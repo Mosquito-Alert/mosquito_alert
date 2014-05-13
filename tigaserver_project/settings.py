@@ -36,7 +36,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tigerserver_app',
+    'tigaserver_app',
+    'tastypie',
+    'tastypie_swagger',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -85,3 +87,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# !!!REMEMBER to change this on the server to something that makes sense there
+MEDIA_ROOT = '/var/www/'
+
+# Swagger
+TASTYPIE_SWAGGER_API_MODULE = 'tigaserver_project.urls.v1_api'

@@ -2,14 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a1a51bc3-3b0c-4951-9efb-bfaa449e7e8c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tigaserver_app/api.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scopes/scope_settings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/tigaserver_project.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/admin.py" afterPath="$PROJECT_DIR$/tigaserver_app/admin.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/api.py" afterPath="$PROJECT_DIR$/tigaserver_app/api.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/models.py" afterPath="$PROJECT_DIR$/tigaserver_app/models.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_project/settings.py" afterPath="$PROJECT_DIR$/tigaserver_project/settings.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_project/urls.py" afterPath="$PROJECT_DIR$/tigaserver_project/urls.py" />
     </list>
     <ignored path="tigaserver_project.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -35,7 +32,7 @@
       <file leaf-file-name="settings.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_project/settings.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="38" column="22" selection-start="1042" selection-end="1042" vertical-scroll-proportion="0.0" vertical-offset="423" max-vertical-offset="1674">
+            <state line="90" column="5" selection-start="2177" selection-end="2177" vertical-scroll-proportion="0.0" vertical-offset="1087" max-vertical-offset="1818">
               <folding />
             </state>
           </provider>
@@ -44,7 +41,18 @@
       <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1206">
+            <state line="36" column="46" selection-start="1300" selection-end="1316" vertical-scroll-proportion="1.08" vertical-offset="0" max-vertical-offset="1224">
+              <folding>
+                <element signature="e#0#28#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="tests.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tigaserver_app/tests.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="162">
               <folding />
             </state>
           </provider>
@@ -53,8 +61,10 @@
       <file leaf-file-name="admin.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/admin.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="2" column="23" selection-start="83" selection-end="83" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="414">
-              <folding />
+            <state line="6" column="0" selection-start="181" selection-end="181" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="216">
+              <folding>
+                <element signature="e#0#32#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -62,7 +72,7 @@
       <file leaf-file-name="api.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/api.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="0" selection-start="230" selection-end="230" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="630">
+            <state line="25" column="45" selection-start="848" selection-end="848" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="774">
               <folding>
                 <element signature="e#0#27#0" expanded="true" />
               </folding>
@@ -73,8 +83,10 @@
       <file leaf-file-name="urls.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_project/urls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="4" column="0" selection-start="107" selection-end="107" vertical-scroll-proportion="0.0" vertical-offset="72" max-vertical-offset="324">
-              <folding />
+            <state line="11" column="0" selection-start="322" selection-end="322" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432">
+              <folding>
+                <element signature="e#0#30#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -92,18 +104,18 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
+        <option value="$PROJECT_DIR$/tigaserver_app/admin.py" />
+        <option value="$PROJECT_DIR$/tigaserver_project/urls.py" />
         <option value="$PROJECT_DIR$/tigaserver_project/settings.py" />
         <option value="$PROJECT_DIR$/tigaserver_app/models.py" />
-        <option value="$PROJECT_DIR$/tigaserver_app/admin.py" />
         <option value="$PROJECT_DIR$/tigaserver_app/api.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1415" />
-    <option name="y" value="24" />
-    <option name="width" value="1871" />
-    <option name="height" value="1056" />
+    <option name="y" value="52" />
+    <option name="width" value="1366" />
+    <option name="height" value="716" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -199,6 +211,7 @@
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
     <property name="last_opened_file_path" value="$USER_HOME$/.python/virtualenvs/tigatrapp/bin/python2.7" />
+    <property name="SearchEverywhereHistory" value="MEDIA_ROOT" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -433,7 +446,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1415" y="24" width="1871" height="1056" extended-state="6" />
+    <frame x="0" y="52" width="1366" height="716" extended-state="7" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -441,7 +454,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.35435596" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.48535872" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -483,21 +496,27 @@
     <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1206">
-          <folding />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_app/admin.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="0" selection-start="354" selection-end="354" vertical-scroll-proportion="0.0" vertical-offset="234" max-vertical-offset="360">
-          <folding />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_project/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="4" column="0" selection-start="107" selection-end="107" vertical-scroll-proportion="0.0" vertical-offset="72" max-vertical-offset="324">
-          <folding />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -511,14 +530,18 @@
     <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="50" column="0" selection-start="1777" selection-end="1777" vertical-scroll-proportion="0.0" vertical-offset="900" max-vertical-offset="1728">
-          <folding />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_project/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="4" column="0" selection-start="107" selection-end="107" vertical-scroll-proportion="0.0" vertical-offset="72" max-vertical-offset="324">
-          <folding />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -532,7 +555,9 @@
     <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="28" column="0" selection-start="1190" selection-end="1190" vertical-scroll-proportion="0.0" vertical-offset="25" max-vertical-offset="648">
-          <folding />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -546,7 +571,9 @@
     <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="25" column="34" selection-start="1081" selection-end="1081" vertical-scroll-proportion="0.0" vertical-offset="43" max-vertical-offset="702">
-          <folding />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -578,35 +605,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/tests.py">
+    <entry file="file://$PROJECT_DIR$/tigaserver_app/admin.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="641" />
+        <state line="6" column="0" selection-start="181" selection-end="181" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="216">
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_project/urls.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="0" selection-start="107" selection-end="107" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="324">
-          <folding />
+        <state line="11" column="0" selection-start="322" selection-end="322" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432">
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_project/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="22" selection-start="1042" selection-end="1042" vertical-scroll-proportion="0.0" vertical-offset="423" max-vertical-offset="1674">
+        <state line="90" column="5" selection-start="2177" selection-end="2177" vertical-scroll-proportion="0.0" vertical-offset="1087" max-vertical-offset="1818">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/admin.py">
+    <entry file="file://$PROJECT_DIR$/tigaserver_app/tests.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="23" selection-start="83" selection-end="83" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="414">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="616">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_app/api.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="0" selection-start="230" selection-end="230" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="630">
+        <state line="25" column="45" selection-start="848" selection-end="848" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="774">
           <folding>
             <element signature="e#0#27#0" expanded="true" />
           </folding>
@@ -615,8 +648,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1206">
-          <folding />
+        <state line="36" column="46" selection-start="1300" selection-end="1316" vertical-scroll-proportion="1.08" vertical-offset="0" max-vertical-offset="1224">
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

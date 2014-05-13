@@ -2,7 +2,7 @@ from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.resources import ModelResource
-from tigaserver_app.models import Report, TigaUser
+from tigaserver_app.models import Report, TigaUser, Mission
 
 
 class UserResource(ModelResource):
@@ -11,9 +11,8 @@ class UserResource(ModelResource):
         resource_name = 'user'
         authorization = Authorization()
         authentication = ApiKeyAuthentication()
-        list_allowed_methods = ['post', 'get']
-        detail_allowed_methods = ['post', 'get']
-        fields = ['user_id']
+        list_allowed_methods = ['post']
+        detail_allowed_methods = ['post']
 
 
 class ReportResource(ModelResource):
@@ -26,4 +25,13 @@ class ReportResource(ModelResource):
         resource_name = 'report'
         list_allowed_methods = ['post', 'get']
         detail_allowed_methods = ['post', 'get']
-        excludes = ['report_server_time']
+
+
+class MissionResource(ModelResource):
+    class Meta:
+        authorization = Authorization()
+        authentication = ApiKeyAuthentication()
+        queryset = Mission.objects.all()
+        resource_name = 'mission'
+        list_allowed_methods = ['get']
+        detail_allowed_methods = ['get']

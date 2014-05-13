@@ -1,4 +1,6 @@
 from django.db import models
+import datetime
+from django.utils.timezone import utc
 
 
 class TigaUser(models.Model):
@@ -6,6 +8,25 @@ class TigaUser(models.Model):
 
     def __unicode__(self):
         return self.user_id
+
+
+class Mission(models.Model):
+    mission_id = models.CharField(max_length=200, unique=True)
+    title = models.CharField(max_length=200)
+    short_description = models.CharField(max_length=200)
+    creation_time = models.DateTimeField()
+    expiration_time = models.DateTimeField(blank=True, null=True)
+    mission_detail = models.CharField(max_length=1000)
+    location_trigger_lat = models.FloatField(blank=True, null=True)
+    location_trigger_lon = models.FloatField(blank=True, null=True)
+    time_trigger_lower_bound = models.TimeField(blank=True, null=True)
+    time_trigger_upper_bound = models.TimeField(blank=True, null=True)
+
+    def __unicode__(self):
+        return self.mission_id
+
+    def active_missions(self):
+        return self.expiration_time >= datetime.datetime.utcnow().replace(tzinfo=utc)
 
 
 class Report(models.Model):
@@ -17,45 +38,25 @@ class Report(models.Model):
     creation_time = models.BigIntegerField()
     version_time = models.BigIntegerField()
     type = models.IntegerField()
-    mission_id = models.ForeignKey(Mission)
+    mission_id = models.ForeignKey(Mission, blank=True, null=True)
     confirmation = models.CharField(max_length=1000)
-    confirmation_code = models.IntegerField()
+    confirmation_code = models.IntegerField(blank=True, null=True)
     location_choice = models.IntegerField()
-    current_location_lon = models.FloatField()
-    current_location_lat = models.FloatField()
-    selected_location_lon = models.FloatField()
-    selected_location_lat = models.FloatField()
-    photo_attached = models.BooleanField()
-    photo = models.ImageField()
-    note = models.CharField(max_length=1000)
-    package_name = models.CharField(max_length=400)
-    package_version = models.IntegerField()
-    phone_manufacturer = models.CharField(max_length=200)
-    phone_model = models.CharField(max_length=200)
-    os = models.CharField(max_length=200)
-    os_version = models.CharField(max_length=200)
+    current_location_lon = models.FloatField(blank=True, null=True)
+    current_location_lat = models.FloatField(blank=True, null=True)
+    selected_location_lon = models.FloatField(blank=True, null=True)
+    selected_location_lat = models.FloatField(blank=True, null=True)
+    photo_attached = models.NullBooleanField(blank=True)
+    photo = models.ImageField(upload_to='tigapics', blank=True, null=True)
+    note = models.CharField(max_length=1000, blank=True)
+    package_name = models.CharField(max_length=400, blank=True)
+    package_version = models.IntegerField(blank=True, null=True)
+    phone_manufacturer = models.CharField(max_length=200, blank=True)
+    phone_model = models.CharField(max_length=200, blank=True)
+    os = models.CharField(max_length=200, blank=True)
+    os_version = models.CharField(max_length=200, blank=True)
 
     def __unicode__(self):
         return self.report_id
 
-
-class Mission(models.Model):
-    mission_id = models.CharField(max_length=200, primary_key=True)
-    title = models.CharField(max_length=200)
-    short_description = models.CharField(max_length=200)
-    creation_time = models.BigIntegerField()
-    expiration_time = models.BigIntegerField()
-    mission_detail = models.CharField(max_length=1000)
-
-
-class MissionLocationTriggers(models.Model):
-    mission_id = models.ForeignKey(Mission)
-    lat = models.FloatField()
-    lon = models.FloatField()
-
-
-class MissionTimeTriggers(models.Model):
-    mission_id = models.ForeignKey(Mission)
-    lower_bound = models.BigIntegerField()
-    upper_bound = models.BigIntegerField()
 
