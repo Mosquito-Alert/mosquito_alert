@@ -4,10 +4,10 @@ from django.utils.timezone import utc
 
 
 class TigaUser(models.Model):
-    user_id = models.CharField(max_length=200, primary_key=True)
+    user_UUID = models.CharField(max_length=36, primary_key=True)
 
     def __unicode__(self):
-        return self.user_id
+        return self.user_UUID
 
 
 class Mission(models.Model):
@@ -32,7 +32,8 @@ class Mission(models.Model):
 class Report(models.Model):
     user = models.ForeignKey(TigaUser)
     report_id = models.CharField(max_length=200)
-    version = models.IntegerField()
+    version_UUID = models.CharField(max_length=36, primary_key=True)
+    version_number = models.IntegerField()
     server_upload_time = models.DateTimeField(auto_now_add=True)
     phone_upload_time = models.BigIntegerField()
     creation_time = models.BigIntegerField()
@@ -46,8 +47,6 @@ class Report(models.Model):
     current_location_lat = models.FloatField(blank=True, null=True)
     selected_location_lon = models.FloatField(blank=True, null=True)
     selected_location_lat = models.FloatField(blank=True, null=True)
-    photo_attached = models.NullBooleanField(blank=True)
-    photo = models.ImageField(upload_to='tigapics', blank=True, null=True)
     note = models.CharField(max_length=1000, blank=True)
     package_name = models.CharField(max_length=400, blank=True)
     package_version = models.IntegerField(blank=True, null=True)
@@ -57,6 +56,11 @@ class Report(models.Model):
     os_version = models.CharField(max_length=200, blank=True)
 
     def __unicode__(self):
-        return self.report_id
+        return self.version_UUID
+
+    class Meta:
+        unique_together = ("user", "report_id")
 
 
+class Photo(models.Model):
+    photo = models.ImageField(upload_to='tigapics')

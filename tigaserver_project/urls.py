@@ -14,5 +14,6 @@ urlpatterns = patterns('',
     (r'^api/', include(v1_api.urls)),
     url(r'api/v1/doc/', include('tastypie_swagger.urls', namespace='tastypie_swagger')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^tigaserver_app/', include('tigaserver_app.urls')),
 )
 

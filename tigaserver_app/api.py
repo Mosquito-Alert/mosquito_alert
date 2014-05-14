@@ -2,7 +2,7 @@ from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.resources import ModelResource
-from tigaserver_app.models import Report, TigaUser, Mission
+from tigaserver_app.models import Report, TigaUser, Mission, Photo
 
 
 class UserResource(ModelResource):
@@ -23,8 +23,8 @@ class ReportResource(ModelResource):
         authentication = ApiKeyAuthentication()
         queryset = Report.objects.all()
         resource_name = 'report'
-        list_allowed_methods = ['post', 'get']
-        detail_allowed_methods = ['post', 'get']
+        list_allowed_methods = ['post']
+        detail_allowed_methods = ['post']
 
 
 class MissionResource(ModelResource):
@@ -35,3 +35,30 @@ class MissionResource(ModelResource):
         resource_name = 'mission'
         list_allowed_methods = ['get']
         detail_allowed_methods = ['get']
+
+""""
+class MultipartResource(object):
+    def deserialize(self, request, data, format=None):
+        if not format:
+            format = request.META.get('CONTENT_TYPE', 'application/json')
+        if format == 'application/x-www-form-urlencoded':
+            return request.POST
+        if format.startswith('multipart'):
+            data = request.POST.copy()
+            data.update(request.FILES)
+            return data
+        return super(MultipartResource, self).deserialize(request, data, format)
+
+
+class PhotoResource(ModelResource):
+    report = fields.ForeignKey(ReportResource, 'report')
+
+    class Meta:
+        authorization = Authorization()
+        authentication = ApiKeyAuthentication()
+        queryset = Photo.objects.all()
+        resource_name = 'photo'
+        list_allowed_methods = ['post','get']
+        detail_allowed_methods = ['post','get']
+
+"""""
