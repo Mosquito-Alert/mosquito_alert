@@ -37,8 +37,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tigaserver_app',
-    'tastypie',
-    'tastypie_swagger',
+    'rest_framework',
+    'rest_framework.authtoken',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -91,5 +91,17 @@ STATIC_URL = '/static/'
 # !!!REMEMBER to change this on the server to something that makes sense there
 MEDIA_ROOT = '/var/www/'
 
-# Swagger
-TASTYPIE_SWAGGER_API_MODULE = 'tigaserver_project.urls.v1_api'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    )
+}
