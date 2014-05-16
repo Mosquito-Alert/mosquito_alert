@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from tigaserver_app.models import Report, TigaUser, Mission, Photo
+from tigaserver_app.models import Report, TigaUser, Mission, Photo, Fix
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -62,10 +62,19 @@ class ReportListingField(serializers.RelatedField):
         return value.version_UUID
 
 
-class PhotoSerializer(serializers.HyperlinkedModelSerializer):
+class PhotoSerializer(serializers.ModelSerializer):
     report = ReportListingField
 
     class Meta:
         model = Photo
         depth = 0
         fields = ['photo', 'report']
+
+
+class FixSerializer(serializers.ModelSerializer):
+    user = UserListingField
+
+    class Meta:
+        model = Fix
+        depth = 0
+        fields = ['user', 'time']

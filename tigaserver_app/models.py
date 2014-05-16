@@ -37,9 +37,9 @@ class Report(models.Model):
     user = models.ForeignKey(TigaUser)
     report_id = models.CharField(max_length=200)
     server_upload_time = models.DateTimeField(auto_now_add=True)
-    phone_upload_time = models.BigIntegerField()
-    creation_time = models.BigIntegerField()
-    version_time = models.BigIntegerField()
+    phone_upload_time = models.DateTimeField()
+    creation_time = models.DateTimeField()
+    version_time = models.DateTimeField()
     type = models.IntegerField()
     mission = models.ForeignKey(Mission, blank=True, null=True)
     confirmation = models.CharField(max_length=1000)
@@ -64,15 +64,16 @@ class Report(models.Model):
         unique_together = ("user", "version_UUID")
 
 
-def get_unique_image_file_path(filename='default.jpg'):
-    extension = filename.split('.')[-1]
-    filename = "%s.%s" % (uuid.uuid4(), extension)
-    root = 'tigapics'
-    return os.path.join(root, filename)
+def make_image_uuid(path):
+    def wrapper(instance, filename):
+        extension = filename.split('.')[-1]
+        filename = "%s.%s" % (uuid.uuid4(), extension)
+        return os.path.join(path, filename)
+    return wrapper
 
 
 class Photo(models.Model):
-    photo = models.ImageField(upload_to="tigapics")
+    photo = models.ImageField(upload_to=make_image_uuid('tigapics'))
     report = models.ForeignKey(Report)
 
     def __unicode__(self):
@@ -81,4 +82,4 @@ class Photo(models.Model):
 
 class Fix(models.Model):
     user = models.ForeignKey(TigaUser)
-    time = models.BigIntegerField()
+    time = models.DateTimeField()

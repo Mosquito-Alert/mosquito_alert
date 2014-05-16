@@ -1,14 +1,9 @@
 from rest_framework import viewsets, views
-from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer
-from models import TigaUser, Report, Mission, Photo
+from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer
+from models import TigaUser, Report, Mission, Photo, Fix
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins
-from rest_framework.permissions import DjangoModelPermissions
-from custom_permissions import *
-from django.views.decorators.http import require_http_methods
-from rest_framework import generics
-
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -69,9 +64,17 @@ class MissionViewSet(ReadOnlyModelViewSet):
     serializer_class = MissionSerializer
 
 
-class PhotoViewSet(viewsets.ModelViewSet):
+class PhotoViewSet(WriteOnlyModelViewSet):
     """
-    API endpoint that allows photos to be uploaded a multipart form data.
+    API endpoint that allows photos to be uploaded as multipart form data.
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+
+
+class FixViewSet(WriteOnlyModelViewSet):
+    """
+    API endpoint that allows location fixes to be posted.
+    """
+    queryset = Fix.objects.all()
+    serializer_class = FixSerializer

@@ -105,3 +105,5 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     )
 }
+
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
