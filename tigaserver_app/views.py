@@ -1,6 +1,7 @@
 from rest_framework import viewsets, views
-from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer
-from models import TigaUser, Report, Mission, Photo, Fix
+from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
+    ConfigurationSerializer, ReportResponseSerializer
+from models import TigaUser, Report, Mission, Photo, Fix, Configuration, ReportResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins
@@ -29,9 +30,7 @@ class WriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 @api_view(['POST'])
 def upload_form(request):
     """
-    A function for uploading photos and related database entries as multipart form data.
-
-    The photo file must be named 'photo', and its associated report's version_UUID must be named 'report'
+    A function for uploading photos and related database entries as multipart form data. The photo file must be named 'photo', and its associated report's version_UUID must be named 'report'
     """
     if request.method == 'POST':
         this_report = Report.objects.get(version_UUID=request.DATA['report'])
@@ -40,7 +39,8 @@ def upload_form(request):
         return Response('uploaded')
 
 
-class UserViewSet(WriteOnlyModelViewSet):
+# For production version, substitute WriteOnlyModelViewSet
+class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows new users to be posted.
     """
@@ -48,7 +48,8 @@ class UserViewSet(WriteOnlyModelViewSet):
     serializer_class = UserSerializer
 
 
-class ReportViewSet(WriteOnlyModelViewSet):
+# For production version, substitute WriteOnlyModelViewSet
+class ReportViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows new reports or new report versions to be posted.
     """
@@ -56,15 +57,25 @@ class ReportViewSet(WriteOnlyModelViewSet):
     serializer_class = ReportSerializer
 
 
+# For production version, substitute WriteOnlyModelViewSet
+class ReportResponseViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for posting report responses.
+    """
+    queryset = ReportResponse.objects.all()
+    serializer_class = ReportResponseSerializer
+
+
 class MissionViewSet(ReadOnlyModelViewSet):
     """
-    API endpoint that allows missions to be downloaded.
+    API endpoint that allows users to download missions created by MoveLab.
     """
     queryset = Mission.objects.all()
     serializer_class = MissionSerializer
 
 
-class PhotoViewSet(WriteOnlyModelViewSet):
+# For production version, substitute WriteOnlyModelViewSet
+class PhotoViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows photos to be uploaded as multipart form data.
     """
@@ -72,9 +83,19 @@ class PhotoViewSet(WriteOnlyModelViewSet):
     serializer_class = PhotoSerializer
 
 
-class FixViewSet(WriteOnlyModelViewSet):
+# For production version, substitute WriteOnlyModelViewSet
+class FixViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows location fixes to be posted.
     """
     queryset = Fix.objects.all()
     serializer_class = FixSerializer
+
+
+class ConfigurationViewSet(ReadOnlyModelViewSet):
+    """
+    API endpoint that allows users to download app configuration created by Movelab.
+
+    """
+    queryset = Configuration.objects.all()
+    serializer_class = ConfigurationSerializer

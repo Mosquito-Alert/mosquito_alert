@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'tigaserver_app',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_swagger',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -61,9 +62,9 @@ WSGI_APPLICATION = 'tigaserver_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tigatrapp_db',
-        'USER': 'tigatrapp_user',
-        'PASSWORD': 'test',
+        'NAME': 'tigadata',
+        'USER': 'tigadata_user',
+        'PASSWORD': 'XIEAzdwDDYJlfjVMzFz2YJIEIrYP6GfkBFUcM|xWj^nyX7imfLdsZ0NydFrTniCLz[g@KdmgvBUpQZSQnvuQqGR"Wh[ic@OU8Bbw',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -88,6 +89,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATIC_ROOT = '/home/palmer/tigatrapp/tigaserver_project/tigaserver_app/static/'
+
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+
 # !!!REMEMBER to change this on the server to something that makes sense there
 MEDIA_ROOT = '/var/www/'
 
@@ -103,7 +109,23 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
-    )
+    ),
 }
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+
+SWAGGER_SETTINGS = {
+    "exclude_namespaces": [], # List URL namespaces to ignore
+#    "api_version": '0.1',  # Specify your API's version
+#    "api_path": "/",  # Specify the path to your API not a root level
+    "enabled_methods": [  # Specify which methods to enable in Swagger UI
+        'get',
+        'post',
+#        'put',
+#        'patch',
+#        'delete'
+    ],
+#    "api_key": '', # An API key
+    "is_authenticated": False,  # Set to True to enforce user authentication,
+    "is_superuser": False,  # Set to True to enforce admin only access
+}
