@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from tigaserver_app.models import Report, TigaUser, Mission, Photo, Fix, Configuration, ReportResponse, MissionItem
+from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+    Fix, Configuration
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,8 +25,25 @@ class MissionItemSerializer(serializers.ModelSerializer):
         model = MissionItem
 
 
+class MissionTriggerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MissionTrigger
+
+
 class MissionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    short_description = serializers.CharField()
+    long_description = serializers.CharField()
+    creation_time = serializers.DateTimeField()
+    expiration_time = serializers.DateTimeField()
+    platform = serializers.CharField()
+    language = serializers.CharField()
+    help_text = serializers.CharField()
     items = MissionItemSerializer(many=True)
+    triggers = MissionTriggerSerializer(many=True)
+    url = serializers.URLField()
+    photo_mission = serializers.BooleanField()
 
     class Meta:
         model = Mission

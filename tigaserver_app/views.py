@@ -1,7 +1,8 @@
-from rest_framework import viewsets, views
+from rest_framework import viewsets
 from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
     ConfigurationSerializer, ReportResponseSerializer
-from models import TigaUser, Report, Mission, Photo, Fix, Configuration, ReportResponse
+from models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+    Fix, Configuration
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins
@@ -67,15 +68,6 @@ class ReportViewSet(ReadWriteOnlyModelViewSet):
     serializer_class = ReportSerializer
 
 
-# For production version, substitute WriteOnlyModelViewSet
-class ReportResponseViewSet(ReadWriteOnlyModelViewSet):
-    """
-    API endpoint for posting report responses.
-    """
-    queryset = ReportResponse.objects.all()
-    serializer_class = ReportResponseSerializer
-
-
 class MissionViewSet(ReadOnlyModelViewSet):
     """
     API endpoint that allows users to download missions created by MoveLab.
@@ -104,8 +96,12 @@ class FixViewSet(ReadWriteOnlyModelViewSet):
 
 class ConfigurationViewSet(ReadOnlyModelViewSet):
     """
-    API endpoint that allows users to download app configuration created by Movelab.
+API endpoint that allows users to download app configuration created by Movelab.
 
+* id: Auto-incremented primary key record ID.
+* samples_per_day: Number of randomly-timed location samples to take per day.
+* creation_time: Date and time when this configuration was created by MoveLab. Automatically generated when
+record is saved.
     """
     queryset = Configuration.objects.all()
     serializer_class = ConfigurationSerializer
