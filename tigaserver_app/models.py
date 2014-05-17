@@ -9,7 +9,10 @@ class TigaUser(models.Model):
     user_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
                                                 'phone to identify each unique user. Must be exactly 36 '
                                                 'characters (32 hex digits plus 4 hyphens).')
-    consent_time = models.DateTimeField(auto_now=True)
+    consent_time = models.DateTimeField(auto_now=True, help_text='The date and time when user consented to sharing '
+                                                                 'data. The app allows users to register UUID only '
+                                                                 'upon consent, so this field is automatically set by'
+                                                                 ' the server when user registers.')
 
     def __unicode__(self):
         return self.user_UUID
@@ -39,12 +42,10 @@ class Mission(models.Model):
     platform = models.CharField(max_length=4, choices=PLATFORM_CHOICES, help_text='What type of device is this '
                                                                                    'mission is intended for? It will '
                                                                                    'be sent only to these devices')
-    creation_time = models.DateTimeField(auto_now=True)
-    expiration_time = models.DateTimeField(blank=True, null=True)
-    location_trigger_lat = models.FloatField(blank=True, null=True)
-    location_trigger_lon = models.FloatField(blank=True, null=True)
-    time_trigger_lower_bound = models.TimeField(blank=True, null=True)
-    time_trigger_upper_bound = models.TimeField(blank=True, null=True)
+    creation_time = models.DateTimeField(auto_now=True, help_text='Date and time mission was created by MoveLab. '
+                                                                  'Automatically generated when mission saved.')
+    expiration_time = models.DateTimeField(blank=True, null=True, help_text='Optional date and time when mission '
+                                                                            'should expire (if ever). Mission will no longer be displayed to users after this date-time.')
     button_left_visible = models.BooleanField()
     button_middle_visible = models.BooleanField()
     button_right_visible = models.BooleanField()
@@ -65,6 +66,15 @@ class Mission(models.Model):
         return self.expiration_time >= datetime.datetime.utcnow().replace(tzinfo=utc)
 
 
+class MissionTrigger(models.Model):
+    mission = models.ForeignKey(Mission, related_name='items')
+    location_trigger_lat = models.FloatField(blank=True, null=True, help_text='Optional latitude for triggering '
+                                                                              'mission to appear to user.')
+    location_trigger_lon = models.FloatField(blank=True, null=True)
+    time_trigger_lower_bound = models.TimeField(blank=True, null=True)
+    time_trigger_upper_bound = models.TimeField(blank=True, null=True)
+
+
 class MissionItem(models.Model):
     mission = models.ForeignKey(Mission, related_name='items')
     question = models.CharField(max_length=1000, help_text='Question to be displayed to user.')
@@ -79,7 +89,7 @@ class Report(models.Model):
                                                 'phone to identify each unique report version. Must be exactly 36 '
                                                 'characters (32 hex).')
     version_number = models.IntegerField()
-    user = models.ForeignKey(TigaUser)
+    user = models.ForeignKey(TigaUser, help_text="user_UUID for the user sending this report.")
     report_id = models.CharField(max_length=200)
     server_upload_time = models.DateTimeField(auto_now_add=True)
     phone_upload_time = models.DateTimeField()
@@ -141,13 +151,22 @@ class Fix(models.Model):
     """
     Location fix uploaded by user.
     """
-    user = models.ForeignKey(TigaUser)
-    fix_time = models.DateTimeField()
-    server_upload_time = models.DateTimeField(auto_now_add=True)
-    phone_upload_time = models.DateTimeField()
-    masked_lon = models.FloatField()
-    masked_lat = models.FloatField()
-    power = models.FloatField(null=True, blank=True)
+    user = models.ForeignKey(TigaUser, help_text='The user_UUID for the user sending this location fix.')
+    fix_time = models.DateTimeField(help_text='Date and time when fix was recorded on phone. Format as ECMA '
+                                              '262 date time string (e.g. "2014-05-17T12:34:56'
+                                              '.123+01:00".')
+    server_upload_time = models.DateTimeField(auto_now_add=True, help_text='Date and time registered by server when '
+                                                                           'it received fix upload. Automatically '
+                                                                           'generated.')
+    phone_upload_time = models.DateTimeField(help_text='Date and time on phone when it uploaded fix. Format '
+                                                       'as ECMA '
+                                                       '262 date time string (e.g. "2014-05-17T12:34:56'
+                                                       '.123+01:00".')
+    masked_lon = models.FloatField(help_text='Longitude rounded down to nearest 0.5 decimal degree (floor(lon/.5)*.5)'
+                                             '.')
+    masked_lat = models.FloatField(help_text='Latitude rounded down to nearest 0.5 decimal degree (floor(lat/.5)*.5).')
+    power = models.FloatField(null=True, blank=True, help_text='Power level of phone at time fix recorded, '
+                                                               'expressed as proportion of full charge. Range: 0-1.')
 
     def __unicode__(self):
         return self.user.user_UUID + " " + str(self.fix_time)

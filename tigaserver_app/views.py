@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.generics import mixins
 
 
-class ReadOnlyModelViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     A viewset that provides `retrieve`, andlist` actions.
 
@@ -18,6 +18,16 @@ class ReadOnlyModelViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vie
 
 
 class WriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    A viewset that provides`create` action.
+
+    To use it, override the class and set the `.queryset` and
+    `.serializer_class` attributes.
+    """
+    pass
+
+
+class ReadWriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet, mixins.ListModelMixin):
     """
     A viewset that provides`create` action.
 
@@ -40,7 +50,7 @@ def upload_form(request):
 
 
 # For production version, substitute WriteOnlyModelViewSet
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(ReadWriteOnlyModelViewSet):
     """
     API endpoint that allows new users to be posted.
     """
@@ -49,7 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 # For production version, substitute WriteOnlyModelViewSet
-class ReportViewSet(viewsets.ModelViewSet):
+class ReportViewSet(ReadWriteOnlyModelViewSet):
     """
     API endpoint that allows new reports or new report versions to be posted.
     """
@@ -58,7 +68,7 @@ class ReportViewSet(viewsets.ModelViewSet):
 
 
 # For production version, substitute WriteOnlyModelViewSet
-class ReportResponseViewSet(viewsets.ModelViewSet):
+class ReportResponseViewSet(ReadWriteOnlyModelViewSet):
     """
     API endpoint for posting report responses.
     """
@@ -75,7 +85,7 @@ class MissionViewSet(ReadOnlyModelViewSet):
 
 
 # For production version, substitute WriteOnlyModelViewSet
-class PhotoViewSet(viewsets.ModelViewSet):
+class PhotoViewSet(ReadWriteOnlyModelViewSet):
     """
     API endpoint that allows photos to be uploaded as multipart form data.
     """
@@ -84,7 +94,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
 
 
 # For production version, substitute WriteOnlyModelViewSet
-class FixViewSet(viewsets.ModelViewSet):
+class FixViewSet(ReadWriteOnlyModelViewSet):
     """
     API endpoint that allows location fixes to be posted.
     """

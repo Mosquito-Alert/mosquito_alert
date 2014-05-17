@@ -26,36 +26,13 @@ class MissionItemSerializer(serializers.ModelSerializer):
 
 class MissionSerializer(serializers.ModelSerializer):
     items = MissionItemSerializer(many=True)
-    title = serializers.CharField()
-    short_description = serializers.CharField(help_text='Text to be displayed in mission list.')
-    long_description = serializers.CharField(help_text='Text that fully explains mission to user')
-    help_text = serializers.CharField(help_text='Text to be displayed when user taps mission help button.')
-    language = serializers.CharField(help_text='What language is mission displayed in?')
-    platform = serializers.CharField()
-    creation_time = serializers.DateTimeField()
-    expiration_time = serializers.DateTimeField()
-    location_trigger_lat = serializers.FloatField()
-    location_trigger_lon = serializers.FloatField()
-    time_trigger_lower_bound = serializers.TimeField()
-    time_trigger_upper_bound = serializers.TimeField()
-    button_left_visible = serializers.BooleanField()
-    button_middle_visible = serializers.BooleanField()
-    button_right_visible = serializers.BooleanField()
-    button_left_text = serializers.CharField()
-    button_left_action = serializers.IntegerField()
-    button_left_url = serializers.URLField()
-    button_middle_text = serializers.CharField()
-    button_middle_action = serializers.IntegerField()
-    button_middle_url = serializers.URLField()
-    button_right_text = serializers.CharField()
-    button_right_action = serializers.IntegerField()
-    button_right_url = serializers.URLField()
 
     class Meta:
         model = Mission
 
 
 class UserListingField(serializers.RelatedField):
+
     def to_native(self, value):
         return value.user_UUID
 
@@ -66,10 +43,8 @@ class MissionListingField(serializers.RelatedField):
 
 
 class ReportSerializer(serializers.ModelSerializer):
-    report_UUID = serializers.CharField(max_length=36)
     user = UserListingField
     mission = MissionListingField
-    type = serializers.CharField(help_text="Type of report: 'adult', 'site', or 'mission'.")
 
     def validate_report_UUID(self, attrs, source):
         """
@@ -89,32 +64,10 @@ class ReportSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Make sure type is 'adult', 'site', or 'mission'.")
         return attrs
 
-
     class Meta:
         model = Report
         depth = 0
-        fields = ['version_UUID',
-                  'version_number',
-                  'user',
-                  'report_id',
-                  'server_upload_time',
-                  'phone_upload_time',
-                  'creation_time',
-                  'version_time',
-                  'type',
-                  'mission',
-                  'location_choice',
-                  'current_location_lon',
-                  'current_location_lat',
-                  'selected_location_lon',
-                  'selected_location_lat',
-                  'note',
-                  'package_name',
-                  'package_version',
-                  'phone_manufacturer',
-                  'phone_model',
-                  'os',
-                  'os_version', ]
+
 
 class ReportListingField(serializers.RelatedField):
     def to_native(self, value):
@@ -139,7 +92,11 @@ class PhotoSerializer(serializers.ModelSerializer):
 
 
 class FixSerializer(serializers.ModelSerializer):
-    user = UserListingField(help_text='esting')
+    user = UserListingField
+#    fix_time = serializers.DateTimeField()
+#    phone_upload_time = serializers.DateTimeField()
+#    masked_lon = serializers.FloatField()
+#    masked_lat = serializers.FloatField()
 
     class Meta:
         model = Fix
