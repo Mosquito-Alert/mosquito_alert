@@ -12,7 +12,7 @@ class ConfigurationAdmin(admin.ModelAdmin):
     readonly_fields = ('creation_time', )
 
 
-class MissionItemInline(admin.TabularInline):
+class MissionItemInline(admin.StackedInline):
     model = MissionItem
     extra = 1
 

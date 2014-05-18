@@ -10,11 +10,13 @@ router.register(r'report_responses', views.ReportItemViewSet)
 router.register(r'missions', views.MissionViewSet)
 router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
-router.register(r'configurations', views.ConfigurationViewSet)
+router.register(r'configuration', views.ConfigurationViewSet)
 
 
 
 urlpatterns = patterns('tigaserver_app.views',
     url(r'^photos/$', 'upload_form'),
+    url(r'^configuration/$', 'get_current_configuration'),
+    url(r'^missions/$', 'get_new_missions'),
     url(r'^', include(router.urls)),
 )

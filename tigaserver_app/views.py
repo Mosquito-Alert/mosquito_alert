@@ -38,6 +38,43 @@ class ReadWriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet
     pass
 
 
+@api_view(['GET'])
+def get_current_configuration(request):
+    """
+API endpoint for getting most recent app configuration created by Movelab.
+
+* id: Auto-incremented primary key record ID.
+* samples_per_day: Number of randomly-timed location samples to take per day.
+* creation_time: Date and time when this configuration was created by MoveLab. Automatically generated when
+record is saved.
+    """
+    if request.method == 'GET':
+        current_config = Configuration.objects.last('-creation_time')
+        serializer = ConfigurationSerializer(current_config)
+        return Response(serializer.data)
+
+
+@api_view(['GET'])
+def get_new_missions(request):
+    """
+API endpoint for getting most missions that have not yet been downloaded.
+
+* id: Auto-incremented primary key record ID.
+* samples_per_day: Number of randomly-timed location samples to take per day.
+* creation_time: Date and time when this configuration was created by MoveLab. Automatically generated when
+record is saved.
+
+**Query Parameters**
+
+* id_greater_than: Returns records with id greater than the specified value. Use this for
+    """
+    if request.method == 'GET':
+        these_missions = Mission.objects.filter(id__gt=request.QUERY_PARAMS.get('id_greater_than', 0))
+        serializer = MissionSerializer(these_missions)
+        return Response(serializer.data)
+
+
+
 @api_view(['POST'])
 def upload_form(request):
     """
@@ -91,7 +128,7 @@ API endpoint for downloading missions created by MoveLab.
 * **short_description**: Text to be displayed in mission list.
 * **long_description**: Text that fully explains mission to user.
 * **help_text**: Text to be displayed when user taps mission help button.
-* **language**: What language is mission displayed in? (It will be sent only users who have chosen this language.
+* **language**: What language is mission displayed in? (It will be sent only users who have chosen this language.)
 * **platform**: What type of device is this mission is intended for? It will be sent only to these devices.
 * **creation_time**: Date and time mission was created by MoveLab. Automatically generated when mission saved.
 * **expiration_time**: Optional date and time when mission should expire (if ever). Mission will no longer be displayed to users after this date-time.
