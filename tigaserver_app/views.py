@@ -49,7 +49,7 @@ API endpoint for getting most recent app configuration created by Movelab.
 record is saved.
     """
     if request.method == 'GET':
-        current_config = Configuration.objects.last('-creation_time')
+        current_config = Configuration.objects.order_by('creation_time').last()
         serializer = ConfigurationSerializer(current_config)
         return Response(serializer.data)
 

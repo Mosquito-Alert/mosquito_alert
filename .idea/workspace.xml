@@ -2,12 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a1a51bc3-3b0c-4951-9efb-bfaa449e7e8c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/admin.py" afterPath="$PROJECT_DIR$/tigaserver_app/admin.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html" afterPath="$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/models.py" afterPath="$PROJECT_DIR$/tigaserver_app/models.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/serializers.py" afterPath="$PROJECT_DIR$/tigaserver_app/serializers.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/urls.py" afterPath="$PROJECT_DIR$/tigaserver_app/urls.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_project/urls.py" afterPath="$PROJECT_DIR$/tigaserver_project/urls.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/views.py" afterPath="$PROJECT_DIR$/tigaserver_app/views.py" />
     </list>
     <ignored path="tigaserver_project.iws" />
@@ -54,7 +48,7 @@
       <file leaf-file-name="views.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="67" column="0" selection-start="2228" selection-end="2228" vertical-scroll-proportion="-1.7263682" vertical-offset="2247" max-vertical-offset="3366">
+            <state line="51" column="57" selection-start="1707" selection-end="1707" vertical-scroll-proportion="0.5671642" vertical-offset="576" max-vertical-offset="3366">
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
               </folding>
@@ -931,7 +925,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_app/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="0" selection-start="2228" selection-end="2228" vertical-scroll-proportion="-1.7263682" vertical-offset="2247" max-vertical-offset="3366">
+        <state line="51" column="57" selection-start="1707" selection-end="1707" vertical-scroll-proportion="0.5671642" vertical-offset="576" max-vertical-offset="3366">
           <folding>
             <element signature="e#0#35#0" expanded="true" />
           </folding>
