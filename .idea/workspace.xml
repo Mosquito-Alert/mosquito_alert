@@ -2,13 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a1a51bc3-3b0c-4951-9efb-bfaa449e7e8c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/admin.py" afterPath="$PROJECT_DIR$/tigaserver_app/admin.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tigaserver_app/templates/rest_framework_swagger/index.html" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html" afterPath="$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/templates/rest_framework_swagger/index.html" afterPath="$PROJECT_DIR$/tigaserver_app/templates/rest_framework_swagger/index.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/models.py" afterPath="$PROJECT_DIR$/tigaserver_app/models.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/serializers.py" afterPath="$PROJECT_DIR$/tigaserver_app/serializers.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_project/settings.py" afterPath="$PROJECT_DIR$/tigaserver_project/settings.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/urls.py" afterPath="$PROJECT_DIR$/tigaserver_app/urls.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_project/urls.py" afterPath="$PROJECT_DIR$/tigaserver_project/urls.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/views.py" afterPath="$PROJECT_DIR$/tigaserver_app/views.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -36,7 +35,7 @@
       <file leaf-file-name="settings.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_project/settings.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="0" selection-start="1126" selection-end="1126" vertical-scroll-proportion="0.0" vertical-offset="486" max-vertical-offset="2448">
+            <state line="41" column="0" selection-start="1096" selection-end="1096" vertical-scroll-proportion="0.0" vertical-offset="486" max-vertical-offset="2430">
               <folding />
             </state>
           </provider>
@@ -45,7 +44,7 @@
       <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="120" column="131" selection-start="9925" selection-end="9925" vertical-scroll-proportion="0.0" vertical-offset="1969" max-vertical-offset="4986">
+            <state line="183" column="8" selection-start="16475" selection-end="16475" vertical-scroll-proportion="0.0" vertical-offset="694" max-vertical-offset="4968">
               <folding>
                 <element signature="e#0#28#0" expanded="true" />
               </folding>
@@ -56,7 +55,7 @@
       <file leaf-file-name="views.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="69" column="0" selection-start="2278" selection-end="2278" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2034">
+            <state line="110" column="0" selection-start="5906" selection-end="5906" vertical-scroll-proportion="0.0" vertical-offset="1593" max-vertical-offset="2700">
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
               </folding>
@@ -64,10 +63,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="urls.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="urls.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/urls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="0" selection-start="579" selection-end="639" vertical-scroll-proportion="0.47737908" vertical-offset="0" max-vertical-offset="641">
+            <state line="5" column="32" selection-start="154" selection-end="154" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="450">
+              <folding>
+                <element signature="e#0#51#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="api.html" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="14" column="38" selection-start="420" selection-end="420" vertical-scroll-proportion="-9.333333" vertical-offset="0" max-vertical-offset="486">
               <folding />
             </state>
           </provider>
@@ -76,7 +86,7 @@
       <file leaf-file-name="admin.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/admin.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="2" column="22" selection-start="67" selection-end="171" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1116">
+            <state line="2" column="22" selection-start="67" selection-end="171" vertical-scroll-proportion="0.0" vertical-offset="232" max-vertical-offset="1116">
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -84,10 +94,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="serializers.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="serializers.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tigaserver_app/serializers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="103" column="31" selection-start="3002" selection-end="3002" vertical-scroll-proportion="0.0" vertical-offset="1760" max-vertical-offset="2520">
+            <state line="44" column="0" selection-start="1416" selection-end="1416" vertical-scroll-proportion="0.69983417" vertical-offset="370" max-vertical-offset="2412">
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
@@ -122,12 +132,12 @@
         <option value="$PROJECT_DIR$/tigaserver_app/admin.py" />
         <option value="$PROJECT_DIR$/tigaserver_project/urls.py" />
         <option value="$PROJECT_DIR$/tigaserver_app/templates/rest_framework_swagger/index.html" />
-        <option value="$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html" />
         <option value="$PROJECT_DIR$/tigaserver_project/settings.py" />
-        <option value="$PROJECT_DIR$/tigaserver_app/serializers.py" />
-        <option value="$PROJECT_DIR$/tigaserver_app/models.py" />
-        <option value="$PROJECT_DIR$/tigaserver_app/views.py" />
         <option value="$PROJECT_DIR$/tigaserver_app/urls.py" />
+        <option value="$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html" />
+        <option value="$PROJECT_DIR$/tigaserver_app/views.py" />
+        <option value="$PROJECT_DIR$/tigaserver_app/models.py" />
+        <option value="$PROJECT_DIR$/tigaserver_app/serializers.py" />
       </list>
     </option>
   </component>
@@ -310,24 +320,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="tigaserver_app" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tigaserver_project" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tigaserver_project" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tigaserver_app" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="templates" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -668,7 +660,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -708,7 +700,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="9" column="45" selection-start="345" selection-end="345" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="360">
           <folding>
-            <element signature="e#0#51#0" expanded="false" />
+            <element signature="e#0#51#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -874,15 +866,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/admin.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="22" selection-start="67" selection-end="171" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1116">
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_project/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="10" column="63" selection-start="362" selection-end="362" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="306">
@@ -897,58 +880,62 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/templates/rest_framework_swagger/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="13" selection-start="66" selection-end="66" vertical-scroll-proportion="0.125" vertical-offset="0" max-vertical-offset="1746">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="14" selection-start="74" selection-end="74" vertical-scroll-proportion="0.09168082" vertical-offset="0" max-vertical-offset="589">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_project/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="0" selection-start="1126" selection-end="1126" vertical-scroll-proportion="0.0" vertical-offset="486" max-vertical-offset="2448">
+        <state line="41" column="0" selection-start="1096" selection-end="1096" vertical-scroll-proportion="0.0" vertical-offset="486" max-vertical-offset="2430">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
+    <entry file="file://$PROJECT_DIR$/tigaserver_app/admin.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="120" column="131" selection-start="9925" selection-end="9925" vertical-scroll-proportion="0.0" vertical-offset="1969" max-vertical-offset="4986">
+        <state line="2" column="22" selection-start="67" selection-end="171" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1116">
           <folding>
-            <element signature="e#0#28#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="69" column="0" selection-start="2278" selection-end="2278" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2034">
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tigaserver_app/serializers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="103" column="31" selection-start="3002" selection-end="3002" vertical-scroll-proportion="0.0" vertical-offset="1760" max-vertical-offset="2520">
-          <folding>
-            <element signature="e#0#38#0" expanded="true" />
+            <element signature="e#0#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_app/urls.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="0" selection-start="579" selection-end="639" vertical-scroll-proportion="0.47737908" vertical-offset="0" max-vertical-offset="641">
+        <state line="5" column="32" selection-start="154" selection-end="154" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="450">
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tigaserver_app/templates/rest_framework/api.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="38" selection-start="420" selection-end="420" vertical-scroll-proportion="-9.333333" vertical-offset="0" max-vertical-offset="486">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tigaserver_app/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="110" column="0" selection-start="5906" selection-end="5906" vertical-scroll-proportion="0.0" vertical-offset="1593" max-vertical-offset="2700">
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tigaserver_app/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="183" column="8" selection-start="16475" selection-end="16475" vertical-scroll-proportion="0.0" vertical-offset="694" max-vertical-offset="4968">
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tigaserver_app/serializers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="44" column="0" selection-start="1416" selection-end="1416" vertical-scroll-proportion="0.69983417" vertical-offset="370" max-vertical-offset="2412">
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

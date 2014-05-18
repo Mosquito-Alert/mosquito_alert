@@ -4,7 +4,6 @@ from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem
 
 
 class UserSerializer(serializers.ModelSerializer):
-    user_UUID = serializers.CharField()
 
     def validate_user_UUID(self, attrs, source):
         """
@@ -17,7 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TigaUser
-        fields = ['user_UUID']
 
 
 class MissionItemSerializer(serializers.ModelSerializer):
@@ -40,10 +38,10 @@ class MissionSerializer(serializers.ModelSerializer):
     platform = serializers.CharField()
     language = serializers.CharField()
     help_text = serializers.CharField()
-    items = MissionItemSerializer(many=True)
-    triggers = MissionTriggerSerializer(many=True)
     url = serializers.URLField()
     photo_mission = serializers.BooleanField()
+    items = MissionItemSerializer(many=True)
+    triggers = MissionTriggerSerializer(many=True)
 
     class Meta:
         model = Mission
@@ -123,10 +121,6 @@ class FixSerializer(serializers.ModelSerializer):
 
 
 class ConfigurationSerializer(serializers.ModelSerializer):
-    """
-    Test doc
-    param -- descrip
-    """
     samples_per_day = serializers.IntegerField(help_text='Number of samples.')
     creation_time = serializers.DateTimeField(help_text='Creation time help', read_only=True)
 

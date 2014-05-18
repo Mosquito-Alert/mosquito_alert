@@ -99,8 +99,7 @@ class MissionTrigger(models.Model):
 class MissionItem(models.Model):
     mission = models.ForeignKey(Mission, related_name='items', help_text='Mission to which this item is associated.')
     question = models.CharField(max_length=1000, help_text='Question displayed to user.')
-    answer_choices = models.CharField(max_length=1000, help_text='Response choices. Enter as strings separated by '
-                                                                 'commas.')
+    answer_choices = models.CharField(max_length=1000, help_text='Response choices, wrapped in square brackets (e.g., [yes][no]).')
     help_text = models.TextField(blank=True, help_text='Help text displayed to user for this item.')
     prepositioned_image_reference = models.IntegerField(blank=True, null=True, help_text='Optional image '
                                                                                          'displayed to user '
