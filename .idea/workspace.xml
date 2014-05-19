@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a1a51bc3-3b0c-4951-9efb-bfaa449e7e8c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.xml" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_app/serializers.py" afterPath="$PROJECT_DIR$/tigaserver_app/serializers.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tigaserver_project/settings.py" afterPath="$PROJECT_DIR$/tigaserver_project/settings.py" />
     </list>
     <ignored path="tigaserver_project.iws" />
@@ -30,7 +28,7 @@
       <file leaf-file-name="settings.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tigaserver_project/settings.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="99" column="0" selection-start="2502" selection-end="2502" vertical-scroll-proportion="0.42675158" vertical-offset="1514" max-vertical-offset="2322">
+            <state line="99" column="44" selection-start="2589" selection-end="2589" vertical-scroll-proportion="0.5047771" vertical-offset="1465" max-vertical-offset="2412">
               <folding />
             </state>
           </provider>
@@ -947,7 +945,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tigaserver_project/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="99" column="0" selection-start="2502" selection-end="2502" vertical-scroll-proportion="0.42675158" vertical-offset="1514" max-vertical-offset="2322">
+        <state line="99" column="44" selection-start="2589" selection-end="2589" vertical-scroll-proportion="0.5047771" vertical-offset="1465" max-vertical-offset="2412">
           <folding />
         </state>
       </provider>

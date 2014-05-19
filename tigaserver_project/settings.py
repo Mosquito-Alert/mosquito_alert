@@ -23,11 +23,16 @@ with open('/etc/tigaserver_config/sk.txt') as f:
 # SECRET_KEY = 'h0v(25z3u9yquh+01+#%tj@7iyk*raq!-6)jwz+0ac^h2grd0@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+with open('/etc/tigaserver_config/debug.txt') as f:
+    DEBUG = f.read().strip()
 
-TEMPLATE_DEBUG = True
+with open('/etc/tigaserver_config/template_debug.txt') as f:
+    TEMPLATE_DEBUG = f.read().strip()
 
-ALLOWED_HOSTS = []
+with open('/etc/tigaserver_config/allowed_hosts.txt') as f:
+    ALLOWED_HOSTS = [f.read().strip()]
+
+
 
 
 # Application definition
@@ -92,10 +97,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-with open('/etc/tigaserver_config/media_root.txt') as f:
+with open('/etc/tigaserver_config/static_url.txt') as f:
     STATIC_URL = f.read().strip()
 
-with open('/etc/tigaserver_config/media_root.txt') as f:
+with open('/etc/tigaserver_config/static_root.txt') as f:
     STATIC_ROOT = f.read().strip()
 
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
