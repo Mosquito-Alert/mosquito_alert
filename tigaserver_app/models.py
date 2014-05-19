@@ -34,18 +34,25 @@ class Mission(models.Model):
     title_catalan = models.CharField(max_length=200, help_text='Title of mission in Catalan')
     title_spanish = models.CharField(max_length=200, help_text='Title of mission in Spanish')
     title_english = models.CharField(max_length=200, help_text='Title of mission in English')
-    short_description_catalan = models.CharField(max_length=200, help_text='Catalan text to be displayed in mission '
+    short_description_catalan = models.CharField(max_length=200, help_text='Catalan text to be displayed '
+                                                                                       'in mission '
                                                                            'list.')
-    short_description_spanish = models.CharField(max_length=200, help_text='Spanish text to be displayed in mission '
+    short_description_spanish = models.CharField(max_length=200, help_text='Spanish text to be displayed '
+                                                                                      'in mission '
                                                                            'list.')
-    short_description_english = models.CharField(max_length=200, help_text='English text to be displayed in mission '
+    short_description_english = models.CharField(max_length=200, help_text='English text to be displayed '
+                                                                                      'in mission '
                                                                            'list.')
-    long_description_catalan = models.CharField(max_length=1000, help_text='Catalan text that fully explains mission '
+    long_description_catalan = models.CharField(max_length=1000, blank=True, help_text='Catalan text that fully ' \
+                                                                                     'explains '
+                                                                             'mission '
                                                                            'to '
                                                                            'user')
-    long_description_spanish = models.CharField(max_length=1000, help_text='Spanish text that fully explains mission '
+    long_description_spanish = models.CharField(max_length=1000, blank=True, help_text='Spanish text that fully ' \
+                                                                                     'explains mission '
                                                                            'to user')
-    long_description_english = models.CharField(max_length=1000, help_text='English text that fully explains mission '
+    long_description_english = models.CharField(max_length=1000, blank=True, help_text='English text that fully ' \
+                                                                                     'explains mission '
                                                                            'to user')
     help_text_catalan = models.TextField(blank=True, help_text='Catalan text to be displayed when user taps mission '
                                                                'help '
