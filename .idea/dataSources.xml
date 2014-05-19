@@ -6,7 +6,6 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://127.0.0.1/tigadata</jdbc-url>
       <user-name>tigadata_user</user-name>
-      <user-password>dff2dfe3dfefdfebdfd0dfcedfdddfeedfeedff3dfe0dfc6dfccdfc0dffcdfe7dfd0dfecdfd0df98dff3dfe0dfe3dfefdfe3dfd8dff3dffadf9cdfeddfccdfc1dfe8dfecdfffdfc9dfe7dfd6dfd2dffddfc0dff4dfc4dfd3dff2df9ddfc3dfc7dfccdfe6dfcedfd9dff0df9adfe4dfd3dfcedfecdfd8dffedfc4dfc3dfe9dfe6dfd0dff1dfcddfeadfe1dfcedfc7dfcddfdcdfe8dfffdfdadffbdff0dff9dffbdfc4dfdcdfdfdffbdfdbdfeddff8df88dffddfc2dff1dfc3dfc9dfeadfe5dfffdf92dfe8dfc8dfdd</user-password>
       <libraries />
     </data-source>
   </component>
