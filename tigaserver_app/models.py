@@ -162,11 +162,12 @@ class Report(models.Model):
                                                        'as ECMA '
                                                        '262 date time string (e.g. "2014-05-17T12:34:56'
                                                        '.123+01:00".')
-    creation_time = models.DateTimeField(help_text='Date and time on phone when first version of repor was created. Format '
+    creation_time = models.DateTimeField(help_text='Date and time on phone when first version of report was created. '
+                                                   'Format '
                                                        'as ECMA '
                                                        '262 date time string (e.g. "2014-05-17T12:34:56'
                                                        '.123+01:00".')
-    version_time = models.DateTimeField(help_text='Date and time on phone when this version of repor was created. '
+    version_time = models.DateTimeField(help_text='Date and time on phone when this version of report was created. '
                                                   'Format '
                                                        'as ECMA '
                                                        '262 date time string (e.g. "2014-05-17T12:34:56'

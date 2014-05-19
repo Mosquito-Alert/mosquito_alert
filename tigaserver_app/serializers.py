@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TigaUser
+        fields = ['user_UUID',]
 
 
 class MissionItemSerializer(serializers.ModelSerializer):
@@ -65,9 +66,44 @@ class MissionListingField(serializers.RelatedField):
         return value.mission_id
 
 
+class ReportListingField(serializers.RelatedField):
+    def to_native(self, value):
+        return value.version_UUID
+
+
+class ReportResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReportResponse
+        fields = ['question', 'answer']
+
+
 class ReportSerializer(serializers.ModelSerializer):
+
     user = UserListingField
+    version_UUID = serializers.CharField()
+    version_number = serializers.IntegerField()
+    report_id = serializers.CharField()
+    server_upload_time = serializers.DateTimeField()
+    phone_upload_time = serializers.DateTimeField()
+    creation_time = serializers.DateTimeField()
+    version_time = serializers.DateTimeField()
+    type = serializers.CharField()
     mission = MissionListingField
+    location_choice = serializers.CharField()
+    current_location_lon = serializers.FloatField()
+    current_location_lat = serializers.FloatField()
+    selected_location_lon = serializers.FloatField()
+    selected_location_lat = serializers.FloatField()
+    note = serializers.CharField()
+    package_name = serializers.CharField()
+    package_version = serializers.IntegerField()
+    device_manufacturer = serializers.CharField()
+    device_model = serializers.CharField()
+    os = serializers.CharField()
+    os_version = serializers.CharField()
+    os_language = serializers.CharField()
+    app_language = serializers.CharField()
+    responses = ReportResponseSerializer(many=True)
 
     def validate_report_UUID(self, attrs, source):
         """
@@ -90,19 +126,6 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         depth = 0
-
-
-class ReportListingField(serializers.RelatedField):
-    def to_native(self, value):
-        return value.version_UUID
-
-
-class ReportResponseSerializer(serializers.ModelSerializer):
-    report = ReportListingField
-
-    class Meta:
-        model = ReportResponse
-        fields = ['report', 'question', 'answer']
 
 
 class PhotoSerializer(serializers.ModelSerializer):
