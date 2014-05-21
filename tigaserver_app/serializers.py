@@ -83,7 +83,6 @@ class ReportSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
     version_number = serializers.IntegerField()
     report_id = serializers.CharField()
-    server_upload_time = serializers.DateTimeField()
     phone_upload_time = serializers.DateTimeField()
     creation_time = serializers.DateTimeField()
     version_time = serializers.DateTimeField()
