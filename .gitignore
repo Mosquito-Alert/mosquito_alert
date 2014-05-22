@@ -1,4 +1,6 @@
 tigaserver_project/settings/local.py
 tigaserver_project/settings/local/*
+*.pyc
 *.egg-info
 *local.ipynb
+.idea/*
