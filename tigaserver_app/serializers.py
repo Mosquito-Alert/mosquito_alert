@@ -118,7 +118,7 @@ class ReportSerializer(serializers.ModelSerializer):
         Check that the report type is either 'adult', 'site', or 'mission'.
         """
         value = attrs[source]
-        if value not in ['adult', 'type', 'mission']:
+        if value not in ['adult', 'site', 'mission']:
             raise serializers.ValidationError("Make sure type is 'adult', 'site', or 'mission'.")
         return attrs
 
