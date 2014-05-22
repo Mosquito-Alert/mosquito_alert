@@ -1,0 +1,4 @@
+tigaserver_project/settings/local.py
+tigaserver_project/settings/local/*
+*.egg-info
+*local.ipynb

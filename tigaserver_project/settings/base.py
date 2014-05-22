@@ -16,24 +16,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-with open('/etc/tigaserver_config/sk.txt') as f:
-    SECRET_KEY = f.read().strip()
-
-# SECRET_KEY = 'h0v(25z3u9yquh+01+#%tj@7iyk*raq!-6)jwz+0ac^h2grd0@'
+SECRET_KEY = 'h0v(25z3u9yquh+01+#%tj@7iyk*raq!-6)jwz+0ac^h2grd0@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-with open('/etc/tigaserver_config/debug.txt') as f:
-    DEBUG = f.read().strip()
+DEBUG = False
 
-with open('/etc/tigaserver_config/template_debug.txt') as f:
-    TEMPLATE_DEBUG = f.read().strip()
+TEMPLATE_DEBUG = DEBUG
 
-with open('/etc/tigaserver_config/allowed_hosts.txt') as f:
-    ALLOWED_HOSTS = [f.read().strip()]
-
-
-
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -47,6 +37,7 @@ INSTALLED_APPS = (
     'tigaserver_app',
     'rest_framework',
     'rest_framework.authtoken',
+    'django.contrib.gis',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -66,15 +57,12 @@ WSGI_APPLICATION = 'tigaserver_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
-with open('/etc/tigaserver_config/db_pwd.txt') as f:
-    pw = f.read().strip()
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tigadata',
-        'USER': 'tigadata_user',
-        'PASSWORD': pw,
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -97,16 +85,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-with open('/etc/tigaserver_config/static_url.txt') as f:
-    STATIC_URL = f.read().strip()
+STATIC_URL = '/static/'
 
-with open('/etc/tigaserver_config/static_root.txt') as f:
-    STATIC_ROOT = f.read().strip()
+STATIC_ROOT = ''
 
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-with open('/etc/tigaserver_config/media_root.txt') as f:
-    MEDIA_ROOT = f.read().strip()
+MEDIA_ROOT = ''
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -124,5 +109,5 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, '../../templates')]
 
