@@ -4,8 +4,7 @@
     <data-source source="LOCAL" name="Django default" uuid="926b4576-47c0-4b26-9d47-9b188d464f9d">
       <driver-ref>sqlite.xerial</driver-ref>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://127.0.0.1/tigadata</jdbc-url>
-      <user-name>tigadata_user</user-name>
+      <jdbc-url>jdbc:postgresql://127.0.0.1/</jdbc-url>
       <libraries />
     </data-source>
   </component>

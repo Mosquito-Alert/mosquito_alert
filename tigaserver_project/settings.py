@@ -111,3 +111,4 @@ REST_FRAMEWORK = {
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, '../../templates')]
 
+from settings_local import *
