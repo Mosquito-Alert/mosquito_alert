@@ -32,12 +32,12 @@
 				var initialZoom = loadSavedZoom();
 
 				if (isNaN(centerLat) || isNaN(centerLng)) {
-					centerLat = 41.6866;
-					centerLng = 2.7996;
+					centerLat = 40.0000;
+					centerLng = -4.0000;
 				}
 
 				if (isNaN(initialZoom)) {
-					initialZoom = 8;
+					initialZoom = 7;
 				}
 
 				var map = new L.mapbox.map('map', 'johnrbpalmer.hco5kgjg').setView([centerLat, centerLng], initialZoom);
