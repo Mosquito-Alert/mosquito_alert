@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'tigaserver_app',
     'tigamap',
+    'tigahelp',
     'rest_framework',
     'rest_framework.authtoken',
     'django.contrib.gis',
