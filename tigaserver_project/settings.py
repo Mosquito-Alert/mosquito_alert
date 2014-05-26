@@ -111,6 +111,6 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, '../../templates')]
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 from settings_local import *
