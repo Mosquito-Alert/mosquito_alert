@@ -1,6 +1,17 @@
 from django.contrib import admin
 from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration
+from rest_framework.authtoken.models import Token
+
+
+class MyTokenAdmin(admin.ModelAdmin):
+    list_display = ('key', 'user', 'created')
+    fields = ('user', 'key')
+    ordering = ('-created',)
+
+
+admin.site.unregister(Token)
+admin.site.register(Token, MyTokenAdmin)
 
 
 class UserAdmin(admin.ModelAdmin):
