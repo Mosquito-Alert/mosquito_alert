@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TigaUser
-        fields = ['user_UUID',]
+        fields = ['user_UUID', ]
 
 
 class MissionItemSerializer(serializers.ModelSerializer):

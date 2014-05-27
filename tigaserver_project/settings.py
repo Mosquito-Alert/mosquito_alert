@@ -35,11 +35,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'rest_framework',
     'rest_framework.authtoken',
     'tigaserver_app',
     'tigamap',
     'tigahelp',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (
