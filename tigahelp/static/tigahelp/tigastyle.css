@@ -1,0 +1,32 @@
+
+h1{
+color:#FF7E00;
+text-shadow:1px 1px 1px #000000;
+}
+h2{
+color:black;
+}
+h3{
+color:#FF7E00;
+}
+
+.center{
+text-align: center;
+}
+
+a:link {
+color:#FF7E00;
+font-weight:bold;
+text-decoration: none;
+}
+
+a:visited {
+color:#FF7E00;
+font-weight:bold;
+text-decoration: none;
+} 
+
+a:hover {color:red;
+text-decoration: none;
+font-weight:bold;
+}
