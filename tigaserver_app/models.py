@@ -267,6 +267,10 @@ class Photo(models.Model):
     def __unicode__(self):
         return self.photo.name
 
+    def image_(self):
+        return '<a href="/media/{0}"><img src="/media/{0}"></a>'.format(self.photo)
+    image_.allow_tags = True
+
 
 class Fix(models.Model):
     """

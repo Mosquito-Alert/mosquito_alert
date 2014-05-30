@@ -19,4 +19,5 @@ urlpatterns = patterns('',
     url(r'^policies/(?P<language>\w+)/$', show_policies),
     url(r'^terms/(?P<language>\w+)/$', show_policies),
     url(r'^privacy/(?P<language>\w+)/$', show_policies),
-) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
+                                                                             document_root=settings.MEDIA_ROOT)

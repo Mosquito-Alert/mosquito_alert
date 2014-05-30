@@ -43,7 +43,7 @@ class ReportResponseInline(admin.StackedInline):
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'photo', 'report')
+    list_display = ('id', 'photo', 'image_', 'report')
 
 
 class PhotoInline(admin.StackedInline):
