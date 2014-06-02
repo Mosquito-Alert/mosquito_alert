@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'tigamap',
     'tigahelp',
     'rest_framework',
+    'leaflet',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -111,6 +112,11 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ),
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+}
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (40.0, -4.0),
+    'DEFAULT_ZOOM': 6,
 }
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
