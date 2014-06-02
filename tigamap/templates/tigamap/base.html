@@ -15,10 +15,20 @@
        }
 
 
-    </style>  </head>
+    </style>
+
+  {% block leaflet_code %}
+
+
+   {% endblock %}
+
+  </head>
   <body>
 
-     {% leaflet_map "tigamap" %}
+
+    {% leaflet_map "tigamap" callback="window.map_init_basic" %}
+
+
 
     {% block logo %}
 

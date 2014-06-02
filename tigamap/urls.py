@@ -10,5 +10,7 @@ urlpatterns = patterns('',
     url(r'^ca/$', views.show_webmap_app, name='show_webmap_app'),
     url(r'^es/$', views.show_webmap_app, name='show_webmap_app'),
     url(r'^en/$', views.show_webmap_app, name='show_webmap_app'),
+    url(r'^testingzone/coverage/$', views.show_coverage_map, name='show_coverage_map'),
+    url(r'^testingzone/reports/$', views.show_report_map, name='show_report_map'),
     url(r'^$', views.show_webmap_app, name='show_webmap_app'),
 )

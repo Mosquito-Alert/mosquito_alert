@@ -234,6 +234,21 @@ class Report(models.Model):
     def __unicode__(self):
         return self.version_UUID
 
+    def get_lat(self):
+        if self.location_choice == 'selected' and self.selected_location_lat is not None:
+            return self.selected_location_lat
+        else:
+            return self.current_location_lat
+
+    def get_lon(self):
+        if self.location_choice == 'selected' and self.selected is not None:
+            return self.selected_location_lon
+        else:
+            return self.current_location_lon
+
+    lon = property(get_lon)
+    lat = property(get_lat)
+
     class Meta:
         unique_together = ("user", "version_UUID")
 
