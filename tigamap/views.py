@@ -4,10 +4,6 @@ from tigaserver_app.models import Fix
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the poll index.")
-
-
 def show_webmap_app(request):
     fix_list = Fix.objects.all()
     context = {'fix_list': fix_list}
