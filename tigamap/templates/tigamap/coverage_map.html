@@ -9,7 +9,12 @@
 
         {% for fix in fix_list %}
 
-        L.marker([{{ fix.masked_lat }}, {{ fix.masked_lon }}]).addTo(map);
+        var polygon = L.polygon([
+        [{{ fix.masked_lat }}, {{ fix.masked_lon }}],
+        [{{ fix.masked_lat }} + 0.5, {{ fix.masked_lon }}],
+        [{{ fix.masked_lat }} + 0.5, {{ fix.masked_lon }}  + 0.5],
+        [{{ fix.masked_lat }}, {{ fix.masked_lon }} + 0.5],
+        ]).addTo(map);
 
          {% endfor %}
     }
