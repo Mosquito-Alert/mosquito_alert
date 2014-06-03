@@ -33,3 +33,9 @@ def show_report_map(request):
     report_list = Report.objects.all()
     context = {'report_list': report_list}
     return render(request, 'tigamap/report_map.html', context)
+
+
+def show_report_map_basic(request):
+    report_list = Report.objects.all()
+    context = {'report_list': report_list}
+    return render(request, 'tigamap/report_map_no_clusters.html', context)

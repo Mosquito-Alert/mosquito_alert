@@ -7,10 +7,6 @@
 <script type="text/javascript">
     function map_init_basic (map, options) {
 
-        var markers_sites = new L.MarkerClusterGroup();
-        var markers_adults = new L.MarkerClusterGroup();
-
-
         var YellowIcon = L.Icon.Default.extend({
             options: {
             	    iconUrl: '{% static "tigamap/yellow_icon.png" %}'
@@ -21,15 +17,13 @@
         {% for report in report_list %}
         {% if report.lat != None and report.lon != None %}
         {% if report.type == "site" %}
-        markers_sites.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}]));
+        L.marker([{{ report.lat }}, {{ report.lon }}]).addTo(map);
         {% elif report.type == "adult" %}
-        markers_adults.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}, {icon: yellowIcon}]));
+        L.marker([{{ report.lat }}, {{ report.lon }}, {icon: yellowIcon}]).addTo(map);
         {% endif %}
         {% endif %}
         {% endfor %}
 
-        map.addLayer(markers_sites);
-        map.addLayer(markers_adults);
 
     }
 </script>
