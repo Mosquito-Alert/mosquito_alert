@@ -19,7 +19,7 @@
         {% if report.type == "site" %}
         L.marker([{{ report.lat }}, {{ report.lon }}]).addTo(map);
         {% elif report.type == "adult" %}
-        L.marker([{{ report.lat }}, {{ report.lon }}, {icon: yellowIcon}]).addTo(map);
+        L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon}).addTo(map);
         {% endif %}
         {% endif %}
         {% endfor %}

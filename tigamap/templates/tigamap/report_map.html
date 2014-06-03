@@ -23,7 +23,7 @@
         {% if report.type == "site" %}
         markers_sites.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}]));
         {% elif report.type == "adult" %}
-        markers_adults.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}, {icon: yellowIcon}]));
+        markers_adults.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon}));
         {% endif %}
         {% endif %}
         {% endfor %}
