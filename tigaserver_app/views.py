@@ -169,7 +169,9 @@ for testing posts does not work for including responses in posted reports; use t
 
 * version_UUID: UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens).
 * version_number: The report version number. Should be an integer that increments by 1 for each repor version. Note
-that the user keeps only the most recent version on the device, but all versions are stored on the server.
+that the user keeps only the most recent version on the device, but all versions are stored on the server. To
+delete a report, submit a version with version_number = -1. This will cause the report to no longer be displated on
+the server map (although it will still be retained internally).
 * user: user_UUID for the user sending this report. Must be exactly 36 characters (32 hex digits plus 4 hyphens) and user must have already registered this ID.
 * report_id: 4-digit alpha-numeric code generated on user phone to identify each unique report from that user. Digits should lbe randomly drawn from the set of all lowercase and uppercase alphabetic characters and 0-9, but excluding 0, o, and O to avoid confusion if we ever need user to be able to refer to a report ID in correspondence with MoveLab (as was previously the case when we had them sending samples).
 * phone_upload_time: Date and time on phone when it uploaded fix. Format as [ECMA 262](http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.15) date time string (e.g. "2014-05-17T12:34:56.123+01:00".

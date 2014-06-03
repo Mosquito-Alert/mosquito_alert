@@ -119,7 +119,7 @@ LEAFLET_CONFIG = {
     'DEFAULT_ZOOM': 6,
     'PLUGINS': {
     'marker_cluster': {
-        'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.Default.css'],
+        'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.Tigamap.css'],
         'js': 'tigamap/leaflet.markercluster.js',
         'auto-include': True,
     },

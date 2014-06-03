@@ -187,11 +187,12 @@ class Report(models.Model):
                                                                           'mission.')
     LOCATION_CHOICE_CHOICES = (('current', "Current location detected by user's device"), ('selected',
                                                                                            'Location selected by '
-                                                                                           'user from map'),)
+                                                                                           'user from map'),
+                               ('missing', 'No location choice submitted - should be used only for missions'))
     location_choice = models.CharField(max_length=8, choices=LOCATION_CHOICE_CHOICES, help_text='Did user indicate '
                                                                                                 'that report relates '
                                                                                                 'to current location '
-                                                                                                'of phone ("current") or to a location selected manually on the map ("selected")?')
+                                                                                                'of phone ("current") or to a location selected manually on the map ("selected")? Or is the choice missing ("missing")')
     current_location_lon = models.FloatField(blank=True, null=True, help_text="Longitude of user's current location. "
                                                                               "In decimal degrees.")
     current_location_lat = models.FloatField(blank=True, null=True, help_text="Latitude of user's current location. "
