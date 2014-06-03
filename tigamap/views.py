@@ -23,6 +23,12 @@ def show_coverage_map(request):
     return render(request, 'tigamap/coverage_map.html', context)
 
 
+def show_coverage_map_25(request):
+    fix_list = Fix.objects.all()
+    context = {'fix_list': fix_list}
+    return render(request, 'tigamap/coverage_map_25.html', context)
+
+
 def show_report_map(request):
     report_list = Report.objects.all()
     context = {'report_list': report_list}
