@@ -7,19 +7,19 @@
 <script type="text/javascript">
     function map_init_basic (map, options) {
 
-        var RedIcon = L.Icon.Default.extend({
+        var YellowIcon = L.Icon.Default.extend({
             options: {
-            	    iconUrl: '{% static "tigamap/red_icon.png" %}'
+            	    iconUrl: '{% static "tigamap/yellow_icon.png" %}'
             }
          });
-         var redIcon = new RedIcon();
+         var yellowIcon = new YellowIcon();
 
         {% for report in report_list %}
         {% if report.lat != None and report.lon != None %}
         {% if report.type == "site" %}
-        L.marker([{{ report.lat }}, {{ report.lon }}], {icon: redIcon}).addTo(map);
-        {% elif report.type == "adult" %}
         L.marker([{{ report.lat }}, {{ report.lon }}]).addTo(map);
+        {% elif report.type == "adult" %}
+        L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon}).addTo(map);
         {% endif %}
         {% endif %}
         {% endfor %}
