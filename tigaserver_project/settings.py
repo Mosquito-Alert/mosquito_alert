@@ -117,6 +117,13 @@ REST_FRAMEWORK = {
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.0, -4.0),
     'DEFAULT_ZOOM': 6,
+    'PLUGINS': {
+    'marker_cluster': {
+        'css': 'tigamap/MarkerCluster.css',
+        'js': 'tigamap/leaflet.markercluster.js',
+        'auto-include': True,
+    },
+    }
 }
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]

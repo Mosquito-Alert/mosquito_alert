@@ -29,6 +29,30 @@ def show_coverage_map_25(request):
     return render(request, 'tigamap/coverage_map_25.html', context)
 
 
+def show_grid_05(request):
+    fix_list = Fix.objects.all()
+    context = {'fix_list': fix_list}
+    return render(request, 'tigamap/grid_map.05.html', context)
+
+
+def show_grid_1(request):
+    fix_list = Fix.objects.all()
+    context = {'fix_list': fix_list}
+    return render(request, 'tigamap/grid_map.1.html', context)
+
+
+def show_grid_25(request):
+    fix_list = Fix.objects.all()
+    context = {'fix_list': fix_list}
+    return render(request, 'tigamap/grid_map.25.html', context)
+
+
+def show_grid_5(request):
+    fix_list = Fix.objects.all()
+    context = {'fix_list': fix_list}
+    return render(request, 'tigamap/grid_map.5.html', context)
+
+
 def show_report_map(request):
     report_list = Report.objects.all()
     context = {'report_list': report_list}
