@@ -11,10 +11,10 @@
 
         var polygon = L.polygon([
         [{{ fix.masked_lat }}, {{ fix.masked_lon }}],
-        [{{ fix.masked_lat }} + 0.5, {{ fix.masked_lon }}],
-        [{{ fix.masked_lat }} + 0.5, {{ fix.masked_lon }}  + 0.5],
-        [{{ fix.masked_lat }}, {{ fix.masked_lon }} + 0.5],
-        ], {weight: 0.5, fillOpacity: 0.005}).addTo(map);
+        [{{ fix.masked_lat }} + 0.05, {{ fix.masked_lon }}],
+        [{{ fix.masked_lat }} + 0.05, {{ fix.masked_lon }}  + 0.05],
+        [{{ fix.masked_lat }}, {{ fix.masked_lon }} + 0.05],
+        ], {weight: 0.5, opacity: 1, color: '#ff0000', fillOpacity: 0.005, fillColor: '##bcbddc'}).addTo(map);
 
          {% endfor %}
     }
