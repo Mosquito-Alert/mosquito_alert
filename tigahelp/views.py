@@ -41,3 +41,13 @@ def show_policies(request, language):
         return render(request, 'tigahelp/policies_ca.html', context)
     if language == 'en':
         return render(request, 'tigahelp/policies_ca.html', context)
+
+
+def show_privacy_en(request):
+    context = {}
+    return render(request, 'tigahelp/privacy_en.html', context)
+
+
+def show_terms_en(request):
+    context = {}
+    return render(request, 'tigahelp/terms_en.html', context)

@@ -34,7 +34,9 @@ class MissionTriggerInline(admin.TabularInline):
 
 
 class MissionAdmin(admin.ModelAdmin):
+    list_display = ('title_catalan', 'platform', 'creation_time', 'expiration_time')
     inlines = [MissionItemInline, MissionTriggerInline]
+    ordering = ('creation_time',)
 
 
 class ReportResponseInline(admin.StackedInline):
@@ -52,12 +54,14 @@ class PhotoInline(admin.StackedInline):
 
 
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('version_UUID', 'user', 'report_id', 'version_number', 'version_time', 'type', 'mission')
+    list_display = ('report_id', 'version_number', 'creation_time', 'version_time', 'type', 'mission')
     inlines = [ReportResponseInline, PhotoInline]
+    ordering = ('creation_time', 'report_id', 'version_number')
 
 
 class FixAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'fix_time', 'server_upload_time')
+    ordering = ('fix_time',)
 
 
 admin.site.register(TigaUser, UserAdmin)

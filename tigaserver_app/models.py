@@ -242,7 +242,7 @@ class Report(models.Model):
             return self.current_location_lat
 
     def get_lon(self):
-        if self.location_choice == 'selected' and self.selected is not None:
+        if self.location_choice == 'selected' and self.selected_location_lon is not None:
             return self.selected_location_lon
         else:
             return self.current_location_lon

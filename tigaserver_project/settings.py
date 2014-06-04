@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'tigaserver_app',
     'tigamap',
+    'webapp',
     'tigahelp',
     'rest_framework',
     'leaflet',

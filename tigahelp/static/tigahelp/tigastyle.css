@@ -7,7 +7,7 @@ h2{
 color:black;
 }
 h3{
-color:#FF7E00;
+color:#f6d10a;
 }
 
 .center{
@@ -15,13 +15,13 @@ text-align: center;
 }
 
 a:link {
-color:#FF7E00;
+color:#f6d10a;
 font-weight:bold;
 text-decoration: none;
 }
 
 a:visited {
-color:#FF7E00;
+color:#f6d10a;
 font-weight:bold;
 text-decoration: none;
 } 

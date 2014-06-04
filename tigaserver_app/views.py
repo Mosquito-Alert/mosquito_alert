@@ -1,14 +1,13 @@
 from rest_framework import viewsets
-from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
-    ConfigurationSerializer, ReportResponseSerializer
-from models import TigaUser, Mission, Report, ReportResponse,  Photo, \
-    Fix, Configuration
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins
-from rest_framework import filters
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
-from rest_framework.parsers import JSONParser
+
+from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
+    ConfigurationSerializer
+from models import TigaUser, Mission, Report, Photo, \
+    Fix, Configuration
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
