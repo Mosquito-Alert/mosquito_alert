@@ -2,14 +2,19 @@
 
 <!DOCTYPE html>
 
-<html style="width:100%; height:100%;">
+<html class='background' style="width:100%; height:100%;">
 	<head>
 		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 		<title>Tigatrapp Help</title>
 <link rel='stylesheet' href={% static "tigahelp/tigastyle.css" %} />
+</head>
+    <body>
 
-<div class="center">
+    <div class='main_container'>
+    <div class='text_container'>
+
+    <div class="center">
 <h1>Sobre Tigatrapp</h1>
 </div>
   
@@ -23,9 +28,11 @@
 
 <p>Les fotografies de l'App Tigatrapp han estat cedides per <a href="http://www.eritja.com">R. Eritja</a>.</p>
 
-<p class='centeredImage'>
-<img src={% static "tigahelp/credits_logos.jpg" %}>
-</p>
+        <p class='centeredImage'>
+            <a href={% static "tigahelp/credits_logos.jpg" %}><img src={% static "tigahelp/credits_logos.jpg" %}></a>
+        </p>
+    </div>
+</div>
 
 </body>
 </html>
