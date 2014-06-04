@@ -2,7 +2,8 @@ from django.conf.urls import *
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms_en, show_privacy_en
+from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms_en, show_privacy_en, \
+    show_credit_image
 
 admin.autodiscover()
 
@@ -16,6 +17,7 @@ urlpatterns = patterns('',
     url(r'^webapp/', include('webapp.urls')),
     url(r'^help/(?P<platform>\w+)/(?P<language>\w+)/$', show_help),
     url(r'^about/(?P<platform>\w+)/(?P<language>\w+)/$', show_about),
+    url(r'^credits/$', show_credit_image, name='show_credit_image'),
     url(r'^license/(?P<platform>\w+)/(?P<language>\w+)/$', show_license),
     url(r'^policies/(?P<language>\w+)/$', show_policies),
     url(r'^terms/(?P<language>\w+)/$', show_policies),

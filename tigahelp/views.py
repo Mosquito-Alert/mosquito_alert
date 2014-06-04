@@ -13,6 +13,11 @@ def show_about(request, platform, language):
         return render(request, 'tigahelp/about_en.html', context)
 
 
+def show_credit_image(request):
+    context = {}
+    return render(request, 'tigahelp/credit_image.html', context)
+
+
 def show_help(request, platform, language):
     context = {}
     if language == 'ca':
