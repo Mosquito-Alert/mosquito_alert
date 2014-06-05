@@ -253,6 +253,8 @@ class Report(models.Model):
         for this_response in these_responses:
             if 'Y' in this_response.answer or 'S' in this_response.answer:
                 result += 1
+            if this_response.answer == 'No':
+                result -= 1
         return result
 
     lon = property(get_lon)

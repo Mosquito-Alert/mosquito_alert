@@ -4,67 +4,63 @@
 
 {% block leaflet_code %}
 
-<script type="text/javascript">
-    function map_init_basic (map, options) {
+    <script type="text/javascript">
+        function map_init_basic(map, options) {
 
-        var oms = new OverlappingMarkerSpiderfier(map);
+            var oms = new OverlappingMarkerSpiderfier(map);
 
-        var markers_low = new L.MarkerClusterGroup();
-        var markers_med = new L.MarkerClusterGroup();
-        var markers_high = new L.MarkerClusterGroup();
+            var markers_all = new L.MarkerClusterGroup();
+            var markers_medium = new L.MarkerClusterGroup();
+            var markers_high = new L.MarkerClusterGroup();
 
-        var low = new L.LayerGroup();
-        var medium = new L.LayerGroup();
-        var high = new L.LayerGroup();
+            var low = new L.LayerGroup();
+            var high = new L.LayerGroup();
 
-        var YellowIcon = L.Icon.Default.extend({
-            options: {
-            	    iconUrl: '{% static "tigamap/yellow_icon.png" %}'
-            }
-         });
-         var yellowIcon = new YellowIcon();
+            var YellowIcon = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+                }
+            });
+            var yellowIcon = new YellowIcon();
 
-        {% for report in report_list %}
-        {% if report.lat != None and report.lon != None %}
-        {% if report.type == "adult" %}
-        {% if report.tigaprob == 1 %}
-            var marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
-            markers_low.addLayer(marker)
-          //  low.addLayer(marker);
-            oms.addMarker(marker);
-        {% elif report.tigaprob == 2 %}
-            var marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
-            markers_med.addLayer(marker)
-//            medium.addLayer(marker);
-            oms.addMarker(marker);
-        {% elif report.tigaprob == 3 %}
-            var marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
-            markers_high.addLayer(marker)
-//            high.addLayer(marker);
-            oms.addMarker(marker);
+            var marker;
 
-        {% endif %}
-        {% endif %}
-        {% endif %}
-        {% endfor %}
+            {% for report in report_list %}
+                {% if report.lat != None and report.lon != None %}
+                    {% if report.type == "adult" %}
+                        marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
+                        markers_all.addLayer(marker)
+                        oms.addMarker(marker);
+                       {% if report.tigaprob >= 1 and report.tigaprob < 3 %}
+                            marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
+                            markers_medium.addLayer(marker)
+                            oms.addMarker(marker);
+                        {% endif %}
+                        {% if report.tigaprob == 3 %}
+                            marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
+                            markers_high.addLayer(marker)
+                            oms.addMarker(marker);
 
-        var overlayMaps = {
-        "Low": markers_low,
-        "Medium": markers_med,
-        "High": markers_high
-        };
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
 
-        markers_low.addTo(map);
-        markers_med.addTo(map);
-        markers_high.addTo(map);
+            var baseMaps = {
+                "All reports": markers_all,
+                "High-probability reports only": markers_medium,
+                "High-probability reports only": markers_high
+            };
 
-        L.control.layers(null, overlayMaps).addTo(map);
-    }
-</script>
+            markers_all.addTo(map);
+
+            L.control.layers(baseMaps, null).addTo(map);
+        }
+    </script>
 
 {% endblock %}
 
 
 {% block logo %}
-		<img src={% static "tigamap/tigatrapp_logo.png" %} style="position:absolute;width:30%;bottom:20px; right:10px">
+    <img src={% static "tigamap/tigatrapp_logo.png" %} style="position:absolute;width:30%;bottom:20px; right:10px">
 {% endblock %}
