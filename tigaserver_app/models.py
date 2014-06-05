@@ -259,9 +259,19 @@ class Report(models.Model):
                 result -= 1
         return result/total
 
+    def get_site_type(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for this_response in these_responses:
+            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
+                    this_response.question.startswith('Type'):
+                result = this_response.answer
+        return result
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
+    site_type = property(get_site_type)
 
     class Meta:
         unique_together = ("user", "version_UUID")

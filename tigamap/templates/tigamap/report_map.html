@@ -7,18 +7,18 @@
 {% block leaflet_code %}
 
     {% if type == 'adult' %}
-        {% leaflet_js plugins="marker_cluster_yellow, oms" %}
-        {% leaflet_css plugins="marker_cluster_yellow, oms" %}
+        {% leaflet_js plugins="marker_cluster_yellow" %}
+        {% leaflet_css plugins="marker_cluster_yellow" %}
    {% else %}
-        {% leaflet_js plugins="marker_cluster_blue, oms" %}
-        {% leaflet_css plugins="marker_cluster_blue, oms" %}
+        {% leaflet_js plugins="marker_cluster_blue" %}
+        {% leaflet_css plugins="marker_cluster_blue" %}
     {% endif %}
 
 
     <script type="text/javascript">
         function map_init_basic(map, options) {
 
-            var oms = new OverlappingMarkerSpiderfier(map);
+      //      var oms = new OverlappingMarkerSpiderfier(map);
 
             var markers_all = new L.MarkerClusterGroup();
             var markers_medium = new L.MarkerClusterGroup();
@@ -38,22 +38,31 @@
                 thisIcon = new YellowIcon();
             {% endif %}
 
+            var show_popups = true;
+
             var marker;
 
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
                     marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                    if(show_popups){
+                        marker.bindPopup('{{ report.site_type }}<table style="font-size:small;"><tr><td>id:</td><td>' +
+                                '{{ report.report_id }}</td></tr><tr><td>lat:</td>'+
+                                '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
+                                '{{ report.lon }}</td></tr><tr><td>prob:</td><td>'+
+                                '{{ report.tigaprob }}</td></tr></table>');
+                    }
                     markers_all.addLayer(marker)
-                    oms.addMarker(marker);
+//                    oms.addMarker(marker);
                     {% if report.tigaprob > 0 %}
                         marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
                         markers_medium.addLayer(marker)
-                        oms.addMarker(marker);
+  //                      oms.addMarker(marker);
                     {% endif %}
                     {% if report.tigaprob == 1 %}
                         marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
                         markers_high.addLayer(marker)
-                        oms.addMarker(marker);
+    //                    oms.addMarker(marker);
 
                     {% endif %}
                 {% endif %}
