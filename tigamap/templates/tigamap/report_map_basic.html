@@ -1,0 +1,45 @@
+{% extends "tigamap/base.html" %}
+
+{% load staticfiles %}
+
+{% block leaflet_code %}
+
+<script type="text/javascript">
+    function map_init_basic (map, options) {
+
+        var adults = new L.LayerGroup();
+        var sites = new L.LayerGroup();
+
+        var YellowIcon = L.Icon.Default.extend({
+            options: {
+            	    iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+            }
+         });
+         var yellowIcon = new YellowIcon();
+
+        {% for report in report_list %}
+        {% if report.lat != None and report.lon != None %}
+        {% if report.type == "site" %}
+        sites.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}]));
+        {% elif report.type == "adult" %}
+        adults.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon}));
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+
+        var overlayMaps = {
+        "Adults": adults,
+        "Sites": sites
+        };
+
+        adults.addTo(map);
+        L.control.layers(null, overlayMaps).addTo(map);
+    }
+</script>
+
+{% endblock %}
+
+
+{% block logo %}
+		<img src={% static "tigamap/tigatrapp_logo.png" %} style="position:absolute;width:30%;bottom:20px; right:10px">
+{% endblock %}

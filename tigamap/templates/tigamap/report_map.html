@@ -7,8 +7,15 @@
 <script type="text/javascript">
     function map_init_basic (map, options) {
 
-        var adults = L.LayerGroup();
-        var sites = L.LayerGroup();
+        var oms = new OverlappingMarkerSpiderfier(map);
+
+        var markers_low = new L.MarkerClusterGroup();
+        var markers_med = new L.MarkerClusterGroup();
+        var markers_high = new L.MarkerClusterGroup();
+
+        var low = new L.LayerGroup();
+        var medium = new L.LayerGroup();
+        var high = new L.LayerGroup();
 
         var YellowIcon = L.Icon.Default.extend({
             options: {
@@ -19,21 +26,38 @@
 
         {% for report in report_list %}
         {% if report.lat != None and report.lon != None %}
-        {% if report.type == "site" %}
-        sites.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}]));
-        {% elif report.type == "adult" %}
-        adults.addLayer(L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon}));
+        {% if report.type == "adult" %}
+        {% if report.tigaprob == 1 %}
+            var marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
+            markers_low.addLayer(marker)
+          //  low.addLayer(marker);
+            oms.addMarker(marker);
+        {% elif report.tigaprob == 2 %}
+            var marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
+            markers_med.addLayer(marker)
+//            medium.addLayer(marker);
+            oms.addMarker(marker);
+        {% elif report.tigaprob == 3 %}
+            var marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
+            markers_high.addLayer(marker)
+//            high.addLayer(marker);
+            oms.addMarker(marker);
+
+        {% endif %}
         {% endif %}
         {% endif %}
         {% endfor %}
 
-
         var overlayMaps = {
-        "Adults": adults,
-        "Sites": sites
+        "Low": markers_low,
+        "Medium": markers_med,
+        "High": markers_high
         };
 
-        adults.addTo(map);
+        markers_low.addTo(map);
+        markers_med.addTo(map);
+        markers_high.addTo(map);
+
         L.control.layers(null, overlayMaps).addTo(map);
     }
 </script>

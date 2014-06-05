@@ -247,8 +247,17 @@ class Report(models.Model):
         else:
             return self.current_location_lon
 
+    def get_tigaprob(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = 0
+        for this_response in these_responses:
+            if 'Y' in this_response.answer or 'S' in this_response.answer:
+                result += 1
+        return result
+
     lon = property(get_lon)
     lat = property(get_lat)
+    tigaprob = property(get_tigaprob)
 
     class Meta:
         unique_together = ("user", "version_UUID")
