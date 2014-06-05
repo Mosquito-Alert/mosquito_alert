@@ -2,7 +2,18 @@
 
 {% load staticfiles %}
 
+{% load leaflet_tags %}
+
 {% block leaflet_code %}
+
+    {% if type == 'adult' %}
+        {% leaflet_js plugins="marker_cluster_yellow, oms" %}
+        {% leaflet_css plugins="marker_cluster_yellow, oms" %}
+   {% else %}
+        {% leaflet_js plugins="marker_cluster_blue, oms" %}
+        {% leaflet_css plugins="marker_cluster_blue, oms" %}
+    {% endif %}
+
 
     <script type="text/javascript">
         function map_init_basic(map, options) {
@@ -21,35 +32,37 @@
                     iconUrl: '{% static "tigamap/yellow_icon.png" %}'
                 }
             });
-            var yellowIcon = new YellowIcon();
+
+            var thisIcon = new L.Icon.Default;
+            {% if type == 'adult' %}
+                thisIcon = new YellowIcon();
+            {% endif %}
 
             var marker;
 
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
-                    {% if report.type == "adult" %}
-                        marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
-                        markers_all.addLayer(marker)
+                    marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                    markers_all.addLayer(marker)
+                    oms.addMarker(marker);
+                    {% if report.tigaprob > 0 %}
+                        marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                        markers_medium.addLayer(marker)
                         oms.addMarker(marker);
-                       {% if report.tigaprob >= 1 and report.tigaprob < 3 %}
-                            marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
-                            markers_medium.addLayer(marker)
-                            oms.addMarker(marker);
-                        {% endif %}
-                        {% if report.tigaprob == 3 %}
-                            marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: yellowIcon});
-                            markers_high.addLayer(marker)
-                            oms.addMarker(marker);
+                    {% endif %}
+                    {% if report.tigaprob == 1 %}
+                        marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                        markers_high.addLayer(marker)
+                        oms.addMarker(marker);
 
-                        {% endif %}
                     {% endif %}
                 {% endif %}
             {% endfor %}
 
             var baseMaps = {
                 "All reports": markers_all,
-                "High-probability reports only": markers_medium,
-                "High-probability reports only": markers_high
+                "Medium-probability reports": markers_medium,
+                "High-probability reports": markers_high
             };
 
             markers_all.addTo(map);
@@ -62,5 +75,5 @@
 
 
 {% block logo %}
-    <img src={% static "tigamap/tigatrapp_logo.png" %} style="position:absolute;width:30%;bottom:20px; right:10px">
+    <img src={% static "tigamap/tigatrapp_logo.png" %} style="position:absolute;width:30%;bottom:20px;right:10px">
 {% endblock %}

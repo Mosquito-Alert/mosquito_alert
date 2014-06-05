@@ -35,6 +35,18 @@ def show_report_map(request):
     return render(request, 'tigamap/report_map.html', context)
 
 
+def show_report_map_adults(request):
+    report_list = Report.objects.filter(type='adult')
+    context = {'report_list': report_list, 'type': 'adult'}
+    return render(request, 'tigamap/report_map.html', context)
+
+
+def show_report_map_sites(request):
+    report_list = Report.objects.filter(type='site')
+    context = {'report_list': report_list, 'type': 'site'}
+    return render(request, 'tigamap/report_map.html', context)
+
+
 def show_report_map_simple_cluster(request):
     report_list = Report.objects.all()
     context = {'report_list': report_list}

@@ -250,12 +250,14 @@ class Report(models.Model):
     def get_tigaprob(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
         result = 0
+        total = 0
         for this_response in these_responses:
+            total += 1
             if 'Y' in this_response.answer or 'S' in this_response.answer:
                 result += 1
             if this_response.answer == 'No':
                 result -= 1
-        return result
+        return result/total
 
     lon = property(get_lon)
     lat = property(get_lat)

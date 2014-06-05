@@ -119,10 +119,13 @@ LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.0, -4.0),
     'DEFAULT_ZOOM': 6,
     'PLUGINS': {
-        'marker_cluster': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.Tigamap.css'],
+        'marker_cluster_yellow': {
+            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow.css'],
             'js': 'tigamap/leaflet.markercluster.js',
-            'auto-include': True,
+        },
+        'marker_cluster_blue': {
+            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_blue.css'],
+            'js': 'tigamap/leaflet.markercluster.js',
         },
         'oms': {
             'css': [],
