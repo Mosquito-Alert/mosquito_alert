@@ -1,20 +1,12 @@
-﻿{% load staticfiles %}
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
 
-<!DOCTYPE html>
-
-<html style="width:100%; height:100%;">
-	<head>
-		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-		<title>Tigatrapp Help</title>
-<link rel='stylesheet' href={% static "tigahelp/tigastyle.css" %}  />
+{% block page_title %}
+    Ayuda
+{% endblock %}
 
 
-
-
-	</head>
-
-	<body>
+{% block content %}
 
 
 <h1>PARTICIPA</h1>
@@ -24,7 +16,7 @@ Participa en el estudio y seguimiento del mosquito tigre en España, enviando da
 Aprende a reconocer el mosquito tigre (asegúrate de que no lo confundes con otros mosquitos). Familiarízate con su ciclo de vida y con sus lugares de cría. La App y la web del proyecto AtrapaelTigre.com contienen toda la información necesaria para que tus datos sean de calidad.
 
 <h2>Participa compartiendo datos</h2>
-Utiliza los botones “PARTICIPA” para enviar informes de nuevos lugares de cría en espacios públicos y de hallazgos de mosquito tigre. Encontrarás información detallada clicando el icono (i).
+Utiliza los botones “ENVIA” para enviar informes de nuevos lugares de cría en espacios públicos y de hallazgos de mosquito tigre. Encontrarás información detallada clicando el icono (i).
 
 <h2>Mantén tus datos actualizados</h2>
 Utiliza el botón “MI MAPA” para ver y controlar tus datos, editarlos si los quieres actualizar o corregir y eliminarlos si crees que son erróneos.
@@ -46,7 +38,4 @@ Parte de tus datos enviados se publican de manera automática en el mapa web del
 <h1>CONSULTA SI TIENES MÁS DUDAS</h1>
 Si tienes dudas, consulta la <a href="http://www.atrapaeltigre.com">página web</a> o escribe a <a href="mailto:info@atrapaeltigre.com">info@atrapaeltigre.com</a>.
 
-
-	</body>
-
-</html>
+{% endblock %}

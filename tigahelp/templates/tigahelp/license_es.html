@@ -1,15 +1,12 @@
-﻿{% load staticfiles %}
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
 
-<!DOCTYPE html>
+{% block page_title %}
+    Tigatrapp License
+{% endblock %}
 
-<html style="width:100%; height:100%;">
-	<head>
-		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-		<title>Tigatrapp License</title>
-<link rel='stylesheet' href={% static "tigahelp/tigastyle.css" %} />
-</head>
-    <body>
+
+{% block content %}
 <div class="center">
 <h1>Tigatrapp</h1>
 </div>
@@ -68,6 +65,4 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></blockquote>
-
-</body>
-</html>
+{% endblock %}

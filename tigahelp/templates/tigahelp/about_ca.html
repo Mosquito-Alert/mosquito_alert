@@ -1,39 +1,38 @@
-﻿{% load staticfiles %}
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
 
-<!DOCTYPE html>
+{% block page_title %}
+    Sobre Tigatrapp
+{% endblock %}
 
-<html class='background' style="width:100%; height:100%;">
-	<head>
-		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-		<title>Sobre Tigatrapp</title>
-<link rel='stylesheet' href={% static "tigahelp/tigastyle.css" %} />
-</head>
-    <body>
 
-    <div class='main_container'>
-    <div class='text_container'>
+{% block content %}
 
     <div class="center">
-<h1>Sobre Tigatrapp</h1>
-</div>
-  
-<p>AtrapaelTigre.com és un projecte de ciència ciutadana coordinat per l'<a href="http://www.movelab.net">ICREA-Laboratori d'Ecologia del Moviment</a> del <a href="http://www.ceab.csic.es">Centre d'Estudis Avançats de Blanes</a> del <a href="http://www.csic.es">Consell Superior d'Investigacions Científiques</a>.</p> 
-
-<p>Hi participen responsables de comunicació científica del Consell Superior d'Investigacions Científiques (Vicepresidència Adjunta de Cultura Científica, Delegació a les Illes Balears, Delegació a Catalunya i Delegació a València) i la <a href="http://www.um.es">Universitat de Múrcia</a>.</p> 
-
-<p>El projecte està cofinançat per la Fundació Espanyola per la Ciència i la Tecnologia (FECYT) i pel programa d'ajuts a la recerca Recercaixa, dins el marc del projecte "Ciència ciutadana: educació i recerca". Bloom col&#183;labora en la lluita contra el mosquit tigre patrocinant el projecte <a href="http://atrapaeltigre.com">AtrapaelTigre.com</a>.</p> 
-
-<p>El projecte compta a més amb el suport de  <a href="http://atrapaeltigre.com/web/ca/qui-som/">vàries institucions públiques i privades</a>.</p>
-
-<p>Les fotografies de l'App Tigatrapp han estat cedides per <a href="http://www.eritja.com">R. Eritja</a>.</p>
-
-        <p class='centeredImage'>
-            <a href='/credits/'><img style='max-width: 100%; height: auto;' src
-                    ={% static "tigahelp/credits_logos.jpg" %}></a>
-        </p>
+        <h1>Sobre Tigatrapp</h1>
     </div>
-</div>
 
-</body>
-</html>
+    <p>AtrapaelTigre.com és un projecte de ciència ciutadana coordinat per l'<a href="http://www.movelab.net">ICREA-Laboratori
+        d'Ecologia del Moviment</a> del <a href="http://www.ceab.csic.es">Centre d'Estudis Avançats de Blanes</a> del <a
+            href="http://www.csic.es">Consell Superior d'Investigacions Científiques</a>.</p>
+
+    <p>Hi participen responsables de comunicació científica del Consell Superior d'Investigacions Científiques
+        (Vicepresidència Adjunta de Cultura Científica, Delegació a les Illes Balears, Delegació a Catalunya i Delegació
+        a València) i la <a href="http://www.um.es">Universitat de Múrcia</a>.</p>
+
+    <p>El projecte està cofinançat per la Fundació Espanyola per la Ciència i la Tecnologia (FECYT) i pel programa
+        d'ajuts a la recerca Recercaixa, dins el marc del projecte "Ciència ciutadana: educació i recerca". Bloom col&#183;labora
+        en la lluita contra el mosquit tigre patrocinant el projecte <a href="http://atrapaeltigre.com">AtrapaelTigre.com</a>.
+    </p>
+
+    <p>El projecte compta a més amb el suport de <a href="http://atrapaeltigre.com/web/ca/qui-som/">vàries institucions
+        públiques i privades</a>.</p>
+
+    <p>Les fotografies de l'App Tigatrapp han estat cedides per <a href="http://www.eritja.com">R. Eritja</a>.</p>
+
+    <p class='centeredImage'>
+        <a href='/credits/'><img style='max-width: 100%; height: auto;' src
+                ={% static "tigahelp/credits_logos.jpg" %}></a>
+    </p>
+
+{% endblock %}
