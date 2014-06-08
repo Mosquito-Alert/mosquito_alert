@@ -1,0 +1,13 @@
+# Common requirements for tigaserver (both dev and production)
+# Should be installed by calling either the dev.pip or prod.pip files (e.g. # pip install -r requirements/production.pip
+
+django==1.6.5
+South==0.8.4
+djangorestframework
+requests
+psycopg2==2.5.3
+Pillow
+pytz
+django-filter
+markdown
+django-leaflet
