@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Q
 from django.http import HttpResponse
 from tigaserver_app.models import Fix, Report
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -41,8 +42,17 @@ def show_report_map_adults(request):
     return render(request, 'tigamap/report_map.html', context)
 
 
-def show_report_map_sites(request):
-    report_list = Report.objects.filter(type='site')
+def show_report_map_sites(request, type):
+    if type == 'embornals_fonts':
+        report_list = [report for report in Report.objects.all() if report.embornals or report.fonts]
+    elif type == 'basins':
+        report_list = [report for report in Report.objects.all() if report.basins]
+    elif type == 'buckets_wells':
+        report_list = [report for report in Report.objects.all() if report.buckets or report.wells]
+    elif type == 'other':
+        report_list = [report for report in Report.objects.all() if report.other]
+    else:
+        report_list = Report.objects.all()
     context = {'report_list': report_list, 'type': 'site'}
     return render(request, 'tigamap/report_map.html', context)
 

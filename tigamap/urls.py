@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     url(r'^testingzone/coverage/$', views.show_coverage_map, name='show_coverage_map'),
     url(r'^testingzone/reports/basic/$', views.show_report_map_basic, name='show_report_map'),
     url(r'^testingzone/adults/$', views.show_report_map_adults),
-    url(r'^testingzone/sites/$', views.show_report_map_sites),
+    url(r'^testingzone/sites/(?P<type>\w+)/$', views.show_report_map_sites),
     url(r'^testingzone/grid/$', views.show_grid_05, name='show_grid_05'),
     url(r'^$', views.show_webmap_app, name='show_webmap_app'),
 )

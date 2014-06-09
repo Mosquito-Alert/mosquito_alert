@@ -8,6 +8,12 @@
     {% leaflet_js %}
     {% leaflet_css %}
 
+  {% block head_additions %}
+
+
+   {% endblock %}
+
+
   <style>
        .leaflet-container {  /* all maps */
             width:  100%;
@@ -26,11 +32,20 @@
   <body>
 
 
+    {%  block main_body %}
+
+    {% endblock %}
+
+
     {% leaflet_map "tigamap" callback="window.map_init_basic" %}
 
 
-
     {% block logo %}
+
+
+    {% endblock %}
+
+      {% block end_body %}
 
 
     {% endblock %}

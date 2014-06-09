@@ -268,10 +268,76 @@ class Report(models.Model):
                 result = this_response.answer
         return result
 
+    def get_site_embornals(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for this_response in these_responses:
+            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
+                    this_response.question.startswith('Type'):
+                result = this_response.answer == 'Embornals' or this_response.answer == 'Sumideros' or \
+                    'Storm' in this_response.answer
+        return result
+
+    def get_site_fonts(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for this_response in these_responses:
+            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
+                    this_response.question.startswith('Type'):
+                result = this_response.answer == 'Fonts' or this_response.answer == 'Fountain' or \
+                    this_response.answer == "Fuentes"
+        return result
+
+    def get_site_basins(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for this_response in these_responses:
+            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
+                    this_response.question.startswith('Type'):
+                result = this_response.answer == 'Basin' or this_response.answer == 'Basses' or \
+                    'balsas' in this_response.answer
+        return result
+
+    def get_site_buckets(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for this_response in these_responses:
+            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
+                    this_response.question.startswith('Type'):
+                result = this_response.answer == 'Bucket' or this_response.answer == 'Bidones' or \
+                    'Bidons' in this_response.answer
+        return result
+
+    def get_site_wells(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for this_response in these_responses:
+            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
+                    this_response.question.startswith('Type'):
+                result = this_response.answer == 'Well' or this_response.answer == 'Pozos' or \
+                    this_response.answer == 'Pous'
+        return result
+
+    def get_site_other(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for this_response in these_responses:
+            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
+                    this_response.question.startswith('Type'):
+                result = this_response.answer == 'Other' or this_response.answer == 'Altres' or \
+                    this_response.answer == 'Otros'
+        return result
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
     site_type = property(get_site_type)
+    embornals = property(get_site_embornals)
+    fonts = property(get_site_fonts)
+    basins = property(get_site_basins)
+    buckets = property(get_site_buckets)
+    wells = property(get_site_wells)
+    other = property(get_site_other)
 
     class Meta:
         unique_together = ("user", "version_UUID")
