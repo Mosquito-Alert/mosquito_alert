@@ -1,0 +1,49 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+    Política de privacidad
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="center">
+        <h2>Política de privacidad</h2>
+    </div>
+
+    <p>El proyecto AtrapaelTigre recoge datos compartidos por los voluntarios y los pone a disposición de terceras
+        partes y del público general. Con el fin de proteger la privacidad de sus voluntarios, se evita la recopilación
+        de información que pueda identificar de manera individual a una persona física determinada. Así, no se recopilan
+        nombres, direcciones, contraseñas o cualquier otra información personal de los voluntarios. Sí que se recogen
+        las ubicaciones exactas de los voluntarios durante el envío de informes, pero esta información se vincula
+        solamente al informe y a un identificador de usuario generado de forma aleatoria. También recoge la ubicación
+        aproximada de los voluntarios a intervalos aleatorios en el tiempo (a fin de evaluar las áreas geográficas
+        cubiertas por los voluntarios), pero esta información también se vincula únicamente a un identificador de
+        usuario generado de manera aleatoria. Los voluntarios pueden incluir notas y fotografías en sus informes, pero
+        es su responsabilidad no incluir en estas notas y fotografías cualquier información que deseen mantener en
+        privado o cualquier información que viole los derechos de privacidad de los demás o sea incompatible con el
+        acuerdo del usuario de AtrapaelTigre.</p>
+
+    <p>La lista detallada de la información recopilada es la siguiente:</p>
+    <ul>
+        <li>Informes recogidos y enviados por los voluntarios en relación a lugares de cría y avistamientos de mosquito
+            tigre, así como las misiones específicas. Esto incluye la ubicación precisa de los voluntarios al enviar el
+            informe, la localización especificada por los voluntarios en el mapa del informe y las fotografías, notas o
+            cualquier otra información que el voluntario añada en el informe.
+        </li>
+        <li>Información sobre la ubicación aproximada de los voluntarios, muestreada a intervalos de tiempo aleatorios.
+            Esta información se recoge para conocer las áreas geográficas exploradas por los voluntarios, y para mejorar
+            el conocimiento sobre vías de dispersión del mosquito tigre. Para evitar la recolección precisa de la
+            ubicación de los voluntarios, las latitudes y longitudes se redondean a los 0,05 grados más cercanos antes
+            de transmitir la ubicación desde el dispositivo. Así, es imposible determinar la ubicación real, dentro de
+            un área de 0,05 grados de latitud por 0,05 grados de longitud (aproximadamente el tamaño de una ciudad
+            pequeña como Blanes).
+        </li>
+        <li>Información sobre el modelo de teléfono, batería, configuración de idioma, y la instalación de Tigatrapp
+            (esto es, la versión instalada de Tigatrapp y el sistema operativo y versión en el que se instala). Esta
+            información se utiliza para ayudar al equipo de investigación a mejorar la aplicación.
+        </li>
+    </ul>
+
+{% endblock %}

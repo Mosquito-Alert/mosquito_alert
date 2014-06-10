@@ -43,16 +43,26 @@ def show_policies(request, language):
     if language == 'ca':
         return render(request, 'tigahelp/policies_ca.html', context)
     if language == 'es':
-        return render(request, 'tigahelp/policies_ca.html', context)
+        return render(request, 'tigahelp/policies_es.html', context)
     if language == 'en':
-        return render(request, 'tigahelp/policies_ca.html', context)
+        return render(request, 'tigahelp/policies_en.html', context)
 
 
-def show_privacy_en(request):
+def show_privacy(request, language):
     context = {}
-    return render(request, 'tigahelp/privacy_en.html', context)
+    if language == 'ca':
+        return render(request, 'tigahelp/privacy_ca.html', context)
+    if language == 'es':
+        return render(request, 'tigahelp/privacy_es.html', context)
+    if language == 'en':
+        return render(request, 'tigahelp/privacy_en.html', context)
 
 
-def show_terms_en(request):
+def show_terms(request, language):
     context = {}
-    return render(request, 'tigahelp/terms_en.html', context)
+    if language == 'ca':
+        return render(request, 'tigahelp/terms_ca.html', context)
+    if language == 'es':
+        return render(request, 'tigahelp/terms_es.html', context)
+    if language == 'en':
+        return render(request, 'tigahelp/terms_en.html', context)

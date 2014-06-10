@@ -2,7 +2,7 @@ from django.conf.urls import *
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms_en, show_privacy_en, \
+from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, \
     show_credit_image
 
 admin.autodiscover()
@@ -20,9 +20,7 @@ urlpatterns = patterns('',
     url(r'^credits/$', show_credit_image, name='show_credit_image'),
     url(r'^license/(?P<platform>\w+)/(?P<language>\w+)/$', show_license),
     url(r'^policies/(?P<language>\w+)/$', show_policies),
-    url(r'^terms/(?P<language>\w+)/$', show_policies),
-    url(r'^privacy/(?P<language>\w+)/$', show_policies),
-    url(r'^testingzone/privacy/$', show_privacy_en, name='show_privacy_en'),
-    url(r'^testingzone/terms/$', show_terms_en, name='show_terms_en'),
+    url(r'^terms/(?P<language>\w+)/$', show_terms),
+    url(r'^privacy/(?P<language>\w+)/$', show_privacy),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
                                                                              document_root=settings.MEDIA_ROOT)
