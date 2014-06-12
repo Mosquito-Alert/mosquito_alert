@@ -40,7 +40,7 @@
 					var mapLng = mapCentre.lng;
 					var cookiestring = mapLat + "_" + mapLng + "_" + mapZoom;
                     var d = new Date();
-                    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+                    d.setTime(d.getTime() + (30*24*60*60*1000));
                     var expires = "expires="+d.toGMTString();
 					document.cookie = "tigaMapCookie" + "=" + cookiestring + ";expires=" + expires + ";domain=tigaserver.atrapaeltigre.com;path=/";
 				}
