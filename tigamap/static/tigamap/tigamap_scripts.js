@@ -1,37 +1,37 @@
+var tigaMapCookie = 'tigaMapCookie';
+
 function loadSavedLat() {
-    var gotCookieString = getCookie("myMapCookie");
+    var gotCookieString = getCookie(tigaMapCookie);
     var splitStr = gotCookieString.split("_");
     var savedMapLat = parseFloat(splitStr[0]);
     return savedMapLat;
 }
 
 function loadSavedLng() {
-    var gotCookieString = getCookie("myMapCookie");
+    var gotCookieString = getCookie(tigaMapCookie);
     var splitStr = gotCookieString.split("_");
     var savedMapLng = parseFloat(splitStr[1]);
     return savedMapLng;
 }
 
 function loadSavedZoom() {
-    var gotCookieString = getCookie("myMapCookie");
+    var gotCookieString = getCookie(tigaMapCookie);
     var splitStr = gotCookieString.split("_");
     var savedMapZoom = parseFloat(splitStr[2]);
     return savedMapZoom;
 }
 
 
-function getCookie(c_name) {
-    var i, x, y, ARRcookies = document.cookie.split(";");
-    for (i = 0; i < ARRcookies.length; i++) {
-        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-        x = x.replace(/^\s+|\s+$/g, "");
-        if (x == c_name) {
-            return unescape(y);
-        }
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i].trim();
+        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
     }
     return "";
 }
+
 
 function saveMapState(map) {
     var mapZoom = map.getZoom();
@@ -42,6 +42,6 @@ function saveMapState(map) {
     var d = new Date();
     d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000));
     var expires = "expires=" + d.toGMTString();
-    document.cookie = "tigaMapCookie" + "=" + cookiestring + ";expires=" + expires + ";domain=tigaserver.atrapaeltigre.com;path=/";
+    document.cookie = tigaMapCookie + "=" + cookiestring + ";expires=" + expires + ";domain=tigaserver.atrapaeltigre.com;path=/";
 }
 
