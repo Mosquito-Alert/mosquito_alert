@@ -1,1 +1,4 @@
-body { padding-top: 50px; }
+td {
+    padding: 15px;
+    vertical-align: bottom;
+}

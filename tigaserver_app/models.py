@@ -3,6 +3,7 @@ import uuid
 import os
 import datetime
 from django.utils.timezone import utc
+from django.utils.translation import ugettext_lazy as _
 
 
 class TigaUser(models.Model):
@@ -270,6 +271,18 @@ class Report(models.Model):
                 result = this_response.answer
         return result
 
+    def get_site_type_trans(self):
+        if self.embornals:
+            return _('Storm drain')
+        if self.fonts:
+            return _('Fountain')
+        if self.basins:
+            return _('Basin')
+        if self.wells:
+            return _('Well')
+        if self.other:
+            return _('Other')
+
     def get_site_embornals(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
         result = ''
@@ -334,6 +347,7 @@ class Report(models.Model):
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
     site_type = property(get_site_type)
+    site_type_trans = property(get_site_type_trans)
     embornals = property(get_site_embornals)
     fonts = property(get_site_fonts)
     basins = property(get_site_basins)

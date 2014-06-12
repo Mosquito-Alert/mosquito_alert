@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigaserver Project 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-12 16:14+0200\n"
-"PO-Revision-Date: 2014-06-12 16:16+0100\n"
+"POT-Creation-Date: 2014-06-12 17:22+0200\n"
+"PO-Revision-Date: 2014-06-12 17:22+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -28,12 +28,12 @@ msgstr "Tigaserver admin"
 msgid "Tigaserver administration"
 msgstr "Tigaserver administration"
 
-#: tigahelp/templates/tigahelp/policies.html:29
+#: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 msgid "User Agreement"
 msgstr "Acuerdo del usuario"
 
-#: tigahelp/templates/tigahelp/policies.html:34
+#: tigahelp/templates/tigahelp/policies.html:35
 #: tigahelp/templates/tigahelp/policies_en.html:34
 msgid "Privacy Policy"
 msgstr "Política de privacidad"
@@ -112,12 +112,17 @@ msgid "Buckets and wells"
 msgstr "Bidones y pozos"
 
 #: tigamap/templates/tigamap/app.html:73
+#: tigaserver_app/models.py:284
 msgid "Other"
 msgstr "Otros"
 
 #: tigamap/templates/tigamap/app.html:77
 msgid "Coverage"
 msgstr "Zonas exploradas"
+
+#: tigamap/templates/tigamap/report_map.html:81
+msgid "type"
+msgstr "Tipo"
 
 #: tigamap/templates/tigamap/report_map.html:95
 msgid "clusters"
@@ -126,6 +131,22 @@ msgstr "Valores agregados"
 #: tigamap/templates/tigamap/report_map.html:96
 msgid "points"
 msgstr "Puntos"
+
+#: tigaserver_app/models.py:276
+msgid "Storm drain"
+msgstr "Sumidero"
+
+#: tigaserver_app/models.py:278
+msgid "Fountain"
+msgstr "Fuente"
+
+#: tigaserver_app/models.py:280
+msgid "Basin"
+msgstr "Pequeña balsa artificial"
+
+#: tigaserver_app/models.py:282
+msgid "Well"
+msgstr "Pozo"
 
 #: tigaserver_project/settings.py:96
 msgid "Spanish"
