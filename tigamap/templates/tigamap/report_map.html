@@ -92,8 +92,8 @@
             {% endfor %}
 
             var baseMaps = {
-                "clusters": markers_clustered,
-                "points": markers_basic
+                "{% trans 'clusters' %}": markers_clustered,
+                "{% trans 'points' %}": markers_basic
             };
 
             markers_clustered.addTo(map);

@@ -1,4 +1,5 @@
 ﻿{% load staticfiles %}
+{% load i18n %}
 
 <!DOCTYPE html>
 
@@ -21,16 +22,16 @@
 
 <div class="splash-container">
     <div class="splash">
-        <div class="splash-head"><img style="max-width:100%;" src=
-                "{% static "tigahelp/atrapaeltigre_site_icon_large.png" %}"/></div>
+        <div class="splash-head"><a href="http://atrapaeltigre.com"><img style="max-width:100%;" src=
+                "{% static "tigahelp/atrapaeltigre_site_icon_large.png" %}"/></a></div>
 
         <p>
-            <a class="pure-button pure-button-primary" style="min-width:50%;" href="/terms/en/">
+            <a class="pure-button pure-button-primary" style="min-width:50%;" href={% url 'help.show_terms' %}>
                 {% trans 'User Agreement' %}</a>
         </p>
 
         <p>
-            <a class="pure-button pure-button-primary" style="min-width:50%;" href="/privacy/en/">
+            <a class="pure-button pure-button-primary" style="min-width:50%;" href={% url 'help.show_privacy' %}>
                 {% trans 'Privacy Policy'  %}</a>
         </p>
     </div>

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigaserver Project 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-12 09:58+0200\n"
-"PO-Revision-Date: 2014-06-12 09:49+0100\n"
+"POT-Creation-Date: 2014-06-12 16:14+0200\n"
+"PO-Revision-Date: 2014-06-12 16:16+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -28,43 +28,50 @@ msgstr "Tigaserver admin"
 msgid "Tigaserver administration"
 msgstr "Tigaserver administration"
 
-#: tigamap/views.py:9
-msgid "title"
-msgstr "title"
+#: tigahelp/templates/tigahelp/policies.html:29
+#: tigahelp/templates/tigahelp/policies_en.html:29
+msgid "User Agreement"
+msgstr "Acuerdo del usuario"
 
-#: tigamap/views.py:42
+#: tigahelp/templates/tigahelp/policies.html:34
+#: tigahelp/templates/tigahelp/policies_en.html:34
+msgid "Privacy Policy"
+msgstr "Política de privacidad"
+
+#: tigamap/views.py:57
 msgid "Coverage Map"
 msgstr "Zonas exploradas"
 
-#: tigamap/views.py:47
+#: tigamap/views.py:63
 msgid "Adult tiger mosquitoes: Medium and high probability reports"
 msgstr "Avistamientos de mosquito tigre:: Sólo probabilidad media y alta"
 
-#: tigamap/views.py:50
+#: tigamap/views.py:66
 msgid "Adult tiger mosquitoes: High probability reports"
 msgstr "Avistamientos de mosquito tigre: Sólo probabilidad alta"
 
-#: tigamap/views.py:53
+#: tigamap/views.py:69
+#: tigamap/views.py:89
 msgid "Adult tiger mosquitoes: All reports"
 msgstr "Avistamientos de mosquito tigre: Todos"
 
-#: tigamap/views.py:57
+#: tigamap/views.py:74
 msgid "Breeding sites: Storm drains and fountains"
 msgstr "Lugares de cría: Sumideros y fuentes"
 
-#: tigamap/views.py:60
+#: tigamap/views.py:77
 msgid "Breeding sites: Basins"
 msgstr "Lugares de cría: Pequeñas balsas artificiales"
 
-#: tigamap/views.py:63
+#: tigamap/views.py:80
 msgid "Breeding sites: Buckets and wells"
 msgstr "Lugares de cría: Bidones y pozos"
 
-#: tigamap/views.py:66
+#: tigamap/views.py:83
 msgid "Breeding sites: Other"
 msgstr "Lugares de cría: Otros"
 
-#: tigamap/views.py:69
+#: tigamap/views.py:86
 msgid "Breeding sites: All reports"
 msgstr "Lugares de cría: Todos"
 
@@ -108,9 +115,17 @@ msgstr "Bidones y pozos"
 msgid "Other"
 msgstr "Otros"
 
-#: tigamap/templates/tigamap/app.html:76
+#: tigamap/templates/tigamap/app.html:77
 msgid "Coverage"
 msgstr "Zonas exploradas"
+
+#: tigamap/templates/tigamap/report_map.html:95
+msgid "clusters"
+msgstr "Valores agregados"
+
+#: tigamap/templates/tigamap/report_map.html:96
+msgid "points"
+msgstr "Puntos"
 
 #: tigaserver_project/settings.py:96
 msgid "Spanish"
@@ -123,6 +138,9 @@ msgstr "catalán"
 #: tigaserver_project/settings.py:98
 msgid "English"
 msgstr "Inglés"
+
+#~ msgid "title"
+#~ msgstr "title"
 
 #~ msgid "Tigaserver Map"
 #~ msgstr "Mapa del mosquito tigre 2014"
