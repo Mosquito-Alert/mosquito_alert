@@ -134,6 +134,7 @@ REST_FRAMEWORK = {
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.0, -4.0),
     'DEFAULT_ZOOM': 6,
+    'MINIMAP': True,
     'PLUGINS': {
         'marker_cluster_yellow': {
             'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow.css'],

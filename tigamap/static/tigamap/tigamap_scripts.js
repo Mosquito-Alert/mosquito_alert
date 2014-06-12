@@ -45,3 +45,4 @@ function saveMapState(map) {
     document.cookie = tigaMapCookie + "=" + cookiestring + ";expires=" + expires + ";domain=tigaserver.atrapaeltigre.com;path=/";
 }
 
+

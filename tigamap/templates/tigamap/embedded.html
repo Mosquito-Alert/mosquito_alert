@@ -1,2 +1,43 @@
 {% extends "tigamap/base.html" %}
 
+{% block main_body %}
+
+<div id="tigamap" class="leaflet-container-default"></div>
+<script type="text/javascript">
+(function () {
+
+    function loadmap() {
+
+				var centerLat = loadSavedLat();
+				var centerLng = loadSavedLng();
+				var initialZoom = loadSavedZoom();
+
+				if (isNaN(centerLat) || isNaN(centerLng)) {
+					centerLat = 40.0000;
+					centerLng = -4.0000;
+				}
+
+				if (isNaN(initialZoom)) {
+					initialZoom = 6;
+				}
+
+
+        var djoptions = {"layers": [["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]],
+                    "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                    "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [[-90,
+                        -180], [90,
+                        180]], "resetview": true, "srid": null, "fitextent": true},
+            options = {djoptions: djoptions, initfunc: loadmap,
+                       globals: false, callback: window.map_init_basic};
+        L.Map.djangoMap('tigamap', options);
+    }
+    var loadevents = ["load"];
+    if (loadevents.length === 0) loadmap();
+    else if (window.addEventListener) for (var i=0; i<loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+    else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+
+})();
+</script>
+
+{% endblock %}
