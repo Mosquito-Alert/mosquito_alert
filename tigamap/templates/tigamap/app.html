@@ -38,7 +38,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <div class="navbar-brand" style="color:#fff;">{{ title|default:'' }}</div>
+            <div class="navbar-brand" style="color:#fff;">{{ title }}</div>
         </div>
 
             <ul class="nav navbar-nav navbar-right">
@@ -47,11 +47,11 @@
                         {%  trans 'Adult tiger mosquitoes' %}<b
                                 class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        <li><a href={% url 'webmap.show_map' report_type='adults' category='all' %}
+                        <li><a href={{ hrefs.adults_all }}
                                 >{% trans 'All reports' %}</a></li>
-                        <li><a href={% url 'webmap.show_map' report_type='adults' category='medium' %}>
+                        <li><a href={{ hrefs.adults_medium }}>
                             {% trans 'Medium and high probability reports only' %}</a></li>
-                        <li><a href={% url 'webmap.show_map' report_type='adults' category='high' %}>
+                        <li><a href={{ hrefs.adults_high }}>
                             {% trans 'High probability reports only' %}</a></li>
                     </ul>
                 </li>
@@ -59,21 +59,21 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'Breeding site reports' %}<b
                             class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        <li><a href={% url 'webmap.show_map' report_type='sites' category='all' %}
+                        <li><a href={{ hrefs.sites_all }}
                                 >{% trans 'All sites' %}</a></li>
                         <li>
-                            <a href={% url 'webmap.show_map' report_type='sites' category='drains_fountains' %}
+                            <a href={{ hrefs.sites_drains_fountains }}
                                     >{% trans 'Storm drains and fountains' %}</a>
                         </li>
-                        <li><a href={% url 'webmap.show_map' report_type='sites' category='basins' %}
+                        <li><a href={{ hrefs.sites_basins }}
                                 >{% trans 'Basins' %}</a></li>
-                        <li><a href={% url 'webmap.show_map' report_type='sites' category='buckets_wells' %}>
+                        <li><a href={{ hrefs.sites_buckets_wells }}>
                             {% trans 'Buckets and wells' %}</a></li>
-                        <li><a href={% url 'webmap.show_map' report_type='sites' category='other' %}
+                        <li><a href={{ hrefs.sites_other }}
                                 >{% trans 'Other' %}</a></li>
                     </ul>
                 </li>
-                <li><a href={% url 'webmap.show_map' report_type='coverage' category='all' %}
+                <li><a href="{{ hrefs.coverage }}"
                         >{% trans 'Coverage' %}</a></li>
 
             </ul>

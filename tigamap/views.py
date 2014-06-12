@@ -1,17 +1,14 @@
 from django.shortcuts import render
+from django.db.models import Q
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from tigaserver_app.models import Fix, Report
 from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 
-def show_webmap_app(request):
-    context = {'title': _("title")}
-    return render(request, 'tigamap/app.html', context)
-
 
 @xframe_options_exempt
-def show_embedded_webmap(request):
+def show_embedded_webmap(request, language='es'):
     fix_list = Fix.objects.all()
     context = {'fix_list': fix_list}
     return render(request, 'tigamap/embedded.html', context)
@@ -35,40 +32,76 @@ def strip_lang(path):
     return no_lang_path
 
 
-def show_map(request, report_type='adults', category='all'):
+def show_map(request, report_type='adults', category='all', data='live'):
+    if data == 'beta':
+        these_reports = Report.objects.all()
+        fix_list = Fix.objects.all()
+        href_url_name = 'webmap.show_map_beta'
+        hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all',
+                                                            'data': 'beta'}),
+                 'adults_all': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'all', 'data': 'beta'}),
+                 'adults_medium': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'medium', 'data': 'beta'}),
+                 'adults_high': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'high', 'data': 'beta'}),
+                 'sites_all': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'all', 'data': 'beta'}),
+                 'sites_drains_fountains': reverse(href_url_name, kwargs={'report_type': 'sites', 'category':
+                     'drains_fountains', 'data': 'beta'}),
+                 'sites_basins': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'basins', 'data': 'beta'}),
+                 'sites_buckets_wells': reverse(href_url_name, kwargs={'report_type': 'sites', 'category':
+                     'buckets_wells', 'data': 'beta'}),
+                 'sites_other': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'other', 'data': 'beta'}),
+                 }
+    else:
+        these_reports = Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) | Q(
+                package_name='ceab.movelab.tigatrapp', package_version__gt=2))
+        fix_list = ''
+        href_url_name = 'webmap.show_map'
+        hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
+                 'adults_all': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'all'}),
+                 'adults_medium': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'medium'}),
+                 'adults_high': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'high'}),
+                 'sites_all': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'all'}),
+                 'sites_drains_fountains': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'drains_fountains'}),
+                 'sites_basins': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'basins'}),
+                 'sites_buckets_wells': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'buckets_wells'}),
+                 'sites_other': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'other'}),
+                 }
     redirect_path = strip_lang(reverse('webmap.show_map', kwargs={'report_type': report_type, 'category': category}))
-    this_title = ''
     if report_type == 'coverage':
         this_title = _('Coverage Map')
-        context = {'title': this_title, 'redirect_to': redirect_path}
+        context = {'fix_list': fix_list, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map.html', context)
     elif report_type == 'adults':
+        these_reports = these_reports.filter(type='adult')
         if category == 'medium':
             this_title = _('Adult tiger mosquitoes: Medium and high probability reports')
-            report_list = [report for report in Report.objects.filter(type='adult') if report.tigaprob > 0]
+            report_list = [report for report in these_reports if report.tigaprob > 0]
         elif category == 'high':
             this_title = _('Adult tiger mosquitoes: High probability reports')
-            report_list = [report for report in Report.objects.filter(type='adult') if report.tigaprob == 1]
+            report_list = [report for report in these_reports if report.tigaprob == 1]
         else:
             this_title = _('Adult tiger mosquitoes: All reports')
-            report_list = Report.objects.filter(type='adult')
+            report_list = these_reports
     elif report_type == 'sites':
+        these_reports = these_reports.filter(type='site')
         if category == 'drains_fountains':
             this_title = _('Breeding sites: Storm drains and fountains')
-            report_list = [report for report in Report.objects.filter(type='site') if report.embornals or report.fonts]
+            report_list = [report for report in these_reports if report.embornals or report.fonts]
         elif category == 'basins':
             this_title = _('Breeding sites: Basins')
-            report_list = [report for report in Report.objects.filter(type='site') if report.basins]
+            report_list = [report for report in these_reports if report.basins]
         elif category == 'buckets_wells':
             this_title = _('Breeding sites: Buckets and wells')
-            report_list = [report for report in Report.objects.filter(type='site') if report.buckets or report.wells]
+            report_list = [report for report in these_reports if report.buckets or report.wells]
         elif category == 'other':
             this_title = _('Breeding sites: Other')
-            report_list = [report for report in Report.objects.filter(type='site') if report.other]
+            report_list = [report for report in these_reports if report.other]
         else:
             this_title = _('Breeding sites: All reports')
-            report_list = Report.objects.filter(type='site')
+            report_list = these_reports
+    else:
+        this_title = _('Adult tiger mosquitoes: All reports')
+        report_list = these_reports.filter(type='adult')
     context = {'title': this_title, 'report_list': report_list, 'report_type': report_type, 'redirect_to':
-        redirect_path}
+        redirect_path, 'hrefs': hrefs}
     return render(request, 'tigamap/report_map.html', context)
 

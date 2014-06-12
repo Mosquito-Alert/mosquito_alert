@@ -1,5 +1,7 @@
 from django.conf.urls import *
 from django.conf.urls.i18n import i18n_patterns
+from django.views.generic.base import RedirectView
+from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
@@ -28,11 +30,14 @@ urlpatterns = patterns('',
                                                                              document_root=settings.MEDIA_ROOT)
 
 urlpatterns += i18n_patterns('',
-    url(r'^webmap/embedded/(?P<language>\w+)$', views.show_embedded_webmap, name='webmap.show_embedded_webmap'),
+    url(r'^webmap/embedded/(?P<language>\w+)/$', views.show_embedded_webmap, name='webmap.show_embedded_webmap'),
     url(r'^webmap/embedded/$', views.show_embedded_webmap),
-    url(r'^webmap/(?P<language>\w+)/$', views.show_webmap_app, name='webmap.show_webmap_app'),
-    url(r'^webmap/$', views.show_webmap_app),
-    url(r'^webmap/beta/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map, name='webmap.show_map'),
-    url(r'^webmap/beta/(?P<report_type>\w+)/$', views.show_map),
-    url(r'^webmap/beta/$', views.show_map),
+    url(r'^webmap/(?P<report_type>\w+)/(?P<category>\w+)/(?P<data>\w+)/$', views.show_map, name='webmap'
+                                                                                                '.show_map_beta'),
+    url(r'^webmap/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map, name='webmap.show_map'),
+    url(r'^webmap/(?P<report_type>\w+)/$', views.show_map),
+    url(r'^webmap/$', views.show_map),
+    url(r'^webmap/testingzone/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map),
+    url(r'^webmap/testingzone/(?P<report_type>\w+)/$', views.show_map),
+    url(r'^webmap/testingzone/$', views.show_map),
 )
