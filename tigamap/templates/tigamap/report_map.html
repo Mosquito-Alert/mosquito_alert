@@ -47,28 +47,47 @@
 
             var show_popups = true;
 
-            var marker;
+            var cluster_marker;
+            var basic_marker;
 
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
-                    marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
                     if(show_popups){
                     {% if report_type == 'adults' %}
-                        marker.bindPopup('<table style="font-size:small;"><tr><td>id:</td><td>' +
+                        cluster_marker.bindPopup('<table style="font-size:small;"><tr><td>id:</td><td>' +
                                 '{{ report.report_id }}</td></tr><tr><td>lat:</td>'+
                                 '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
                                 '{{ report.lon }}</td></tr><tr><td>prob:</td><td>'+
                                 '{{ report.tigaprob }}</td></tr></table>');
                    {%  else %}
-                        marker.bindPopup('<table style="font-size:small;"><tr><td>id:</td><td>' +
+                        cluster_marker.bindPopup('<table style="font-size:small;"><tr><td>id:</td><td>' +
                                 '{{ report.report_id }}</td></tr><tr><td>lat:</td>'+
                                 '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
                                 '{{ report.lon }}</td></tr><tr><td>type:</td><td>'+
                                 '{{ report.site_type }}</td></tr></table>');
                    {%  endif %}
                    }
-                    markers_clustered.addLayer(marker);
-                    markers_basic.addLayer(marker);
+
+                    basic_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                    if(show_popups){
+                    {% if report_type == 'adults' %}
+                        basic_marker.bindPopup('<table style="font-size:small;"><tr><td>id:</td><td>' +
+                                '{{ report.report_id }}</td></tr><tr><td>lat:</td>'+
+                                '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
+                                '{{ report.lon }}</td></tr><tr><td>prob:</td><td>'+
+                                '{{ report.tigaprob }}</td></tr></table>');
+                   {%  else %}
+                        basic_marker.bindPopup('<table style="font-size:small;"><tr><td>id:</td><td>' +
+                                '{{ report.report_id }}</td></tr><tr><td>lat:</td>'+
+                                '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
+                                '{{ report.lon }}</td></tr><tr><td>type:</td><td>'+
+                                '{{ report.site_type }}</td></tr></table>');
+                   {%  endif %}
+                   }
+
+                    markers_clustered.addLayer(cluster_marker);
+                    markers_basic.addLayer(basic_marker);
                 {% endif %}
             {% endfor %}
 
@@ -81,6 +100,7 @@
 
             L.control.layers(baseMaps, null).addTo(map);
         }
+
     </script>
 
 {% endblock %}
