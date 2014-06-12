@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigaserver 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-12 17:22+0200\n"
-"PO-Revision-Date: 2014-06-12 17:23+0100\n"
+"POT-Creation-Date: 2014-06-12 17:36+0200\n"
+"PO-Revision-Date: 2014-06-12 17:36+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: Movelab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -111,7 +111,7 @@ msgid "Buckets and wells"
 msgstr "Buckets and wells"
 
 #: tigamap/templates/tigamap/app.html:73
-#: tigaserver_app/models.py:284
+#: tigaserver_app/models.py:292
 msgid "Other"
 msgstr "Other"
 
@@ -131,19 +131,31 @@ msgstr "Clusters"
 msgid "points"
 msgstr "Points"
 
-#: tigaserver_app/models.py:276
+#: tigaserver_app/models.py:267
+msgid "High"
+msgstr "High"
+
+#: tigaserver_app/models.py:269
+msgid "Medium"
+msgstr "Medium"
+
+#: tigaserver_app/models.py:271
+msgid "Low"
+msgstr "Low"
+
+#: tigaserver_app/models.py:284
 msgid "Storm drain"
 msgstr "Storm drain"
 
-#: tigaserver_app/models.py:278
+#: tigaserver_app/models.py:286
 msgid "Fountain"
 msgstr "Fountain"
 
-#: tigaserver_app/models.py:280
+#: tigaserver_app/models.py:288
 msgid "Basin"
 msgstr "Basin"
 
-#: tigaserver_app/models.py:282
+#: tigaserver_app/models.py:290
 msgid "Well"
 msgstr "Well"
 

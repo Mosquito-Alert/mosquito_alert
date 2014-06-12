@@ -262,6 +262,14 @@ class Report(models.Model):
             total = 1;
         return result/total
 
+    def get_tigaprob_text(self):
+        if self.tigaprob == 1:
+            return _('High')
+        elif 0 < self.tigaprob < 1:
+            return _('Medium')
+        else:
+            return _('Low')
+
     def get_site_type(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
         result = ''
@@ -346,6 +354,7 @@ class Report(models.Model):
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
+    tigaprob_text = property(get_tigaprob_text)
     site_type = property(get_site_type)
     site_type_trans = property(get_site_type_trans)
     embornals = property(get_site_embornals)

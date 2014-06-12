@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigaserver 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-12 17:22+0200\n"
-"PO-Revision-Date: 2014-06-12 17:23+0100\n"
+"POT-Creation-Date: 2014-06-12 17:36+0200\n"
+"PO-Revision-Date: 2014-06-12 17:38+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -112,7 +112,7 @@ msgid "Buckets and wells"
 msgstr "Bidons i pous"
 
 #: tigamap/templates/tigamap/app.html:73
-#: tigaserver_app/models.py:284
+#: tigaserver_app/models.py:292
 msgid "Other"
 msgstr "Altres"
 
@@ -132,19 +132,31 @@ msgstr "Valors agregats"
 msgid "points"
 msgstr "Punts"
 
-#: tigaserver_app/models.py:276
+#: tigaserver_app/models.py:267
+msgid "High"
+msgstr "Alta"
+
+#: tigaserver_app/models.py:269
+msgid "Medium"
+msgstr "Mitjana"
+
+#: tigaserver_app/models.py:271
+msgid "Low"
+msgstr "Baixa "
+
+#: tigaserver_app/models.py:284
 msgid "Storm drain"
 msgstr "Embornal"
 
-#: tigaserver_app/models.py:278
+#: tigaserver_app/models.py:286
 msgid "Fountain"
 msgstr "Font"
 
-#: tigaserver_app/models.py:280
+#: tigaserver_app/models.py:288
 msgid "Basin"
 msgstr "Basse artificial petit"
 
-#: tigaserver_app/models.py:282
+#: tigaserver_app/models.py:290
 msgid "Well"
 msgstr "Pou"
 
