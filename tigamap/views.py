@@ -37,25 +37,12 @@ def show_map(request, report_type='adults', category='all', data='live'):
         these_reports = Report.objects.all()
         fix_list = Fix.objects.all()
         href_url_name = 'webmap.show_map_beta'
-        hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all',
-                                                            'data': 'beta'}),
-                 'adults_all': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'all', 'data': 'beta'}),
-                 'adults_medium': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'medium', 'data': 'beta'}),
-                 'adults_high': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'high', 'data': 'beta'}),
-                 'sites_all': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'all', 'data': 'beta'}),
-                 'sites_drains_fountains': reverse(href_url_name, kwargs={'report_type': 'sites', 'category':
-                     'drains_fountains', 'data': 'beta'}),
-                 'sites_basins': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'basins', 'data': 'beta'}),
-                 'sites_buckets_wells': reverse(href_url_name, kwargs={'report_type': 'sites', 'category':
-                     'buckets_wells', 'data': 'beta'}),
-                 'sites_other': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'other', 'data': 'beta'}),
-                 }
     else:
         these_reports = Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) | Q(
                 package_name='ceab.movelab.tigatrapp', package_version__gt=2))
         fix_list = ''
         href_url_name = 'webmap.show_map'
-        hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
+    hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
                  'adults_all': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'all'}),
                  'adults_medium': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'medium'}),
                  'adults_high': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'high'}),
@@ -65,7 +52,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
                  'sites_buckets_wells': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'buckets_wells'}),
                  'sites_other': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'other'}),
                  }
-    redirect_path = strip_lang(reverse('webmap.show_map', kwargs={'report_type': report_type, 'category': category}))
+    redirect_path = strip_lang(reverse(href_url_name, kwargs={'report_type': report_type, 'category': category}))
     if report_type == 'coverage':
         this_title = _('Coverage Map')
         context = {'fix_list': fix_list, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}

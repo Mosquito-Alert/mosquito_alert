@@ -32,8 +32,10 @@ urlpatterns = patterns('',
 urlpatterns += i18n_patterns('',
     url(r'^webmap/embedded/(?P<language>\w+)/$', views.show_embedded_webmap, name='webmap.show_embedded_webmap'),
     url(r'^webmap/embedded/$', views.show_embedded_webmap),
-    url(r'^webmap/(?P<report_type>\w+)/(?P<category>\w+)/(?P<data>\w+)/$', views.show_map, name='webmap'
+    url(r'^betamap/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map, {'data': 'beta'}, name='webmap'
                                                                                                 '.show_map_beta'),
+    url(r'^betamap/(?P<report_type>\w+)/$', views.show_map, {'data': 'beta'}),
+    url(r'^betamap/$', views.show_map, {'data': 'beta'}),
     url(r'^webmap/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map, name='webmap.show_map'),
     url(r'^webmap/(?P<report_type>\w+)/$', views.show_map),
     url(r'^webmap/$', views.show_map),
