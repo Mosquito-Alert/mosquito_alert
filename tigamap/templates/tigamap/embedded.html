@@ -1,4 +1,12 @@
 {% extends "tigamap/base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block head_additions %}
+
+     <script src="{% static "tigamap/tigamap_scripts.js" %}"></script>
+
+{% endblock %}
 
 {% block main_body %}
 
@@ -39,5 +47,6 @@
 
 })();
 </script>
+
 
 {% endblock %}
