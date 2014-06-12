@@ -1,9 +1,11 @@
 from django.conf.urls import *
+from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, \
     show_credit_image
+from tigamap import views
 
 admin.autodiscover()
 
@@ -13,7 +15,6 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/', include('tigaserver_app.urls')),
-    url(r'^webmap/', include('tigamap.urls')),
     url(r'^webapp/', include('webapp.urls')),
     url(r'^help/(?P<platform>\w+)/(?P<language>\w+)/$', show_help),
     url(r'^about/(?P<platform>\w+)/(?P<language>\w+)/$', show_about),
@@ -22,5 +23,16 @@ urlpatterns = patterns('',
     url(r'^policies/(?P<language>\w+)/$', show_policies),
     url(r'^terms/(?P<language>\w+)/$', show_terms),
     url(r'^privacy/(?P<language>\w+)/$', show_privacy),
+    (r'^i18n/', include('django.conf.urls.i18n')),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
                                                                              document_root=settings.MEDIA_ROOT)
+
+urlpatterns += i18n_patterns('',
+    url(r'^webmap/embedded/(?P<language>\w+)$', views.show_embedded_webmap, name='webmap.show_embedded_webmap'),
+    url(r'^webmap/embedded/$', views.show_embedded_webmap),
+    url(r'^webmap/(?P<language>\w+)/$', views.show_webmap_app, name='webmap.show_webmap_app'),
+    url(r'^webmap/$', views.show_webmap_app),
+    url(r'^webmap/beta/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map, name='webmap.show_map'),
+    url(r'^webmap/beta/(?P<report_type>\w+)/$', views.show_map),
+    url(r'^webmap/beta/$', views.show_map),
+)

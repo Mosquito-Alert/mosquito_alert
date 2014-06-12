@@ -257,6 +257,8 @@ class Report(models.Model):
                 result += 1
             if this_response.answer == 'No':
                 result -= 1
+        if total == 0:
+            total = 1;
         return result/total
 
     def get_site_type(self):

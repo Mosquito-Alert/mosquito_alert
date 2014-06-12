@@ -2,15 +2,34 @@
 
 <!DOCTYPE html>
 
-<html style="width:100%; height:100%;">
-	<head>
-		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-		<title>Tigatrapp Policies</title>
-<link rel='stylesheet' href={% static "tigahelp/tigastyle.css" %} />
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Polítiques</title>
+
+    <link rel="stylesheet" href={% static "tigahelp/pure-min.css" %}>
+
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href={% static "tigahelp/policystyle_old.css" %}>
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href={% static "tigahelp/policystyle.css" %}>
+    <!--<![endif]-->
 </head>
-    <body>
-Under construction...
+<body>
+
+<div class="splash-container">
+    <div class="splash">
+        <h1 class="splash-head">Polítiques</h1>
+
+        <p>
+            <a class="pure-button pure-button-primary" href="/terms/en/">Acord de l'usuari</a>
+            <a class="pure-button pure-button-primary" href="/privacy/en/">Política de privacitat</a>
+        </p>
+    </div>
+</div>
+
 
 </body>
 </html>

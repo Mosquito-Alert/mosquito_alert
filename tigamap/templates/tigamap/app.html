@@ -1,5 +1,5 @@
 {% extends "tigamap/base.html" %}
-
+{% load i18n %}
 {% load staticfiles %}
 
 {% block head_additions %}
@@ -13,42 +13,74 @@
 
 {% block main_body %}
 
+
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">Tigatrapp Map</a>
-            </div>
-            <ul class="nav navbar-nav pull-right">
+    <div class="container">
+
+            <form class="navbar-form navbar-left" action="{% url 'set_language' %}" method="post">
+                <div class="form-group">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ redirect_to }}"/>
+                    <select class="form-control" name="language" onchange="this.form.submit()">
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                    selected="selected"{% endif %}>
+                                {{ language.name_local }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <div class="navbar-brand" style="color:#fff;">{{ title|default:'' }}</div>
+        </div>
+
+            <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sites<b class="caret"></b></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        {%  trans 'Adult tiger mosquitoes' %}<b
+                                class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        <li><a href="/webmap/testingzone/sites/all/">All</a></li>
-                        <li><a href="/webmap/testingzone/sites/embornals_fonts/">Storm drains and fountains</a></li>
-                        <li><a href="/webmap/testingzone/sites/basins/">Basins</a></li>
-                        <li><a href="/webmap/testingzone/sites/buckets_wells/">Buckets and wells</a></li>
-                        <li><a href="/webmap/testingzone/sites/other/">Other</a></li>
+                        <li><a href={% url 'webmap.show_map' report_type='adults' category='all' %}
+                                >{% trans 'All reports' %}</a></li>
+                        <li><a href={% url 'webmap.show_map' report_type='adults' category='medium' %}>
+                            {% trans 'Medium and high probability reports only' %}</a></li>
+                        <li><a href={% url 'webmap.show_map' report_type='adults' category='high' %}>
+                            {% trans 'High probability reports only' %}</a></li>
                     </ul>
                 </li>
-                <li><a href="/webmap/testingzone/adults/">Adults</a></li>
-                <li><a href="/webmap/testingzone/coverage/">Coverage</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'Breeding site reports' %}<b
+                            class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href={% url 'webmap.show_map' report_type='sites' category='all' %}
+                                >{% trans 'All sites' %}</a></li>
+                        <li>
+                            <a href={% url 'webmap.show_map' report_type='sites' category='drains_fountains' %}
+                                    >{% trans 'Storm drains and fountains' %}</a>
+                        </li>
+                        <li><a href={% url 'webmap.show_map' report_type='sites' category='basins' %}
+                                >{% trans 'Basins' %}</a></li>
+                        <li><a href={% url 'webmap.show_map' report_type='sites' category='buckets_wells' %}>
+                            {% trans 'Buckets and wells' %}</a></li>
+                        <li><a href={% url 'webmap.show_map' report_type='sites' category='other' %}
+                                >{% trans 'Other' %}</a></li>
+                    </ul>
+                </li>
+                <li><a href={% url 'webmap.show_map' report_type='coverage' category='all' %}
+                        >{% trans 'Coverage' %}</a></li>
 
             </ul>
 
-
             </ul>
-
-
         </div>
     </div>
-
-
-
-
 
 
 {% endblock %}

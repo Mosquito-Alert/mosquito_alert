@@ -3,17 +3,12 @@ from tigamap import views
 
 
 urlpatterns = patterns('',
-    url(r'^embedded/$', views.show_embedded_webmap, name='show_embedded_webmap'),
-    url(r'^embedded/ca/$', views.show_embedded_webmap, name='show_embedded_webmap'),
-    url(r'^embedded/es/$', views.show_embedded_webmap, name='show_embedded_webmap'),
-    url(r'^embedded/en/$', views.show_embedded_webmap, name='show_embedded_webmap'),
-    url(r'^ca/$', views.show_webmap_app, name='show_webmap_app'),
-    url(r'^es/$', views.show_webmap_app, name='show_webmap_app'),
-    url(r'^en/$', views.show_webmap_app, name='show_webmap_app'),
-    url(r'^testingzone/coverage/$', views.show_coverage_map, name='show_coverage_map'),
-    url(r'^testingzone/reports/basic/$', views.show_report_map_basic, name='show_report_map'),
-    url(r'^testingzone/adults/$', views.show_report_map_adults),
-    url(r'^testingzone/sites/(?P<type>\w+)/$', views.show_report_map_sites),
-    url(r'^testingzone/grid/$', views.show_grid_05, name='show_grid_05'),
-    url(r'^$', views.show_webmap_app, name='show_webmap_app'),
+    url(r'^embedded/(?P<language>\w+)$', views.show_embedded_webmap, name='webmap.show_embedded_webmap'),
+    url(r'^embedded/$', views.show_embedded_webmap),
+    url(r'^(?P<language>\w+)/$', views.show_webmap_app, name='webmap.show_webmap_app'),
+    url(r'^$', views.show_webmap_app),
+    url(r'^beta/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map, name='webmap.show_map'),
+    url(r'^beta/(?P<report_type>\w+)/$', views.show_map),
+    url(r'^beta/$', views.show_map),
 )
+
