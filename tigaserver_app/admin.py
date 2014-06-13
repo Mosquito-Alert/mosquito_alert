@@ -54,7 +54,8 @@ class PhotoInline(admin.StackedInline):
 
 
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('report_id', 'version_number', 'creation_time', 'version_time', 'type', 'mission')
+    list_display = ('report_id', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
+                    'package_version', 'os')
     inlines = [ReportResponseInline, PhotoInline]
     ordering = ('creation_time', 'report_id', 'version_number')
 
