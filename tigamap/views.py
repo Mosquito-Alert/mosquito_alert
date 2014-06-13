@@ -70,7 +70,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
         context = {'fix_list': fix_list, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map.html', context)
     elif report_type == 'adults':
-        these_reports = [report for report in these_reports if report.type=='adult']
+        these_reports = [report for report in these_reports if report.type == 'adult']
         if category == 'medium':
             this_title = _('Adult tiger mosquitoes: Medium and high probability reports')
             report_list = [report for report in these_reports if report.tigaprob > 0]

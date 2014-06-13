@@ -259,12 +259,12 @@ class Report(models.Model):
                 result -= 1
         if total == 0:
             total = 1
-        return result/total
+        return float(result)/total
 
     def get_tigaprob_text(self):
-        if self.tigaprob == 1:
+        if self.tigaprob == 1.0:
             return _('High')
-        elif 0 < self.tigaprob < 1:
+        elif 0.0 < self.tigaprob < 1.0:
             return _('Medium')
         else:
             return _('Low')
