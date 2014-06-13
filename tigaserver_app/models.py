@@ -61,7 +61,8 @@ class Mission(models.Model):
     help_text_english = models.TextField(blank=True, help_text='English text to be displayed when user taps mission '
                                                                'help '
                                                                'button.')
-    PLATFORM_CHOICES = (('and', 'Android'), ('ios', 'iOS'), ('html', 'HTML5'), ('all', 'All platforms'),)
+    PLATFORM_CHOICES = (('and', 'Android'), ('ios', 'iOS'), ('html', 'HTML5'), ('beta', 'beta versions only'), ('all',
+                                                                                               'All platforms'),)
     platform = models.CharField(max_length=4, choices=PLATFORM_CHOICES, help_text='What type of device is this '
                                                                                    'mission is intended for? It will '
                                                                                    'be sent only to these devices')
