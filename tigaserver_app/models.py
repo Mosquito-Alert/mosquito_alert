@@ -76,6 +76,7 @@ class Mission(models.Model):
                                                 'entire mission can consist of user going to that URL and performing '
                                                 'some action there. For security reasons, this URL must be within a '
                                                 'MoveLab domain.')
+    mission_version = models.IntegerField(blank=True, null=True)
 
     def __unicode__(self):
         return self.title_catalan

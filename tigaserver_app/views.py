@@ -83,6 +83,9 @@ API endpoint for getting most missions that have not yet been downloaded.
 * expiration_time: Optional date and time when mission should expire (if ever). Mission will no longer be displayed to users after this date-time.
 * photo_mission: Should this mission allow users to attach photos to their responses? (True/False).
 * url: Optional URL that wll be displayed to user for this mission. (The entire mission can consist of user going to that URL and performing some action there. For security reasons, this URL must be within a MoveLab domain.
+* mission_version: Optional integer that can be used to ensure that new mission parameters that we may create in the
+future do not cause problems on older versions of the app. The Android app is currently set to respond only to
+missions with mission_version=1 or null.
 * triggers:
     * lat_lower_bound:Optional lower-bound latitude for triggering mission to appear to user. Given in decimal degrees.
     * lat_upper_bound: Optional upper-bound latitude for triggering mission to appear to user. Given in decimal degrees.

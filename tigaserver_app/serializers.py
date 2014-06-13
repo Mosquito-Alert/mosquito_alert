@@ -50,6 +50,7 @@ class MissionSerializer(serializers.ModelSerializer):
     photo_mission = serializers.BooleanField()
     items = MissionItemSerializer(many=True)
     triggers = MissionTriggerSerializer(many=True)
+    mission_version = serializers.IntegerField()
 
     class Meta:
         model = Mission
