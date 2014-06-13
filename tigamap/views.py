@@ -50,7 +50,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
         href_url_name = 'webmap.show_map_beta'
     else:
         these_reports = Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) | Q(
-                package_name='ceab.movelab.tigatrapp', package_version__gt=3))
+                package_name='ceab.movelab.tigatrapp', package_version__gt=4))
         fix_list = ''
         href_url_name = 'webmap.show_map'
     hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
