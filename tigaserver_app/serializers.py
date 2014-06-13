@@ -140,7 +140,7 @@ class FixSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Fix
-        fields = ['user_coveragge_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power']
+        fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power']
 
 
 class ConfigurationSerializer(serializers.ModelSerializer):

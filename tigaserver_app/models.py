@@ -428,7 +428,7 @@ class Fix(models.Model):
                                                                'expressed as proportion of full charge. Range: 0-1.')
 
     def __unicode__(self):
-        return self.user.user_UUID + " " + str(self.fix_time)
+        return self.user.coverage_uuid + " " + str(self.fix_time)
 
     class Meta:
         verbose_name = "fix"
