@@ -18,9 +18,6 @@ class TigaUser(models.Model):
     def __unicode__(self):
         return self.user_UUID
 
-    def number_of_fixes_uploaded(self):
-        return Fix.objects.filter(user=self).count()
-
     def number_of_reports_uploaded(self):
         return Report.objects.filter(user=self).count()
 
@@ -406,7 +403,14 @@ class Fix(models.Model):
     """
     Location fix uploaded by user.
     """
-    user = models.ForeignKey(TigaUser, help_text='The user_UUID for the user sending this location fix.')
+    user_coverage_uuid = models.CharField(blank=True, null=True, max_length=36, help_text='UUID randomly generated on '
+                                                                            'phone to identify each unique user, '
+                                                                            'but only within the coverage data so '
+                                                                            'that privacy issues are not raised by '
+                                                                            'linking this to the report data.'
+                                                                            '. Must be exactly 36 '
+                                                                            'characters (32 hex digits plus 4 hyphens).')
+
     fix_time = models.DateTimeField(help_text='Date and time when fix was recorded on phone. Format as ECMA '
                                               '262 date time string (e.g. "2014-05-17T12:34:56'
                                               '.123+01:00".')

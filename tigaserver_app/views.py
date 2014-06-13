@@ -243,7 +243,7 @@ API endpoint for getting and posting masked location fixes.
     """
     queryset = Fix.objects.all()
     serializer_class = FixSerializer
-    filter_fields = ('user', )
+    filter_fields = ('user_coverage_uuid', )
 
 
 class ConfigurationViewSet(ReadOnlyModelViewSet):

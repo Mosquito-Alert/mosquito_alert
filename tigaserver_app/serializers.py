@@ -137,16 +137,10 @@ class PhotoSerializer(serializers.ModelSerializer):
 
 
 class FixSerializer(serializers.ModelSerializer):
-    user = UserListingField
-#    fix_time = serializers.DateTimeField()
-#    phone_upload_time = serializers.DateTimeField()
-#    masked_lon = serializers.FloatField()
-#    masked_lat = serializers.FloatField()
 
     class Meta:
         model = Fix
-        depth = 0
-        fields = ['user', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power']
+        fields = ['user_coveragge_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power']
 
 
 class ConfigurationSerializer(serializers.ModelSerializer):

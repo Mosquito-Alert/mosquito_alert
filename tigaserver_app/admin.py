@@ -15,7 +15,7 @@ admin.site.register(Token, MyTokenAdmin)
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('user_UUID', 'registration_time', 'number_of_fixes_uploaded', 'number_of_reports_uploaded')
+    list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded')
 
 
 class ConfigurationAdmin(admin.ModelAdmin):
@@ -60,7 +60,7 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 class FixAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'fix_time', 'server_upload_time')
+    list_display = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time')
     ordering = ('fix_time',)
 
 
