@@ -5,6 +5,7 @@ from django.utils.translation import ugettext as _
 from tigaserver_app.models import Fix, Report
 from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
+from operator import itemgetter, attrgetter
 
 
 @xframe_options_exempt
@@ -32,9 +33,19 @@ def strip_lang(path):
     return no_lang_path
 
 
+def get_latest_reports(reports):
+    unique_report_ids = set([r.report_id for r in reports])
+    result = list()
+    for this_id in unique_report_ids:
+        these_reports = sorted(reports.filter(report_id__exact=this_id), key=attrgetter('version_number'))
+        if these_reports[0].version_number > -1:
+            result.append(these_reports[-1])
+    return result
+
+
 def show_map(request, report_type='adults', category='all', data='live'):
     if data == 'beta':
-        these_reports = Report.objects.filter(version_number__gt=-1)
+        these_reports = Report.objects.all()
         fix_list = Fix.objects.all()
         href_url_name = 'webmap.show_map_beta'
     else:
@@ -88,7 +99,8 @@ def show_map(request, report_type='adults', category='all', data='live'):
     else:
         this_title = _('Adult tiger mosquitoes: All reports')
         report_list = these_reports.filter(type='adult')
-    context = {'title': this_title, 'report_list': report_list, 'report_type': report_type, 'redirect_to':
+    context = {'title': this_title, 'report_list': get_latest_reports(report_list), 'report_type': report_type,
+               'redirect_to':
         redirect_path, 'hrefs': hrefs}
     return render(request, 'tigamap/report_map.html', context)
 

@@ -56,4 +56,5 @@ urlpatterns += i18n_patterns('',
     url(r'^webmap/(?P<report_type>\w+)/(?P<category>\w+)/$', views.show_map, name='webmap.show_map'),
     url(r'^webmap/(?P<report_type>\w+)/$', views.show_map),
     url(r'^webmap/$', views.show_map),
+    url(r'^$', views.show_map),
 )
