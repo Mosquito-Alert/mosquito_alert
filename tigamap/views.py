@@ -37,7 +37,7 @@ def get_latest_reports(reports):
     unique_report_ids = set([r.report_id for r in reports])
     result = list()
     for this_id in unique_report_ids:
-        these_reports = sorted((report for report in reports if report.report_id == this_id),
+        these_reports = sorted([report for report in reports if report.report_id == this_id],
                                key=attrgetter('version_number'))
         if these_reports[0].version_number > -1:
             result.append(these_reports[-1])
@@ -46,12 +46,12 @@ def get_latest_reports(reports):
 
 def show_map(request, report_type='adults', category='all', data='live'):
     if data == 'beta':
-        these_reports = Report.objects.all()
+        these_reports = get_latest_reports(Report.objects.all())
         fix_list = Fix.objects.all()
         href_url_name = 'webmap.show_map_beta'
     else:
-        these_reports = Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) | Q(
-                package_name='ceab.movelab.tigatrapp', package_version__gt=4))
+        these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) |
+                                                                 Q(package_name='ceab.movelab.tigatrapp', package_version__gt=4)))
         fix_list = ''
         href_url_name = 'webmap.show_map'
     hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
@@ -70,7 +70,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
         context = {'fix_list': fix_list, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map.html', context)
     elif report_type == 'adults':
-        these_reports = these_reports.filter(type='adult')
+        these_reports = [report for report in these_reports if report.type=='adult']
         if category == 'medium':
             this_title = _('Adult tiger mosquitoes: Medium and high probability reports')
             report_list = [report for report in these_reports if report.tigaprob > 0]
@@ -81,7 +81,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
             this_title = _('Adult tiger mosquitoes: All reports')
             report_list = these_reports
     elif report_type == 'sites':
-        these_reports = these_reports.filter(type='site')
+        these_reports = [report for report in these_reports if report.type == 'site']
         if category == 'drains_fountains':
             this_title = _('Breeding sites: Storm drains and fountains')
             report_list = [report for report in these_reports if report.embornals or report.fonts]
@@ -99,9 +99,8 @@ def show_map(request, report_type='adults', category='all', data='live'):
             report_list = these_reports
     else:
         this_title = _('Adult tiger mosquitoes: All reports')
-        report_list = these_reports.filter(type='adult')
-    context = {'title': this_title, 'report_list': get_latest_reports(report_list), 'report_type': report_type,
-               'redirect_to':
-        redirect_path, 'hrefs': hrefs}
+        report_list = [report for report in these_reports if report.type == 'adult']
+    context = {'title': this_title, 'report_list': report_list, 'report_type': report_type,
+               'redirect_to': redirect_path, 'hrefs': hrefs}
     return render(request, 'tigamap/report_map.html', context)
 

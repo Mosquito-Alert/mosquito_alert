@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Tigaserver 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-06-12 17:36+0200\n"
-"PO-Revision-Date: 2014-06-12 17:38+0100\n"
+"PO-Revision-Date: 2014-06-13 15:49+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -44,16 +44,16 @@ msgstr "Zones explorades"
 
 #: tigamap/views.py:63
 msgid "Adult tiger mosquitoes: Medium and high probability reports"
-msgstr "Albiraments de mosquit tigre: Només probabilitat mitjana i alta"
+msgstr "Mosquits tigre: Només probabilitat mitjana i alta"
 
 #: tigamap/views.py:66
 msgid "Adult tiger mosquitoes: High probability reports"
-msgstr "Albiraments de mosquit tigre: Només probabilitat alta"
+msgstr "Mosquits tigre: Només probabilitat alta"
 
 #: tigamap/views.py:69
 #: tigamap/views.py:89
 msgid "Adult tiger mosquitoes: All reports"
-msgstr "Albiraments de mosquit tigre: Tots"
+msgstr "Mosquits tigre: Tots"
 
 #: tigamap/views.py:74
 msgid "Breeding sites: Storm drains and fountains"
@@ -77,7 +77,7 @@ msgstr "Llocs de cria: Tots"
 
 #: tigamap/templates/tigamap/app.html:47
 msgid "Adult tiger mosquitoes"
-msgstr "Albiraments de mosquit tigre"
+msgstr "Mosquits tigre"
 
 #: tigamap/templates/tigamap/app.html:51
 msgid "All reports"
