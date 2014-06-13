@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'tigahelp',
     'rest_framework',
     'leaflet',
+    'south',
 )
 
 MIDDLEWARE_CLASSES = (
