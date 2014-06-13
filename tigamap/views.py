@@ -34,7 +34,7 @@ def strip_lang(path):
 
 def show_map(request, report_type='adults', category='all', data='live'):
     if data == 'beta':
-        these_reports = Report.objects.all()
+        these_reports = Report.objects.filter(version_number__gt=-1)
         fix_list = Fix.objects.all()
         href_url_name = 'webmap.show_map_beta'
     else:
