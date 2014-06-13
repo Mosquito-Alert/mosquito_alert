@@ -37,7 +37,8 @@ def get_latest_reports(reports):
     unique_report_ids = set([r.report_id for r in reports])
     result = list()
     for this_id in unique_report_ids:
-        these_reports = sorted(reports.filter(report_id__exact=this_id), key=attrgetter('version_number'))
+        these_reports = sorted((report for report in reports if report.report_id == this_id),
+                               key=attrgetter('version_number'))
         if these_reports[0].version_number > -1:
             result.append(these_reports[-1])
     return result
