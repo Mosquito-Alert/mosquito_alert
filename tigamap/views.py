@@ -56,7 +56,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
         these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)))
-        fix_list = ''
+        fix_list = Fix.objects.filter(fix_time__gt='2014-06-13')
         href_url_name = 'webmap.show_map'
     hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
                  'adults_all': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'all'}),
