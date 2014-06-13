@@ -1,12 +1,63 @@
 {% extends "tigamap/base.html" %}
 {% load i18n %}
 {% load staticfiles %}
+{% load leaflet_tags %}
+
 
 {% block head_additions %}
 
      <script src="{% static "tigamap/tigamap_scripts.js" %}"></script>
 
+        {% leaflet_js plugins="marker_cluster_yellow" %}
+        {% leaflet_css plugins="marker_cluster_yellow" %}
+
 {% endblock %}
+
+{% block leaflet_code %}
+
+    <script type="text/javascript">
+
+        function map_init_basic(map, options) {
+
+            map.on('zoomend', function(e){
+                saveMapState(map)
+            });
+            map.on('dragend', function(e){
+                saveMapState(map)
+            });
+
+            var markers_clustered = new L.MarkerClusterGroup();
+
+
+            var YellowIcon = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+                }
+            });
+
+            thisIcon = new YellowIcon();
+
+
+            var cluster_marker;
+            var popup_text;
+
+            {% for report in report_list %}
+                {% if report.lat != None and report.lon != None %}
+                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                   }
+                    markers_clustered.addLayer(cluster_marker);
+                {% endif %}
+            {% endfor %}
+
+
+            markers_clustered.addTo(map);
+
+        }
+
+    </script>
+
+
+{%  endblock %}
 
 {% block main_body %}
 
