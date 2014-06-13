@@ -3,6 +3,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from django.db.models import Q
+
 
 from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
     ConfigurationSerializer
@@ -109,10 +111,18 @@ missions with mission_version=1 or null.
 
 **Query Parameters**
 
-* id_greater_than: Returns records with id greater than the specified value. Use this for getting only those missions that have not yet been downloaded.
+* id_gt: Returns records with id greater than the specified value. Use this for getting only those missions that have not yet been downloaded. Default is 0.
+* platform: Returns records matching exactly the platform code or those with 'all' or null. Default is 'all'.
+* version_lte: returns records with mission_version less than or equal to the value specified or those with
+mission_version null. Defaults to 100.
     """
     if request.method == 'GET':
-        these_missions = Mission.objects.filter(id__gt=request.QUERY_PARAMS.get('id_greater_than', 0))
+        these_missions = Mission.objects.filter(Q(id__gt=request.QUERY_PARAMS.get('id_gt', 0)),
+                                                Q(platform__exact=request.QUERY_PARAMS.get('platform', 'all')) | Q(
+                                                    platform__isnull=True) | Q(platform__exact='all'),
+                                                Q(mission_version__lte=request.QUERY_PARAMS.get(
+                                                    'version_lte',
+                                                                                               100)) | Q(mission_version__isnull=True))
         serializer = MissionSerializer(these_missions)
         return Response(serializer.data)
 
