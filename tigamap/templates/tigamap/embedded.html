@@ -44,7 +44,7 @@
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
                     cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
-                   }
+
                     markers_clustered.addLayer(cluster_marker);
                 {% endif %}
             {% endfor %}

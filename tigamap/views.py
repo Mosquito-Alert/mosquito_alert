@@ -8,16 +8,6 @@ from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
 
 
-@xframe_options_exempt
-def show_embedded_webmap(request):
-    these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) |
-                                                                 Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)))
-    these_reports = [report for report in these_reports if report.type == 'adult']
-    context = {'report_list': these_reports}
-    return render(request, 'tigamap/embedded.html', context)
-
-
 def show_grid_05(request):
     fix_list = Fix.objects.all()
     context = {'fix_list': fix_list}
@@ -108,3 +98,11 @@ def show_map(request, report_type='adults', category='all', data='live'):
                'redirect_to': redirect_path, 'hrefs': hrefs}
     return render(request, 'tigamap/report_map.html', context)
 
+@xframe_options_exempt
+def show_embedded_webmap(request):
+    these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) |
+                                                                 Q(package_name='ceab.movelab.tigatrapp',
+                                                                   package_version__gt=3)))
+    report_list = [report for report in these_reports if report.type == 'adult']
+    context = {'report_list': report_list}
+    return render(request, 'tigamap/embedded.html', context)
