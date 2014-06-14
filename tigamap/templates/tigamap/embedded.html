@@ -44,7 +44,11 @@
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
                     cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
-
+                    popup_text = '<table><tr><td>prob:</td><td>'+
+                                '{{ report.tigaprob_text }}</td></tr><tr><td>lat:</td>'+
+                                '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
+                                '{{ report.lon }}</td></tr></table>';
+                     cluster_marker.bindPopup(popup_text);
                     markers_clustered.addLayer(cluster_marker);
                 {% endif %}
             {% endfor %}
