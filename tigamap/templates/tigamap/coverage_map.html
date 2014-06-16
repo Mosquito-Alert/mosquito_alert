@@ -7,14 +7,23 @@
 <script type="text/javascript">
     function map_init_basic (map, options) {
 
-        {% for fix in fix_list %}
+        var fo = .3;
 
-        var polygon = L.polygon([
-        [{{ fix.masked_lat }}, {{ fix.masked_lon }}],
-        [{{ fix.masked_lat }} + 0.05, {{ fix.masked_lon }}],
-        [{{ fix.masked_lat }} + 0.05, {{ fix.masked_lon }}  + 0.05],
-        [{{ fix.masked_lat }}, {{ fix.masked_lon }} + 0.05],
-        ], {weight: 0.5, opacity: 1, color: '#ff0000', fillOpacity: 0.005, fillColor: '##bcbddc'}).addTo(map);
+        {% for ca in coverage_list %}
+
+            {% if ca.n_fixes > 100 %}
+
+            fo = .5;
+
+            {% endif %}
+
+
+        L.polygon([
+        [{{ ca.lat }}, {{ ca.lon }}],
+        [{{ ca.lat }} + 0.05, {{ ca.lon }}],
+        [{{ ca.lat }} + 0.05, {{ ca.lon }}  + 0.05],
+        [{{ ca.lat }}, {{ ca.lon }} + 0.05]
+        ], {weight: 0.5, opacity: 1, color: '#ff0000', fillOpacity: fo, fillColor: '#f00'}).addTo(map);
 
          {% endfor %}
     }

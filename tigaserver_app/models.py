@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 import os
 import datetime
+from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
@@ -350,6 +351,18 @@ class Report(models.Model):
                     this_response.answer == 'Otros'
         return result
 
+    def get_masked_lat(self):
+        if self.lat is not None:
+            return floor(self.lat/.05)*.05
+        else:
+            return None
+
+    def get_masked_lon(self):
+        if self.lon is not None:
+            return floor(self.lon/.05)*.05
+        else:
+            return None
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
@@ -362,6 +375,8 @@ class Report(models.Model):
     buckets = property(get_site_buckets)
     wells = property(get_site_wells)
     other = property(get_site_other)
+    masked_lat = property(get_masked_lat)
+    masked_lon = property(get_masked_lon)
 
     class Meta:
         unique_together = ("user", "version_UUID")
