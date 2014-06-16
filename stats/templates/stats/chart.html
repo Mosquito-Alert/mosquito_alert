@@ -18,6 +18,8 @@
 
     var days = new Array();
     var users = new Array();
+    var site_reports = new Array();
+    var adult_reports = new Array();
 
     {% for day in days %}
 
@@ -31,6 +33,18 @@
 
     {% endfor %}
 
+    {% for site_report in site_reports %}
+
+        site_reports[site_reports.length] = {{ site_report }};
+
+    {% endfor %}
+
+    {% for adult_report in adult_reports %}
+
+        adult_reports[adult_reports.length] = {{ adult_report }};
+
+    {% endfor %}
+
 
       $(function () {
         $('#container').highcharts({
@@ -39,7 +53,7 @@
                 x: -20 //center
             },
             subtitle: {
-                text: 'Registered citizen scientists',
+                text: 'Real-time data from the Tigatrapp server',
                 x: -20
             },
             xAxis: {
@@ -47,7 +61,7 @@
             },
             yAxis: {
                 title: {
-                    text: 'Total registered (cumulative)'
+                    text: 'Cumulative Total'
                 },
                 plotLines: [{
                     value: 0,
@@ -56,7 +70,6 @@
                 }]
             },
             tooltip: {
-                valueSuffix: ' registered'
             },
             legend: {
                 layout: 'vertical',
@@ -65,8 +78,12 @@
                 borderWidth: 0
             },
             series: [{
-                name: 'Tigatrapp citizen scientists',
-                data: users
+                name: 'Citizen scientists',
+                data: users},
+                {name: 'Breeding site reports',
+                 data: site_reports},
+                {name: 'Tiger mosquito reports',
+                 data: adult_reports
             }]
         });
     });
