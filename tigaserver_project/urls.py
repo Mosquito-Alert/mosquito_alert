@@ -8,6 +8,7 @@ from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, \
     show_credit_image
 from tigamap import views
+from stats.views import show_usage
 
 admin.autodiscover()
 
@@ -57,4 +58,5 @@ urlpatterns += i18n_patterns('',
     url(r'^webmap/(?P<report_type>\w+)/$', views.show_map),
     url(r'^webmap/$', views.show_map),
     url(r'^$', views.show_map),
+    url(r'^stats/$', show_usage),
 )

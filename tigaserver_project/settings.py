@@ -49,6 +49,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'leaflet',
     'south',
+    'stats'
 )
 
 MIDDLEWARE_CLASSES = (
