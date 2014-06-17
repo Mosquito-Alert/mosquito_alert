@@ -20,9 +20,10 @@ def show_usage(request):
     adult_reports = []
     while ref_date <= end_date:
         days.append(ref_date.strftime("%x"))
-        ref_date += timedelta(days=1)
-        users.append(len(real_tigausers.filter(registration_time__lte=ref_date)))
         site_reports.append(len([r for r in real_reports if r.type == 'site' and r.creation_time.date() <= ref_date]))
         adult_reports.append(len([r for r in real_reports if r.type == 'adult' and r.creation_time.date() <= ref_date]))
+        ref_date += timedelta(days=1)
+        # using ref_date after incrementing here because we are comparing datetime to date
+        users.append(len(real_tigausers.filter(registration_time__lte=ref_date)))
     context = {'days': days, 'users': users, 'site_reports': site_reports, 'adult_reports': adult_reports}
     return render(request, 'stats/chart.html', context)
