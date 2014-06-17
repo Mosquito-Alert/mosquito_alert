@@ -8,7 +8,7 @@ from tigamap.views import get_latest_reports
 
 @xframe_options_exempt
 def show_usage(request):
-    real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 14))
+    real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
     real_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)))
