@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigaserver 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-12 17:36+0200\n"
-"PO-Revision-Date: 2014-06-13 15:49+0100\n"
+"POT-Creation-Date: 2014-06-17 19:57+0200\n"
+"PO-Revision-Date: 2014-06-17 20:01+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -20,6 +20,30 @@ msgstr ""
 "X-Poedit-Country: Spain\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
+#: stats/templates/stats/chart.html:53
+msgid "Tigatrapp Participation"
+msgstr "Dades de Tigatrapp"
+
+#: stats/templates/stats/chart.html:57
+msgid "Real-time data"
+msgstr "obtingudes a temps real"
+
+#: stats/templates/stats/chart.html:65
+msgid "Cumulative Total"
+msgstr "Total acumulat"
+
+#: stats/templates/stats/chart.html:83
+msgid "Number of citizen scientists"
+msgstr "Científics ciutadans"
+
+#: stats/templates/stats/chart.html:91
+msgid "Number of tiger mosquito reports"
+msgstr "Informes de mosquit tigre"
+
+#: stats/templates/stats/chart.html:99
+msgid "Number of breeding site reports"
+msgstr "Informes de llocs de cria"
+
 #: templates/admin/base_site.html:4
 msgid "Tigaserver admin"
 msgstr "Tigaserver admin"
@@ -30,93 +54,111 @@ msgstr "Tigaserver administration"
 
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
+#: tigamap/templates/tigamap/app.html:27
 msgid "User Agreement"
 msgstr "Acord de l'usuari"
 
 #: tigahelp/templates/tigahelp/policies.html:35
 #: tigahelp/templates/tigahelp/policies_en.html:34
+#: tigamap/templates/tigamap/app.html:27
 msgid "Privacy Policy"
 msgstr "Política de privacitat"
 
-#: tigamap/views.py:57
+#: tigamap/views.py:94
 msgid "Coverage Map"
 msgstr "Zones explorades"
 
-#: tigamap/views.py:63
+#: tigamap/views.py:100
 msgid "Adult tiger mosquitoes: Medium and high probability reports"
 msgstr "Mosquits tigre: Només probabilitat mitjana i alta"
 
-#: tigamap/views.py:66
+#: tigamap/views.py:103
 msgid "Adult tiger mosquitoes: High probability reports"
 msgstr "Mosquits tigre: Només probabilitat alta"
 
-#: tigamap/views.py:69
-#: tigamap/views.py:89
+#: tigamap/views.py:106
+#: tigamap/views.py:126
 msgid "Adult tiger mosquitoes: All reports"
 msgstr "Mosquits tigre: Tots"
 
-#: tigamap/views.py:74
+#: tigamap/views.py:111
 msgid "Breeding sites: Storm drains and fountains"
 msgstr "Llocs de cria: Embornals i fonts"
 
-#: tigamap/views.py:77
+#: tigamap/views.py:114
 msgid "Breeding sites: Basins"
 msgstr "Llocs de cria: Basses artificials petites"
 
-#: tigamap/views.py:80
+#: tigamap/views.py:117
 msgid "Breeding sites: Buckets and wells"
 msgstr "Llocs de cria: Bidons i pous"
 
-#: tigamap/views.py:83
+#: tigamap/views.py:120
 msgid "Breeding sites: Other"
 msgstr "Llocs de cria: Altres"
 
-#: tigamap/views.py:86
+#: tigamap/views.py:123
 msgid "Breeding sites: All reports"
 msgstr "Llocs de cria: Tots"
 
-#: tigamap/templates/tigamap/app.html:47
+#: tigamap/templates/tigamap/app.html:27
+msgid "Our website uses cookies. By continuing we assume your permission to deploy cookies. For more information on our site policies, please see our"
+msgstr "El nostre lloc web utilitza galetes (cookies). Si continues navegant assumim el teu permís per utilitzar galetes. Per a més informació sobre les polítiques del nostre lloc web, si us plau consulta la nostra"
+
+#: tigamap/templates/tigamap/app.html:27
+msgid "privacy policy"
+msgstr "política de privacitat"
+
+#: tigamap/templates/tigamap/app.html:27
+msgid "and"
+msgstr "i"
+
+#: tigamap/templates/tigamap/app.html:27
+msgid "user agreement"
+msgstr "acord d'usuari"
+
+#: tigamap/templates/tigamap/app.html:120
 msgid "Adult tiger mosquitoes"
 msgstr "Mosquits tigre"
 
-#: tigamap/templates/tigamap/app.html:51
+#: tigamap/templates/tigamap/app.html:124
 msgid "All reports"
 msgstr "Tots"
 
-#: tigamap/templates/tigamap/app.html:53
+#: tigamap/templates/tigamap/app.html:126
 msgid "Medium and high probability reports only"
 msgstr "Només probabilitat mitjana i alta"
 
-#: tigamap/templates/tigamap/app.html:55
+#: tigamap/templates/tigamap/app.html:128
 msgid "High probability reports only"
 msgstr "Només probabilitat alta"
 
-#: tigamap/templates/tigamap/app.html:59
+#: tigamap/templates/tigamap/app.html:132
 msgid "Breeding site reports"
 msgstr "Llocs de cria"
 
-#: tigamap/templates/tigamap/app.html:63
+#: tigamap/templates/tigamap/app.html:136
 msgid "All sites"
 msgstr "Tots"
 
-#: tigamap/templates/tigamap/app.html:66
+#: tigamap/templates/tigamap/app.html:139
 msgid "Storm drains and fountains"
 msgstr "Embornals i fonts"
 
-#: tigamap/templates/tigamap/app.html:69
+#: tigamap/templates/tigamap/app.html:142
 msgid "Basins"
 msgstr "Basses artificials petites"
 
-#: tigamap/templates/tigamap/app.html:71
+#: tigamap/templates/tigamap/app.html:144
 msgid "Buckets and wells"
 msgstr "Bidons i pous"
 
-#: tigamap/templates/tigamap/app.html:73
+#: tigamap/templates/tigamap/app.html:146
 #: tigaserver_app/models.py:292
 msgid "Other"
 msgstr "Altres"
 
-#: tigamap/templates/tigamap/app.html:77
+#: tigamap/templates/tigamap/app.html:150
 msgid "Coverage"
 msgstr "Zones explorades"
 
@@ -160,15 +202,15 @@ msgstr "Basse artificial petit"
 msgid "Well"
 msgstr "Pou"
 
-#: tigaserver_project/settings.py:96
+#: tigaserver_project/settings.py:98
 msgid "Spanish"
 msgstr "Espanyol"
 
-#: tigaserver_project/settings.py:97
+#: tigaserver_project/settings.py:99
 msgid "Catalan"
 msgstr "Català"
 
-#: tigaserver_project/settings.py:98
+#: tigaserver_project/settings.py:100
 msgid "English"
 msgstr "Anglès"
 

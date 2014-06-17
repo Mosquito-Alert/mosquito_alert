@@ -24,7 +24,7 @@ function createDiv(){
     div.style.textAlign='center';
     div.style.backgroundColor='#F6D10A'
     div.setAttribute('id','cookie-law');
-    div.innerHTML = 'Our website uses cookies. By continuing we assume your permission to deploy cookies. For more information on our site policies, please see our <a href="{% url 'help.show_privacy' %}" rel="nofollow" title="Privacy Policy">privacy policy</a> and <a href="{% url 'help.show_terms' %}" rel="nofollow" title="User Agreement">user agreement</a>. <a class="close-cookie-banner href="javascript:void(0);" onclick="removeMe();"><span>X</span></a>';
+    div.innerHTML = '{% trans 'Our website uses cookies. By continuing we assume your permission to deploy cookies. For more information on our site policies, please see our' %}<a href="{% url 'help.show_privacy' %}" rel="nofollow" title="{% trans 'Privacy Policy' %}">{% trans 'privacy policy' %}</a> {% trans 'and'  %} <a href="{% url 'help.show_terms' %}" rel="nofollow" title="{% trans 'User Agreement' %}">{% trans 'user agreement' %}</a>.&nbsp;&nbsp;<a class="close-cookie-banner href="javascript:void(0);" onclick="removeMe();"><span style="cursor: pointer;">X</span></a>';
  // Be advised the Close Banner 'X' link requires jQuery
 
     // bodytag.appendChild(div); // Adds the Cookie Law Banner just before the closing </body> tag

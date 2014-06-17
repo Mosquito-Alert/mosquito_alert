@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load i18n %}
 <html>
   <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
@@ -16,10 +17,10 @@
 
   <script>
 
-    var days = new Array();
-    var users = new Array();
-    var site_reports = new Array();
-    var adult_reports = new Array();
+    var days = [];
+    var users = [];
+    var site_reports = [];
+    var adult_reports = [];
 
     {% for day in days %}
 
@@ -49,11 +50,11 @@
       $(function () {
         $('#container').highcharts({
             title: {
-                text: 'Tigatrapp Participation',
+                text: '{% trans 'Tigatrapp Participation' %}',
                 x: -20 //center
             },
             subtitle: {
-                text: 'Real-time data from the Tigatrapp server',
+                text: '{% trans 'Real-time data' %}',
                 x: -20
             },
             xAxis: {
@@ -61,8 +62,9 @@
             },
             yAxis: {
                 title: {
-                    text: 'Cumulative Total'
+                    text: '{% trans 'Cumulative Total' %}'
                 },
+                floor: 0,
                 plotLines: [{
                     value: 0,
                     width: 1,
@@ -78,15 +80,30 @@
                 borderWidth: 0
             },
             series: [{
-                name: 'Citizen scientists',
+                name: '{% trans 'Number of citizen scientists' %}',
                 data: users,
-                color: '#2ca25f'},
-                {name: 'Breeding site reports',
-                 data: site_reports,
-                 color: '#126FC6'},
-                {name: 'Tiger mosquito reports',
+                color: '#2ca25f',
+                marker: {
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+                {name: '{% trans 'Number of tiger mosquito reports' %}',
                  data: adult_reports,
-                 color: '#F6D10A'
+                 color: '#EBB101',
+                marker: {
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+                {name: '{% trans 'Number of breeding site reports' %}',
+                 data: site_reports,
+                 color: '#126FC6',
+                marker: {
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }
             }]
         });
     });
