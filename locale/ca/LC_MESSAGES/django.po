@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Tigaserver 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-06-17 19:57+0200\n"
-"PO-Revision-Date: 2014-06-17 20:01+0100\n"
+"PO-Revision-Date: 2014-06-17 20:17+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -115,7 +115,7 @@ msgstr "i"
 
 #: tigamap/templates/tigamap/app.html:27
 msgid "user agreement"
-msgstr "acord d'usuari"
+msgstr "acord d&#39;usuari"
 
 #: tigamap/templates/tigamap/app.html:120
 msgid "Adult tiger mosquitoes"
