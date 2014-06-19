@@ -11,3 +11,4 @@ pytz
 django-filter
 markdown
 django-leaflet
+tzlocal
