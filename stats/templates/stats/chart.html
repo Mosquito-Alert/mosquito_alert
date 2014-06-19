@@ -17,48 +17,47 @@
 
   <script>
 
-    var days = [];
     var users = [];
     var site_reports = [];
     var adult_reports = [];
 
-    {% for day in days %}
-
-        days[days.length] = "{{ day }}";
-
-    {% endfor %}
-
     {% for user in users %}
 
-        users[users.length] = {{ user }};
+        users[users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
     {% for site_report in site_reports %}
 
-        site_reports[site_reports.length] = {{ site_report }};
+        site_reports[site_reports.length] = [parseInt("{{ site_report.date }}")*1000, parseInt("{{ site_report.n }}")];
 
     {% endfor %}
 
     {% for adult_report in adult_reports %}
 
-        adult_reports[adult_reports.length] = {{ adult_report }};
+        adult_reports[adult_reports.length] = [parseInt("{{ adult_report.date }}")*1000, parseInt("{{ adult_report.n }}")];
 
     {% endfor %}
 
 
       $(function () {
         $('#container').highcharts({
+            chart: {
+                type: 'line'
+            },
             title: {
-                text: '{% trans 'Tigatrapp Participation' %}',
+                text: null,
                 x: -20 //center
             },
             subtitle: {
-                text: '{% trans 'Real-time data' %}',
+                text: null,
                 x: -20
             },
             xAxis: {
-                categories: days
+                type: 'datetime',
+                dateTimeLabelFormats: {
+                day: '%d/%m/%y'
+            }
             },
             yAxis: {
                 title: {
