@@ -71,11 +71,14 @@
                 }]
             },
             tooltip: {
+                dateTimeLabelFormats:{
+                    minute: '%d/%m/%y, %H:%M'
+                }
             },
             legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'middle',
+                layout: 'horizontal',
+                align: 'center',
+                verticalAlign: 'bottom',
                 borderWidth: 0
             },
             series: [{
@@ -83,6 +86,7 @@
                 data: users,
                 color: '#2ca25f',
                 marker: {
+                    enabled: false,
                     symbol: 'circle',
                     lineColor: '#000',
                     lineWidth: 1
@@ -91,6 +95,7 @@
                  data: adult_reports,
                  color: '#EBB101',
                 marker: {
+                    enabled: false,
                     symbol: 'circle',
                     lineColor: '#000',
                     lineWidth: 1
@@ -99,6 +104,7 @@
                  data: site_reports,
                  color: '#126FC6',
                 marker: {
+                    enabled: false,
                     symbol: 'circle',
                     lineColor: '#000',
                     lineWidth: 1

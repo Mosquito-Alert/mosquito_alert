@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigaserver Project 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-17 19:57+0200\n"
-"PO-Revision-Date: 2014-06-17 20:00+0100\n"
+"POT-Creation-Date: 2014-06-20 13:54+0200\n"
+"PO-Revision-Date: 2014-06-20 13:56+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -20,27 +20,19 @@ msgstr ""
 "X-Poedit-Country: Spain\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: stats/templates/stats/chart.html:53
-msgid "Tigatrapp Participation"
-msgstr "Datos de Tigatrapp"
-
-#: stats/templates/stats/chart.html:57
-msgid "Real-time data"
-msgstr "obtenidos a tiempo real"
-
-#: stats/templates/stats/chart.html:65
+#: stats/templates/stats/chart.html:64
 msgid "Cumulative Total"
 msgstr "Total acumulado"
 
-#: stats/templates/stats/chart.html:83
+#: stats/templates/stats/chart.html:82
 msgid "Number of citizen scientists"
 msgstr "Científicos ciudadanos"
 
-#: stats/templates/stats/chart.html:91
+#: stats/templates/stats/chart.html:90
 msgid "Number of tiger mosquito reports"
 msgstr "Informes de mosquito tigre"
 
-#: stats/templates/stats/chart.html:99
+#: stats/templates/stats/chart.html:98
 msgid "Number of breeding site reports"
 msgstr "Informes de lugares de cría"
 
@@ -162,6 +154,10 @@ msgstr "Otros"
 msgid "Coverage"
 msgstr "Zonas exploradas"
 
+#: tigamap/templates/tigamap/app.html:152
+msgid "http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/"
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/"
+
 #: tigamap/templates/tigamap/report_map.html:81
 msgid "type"
 msgstr "Tipo"
@@ -213,6 +209,12 @@ msgstr "catalán"
 #: tigaserver_project/settings.py:100
 msgid "English"
 msgstr "Inglés"
+
+#~ msgid "Tigatrapp Participation"
+#~ msgstr "Datos de Tigatrapp"
+
+#~ msgid "Real-time data"
+#~ msgstr "obtenidos a tiempo real"
 
 #~ msgid "title"
 #~ msgstr "title"

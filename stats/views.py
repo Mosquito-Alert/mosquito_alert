@@ -15,7 +15,7 @@ def show_usage(request):
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)))
     tz = get_localzone()
-    ref_date = datetime(2014, 6, 13, 23, 59, 59,  tzinfo=tz)
+    ref_date = datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
     end_date = tz.localize(datetime.now())
     users = []
     site_reports = []
@@ -24,7 +24,7 @@ def show_usage(request):
         site_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'site' and r.creation_time <= ref_date])})
         adult_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'adult' and r.creation_time <= ref_date])})
         users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(real_tigausers.filter(registration_time__lte=ref_date))})
-        ref_date += timedelta(hours=4)
+        ref_date += timedelta(hours=1)
     # now set final day as current time
     site_reports.append({'date': time.mktime(end_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'site' and r.creation_time <= ref_date])})
     adult_reports.append({'date': time.mktime(end_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'adult' and r.creation_time <= ref_date])})
