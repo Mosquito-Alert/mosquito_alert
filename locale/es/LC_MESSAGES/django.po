@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Tigaserver Project 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-06-20 13:54+0200\n"
-"PO-Revision-Date: 2014-06-20 13:56+0100\n"
+"PO-Revision-Date: 2014-06-20 14:15+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
 "Language: \n"
@@ -156,7 +156,7 @@ msgstr "Zonas exploradas"
 
 #: tigamap/templates/tigamap/app.html:152
 msgid "http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/"
-msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/"
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 
 #: tigamap/templates/tigamap/report_map.html:81
 msgid "type"
