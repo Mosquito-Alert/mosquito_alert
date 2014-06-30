@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.db.models import Q
+from datetime import date
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from tigaserver_app.models import Fix, Report
@@ -74,7 +75,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
         coverage_areas = get_coverage(Fix.objects.all(), these_reports)
         href_url_name = 'webmap.show_map_beta'
     else:
-        these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) |
+        these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)))
         coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
