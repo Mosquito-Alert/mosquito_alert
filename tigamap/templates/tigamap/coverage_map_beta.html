@@ -18,19 +18,25 @@
             });
 
 
-        var color1 = '#f00'
-        var color2 = '#f90'
-        var color3 = '#ff0'
-        var color4 = '#ff9'
-        var color5 = '#fff'
+        var color1 = '#f00';
+        var color2 = '#f90';
+        var color3 = '#ff0';
+        var color4 = '#ff9';
+        var color5 = '#fff';
 
 
-        var fill_opacity = .3;
+        var fill_opacity = .5;
         var color = '#f00';
 
         {% for ca in coverage_list %}
-            {% if ca.n_fixes > 100 %}
-                fill_opacity = .5;
+            {% if ca.n_fixes > 1000 %}
+                color = color5;
+            {% elif ca.n_fixes > 500 %}
+                color = color4;
+            {% elif ca.n_fixes > 250 %}
+                color = color3;
+            {% elif ca.n_fixes > 100 %}
+                color = color2;
             {% endif %}
 
         L.polygon([
