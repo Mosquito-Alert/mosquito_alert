@@ -22,6 +22,8 @@ class TigaUser(models.Model):
     def number_of_reports_uploaded(self):
         return Report.objects.filter(user=self).count()
 
+    n_reports = property(number_of_reports_uploaded)
+
     class Meta:
         verbose_name = "user"
         verbose_name_plural = "users"
@@ -363,6 +365,10 @@ class Report(models.Model):
         else:
             return None
 
+    def get_n_photos(self):
+        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
+        return len(these_photos)
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
@@ -377,6 +383,7 @@ class Report(models.Model):
     other = property(get_site_other)
     masked_lat = property(get_masked_lat)
     masked_lon = property(get_masked_lon)
+    n_photos = property(get_n_photos)
 
     class Meta:
         unique_together = ("user", "version_UUID")
@@ -404,7 +411,7 @@ class Photo(models.Model):
     """
     Photo uploaded by user.
     """
-    photo = models.ImageField(upload_to=make_image_uuid('tigapics'), help_text='Phoeo uploaded by user.')
+    photo = models.ImageField(upload_to=make_image_uuid('tigapics'), help_text='Photo uploaded by user.')
     report = models.ForeignKey(Report, help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).')
 
@@ -445,7 +452,7 @@ class Fix(models.Model):
                                                                'expressed as proportion of full charge. Range: 0-1.')
 
     def __unicode__(self):
-        return self.user_coverage_uuid + " " + str(self.fix_time)
+        return self.user_coverage_uuid
 
     class Meta:
         verbose_name = "fix"

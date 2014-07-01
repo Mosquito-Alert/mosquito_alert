@@ -24,7 +24,7 @@ def show_usage(request):
         site_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'site' and r.creation_time <= ref_date])})
         adult_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'adult' and r.creation_time <= ref_date])})
         users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(real_tigausers.filter(registration_time__lte=ref_date))})
-        ref_date += timedelta(hours=1)
+        ref_date += timedelta(hours=4)
     # now set final day as current time
     site_reports.append({'date': time.mktime(end_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'site' and r.creation_time <= ref_date])})
     adult_reports.append({'date': time.mktime(end_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'adult' and r.creation_time <= ref_date])})
@@ -38,7 +38,45 @@ def show_fix_users(request):
     tz = get_localzone()
     ref_date = datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
     end_date = tz.localize(datetime.now())
-    users = []
+    fix1000_users = []
+    fix500_users = []
+    fix250_users = []
+    fix100_users = []
+    fix1_users = []
+
     while ref_date <= end_date:
-        users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(f.user_coverage_uuid for f in real_fixes.filter(fix_time_lte=ref_date)))})
-        ref_date += timedelta(hours=1)
+        these_fixes = real_fixes.filter(fix_time__lte=ref_date)
+        these_users = set(f.user_coverage_uuid for f in these_fixes)
+        usertable = []
+        for this_user in these_users:
+            usertable.append({'user': this_user, 'n': these_fixes.filter(user_coverage_uuid=this_user).count()})
+        fix1000_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u.user for u in usertable if u.n > 1000))})
+        fix500_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u.user for u in usertable if u.n > 500))})
+        fix250_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u.user for u in usertable if u.n > 250))})
+        fix100_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u.user for u in usertable if u.n > 100))})
+        fix1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u.user for u in usertable if u.n > 1))})
+        ref_date += timedelta(hours=24)
+    context = {'fix1000_users': fix1000_users, 'fix500_users': fix500_users,'fix250_users': fix250_users, 'fix100_users': fix100_users,'fix1_users': fix1_users}
+    return render(request, 'stats/fix_user_chart.html', context)
+
+
+def show_report_users(request):
+    real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
+    tz = get_localzone()
+    ref_date = datetime(2014, 6, 13,  tzinfo=tz)
+    end_date = tz.localize(datetime.now())
+    r100_users = []
+    r50_users = []
+    r10_users = []
+    r1_users = []
+    r0_users = []
+    while ref_date <= end_date:
+        these_users = real_tigausers.filter(registration_time__lte=ref_date)
+        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': these_users.count()})
+        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u for u in these_users if u.n_reports >= 1))})
+        r10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u for u in these_users if u.n_reports > 10))})
+        r50_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u for u in these_users if u.n_reports > 50))})
+        r100_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(set(u for u in these_users if u.n_reports > 100))})
+        ref_date += timedelta(days=1)
+    context = {'r100_users': r100_users, 'r50_users': r50_users, 'r10_users': r10_users, 'r1_users': r1_users, 'r0_users': r0_users}
+    return render(request, 'stats/report_user_chart.html', context)

@@ -1,0 +1,153 @@
+{% load staticfiles %}
+{% load i18n %}
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+	<title>Tigatrapp Stats</title>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+
+
+  </head>
+  <body>
+
+  <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+  <script>
+
+    var fix1000users = [];
+    var fix500users = [];
+    var fix250users = [];
+    var fix100users = [];
+    var fix1users = [];
+
+    {% for user in fix1000_users %}
+
+        fix1000users[fix1000users.length] = [parseInt("{{ fix1000_users.date }}")*1000, parseInt("{{ fix1000_users.n }}")];
+
+    {% endfor %}
+
+    {% for user in fix500_users %}
+
+        fix500users[fix500users.length] = [parseInt("{{ fix500_users.date }}")*1000, parseInt("{{ fix500_users.n }}")];
+
+    {% endfor %}
+    
+    {% for user in fix250_users %}
+
+        fix250users[fix250users.length] = [parseInt("{{ fix250_users.date }}")*1000, parseInt("{{ fix250_users.n }}")];
+
+    {% endfor %}
+    
+    {% for user in fix100_users %}
+
+        fix100users[fix100users.length] = [parseInt("{{ fix100_users.date }}")*1000, parseInt("{{ fix100_users.n }}")];
+
+    {% endfor %}
+    
+    {% for user in fix1_users %}
+
+        fix1users[fix1users.length] = [parseInt("{{ fix1_users.date }}")*1000, parseInt("{{ fix1_users.n }}")];
+
+    {% endfor %}
+
+
+      $(function () {
+        $('#container').highcharts({
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: null,
+                x: -20 //center
+            },
+            subtitle: {
+                text: null,
+                x: -20
+            },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: {
+                day: '%d/%m/%y'
+            }
+            },
+            yAxis: {
+                title: {
+                    text: '{% trans 'Cumulative Total' %}'
+                },
+                floor: 0,
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                dateTimeLabelFormats:{
+                    minute: '%d/%m/%y, %H:%M'
+                }
+            },
+            legend: {
+                layout: 'horizontal',
+                align: 'center',
+                verticalAlign: 'bottom',
+                borderWidth: 0
+            },
+            series: [{
+                name: '{% trans 'Participants with over 1000 fixes' %}',
+                data: fix1000users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+{
+                name: '{% trans 'Participants with over 500 fixes' %}',
+                data: fix500users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+          {
+                name: '{% trans 'Participants with over 10 reports' %}',
+                data: fix250users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+          {
+                name: '{% trans 'Participants with at least 1 report' %}',
+                data: fix100users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+          {
+                name: '{% trans 'Total participants' %}',
+                data: fix1users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }}
+                    ]
+        });
+    });
+
+
+
+  </script>
+
+
+  </body>
+</html>

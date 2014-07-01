@@ -132,7 +132,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
 
 @xframe_options_exempt
 def show_embedded_webmap(request):
-    these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', package_version__gt=0) |
+    these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)))
     report_list = [report for report in these_reports if report.type == 'adult']

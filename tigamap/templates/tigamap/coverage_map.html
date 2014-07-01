@@ -18,23 +18,33 @@
             });
 
 
-        var fo = .3;
+        var color1 = '#f00'
+        var color2 = '#f90'
+        var color3 = '#ff0'
+        var color4 = '#ff9'
+        var color5 = '#fff'
+
+
+        var fill_opacity = .3;
+        var color = '#f00';
 
         {% for ca in coverage_list %}
-
-            {% if ca.n_fixes > 100 %}
-
-            fo = .5;
-
+            {% if ca.n_fixes > 1000 %}
+                color = color5;
+            {% elif ca.n_fixes > 500 %}
+                color = color4;
+            {% elif ca.n_fixes > 250 %}
+                color = color3;
+            {% elif ca.n_fixes > 100 %}
+                color = color2;
             {% endif %}
-
 
         L.polygon([
         [{{ ca.lat }}, {{ ca.lon }}],
         [{{ ca.lat }} + 0.05, {{ ca.lon }}],
         [{{ ca.lat }} + 0.05, {{ ca.lon }}  + 0.05],
         [{{ ca.lat }}, {{ ca.lon }} + 0.05]
-        ], {weight: 0.5, opacity: 1, color: '#ff0000', fillOpacity: fo, fillColor: '#f00'}).addTo(map);
+        ], {weight: 0.5, opacity: 1, color: color, fillOpacity: fill_opacity, fillColor: color}).addTo(map);
 
          {% endfor %}
     }

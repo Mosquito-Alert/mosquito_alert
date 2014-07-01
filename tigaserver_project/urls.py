@@ -2,13 +2,13 @@ from django.conf.urls import *
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic.base import RedirectView
 from django.core.urlresolvers import reverse
-from django.contrib import admin
+from django.contrib.gis import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, \
     show_credit_image
 from tigamap import views
-from stats.views import show_usage
+from stats.views import show_usage, show_report_users, show_fix_users
 
 admin.autodiscover()
 
@@ -59,4 +59,6 @@ urlpatterns += i18n_patterns('',
     url(r'^webmap/$', views.show_map),
     url(r'^$', views.show_map),
     url(r'^stats/$', show_usage),
+    url(r'^reportstats/$', show_report_users),
+    url(r'^coveragestats/$', show_fix_users),
 )
