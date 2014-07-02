@@ -17,39 +17,39 @@
 
   <script>
 
-    var fix1000users = [];
-    var fix500users = [];
-    var fix250users = [];
-    var fix100users = [];
+    var fix20users = [];
+    var fix15users = [];
+    var fix10users = [];
+    var fix5users = [];
     var fix1users = [];
 
-    {% for user in fix1000_users %}
+    {% for user in fix20_users %}
 
-        fix1000users[fix1000users.length] = [parseInt("{{ fix1000_users.date }}")*1000, parseInt("{{ fix1000_users.n }}")];
-
-    {% endfor %}
-
-    {% for user in fix500_users %}
-
-        fix500users[fix500users.length] = [parseInt("{{ fix500_users.date }}")*1000, parseInt("{{ fix500_users.n }}")];
+        fix20users[fix20users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
-    
-    {% for user in fix250_users %}
 
-        fix250users[fix250users.length] = [parseInt("{{ fix250_users.date }}")*1000, parseInt("{{ fix250_users.n }}")];
+    {% for user in fix15_users %}
+
+        fix15users[fix15users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
     
-    {% for user in fix100_users %}
+    {% for user in fix10_users %}
 
-        fix100users[fix100users.length] = [parseInt("{{ fix100_users.date }}")*1000, parseInt("{{ fix100_users.n }}")];
+        fix10users[fix10users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
+
+    {% endfor %}
+    
+    {% for user in fix5_users %}
+
+        fix5users[fix5users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
     
     {% for user in fix1_users %}
 
-        fix1users[fix1users.length] = [parseInt("{{ fix1_users.date }}")*1000, parseInt("{{ fix1_users.n }}")];
+        fix1users[fix1users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
@@ -96,8 +96,8 @@
                 borderWidth: 0
             },
             series: [{
-                name: '{% trans 'Participants with over 1000 fixes' %}',
-                data: fix1000users,
+                name: '{% trans 'Participants with over 20 fixes' %}',
+                data: fix20users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -105,8 +105,8 @@
                     lineWidth: 1
                   }},
 {
-                name: '{% trans 'Participants with over 500 fixes' %}',
-                data: fix500users,
+                name: '{% trans 'Participants with over 15 fixes' %}',
+                data: fix15users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -114,8 +114,8 @@
                     lineWidth: 1
                   }},
           {
-                name: '{% trans 'Participants with over 10 reports' %}',
-                data: fix250users,
+                name: '{% trans 'Participants with over 10 fixes' %}',
+                data: fix10users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -123,8 +123,8 @@
                     lineWidth: 1
                   }},
           {
-                name: '{% trans 'Participants with at least 1 report' %}',
-                data: fix100users,
+                name: '{% trans 'Participants with at over fixes' %}',
+                data: fix5users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -132,7 +132,7 @@
                     lineWidth: 1
                   }},
           {
-                name: '{% trans 'Total participants' %}',
+                name: '{% trans 'Participants with at least 1 fix' %}',
                 data: fix1users,
                 marker: {
                     enabled: false,

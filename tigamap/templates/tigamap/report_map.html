@@ -83,6 +83,16 @@ td {
                                 '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
                                 '{{ report.lon }}</td></tr></table>';
                    {%  endif %}
+                   {% if detailed == 'detailed' %}
+                       popup_text = popup_text + '<br/>Date: {{ report.formatted_date }}';
+                       popup_text = popup_text + '<br/><br/>User: {{ report.user }}';
+                       popup_text = popup_text + '<br/><br/>OS: {{ report.os }}';
+                       {% autoescape off %}
+                       popup_text = popup_text + '<br/><br/>Responses: {{ report.response_html | escapejs }}';
+                       popup_text = popup_text + '<br/><br/>Note: {{ report.note | escapejs }}';
+                       {% endautoescape %}
+                       popup_text = popup_text + '<br/><br/>Photos: {{ report.photo_html | safe }}';
+                   {%  endif %}
                         cluster_marker.bindPopup(popup_text)
                         basic_marker.bindPopup(popup_text)
                    }

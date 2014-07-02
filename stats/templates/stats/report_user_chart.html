@@ -17,39 +17,39 @@
 
   <script>
 
-    var r100users = [];
-    var r50users = [];
+    var r20users = [];
+    var r15users = [];
     var r10users = [];
+    var r5users = [];
     var r1users = [];
-    var r0users = [];
 
-    {% for user in r100_users %}
+    {% for user in r20_users %}
 
-        r100users[r100users.length] = [parseInt("{{ r100_users.date }}")*1000, parseInt("{{ r100_users.n }}")];
+        r20users[r20users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
-    {% for user in r50_users %}
+    {% for user in r15_users %}
 
-        r50users[r50users.length] = [parseInt("{{ r50_users.date }}")*1000, parseInt("{{ r50_users.n }}")];
+        r15users[r15users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
    {% for user in r10_users %}
 
-        r10users[r10users.length] = [parseInt("{{ r10_users.date }}")*1000, parseInt("{{ r10_users.n }}")];
+        r10users[r10users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
+
+    {% endfor %}
+
+       {% for user in r5_users %}
+
+        r5users[r5users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
        {% for user in r1_users %}
 
-        r1users[r1users.length] = [parseInt("{{ r1_users.date }}")*1000, parseInt("{{ r1_users.n }}")];
-
-    {% endfor %}
-
-       {% for user in r0_users %}
-
-        r0users[r0users.length] = [parseInt("{{ r0_users.date }}")*1000, parseInt("{{ r0_users.n }}")];
+        r1users[r1users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
@@ -96,9 +96,8 @@
                 borderWidth: 0
             },
             series: [{
-                name: '{% trans 'Participants with over 100 reports' %}',
-                data: r100users,
-                color: '#ffffb2',
+                name: '{% trans 'Participants with over 20 reports' %}',
+                data: r20users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -106,9 +105,8 @@
                     lineWidth: 1
                   }},
 {
-                name: '{% trans 'Participants with over 50 reports' %}',
-                data: r50users,
-                color: '#fecc5c',
+                name: '{% trans 'Participants with over 15 reports' %}',
+                data: r15users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -118,7 +116,15 @@
           {
                 name: '{% trans 'Participants with over 10 reports' %}',
                 data: r10users,
-                color: '#fd8d3c',
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+          {
+                name: '{% trans 'Participants with over 5 reports' %}',
+                data: r5users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -128,17 +134,6 @@
           {
                 name: '{% trans 'Participants with at least 1 report' %}',
                 data: r1users,
-                color: '#f03b20',
-                marker: {
-                    enabled: false,
-                    symbol: 'circle',
-                    lineColor: '#000',
-                    lineWidth: 1
-                  }},
-          {
-                name: '{% trans 'Total participants' %}',
-                data: r0users,
-                color: '#bd0026',
                 marker: {
                     enabled: false,
                     symbol: 'circle',

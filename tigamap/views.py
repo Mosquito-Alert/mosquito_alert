@@ -69,7 +69,7 @@ def get_latest_reports(reports):
     return result
 
 
-def show_map(request, report_type='adults', category='all', data='live'):
+def show_map(request, report_type='adults', category='all', data='live', detail='none'):
     if data == 'beta':
         these_reports = get_latest_reports(Report.objects.all())
         coverage_areas = get_coverage(Fix.objects.all(), these_reports)
@@ -79,7 +79,10 @@ def show_map(request, report_type='adults', category='all', data='live'):
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)))
         coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
-        href_url_name = 'webmap.show_map'
+        if detail == 'detailed':
+            href_url_name = 'webmap.show_map_detailed'
+        else:
+            href_url_name = 'webmap.show_map'
     hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
                  'adults_all': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'all'}),
                  'adults_medium': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'medium'}),
@@ -131,7 +134,7 @@ def show_map(request, report_type='adults', category='all', data='live'):
         this_title = _('Adult tiger mosquitoes: All reports')
         report_list = [report for report in these_reports if report.type == 'adult']
     context = {'title': this_title, 'report_list': report_list, 'report_type': report_type,
-               'redirect_to': redirect_path, 'hrefs': hrefs}
+               'redirect_to': redirect_path, 'hrefs': hrefs, 'detailed': detail}
     return render(request, 'tigamap/report_map.html', context)
 
 @xframe_options_exempt

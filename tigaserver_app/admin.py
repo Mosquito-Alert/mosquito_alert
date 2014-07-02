@@ -64,9 +64,13 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'photo', 'image_', 'report')
-    readonly_fields = ('photo', 'image_', 'report')
-    fields = ('photo', 'image_', 'report')
+    list_display = ('id', 'image_', 'user', 'date', 'report_link')
+    readonly_fields = ('photo', 'image_', 'user', 'date', 'report_link')
+    fields = ('date', 'user', 'photo', 'report_link', 'image_')
+
+    def report_link(self, obj):
+        return '<a href="/admin/tigaserver_app/report/%s">%s</a>' % (obj.report, obj.report)
+    report_link.allow_tags = True
 
 
 class FixAdmin(admin.ModelAdmin):

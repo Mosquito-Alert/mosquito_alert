@@ -264,6 +264,13 @@ class Report(models.Model):
             total = 1
         return float(result)/total
 
+    def get_response_html(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID).order_by('question')
+        result = ''
+        for this_response in these_responses:
+            result = result + '<br/>' + this_response.question + '&nbsp;' + this_response.answer
+        return result
+
     def get_tigaprob_text(self):
         if self.tigaprob == 1.0:
             return _('High')
@@ -369,6 +376,16 @@ class Report(models.Model):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
         return len(these_photos)
 
+    def get_photo_html(self):
+        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
+        result = ''
+        for photo in these_photos:
+            result = result + photo.image_() + '&nbsp;'
+        return result
+
+    def get_formatted_date(self):
+        return self.version_time.strftime("%d-%m-%Y %H:%M")
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
@@ -384,6 +401,9 @@ class Report(models.Model):
     masked_lat = property(get_masked_lat)
     masked_lon = property(get_masked_lon)
     n_photos = property(get_n_photos)
+    photo_html = property(get_photo_html)
+    formatted_date = property(get_formatted_date)
+    response_html = property(get_response_html)
 
     class Meta:
         unique_together = ("user", "version_UUID")
@@ -419,8 +439,17 @@ class Photo(models.Model):
         return self.photo.name
 
     def image_(self):
-        return '<a href="/media/{0}"><img src="/media/{0}"></a>'.format(self.photo)
+        return '<a href="/media/{0}"><img src="/media/{0}" width="60", height="60"></a>'.format(self.photo)
     image_.allow_tags = True
+
+    def get_user(self):
+        return self.report.user
+
+    def get_date(self):
+        return self.report.version_time.strftime("%d-%m-%Y %H:%M")
+
+    user = property(get_user)
+    date = property(get_date)
 
 
 class Fix(models.Model):
@@ -452,7 +481,10 @@ class Fix(models.Model):
                                                                'expressed as proportion of full charge. Range: 0-1.')
 
     def __unicode__(self):
-        return self.user_coverage_uuid
+        result = 'NA'
+        if self.user_coverage_uuid is not None:
+            result = self.user_coverage_uuid
+        return result
 
     class Meta:
         verbose_name = "fix"
