@@ -18,6 +18,12 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded')
     readonly_fields = ('user_UUID', 'registration_time', 'number_of_reports_uploaded')
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class ConfigurationAdmin(admin.ModelAdmin):
     list_display = ('id', 'creation_time', 'samples_per_day')
@@ -56,21 +62,41 @@ class PhotoInline(admin.StackedInline):
 
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('report_id', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
-                    'package_version', 'os', 'n_photos')
+                    'package_version', 'os', 'n_photos', 'map_link')
     inlines = [ReportResponseInline, PhotoInline]
     ordering = ('creation_time', 'report_id', 'version_number')
-    readonly_fields = ('version_UUID', 'user', 'report_id', 'version_number', 'creation_time', 'version_time', 'server_upload_time', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
-    fields = ('version_UUID', 'user', 'report_id', 'version_number', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
+    readonly_fields = ('version_UUID', 'user', 'report_id', 'version_number', 'creation_time', 'version_time', 'server_upload_time', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link')
+    fields = ('map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def map_link(self, obj):
+        return '<a href="/single_report_map/%s/">Show map</a>' % obj.version_UUID
+    map_link.allow_tags = True
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image_', 'user', 'date', 'report_link')
-    readonly_fields = ('photo', 'image_', 'user', 'date', 'report_link')
-    fields = ('date', 'user', 'photo', 'report_link', 'image_')
+    list_display = ('id', 'image_', 'user', 'date', 'report_link', 'map_link')
+    readonly_fields = ('photo', 'image_', 'user', 'date', 'report_link', 'map_link')
+    fields = ('date', 'user', 'photo', 'report_link', 'map_link', 'image_')
 
     def report_link(self, obj):
         return '<a href="/admin/tigaserver_app/report/%s">%s</a>' % (obj.report, obj.report)
     report_link.allow_tags = True
+
+    def map_link(self, obj):
+        return '<a href="/single_report_map/%s/">Show map</a>' % obj.report
+    map_link.allow_tags = True
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class FixAdmin(admin.ModelAdmin):
@@ -78,6 +104,12 @@ class FixAdmin(admin.ModelAdmin):
     ordering = ('fix_time',)
     readonly_fields = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power')
     fields = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(TigaUser, UserAdmin)

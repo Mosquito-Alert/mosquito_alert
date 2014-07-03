@@ -138,10 +138,16 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
     return render(request, 'tigamap/report_map.html', context)
 
 @xframe_options_exempt
-def show_embedded_webmap(request):
+def show_embedded_webmap(request, detail='none'):
     these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)))
     report_list = [report for report in these_reports if report.type == 'adult']
-    context = {'report_list': report_list}
+    context = {'report_list': report_list, 'detailed': detail}
+    return render(request, 'tigamap/embedded.html', context)
+
+
+def show_single_report_map(request, version_uuid, detail='detailed'):
+    this_report = Report.objects.filter(version_UUID=version_uuid)
+    context = {'report_list': this_report, 'detailed': detail}
     return render(request, 'tigamap/embedded.html', context)
