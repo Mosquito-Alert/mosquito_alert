@@ -12,8 +12,8 @@
     color: #555;
 }
 .legend i {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     float: left;
     margin-right: 8px;
     opacity: 0.7;
@@ -63,7 +63,7 @@
 
             color = getColor(parseInt("{{ ca.n_fixes }}"));
 
-        L.polygon([
+        var poly = L.polygon([
         [{{ ca.lat }}, {{ ca.lon }}],
         [{{ ca.lat }} + 0.05, {{ ca.lon }}],
         [{{ ca.lat }} + 0.05, {{ ca.lon }}  + 0.05],
@@ -84,7 +84,7 @@ legend.onAdd = function (map) {
     for (var i = 0; i < grades.length; i++) {
         div.innerHTML +=
             '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br/><br/>' : '+');
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br/>' : '+');
     }
 
     return div;
