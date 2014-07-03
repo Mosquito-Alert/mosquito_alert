@@ -5,6 +5,35 @@
 
 {% block leaflet_code %}
 
+<style>
+
+.legend {
+    line-height: 18px;
+    color: #555;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+
+</style>
+
 <script type="text/javascript">
 
 
@@ -18,26 +47,21 @@
             });
 
 
-        var color1 = '#f00';
-        var color2 = '#f90';
-        var color3 = '#ff0';
-        var color4 = '#ff9';
-        var color5 = '#fff';
+    function getColor(d) {
+    return d > 100 ? '#800026' :
+           d > 75  ? '#bd0026' :
+           d > 50  ? '#e31a1c' :
+           d > 25  ? '#fc4e2a' :
+                      '#fd8d3c';
+}
 
 
         var fill_opacity = .5;
-        var color = '#f00';
+        var color;
 
         {% for ca in coverage_list %}
-            {% if ca.n_fixes > 1000 %}
-                color = color5;
-            {% elif ca.n_fixes > 500 %}
-                color = color4;
-            {% elif ca.n_fixes > 250 %}
-                color = color3;
-            {% elif ca.n_fixes > 100 %}
-                color = color2;
-            {% endif %}
+
+            color = getColor(parseInt("{{ ca.n_fixes }}"));
 
         L.polygon([
         [{{ ca.lat }}, {{ ca.lon }}],
@@ -47,6 +71,27 @@
         ], {weight: 0.5, opacity: 1, color: color, fillOpacity: fill_opacity, fillColor: color}).addTo(map);
 
          {% endfor %}
+
+ var legend = L.control({position: 'bottomleft'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [1, 25, 50, 75, 100],
+        labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br/><br/>' : '+');
+    }
+
+    return div;
+};
+
+legend.addTo(map);
+
     }
 </script>
 
