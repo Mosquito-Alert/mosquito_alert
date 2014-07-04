@@ -88,7 +88,7 @@ class ReportAdmin(admin.ModelAdmin):
 
 def export_csv_photo(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=mymodel.csv'
+    response['Content-Disposition'] = 'attachment; filename=tigatrapp_photos.csv'
     writer = csv.writer(response, csv.excel)
     response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
     writer.writerow([
@@ -123,7 +123,7 @@ export_csv_photo.short_description = u"Export Full CSV"
 
 def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=mymodel.csv'
+    response['Content-Disposition'] = 'attachment; filename=tigatrapp_crowdcrafting_photos.csv'
     writer = csv.writer(response, csv.excel)
     response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
     writer.writerow([
