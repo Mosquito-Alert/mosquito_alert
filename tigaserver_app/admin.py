@@ -5,8 +5,6 @@ from rest_framework.authtoken.models import Token
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
-from django.http.request import HttpRequest
-
 
 
 class MyTokenAdmin(admin.ModelAdmin):
@@ -68,18 +66,22 @@ class PhotoInline(admin.StackedInline):
 
 
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('report_id', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
+    list_display = ('report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
                     'package_version', 'os', 'n_photos', 'map_link')
     inlines = [ReportResponseInline, PhotoInline]
     ordering = ('creation_time', 'report_id', 'version_number')
-    readonly_fields = ('version_UUID', 'user', 'report_id', 'version_number', 'creation_time', 'version_time', 'server_upload_time', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link')
-    fields = ('map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
+    readonly_fields = ('deleted', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link')
+    fields = ('deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
 
     def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def other_versions_of_this_report(self, obj):
+        return obj.other_versions
+    other_versions_of_this_report.allow_tags = True
 
     def map_link(self, obj):
         return '<a href="/single_report_map/%s/">Show map</a>' % obj.version_UUID
@@ -131,27 +133,35 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
         smart_str(u"url"),
     ])
     for obj in queryset:
-        writer.writerow([
-            smart_str(obj.id),
-            smart_str("http://%s%s" % (request.get_host(), obj.photo.url)),
+        if not obj.report.deleted:
+            writer.writerow([
+                smart_str(obj.id),
+                smart_str("http://%s%s" % (request.get_host(), obj.photo.url)),
         ])
     return response
 export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image_', 'user', 'date', 'report_link', 'map_link')
-    readonly_fields = ('photo', 'image_', 'user', 'date', 'report_link', 'map_link')
-    fields = ('date', 'user', 'photo', 'report_link', 'map_link', 'image_')
+    list_display = ('id', 'deleted', 'image_', 'user', 'date', 'report_link', 'map_link')
+    readonly_fields = ('deleted', 'photo', 'image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
+    fields = ('deleted', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting]
 
     def report_link(self, obj):
         return '<a href="/admin/tigaserver_app/report/%s">%s</a>' % (obj.report, obj.report)
     report_link.allow_tags = True
 
+    def other_report_versions(self, obj):
+        return obj.report.other_versions
+    other_report_versions.allow_tag = True
+
     def map_link(self, obj):
         return '<a href="/single_report_map/%s/">Show map</a>' % obj.report
     map_link.allow_tags = True
+
+    def deleted(self, obj):
+        return obj.report.deleted
 
     def has_add_permission(self, request):
         return False

@@ -393,6 +393,20 @@ class Report(models.Model):
     def get_formatted_date(self):
         return self.version_time.strftime("%d-%m-%Y %H:%M")
 
+    def get_is_deleted(self):
+        result = False
+        all_versions = Report.objects.filter(report_id=self.report_id).order_by('version_number')
+        if all_versions[0].version_number == -1:
+            result = True
+        return result
+
+    def get_other_versions(self):
+        all_versions = Report.objects.filter(report_id=self.report_id).exclude(version_UUID=self.version_UUID).order_by('version_number')
+        result = ''
+        for this_version in all_versions:
+            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (this_version.version_UUID, this_version.version_number)
+        return result
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
@@ -412,6 +426,8 @@ class Report(models.Model):
     formatted_date = property(get_formatted_date)
     response_html = property(get_response_html)
     response_string = property(get_response_string)
+    deleted = property(get_is_deleted)
+    other_versions = property(get_other_versions)
 
     class Meta:
         unique_together = ("user", "version_UUID")
