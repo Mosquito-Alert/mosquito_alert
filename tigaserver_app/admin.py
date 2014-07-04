@@ -154,7 +154,7 @@ class PhotoAdmin(admin.ModelAdmin):
 
     def other_report_versions(self, obj):
         return obj.report.other_versions
-    other_report_versions.allow_tag = True
+    other_report_versions.allow_tags = True
 
     def map_link(self, obj):
         return '<a href="/single_report_map/%s/">Show map</a>' % obj.report
