@@ -48,11 +48,9 @@
 
 
     function getColor(d) {
-    return d > 100 ? '#800026' :
-           d > 75  ? '#bd0026' :
-           d > 50  ? '#e31a1c' :
-           d > 25  ? '#fc4e2a' :
-                      '#fd8d3c';
+    return d > 10 ? '#e31a1c' :
+           d > 5  ? '#fd8d3c' :
+                     '#fecc5c';
 }
 
 
@@ -77,14 +75,15 @@
 legend.onAdd = function (map) {
 
     var div = L.DomUtil.create('div', 'info legend'),
-        grades = [1, 25, 50, 75, 100],
-        labels = [];
+        grades = [1, 5, 10],
+        labels = ["{% trans 'low' %}", "{% trans 'medium' %}", "{% trans 'high' %}"];
 
     // loop through our density intervals and generate a label with a colored square for each interval
+    div.innerHTML = "<b>{% trans 'Coverage' %}</b><br/>";
     for (var i = 0; i < grades.length; i++) {
         div.innerHTML +=
             '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br/>' : '+');
+            labels[i] + '<br/>';
     }
 
     return div;

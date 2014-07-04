@@ -2,6 +2,11 @@ from django.contrib import admin
 from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration
 from rest_framework.authtoken.models import Token
+import csv
+from django.utils.encoding import smart_str
+from django.http.response import HttpResponse
+from django.http.request import HttpRequest
+
 
 
 class MyTokenAdmin(admin.ModelAdmin):
@@ -12,6 +17,8 @@ class MyTokenAdmin(admin.ModelAdmin):
 
 admin.site.unregister(Token)
 admin.site.register(Token, MyTokenAdmin)
+
+admin.site.disable_action('delete_selected')
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -79,10 +86,64 @@ class ReportAdmin(admin.ModelAdmin):
     map_link.allow_tags = True
 
 
+def export_csv_photo(modeladmin, request, queryset):
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=mymodel.csv'
+    writer = csv.writer(response, csv.excel)
+    response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
+    writer.writerow([
+        smart_str(u"id"),
+        smart_str(u"url"),
+        smart_str(u"user"),
+        smart_str(u"report"),
+        smart_str(u"date"),
+        smart_str(u"report_lat"),
+        smart_str(u"report_lon"),
+        smart_str(u"report_note"),
+        smart_str(u"report_type"),
+        smart_str(u"report_responses"),
+    ])
+    for obj in queryset:
+        writer.writerow([
+            smart_str(obj.id),
+            smart_str("%s%s" % (request.get_host(), obj.photo.url)),
+            smart_str(obj.user),
+            smart_str(obj.report),
+            smart_str(obj.date),
+            smart_str(obj.report.lat),
+            smart_str(obj.report.lon),
+            smart_str(obj.report.note),
+            smart_str(obj.report.type),
+            smart_str(obj.report.response_string),
+
+        ])
+    return response
+export_csv_photo.short_description = u"Export Full CSV"
+
+
+def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=mymodel.csv'
+    writer = csv.writer(response, csv.excel)
+    response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
+    writer.writerow([
+        smart_str(u"id"),
+        smart_str(u"url"),
+    ])
+    for obj in queryset:
+        writer.writerow([
+            smart_str(obj.id),
+            smart_str("%s%s" % (request.get_host(), obj.photo.url))
+        ])
+    return response
+export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
+
+
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ('id', 'image_', 'user', 'date', 'report_link', 'map_link')
     readonly_fields = ('photo', 'image_', 'user', 'date', 'report_link', 'map_link')
     fields = ('date', 'user', 'photo', 'report_link', 'map_link', 'image_')
+    actions = [export_csv_photo, export_csv_photo_crowdcrafting]
 
     def report_link(self, obj):
         return '<a href="/admin/tigaserver_app/report/%s">%s</a>' % (obj.report, obj.report)

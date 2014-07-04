@@ -64,7 +64,7 @@ class Mission(models.Model):
     help_text_english = models.TextField(blank=True, help_text='English text to be displayed when user taps mission '
                                                                'help '
                                                                'button.')
-    PLATFORM_CHOICES = (('and', 'Android'), ('ios', 'iOS'), ('html', 'HTML5'), ('beta', 'beta versions only'), ('all',
+    PLATFORM_CHOICES = (('none', 'No platforms (for drafts)'), ('and', 'Android'), ('ios', 'iOS'), ('html', 'HTML5'), ('beta', 'beta versions only'), ('all',
                                                                                                'All platforms'),)
     platform = models.CharField(max_length=4, choices=PLATFORM_CHOICES, help_text='What type of device is this '
                                                                                    'mission is intended for? It will '
@@ -271,6 +271,13 @@ class Report(models.Model):
             result = result + '<br/>' + this_response.question + '&nbsp;' + this_response.answer
         return result
 
+    def get_response_string(self):
+        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID).order_by('question')
+        result = ''
+        for this_response in these_responses:
+            result = result + '{' + this_response.question + ' ' + this_response.answer + '}'
+        return result
+
     def get_tigaprob_text(self):
         if self.tigaprob == 1.0:
             return _('High')
@@ -404,6 +411,7 @@ class Report(models.Model):
     photo_html = property(get_photo_html)
     formatted_date = property(get_formatted_date)
     response_html = property(get_response_html)
+    response_string = property(get_response_string)
 
     class Meta:
         unique_together = ("user", "version_UUID")

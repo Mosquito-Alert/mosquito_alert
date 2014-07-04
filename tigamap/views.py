@@ -8,7 +8,6 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
 
-
 def show_grid_05(request):
     fix_list = Fix.objects.all()
     context = {'fix_list': fix_list}
