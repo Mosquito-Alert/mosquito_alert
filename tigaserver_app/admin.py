@@ -106,7 +106,7 @@ def export_csv_photo(modeladmin, request, queryset):
     for obj in queryset:
         writer.writerow([
             smart_str(obj.id),
-            smart_str("%s%s" % (request.get_host(), obj.photo.url)),
+            smart_str("http://%s%s" % (request.get_host(), obj.photo.url)),
             smart_str(obj.user),
             smart_str(obj.report),
             smart_str(obj.date),
@@ -133,7 +133,7 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
     for obj in queryset:
         writer.writerow([
             smart_str(obj.id),
-            smart_str("%s%s" % (request.get_host(), obj.photo.url))
+            smart_str("http://%s%s" % (request.get_host(), obj.photo.url)),
         ])
     return response
 export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
