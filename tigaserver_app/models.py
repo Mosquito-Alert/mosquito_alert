@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 import os
+import os.path
+from PIL import Image
 import datetime
 from math import floor
 from django.utils.timezone import utc

@@ -1,0 +1,54 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+    About Tigatrapp
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="center">
+        <h1>About Tigatrapp</h1>
+    </div>
+
+    <p>AtrapaelTigre.com is a citizen science project coordinated by the <a href="http://www.movelab.net">ICREA-Movement
+        Ecology Lab</a> at the <a href="http://www.ceab.csic.es">Centre for Advanced Studies of Blanes</a> (<a
+            href="http://www.csic.es">CSIC</a>).</p>
+
+    <p>The project is being implemented in collaboration with CSIC scientific communication officers (Associate Vice
+        President for Scientific Culture, Balearic Islands Delegation, Catalonia Delegation, and Valencia Delegation)
+        and the <a href="http://www.um.es">University of Murcia</a>.</p>
+
+    <p>The project is co-financed by the Spanish Foundation for Science and Technology (FECYT) and the Recercaixa
+        research grant program within the framework of the project "Citizen Science: education and research". Bloom is
+        collaborating in the fight against the tiger mosquito by also sponsoring the <a href="http://atrapaeltigre.com">AtrapaelTigre.com</a>
+        project.</p>
+
+    <p>The project also has the support of <a href="http://atrapaeltigre.com/web/ca/qui-som/">several other public and
+        private institutions</a>.</p>
+
+    <p>All of the photos used in Tigatrapp were provided by <a href="http://www.eritja.com">R. Eritja</a>. </p>
+
+    <p class='centeredImage'>
+        <a href='/credits/'><img style='max-width: 100%; height: auto;' src
+                ={% static "tigahelp/credits_logos.jpg" %}></a>
+    </p>
+
+    <p>Copyright &#169; 2014 OMA Technologies, Ibeji digital, John R.B. Palmer, Aitana Oltra, Joan Garriga, and Frederic Bartumeus</p>
+
+    <p>Tigatrapp is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or (at
+  your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses.</p>
+
+
+{% endblock %}

@@ -17,39 +17,39 @@
 
   <script>
 
-    var r20users = [];
-    var r15users = [];
-    var r10users = [];
-    var r5users = [];
+    var r0users = [];
     var r1users = [];
+    var r2users = [];
+    var r3users = [];
+    var r4users = [];
 
-    {% for user in r20_users %}
+    {% for user in r0_users %}
 
-        r20users[r20users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
-
-    {% endfor %}
-
-    {% for user in r15_users %}
-
-        r15users[r15users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
+        r0users[r0users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
-   {% for user in r10_users %}
-
-        r10users[r10users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
-
-    {% endfor %}
-
-       {% for user in r5_users %}
-
-        r5users[r5users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
-
-    {% endfor %}
-
-       {% for user in r1_users %}
+    {% for user in r1_users %}
 
         r1users[r1users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
+
+    {% endfor %}
+
+   {% for user in r2_users %}
+
+        r2users[r2users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
+
+    {% endfor %}
+
+       {% for user in r3_users %}
+
+        r3users[r3users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
+
+    {% endfor %}
+
+       {% for user in r4_users %}
+
+        r4users[r4users.length] = [parseInt("{{ user.date }}")*1000, parseInt("{{ user.n }}")];
 
     {% endfor %}
 
@@ -96,8 +96,8 @@
                 borderWidth: 0
             },
             series: [{
-                name: '{% trans 'Participants with over 20 reports' %}',
-                data: r20users,
+                name: '{% trans 'Participants with at least 1 report' %}',
+                data: r0users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
@@ -105,35 +105,35 @@
                     lineWidth: 1
                   }},
 {
-                name: '{% trans 'Participants with over 15 reports' %}',
-                data: r15users,
-                marker: {
-                    enabled: false,
-                    symbol: 'circle',
-                    lineColor: '#000',
-                    lineWidth: 1
-                  }},
-          {
-                name: '{% trans 'Participants with over 10 reports' %}',
-                data: r10users,
-                marker: {
-                    enabled: false,
-                    symbol: 'circle',
-                    lineColor: '#000',
-                    lineWidth: 1
-                  }},
-          {
-                name: '{% trans 'Participants with over 5 reports' %}',
-                data: r5users,
-                marker: {
-                    enabled: false,
-                    symbol: 'circle',
-                    lineColor: '#000',
-                    lineWidth: 1
-                  }},
-          {
-                name: '{% trans 'Participants with at least 1 report' %}',
+                name: '{% trans 'Participants with over 1 reports' %}',
                 data: r1users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+          {
+                name: '{% trans 'Participants with over 2 reports' %}',
+                data: r2users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+          {
+                name: '{% trans 'Participants with over 3 reports' %}',
+                data: r3users,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    lineColor: '#000',
+                    lineWidth: 1
+                  }},
+          {
+                name: '{% trans 'Participants with over 4 reports' %}',
+                data: r4users,
                 marker: {
                     enabled: false,
                     symbol: 'circle',

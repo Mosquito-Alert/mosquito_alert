@@ -63,19 +63,19 @@ def show_report_users(request):
     tz = get_localzone()
     ref_date = datetime(2014, 6, 13,  tzinfo=tz)
     end_date = tz.localize(datetime.now())
-    r20_users = []
-    r15_users = []
-    r10_users = []
-    r5_users = []
+    r0_users = []
     r1_users = []
+    r2_users = []
+    r3_users = []
+    r4_users = []
     while ref_date <= end_date:
         these_reports = [r for r in real_reports if r.creation_time <= ref_date]
         c = Counter(r.user for r in these_reports)
-        r20_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 20])})
-        r15_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 15])})
-        r10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 10])})
-        r5_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 5])})
-        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v >= 1])})
+        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 0])})
+        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 1])})
+        r2_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 2])})
+        r3_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 3])})
+        r4_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 4])})
         ref_date += timedelta(days=1)
-    context = {'r20_users': r20_users, 'r15_users': r15_users, 'r10_users': r10_users, 'r5_users': r5_users, 'r1_users': r1_users}
+    context = {'r0_users': r0_users, 'r1_users': r1_users, 'r2_users': r2_users, 'r3_users': r3_users, 'r4_users': r4_users}
     return render(request, 'stats/report_user_chart.html', context)
