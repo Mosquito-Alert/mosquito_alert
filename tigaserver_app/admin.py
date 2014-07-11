@@ -62,7 +62,7 @@ class PhotoInline(admin.StackedInline):
     model = Photo
     extra = 0
     max_num = 0
-    readonly_fields = ('photo', 'image_', 'report')
+    readonly_fields = ('photo', 'small_image_', 'report')
 
 
 class ReportAdmin(admin.ModelAdmin):
@@ -131,21 +131,23 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
     writer.writerow([
         smart_str(u"id"),
         smart_str(u"url"),
+        smart_str(u"url_medium"),
     ])
     for obj in queryset:
         if not obj.report.deleted:
             writer.writerow([
                 smart_str(obj.id),
                 smart_str("http://%s%s" % (request.get_host(), obj.photo.url)),
+                smart_str("http://%s%s" % (request.get_host(), obj.get_medium_url())),
         ])
     return response
 export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'deleted', 'image_', 'user', 'date', 'report_link', 'map_link')
-    readonly_fields = ('deleted', 'photo', 'image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
-    fields = ('deleted', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'image_')
+    list_display = ('id', 'deleted', 'small_image_', 'user', 'date', 'report_link', 'map_link')
+    readonly_fields = ('deleted', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
+    fields = ('deleted', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting]
 
     def report_link(self, obj):

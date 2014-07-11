@@ -389,7 +389,7 @@ class Report(models.Model):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
         result = ''
         for photo in these_photos:
-            result = result + photo.image_() + '&nbsp;'
+            result = result + photo.small_image_() + '&nbsp;'
         return result
 
     def get_formatted_date(self):
@@ -464,15 +464,44 @@ class Photo(models.Model):
     def __unicode__(self):
         return self.photo.name
 
-    def image_(self):
-        return '<a href="/media/{0}"><img src="/media/{0}" width="60", height="60"></a>'.format(self.photo)
-    image_.allow_tags = True
-
     def get_user(self):
         return self.report.user
 
     def get_date(self):
         return self.report.version_time.strftime("%d-%m-%Y %H:%M")
+
+    def get_small_path(self):
+        return self.photo.path.replace('tigapics/', 'tigapics_small/')
+
+    def get_small_url(self):
+        if os.path.isfile(self.photo.path):
+            if not os.path.isfile(self.get_small_path()):
+                im = Image.open(self.photo.path)
+                im.thumbnail((120, 120), Image.ANTIALIAS)
+                im.save(self.get_small_path())
+            return self.photo.url.replace('tigapics/', 'tigapics_small/')
+
+    def small_image_(self):
+        return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_small_url())
+
+    small_image_.allow_tags = True
+
+    def get_medium_path(self):
+        return self.photo.path.replace('tigapics/', 'tigapics_medium/')
+
+    def get_medium_url(self):
+        if os.path.isfile(self.photo.path):
+            if not os.path.isfile(self.get_medium_path()):
+                im = Image.open(self.photo.path)
+                im.thumbnail((460, 460), Image.ANTIALIAS)
+                im.save(self.get_medium_path())
+            return self.photo.url.replace('tigapics/', 'tigapics_medium/')
+
+    def medium_image_(self):
+        return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
+
+    small_image_.allow_tags = True
+
 
     user = property(get_user)
     date = property(get_date)
