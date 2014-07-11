@@ -71,7 +71,7 @@ class ReportAdmin(admin.ModelAdmin):
     inlines = [ReportResponseInline, PhotoInline]
     ordering = ('creation_time', 'report_id', 'version_number')
     readonly_fields = ('deleted', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link')
-    fields = ('deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
+    fields = ('hide', 'deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
 
     def has_add_permission(self, request):
         return False
@@ -147,7 +147,7 @@ export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ('id', 'deleted', 'small_image_', 'user', 'date', 'report_link', 'map_link')
     readonly_fields = ('deleted', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
-    fields = ('deleted', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
+    fields = ('hide', 'deleted', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting]
 
     def report_link(self, obj):

@@ -237,6 +237,8 @@ class Report(models.Model):
                                                                           'report was submitted. 2-digit '
                                                                         'ISO-639-1 language code.')
 
+    hide = models.BooleanField(default=False, help_text='Hide this report from public views?')
+
     def __unicode__(self):
         return self.version_UUID
 
@@ -386,7 +388,7 @@ class Report(models.Model):
         return len(these_photos)
 
     def get_photo_html(self):
-        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
+        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         result = ''
         for photo in these_photos:
             result = result + photo.small_image_() + '&nbsp;'
@@ -460,6 +462,7 @@ class Photo(models.Model):
     photo = models.ImageField(upload_to=make_image_uuid('tigapics'), help_text='Photo uploaded by user.')
     report = models.ForeignKey(Report, help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).')
+    hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
 
     def __unicode__(self):
         return self.photo.name

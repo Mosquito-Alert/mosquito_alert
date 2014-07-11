@@ -70,13 +70,13 @@ def get_latest_reports(reports):
 
 def show_map(request, report_type='adults', category='all', data='live', detail='none'):
     if data == 'beta':
-        these_reports = get_latest_reports(Report.objects.all())
+        these_reports = get_latest_reports(Report.objects.all().exclude(hide=True))
         coverage_areas = get_coverage(Fix.objects.all(), these_reports)
         href_url_name = 'webmap.show_map_beta'
     else:
         these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)))
+                                                                   package_version__gt=3)).exclude(hide=True))
         coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
         if detail == 'detailed':
             href_url_name = 'webmap.show_map_detailed'
@@ -140,7 +140,7 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
 def show_embedded_webmap(request, detail='none'):
     these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)))
+                                                                   package_version__gt=3)).exclude(hide=True))
     report_list = [report for report in these_reports if report.type == 'adult']
     context = {'report_list': report_list, 'detailed': detail}
     return render(request, 'tigamap/embedded.html', context)
