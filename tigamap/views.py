@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Q
 from datetime import date
 from django.core.urlresolvers import reverse
@@ -8,6 +8,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
 from django.contrib.auth.decorators import login_required
+
 
 def show_grid_05(request):
     fix_list = Fix.objects.all()
@@ -139,7 +140,10 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
 
 @login_required
 def show_detailed_map(request, report_type='adults', category='all', data='live', detail='detailed'):
-    return show_map(request, report_type, category, data, detail)
+    if request.user.groups.filter(name='movelabmap').exists():
+        return show_map(request, report_type, category, data, detail)
+    else:
+        return render(request, 'registration/no_permission.html')
 
 @xframe_options_exempt
 def show_embedded_webmap(request, detail='none'):
