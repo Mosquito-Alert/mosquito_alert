@@ -7,6 +7,7 @@ from tigaserver_app.models import Fix, Report
 from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
+from django.contrib.auth.decorators import login_required
 
 def show_grid_05(request):
     fix_list = Fix.objects.all()
@@ -135,6 +136,10 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
     context = {'title': this_title, 'report_list': report_list, 'report_type': report_type,
                'redirect_to': redirect_path, 'hrefs': hrefs, 'detailed': detail}
     return render(request, 'tigamap/report_map.html', context)
+
+@login_required
+def show_detailed_map(request, report_type='adults', category='all', data='live', detail='detailed'):
+    return show_map(request, report_type, category, data, detail)
 
 @xframe_options_exempt
 def show_embedded_webmap(request, detail='none'):

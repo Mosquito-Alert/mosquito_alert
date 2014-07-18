@@ -1,5 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 import tigaserver_project as project_module
+import django.conf.global_settings as DEFAULT_SETTINGS
+
 
 """
 Django settings for tigaserver_project project.
@@ -32,6 +34,11 @@ TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = []
 
 # Application definition
+
+
+TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
+    'django.core.context_processors.request',
+)
 
 INSTALLED_APPS = (
     'django.contrib.admin',

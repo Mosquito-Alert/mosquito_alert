@@ -151,10 +151,17 @@ function removeMe(){
                 <li>
                 <a href="{% trans 'http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
                 </li>
+                {% if request.user.is_authenticated %}
+
+                    <li><p class="navbar-text">Hello, {{ request.user.username }} /
+                        <a href="{% url "auth_logout" %}">logout</a></p>
+                    </li>
+
+                {% endif %}
 
             </ul>
 
-            </ul>
+
         </div>
     </div>
 
