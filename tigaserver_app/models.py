@@ -480,7 +480,10 @@ class Photo(models.Model):
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_small_path()):
                 im = Image.open(self.photo.path)
-                im.thumbnail((120, 120), Image.ANTIALIAS)
+                try:
+                    im.thumbnail((120, 120), Image.ANTIALIAS)
+                except IOError:
+                    im.thumbnail((120, 120), Image.NEAREST)
                 im.save(self.get_small_path())
             return self.photo.url.replace('tigapics/', 'tigapics_small/')
 
@@ -496,7 +499,10 @@ class Photo(models.Model):
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_medium_path()):
                 im = Image.open(self.photo.path)
-                im.thumbnail((460, 460), Image.ANTIALIAS)
+                try:
+                    im.thumbnail((460, 460), Image.ANTIALIAS)
+                except IOError:
+                    im.thumbnail((460, 460), Image.NEAREST)
                 im.save(self.get_medium_path())
             return self.photo.url.replace('tigapics/', 'tigapics_medium/')
 
