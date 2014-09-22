@@ -144,9 +144,8 @@ def show_detailed_map(request, report_type='adults', category='all', data='live'
 def show_embedded_webmap(request, detail='none'):
     these_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)).exclude(hide=True) if report.latest_version]
-    report_list = [report for report in these_reports if report.type == 'adult']
-    context = {'report_list': report_list, 'detailed': detail}
+                                                                   package_version__gt=3)).filter(type='adult').exclude(hide=True) if report.latest_version]
+    context = {'report_list': these_reports, 'detailed': detail}
     return render(request, 'tigamap/embedded.html', context)
 
 
