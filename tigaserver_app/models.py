@@ -156,13 +156,13 @@ class Report(models.Model):
     version_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
                                                 'phone to identify each unique report version. Must be exactly 36 '
                                                 'characters (32 hex digits plus 4 hyphens).')
-    version_number = models.IntegerField(help_text='The report version number. Should be an integer that increments '
+    version_number = models.IntegerField(db_index=True, help_text='The report version number. Should be an integer that increments '
                                                    'by 1 for each repor version. Note that the user keeps only the '
                                                    'most recent version on the device, but all versions are stored on the server.')
     user = models.ForeignKey(TigaUser, help_text='user_UUID for the user sending this report. Must be exactly 36 '
                                                  'characters (32 hex digits plus 4 hyphens) and user must have '
                                                  'already registered this ID.')
-    report_id = models.CharField(max_length=4, help_text='4-digit alpha-numeric code generated on user phone to '
+    report_id = models.CharField(db_index=True, max_length=4, help_text='4-digit alpha-numeric code generated on user phone to '
                                                          'identify each unique report from that user. Digits should '
                                                          'lbe randomly drawn from the set of all lowercase and '
                                                          'uppercase alphabetic characters and 0-9, but excluding 0, '
@@ -209,9 +209,9 @@ class Report(models.Model):
                                                                                "user on map. "
                                                                               "In decimal degrees.")
     note = models.TextField(blank=True, help_text='Note user attached to report.')
-    package_name = models.CharField(max_length=400, blank=True, help_text='Name of tigatrapp package from which this '
+    package_name = models.CharField(db_index=True, max_length=400, blank=True, help_text='Name of tigatrapp package from which this '
                                                                           'report was submitted.')
-    package_version = models.IntegerField(blank=True, null=True, help_text='Version number of tigatrapp package from '
+    package_version = models.IntegerField(db_index=True, blank=True, null=True, help_text='Version number of tigatrapp package from '
                                                                            'which this '
                                                                           'report was submitted.')
     device_manufacturer = models.CharField(max_length=200, blank=True, help_text='Manufacturer of device from which '
