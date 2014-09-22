@@ -73,13 +73,11 @@ def get_latest_reports(reports):
 def show_map(request, report_type='adults', category='all', data='live', detail='none'):
     if data == 'beta':
         these_reports = get_latest_reports(Report.objects.all().exclude(hide=True))
-        coverage_areas = get_coverage(Fix.objects.all(), these_reports)
         href_url_name = 'webmap.show_map_beta'
     else:
         these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
                                                                    package_version__gt=3)).exclude(hide=True))
-        coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
         if detail == 'detailed':
             href_url_name = 'webmap.show_map_detailed'
         else:
@@ -96,10 +94,18 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
                  }
     redirect_path = strip_lang(reverse(href_url_name, kwargs={'report_type': report_type, 'category': category}))
     if report_type == 'coverage':
+        if data == 'beta':
+            coverage_areas = get_coverage(Fix.objects.all(), these_reports)
+        else:
+            coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
         this_title = _('Coverage Map')
         context = {'coverage_list': coverage_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map.html', context)
     elif report_type == 'beta_coverage':
+        if data == 'beta':
+            coverage_areas = get_coverage(Fix.objects.all(), these_reports)
+        else:
+            coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
         this_title = _('Beta Coverage Map')
         context = {'coverage_list': coverage_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map_beta.html', context)
