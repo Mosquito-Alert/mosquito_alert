@@ -59,14 +59,25 @@ def get_coverage(fix_list, report_list):
     return result
 
 
+def get_latest_reports(reports):
+    unique_report_ids = set(map(lambda r: r.report_id, reports))
+    result = list()
+    for this_id in unique_report_ids:
+        these_reports = sorted(filter(lambda report: report.report_id == this_id, reports),
+                               key=attrgetter('version_number'))
+        if these_reports[0].version_number > -1:
+            result.append(these_reports[-1])
+    return result
+
+
 def show_map(request, report_type='adults', category='all', data='live', detail='none'):
     if data == 'beta':
-        these_reports = [report for report in Report.objects.all().exclude(hide=True) if report.latest_version]
+        these_reports = get_latest_reports(Report.objects.all().exclude(hide=True))
         href_url_name = 'webmap.show_map_beta'
     else:
-        these_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
+        these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)).exclude(hide=True) if report.latest_version]
+                                                                   package_version__gt=3)).exclude(hide=True))
         if detail == 'detailed':
             href_url_name = 'webmap.show_map_detailed'
         else:
@@ -142,9 +153,9 @@ def show_detailed_map(request, report_type='adults', category='all', data='live'
 
 @xframe_options_exempt
 def show_embedded_webmap(request, detail='none'):
-    these_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
+    these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)).filter(type='adult').exclude(hide=True) if report.latest_version]
+                                                                   package_version__gt=3)).filter(type='adult').exclude(hide=True))
     context = {'report_list': these_reports, 'detailed': detail}
     return render(request, 'tigamap/embedded.html', context)
 

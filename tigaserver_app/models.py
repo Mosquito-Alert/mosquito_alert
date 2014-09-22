@@ -7,6 +7,7 @@ import datetime
 from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Max, Min
 
 
 class TigaUser(models.Model):
