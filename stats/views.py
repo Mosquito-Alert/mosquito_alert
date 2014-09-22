@@ -6,15 +6,14 @@ import time
 from collections import Counter
 from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
-from tigamap.views import get_latest_reports
 
 
 @xframe_options_exempt
 def show_usage(request):
     real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
-    real_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) |
+    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)))
+                                                                   package_version__gt=3)) if report.latest_version]
     tz = get_localzone()
     ref_date = datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
     end_date = tz.localize(datetime.now())
@@ -59,7 +58,7 @@ def show_fix_users(request):
 
 
 def show_report_users(request):
-    real_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)) if report.latest_version]
     tz = get_localzone()
     ref_date = datetime(2014, 6, 13,  tzinfo=tz)
     end_date = tz.localize(datetime.now())
