@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.generics import mixins
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect
+from django.conf import settings
 
 
 from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
@@ -272,3 +274,15 @@ record is saved.
     """
     queryset = Configuration.objects.all()
     serializer_class = ConfigurationSerializer
+
+
+def lookup_photo(request, token, photo_uuid, size):
+    if token == settings.PHOTO_SECRET_KEY: # and request.get_host() in 'crowdcrafting.org':
+        this_photo = Photo.objects.get(uuid=photo_uuid)
+        if size == 'small':
+            url = this_photo.get_small_url()
+        elif size == 'medium':
+            url = this_photo.get_medium_url()
+        else:
+            url = this_photo.photo.url
+        return HttpResponseRedirect(url)

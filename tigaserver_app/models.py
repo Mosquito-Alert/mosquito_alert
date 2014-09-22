@@ -455,6 +455,10 @@ def make_image_uuid(path):
     return wrapper
 
 
+def make_uuid():
+    return str(uuid.uuid4())
+
+
 class Photo(models.Model):
     """
     Photo uploaded by user.
@@ -463,6 +467,7 @@ class Photo(models.Model):
     report = models.ForeignKey(Report, help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).')
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
+    uuid = models.CharField(max_length=36, default=make_uuid)
 
     def __unicode__(self):
         return self.photo.name
@@ -510,7 +515,6 @@ class Photo(models.Model):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
 
     small_image_.allow_tags = True
-
 
     user = property(get_user)
     date = property(get_date)

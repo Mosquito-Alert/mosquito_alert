@@ -130,15 +130,13 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
     response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
     writer.writerow([
         smart_str(u"id"),
-        smart_str(u"url"),
-        smart_str(u"url_medium"),
+        smart_str(u"uuid"),
     ])
     for obj in queryset:
         if not obj.report.deleted:
             writer.writerow([
                 smart_str(obj.id),
-                smart_str("http://%s%s" % (request.get_host(), obj.photo.url)),
-                smart_str("http://%s%s" % (request.get_host(), obj.get_medium_url())),
+                smart_str(obj.uuid),
         ])
     return response
 export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
@@ -146,8 +144,8 @@ export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
 
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ('id', 'deleted', 'small_image_', 'user', 'date', 'report_link', 'map_link')
-    readonly_fields = ('deleted', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
-    fields = ('hide', 'deleted', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
+    readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
+    fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting]
 
     def report_link(self, obj):
