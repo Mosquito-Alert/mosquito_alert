@@ -277,7 +277,7 @@ record is saved.
 
 
 def lookup_photo(request, token, photo_uuid, size):
-    if token == settings.PHOTO_SECRET_KEY and request.get_host() in 'crowdcrafting.org':
+    if token == settings.PHOTO_SECRET_KEY:
         this_photo = Photo.objects.get(uuid=photo_uuid)
         if size == 'small':
             url = this_photo.get_small_url()
