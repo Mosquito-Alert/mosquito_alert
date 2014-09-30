@@ -25,6 +25,9 @@ class TigaUser(models.Model):
     def number_of_reports_uploaded(self):
         return Report.objects.filter(user=self).count()
 
+    def is_ios(self):
+        return self.user_UUID.isupper()
+
     n_reports = property(number_of_reports_uploaded)
 
     class Meta:

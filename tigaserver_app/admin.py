@@ -7,6 +7,25 @@ from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
 
 
+def export_full_csv(modeladmin, request, queryset):
+    response = HttpResponse(mimetype='text/csv')
+    this_meta = queryset[0]._meta
+    response['Content-Disposition'] = 'attachment; filename=tigatrapp_export_ ' + smart_str(this_meta.db_table) + '.csv'
+    writer = csv.writer(response, csv.excel)
+    response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
+    colnames = []
+    for field in this_meta.fields:
+        colnames.append(smart_str(field.name))
+    writer.writerow(colnames)
+    for obj in queryset:
+        this_row = []
+        for field in this_meta.fields:
+            this_row.append(smart_str(getattr(obj, field.name)))
+        writer.writerow(this_row)
+    return response
+export_full_csv.short_description = u"Export Full CSV"
+
+
 class MyTokenAdmin(admin.ModelAdmin):
     list_display = ('key', 'user', 'created')
     fields = ('user', 'key')
@@ -22,6 +41,8 @@ admin.site.disable_action('delete_selected')
 class UserAdmin(admin.ModelAdmin):
     list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded')
     readonly_fields = ('user_UUID', 'registration_time', 'number_of_reports_uploaded')
+    actions = [export_full_csv]
+
 
     def has_add_permission(self, request):
         return False
@@ -72,6 +93,7 @@ class ReportAdmin(admin.ModelAdmin):
     ordering = ('creation_time', 'report_id', 'version_number')
     readonly_fields = ('deleted', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link')
     fields = ('hide', 'deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
+    actions = [export_full_csv]
 
     def has_add_permission(self, request):
         return False
@@ -143,7 +165,8 @@ export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'deleted', 'small_image_', 'user', 'date', 'report_link', 'map_link')
+    list_display = ('id', 'date', 'deleted', 'hide', 'small_image_', 'user', 'date', 'report_link', 'map_link')
+    list_filter = ['hide', 'report__package_name', 'report__package_version']
     readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
     fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting]
@@ -176,6 +199,19 @@ class FixAdmin(admin.ModelAdmin):
     ordering = ('fix_time',)
     readonly_fields = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power')
     fields = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power')
+    actions = [export_full_csv]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class ReportResponseAdmin(admin.ModelAdmin):
+    list_display = ('report', 'question', 'answer')
+    fields =  ('report', 'question', 'answer')
+    actions = [export_full_csv]
 
     def has_add_permission(self, request):
         return False
@@ -190,3 +226,4 @@ admin.site.register(Fix, FixAdmin)
 admin.site.register(Configuration, ConfigurationAdmin)
 admin.site.register(Mission, MissionAdmin)
 admin.site.register(Photo, PhotoAdmin)
+admin.site.register(ReportResponse, ReportResponseAdmin)
