@@ -29,6 +29,7 @@ class TigaUser(models.Model):
         return self.user_UUID.isupper()
 
     n_reports = property(number_of_reports_uploaded)
+    ios_user = property(is_ios)
 
     class Meta:
         verbose_name = "user"

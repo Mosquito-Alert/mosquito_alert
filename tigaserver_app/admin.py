@@ -39,10 +39,9 @@ admin.site.disable_action('delete_selected')
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded')
-    readonly_fields = ('user_UUID', 'registration_time', 'number_of_reports_uploaded')
+    list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
+    readonly_fields = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
     actions = [export_full_csv]
-
 
     def has_add_permission(self, request):
         return False
@@ -93,6 +92,7 @@ class ReportAdmin(admin.ModelAdmin):
     ordering = ('creation_time', 'report_id', 'version_number')
     readonly_fields = ('deleted', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link')
     fields = ('hide', 'deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time','phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon')
+    list_filter = ['os', 'type', 'mission', 'package_name', 'package_version']
     actions = [export_full_csv]
 
     def has_add_permission(self, request):
