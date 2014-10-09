@@ -12,3 +12,4 @@ django-filter
 markdown
 django-leaflet
 tzlocal
+python-dateutil
