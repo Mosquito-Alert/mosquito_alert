@@ -532,7 +532,7 @@ class Photo(models.Model):
     def medium_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
 
-    small_image_.allow_tags = True
+    medium_image_.allow_tags = True
 
     user = property(get_user)
     date = property(get_date)

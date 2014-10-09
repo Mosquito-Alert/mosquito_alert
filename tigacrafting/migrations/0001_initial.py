@@ -10,29 +10,32 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding model 'CrowdcraftingTask'
         db.create_table(u'tigacrafting_crowdcraftingtask', (
-            ('task_id', self.gf('django.db.models.fields.IntegerField')(primary_key=True)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('task_id', self.gf('django.db.models.fields.IntegerField')(unique=True)),
             ('photo', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['tigaserver_app.Photo'], unique=True)),
         ))
         db.send_create_signal(u'tigacrafting', ['CrowdcraftingTask'])
 
         # Adding model 'CrowdcraftingUser'
         db.create_table(u'tigacrafting_crowdcraftinguser', (
-            ('user_id', self.gf('django.db.models.fields.IntegerField')(primary_key=True)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user_id', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
         ))
         db.send_create_signal(u'tigacrafting', ['CrowdcraftingUser'])
 
         # Adding model 'CrowdcraftingResponse'
         db.create_table(u'tigacrafting_crowdcraftingresponse', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('response_id', self.gf('django.db.models.fields.IntegerField')()),
             ('task', self.gf('django.db.models.fields.related.ForeignKey')(related_name='responses', to=orm['tigacrafting.CrowdcraftingTask'])),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='responses', to=orm['tigacrafting.CrowdcraftingUser'])),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='responses', null=True, to=orm['tigacrafting.CrowdcraftingUser'])),
             ('user_lang', self.gf('django.db.models.fields.CharField')(max_length=2, blank=True)),
             ('mosquito_question_response', self.gf('django.db.models.fields.CharField')(max_length=100)),
             ('tiger_question_response', self.gf('django.db.models.fields.CharField')(max_length=100)),
             ('site_question_response', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')()),
-            ('finish_time', self.gf('django.db.models.fields.DateTimeField')()),
-            ('user_ip', self.gf('django.db.models.fields.IPAddressField')(max_length=15)),
+            ('created', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
+            ('finish_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
+            ('user_ip', self.gf('django.db.models.fields.IPAddressField')(max_length=15, null=True, blank=True)),
         ))
         db.send_create_signal(u'tigacrafting', ['CrowdcraftingResponse'])
 
@@ -51,25 +54,28 @@ class Migration(SchemaMigration):
     models = {
         u'tigacrafting.crowdcraftingresponse': {
             'Meta': {'object_name': 'CrowdcraftingResponse'},
-            'created': ('django.db.models.fields.DateTimeField', [], {}),
-            'finish_time': ('django.db.models.fields.DateTimeField', [], {}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'finish_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'mosquito_question_response': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'response_id': ('django.db.models.fields.IntegerField', [], {}),
             'site_question_response': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'task': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'responses'", 'to': u"orm['tigacrafting.CrowdcraftingTask']"}),
             'tiger_question_response': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'responses'", 'to': u"orm['tigacrafting.CrowdcraftingUser']"}),
-            'user_ip': ('django.db.models.fields.IPAddressField', [], {'max_length': '15'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'responses'", 'null': 'True', 'to': u"orm['tigacrafting.CrowdcraftingUser']"}),
+            'user_ip': ('django.db.models.fields.IPAddressField', [], {'max_length': '15', 'null': 'True', 'blank': 'True'}),
             'user_lang': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'})
         },
         u'tigacrafting.crowdcraftingtask': {
             'Meta': {'object_name': 'CrowdcraftingTask'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'photo': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['tigaserver_app.Photo']", 'unique': 'True'}),
-            'task_id': ('django.db.models.fields.IntegerField', [], {'primary_key': 'True'})
+            'task_id': ('django.db.models.fields.IntegerField', [], {'unique': 'True'})
         },
         u'tigacrafting.crowdcraftinguser': {
             'Meta': {'object_name': 'CrowdcraftingUser'},
-            'user_id': ('django.db.models.fields.IntegerField', [], {'primary_key': 'True'})
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'user_id': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         u'tigaserver_app.mission': {
             'Meta': {'object_name': 'Mission'},
@@ -99,7 +105,7 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'photo': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
             'report': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['tigaserver_app.Report']"}),
-            'uuid': ('django.db.models.fields.CharField', [], {'default': "'7046a9c3-ba6e-46ee-bb4f-c37d2cff7d5b'", 'max_length': '36'})
+            'uuid': ('django.db.models.fields.CharField', [], {'default': "'e797d008-a0bb-49ee-a2d0-961e2db4d2eb'", 'max_length': '36'})
         },
         u'tigaserver_app.report': {
             'Meta': {'unique_together': "(('user', 'version_UUID'),)", 'object_name': 'Report'},
