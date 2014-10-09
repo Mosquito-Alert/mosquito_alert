@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'tigamap',
     'webapp',
     'tigahelp',
+    'tigacrafting',
     'rest_framework',
     'leaflet',
     'south',
