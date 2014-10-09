@@ -42,7 +42,9 @@
 
         <div class="page-header">
 
-            <h1>Photo Validation: {{ type }}</h1>
+            <h1>Tigatrapp Photo Validation: {{ type }} <small> See the latest crowdrafting results</small></h1>
+
+            <p>The Validation scores shown by each photo range from -1 to 1, and they represent the average of thirty citizen scientists' responses as to whether they see a {{ type }} in the photo. A response of 'yes' has a score of 1, 'no' has a score of -1. A response of 'not sure' or a blank response has a score of 0.</p>
 
         </div>
 
@@ -53,13 +55,13 @@
             <div class="row">
 
                 <div class="col-md-4">
-                    <h3>{{ task.validation_score }}</h3>
+                    <h3>Validation Score: {{ task.validation_score }}</h3>
 
                 </div>
 
                 <div class="col-md-4">
 
-                    {{ task.photo_image }}
+                    {{ task.photo_image | safe}}
 
                 </div>
 
