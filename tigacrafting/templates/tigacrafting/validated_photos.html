@@ -78,7 +78,7 @@
 
             <h1>{{ title }}</h1>
 
-            <p>The validation scores shown by each photo range from -1 to 1, and they represent the average of thirty citizen scientists' responses to the crowdcrafting question: {{ question }} A response of 'yes' has a score of 1, 'no' has a score of -1. A response of 'not sure' or a blank response has a score of 0.</p>
+            <p>The validation scores shown by each photo range from -1 to 1, and they represent the average of thirty citizen scientists' responses to the crowdcrafting question: {{ question }} A response of 'yes' has a score of 1 and a response of 'no' has a score of -1. A response of 'not sure' or a blank response has a score of 0.</p>
 
             <p>Visit the <a href="http://crowdcrafting.org/app/Tigafotos/">Tigafotos</a> project on crowdcrafting to see the questions and help validate more photos!</p>
 
@@ -91,12 +91,15 @@
 
             <div class="row">
 
-                <div class="col-md-2">
-                    <h3>Validation Score: {{ task.validation_score }}</h3>
-
+                <div class="col-md-3">
+                    <h4>{% if task.report_type == 'adult' %}Tiger mosquito report{% elif task.report_type == 'site' %}Breeding site report{% else %}Report{% endif %}</h4>
+                    <p>{{ task.report_creation_time }}</p>
+                    <p>Question: "{{ question }}"</p>
+                    <p>Validation Score: <span class="badge" style="color:{% if task.validation_score >= 0 %}black{% else %}white{% endif %}; background-color: {% if task.validation_score >= 0 %}rgba(0,255,0,{{ task.validation_score }}){% else %}rgba(255,0,0, {{ task.neg_validation_score }}){% endif %};">{{ task.validation_score }}</span></p>
+                   {{ task.individual_responses_html | safe }}
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-5">
 
                     {{ task.photo_image | safe}}
 

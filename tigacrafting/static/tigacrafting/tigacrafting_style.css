@@ -7,11 +7,20 @@ table, td, th {
     border: 1px solid black;
 }
 
-td {
+td, th {
     padding: 5px;
     vertical-align: top;
     text-align: right;
 }
+
+th{
+    text-align: center;
+}
+
+img{
+    max-width: 100%;
+}
+
 
 .leaflet-container {
     width: 100%;
