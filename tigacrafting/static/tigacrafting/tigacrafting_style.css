@@ -1,6 +1,7 @@
 table {
     border-collapse: collapse;
     font-size: small;
+    max-width: 100%;
 }
 
 table, td, th {
@@ -11,6 +12,7 @@ td, th {
     padding: 5px;
     vertical-align: top;
     text-align: right;
+    width: 25%;
 }
 
 th{
