@@ -7,6 +7,7 @@ import dateutil.parser
 from django.db.models import Count
 import pytz
 from django.db.models import Max
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 
 def import_tasks():
@@ -99,10 +100,14 @@ def import_task_responses():
     return {'errors': errors, 'warnings': warnings}
 
 
+@xframe_options_exempt
 def show_validated_photos(request, type='tiger'):
+    import_task_responses()
     validated_tasks = CrowdcraftingTask.objects.annotate(n_responses=Count('responses')).filter(n_responses__gte=30)
     validation_score_dic = {'mosquito': 'mosquito_validation_score', 'site': 'site_validation_score', 'tiger': 'tiger_validation_score'}
-    context = {'type': type, 'validated_tasks': sorted(map(lambda x: {'id': x.id, 'deleted': x.photo.report.deleted, 'hidden': x.photo.hide, 'latest_version': x.photo.report.latest_version, 'lat': x.photo.report.lat, 'lon':  x.photo.report.lon, 'photo_image': x.photo.medium_image_(), 'validation_score': round(getattr(x, validation_score_dic[type]), 2)}, list(validated_tasks)), key=lambda x: -x['validation_score'])}
+    title_dic = {'mosquito': 'Mosquito Validation Results', 'site': 'Breeding Site Validation Results', 'tiger': 'Tiger Mosquito Validation Results'}
+    question_dic = {'mosquito': 'Do you see a mosquito in this photo?', 'site': 'Do you see a potential tiger mosquito breeding site in this photo?', 'tiger': 'Is this a tiger mosquito?'}
+    context = {'type': type, 'title': title_dic[type], 'question' :question_dic[type], 'validated_tasks': sorted(map(lambda x: {'id': x.id, 'deleted': x.photo.report.deleted, 'hidden': x.photo.hide, 'latest_version': x.photo.report.latest_version, 'lat': x.photo.report.lat, 'lon':  x.photo.report.lon, 'photo_image': x.photo.medium_image_(), 'validation_score': round(getattr(x, validation_score_dic[type]), 2)}, list(validated_tasks)), key=lambda x: -x['validation_score'])}
     return render(request, 'tigacrafting/validated_photos.html', context)
 
 
