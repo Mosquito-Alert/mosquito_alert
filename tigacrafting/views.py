@@ -102,7 +102,7 @@ def import_task_responses():
 def show_validated_photos(request, type='tiger'):
     validated_tasks = CrowdcraftingTask.objects.annotate(n_responses=Count('responses')).filter(n_responses__gte=30)
     validation_score_dic = {'mosquito': 'mosquito_validation_score', 'site': 'site_validation_score', 'tiger': 'tiger_validation_score'}
-    context = {'type': type, 'validated_tasks': sorted(map(lambda x: {'deleted': x.photo.report.deleted, 'hidden': x.photo.hide, 'latest_version': x.photo.report.latest_version, 'lat': x.photo.report.lat, 'lon':  x.photo.report.lon, 'photo_image': x.photo.small_image_(), 'validation_score': round(getattr(x, validation_score_dic[type]), 2)}, list(validated_tasks)), key=lambda x: -x['validation_score'])}
+    context = {'type': type, 'validated_tasks': sorted(map(lambda x: {'id': x.id, 'deleted': x.photo.report.deleted, 'hidden': x.photo.hide, 'latest_version': x.photo.report.latest_version, 'lat': x.photo.report.lat, 'lon':  x.photo.report.lon, 'photo_image': x.photo.medium_image_(), 'validation_score': round(getattr(x, validation_score_dic[type]), 2)}, list(validated_tasks)), key=lambda x: -x['validation_score'])}
     return render(request, 'tigacrafting/validated_photos.html', context)
 
 

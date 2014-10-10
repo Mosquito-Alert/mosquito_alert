@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load leaflet_tags %}
 
 <!DOCTYPE html>
 <html lang={% block language %}"en"{% endblock %}>
@@ -32,6 +33,39 @@
     <![endif]-->
     {% endblock %}
 
+    {% leaflet_js %}
+    {% leaflet_css %}
+
+
+        <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+
+    <script type="text/javascript">
+
+        var mosquito_icon_class = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+            }
+        });
+
+        var site_icon_class = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/blue_icon.png" %}'
+            }
+        });
+
+        var mosquito_icon = new mosquito_icon_class;
+        var site_icon = new site_icon_class;
+
+        {% for task in validated_tasks %}
+        function map_init_basic{{ task.id }}(map, options) {
+
+            L.marker([{{ task.lat }}, {{ task.lon }}], {icon: mosquito_icon}).addTo(map);
+
+
+        }
+        {%  endfor %}
+
+    </script>
 
 </head>
 
@@ -66,12 +100,17 @@
                 </div>
 
                 <div class="col-md-4">
+                    <div id="photo{{ task.id }}" class="task_map-container"></div>
                 </div>
 
             </div>
 
 
-            <div class="border-row"></div>
+            <div class="border-row">
+
+            <br>
+
+            </div>
 
 
         {% endfor %}
@@ -94,6 +133,45 @@
     <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/docs.min.js" %}></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
+
+
+        <script type="text/javascript">
+        (function () {
+            function loadmap() {
+
+                {% for task in validated_tasks %}
+
+                var centerLat = {{ task.lat }};
+                var centerLng = {{ task.lon }};
+                var initialZoom = 6;
+                var djoptions = {"layers": [
+                            ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
+                        ],
+                            "minimap": true, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                                [-90,
+                                    -180],
+                                [90,
+                                    180]
+                            ], "resetview": true, "srid": null, "fitextent": true},
+                        options = {djoptions: djoptions, initfunc: loadmap,
+                            globals: false, callback: window.map_init_basic};
+
+                    L.Map.djangoMap('photo{{ task.id }}', {djoptions: djoptions, initfunc: loadmap,
+                        globals: false, callback: eval("window.map_init_basic{{ task.id }}")});
+                {% endfor %}
+
+            }
+
+            var loadevents = ["load"];
+            if (loadevents.length === 0) loadmap();
+            else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+            else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+        })();
+    </script>
+
+
 {% endblock %}
 
 </body>
