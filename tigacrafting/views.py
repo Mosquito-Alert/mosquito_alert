@@ -100,6 +100,10 @@ def import_task_responses():
     return {'errors': errors, 'warnings': warnings}
 
 
+def show_processing(request):
+    return render(request, 'tigacrafting/please_wait.html')
+
+
 @xframe_options_exempt
 def show_validated_photos(request, type='tiger'):
     import_task_responses()
@@ -111,7 +115,6 @@ def show_validated_photos(request, type='tiger'):
     question_dic = {'mosquito': 'Do you see a mosquito in this photo?', 'site': 'Do you see a potential tiger mosquito breeding site in this photo?', 'tiger': 'Is this a tiger mosquito?'}
     context = {'type': type, 'title': title_dic[type], 'question': question_dic[type], 'validated_tasks': sorted(map(lambda x: {'id': x.id, 'report_type': x.photo.report.type, 'report_creation_time': x.photo.report.creation_time.strftime('%d %b %Y, %H:%M %Z'), 'lat': x.photo.report.lat, 'lon':  x.photo.report.lon, 'photo_image': x.photo.medium_image_(), 'validation_score': round(getattr(x, validation_score_dic[type]), 2), 'neg_validation_score': -1*round(getattr(x, validation_score_dic[type]), 2), 'individual_responses_html': getattr(x, individual_responses_dic[type])}, list(validated_tasks)), key=lambda x: -x['validation_score'])}
     return render(request, 'tigacrafting/validated_photos.html', context)
-
 
 
 
