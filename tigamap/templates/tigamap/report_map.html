@@ -86,7 +86,7 @@ td {
 
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
-                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if validation and report.crowdcrafting_score > .5 %} thisIconValidated{% else %} thisIcon{% endif %}});
+                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if validation and report.crowdcrafting_score > 0 %} thisIconValidated{% else %} thisIcon{% endif %}});
                     basic_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if report.crowdcrafting_score > 0 %} thisIconValidated{% else %} thisIcon{% endif %}});
                     if(show_popups){
                     {% if report_type == 'adults' %}
