@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
 from tigacrafting.models import CrowdcraftingTask
 from django.db.models import Count
+from django.conf import settings
 
 
 class TigaUser(models.Model):
@@ -444,6 +445,21 @@ class Report(models.Model):
                 scores = map(lambda x: x.tiger_validation_score, these_tasks_filtered)
         return scores
 
+    def get_is_crowd_validated(self):
+        return self.get_crowdcrafting_score() > settings.CROWD_VALIDATION_CUTOFF
+
+    def get_validated_photo_html(self):
+        result = ''
+        if self.type in ('site', 'adult'):
+            these_tasks = CrowdcraftingTask.objects.filter(photo__report__version_UUID=self.version_UUID).annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
+            if self.type == 'site':
+                these_tasks_filtered = filter(lambda x: x.site_validation_score > settings.CROWD_VALIDATION_CUTOFF, these_tasks)
+            else:
+                these_tasks_filtered = filter(lambda x: x.tiger_validation_score > settings.CROWD_VALIDATION_CUTOFF, these_tasks)
+            for task in these_tasks_filtered:
+                result += '<br>' + task.photo.small_image_()
+        return result
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
@@ -467,6 +483,8 @@ class Report(models.Model):
     other_versions = property(get_other_versions)
     latest_version = property(get_is_latest)
     crowdcrafting_score = property(get_crowdcrafting_score)
+    crowd_validated = property(get_is_crowd_validated)
+    validated_photo_html = property(get_validated_photo_html)
 
     class Meta:
         unique_together = ("user", "version_UUID")

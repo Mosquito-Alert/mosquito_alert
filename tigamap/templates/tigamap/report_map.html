@@ -86,19 +86,19 @@ td {
 
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
-                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if validation and report.crowdcrafting_score > 0 %} thisIconValidated{% else %} thisIcon{% endif %}});
-                    basic_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if report.crowdcrafting_score > 0 %} thisIconValidated{% else %} thisIcon{% endif %}});
+                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if validation == 'mark_validated' and report.crowd_validated == True %} thisIconValidated{% else %} thisIcon{% endif %}});
+                    basic_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if  validation == 'mark_validated' and report.crowd_validated == True %} thisIconValidated{% else %} thisIcon{% endif %}});
                     if(show_popups){
                     {% if report_type == 'adults' %}
                         popup_text = '<table><tr><td>prob:</td><td>'+
                                 '{{ report.tigaprob_text }}</td></tr><tr><td>lat:</td>'+
                                 '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
-                                '{{ report.lon }}</td></tr></table>';
+                                '{{ report.lon }}</td></tr></table>{{ report.validated_photo_html | safe }}';
                    {%  else %}
                         popup_text = '<table><tr><td>{% trans 'type' %}:</td><td>'+
                                 '{{ report.site_type_trans }}</td></tr><tr><td>lat:</td>'+
                                 '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
-                                '{{ report.lon }}</td></tr></table>';
+                                '{{ report.lon }}</td></tr></table>{{ report.validated_photo_html | safe }}';
                    {%  endif %}
                    {% if detailed == 'detailed' %}
                        popup_text = popup_text + '<br/>Date: {{ report.formatted_date }}';

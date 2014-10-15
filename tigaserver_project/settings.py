@@ -164,4 +164,7 @@ LEAFLET_CONFIG = {
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
+# This is the cuttoff score above which a photo will be considered "crowd-validated"
+CROWD_VALIDATION_CUTOFF = 0
+
 from settings_local import *
