@@ -210,7 +210,7 @@ class FixAdmin(admin.ModelAdmin):
 
 class ReportResponseAdmin(admin.ModelAdmin):
     list_display = ('report', 'question', 'answer')
-    fields =  ('report', 'question', 'answer')
+    fields = ('report', 'question', 'answer')
     actions = [export_full_csv]
 
     def has_add_permission(self, request):

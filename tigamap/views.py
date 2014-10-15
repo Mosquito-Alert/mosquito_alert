@@ -70,7 +70,7 @@ def get_latest_reports(reports):
     return result
 
 
-def show_map(request, report_type='adults', category='all', data='live', detail='none'):
+def show_map(request, report_type='adults', category='all', data='live', detail='none', validation=''):
     if data == 'beta':
         these_reports = get_latest_reports(Report.objects.all().exclude(hide=True))
         href_url_name = 'webmap.show_map_beta'
@@ -117,6 +117,9 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
         elif category == 'high':
             this_title = _('Adult tiger mosquitoes: High probability reports')
             report_list = [report for report in these_reports if report.tigaprob == 1]
+        elif category == 'crowd_validated':
+            this_title = _('Adult tiger mosquitoes: Validated reports')
+            report_list = filter(lambda x: x.crowdcrafting_score > 0, these_reports)
         else:
             this_title = _('Adult tiger mosquitoes: All reports')
             report_list = these_reports
@@ -134,6 +137,9 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
         elif category == 'other':
             this_title = _('Breeding sites: Other')
             report_list = [report for report in these_reports if report.other]
+        elif category == 'crowd_validated':
+            this_title = _('Breeding Sites: Validated reports')
+            report_list = filter(lambda x: x.crowdcrafting_score > 0, these_reports)
         else:
             this_title = _('Breeding sites: All reports')
             report_list = these_reports
@@ -141,13 +147,13 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
         this_title = _('Adult tiger mosquitoes: All reports')
         report_list = [report for report in these_reports if report.type == 'adult']
     context = {'title': this_title, 'report_list': report_list, 'report_type': report_type,
-               'redirect_to': redirect_path, 'hrefs': hrefs, 'detailed': detail}
+               'redirect_to': redirect_path, 'hrefs': hrefs, 'detailed': detail, 'validation': validation}
     return render(request, 'tigamap/report_map.html', context)
 
 @login_required
-def show_detailed_map(request, report_type='adults', category='all', data='live', detail='detailed'):
+def show_detailed_map(request, report_type='adults', category='all', data='live', detail='detailed', validation=''):
     if request.user.groups.filter(name='movelabmap').exists():
-        return show_map(request, report_type, category, data, detail)
+        return show_map(request, report_type, category, data, detail, validation)
     else:
         return render(request, 'registration/no_permission.html')
 

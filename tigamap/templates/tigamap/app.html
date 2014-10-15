@@ -165,9 +165,11 @@ function removeMe(){
         </div>
     </div>
 
-
+{% block map_area %}
 <div id="tigamap" class="leaflet-container-default"></div>
-<script type="text/javascript">
+{% endblock %}
+
+    <script type="text/javascript">
 (function () {
 
     function loadmap() {
@@ -215,10 +217,11 @@ function removeMe(){
 {% endblock %}
 
 
-{% block end_body %}
 
+    {% block body_scripts %}
     <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
 
     <script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
+
 
 {% endblock %}

@@ -56,9 +56,26 @@ td {
                 }
             });
 
+            var YellowIconValidated = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/yellow_icon_validated.png" %}'
+                }
+            });
+
+            var BlueIconValidated = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/blue_icon_validated.png" %}'
+                }
+            });
+
+
             var thisIcon = new L.Icon.Default;
+            var thisIconValidated = new L.Icon.Default;
             {% if report_type == 'adults' %}
                 thisIcon = new YellowIcon();
+                thisIconValidated = new YellowIconValidated();
+            {% elif report_type == 'sites' %}
+                thisIconValidated = new BlueIconValidated();
             {% endif %}
 
             var show_popups = true;
@@ -69,8 +86,8 @@ td {
 
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
-                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
-                    basic_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
+                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if validation and report.crowdcrafting_score > .5 %} thisIconValidated{% else %} thisIcon{% endif %}});
+                    basic_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if report.crowdcrafting_score > 0 %} thisIconValidated{% else %} thisIcon{% endif %}});
                     if(show_popups){
                     {% if report_type == 'adults' %}
                         popup_text = '<table><tr><td>prob:</td><td>'+

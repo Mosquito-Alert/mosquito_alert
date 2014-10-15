@@ -1,0 +1,30 @@
+body {
+  padding-top: 70px;
+  padding-bottom: 30px;
+}
+
+.theme-dropdown .dropdown-menu {
+  position: static;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.theme-showcase > p > .btn {
+  margin: 5px 0;
+}
+
+.theme-showcase .navbar .container {
+  width: auto;
+}
+
+label{
+    vertical-align: top;
+}
+
+#id_email {
+width: 200px;
+}
+
+#id_name, #id_short_description, #id_description, #id_long_text {
+width: 100%;
+}

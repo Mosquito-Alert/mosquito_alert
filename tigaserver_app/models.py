@@ -8,6 +8,8 @@ from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
+import tigacrafting.models
+from django.db.models import Count
 
 
 class TigaUser(models.Model):
@@ -428,6 +430,20 @@ class Report(models.Model):
             elif all_versions.reverse()[0].version_number == self.version_number:
                 return True
 
+    def get_crowdcrafting_score(self):
+        if self.type not in ('site', 'adult'):
+           scores = None
+        else:
+            these_tasks = tigacrafting.models.CrowdcraftingTask.objects.filter(photo__report__version_UUID=self.version_UUID).annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
+            these_tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, these_tasks)
+            if len(these_tasks_filtered) == 0:
+                scores = None
+            elif self.type == 'site':
+                scores = map(lambda x: x.site_validation_score, these_tasks_filtered)
+            else:
+                scores = map(lambda x: x.tiger_validation_score, these_tasks_filtered)
+        return scores
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
@@ -450,6 +466,7 @@ class Report(models.Model):
     deleted = property(get_is_deleted)
     other_versions = property(get_other_versions)
     latest_version = property(get_is_latest)
+    crowdcrafting_score = property(get_crowdcrafting_score)
 
     class Meta:
         unique_together = ("user", "version_UUID")
@@ -482,7 +499,7 @@ class Photo(models.Model):
     Photo uploaded by user.
     """
     photo = models.ImageField(upload_to=make_image_uuid('tigapics'), help_text='Photo uploaded by user.')
-    report = models.ForeignKey(Report, help_text='Report and version to which this photo is associated (36-digit '
+    report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).')
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
     uuid = models.CharField(max_length=36, default=make_uuid)
