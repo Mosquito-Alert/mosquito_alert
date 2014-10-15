@@ -1,5 +1,4 @@
 from django.db import models
-from tigaserver_app.models import Photo
 
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
@@ -8,7 +7,7 @@ def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
 
 class CrowdcraftingTask(models.Model):
     task_id = models.IntegerField(unique=True)
-    photo = models.OneToOneField(Photo)
+    photo = models.OneToOneField('tigaserver_app.Photo')
 
     def __unicode__(self):
         return str(self.task_id)

@@ -8,7 +8,7 @@ from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
-import tigacrafting.models
+from tigacrafting.models import CrowdcraftingTask
 from django.db.models import Count
 
 
@@ -434,7 +434,7 @@ class Report(models.Model):
         if self.type not in ('site', 'adult'):
            scores = None
         else:
-            these_tasks = tigacrafting.models.CrowdcraftingTask.objects.filter(photo__report__version_UUID=self.version_UUID).annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
+            these_tasks = CrowdcraftingTask.objects.filter(photo__report__version_UUID=self.version_UUID).annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
             these_tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, these_tasks)
             if len(these_tasks_filtered) == 0:
                 scores = None
