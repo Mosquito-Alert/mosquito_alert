@@ -457,7 +457,7 @@ class Report(models.Model):
             else:
                 these_tasks_filtered = filter(lambda x: x.tiger_validation_score > settings.CROWD_VALIDATION_CUTOFF, these_tasks)
             for task in these_tasks_filtered:
-                result += '<br>' + task.photo.small_image_()
+                result += '<br>' + task.photo.small_image_() + '<br>'
         return result
 
     lon = property(get_lon)
