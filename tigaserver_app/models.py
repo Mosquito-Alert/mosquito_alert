@@ -432,7 +432,7 @@ class Report(models.Model):
                 return True
 
     def get_crowdcrafting_score(self):
-        if self.type not in ('site', 'adult'):
+        if self.type not in ('site', 'adult') or self.hide is True:
             return None
         these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
         if these_photos.count() == 0:
@@ -460,14 +460,11 @@ class Report(models.Model):
 
     def get_validated_photo_html(self):
         result = ''
-        if self.type in ('site', 'adult'):
-            these_tasks = CrowdcraftingTask.objects.filter(photo__report__version_UUID=self.version_UUID).annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
-            if self.type == 'site':
-                these_tasks_filtered = filter(lambda x: x.site_validation_score > settings.CROWD_VALIDATION_CUTOFF, these_tasks)
-            else:
-                these_tasks_filtered = filter(lambda x: x.tiger_validation_score > settings.CROWD_VALIDATION_CUTOFF, these_tasks)
-            for task in these_tasks_filtered:
-                result += '<br>' + task.photo.small_image_() + '<br>'
+        if self.hide is True or self.type not in ('site', 'adult'):
+            return result
+        these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
+        for photo in these_photos:
+            result += '<br>' + photo.small_image_() + '<br>'
         return result
 
     lon = property(get_lon)
