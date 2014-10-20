@@ -443,7 +443,7 @@ class Report(models.Model):
                 scores = map(lambda x: x.site_validation_score, these_tasks_filtered)
             else:
                 scores = map(lambda x: x.tiger_validation_score, these_tasks_filtered)
-        if scores is None:
+        if scores is None or len(scores) == 0:
             return None
         else:
             return max(scores)
