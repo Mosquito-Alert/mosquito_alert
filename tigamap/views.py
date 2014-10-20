@@ -126,26 +126,31 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
 
     #  now sites
     elif report_type == 'sites':
-        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
-        # TODO change these list comprehensions to filters if it gains speed (not sure it would)
-        if category == 'drains_fountains':
-            this_title = _('Breeding sites: Storm drains and fountains')
-            report_list = [report for report in these_reports if report.embornals or report.fonts]
-        elif category == 'basins':
-            this_title = _('Breeding sites: Basins')
-            report_list = [report for report in these_reports if report.basins]
-        elif category == 'buckets_wells':
-            this_title = _('Breeding sites: Buckets and wells')
-            report_list = [report for report in these_reports if report.buckets or report.wells]
-        elif category == 'other':
-            this_title = _('Breeding sites: Other')
-            report_list = [report for report in these_reports if report.other]
-        elif category == 'crowd_validated':
+        if category == 'crowd_validated':
             this_title = _('Breeding Sites: Validated reports')
-            report_list = filter(lambda x: x.get_crowdcrafting_score() > 0, these_reports)
+            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).annotate(n_responses=Count('photos__crowdcraftingtask__responses')).filter(n_responses__gte=30))
+            if these_reports:
+                report_list = filter(lambda x: x.get_crowdcrafting_score() is not None, these_reports)
+            else:
+                report_list = None
         else:
-            this_title = _('Breeding sites: All reports')
-            report_list = these_reports
+            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+            # TODO change these list comprehensions to filters if it gains speed (not sure it would)
+            if category == 'drains_fountains':
+                this_title = _('Breeding sites: Storm drains and fountains')
+                report_list = [report for report in these_reports if report.embornals or report.fonts]
+            elif category == 'basins':
+                this_title = _('Breeding sites: Basins')
+                report_list = [report for report in these_reports if report.basins]
+            elif category == 'buckets_wells':
+                this_title = _('Breeding sites: Buckets and wells')
+                report_list = [report for report in these_reports if report.buckets or report.wells]
+            elif category == 'other':
+                this_title = _('Breeding sites: Other')
+                report_list = [report for report in these_reports if report.other]
+            else:
+                this_title = _('Breeding sites: All reports')
+                report_list = these_reports
     else:
         this_title = _('Adult tiger mosquitoes: All reports')
         report_list = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))

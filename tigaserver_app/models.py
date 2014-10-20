@@ -432,7 +432,7 @@ class Report(models.Model):
                 return True
 
     def get_crowdcrafting_score(self):
-        if self.type not in ('site', 'adult') or self.hide is True:
+        if self.type not in ('site', 'adult'):
             return None
         these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
         if these_photos.count() == 0:
@@ -460,7 +460,7 @@ class Report(models.Model):
 
     def get_validated_photo_html(self):
         result = ''
-        if self.hide is True or self.type not in ('site', 'adult'):
+        if self.type not in ('site', 'adult'):
             return result
         these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
         for photo in these_photos:
