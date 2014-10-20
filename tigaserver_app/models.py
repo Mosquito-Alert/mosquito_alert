@@ -443,7 +443,10 @@ class Report(models.Model):
                 scores = map(lambda x: x.site_validation_score, these_tasks_filtered)
             else:
                 scores = map(lambda x: x.tiger_validation_score, these_tasks_filtered)
-        return max(scores)
+        if scores is None:
+            return None
+        else:
+            return max(scores)
 
     def get_is_crowd_validated(self):
         if self.get_crowdcrafting_score():

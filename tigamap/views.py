@@ -115,7 +115,7 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
         elif category == 'crowd_validated':
             this_title = _('Adult tiger mosquitoes: Validated reports')
             if these_reports:
-                report_list = filter(lambda x: x.get_crowdcrafting_score() > 0, these_reports)
+                report_list = filter(lambda x: x.get_crowdcrafting_score is not None, these_reports)
             else:
                 report_list = None
         else:
