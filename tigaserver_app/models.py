@@ -433,16 +433,14 @@ class Report(models.Model):
 
     def get_crowdcrafting_score(self):
         if self.type not in ('site', 'adult'):
-           scores = None
+            return None
+        these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
+        if these_photos.count() == 0:
+            return None
+        if self.type == 'site':
+            scores = map(lambda x: x.crowdcraftingtask.site_validation_score, these_photos.iterator())
         else:
-            these_tasks = CrowdcraftingTask.objects.filter(photo__report__version_UUID=self.version_UUID).annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
-            these_tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, these_tasks)
-            if len(these_tasks_filtered) == 0:
-                scores = None
-            elif self.type == 'site':
-                scores = map(lambda x: x.site_validation_score, these_tasks_filtered)
-            else:
-                scores = map(lambda x: x.tiger_validation_score, these_tasks_filtered)
+            scores = map(lambda x: x.crowdcraftingtask.tiger_validation_score, these_photos.iterator())
         if scores is None or len(scores) == 0:
             return None
         else:

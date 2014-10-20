@@ -103,16 +103,32 @@ td {
             {% for report in report_list %}
                 {% with lat=report.lat lon=report.lon %}
                 {% if lat != None and lon != None %}
+                    {% if validation == 'mark_validated' %}
+                        {% with score=report.get_crowdcrafting_score %}
+                            cluster_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated {% elif score and score < 0 %} thisIconContravalidated{% else %} thisIcon{% endif %}});
+                            basic_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated{% elif score and score < 0 %} thisIconContravalidated {% else %} thisIcon{% endif %}});
+                    if(show_popups){
+                    {% if report_type == 'adults' %}
+                        popup_text = '<table><tr><td>prob:</td><td>'+
+                                '{{ report.tigaprob_text }}</td></tr><tr><td>cc score:</td><td>{{ score|floatformat:2 }}</td></tr><tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ lon }}</td></tr></table>{{ report.get_validated_photo_html | safe }}';
+                   {%  else %}
+                        popup_text = '<table><tr><td>{% trans 'type' %}:</td><td>'+
+                                '{{ report.site_type_trans }}</td></tr><tr><td>cc score:</td><td>{{ score|floatformat:2  }}</td></tr><tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ report.lon }}</td></tr></table>{{ report.get_validated_photo_html | safe }}';
+                        }
+                   {%  endif %}
+                        {% endwith %}
+                    {% else %}
                     cluster_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if  validation == 'mark_validated' %} {% if report.get_is_crowd_validated == True %} thisIconValidated{% elif report.get_is_crowd_contravalidated == True %} thisIconContravalidated{% else %} thisIcon{% endif %}{% else %} thisIcon{% endif %}});
                     basic_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if  validation == 'mark_validated' %} {% if report.get_is_crowd_validated == True %} thisIconValidated{% elif report.get_is_crowd_contravalidated == True %} thisIconContravalidated{% else %} thisIcon{% endif %}{% else %} thisIcon{% endif %}});
                     if(show_popups){
                     {% if report_type == 'adults' %}
                         popup_text = '<table><tr><td>prob:</td><td>'+
-                                '{{ report.tigaprob_text }}</td></tr>{% if validation == 'mark_validated' %}<tr><td>cc score:</td><td>{{ report.get_crowdcrafting_score|floatformat:2 }}</td></tr>{% endif %}<tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ lon }}</td></tr></table>{% if validation == 'mark_validated' %}{{ report.get_validated_photo_html | safe }}{% endif %}';
+                                '{{ report.tigaprob_text }}</td></tr><tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ lon }}</td></tr></table>';
                    {%  else %}
                         popup_text = '<table><tr><td>{% trans 'type' %}:</td><td>'+
-                                '{{ report.site_type_trans }}</td></tr>{% if validation == 'mark_validated' %}<tr><td>cc score:</td><td>{{ report.get_crowdcrafting_score|floatformat:2  }}</td></tr>{% endif %}<tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ report.lon }}</td></tr></table>{% if validation == 'mark_validated' %}{{ report.get_validated_photo_html | safe }}{% endif %}';
+                                '{{ report.site_type_trans }}</td></tr><tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ report.lon }}</td></tr></table>';
                    {%  endif %}
+                   {% endif %}
                    {% if detailed == 'detailed' %}
                        popup_text = popup_text + '<br/>Date: {{ report.formatted_date }}';
                        popup_text = popup_text + '<br/><br/>User: {{ report.user }}';

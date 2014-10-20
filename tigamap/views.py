@@ -8,7 +8,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
 from django.contrib.auth.decorators import login_required
-from django.db.models import Max
+from django.db.models import Max, Count
 
 
 def show_grid_05(request):
@@ -99,28 +99,30 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
 
     # now for adults
     elif report_type == 'adults':
-        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
-        if category == 'medium':
-            this_title = _('Adult tiger mosquitoes: Medium and high probability reports')
-            if these_reports:
-                report_list = filter(lambda x: x.tigaprob > 0, these_reports)
-            else:
-                report_list = None
-        elif category == 'high':
-            this_title = _('Adult tiger mosquitoes: High probability reports')
-            if these_reports:
-                report_list = filter(lambda x: x.tigaprob == 1, these_reports)
-            else:
-                report_list = None
-        elif category == 'crowd_validated':
+        if category == 'crowd_validated':
             this_title = _('Adult tiger mosquitoes: Validated reports')
+            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).annotate(n_responses=Count('photos__crowdcraftingtask__responses')).filter(n_responses__gte=30))
             if these_reports:
-                report_list = filter(lambda x: x.get_crowdcrafting_score is not None, these_reports)
+                    report_list = filter(lambda x: x.get_crowdcrafting_score() is not None, these_reports)
             else:
                 report_list = None
         else:
-            this_title = _('Adult tiger mosquitoes: All reports')
-            report_list = these_reports
+            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+            if category == 'medium':
+                this_title = _('Adult tiger mosquitoes: Medium and high probability reports')
+                if these_reports:
+                    report_list = filter(lambda x: x.tigaprob > 0, these_reports)
+                else:
+                    report_list = None
+            elif category == 'high':
+                this_title = _('Adult tiger mosquitoes: High probability reports')
+                if these_reports:
+                    report_list = filter(lambda x: x.tigaprob == 1, these_reports)
+                else:
+                    report_list = None
+            else:
+                this_title = _('Adult tiger mosquitoes: All reports')
+                report_list = these_reports
 
     #  now sites
     elif report_type == 'sites':
