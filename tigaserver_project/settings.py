@@ -57,7 +57,8 @@ INSTALLED_APPS = (
     'rest_framework',
     'leaflet',
     'south',
-    'stats'
+    'stats',
+    'debug_toolbar',
 )
 
 MIDDLEWARE_CLASSES = (

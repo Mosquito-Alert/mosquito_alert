@@ -263,18 +263,18 @@ class Report(models.Model):
             return self.current_location_lon
 
     def get_tigaprob(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = 0
+        these_responses = self.responses.only('answer').values('answer').iterator()
+        response_score = 0
         total = 0
-        for this_response in these_responses:
+        for response in these_responses:
             total += 1
-            if 'Y' in this_response.answer or 'S' in this_response.answer:
-                result += 1
-            if this_response.answer == 'No':
-                result -= 1
+            if 'Y' in response['answer'] or 'S' in response['answer']:
+                response_score += 1
+            elif 'No' in response.values():
+                response_score -= 1
         if total == 0:
             total = 1
-        return float(result)/total
+        return float(response_score)/total
 
     def get_response_html(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID).order_by('question')
@@ -443,10 +443,19 @@ class Report(models.Model):
                 scores = map(lambda x: x.site_validation_score, these_tasks_filtered)
             else:
                 scores = map(lambda x: x.tiger_validation_score, these_tasks_filtered)
-        return scores
+        return max(scores)
 
     def get_is_crowd_validated(self):
-        return self.get_crowdcrafting_score() > settings.CROWD_VALIDATION_CUTOFF
+        if self.get_crowdcrafting_score():
+            return self.get_crowdcrafting_score() > settings.CROWD_VALIDATION_CUTOFF
+        else:
+            return False
+
+    def get_is_crowd_contravalidated(self):
+        if self.get_crowdcrafting_score():
+            return self.get_crowdcrafting_score() <= settings.CROWD_VALIDATION_CUTOFF
+        else:
+            return False
 
     def get_validated_photo_html(self):
         result = ''
@@ -482,9 +491,6 @@ class Report(models.Model):
     deleted = property(get_is_deleted)
     other_versions = property(get_other_versions)
     latest_version = property(get_is_latest)
-    crowdcrafting_score = property(get_crowdcrafting_score)
-    crowd_validated = property(get_is_crowd_validated)
-    validated_photo_html = property(get_validated_photo_html)
 
     class Meta:
         unique_together = ("user", "version_UUID")

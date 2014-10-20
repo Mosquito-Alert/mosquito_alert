@@ -62,6 +62,12 @@ td {
                 }
             });
 
+             var YellowIconContravalidated = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/yellow_icon_contravalidated.png" %}'
+                }
+            });
+
             var BlueIconValidated = L.Icon.Default.extend({
                 options: {
                     iconUrl: '{% static "tigamap/blue_icon_validated.png" %}'
@@ -69,13 +75,23 @@ td {
             });
 
 
+            var BlueIconContravalidated = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/blue_icon_contravalidated.png" %}'
+                }
+            });
+
+
             var thisIcon = new L.Icon.Default;
             var thisIconValidated = new L.Icon.Default;
+            var thisIconContravalidated = new L.Icon.Default;
             {% if report_type == 'adults' %}
                 thisIcon = new YellowIcon();
                 thisIconValidated = new YellowIconValidated();
+                thisIconContravalidated = new YellowIconContravalidated();
             {% elif report_type == 'sites' %}
                 thisIconValidated = new BlueIconValidated();
+                thisIconContravalidated = new BlueIconContravalidated();
             {% endif %}
 
             var show_popups = true;
@@ -85,20 +101,17 @@ td {
             var popup_text;
 
             {% for report in report_list %}
-                {% if report.lat != None and report.lon != None %}
-                    cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if validation == 'mark_validated' and report.crowd_validated == True %} thisIconValidated{% else %} thisIcon{% endif %}});
-                    basic_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: {% if  validation == 'mark_validated' and report.crowd_validated == True %} thisIconValidated{% else %} thisIcon{% endif %}});
+                {% with lat=report.lat lon=report.lon %}
+                {% if lat != None and lon != None %}
+                    cluster_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if  validation == 'mark_validated' %} {% if report.get_is_crowd_validated == True %} thisIconValidated{% elif report.get_is_crowd_contravalidated == True %} thisIconContravalidated{% else %} thisIcon{% endif %}{% else %} thisIcon{% endif %}});
+                    basic_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if  validation == 'mark_validated' %} {% if report.get_is_crowd_validated == True %} thisIconValidated{% elif report.get_is_crowd_contravalidated == True %} thisIconContravalidated{% else %} thisIcon{% endif %}{% else %} thisIcon{% endif %}});
                     if(show_popups){
                     {% if report_type == 'adults' %}
                         popup_text = '<table><tr><td>prob:</td><td>'+
-                                '{{ report.tigaprob_text }}</td></tr><tr><td>lat:</td>'+
-                                '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
-                                '{{ report.lon }}</td></tr></table>{{ report.validated_photo_html | safe }}';
+                                '{{ report.tigaprob_text }}</td></tr>{% if validation == 'mark_validated' %}<tr><td>cc score:</td><td>{{ report.get_crowdcrafting_score|floatformat:2 }}</td></tr>{% endif %}<tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ lon }}</td></tr></table>{% if validation == 'mark_validated' %}{{ report.get_validated_photo_html | safe }}{% endif %}';
                    {%  else %}
                         popup_text = '<table><tr><td>{% trans 'type' %}:</td><td>'+
-                                '{{ report.site_type_trans }}</td></tr><tr><td>lat:</td>'+
-                                '<td>{{ report.lat }}</td></tr><tr><td>lon:</td><td>'+
-                                '{{ report.lon }}</td></tr></table>{{ report.validated_photo_html | safe }}';
+                                '{{ report.site_type_trans }}</td></tr>{% if validation == 'mark_validated' %}<tr><td>cc score:</td><td>{{ report.get_crowdcrafting_score|floatformat:2  }}</td></tr>{% endif %}<tr><td>lat:</td><td>{{ lat }}</td></tr><tr><td>lon:</td><td>{{ report.lon }}</td></tr></table>{% if validation == 'mark_validated' %}{{ report.get_validated_photo_html | safe }}{% endif %}';
                    {%  endif %}
                    {% if detailed == 'detailed' %}
                        popup_text = popup_text + '<br/>Date: {{ report.formatted_date }}';
@@ -110,12 +123,13 @@ td {
                        {% endautoescape %}
                        popup_text = popup_text + '<br/><br/>Photos: {{ report.photo_html | safe }}';
                    {%  endif %}
-                        cluster_marker.bindPopup(popup_text)
-                        basic_marker.bindPopup(popup_text)
+                        cluster_marker.bindPopup(popup_text);
+                        basic_marker.bindPopup(popup_text);
                    }
                     markers_clustered.addLayer(cluster_marker);
                     markers_basic.addLayer(basic_marker);
                 {% endif %}
+                {% endwith %}
             {% endfor %}
 
             var baseMaps = {

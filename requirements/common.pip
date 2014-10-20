@@ -13,3 +13,4 @@ markdown
 django-leaflet
 tzlocal
 python-dateutil
+django-debug-toolbar

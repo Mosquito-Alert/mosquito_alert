@@ -8,6 +8,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max
 
 
 def show_grid_05(request):
@@ -60,10 +61,10 @@ def get_coverage(fix_list, report_list):
 
 
 def get_latest_reports(reports):
-    unique_report_ids = set(map(lambda r: r.report_id, reports))
+    unique_report_ids = set([r.report_id for r in reports])
     result = list()
     for this_id in unique_report_ids:
-        these_reports = sorted(filter(lambda report: report.report_id == this_id, reports),
+        these_reports = sorted([report for report in reports if report.report_id == this_id],
                                key=attrgetter('version_number'))
         if these_reports[0].version_number > -1:
             result.append(these_reports[-1])
@@ -71,17 +72,11 @@ def get_latest_reports(reports):
 
 
 def show_map(request, report_type='adults', category='all', data='live', detail='none', validation=''):
-    if data == 'beta':
-        these_reports = get_latest_reports(Report.objects.all().exclude(hide=True))
-        href_url_name = 'webmap.show_map_beta'
+    # set up hrefs and redirects
+    if detail == 'detailed':
+        href_url_name = 'webmap.show_map_detailed'
     else:
-        these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
-                                                                 Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)).exclude(hide=True))
-        if detail == 'detailed':
-            href_url_name = 'webmap.show_map_detailed'
-        else:
-            href_url_name = 'webmap.show_map'
+        href_url_name = 'webmap.show_map'
     hrefs = {'coverage': reverse(href_url_name, kwargs={'report_type': 'coverage', 'category': 'all'}),
                  'adults_all': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'all'}),
                  'adults_medium': reverse(href_url_name, kwargs={'report_type': 'adults', 'category': 'medium'}),
@@ -93,38 +88,44 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
                  'sites_other': reverse(href_url_name, kwargs={'report_type': 'sites', 'category': 'other'}),
                  }
     redirect_path = strip_lang(reverse(href_url_name, kwargs={'report_type': report_type, 'category': category}))
+
+    # set up reports for coverage
     if report_type == 'coverage':
-        if data == 'beta':
-            coverage_areas = get_coverage(Fix.objects.all(), these_reports)
-        else:
-            coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
+        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+        coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
         this_title = _('Coverage Map')
         context = {'coverage_list': coverage_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map.html', context)
-    elif report_type == 'beta_coverage':
-        if data == 'beta':
-            coverage_areas = get_coverage(Fix.objects.all(), these_reports)
-        else:
-            coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
-        this_title = _('Beta Coverage Map')
-        context = {'coverage_list': coverage_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
-        return render(request, 'tigamap/coverage_map_beta.html', context)
+
+    # now for adults
     elif report_type == 'adults':
-        these_reports = [report for report in these_reports if report.type == 'adult']
+        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
         if category == 'medium':
             this_title = _('Adult tiger mosquitoes: Medium and high probability reports')
-            report_list = [report for report in these_reports if report.tigaprob > 0]
+            if these_reports:
+                report_list = filter(lambda x: x.tigaprob > 0, these_reports)
+            else:
+                report_list = None
         elif category == 'high':
             this_title = _('Adult tiger mosquitoes: High probability reports')
-            report_list = [report for report in these_reports if report.tigaprob == 1]
+            if these_reports:
+                report_list = filter(lambda x: x.tigaprob == 1, these_reports)
+            else:
+                report_list = None
         elif category == 'crowd_validated':
             this_title = _('Adult tiger mosquitoes: Validated reports')
-            report_list = filter(lambda x: x.crowdcrafting_score > 0, these_reports)
+            if these_reports:
+                report_list = filter(lambda x: x.get_crowdcrafting_score() > 0, these_reports)
+            else:
+                report_list = None
         else:
             this_title = _('Adult tiger mosquitoes: All reports')
             report_list = these_reports
+
+    #  now sites
     elif report_type == 'sites':
-        these_reports = [report for report in these_reports if report.type == 'site']
+        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+        # TODO change these list comprehensions to filters if it gains speed (not sure it would)
         if category == 'drains_fountains':
             this_title = _('Breeding sites: Storm drains and fountains')
             report_list = [report for report in these_reports if report.embornals or report.fonts]
@@ -139,13 +140,13 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
             report_list = [report for report in these_reports if report.other]
         elif category == 'crowd_validated':
             this_title = _('Breeding Sites: Validated reports')
-            report_list = filter(lambda x: x.crowdcrafting_score > 0, these_reports)
+            report_list = filter(lambda x: x.get_crowdcrafting_score() > 0, these_reports)
         else:
             this_title = _('Breeding sites: All reports')
             report_list = these_reports
     else:
         this_title = _('Adult tiger mosquitoes: All reports')
-        report_list = [report for report in these_reports if report.type == 'adult']
+        report_list = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
     context = {'title': this_title, 'report_list': report_list, 'report_type': report_type,
                'redirect_to': redirect_path, 'hrefs': hrefs, 'detailed': detail, 'validation': validation}
     return render(request, 'tigamap/report_map.html', context)
