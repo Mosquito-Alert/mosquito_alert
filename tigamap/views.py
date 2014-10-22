@@ -9,7 +9,7 @@ from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Count
-
+import math
 
 def show_grid_05(request):
     fix_list = Fix.objects.all()
@@ -43,6 +43,28 @@ class CoverageArea():
         self.n_fixes += 1
 
 
+class OEArea():
+    lat = float
+    lon = float
+    background_fixes = int
+    report_fixes = int
+    adult_reports = int
+    occurrence = int
+    exposure = int
+    oe_rate = float
+
+    def __init__(self, lat, lon, background_fixes, report_fixes, adult_reports):
+        self.lat = lat
+        self.lon = lon
+        self.background_fixes = background_fixes
+        self.report_fixes = report_fixes
+        self.adult_reports = adult_reports
+        self.exposure = background_fixes + report_fixes
+        self.occurrence = adult_reports
+        if self.background_fixes > 0:
+            self.oe_rate = float(self.occurrence)/self.exposure
+
+
 def get_coverage(fix_list, report_list):
     result = list()
     full_lat_list = [f.masked_lat for f in fix_list] + [r.masked_lat for r in report_list if r.masked_lat is not None]
@@ -57,6 +79,28 @@ def get_coverage(fix_list, report_list):
         for this_lon in unique_lons:
             n_fixes = len([l for l in these_lons if l == this_lon])
             result.append(CoverageArea(this_lat, this_lon, n_fixes))
+    return result
+
+
+def get_oe_rates(fix_list, report_list):
+    result = list()
+    full_lat_list = [f.masked_lat for f in fix_list] + [r.masked_lat for r in report_list if r.masked_lat is not None]
+    unique_lats = set(full_lat_list)
+    for this_lat in unique_lats:
+        these_lons = [f.masked_lon for f in fix_list if f.masked_lat == this_lat] + [r.masked_lon for r in
+                                                                                     report_list if r.masked_lat is
+                                                                                                    not None and r
+                                                                                                        .masked_lat ==
+                                                                                                    this_lat]
+        these_background_fix_lons = [f.masked_lon for f in fix_list if f.masked_lat == this_lat]
+        these_report_fix_lons = [r.masked_lon for r in report_list if r.masked_lat is not None and r.masked_lat == this_lat]
+        these_adult_report_lons = [r.masked_lon for r in report_list if r.type == 'adult' and r.masked_lat is not None and r.masked_lat == this_lat]
+        unique_lons = set(these_lons)
+        for this_lon in unique_lons:
+            these_background_fixes = len([l for l in these_background_fix_lons if l == this_lon])
+            these_report_fixes = len([l for l in these_report_fix_lons if l == this_lon])
+            these_adult_reports = len([l for l in these_adult_report_lons if l == this_lon])
+            result.append(OEArea(lat=this_lat, lon=this_lon, background_fixes=these_background_fixes, report_fixes=these_report_fixes, adult_reports=these_adult_reports))
     return result
 
 
@@ -96,6 +140,14 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
         this_title = _('Coverage Map')
         context = {'coverage_list': coverage_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map.html', context)
+
+    # set up reports for oe-rates
+    if report_type == 'oe':
+        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+        oe_areas = get_oe_rates(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
+        this_title = _('Occurrence-Exposure Map')
+        context = {'area_list': oe_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
+        return render(request, 'tigamap/oe_map.html', context)
 
     # now for adults
     elif report_type == 'adults':

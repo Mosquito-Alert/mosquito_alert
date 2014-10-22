@@ -381,13 +381,13 @@ class Report(models.Model):
 
     def get_masked_lat(self):
         if self.lat is not None:
-            return floor(self.lat/.05)*.05
+            return round(floor(self.lat/.05)*.05, 2)
         else:
             return None
 
     def get_masked_lon(self):
         if self.lon is not None:
-            return floor(self.lon/.05)*.05
+            return round(floor(self.lon/.05)*.05, 2)
         else:
             return None
 
