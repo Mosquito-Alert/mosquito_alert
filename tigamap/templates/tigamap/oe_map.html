@@ -20,7 +20,7 @@
 
         {% for area in area_list %}
 
-        var popup_text = 'background fixes = {{ area.background_fixes }}<br>report fixes = {{ area.report_fixes }}<br>adult reports = {{ area.adult_reports }}<br>rate = {{ area.oe_rate|floatformat:2 }}<hr><i>notes: background fixes are defined as the masked location estimates taken at randomly sampled times from Tigatrapp-Android; report fixes are the location estimates associated with every report that users send (both sites and adults); rate is calculated as [adult reports] / ([background fixes] + [report fixes]).</i>';
+        var popup_text = '<p><b>background fixes</b> = {{ area.background_fixes }}<br><i>fixes taken at random times (Android only)</i></p><p><b>report fixes</b> = {{ area.report_fixes }}<br><i>fixes from reports (both sites and adults)</i></p><p><b>adult reports</b> = {{ area.adult_reports }}<br><i>number of adult reports</i></p><p><b>rate</b> = {{ area.oe_rate|floatformat:2 }}<br><i>[adult reports] / ([background fixes] + [report fixes])</i>';
 
         var fillOpacity = 0;
             {% if area.oe_rate > 0 %}

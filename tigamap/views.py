@@ -145,7 +145,7 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
     if report_type == 'oe':
         these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
         oe_areas = get_oe_rates(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
-        this_title = _('Occurrence-Exposure Map')
+        this_title = _('Pseudo Occurrence-Exposure Map')
         context = {'area_list': oe_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/oe_map.html', context)
 
