@@ -82,6 +82,8 @@
 
             <p>Visit the <a href="http://crowdcrafting.org/app/Tigafotos/">Tigafotos</a> project on crowdcrafting to see the questions and help validate more photos!</p>
 
+            <p><i>Number of validated photos as of {% now "DATETIME_FORMAT" %} UTC: {{ n_tasks }}</i></p>
+
 
         </div>
 
@@ -120,6 +122,22 @@
 
 
         {% endfor %}
+
+    <div class="pagination">
+    <span class="step-links">
+        {% if validated_tasks.has_previous %}
+            <a href="?page={{ validated_tasks.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ validated_tasks.number }} of {{ validated_tasks.paginator.num_pages }}.
+        </span>
+
+        {% if validated_tasks.has_next %}
+            <a href="?page={{ validated_tasks.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
 
     </div>
 
