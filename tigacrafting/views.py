@@ -33,7 +33,11 @@ def import_tasks():
                 this_photo = Photo.objects.get(id=task['info'][u'\ufeffid'])
                 # check for tasks that already have this photo: There should not be any BUT I accidentially added photos 802-810 in both the first and second crowdcrafting task batches
                 if CrowdcraftingTask.objects.filter(photo=this_photo).count() > 0:
-                    errors.append('Task with Photo ' + str(this_photo.id) + ' already exists. Not importing this task.')
+                    # do nothing if photo id beteen 802 and 810 since I already know about this
+                    if this_photo.id in range(802, 810):
+                        pass
+                    else:
+                        errors.append('Task with Photo ' + str(this_photo.id) + ' already exists. Not importing this task.')
                 else:
                     task_model.photo = this_photo
                     task_model.save()
@@ -61,10 +65,10 @@ def import_task_responses():
     r = requests.get('http://crowdcrafting.org/app/Tigafotos/tasks/export?type=task_run&format=json')
     response_array = json.loads(r.text)
     last_response_id = CrowdcraftingResponse.objects.all().aggregate(Max('response_id'))['response_id__max']
-    if last_response_id:
-        new_responses = filter(lambda x: x['id'] > last_response_id, response_array)
-    else:
-        new_responses = response_array
+ #   if last_response_id:
+ #       new_responses = filter(lambda x: x['id'] > last_response_id, response_array)
+ #   else:
+    new_responses = response_array
     for response in new_responses:
         existing_response = CrowdcraftingResponse.objects.filter(response_id=int(response['id']))
         if existing_response:
