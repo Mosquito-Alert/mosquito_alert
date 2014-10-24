@@ -34,7 +34,7 @@ def import_tasks():
                 # check for tasks that already have this photo: There should not be any BUT I accidentially added photos 802-810 in both the first and second crowdcrafting task batches
                 if CrowdcraftingTask.objects.filter(photo=this_photo).count() > 0:
                     # do nothing if photo id beteen 802 and 810 since I already know about this
-                    if this_photo.id in range(802, 810):
+                    if this_photo.id in range(802, 811):
                         pass
                     else:
                         errors.append('Task with Photo ' + str(this_photo.id) + ' already exists. Not importing this task.')
