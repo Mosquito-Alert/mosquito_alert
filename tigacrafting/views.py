@@ -65,16 +65,15 @@ def import_task_responses():
     r = requests.get('http://crowdcrafting.org/app/Tigafotos/tasks/export?type=task_run&format=json')
     response_array = json.loads(r.text)
     last_response_id = CrowdcraftingResponse.objects.all().aggregate(Max('response_id'))['response_id__max']
- #   if last_response_id:
- #       new_responses = filter(lambda x: x['id'] > last_response_id, response_array)
- #   else:
-    new_responses = response_array
+    if last_response_id:
+        new_responses = filter(lambda x: x['id'] > last_response_id, response_array)
+    else:
+       new_responses = response_array
     for response in new_responses:
         existing_response = CrowdcraftingResponse.objects.filter(response_id=int(response['id']))
         if existing_response:
             warnings.append('Response to task ' + str(response['task_id']) + ' by user ' + str(response['user_id']) + ' already exists. Skipping this response.')
         else:
-            print 'making new response'
             info_dic = {}
             info_fields = response['info'].replace('{', '').replace(' ', '').replace('}', '').split(',')
             for info_field in info_fields:
@@ -98,7 +97,6 @@ def import_task_responses():
                 this_task = CrowdcraftingTask.objects.get(task_id=response['task_id'])
                 response_model.task = this_task
             else:
-                print 'calling import)tasks'
                 import_tasks()
                 warnings.append('Task ' + str(response['task_id']) + ' did not exist, so import_tasks was called.')
                 existing_task = CrowdcraftingTask.objects.filter(task_id=response['task_id'])
