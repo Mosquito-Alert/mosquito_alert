@@ -7,3 +7,7 @@ body{
     padding-top: 50px;
 }
 
+
+.leaflet-popup-content {
+    height : 150px; overflow : auto;
+}
