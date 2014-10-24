@@ -107,7 +107,7 @@ def import_task_responses():
                     response_model.task = this_task
                 else:
                     errors.append('Cannot seem to import task ' + str(response['task_id']))
-                    break
+                    continue
             existing_user = CrowdcraftingUser.objects.filter(user_id=response['user_id'])
             if existing_user:
                 this_user = CrowdcraftingUser.objects.get(user_id=response['user_id'])
