@@ -9,5 +9,7 @@ body{
 
 
 .leaflet-popup-content {
-    height : 150px; overflow : auto;
+    max-height: 500px;
+    max-width: 400px;
+    overflow : auto;
 }
