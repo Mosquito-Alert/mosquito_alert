@@ -74,6 +74,7 @@ def import_task_responses():
         if existing_response:
             warnings.append('Response to task ' + str(response['task_id']) + ' by user ' + str(response['user_id']) + ' already exists. Skipping this response.')
         else:
+            print 'making new response'
             info_dic = {}
             info_fields = response['info'].replace('{', '').replace(' ', '').replace('}', '').split(',')
             for info_field in info_fields:
@@ -93,9 +94,11 @@ def import_task_responses():
             response_model.user_lang = info_dic['user_lang']
             existing_task = CrowdcraftingTask.objects.filter(task_id=response['task_id'])
             if existing_task:
+                print 'existing task'
                 this_task = CrowdcraftingTask.objects.get(task_id=response['task_id'])
                 response_model.task = this_task
             else:
+                print 'calling import)tasks'
                 import_tasks()
                 warnings.append('Task ' + str(response['task_id']) + ' did not exist, so import_tasks was called.')
                 existing_task = CrowdcraftingTask.objects.filter(task_id=response['task_id'])
@@ -124,8 +127,8 @@ def import_task_responses():
         if len(warnings) > 0:
             ef.write('<h1>tigacrafting.views.import_task_responses warnings</h1><p>' + barcelona.localize(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S UTC%z') + '</p><p>' + '</p><p>'.join(warnings) + '</p>')
         ef.close()
-        print '\n'.join(errors)
-        print '\n'.join(warnings)
+      #  print '\n'.join(errors)
+      #  print '\n'.join(warnings)
     return {'errors': errors, 'warnings': warnings}
 
 
