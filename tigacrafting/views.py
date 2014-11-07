@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response, get_object_or_404
 import requests
 import json
 from tigacrafting.models import *
@@ -9,8 +9,23 @@ import pytz
 import datetime
 from django.db.models import Max
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.decorators import login_required
+from random import shuffle
+from django.core.context_processors import csrf
+from django.views.generic.edit import FormView
+from django.core.urlresolvers import reverse_lazy
+from django.contrib.auth import authenticate, login
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
+from django.conf import settings
+from PIL import Image
+import shutil
+from django.http import HttpResponse
+from django.forms.models import modelformset_factory
+from django import forms
+from django.utils.translation import ugettext as _
+from forms import AnnotationForm
 
 
 def import_tasks():
@@ -134,15 +149,19 @@ def show_processing(request):
     return render(request, 'tigacrafting/please_wait.html')
 
 
+def filter_tasks(tasks):
+    tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, tasks)
+    return tasks_filtered
+
 @xframe_options_exempt
 def show_validated_photos(request, type='tiger'):
-    import_task_responses()
-    validated_tasks = CrowdcraftingTask.objects.annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
-    validated_tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, validated_tasks)
-    validation_score_dic = {'mosquito': 'mosquito_validation_score', 'site': 'site_validation_score', 'tiger': 'tiger_validation_score'}
-    individual_responses_dic = {'mosquito': 'mosquito_individual_responses_html', 'site': 'site_individual_responses_html', 'tiger': 'tiger_individual_responses_html'}
     title_dic = {'mosquito': 'Mosquito Validation Results', 'site': 'Breeding Site Validation Results', 'tiger': 'Tiger Mosquito Validation Results'}
     question_dic = {'mosquito': 'Do you see a mosquito in this photo?', 'site': 'Do you see a potential tiger mosquito breeding site in this photo?', 'tiger': 'Is this a tiger mosquito?'}
+    validation_score_dic = {'mosquito': 'mosquito_validation_score', 'site': 'site_validation_score', 'tiger': 'tiger_validation_score'}
+    individual_responses_dic = {'mosquito': 'mosquito_individual_responses_html', 'site': 'site_individual_responses_html', 'tiger': 'tiger_individual_responses_html'}
+    import_task_responses()
+    validated_tasks = CrowdcraftingTask.objects.annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
+    validated_tasks_filtered = filter_tasks(validated_tasks)
     validated_task_array = sorted(map(lambda x: {'id': x.id, 'report_type': x.photo.report.type, 'report_creation_time': x.photo.report.creation_time.strftime('%d %b %Y, %H:%M %Z'), 'lat': x.photo.report.lat, 'lon':  x.photo.report.lon, 'photo_image': x.photo.medium_image_(), 'validation_score': round(getattr(x, validation_score_dic[type]), 2), 'neg_validation_score': -1*round(getattr(x, validation_score_dic[type]), 2), 'individual_responses_html': getattr(x, individual_responses_dic[type])}, list(validated_tasks_filtered)), key=lambda x: -x['validation_score'])
     paginator = Paginator(validated_task_array, 25)
     page = request.GET.get('page')
@@ -154,8 +173,35 @@ def show_validated_photos(request, type='tiger'):
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         these_validated_tasks = paginator.page(paginator.num_pages)
-    context = {'type': type, 'title': title_dic[type], 'n_tasks': len(validated_tasks_filtered), 'question': question_dic[type], 'validated_tasks': these_validated_tasks}
+    context = {'type': type, 'title': title_dic[type], 'n_tasks': len(validated_task_array), 'question': question_dic[type], 'validated_tasks': these_validated_tasks}
     return render(request, 'tigacrafting/validated_photos.html', context)
 
 
+@login_required
+def annotate_tasks(request, how_many=None):
+    this_user = request.user
+    args = {}
+    args.update(csrf(request))
+    AnnotationFormset = modelformset_factory(Annotation, form=AnnotationForm, extra=0)
+    if request.method == 'POST':
+        formset = AnnotationFormset(request.POST)
+        if formset.is_valid():
+            formset.save()
+            return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
+        else:
+            return HttpResponse('error')
+    else:
+        # grab tasks
+#      import_task_responses()
+        validated_tasks = CrowdcraftingTask.objects.filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
+        # make blank annotations for this user as needed
+        validated_tasks_filtered = filter_tasks(validated_tasks)[:int(how_many)]
+        # make blank annotations for this user as needed
+        for this_task in validated_tasks_filtered:
+            if this_user not in [annotation.user for annotation in this_task.annotations.all()]:
+                new_annotation = Annotation(user=this_user, task=this_task)
+                new_annotation.save()
+        this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=validated_tasks_filtered))
+        args['formset'] = this_formset
+        return render_to_response('tigacrafting/expert_validation.html', args)

@@ -1,5 +1,7 @@
 from django.db import models
-
+from django.contrib.auth.models import User
+from datetime import datetime
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -113,3 +115,18 @@ class CrowdcraftingResponse(models.Model):
 
     def __unicode__(self):
         return str(self.id)
+
+
+class Annotation(models.Model):
+    user = models.ForeignKey(User, related_name='annotations')
+    task = models.ForeignKey(CrowdcraftingTask, related_name='annotations')
+    tiger_certainty_percent = models.IntegerField(validators = [MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
+    CERTAINTY_CATS = ((0, 'Definitely not'), ('1', 'Low probabilityb'), ('2', 'Medium probability'), ('3', 'High probability'),)
+    tiger_certainty_cats = models.IntegerField(choices=CERTAINTY_CATS, blank=True, null=True)
+    tiger_certainty_bool = models.NullBooleanField(blank=True, null=True)
+    notes = models.TextField(blank=True)
+    last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+
+    def __unicode__(self):
+        return "Annotation: " + str(self.id) + ", Task: " + str(self.task.task_id)

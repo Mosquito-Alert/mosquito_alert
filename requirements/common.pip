@@ -14,3 +14,4 @@ django-leaflet
 tzlocal
 python-dateutil
 django-debug-toolbar
+django-floppyforms==1.1

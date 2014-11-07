@@ -1,5 +1,6 @@
 {% load staticfiles %}
 {% load leaflet_tags %}
+{% load i18n %}
 
 <!DOCTYPE html>
 <html lang={% block language %}"en"{% endblock %}>
@@ -17,6 +18,11 @@
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
     {% endblock %}
+
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+
 
     {% block fa_css %}
         <!-- FA CSS -->
@@ -47,19 +53,12 @@
             }
         });
 
-        var site_icon_class = L.Icon.Default.extend({
-            options: {
-                iconUrl: '{% static "tigamap/blue_icon.png" %}'
-            }
-        });
-
         var mosquito_icon = new mosquito_icon_class;
-        var site_icon = new site_icon_class;
 
-        {% for task in validated_tasks %}
-        function map_init_basic{{ task.id }}(map, options) {
+        {% for form in formset %}
+        function map_init_basic{{ form.instance.task.id }}(map, options) {
 
-            L.marker([{{ task.lat }}, {{ task.lon }}], {icon: mosquito_icon}).addTo(map);
+            L.marker([{{ form.instance.task.photo.report.lat }}, {{ form.instance.task.photo.report.lon }}], {icon: mosquito_icon}).addTo(map);
 
 
         }
@@ -76,44 +75,35 @@
 
         <div class="page-header">
 
-{% block page_title_and_description %}
 
-            <h1>{{ title }}</h1>
+            <h1>{% trans "Tigatrapp Expert Validation" %}</h1>
 
-            <p>The validation scores shown by each photo range from -1 to 1, and they represent the average of thirty citizen scientists' responses to the crowdcrafting question: {{ question }} A response of 'yes' has a score of 1 and a response of 'no' has a score of -1. A response of 'not sure' or a blank response has a score of 0.</p>
+            <p>Thank you for agreeing to help validate Tigatrapp photos! The photos displayed here were sent by citizen scientists, and they have all been checked by 30 volunteers on Crowdcrafting. We would now like to compare the volunteers' assessments with your expert assessment. For each photo, please indicate your level of certainty as to whether there is a tiger mosquito in the photo.</p>
 
-            <p>Visit the <a href="http://crowdcrafting.org/app/Tigafotos/">Tigafotos</a> project on crowdcrafting to see the questions and help validate more photos!</p>
 
-            <p><i>Number of validated photos as of {% now "DATETIME_FORMAT" %} UTC: {{ n_tasks }}</i></p>
 
-{% endblock %}
         </div>
 
-
-        {% for task in validated_tasks %}
-
-
+    <form method="post" action="#">{% csrf_token %}
+    {{ formset.management_form }}
+        {% for form in formset %}
             <div class="row">
 
                 <div class="col-md-3">
-{% block left_column_content %}
-                    <h4>{% if task.report_type == 'adult' %}Tiger mosquito report{% elif task.report_type == 'site' %}Breeding site report{% else %}Report{% endif %}</h4>
-                    <p>{{ task.report_creation_time }}</p>
-                    <p>Question: "{{ question }}"</p>
-                    <p>Validation Score: <span class="badge" style="color:{% if task.validation_score >= 0 %}black{% else %}white{% endif %}; background-color: {% if task.validation_score >= 0 %}rgba(0,255,0,{{ task.validation_score }}){% else %}rgba(255,0,0, {{ task.neg_validation_score }}){% endif %};">{{ task.validation_score }}</span></p>
-                   {{ task.individual_responses_html | safe }}
+                    <h4>Tiger mosquito report</h4>
+                    <p>{{ form.instance.task.report_creation_time }}</p>
+                            {{ form.as_p }}
 
-{% endblock %}
                 </div>
 
                 <div class="col-md-5">
 
-                    {{ task.photo_image | safe}}
+                    {{ form.instance.task.photo_image | safe}}
 
                 </div>
 
                 <div class="col-md-4">
-                    <div id="photo{{ task.id }}" class="task_map-container"></div>
+                    <div id="photo{{ form.instance.task.id }}" class="task_map-container"></div>
                 </div>
 
             </div>
@@ -127,26 +117,12 @@
 
 
         {% endfor %}
+              <input type="submit" value="{% trans "Save All" %}" style="position:fixed;top:10px; margin: 0 auto"/>
+</form>
 
-    <div class="pagination">
-    <span class="step-links">
-        {% if validated_tasks.has_previous %}
-            <a href="?page={{ validated_tasks.previous_page_number }}">previous</a>
-        {% endif %}
 
-        <span class="current">
-            Page {{ validated_tasks.number }} of {{ validated_tasks.paginator.num_pages }}.
-        </span>
-
-        {% if validated_tasks.has_next %}
-            <a href="?page={{ validated_tasks.next_page_number }}">next</a>
-        {% endif %}
-    </span>
-</div>
 
     </div>
-
-
 
 
 {% endblock %}
@@ -157,7 +133,7 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+
     <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
     <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/docs.min.js" %}></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
@@ -168,10 +144,10 @@
         (function () {
             function loadmap() {
 
-                {% for task in validated_tasks %}
+                {% for form in formset %}
 
-                var centerLat = {{ task.lat }};
-                var centerLng = {{ task.lon }};
+                var centerLat = {{ form.instance.task.photo.report.lat }};
+                var centerLng = {{ form.instance.task.photo.report.lon }};
                 var initialZoom = 6;
                 var djoptions = {"layers": [
                             ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -187,8 +163,8 @@
                         options = {djoptions: djoptions, initfunc: loadmap,
                             globals: false, callback: window.map_init_basic};
 
-                    L.Map.djangoMap('photo{{ task.id }}', {djoptions: djoptions, initfunc: loadmap,
-                        globals: false, callback: eval("window.map_init_basic{{ task.id }}")});
+                    L.Map.djangoMap('photo{{ form.instance.task.id }}', {djoptions: djoptions, initfunc: loadmap,
+                        globals: false, callback: eval("window.map_init_basic{{ form.instance.task.id }}")});
                 {% endfor %}
 
             }
@@ -199,6 +175,19 @@
             else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
         })();
     </script>
+
+
+
+        <script>
+
+    $("form").addClass("form-horizontal").attr("role", "form");
+
+    $("#submit_button").click(function() {
+    $("#page_title").html('<h1>{% trans "Saving, please wait." %} <i class="fa fa-refresh fa-spin"></i></h1>');
+
+    })
+    </script>
+
 
 
 {% endblock %}

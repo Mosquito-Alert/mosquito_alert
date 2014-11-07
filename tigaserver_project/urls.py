@@ -10,7 +10,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap import views
 from stats.views import show_usage, show_report_users, show_fix_users
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import show_validated_photos, show_processing
+from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks
 
 admin.autodiscover()
 
@@ -70,6 +70,7 @@ urlpatterns += i18n_patterns('',
     url(r'^stats/$', show_usage),
     url(r'^reportstats/$', show_report_users),
     url(r'^tigacrafting_photos/(?P<type>[-\w]+)/$', show_validated_photos),
+    url(r'^export_validation/(?P<how_many>[1-9]+)/$', annotate_tasks),
     url(r'^coveragestats/$', show_fix_users),
     url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
     url(r'^processing/$', show_processing),

@@ -1,0 +1,22 @@
+{% include "floppyforms/input.html" %}
+<p id="{{ attrs.id }}-slider-value">Current value:</p>
+<div id="{{ attrs.id }}-slider"></div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    var type = $('<input type="range" />').attr('type');
+    if (type == 'text') { // No HTML5 support
+      $('#{{ attrs.id }}').attr("readonly", true);
+      $('#{{ attrs.id }}-slider').slider({
+        {% if value %}value: {{ value }},{% endif %}
+        min: {{ attrs.min }},
+        max: {{ attrs.max }},
+        step: {{ attrs.step }},
+        slide: function(event, ui) {
+          $('#{{ attrs.id }}').val(ui.value);
+          $('#{{ attrs.id }}-slider-value').html("new");
+        }
+      });
+    }
+  });
+</script>

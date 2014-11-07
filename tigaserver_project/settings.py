@@ -58,7 +58,7 @@ INSTALLED_APPS = (
     'leaflet',
     'south',
     'stats',
-    'debug_toolbar',
+    'floppyforms',
 )
 
 MIDDLEWARE_CLASSES = (
