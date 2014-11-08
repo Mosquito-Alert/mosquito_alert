@@ -196,12 +196,13 @@ def annotate_tasks(request, how_many=None):
 #      import_task_responses()
         validated_tasks = CrowdcraftingTask.objects.filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
         # make blank annotations for this user as needed
-        validated_tasks_filtered = filter_tasks(validated_tasks)[:int(how_many)]
+        validated_tasks_filtered = filter_tasks(validated_tasks)
+        task_sample = validated_tasks_filtered[:int(how_many)]
         # make blank annotations for this user as needed
-        for this_task in validated_tasks_filtered:
+        for this_task in task_sample:
             if this_user not in [annotation.user for annotation in this_task.annotations.all()]:
                 new_annotation = Annotation(user=this_user, task=this_task)
                 new_annotation.save()
-        this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=validated_tasks_filtered))
+        this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=task_sample))
         args['formset'] = this_formset
-        return render_to_response('tigacrafting/expert_validation.html', args)
+        return render(request, 'tigacrafting/expert_validation.html', args)

@@ -22,7 +22,12 @@
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+<style>
+    #ex1Slider .slider-selection {
+	background: #BABABA;
+}
 
+</style>
 
     {% block fa_css %}
         <!-- FA CSS -->
@@ -68,21 +73,54 @@
 
 </head>
 
-<body>
+<body style="padding-top: 70px;">
+
+{% block navbar %}
+    <!-- NAVBAR
+================================================== -->
+           <div class="navbar-wrapper">
+            <div class="container">
+             <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">{% trans "Toggle navigation" %}</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div id="gear" class="navbar-brand"><span style="color:#ff9900">Tigatrapp Expert Validation</span></div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                    <li><p class="navbar-text">Logged in as: {{ request.user.username }}</p></li>
+                        <li><a href="{% url "auth_logout" %}">logout</a>
+                    </li>
+                       </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
 
 {% block main_body %}
+
     <div class="container theme-showcase" role="main">
 
-        <div class="page-header">
+            <div class="starter-template">
 
+            <div class="page-header">
+                        <div id="page_title" class="page-header">
+<h3>Instructions</h3>
+</div>
 
-            <h1>{% trans "Tigatrapp Expert Validation" %}</h1>
+            <p>For each photo, please indicate your degree of belief that the photo shows a tiger mosquito, where 0% represents certainty that it does not show a tiger mosquito, 50% represents equal odds, and 100% represents certainty that it does show a tiger mosquito. Click "Save" to save your responses on the server.</p>
+</div>
 
-            <p>Thank you for agreeing to help validate Tigatrapp photos! The photos displayed here were sent by citizen scientists, and they have all been checked by 30 volunteers on Crowdcrafting. We would now like to compare the volunteers' assessments with your expert assessment. For each photo, please indicate your level of certainty as to whether there is a tiger mosquito in the photo.</p>
-
-
-
-        </div>
 
     <form method="post" action="#">{% csrf_token %}
     {{ formset.management_form }}
@@ -90,10 +128,8 @@
             <div class="row">
 
                 <div class="col-md-3">
-                    <h4>Tiger mosquito report</h4>
-                    <p>{{ form.instance.task.report_creation_time }}</p>
-                            {{ form.as_p }}
-
+ <br><br>
+                    {{ form.as_p }}
                 </div>
 
                 <div class="col-md-5">
@@ -103,12 +139,13 @@
                 </div>
 
                 <div class="col-md-4">
+                <p>{{ form.instance.task.photo.report.creation_time }} UTC</p>
                     <div id="photo{{ form.instance.task.id }}" class="task_map-container"></div>
                 </div>
 
             </div>
 
-
+<br>
             <div class="border-row">
 
             <br>
@@ -117,13 +154,13 @@
 
 
         {% endfor %}
-              <input type="submit" value="{% trans "Save All" %}" style="position:fixed;top:10px; margin: 0 auto"/>
+              <input id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;" value="{% trans "Save All" %}"/>
 </form>
 
 
 
     </div>
-
+</div>
 
 {% endblock %}
 
@@ -179,13 +216,19 @@
 
 
         <script>
-
+ $(document).ready(function() {
     $("form").addClass("form-horizontal").attr("role", "form");
 
-    $("#submit_button").click(function() {
-    $("#page_title").html('<h1>{% trans "Saving, please wait." %} <i class="fa fa-refresh fa-spin"></i></h1>');
 
-    })
+    $("#save_button").click(function() {
+    $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');}).position({
+        my: "middle top",
+        at: "middle bottom",
+        of: "#navbar",
+        collision: "fit"
+      });
+
+ })
     </script>
 
 

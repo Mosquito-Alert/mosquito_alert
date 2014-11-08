@@ -120,10 +120,7 @@ class CrowdcraftingResponse(models.Model):
 class Annotation(models.Model):
     user = models.ForeignKey(User, related_name='annotations')
     task = models.ForeignKey(CrowdcraftingTask, related_name='annotations')
-    tiger_certainty_percent = models.IntegerField(validators = [MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
-    CERTAINTY_CATS = ((0, 'Definitely not'), ('1', 'Low probabilityb'), ('2', 'Medium probability'), ('3', 'High probability'),)
-    tiger_certainty_cats = models.IntegerField(choices=CERTAINTY_CATS, blank=True, null=True)
-    tiger_certainty_bool = models.NullBooleanField(blank=True, null=True)
+    tiger_certainty_percent = models.IntegerField('Degree of belief', validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
     notes = models.TextField(blank=True)
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())

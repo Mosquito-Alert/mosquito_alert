@@ -1,9 +1,17 @@
 {% include "floppyforms/input.html" %}
-<p id="{{ attrs.id }}-slider-value">Current value:</p>
 <div id="{{ attrs.id }}-slider"></div>
 
 <script type="text/javascript">
+
   $(document).ready(function() {
+  var range = $('#{{ attrs.id }}');
+  var range_label = $('label[for="{{ attrs.id }}"]').html("Degree of belief: " + range.val() + "%");
+
+  range.change(function(){
+    range_label.html("Degree of belief: " + range.val() + "%");
+  }).on('input', function(){
+          $('label[for="{{ attrs.id }}"]').html("Degree of belief: " + range.val() + "%");
+  });
     var type = $('<input type="range" />').attr('type');
     if (type == 'text') { // No HTML5 support
       $('#{{ attrs.id }}').attr("readonly", true);
@@ -14,9 +22,9 @@
         step: {{ attrs.step }},
         slide: function(event, ui) {
           $('#{{ attrs.id }}').val(ui.value);
-          $('#{{ attrs.id }}-slider-value').html("new");
         }
       });
     }
   });
+
 </script>
