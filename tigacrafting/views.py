@@ -193,8 +193,6 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
         else:
             return HttpResponse('error')
     else:
-        # grab tasks
-#      import_task_responses()
         if which == 'noted_only':
             Annotation.objects.filter(working_on=True).update(working_on=False)
             this_queryset = Annotation.objects.filter(user=request.user, value_changed=False).exclude(notes="")
@@ -208,6 +206,7 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
         if which == 'working_on':
             this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, working_on=True))
         if which == 'new':
+            import_task_responses()
             annotated_task_ids = Annotation.objects.filter(user=this_user).exclude( tiger_certainty_percent=None).exclude(value_changed=False).values('task__id')
             validated_tasks = CrowdcraftingTask.objects.exclude(id__in=annotated_task_ids).exclude(photo__report__hide=True).exclude(photo__hide=True).filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30)
             validated_tasks_filtered = filter_tasks(validated_tasks)
