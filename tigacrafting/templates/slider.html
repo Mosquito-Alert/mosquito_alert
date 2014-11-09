@@ -4,13 +4,19 @@
 <script type="text/javascript">
 
   $(document).ready(function() {
-  var range = $('#{{ attrs.id }}');
-  var range_label = $('label[for="{{ attrs.id }}"]').html("Degree of belief: " + range.val() + "%");
+  var range_id = "{{ attrs.id }}";
+  var value_changed_id = range_id.replace('tiger_certainty_percent', 'value_changed');
+  var range = $('#' + range_id);
+  var range_label = $('label[for="' + range_id + '"]').html("Degree of belief: " + range.val() + "%");
+  var value_changed = $('#' + value_changed_id).hide();
+  var value_changed_label = $('label[for="' + value_changed_id + '"]').hide();
 
   range.change(function(){
     range_label.html("Degree of belief: " + range.val() + "%");
+    value_changed.prop('checked', true);
   }).on('input', function(){
-          $('label[for="{{ attrs.id }}"]').html("Degree of belief: " + range.val() + "%");
+          range_label.html("Degree of belief: " + range.val() + "%");
+          value_changed.prop('checked', true);
   });
     var type = $('<input type="range" />').attr('type');
     if (type == 'text') { // No HTML5 support

@@ -121,9 +121,11 @@ class Annotation(models.Model):
     user = models.ForeignKey(User, related_name='annotations')
     task = models.ForeignKey(CrowdcraftingTask, related_name='annotations')
     tiger_certainty_percent = models.IntegerField('Degree of belief', validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
+    value_changed = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    working_on = models.BooleanField(default=False)
 
     def __unicode__(self):
         return "Annotation: " + str(self.id) + ", Task: " + str(self.task.task_id)

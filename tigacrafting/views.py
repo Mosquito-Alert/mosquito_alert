@@ -178,7 +178,7 @@ def show_validated_photos(request, type='tiger'):
 
 
 @login_required
-def annotate_tasks(request, how_many=None):
+def annotate_tasks(request, how_many=None, which='new'):
     this_user = request.user
     args = {}
     args.update(csrf(request))
@@ -187,22 +187,32 @@ def annotate_tasks(request, how_many=None):
         formset = AnnotationFormset(request.POST)
         if formset.is_valid():
             formset.save()
-            return HttpResponseRedirect(request.META['HTTP_REFERER'])
+            return HttpResponseRedirect(reverse('annotate_tasks', kwargs={'which': 'working_on', 'how_many': how_many}))
 
         else:
             return HttpResponse('error')
     else:
         # grab tasks
 #      import_task_responses()
-        validated_tasks = CrowdcraftingTask.objects.filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
-        # make blank annotations for this user as needed
-        validated_tasks_filtered = filter_tasks(validated_tasks)
-        task_sample = validated_tasks_filtered[:int(how_many)]
-        # make blank annotations for this user as needed
-        for this_task in task_sample:
-            if this_user not in [annotation.user for annotation in this_task.annotations.all()]:
-                new_annotation = Annotation(user=this_user, task=this_task)
-                new_annotation.save()
-        this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=task_sample))
+        if which == 'completed':
+            this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user).exclude( tiger_certainty_percent=None).exclude(value_changed=False))
+        if which == 'working_on':
+            this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, working_on=True))
+        if which == 'new':
+            annotated_task_ids = Annotation.objects.filter(user=this_user).exclude( tiger_certainty_percent=None).exclude(value_changed=False).values('task__id')
+            validated_tasks = CrowdcraftingTask.objects.exclude(id__in=annotated_task_ids).exclude(photo__report__hide=True).exclude(photo__hide=True).filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30)
+            validated_tasks_filtered = filter_tasks(validated_tasks)
+            shuffle(validated_tasks_filtered)
+            task_sample = validated_tasks_filtered[:int(how_many)]
+            # reset working_on annotations
+            Annotation.objects.filter(working_on=True).update(working_on=False)
+            # set working on for existsing declarations:
+            Annotation.objects.filter(user=this_user, task__in=task_sample).update(working_on=True)
+            # make blank annotations for this user as needed
+            for this_task in task_sample:
+                if not Annotation.objects.filter(user=this_user, task=this_task).exists():
+                    new_annotation = Annotation(user=this_user, task=this_task, workiing_on=True)
+                    new_annotation.save()
+            this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=task_sample))
         args['formset'] = this_formset
         return render(request, 'tigacrafting/expert_validation.html', args)
