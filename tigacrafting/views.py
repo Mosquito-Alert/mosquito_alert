@@ -187,15 +187,22 @@ def annotate_tasks(request, how_many=None, which='new'):
         formset = AnnotationFormset(request.POST)
         if formset.is_valid():
             formset.save()
-            return HttpResponseRedirect(reverse('annotate_tasks', kwargs={'which': 'working_on', 'how_many': how_many}))
-
+            return HttpResponseRedirect(reverse('annotate_tasks_all', kwargs={'which': 'working_on'}))
         else:
             return HttpResponse('error')
     else:
         # grab tasks
 #      import_task_responses()
+        if which == 'noted_only':
+            Annotation.objects.filter(working_on=True).update(working_on=False)
+            this_queryset = Annotation.objects.filter(user=request.user, value_changed=False).exclude(notes="")
+            this_queryset.update(working_on=True)
+            this_formset = AnnotationFormset(queryset=this_queryset)
         if which == 'completed':
-            this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user).exclude( tiger_certainty_percent=None).exclude(value_changed=False))
+            Annotation.objects.filter(working_on=True).update(working_on=False)
+            this_queryset = Annotation.objects.filter(user=request.user).exclude( tiger_certainty_percent=None).exclude(value_changed=False)
+            this_queryset.update(working_on=True)
+            this_formset = AnnotationFormset(queryset=this_queryset)
         if which == 'working_on':
             this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, working_on=True))
         if which == 'new':
@@ -203,7 +210,10 @@ def annotate_tasks(request, how_many=None, which='new'):
             validated_tasks = CrowdcraftingTask.objects.exclude(id__in=annotated_task_ids).exclude(photo__report__hide=True).exclude(photo__hide=True).filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30)
             validated_tasks_filtered = filter_tasks(validated_tasks)
             shuffle(validated_tasks_filtered)
-            task_sample = validated_tasks_filtered[:int(how_many)]
+            if how_many is not None:
+                task_sample = validated_tasks_filtered[:int(how_many)]
+            else:
+                task_sample = validated_tasks_filtered
             # reset working_on annotations
             Annotation.objects.filter(working_on=True).update(working_on=False)
             # set working on for existsing declarations:
@@ -211,7 +221,7 @@ def annotate_tasks(request, how_many=None, which='new'):
             # make blank annotations for this user as needed
             for this_task in task_sample:
                 if not Annotation.objects.filter(user=this_user, task=this_task).exists():
-                    new_annotation = Annotation(user=this_user, task=this_task, workiing_on=True)
+                    new_annotation = Annotation(user=this_user, task=this_task, working_on=True)
                     new_annotation.save()
             this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=task_sample))
         args['formset'] = this_formset

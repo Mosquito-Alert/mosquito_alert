@@ -94,6 +94,16 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav navbar-right">
+                                                  <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Menu" %}
+                                    <span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href={% url 'annotate_tasks' 'new' '50' %}>{% trans "New batch" %}</a></li>
+                                    <li><a href={% url 'annotate_tasks_all' 'noted_only' %}>{% trans "Photos you have taken notes on but not yet scored" %}</a></li>
+                                     <li><a href={% url 'annotate_tasks_all' 'completed' %}>{% trans "Photos you have already scored" %}</a></li>
+                                </ul>
+                            </li>
+
                     <li><p class="navbar-text">Logged in as: {{ request.user.username }}</p></li>
                         <li><a href="{% url "auth_logout" %}">logout</a>
                     </li>
@@ -154,7 +164,9 @@
 
 
         {% endfor %}
-              <input id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;" value="{% trans "Save All" %}"/>
+    <button id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;">
+  <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
+</button>
 </form>
 
 
