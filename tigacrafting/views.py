@@ -178,16 +178,18 @@ def show_validated_photos(request, type='tiger'):
 
 
 @login_required
-def annotate_tasks(request, how_many=None, which='new'):
+def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
     this_user = request.user
     args = {}
     args.update(csrf(request))
+    args['scroll_position'] = scroll_position
     AnnotationFormset = modelformset_factory(Annotation, form=AnnotationForm, extra=0)
     if request.method == 'POST':
+        scroll_position = request.POST.get("scroll_position", '0')
         formset = AnnotationFormset(request.POST)
         if formset.is_valid():
             formset.save()
-            return HttpResponseRedirect(reverse('annotate_tasks_all', kwargs={'which': 'working_on'}))
+            return HttpResponseRedirect(reverse('annotate_tasks_scroll_position', kwargs={'which': 'working_on', 'scroll_position': scroll_position}))
         else:
             return HttpResponse('error')
     else:

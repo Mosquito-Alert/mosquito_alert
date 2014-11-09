@@ -98,9 +98,9 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Menu" %}
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu" role="menu">
-                                    <li><a href={% url 'annotate_tasks' 'new' '50' %}>{% trans "New batch" %}</a></li>
-                                    <li><a href={% url 'annotate_tasks_all' 'noted_only' %}>{% trans "Photos you have taken notes on but not yet scored" %}</a></li>
-                                     <li><a href={% url 'annotate_tasks_all' 'completed' %}>{% trans "Photos you have already scored" %}</a></li>
+                                    <li><a href={% url 'annotate_tasks' 'new' %}>{% trans "New batch" %}</a></li>
+                                    <li><a href={% url 'annotate_tasks' 'noted_only' %}>{% trans "Photos you have taken notes on but not yet scored" %}</a></li>
+                                     <li><a href={% url 'annotate_tasks' 'completed' %}>{% trans "Photos you have already scored" %}</a></li>
                                 </ul>
                             </li>
 
@@ -132,7 +132,7 @@
 </div>
 
 
-    <form method="post" action="#">{% csrf_token %}
+    <form method="post">{% csrf_token %}
     {{ formset.management_form }}
         {% for form in formset %}
             <div class="row">
@@ -164,6 +164,9 @@
 
 
         {% endfor %}
+
+    <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
+
     <button id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;">
   <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
 </button>
@@ -228,9 +231,14 @@
 
 
         <script>
+    var scroll_position = parseInt({{ scroll_position }});
+    if(scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)){
+    $(window).scrollTop(scroll_position);
+    }
+
+
  $(document).ready(function() {
     $("form").addClass("form-horizontal").attr("role", "form");
-
 
     $("#save_button").click(function() {
     $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');}).position({
@@ -241,6 +249,13 @@
       });
 
  })
+
+var scroll_position_input = $("#scroll_position");
+
+$(window).scroll(function (event) {
+    var scroll = $(window).scrollTop();
+    scroll_position_input.val(scroll);
+});
     </script>
 
 
