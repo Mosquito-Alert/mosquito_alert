@@ -28,6 +28,8 @@
         step: {{ attrs.step }},
         slide: function(event, ui) {
           $('#{{ attrs.id }}').val(ui.value);
+          range_label.html("Degree of belief: " + range.val() + "%");
+          value_changed.prop('checked', true);
         }
       });
     }

@@ -217,7 +217,7 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
                 task_sample = validated_tasks_filtered
             # reset working_on annotations
             Annotation.objects.filter(working_on=True).update(working_on=False)
-            # set working on for existsing declarations:
+            # set working on for existing annotations:
             Annotation.objects.filter(user=this_user, task__in=task_sample).update(working_on=True)
             # make blank annotations for this user as needed
             for this_task in task_sample:
