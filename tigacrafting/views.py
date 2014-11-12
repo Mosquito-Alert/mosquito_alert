@@ -247,7 +247,9 @@ def movelab_annotation(request, scroll_position=''):
             else:
                 return HttpResponse('error')
         else:
-            tasks_without_annotations = CrowdcraftingTask.objects.filter(movelab_annotation=None)
+            import_tasks()
+            tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
+            tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
             for this_task in tasks_without_annotations:
                 new_annotation = MoveLabAnnotation(task=this_task)
                 new_annotation.save()
