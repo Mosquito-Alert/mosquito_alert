@@ -129,3 +129,14 @@ class Annotation(models.Model):
 
     def __unicode__(self):
         return "Annotation: " + str(self.id) + ", Task: " + str(self.task.task_id)
+
+
+class MoveLabAnnotation(models.Model):
+    task = models.OneToOneField(CrowdcraftingTask, related_name='movelab_annotation')
+    CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
+    tiger_certainty_category = models.IntegerField('Certainty', choices=CATEGORIES, blank=True, null=True)
+    certainty_notes = models.TextField(blank=True)
+    hide = models.BooleanField('Hide photo from public', default=False)
+    edited_user_notes = models.TextField(blank=True)
+    last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    created = models.DateTimeField(auto_now_add=True, default=datetime.now())

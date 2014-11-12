@@ -10,7 +10,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap import views
 from stats.views import show_usage, show_report_users, show_fix_users
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks
+from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks, movelab_annotation
 
 admin.autodiscover()
 
@@ -74,6 +74,8 @@ urlpatterns += i18n_patterns('',
     'new'}, name='annotate_tasks_fifty_new'),
     url(r'^expert_validation/(?P<which>\w+)/$', annotate_tasks, name='annotate_tasks'),
     url(r'^expert_validation/(?P<which>\w+)/(?P<scroll_position>\w+)/$', annotate_tasks, name='annotate_tasks_scroll_position'),
+    url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
+    url(r'^movelab_annotation/(?P<scroll_position>\w+)/$', movelab_annotation, name='movelab_annotation_scroll_position'),
     url(r'^coveragestats/$', show_fix_users),
     url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
     url(r'^processing/$', show_processing),

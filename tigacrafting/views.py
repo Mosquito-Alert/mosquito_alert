@@ -25,7 +25,7 @@ from django.http import HttpResponse
 from django.forms.models import modelformset_factory
 from django import forms
 from django.utils.translation import ugettext as _
-from forms import AnnotationForm
+from forms import AnnotationForm, MovelabAnnotationForm
 
 
 def import_tasks():
@@ -227,3 +227,43 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
             this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=task_sample))
         args['formset'] = this_formset
         return render(request, 'tigacrafting/expert_validation.html', args)
+
+
+@login_required
+def movelab_annotation(request, scroll_position=''):
+    this_user = request.user
+    if request.user.groups.filter(name='movelab').exists():
+        args = {}
+        args.update(csrf(request))
+        args['scroll_position'] = scroll_position
+        AnnotationFormset = modelformset_factory(MoveLabAnnotation, form=MovelabAnnotationForm, extra=0)
+        if request.method == 'POST':
+            scroll_position = request.POST.get("scroll_position", '0')
+            formset = AnnotationFormset(request.POST)
+            if formset.is_valid():
+                formset.save()
+                page = request.GET.get('page')
+                return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'scroll_position': scroll_position}) + '?page='+page)
+            else:
+                return HttpResponse('error')
+        else:
+            tasks_without_annotations = CrowdcraftingTask.objects.filter(movelab_annotation=None)
+            for this_task in tasks_without_annotations:
+                new_annotation = MoveLabAnnotation(task=this_task)
+                new_annotation.save()
+            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
+            paginator = Paginator(all_annotations, 10) # Show 10 forms per page
+            page = request.GET.get('page')
+            try:
+                objects = paginator.page(page)
+            except PageNotAnInteger:
+                objects = paginator.page(1)
+            except EmptyPage:
+                objects = paginator.page(paginator.num_pages)
+            page_query = all_annotations.filter(id__in=[object.id for object in objects])
+            this_formset = AnnotationFormset(queryset=page_query)
+            args['formset'] = this_formset
+            args['objects'] = objects
+        return render(request, 'tigacrafting/movelab_validation.html', args)
+    else:
+        return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
