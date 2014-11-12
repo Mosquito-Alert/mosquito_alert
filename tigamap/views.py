@@ -4,6 +4,7 @@ from datetime import date
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from tigaserver_app.models import Fix, Report
+from tigacrafting.models import MoveLabAnnotation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 from operator import itemgetter, attrgetter
@@ -231,3 +232,8 @@ def show_single_report_map(request, version_uuid, detail='detailed'):
     context = {'report_list': this_report, 'detailed': detail}
     return render(request, 'tigamap/embedded.html', context)
 
+
+def show_validated_photo_map(request):
+    these_annotations = MoveLabAnnotation.objects.exclude(tiger_certainty_category=None).exclude(task__photo__report__type='site', tiger_certainty_category__lte=0)
+    context = {'annotation_list': these_annotations}
+    return render(request, 'tigamap/validated_photo_map.html', context)

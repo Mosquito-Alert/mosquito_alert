@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap.min.css" %}>
     <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap-theme.min.css" %}>
-    <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}>
+{% block custom_map_style %}    <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}> {% endblock %}
 <script>
 // The following code is adapted from Creare's 'Implied Consent' EU Cookie Law Banner v:2.4
 // Conceived by Robert Kent, James Bavington & Tom Foyster

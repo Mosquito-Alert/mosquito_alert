@@ -1,0 +1,137 @@
+{% extends "tigamap/app.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load leaflet_tags %}
+
+{% block custom_map_style %}
+
+{% endblock %}
+
+{% block leaflet_code %}
+
+<style>
+table {
+    border-collapse: collapse;
+    font-size:small;
+}
+
+table, td, th {
+    border: 1px solid black;
+}
+
+td {
+    padding: 0px;
+}
+
+
+.color-box{
+    width:100%;
+    text-align: center;
+    vertical-align: middle;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+
+.red{
+    background-color: red;
+}
+
+.orange{
+    background-color: orange;
+}
+
+.note-div{
+    font-size:small;
+    padding:5px;
+    background-color:#eeee55;
+    font-family: 'Just Another Hand', cursive;
+    color: #212121;
+}
+
+
+</style>
+
+        {% leaflet_js plugins="marker_cluster_yellow" %}
+        {% leaflet_css plugins="marker_cluster_yellow" %}
+
+
+    <script type="text/javascript">
+
+        function map_init_basic(map, options) {
+
+            map.on('zoomend', function(e){
+                saveMapState(map)
+            });
+            map.on('dragend', function(e){
+                saveMapState(map)
+            });
+
+
+
+            var markers_clustered = new L.MarkerClusterGroup();
+
+            var markers_basic = new L.LayerGroup();
+
+            var YellowIcon = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+                }
+            });
+
+            var YellowIconValidated = L.Icon.Default.extend({
+                options: {
+                    iconUrl: '{% static "tigamap/yellow_icon_contravalidated.png" %}'
+                }
+            });
+
+
+
+            var thisIcon = new YellowIcon();
+            var thisIconValidated = new YellowIconValidated();
+
+            var cluster_marker;
+            var basic_marker;
+            var popup_text;
+
+                var popup_options ={
+                'closeButton': false
+                };
+
+
+            {% for annotation in annotation_list %}
+                {% with lat=annotation.task.photo.report.lat lon=annotation.task.photo.report.lon %}
+                {% if lat != None and lon != None %}
+                {% with score=annotation.tiger_certainty_category %}
+                    {% with crowd_score=annotation.task.get_tiger_validation_score %}
+                    cluster_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated {% else %} thisIcon{% endif %}});
+                    basic_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated {% else %} thisIcon{% endif %}});
+                    popup_text = '<table><tr><td><div class="color-box {% if score == 1 %}orange{% elif score == 2 %}red{% endif %}">E</div></td><td><div class="color-box {% if crowd_score > 0 and crowd_score <= .5 %}orange{% elif crowd_score > .5 %}red{% endif %}">C</div></td></tr><tr><td colspan="2">{{ annotation.task.photo.small_image_ | safe }}</td></tr>{% if annotation.edited_user_notes != "" %}<tr><td colspan="2"><div class="note-div">{{ annotation.edited_user_notes }}</div></td></tr>{% endif %}</table>';
+
+                {% endwith %}
+                {% endwith %}
+                   cluster_marker.bindPopup(popup_text, popup_options);
+                   basic_marker.bindPopup(popup_text, popup_options);
+
+                    markers_clustered.addLayer(cluster_marker);
+                    markers_basic.addLayer(basic_marker);
+                {% endif %}
+                {% endwith %}
+            {% endfor %}
+
+            var baseMaps = {
+                "{% trans 'clusters' %}": markers_clustered,
+                "{% trans 'points' %}": markers_basic
+            };
+
+            markers_clustered.addTo(map);
+
+            L.control.layers(baseMaps, null).addTo(map);
+        }
+
+    </script>
+
+
+{% endblock %}
+
+
