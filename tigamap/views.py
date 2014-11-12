@@ -234,6 +234,8 @@ def show_single_report_map(request, version_uuid, detail='detailed'):
 
 
 def show_validated_photo_map(request):
+    href_url_name = 'validated_photo_map'
+    redirect_path = strip_lang(reverse(href_url_name))
     these_annotations = MoveLabAnnotation.objects.exclude(tiger_certainty_category=None).exclude(task__photo__report__type='site', tiger_certainty_category__lte=0)
-    context = {'annotation_list': these_annotations}
+    context = {'annotation_list': these_annotations, 'redirect_to': redirect_path}
     return render(request, 'tigamap/validated_photo_map.html', context)

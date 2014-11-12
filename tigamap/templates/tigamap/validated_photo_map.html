@@ -10,6 +10,22 @@
 {% block leaflet_code %}
 
 <style>
+
+td {
+    padding: 15px;
+    vertical-align: bottom;
+}
+
+body{
+    padding-top: 50px;
+}
+
+.leaflet-popup-content {
+    max-height: 300px;
+    min-width: 120px !important;
+    overflow : auto;
+}
+
 table {
     border-collapse: collapse;
     font-size:small;
@@ -30,6 +46,17 @@ td {
     vertical-align: middle;
     padding-top: 10px;
     padding-bottom: 10px;
+}
+
+
+.black{
+    background-color: black;
+    color:white;
+}
+
+.grey{
+    background-color: grey;
+    color:white;
 }
 
 
@@ -106,7 +133,7 @@ td {
                     {% with crowd_score=annotation.task.get_tiger_validation_score %}
                     cluster_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated {% else %} thisIcon{% endif %}});
                     basic_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated {% else %} thisIcon{% endif %}});
-                    popup_text = '<table><tr><td><div class="color-box {% if score == 1 %}orange{% elif score == 2 %}red{% endif %}">E</div></td><td><div class="color-box {% if crowd_score > 0 and crowd_score <= .5 %}orange{% elif crowd_score > .5 %}red{% endif %}">C</div></td></tr><tr><td colspan="2">{{ annotation.task.photo.small_image_ | safe }}</td></tr>{% if annotation.edited_user_notes != "" %}<tr><td colspan="2"><div class="note-div">{{ annotation.edited_user_notes }}</div></td></tr>{% endif %}</table>';
+                    popup_text = '<table><tr><td><div class="color-box {% if score == -2 %}black{% elif score == -1 %}grey{% elif score == 1 %}orange{% elif score == 2 %}red{% endif %}">E</div></td><td><div class="color-box {% if crowd_score > 0 and crowd_score <= .5 %}orange{% elif crowd_score > .5 %}red{% elif crowd_score < -0.5 %}black{% elif crowd_score < 0 and crowd_score >= -0.5 %}red{% endif %}">C</div></td></tr><tr><td colspan="2">{{ annotation.task.photo.small_image_ | safe }}</td></tr>{% if annotation.edited_user_notes != "" %}<tr><td colspan="2"><div class="note-div">{{ annotation.edited_user_notes }}</div></td></tr>{% endif %}</table>';
 
                 {% endwith %}
                 {% endwith %}
@@ -134,4 +161,20 @@ td {
 
 {% endblock %}
 
+            {% block photo_menu %}
+                                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        {%  trans 'Photos' %}<b
+                                class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href={{ hrefs.photos_all }}
+                                >{% trans 'All photos' %}</a></li>
+                        <li><a href={{ hrefs.photos_medium }}>
+                            {% trans 'Medium and high probability photos only' %}</a></li>
+                        <li><a href={{ hrefs.photos_high }}>
+                            {% trans 'High probability photos only' %}</a></li>
+                    </ul>
+                </li>
+
+            {% endblock %}
 
