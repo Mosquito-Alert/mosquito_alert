@@ -230,7 +230,7 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
 
 
 @login_required
-def movelab_annotation(request, scroll_position=''):
+def movelab_annotation(request, scroll_position='', tasks_per_page='50'):
     this_user = request.user
     if request.user.groups.filter(name='movelab').exists():
         args = {}
@@ -243,7 +243,9 @@ def movelab_annotation(request, scroll_position=''):
             if formset.is_valid():
                 formset.save()
                 page = request.GET.get('page')
-                return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'scroll_position': scroll_position}) + '?page='+page)
+                if not page:
+                    page = '1'
+                return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
             else:
                 return HttpResponse('error')
         else:
@@ -254,7 +256,7 @@ def movelab_annotation(request, scroll_position=''):
                 new_annotation = MoveLabAnnotation(task=this_task)
                 new_annotation.save()
             all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            paginator = Paginator(all_annotations, 10) # Show 10 forms per page
+            paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
                 objects = paginator.page(page)
@@ -266,6 +268,8 @@ def movelab_annotation(request, scroll_position=''):
             this_formset = AnnotationFormset(queryset=page_query)
             args['formset'] = this_formset
             args['objects'] = objects
+            args['pages'] = range(1, objects.paginator.num_pages+1)
+            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
         return render(request, 'tigacrafting/movelab_validation.html', args)
     else:
         return HttpResponse("You need to be logged in as a MoveLab member to view this page.")

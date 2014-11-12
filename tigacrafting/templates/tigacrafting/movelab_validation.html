@@ -93,12 +93,38 @@
                         <div id="gear" class="navbar-brand"><span style="color:#ff9900">Tigatrapp Movelab Validation</span></div>
                     </div>
                     <div class="navbar-collapse collapse">
+
+
+
                         <ul class="nav navbar-nav navbar-right">
+
+
+                                                   <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Photos per page" %}
+                                    <span class="caret"></span></a>
+                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                    {% for n in tasks_per_page_choices %}
+                                    <li><a href="{% url 'movelab_annotation_tasks_per_page' n %}">{{ n }}</a></li>
+                                       {% endfor %}
+                                </ul>
+                            </li>
+
+
+
 
                     <li><p class="navbar-text">Logged in as: {{ request.user.username }}</p></li>
                         <li><a href="{% url "auth_logout" %}">logout</a>
                     </li>
                        </ul>
+
+                                                                <form class="navbar-form navbar-right" style="margin-right: 5px">
+  <div class="form-group">
+    <input type="number" min="1" max="{{ objects.paginator.num_pages }}" class="form-control input-sm" id="page_input" placeholder="Go to page" style="width:100px;">
+     <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+ </div>
+
+                                                                </form>
+
                     </div>
                 </div>
             </div>
@@ -170,6 +196,10 @@
 </button>
 </form>
 
+<div class="row">
+
+                <div class="col-md-12">
+
   <div class="pagination">
         <span class="step-links">
             {% if objects.has_previous %}
@@ -185,6 +215,11 @@
             {% endif %}
         </span>
     </div>
+
+
+</div>
+                    </div>
+
 {% else %}
     <p>There are no objects.</p>
 {% endif %}
@@ -274,7 +309,16 @@ $(window).scroll(function (event) {
     var scroll = $(window).scrollTop();
     scroll_position_input.val(scroll);
 });
+
+
+$("#page_button").on('click', function () {
+
+    window.location.href = "?page=" + $("#page_input").val();
+
+  })
+
     </script>
+
 
 
 
