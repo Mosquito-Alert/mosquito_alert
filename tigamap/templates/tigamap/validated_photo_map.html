@@ -21,9 +21,7 @@ body{
 }
 
 .leaflet-popup-content {
-    max-height: 300px;
-    min-width: 120px !important;
-    overflow : auto;
+    overflow-y : auto;
 }
 
 table {
@@ -122,6 +120,8 @@ td {
             var popup_text;
 
                 var popup_options ={
+                'minWidth': 150,
+                'maxHeight': 250,
                 'closeButton': false
                 };
 
@@ -133,7 +133,7 @@ td {
                     {% with crowd_score=annotation.task.get_tiger_validation_score %}
                     cluster_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated {% else %} thisIcon{% endif %}});
                     basic_marker = L.marker([{{ lat }}, {{ lon }}], {icon: {% if score > 0 %} thisIconValidated {% else %} thisIcon{% endif %}});
-                    popup_text = '<table><tr><td><div class="color-box {% if score == -2 %}black{% elif score == -1 %}grey{% elif score == 1 %}orange{% elif score == 2 %}red{% endif %}">E</div></td><td><div class="color-box {% if crowd_score > 0 and crowd_score <= .5 %}orange{% elif crowd_score > .5 %}red{% elif crowd_score < -0.5 %}black{% elif crowd_score < 0 and crowd_score >= -0.5 %}red{% endif %}">C</div></td></tr><tr><td colspan="2">{{ annotation.task.photo.small_image_ | safe }}</td></tr>{% if annotation.edited_user_notes != "" %}<tr><td colspan="2"><div class="note-div">{{ annotation.edited_user_notes }}</div></td></tr>{% endif %}</table>';
+                    popup_text = '<table><tr><td><div class="color-box {% if score == -2 %}black{% elif score == -1 %}grey{% elif score == 1 %}orange{% elif score == 2 %}red{% endif %}">E</div></td><td><div class="color-box {% if crowd_score > 0 and crowd_score <= .5 %}orange{% elif crowd_score > .5 %}red{% elif crowd_score < -0.5 %}black{% elif crowd_score < 0 and crowd_score >= -0.5 %}red{% endif %}">C</div></td></tr><tr><td colspan="2">{{ annotation.task.photo.small_image_ | safe }}</td></tr>{% if annotation.edited_user_notes != "" %}<tr><td colspan="2"><div class="note-div">{{ annotation.edited_user_notes | escapejs }}</div></td></tr>{% endif %}</table>';
 
                 {% endwith %}
                 {% endwith %}
