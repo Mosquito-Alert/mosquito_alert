@@ -170,7 +170,7 @@ class PhotoAdmin(admin.ModelAdmin):
     readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
     fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting]
-    list_max_show_all = 2000
+    list_max_show_all = 400
 
     def report_link(self, obj):
         return '<a href="/admin/tigaserver_app/report/%s">%s</a>' % (obj.report, obj.report)
