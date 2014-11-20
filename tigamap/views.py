@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Count
 import math
 
+
 def show_grid_05(request):
     fix_list = Fix.objects.all()
     context = {'fix_list': fix_list}

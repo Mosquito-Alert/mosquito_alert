@@ -155,7 +155,7 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
         smart_str(u"uuid"),
     ])
     for obj in queryset:
-        if not obj.report.deleted and not obj.hide:
+        if not obj.report.deleted and not obj.report.hide and not obj.hide and obj.report.latest_version:
             writer.writerow([
                 smart_str(obj.id),
                 smart_str(obj.uuid),
