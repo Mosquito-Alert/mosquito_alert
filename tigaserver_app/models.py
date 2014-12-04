@@ -467,6 +467,18 @@ class Report(models.Model):
             result += '<br>' + photo.small_image_() + '<br>'
         return result
 
+    def get_expert_annotation(self):
+        if self.type not in ('site', 'adult'):
+            return None
+        these_photos = self.photos.exclude(hide=True)
+        if these_photos.count() == 0:
+            return None
+        annotations = map(lambda x: x.crowdcraftingtask.movelab_annotation.tiger_certainty_category, filter(lambda x: hasattr(x, 'crowdcraftingtask') and hasattr(x.crowdcraftingtask, 'movelab_annotation'), these_photos.iterator()))
+        if annotations is None or len(annotations) == 0:
+            return None
+        else:
+            return max(annotations)
+
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)

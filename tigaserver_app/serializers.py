@@ -150,3 +150,13 @@ class ConfigurationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Configuration
+
+
+class MapDataSerializer(serializers.ModelSerializer):
+    creation_time = serializers.DateTimeField()
+    type = serializers.CharField()
+    lon = serializers.Field()
+    lat = serializers.Field()
+
+    class Meta:
+        model = Report

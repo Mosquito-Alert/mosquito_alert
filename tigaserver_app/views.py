@@ -6,10 +6,14 @@ from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
-
+import django_filters
+from datetime import datetime
+import pytz
+import calendar
+import json
 
 from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
-    ConfigurationSerializer
+    ConfigurationSerializer, MapDataSerializer
 from models import TigaUser, Mission, Report, Photo, \
     Fix, Configuration
 
@@ -286,3 +290,73 @@ def lookup_photo(request, token, photo_uuid, size):
         else:
             url = this_photo.photo.url
         return HttpResponseRedirect(url)
+
+
+START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
+
+IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
+
+def get_data_time_info(request):
+    # setting fixed start time based on release date to avoid the pre-release beta reports
+    start_time = START_TIME
+    end_time = Report.objects.latest('creation_time').creation_time
+    # adding 1 to include the last dayin the set
+    days = (end_time - start_time).days + 1
+    json_response = {'start_time_posix': calendar.timegm(start_time.utctimetuple()), 'end_time_posix': calendar.timegm(end_time.utctimetuple()), 'n_days': days}
+    return HttpResponse(json.dumps(json_response))
+
+
+from datetime import timedelta
+
+
+def filter_creation_day(queryset, days_since_launch):
+    if not days_since_launch:
+        return queryset
+    try:
+        target_day_start = START_TIME + timedelta(days=days_since_launch)
+        target_day_end = START_TIME + timedelta(days=days_since_launch+1)
+        result = queryset.filter(creation_time__range=(target_day_start, target_day_end))
+        return result
+    except ValueError:
+        return queryset
+
+
+def filter_creation_week(queryset, weeks_since_launch):
+    if not weeks_since_launch:
+        return queryset
+    try:
+        target_week_start = START_TIME + timedelta(weeks=weeks_since_launch)
+        target_week_end = START_TIME + timedelta(weeks=weeks_since_launch+1)
+        result = queryset.filter(creation_time__range=(target_week_start, target_week_end))
+        return result
+    except ValueError:
+        return queryset
+
+
+class MapDataFilter(django_filters.FilterSet):
+    day = django_filters.Filter(action=filter_creation_day)
+    week = django_filters.Filter(action=filter_creation_week)
+
+    class Meta:
+        model = Report
+        fields = ['day', 'week']
+
+
+from operator import attrgetter
+
+
+def get_latest_reports_qs(reports):
+    unique_report_ids = set([r.report_id for r in reports])
+    result_ids = list()
+    for this_id in unique_report_ids:
+        these_reports = sorted([report for report in reports if report.report_id == this_id],
+                               key=attrgetter('version_number'))
+        if these_reports[0].version_number > -1:
+            result_ids.append(these_reports[-1].version_UUID)
+    return Report.objects.filter(version_UUID__in=result_ids)
+
+
+class MapDataViewSet(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+    serializer_class = MapDataSerializer
+    filter_class = MapDataFilter
