@@ -11,7 +11,7 @@ def export_full_csv(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
     this_meta = queryset[0]._meta
     response['Content-Disposition'] = 'attachment; filename=tigatrapp_export_ ' + smart_str(this_meta.db_table) + '.csv'
-    writer = csv.writer(response, csv.excel, quotechar=",")
+    writer = csv.writer(response, csv.excel, quoting=csv.QUOTE_NONNUMERIC)
     response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
     colnames = []
     for field in this_meta.fields:
@@ -30,7 +30,7 @@ def export_full_csv_sc(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
     this_meta = queryset[0]._meta
     response['Content-Disposition'] = 'attachment; filename=tigatrapp_export_ ' + smart_str(this_meta.db_table) + '.csv'
-    writer = csv.writer(response, csv.excel, delimiter=";", quotechar=";")
+    writer = csv.writer(response, csv.excel, delimiter=";",  quoting=csv.QUOTE_NONNUMERIC)
     response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
     colnames = []
     for field in this_meta.fields:
