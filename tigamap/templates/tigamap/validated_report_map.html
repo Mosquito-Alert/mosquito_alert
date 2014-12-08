@@ -24,13 +24,8 @@
 
     </style>
 
-    {% if report_type == 'adults' %}
         {% leaflet_js plugins="marker_cluster_yellow" %}
         {% leaflet_css plugins="marker_cluster_yellow" %}
-    {% else %}
-        {% leaflet_js plugins="marker_cluster_blue" %}
-        {% leaflet_css plugins="marker_cluster_blue" %}
-    {% endif %}
 
 
     <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
@@ -38,6 +33,13 @@
 
     <script type="text/javascript">
 
+                    var markers_clustered = new L.MarkerClusterGroup();
+                    var YellowIcon = L.Icon.Default.extend({
+                        options: {
+                            iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+                        }
+                    });
+                    var thisIcon = new YellowIcon();
 
         function get_data(day, map) {
             var csrftoken = $.cookie('csrftoken');
@@ -54,26 +56,22 @@
                 success: function (data) {
 
                     if(data != null && data.length > 0){
-                    var markers_clustered = new L.MarkerClusterGroup();
-                    var YellowIcon = L.Icon.Default.extend({
-                        options: {
-                            iconUrl: '{% static "tigamap/yellow_icon.png" %}'
-                        }
-                    });
-                    var thisIcon = new YellowIcon();
 
                     $.each(data, function(index, value) {
                         if(value != null && value.lat != null && value.lon != null && value.type != null){
                         var cluster_marker = L.marker([value.lat, value.lon], {icon: thisIcon});
                         cluster_marker.bindPopup(value.type);
                         markers_clustered.addLayer(cluster_marker);
+
+                        L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(value.type).addTo(map);
                         }
                     });
 
-                    markers_clustered.addTo(map);
                     }
-                    if(day < 100){
+                    if(day < {{ end_day }}){
                     get_data(day + 1, map);
+                    } else if(day == {{ end_day }}){
+                    markers_clustered.addTo(map);
                     }
                 }
             });

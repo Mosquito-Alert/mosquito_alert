@@ -307,6 +307,13 @@ def get_data_time_info(request):
     return HttpResponse(json.dumps(json_response))
 
 
+def get_n_days():
+    # setting fixed start time based on release date to avoid the pre-release beta reports
+    start_time = START_TIME
+    end_time = Report.objects.latest('creation_time').creation_time
+    # adding 1 to include the last dayin the set
+    return (end_time - start_time).days + 1
+
 from datetime import timedelta
 
 

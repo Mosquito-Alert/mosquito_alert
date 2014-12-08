@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Count
 import math
 from django.core.context_processors import csrf
+from tigaserver_app.views import get_n_days
 
 
 def show_grid_05(request):
@@ -246,6 +247,6 @@ def show_validated_photo_map(request):
 def show_validated_report_map(request):
     href_url_name = 'validated_photo_map'
     redirect_path = strip_lang(reverse(href_url_name))
-    context = {'redirect_to': redirect_path}
+    context = {'redirect_to': redirect_path, 'end_day': get_n_days()}
     context.update(csrf(request))
     return render(request, 'tigamap/validated_report_map.html', context)
