@@ -38,10 +38,10 @@
 
     <script type="text/javascript">
 
-        function get_data(map) {
+        function get_data(day, map) {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
-                url: 'http://tigaserver.atrapaeltigre.com/api/map_data/',
+                url: 'http://tigaserver.atrapaeltigre.com/api/map_data/' + day + "/",
                 contentType: 'application/json',
                 dataType: 'json',
                 headers: {
@@ -52,7 +52,6 @@
                 },
                 success: function (data) {
                     var markers_clustered = new L.MarkerClusterGroup();
-                    var markers_basic = new L.LayerGroup();
                     var YellowIcon = L.Icon.Default.extend({
                         options: {
                             iconUrl: '{% static "tigamap/yellow_icon.png" %}'
@@ -63,21 +62,12 @@
                     $.each(data, function(index, value) {
                         if(value != null && value.lat != null && value.lon != null && value.type != null){
                         var cluster_marker = L.marker([value.lat, value.lon], {icon: thisIcon});
-                        var basic_marker = L.marker([value.lat, value.lon], {icon: thisIcon});
                         cluster_marker.bindPopup(value.type);
-                        basic_marker.bindPopup(value.type);
                         markers_clustered.addLayer(cluster_marker);
-                        markers_basic.addLayer(basic_marker);
                         }
                     });
 
-                    var baseMaps = {
-                        "{% trans 'clusters' %}": markers_clustered,
-                        "{% trans 'points' %}": markers_basic
-                    };
-
                     markers_clustered.addTo(map);
-                    L.control.layers(baseMaps, null).addTo(map);
                 }
             });
         }
@@ -92,8 +82,9 @@
                 saveMapState(map)
             });
 
-            get_data(map);
-
+            for(var d = 0; d < 100; d++){
+            get_data(d, map);
+            }
         }
 
     </script>
