@@ -41,7 +41,7 @@
         function get_data(day, map) {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
-                url: 'http://tigaserver.atrapaeltigre.com/api/map_data/' + day + "/",
+                url: 'http://tigaserver.atrapaeltigre.com/api/map_data/?day=' + day,
                 contentType: 'application/json',
                 dataType: 'json',
                 headers: {
