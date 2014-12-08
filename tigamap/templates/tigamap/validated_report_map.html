@@ -61,7 +61,7 @@
                     var thisIcon = new YellowIcon();
 
                     $.each(data, function(index, value) {
-                        if(value != null){
+                        if(value != null && value.lat != null && value.lon != null && value.type != null){
                         var cluster_marker = L.marker([value.lat, value.lon], {icon: thisIcon});
                         var basic_marker = L.marker([value.lat, value.lon], {icon: thisIcon});
                         cluster_marker.bindPopup(value.type);
