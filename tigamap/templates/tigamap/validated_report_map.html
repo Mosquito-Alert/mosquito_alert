@@ -38,6 +38,7 @@
 
     <script type="text/javascript">
 
+
         function get_data(day, map) {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
@@ -68,6 +69,9 @@
                     });
 
                     markers_clustered.addTo(map);
+                    if(day < 100){
+                    get_data(day + 1);
+                    }
                 }
             });
         }
@@ -82,9 +86,8 @@
                 saveMapState(map)
             });
 
-            for(var d = 0; d < 100; d++){
-            get_data(d, map);
-            }
+            get_data(0, map);
+
         }
 
     </script>
