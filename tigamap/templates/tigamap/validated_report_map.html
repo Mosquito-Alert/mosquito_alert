@@ -38,19 +38,7 @@
 
     <script type="text/javascript">
 
-        function suppress(event) {
-            if (!event)
-                return false;
-            if (event.preventDefault)
-                event.preventDefault();
-            if (event.stopPropagation)
-                event.stopPropagation();
-            if (event.cancelBubble)
-                event.cancelBubble = true;
-            return false;
-        }
-
-        function get_data(event) {
+        function get_data() {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
                 url: 'http://tigaserver.atrapaeltigre.com/api/map_data/',
@@ -91,7 +79,6 @@
                     L.control.layers(baseMaps, null).addTo(map);
                 }
             });
-            return suppress(event);
         }
 
 
@@ -104,7 +91,7 @@
                 saveMapState(map)
             });
 
-            get_data(event);
+            get_data();
 
         }
 
