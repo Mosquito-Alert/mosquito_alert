@@ -52,6 +52,8 @@
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 },
                 success: function (data) {
+
+                    if(data != null && data.length > 0){
                     var markers_clustered = new L.MarkerClusterGroup();
                     var YellowIcon = L.Icon.Default.extend({
                         options: {
@@ -69,6 +71,7 @@
                     });
 
                     markers_clustered.addTo(map);
+                    }
                     if(day < 100){
                     get_data(day + 1);
                     }
