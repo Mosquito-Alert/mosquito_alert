@@ -78,6 +78,7 @@
 
                     markers_clustered.addTo(map);
                     L.control.layers(baseMaps, null).addTo(map);
+                    map.addLayer(markers_clustered);
                 }
             });
         }
