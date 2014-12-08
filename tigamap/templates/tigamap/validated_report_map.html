@@ -60,12 +60,13 @@
                     });
                     var thisIcon = new YellowIcon();
 
-                    for (var i = 0; i < data.length; i++) {
-                        var this_report = data[i];
-                        var cluster_marker = L.marker([this_report.lat, this_report.lon], {icon: thisIcon});
-                        var basic_marker = L.marker([this_report.lat, this_report.lon], {icon: thisIcon});
-                        cluster_marker.bindPopup(this_report.type);
-                        basic_marker.bindPopup(this_report.type);
+                    $.each(data, function(index, value) {
+                        console.log(value.lon);
+                        console.log(value.lat);
+                        var cluster_marker = L.marker([value.lat, value.lon], {icon: thisIcon});
+                        var basic_marker = L.marker([value.lat, value.lon], {icon: thisIcon});
+                        cluster_marker.bindPopup(value.type);
+                        basic_marker.bindPopup(value.type);
                         markers_clustered.addLayer(cluster_marker);
                         markers_basic.addLayer(basic_marker);
                     }
