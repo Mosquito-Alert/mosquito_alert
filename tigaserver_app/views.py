@@ -296,6 +296,7 @@ START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
 
 IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
 
+
 def get_data_time_info(request):
     # setting fixed start time based on release date to avoid the pre-release beta reports
     start_time = START_TIME
@@ -313,8 +314,8 @@ def filter_creation_day(queryset, days_since_launch):
     if not days_since_launch:
         return queryset
     try:
-        target_day_start = START_TIME + timedelta(days=days_since_launch)
-        target_day_end = START_TIME + timedelta(days=days_since_launch+1)
+        target_day_start = START_TIME + timedelta(days=int(days_since_launch))
+        target_day_end = START_TIME + timedelta(days=int(days_since_launch)+1)
         result = queryset.filter(creation_time__range=(target_day_start, target_day_end))
         return result
     except ValueError:
@@ -325,8 +326,8 @@ def filter_creation_week(queryset, weeks_since_launch):
     if not weeks_since_launch:
         return queryset
     try:
-        target_week_start = START_TIME + timedelta(weeks=weeks_since_launch)
-        target_week_end = START_TIME + timedelta(weeks=weeks_since_launch+1)
+        target_week_start = START_TIME + timedelta(weeks=int(weeks_since_launch))
+        target_week_end = START_TIME + timedelta(weeks=int(weeks_since_launch)+1)
         result = queryset.filter(creation_time__range=(target_week_start, target_week_end))
         return result
     except ValueError:

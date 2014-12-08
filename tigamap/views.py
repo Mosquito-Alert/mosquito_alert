@@ -11,6 +11,7 @@ from operator import itemgetter, attrgetter
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Count
 import math
+from django.core.context_processors import csrf
 
 
 def show_grid_05(request):
@@ -240,3 +241,11 @@ def show_validated_photo_map(request):
     these_annotations = MoveLabAnnotation.objects.exclude(tiger_certainty_category=None).exclude(task__photo__report__type='site', tiger_certainty_category__lte=0)
     context = {'annotation_list': these_annotations, 'redirect_to': redirect_path}
     return render(request, 'tigamap/validated_photo_map.html', context)
+
+
+def show_validated_report_map(request):
+    href_url_name = 'validated_photo_map'
+    redirect_path = strip_lang(reverse(href_url_name))
+    context = {'redirect_to': redirect_path}
+    context.update(csrf(request))
+    return render(request, 'tigamap/validated_report_map.html', context)
