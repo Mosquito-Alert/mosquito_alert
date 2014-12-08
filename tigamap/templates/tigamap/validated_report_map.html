@@ -69,7 +69,7 @@
                         basic_marker.bindPopup(value.type);
                         markers_clustered.addLayer(cluster_marker);
                         markers_basic.addLayer(basic_marker);
-                    }
+                    });
 
                     var baseMaps = {
                         "{% trans 'clusters' %}": markers_clustered,
