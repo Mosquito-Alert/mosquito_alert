@@ -38,7 +38,7 @@
 
     <script type="text/javascript">
 
-        function get_data() {
+        function get_data(map) {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
                 url: 'http://tigaserver.atrapaeltigre.com/api/map_data/',
@@ -91,7 +91,7 @@
                 saveMapState(map)
             });
 
-            get_data();
+            get_data(map);
 
         }
 
