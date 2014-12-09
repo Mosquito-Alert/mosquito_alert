@@ -70,6 +70,7 @@
         var thisIcon = new YellowIcon();
         var percent_done;
         var progress_bar;
+        var progress_bar_container;
         var day_just_finished = 0;
 
         function get_data(day, map) {
@@ -104,7 +105,7 @@
                             progress_bar.html(percent_done.toString() + "%");
                         }
                     if(percent_done >= 100){
-                        progress_bar.hide();
+                        progress_bar_container.hide()
                     }
                 }
             });
@@ -121,6 +122,7 @@
             });
 
             progress_bar = $("#progress_bar");
+            progress_bar_container = $("#progress_bar_container");
             for(var d = 0; d <= {{ end_day }}; d++){
             get_data(d, map);
             }
@@ -136,7 +138,7 @@
 
     {{ block.super }}
 
-    <div class="my-progress-bar-container">
+    <div id="progress_bar-container" class="my-progress-bar-container">
         <div id="progress_bar" class="my-progress-bar">
         </div>
     </div>
