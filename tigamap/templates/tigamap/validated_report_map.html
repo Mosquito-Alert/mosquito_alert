@@ -93,9 +93,9 @@ border-radius: 15px;
                     var percent_done = 100 * Math.floor(day/{{ end_day }});
                     $("#progress_bar").css("width", percent_done.toString() + "%");
                     console.log("test");
-                    console.log("day: " + day);
-                    console.log("end_day: " + {{ end_day }});
-                    console.log("percent done: " + percent_done);
+                    console.log("day: " + day.toString());
+                    console.log("end_day: " + "{{ end_day }}");
+                    console.log("percent done: " + percent_done.toString());
                     console.log("percent done: " + percent_done.toString() + "%");
                     console.log("pg width: " + $("#progress_bar").css("width"));
                     if(percent_done > 20){
