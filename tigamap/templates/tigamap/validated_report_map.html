@@ -78,7 +78,7 @@ border-radius: 15px;
                 beforeSend: function (xhr, settings) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 },
-                success: function (data) {
+                success: function (data, day) {
 
                     if(data != null && data.length > 0){
 
@@ -92,6 +92,8 @@ border-radius: 15px;
                     markers_clustered.addTo(map);
                     var percent_done = 100 * Math.floor(day/{{ end_day }});
                     $("#progress_bar").css("width", percent_done.toString() + "%");
+                    console.log("day: " + day);
+                    console.log("end_day: " + {{ end_day }});
                     console.log("percent done: " + percent_done);
                     console.log("percent done: " + percent_done.toString() + "%");
                     console.log("pg width: " + $("#progress_bar").css("width"));
