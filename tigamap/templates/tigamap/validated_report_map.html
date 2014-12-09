@@ -91,7 +91,7 @@
 
                         $.each(data, function (index, value) {
                             if (value != null && value.lat != null && value.lon != null && value.type != null) {
-                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(value.type));
+                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(value.movelab_annotation.tiger_certainty_category + "<br>" +  value.movelab_annotation.crowdcrafting_score + "<br>" + value.movelab_annotation.photo_html + "<br>" + value.movelab_annotation.edited_user_notes));
 
                             }
                         });

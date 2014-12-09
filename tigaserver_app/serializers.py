@@ -157,6 +157,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     type = serializers.CharField()
     lon = serializers.Field()
     lat = serializers.Field()
+    movelab_annotation = serializers.Field()
 
     class Meta:
         model = Report

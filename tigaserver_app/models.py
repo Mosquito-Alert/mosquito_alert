@@ -8,7 +8,7 @@ from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
-from tigacrafting.models import CrowdcraftingTask
+from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation
 from django.db.models import Count
 from django.conf import settings
 
@@ -467,17 +467,16 @@ class Report(models.Model):
             result += '<br>' + photo.small_image_() + '<br>'
         return result
 
-    def get_expert_annotation(self):
+    def get_movelab_annotation(self):
         if self.type not in ('site', 'adult'):
             return None
         these_photos = self.photos.exclude(hide=True)
         if these_photos.count() == 0:
             return None
-        annotations = map(lambda x: x.crowdcraftingtask.movelab_annotation.tiger_certainty_category, filter(lambda x: hasattr(x, 'crowdcraftingtask') and hasattr(x.crowdcraftingtask, 'movelab_annotation'), these_photos.iterator()))
-        if annotations is None or len(annotations) == 0:
+        max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').first()
+        if max_movelab_annotation is None:
             return None
-        else:
-            return max(annotations)
+        return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score': max_movelab_annotation.task.tiger_validation_score, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.small_image_()}
 
     lon = property(get_lon)
     lat = property(get_lat)
@@ -501,6 +500,7 @@ class Report(models.Model):
     deleted = property(get_is_deleted)
     other_versions = property(get_other_versions)
     latest_version = property(get_is_latest)
+    movelab_annotation = property(get_movelab_annotation)
 
     class Meta:
         unique_together = ("user", "version_UUID")

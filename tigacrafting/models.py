@@ -87,12 +87,16 @@ class CrowdcraftingTask(models.Model):
             n_reg_blank = CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='undefined').exclude(user__user_id=None).count()
             return '<table><tr><th>Resp.</th><th>Reg. Users</th><th>Anon. Users</th><th>Total</th></tr><tr><td>Yes</td><td>' + str(n_reg_yes) + '</td><td>' + str(n_anon_yes) + '</td><td>' + str(n_reg_yes + n_anon_yes) + '</td></tr><tr><td>No</td><td>' + str(n_reg_no) + '</td><td>' + str(n_anon_no) + '</td><td>' + str(n_reg_no + n_anon_no) + '</td></tr><tr><td>Not sure</td><td>' + str(n_reg_unknown) + '</td><td>' + str(n_anon_unknown) + '</td><td>' + str(0 + n_reg_unknown + n_anon_unknown) + '</td></tr><tr><td>Blank</td><td>' + str(n_reg_blank) + '</td><td>' + str(n_anon_blank) + '</td><td>' + str(n_reg_blank + n_anon_blank) + '</td></tr><tr><td>Total</td><td>' + str(n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank + n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td></tr></table>'
 
+    def get_crowdcrafting_n_responses(self):
+        return CrowdcraftingResponse.objects.filter(task=self).count()
+
     mosquito_validation_score = property(get_mosquito_validation_score)
     tiger_validation_score = property(get_tiger_validation_score)
     site_validation_score = property(get_site_validation_score)
     site_individual_responses_html = property(get_site_individual_responses_html)
     tiger_individual_responses_html = property(get_tiger_individual_responses_html)
     mosquito_individual_responses_html = property(get_mosquito_individual_responses_html)
+    crowdcrafting_n_responses = property(get_crowdcrafting_n_responses)
 
 
 class CrowdcraftingUser(models.Model):
