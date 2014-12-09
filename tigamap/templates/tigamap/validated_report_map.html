@@ -103,6 +103,9 @@
                         if (percent_done > 20) {
                             progress_bar.html(percent_done.toString() + "%");
                         }
+                    if(percent_done >= 100){
+                        progress_bar.hide();
+                    }
                 }
             });
         }
