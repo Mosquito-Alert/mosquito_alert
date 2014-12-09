@@ -101,7 +101,7 @@
                     }
                         percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
                         progress_bar.css("width", percent_done.toString() + "%");
-                        if (percent_done > 20) {
+                        if (percent_done > 10) {
                             progress_bar.html(percent_done.toString() + "%");
                         }
                     if(percent_done >= 100){
@@ -138,7 +138,7 @@
 
     {{ block.super }}
 
-    <div id="progress_bar-container" class="my-progress-bar-container">
+    <div id="progress_bar_container" class="my-progress-bar-container">
         <div id="progress_bar" class="my-progress-bar">
         </div>
     </div>
