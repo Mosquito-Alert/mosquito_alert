@@ -65,7 +65,6 @@ border-radius: 15px;
                         }
                     });
                     var thisIcon = new YellowIcon();
-                    var percent_done = 0;
 
         function get_data(day, map) {
             var csrftoken = $.cookie('csrftoken');
@@ -91,14 +90,14 @@ border-radius: 15px;
                     });
 
                     markers_clustered.addTo(map);
-                    percent_done = 100 * Math.floor(day/{{ end_day }});
+                    var percent_done = 100 * Math.floor(day/{{ end_day }});
                     $("#progress_bar").css("width", percent_done.toString() + "%");
                     console.log("percent done: " + percent_done);
                     console.log("percent done: " + percent_done.toString() + "%");
                     console.log("pg width: " + $("#progress_bar").css("width"));
-//                    if(percent_done > 20){
- //                       $("#progress_bar").html(percent_done.toString() + "%");
-  //                  }
+                    if(percent_done > 20){
+                        $("#progress_bar").html(percent_done.toString() + "%");
+                    }
 
 
                     }
