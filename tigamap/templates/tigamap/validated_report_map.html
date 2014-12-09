@@ -78,7 +78,7 @@ border-radius: 15px;
                 beforeSend: function (xhr, settings) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 },
-                success: function (data, day) {
+                success: function (data) {
 
                     if(data != null && data.length > 0){
 
