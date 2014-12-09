@@ -44,7 +44,7 @@
                     var thisIcon = new YellowIcon();
                     var percent_done = 0;
 
-        function get_data(day, map, progress_bar) {
+        function get_data(day, map) {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
                 url: 'http://tigaserver.atrapaeltigre.com/api/map_data/?day=' + day,
@@ -85,7 +85,7 @@
                     }
 
                     percent_done = 100 * day/{{ end_day }}
-                    progress_bar.html(percent_done.toString() + "%").attr("width", percent_done.toString() + "%").attr("aria-valuenow", percent_done.toString());
+                    $("#progress_bar").html(percent_done.toString() + "%").attr("width", percent_done.toString() + "%").attr("aria-valuenow", percent_done.toString());
                 }
             });
         }
@@ -102,7 +102,7 @@
 
             var progress_bar = $("#progress_bar");
 
-            get_data(0, map, progress_bar);
+            get_data(0, map);
 
         }
 
