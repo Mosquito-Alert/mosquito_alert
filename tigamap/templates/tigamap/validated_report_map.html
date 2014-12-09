@@ -34,7 +34,6 @@
     <script type="text/javascript">
 
                     var markers_clustered = new L.MarkerClusterGroup();
-                    var markers_basic = new L.LayerGroup();
 
                     var YellowIcon = L.Icon.Default.extend({
                         options: {
@@ -63,7 +62,6 @@
                     $.each(data, function(index, value) {
                         if(value != null && value.lat != null && value.lon != null && value.type != null){
                         markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(value.type));
-                        markers_basic.addLayer(L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(value.type));
 
                         }
                     });
@@ -74,17 +72,8 @@
                     if(day <= {{ end_day }}){
                     get_data(day + 1, map);
                     }
-                    if(day == {{ end_day }}){
-                        var baseMaps = {
-                            "{% trans 'clusters' %}": markers_clustered,
-                            "{% trans 'points' %}": markers_basic
-                        };
 
-                        L.control.layers(baseMaps, null).addTo(map);
-
-                    }
-
-                    percent_done = 100 * day/{{ end_day }}
+                    percent_done = 100 * Math.floor(day/{{ end_day }})
                     $("#progress_bar").html(percent_done.toString() + "%").attr("width", percent_done.toString() + "%").attr("aria-valuenow", percent_done.toString());
                 }
             });
