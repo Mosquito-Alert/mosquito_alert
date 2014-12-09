@@ -74,7 +74,7 @@
                     }
 
                     percent_done = 100 * Math.floor(day/{{ end_day }})
-                    $("#progress_bar").html(percent_done.toString() + "%").attr("width", percent_done.toString() + "%").attr("aria-valuenow", percent_done.toString());
+                    $("#progress_bar").html(percent_done.toString() + "%").css("width", percent_done.toString() + "%").attr("aria-valuenow", percent_done.toString());
                 }
             });
         }
