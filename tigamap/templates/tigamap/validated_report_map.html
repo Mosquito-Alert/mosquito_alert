@@ -21,6 +21,31 @@
             text-align: right;
         }
 
+    .my-progress-bar-container {
+background-color: rgba(0,0,0,.25);
+border-radius: 15px;
+        position: absolute;
+        bottom: 30px;
+        left: 10px;
+        width: 60%;
+        height: 20px;
+    }
+
+    .my-progress-bar {
+background-image: -webkit-linear-gradient(top,#428bca 0,#3071a9 100%);
+background-image: linear-gradient(to bottom,#428bca 0,#3071a9 100%);
+background-repeat: repeat-x;
+height: 100%;
+font-size: 12px;
+line-height: 20px;
+width: 60%;
+color: #fff;
+text-align: center;
+background-color: #428bca;
+-webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+border-radius: 15px;
+    }
 
     </style>
 
@@ -73,8 +98,11 @@
                     get_data(day + 1, map);
                     }
 
-                    percent_done = 100 * Math.floor(day/{{ end_day }})
-                    $("#progress_bar").html(percent_done.toString() + "%").css("width", percent_done.toString() + "%").attr("aria-valuenow", percent_done.toString());
+                    percent_done = 100 * Math.floor(day/{{ end_day }});
+                    $("#progress_bar").css("width", percent_done.toString() + "%");
+                    if(percent_done > 20){
+                        $("#progress_bar").html(percent_done.toString() + "%");
+                    }
                 }
             });
         }
@@ -104,8 +132,8 @@
 
     {{ block.super }}
 
-    <div class="progress" style="position: absolute; bottom: 10px; left: 10px; width: 60%;">
-  <div id="progress_bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0;">
+    <div class="my-progress-bar-container">
+  <div id="progress_bar" class="my-progress-bar">
   </div>
 </div>
 
