@@ -34,6 +34,8 @@
     <script type="text/javascript">
 
                     var markers_clustered = new L.MarkerClusterGroup();
+                    var markers_basic = new L.LayerGroup();
+
                     var YellowIcon = L.Icon.Default.extend({
                         options: {
                             iconUrl: '{% static "tigamap/yellow_icon.png" %}'
