@@ -586,13 +586,25 @@ class Photo(models.Model):
                 im.save(self.get_small_path())
             return self.photo.url.replace('tigapics/', 'tigapics_small/')
 
+    def get_popup_url(self):
+        if os.path.isfile(self.photo.path):
+            if not os.path.isfile(self.get_small_path()):
+                im = Image.open(self.photo.path)
+                try:
+                    im.thumbnail((180, 180), Image.ANTIALIAS)
+                except IOError:
+                    im.thumbnail((180, 180), Image.NEAREST)
+                im.save(self.get_small_path())
+            return self.photo.url.replace('tigapics/', 'tigapics_small/')
+
+
     def small_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_small_url())
 
     small_image_.allow_tags = True
 
     def popup_image(self):
-        return '<a href="{0}" target="_blank"><img src="{1}"></a>'.format(self.photo.url, self.get_small_url())
+        return '<a href="{0}" target="_blank"><img src="{1}"></a>'.format(self.photo.url, self.get_popup_url())
 
     popup_image.allow_tags = True
 
