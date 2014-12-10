@@ -137,11 +137,20 @@ table, td, th {
         var score_text_dictionary = {'2':'Mosquito tigre', '1':'Posible mosquito tigre', '0':'No se sabe', '-1': 'Posible otra especie', '-2': 'Otra especie'};
 
         function make_color_div(score){
+            if(score != null){
             return '<div class="color-box ' + score_colorclass_dictionary[score.toString()] + '>score_text_dictionary[score.toString()]</div>';
+            } else{
+                return '';
+            }
+
         }
 
         function make_user_response_div(score, responses){
+            if(score != null){
             return '<div class="color-box ' + score_colorclass_dictionary[score.toString()] + '><table class="response-table"><tr><td>' + responses.q1_response + '</td><td>' + responses.q2_response + '</td><td>' + responses.q3_response + '</td></tr></table></div>';
+            }else{
+                return '';
+            }
         }
 
         function make_popup_text(value){
