@@ -292,14 +292,11 @@ def lookup_photo(request, token, photo_uuid, size):
         return HttpResponseRedirect(url)
 
 
-START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
-
-IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
 
 
 def get_data_time_info(request):
     # setting fixed start time based on release date to avoid the pre-release beta reports
-    start_time = START_TIME
+    start_time = settings.START_TIME
     end_time = Report.objects.latest('creation_time').creation_time
     # adding 1 to include the last dayin the set
     days = (end_time - start_time).days + 1
@@ -309,7 +306,7 @@ def get_data_time_info(request):
 
 def get_n_days():
     # setting fixed start time based on release date to avoid the pre-release beta reports
-    start_time = START_TIME
+    start_time = settings.START_TIME
     end_time = Report.objects.latest('creation_time').creation_time
     # adding 1 to include the last dayin the set
     return (end_time - start_time).days + 1
@@ -321,8 +318,8 @@ def filter_creation_day(queryset, days_since_launch):
     if not days_since_launch:
         return queryset
     try:
-        target_day_start = START_TIME + timedelta(days=int(days_since_launch))
-        target_day_end = START_TIME + timedelta(days=int(days_since_launch)+1)
+        target_day_start = settings.START_TIME + timedelta(days=int(days_since_launch))
+        target_day_end = settings.START_TIME + timedelta(days=int(days_since_launch)+1)
         result = queryset.filter(creation_time__range=(target_day_start, target_day_end))
         return result
     except ValueError:
@@ -333,8 +330,8 @@ def filter_creation_week(queryset, weeks_since_launch):
     if not weeks_since_launch:
         return queryset
     try:
-        target_week_start = START_TIME + timedelta(weeks=int(weeks_since_launch))
-        target_week_end = START_TIME + timedelta(weeks=int(weeks_since_launch)+1)
+        target_week_start = settings.START_TIME + timedelta(weeks=int(weeks_since_launch))
+        target_week_end = settings.START_TIME + timedelta(weeks=int(weeks_since_launch)+1)
         result = queryset.filter(creation_time__range=(target_week_start, target_week_end))
         return result
     except ValueError:
@@ -365,6 +362,6 @@ def get_latest_reports_qs(reports):
 
 
 class MapDataViewSet(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter

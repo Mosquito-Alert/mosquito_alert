@@ -1,7 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
 import tigaserver_project as project_module
 import django.conf.global_settings as DEFAULT_SETTINGS
-
+import pytz
+from datetime import datetime
 
 """
 Django settings for tigaserver_project project.
@@ -167,5 +168,10 @@ TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 # This is the cuttoff score above which a photo will be considered "crowd-validated"
 CROWD_VALIDATION_CUTOFF = 0
+
+START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
+
+IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
+
 
 from settings_local import *

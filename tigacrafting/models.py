@@ -33,6 +33,9 @@ class CrowdcraftingTask(models.Model):
             n_no = CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='tiger-no').count() + CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='undefined', mosquito_question_response='mosquito-no').count()
             return score_computation(n_total=n_total, n_yes=n_yes, n_no=n_no)
 
+    def get_tiger_validation_score_cat(self):
+        return int(round(2.499999 * self.get_tiger_validation_score(), 0))
+
     def get_site_validation_score(self):
         n_total = CrowdcraftingResponse.objects.filter(task=self).count()
         if n_total == 0:
@@ -97,6 +100,7 @@ class CrowdcraftingTask(models.Model):
     tiger_individual_responses_html = property(get_tiger_individual_responses_html)
     mosquito_individual_responses_html = property(get_mosquito_individual_responses_html)
     crowdcrafting_n_responses = property(get_crowdcrafting_n_responses)
+    tiger_validation_score_cat = property(get_tiger_validation_score_cat)
 
 
 class CrowdcraftingUser(models.Model):

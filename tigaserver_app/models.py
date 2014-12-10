@@ -11,6 +11,7 @@ from django.db.models import Max, Min
 from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation
 from django.db.models import Count
 from django.conf import settings
+from django.db.models import Q
 
 
 class TigaUser(models.Model):
@@ -276,6 +277,9 @@ class Report(models.Model):
             total = 1
         return float(response_score)/total
 
+    def get_tigaprob_cat(self):
+        return int(round(2.499999 * self.get_tigaprob(), 0))
+
     def get_response_html(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID).order_by('question')
         result = ''
@@ -468,19 +472,37 @@ class Report(models.Model):
         return result
 
     def get_movelab_annotation(self):
-        if self.type not in ('site', 'adult'):
-            return None
-        these_photos = self.photos.exclude(hide=True)
-        if these_photos.count() == 0:
+        if self.type != 'adult':
             return None
         max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').first()
         if max_movelab_annotation is None:
             return None
-        return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score': max_movelab_annotation.task.tiger_validation_score, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.small_image_()}
+        return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.small_image_()}
+
+    def get_tiger_responses(self):
+        if self.type != 'adult':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
+        q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
+        q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
+        result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
+        result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
+        result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
+        return result
+
+    def get_creation_date(self):
+        return self.creation_time.date()
+
+    def get_creation_day_since_launch(self):
+        return (self.creation_time - settings.START_TIME).days
+
 
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
+    tigaprob_cat = property(get_tigaprob_cat)
     tigaprob_text = property(get_tigaprob_text)
     site_type = property(get_site_type)
     site_type_trans = property(get_site_type_trans)
@@ -501,6 +523,9 @@ class Report(models.Model):
     other_versions = property(get_other_versions)
     latest_version = property(get_is_latest)
     movelab_annotation = property(get_movelab_annotation)
+    tiger_responses = property(get_tiger_responses)
+    creation_date = property(get_creation_date)
+    creation_day_since_launch = property(get_creation_day_since_launch)
 
     class Meta:
         unique_together = ("user", "version_UUID")

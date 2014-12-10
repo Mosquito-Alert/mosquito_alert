@@ -6,20 +6,70 @@
 {% block leaflet_code %}
 
     <style>
-        table {
-            border-collapse: collapse;
-            font-size: small;
-        }
+td {
+    padding: 15px;
+    vertical-align: bottom;
+}
 
-        table, td, th {
-            border: 1px solid black;
-        }
+body{
+    padding-top: 50px;
+}
 
-        td {
-            padding: 5px;
-            vertical-align: top;
-            text-align: right;
-        }
+.leaflet-popup-content {
+    overflow-y : auto;
+}
+
+table {
+    border-collapse: collapse;
+    font-size:small;
+    table-layout: fixed;
+    width: 122px;
+}
+
+table, td, th {
+    border: 1px solid black;
+}
+
+.response-table{
+    text-align: center;
+}
+
+.color-box{
+    width:100%;
+    text-align: center;
+    vertical-align: middle;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+
+.black{
+    background-color: black;
+    color:white;
+}
+
+.grey{
+    background-color: grey;
+    color:white;
+}
+
+
+.red{
+    background-color: red;
+}
+
+.orange{
+    background-color: orange;
+}
+
+.note-div{
+    font-size:small;
+    padding:5px;
+    background-color:#eeeebb;
+    font-family: "Courier New", Courier, monospace;
+    color: #212121;
+}
+
 
         .my-progress-bar-container {
             background-color: rgba(0, 0, 0, .25);
@@ -72,6 +122,36 @@
         var progress_bar;
         var progress_bar_container;
         var day_just_finished = 0;
+        var popup_options ={
+                'minWidth': 150,
+                'maxHeight': 250,
+                'closeButton': false
+                };
+
+        function rc2s(response_code){
+            return response_code == 1 ? {% trans 'yes' %} : response_code == 0 ? {% trans 'not sure' %} : {%  trans 'no' %};
+        }
+
+        var score_colorclass_dictionary = {'2':'red', '1':'orange', '0':'white', '-1': 'grey', '-2': 'black'};
+
+        var score_text_dictionary = {'2':'Mosquito tigre', '1':'Posible mosquito tigre', '0':'No se sabe', '-1': 'Posible otra especie', '-2': 'Otra especie'};
+
+        function make_color_div(score){
+            return '<div class="color-box ' + score_colorclass_dictionary[score.toString()] + '>score_text_dictionary[score.toString()]</div>';
+        }
+
+        function make_user_response_div(score, responses){
+            return '<div class="color-box ' + score_colorclass_dictionary[score.toString()] + '><table class="response-table"><tr><td>' + responses.q1_response + '</td><td>' + responses.q2_response + '</td><td>' + responses.q3_response + '</td></tr></table></div>';
+        }
+
+        function make_popup_text(value){
+        if(value.movelab_annotation != null){
+        return '<table><tr><td> ' + make_color_div(value.movelab_annotation.tiger_certainty_category) + '</td><tr><td>' + make_color_div(value.movelab_annotation.crowdcrafting_score_cat) + '</td></tr><tr><td>' + make_user_response_div(value.tigaprob_cat, value.tiger_responses) + '</td></tr><tr><td align="center" style="background-color: black;">' + value.movelab_annotation.photo_html + '</td></tr><tr><td><div class="note-div">' + value.movelab_annotation.edited_user_notes + '</div></td></tr></table>';
+        } else{
+            return make_user_response_div(value.tigaprob_cat, value.tiger_responses);
+        }
+        }
+
 
         function get_data(day, map) {
             var csrftoken = $.cookie('csrftoken');
@@ -91,7 +171,7 @@
 
                         $.each(data, function (index, value) {
                             if (value != null && value.lat != null && value.lon != null && value.type != null) {
-                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(value.movelab_annotation.tiger_certainty_category + "<br>" +  value.movelab_annotation.crowdcrafting_score + "<br>" + value.movelab_annotation.photo_html + "<br>" + value.movelab_annotation.edited_user_notes));
+                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(make_popup_text(value), popup_options));
 
                             }
                         });
