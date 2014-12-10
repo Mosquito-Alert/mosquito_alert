@@ -575,6 +575,9 @@ class Photo(models.Model):
     def get_small_path(self):
         return self.photo.path.replace('tigapics/', 'tigapics_small/')
 
+    def get_popup_path(self):
+        return self.photo.path.replace('tigapics/', 'tigapics_popups/')
+
     def get_small_url(self):
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_small_path()):
@@ -588,14 +591,14 @@ class Photo(models.Model):
 
     def get_popup_url(self):
         if os.path.isfile(self.photo.path):
-            if not os.path.isfile(self.get_small_path()):
+            if not os.path.isfile(self.get_popup_path()):
                 im = Image.open(self.photo.path)
                 try:
                     im.thumbnail((180, 180), Image.ANTIALIAS)
                 except IOError:
                     im.thumbnail((180, 180), Image.NEAREST)
-                im.save(self.get_small_path())
-            return self.photo.url.replace('tigapics/', 'tigapics_small/')
+                im.save(self.get_popup_path())
+            return self.photo.url.replace('tigapics/', 'tigapics_popups/')
 
 
     def small_image_(self):
