@@ -140,10 +140,10 @@ table, td, th {
         function get_cat_text(score) {
             return score == 2 ? 'Mosquito tigre' : (score == 1 ? 'Posible mosquito tigre' : (score == -1 ? 'Posible otra especie' : (score == -2 ? 'Otra especie' : 'No se sabe')));
         }
-        
+
         function make_color_div(score){
             if(score != null){
-            return '<div class="color-box ' + get_color_class(score) + '>' + get_cat_text(score) + '</div>';
+            return '<div class="color-box ' + get_color_class(score) + '">' + get_cat_text(score) + '</div>';
             } else{
                 return '';
             }
