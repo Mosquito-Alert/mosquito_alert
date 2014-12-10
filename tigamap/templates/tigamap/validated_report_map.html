@@ -129,7 +129,7 @@ table, td, th {
                 };
 
         function rc2s(response_code){
-            return response_code == 1 ? {% trans 'yes' %} : response_code == 0 ? {% trans 'not sure' %} : {%  trans 'no' %};
+            return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not sure' %}" : "{%  trans 'no' %}");
         }
 
         var score_colorclass_dictionary = {'2':'red', '1':'orange', '0':'white', '-1': 'grey', '-2': 'black'};
