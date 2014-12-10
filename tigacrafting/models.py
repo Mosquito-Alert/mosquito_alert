@@ -34,7 +34,10 @@ class CrowdcraftingTask(models.Model):
             return score_computation(n_total=n_total, n_yes=n_yes, n_no=n_no)
 
     def get_tiger_validation_score_cat(self):
-        return int(round(2.499999 * self.get_tiger_validation_score(), 0))
+        if self.get_tiger_validation_score() is not None:
+            return int(round(2.499999 * self.get_tiger_validation_score(), 0))
+        else:
+            return None
 
     def get_site_validation_score(self):
         n_total = CrowdcraftingResponse.objects.filter(task=self).count()
