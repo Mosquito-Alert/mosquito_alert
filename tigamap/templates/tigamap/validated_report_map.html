@@ -7,7 +7,7 @@
 
     <style>
 td {
-    padding: 15px;
+    padding: 0;
     vertical-align: bottom;
 }
 
@@ -65,9 +65,7 @@ table, td, th {
 .note-div{
     font-size:small;
     padding:5px;
-    background-color:#eeeebb;
     font-family: "Courier New", Courier, monospace;
-    color: #212121;
 }
 
 
@@ -129,7 +127,11 @@ table, td, th {
                 };
 
         function rc2s(response_code){
+            if(response_code == null){
+                return "{% trans 'not sure' %}"
+            } else{
             return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not sure' %}" : "{%  trans 'no' %}");
+        }
         }
 
         function get_color_class(score) {
@@ -151,7 +153,7 @@ table, td, th {
 
         function make_user_response_div(score, responses){
             if(score != null){
-            return '<div class="color-box ' + get_color_class(score) + '"><table class="response-table"><tr><td>' + responses.q1_response + '</td><td>' + responses.q2_response + '</td><td>' + responses.q3_response + '</td></tr></table></div>';
+            return '<div class="color-box ' + get_color_class(score) + '"><table class="response-table"><tr><td>' + rc2s(responses.q1_response) + '</td><td>' + rc2s(responses.q2_response) + '</td><td>' + rc2s(responses.q3_response) + '</td></tr></table></div>';
             }else{
                 return '';
             }
