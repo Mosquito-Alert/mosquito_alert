@@ -184,7 +184,7 @@ table, td, th {
         if(value.movelab_annotation != null){
         return '<table>' + make_color_row(value.movelab_annotation.tiger_certainty_category) + make_color_row(value.movelab_annotation.crowdcrafting_score_cat) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else{
-            return '<table>' + make_user_response_row + (value.tigaprob_cat, value.tiger_responses) + '</table>';
+            return '<table>' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
         }
         }
 
