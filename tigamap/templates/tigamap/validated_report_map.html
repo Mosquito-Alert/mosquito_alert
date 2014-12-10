@@ -32,6 +32,7 @@ table, td, th {
 
 .response-table {
     text-align: center;
+    border: none;
     padding-top: 10px;
     padding-bottom: 10px;
 }
@@ -155,7 +156,7 @@ table, td, th {
 
         function make_user_response_row(score, responses){
             if(score != null){
-            return '<tr><td><table class="response-table color-box ' + get_color_class(score) + '"><tr class="response-table"><td class="response-table">' + rc2s(responses.q1_response) + '</td><td class="response-table">' + rc2s(responses.q2_response) + '</td><td class="response-table">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
+            return '<tr><td><table class="response-table color-box ' + get_color_class(score) + '"><tr class="response-table"><td class="response-table" style="border-right: 1px solid;">' + rc2s(responses.q1_response) + '</td><td class="response-table style="border-right: 1px solid;"">' + rc2s(responses.q2_response) + '</td><td class="response-table">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
             }else{
                 return '';
             }
