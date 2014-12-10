@@ -477,7 +477,7 @@ class Report(models.Model):
         max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').first()
         if max_movelab_annotation is None:
             return None
-        return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.small_image_()}
+        return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
 
     def get_tiger_responses(self):
         if self.type != 'adult':
@@ -590,6 +590,11 @@ class Photo(models.Model):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_small_url())
 
     small_image_.allow_tags = True
+
+    def popup_image(self):
+        return '<a href="{0}" target="_blank"><img src="{1}"></a>'.format(self.photo.url, self.get_small_url())
+
+    popup_image.allow_tags = True
 
     def get_medium_path(self):
         return self.photo.path.replace('tigapics/', 'tigapics_medium/')

@@ -32,6 +32,7 @@ table, td, th {
 
 .response-table{
     text-align: center;
+    border: none;
 }
 
 .color-box{
@@ -121,8 +122,8 @@ table, td, th {
         var progress_bar_container;
         var day_just_finished = 0;
         var popup_options ={
-                'minWidth': 150,
-                'maxHeight': 250,
+                'minWidth': 124,
+                'maxHeight': 320,
                 'closeButton': false
                 };
 
@@ -151,9 +152,9 @@ table, td, th {
             }
         }
 
-        function make_user_response_div(score, responses){
+        function make_user_response_table(score, responses){
             if(score != null){
-            return '<div class="color-box ' + get_color_class(score) + '"><table class="response-table"><tr><td>' + rc2s(responses.q1_response) + '</td><td>' + rc2s(responses.q2_response) + '</td><td>' + rc2s(responses.q3_response) + '</td></tr></table></div>';
+            return '<table class="response-table color-box ' + get_color_class(score) + '"><tr><td>' + rc2s(responses.q1_response) + '</td><td>' + rc2s(responses.q2_response) + '</td><td>' + rc2s(responses.q3_response) + '</td></tr></table>';
             }else{
                 return '';
             }
@@ -161,7 +162,7 @@ table, td, th {
 
         function make_popup_text(value){
         if(value.movelab_annotation != null){
-        return '<table><tr><td> ' + make_color_div(value.movelab_annotation.tiger_certainty_category) + '</td><tr><td>' + make_color_div(value.movelab_annotation.crowdcrafting_score_cat) + '</td></tr><tr><td>' + make_user_response_div(value.tigaprob_cat, value.tiger_responses) + '</td></tr><tr><td align="center" style="background-color: black;">' + value.movelab_annotation.photo_html + '</td></tr><tr><td><div class="note-div">' + value.movelab_annotation.edited_user_notes + '</div></td></tr></table>';
+        return '<table><tr><td> ' + make_color_div(value.movelab_annotation.tiger_certainty_category) + '</td><tr><td>' + make_color_div(value.movelab_annotation.crowdcrafting_score_cat) + '</td></tr><tr><td>' + make_user_response_table(value.tigaprob_cat, value.tiger_responses) + '</td></tr><tr><td align="center" style="background-color: black;">' + value.movelab_annotation.photo_html + '</td></tr><tr><td><div class="note-div">' + value.movelab_annotation.edited_user_notes + '</div></td></tr></table>';
         } else{
             return make_user_response_div(value.tigaprob_cat, value.tiger_responses);
         }
