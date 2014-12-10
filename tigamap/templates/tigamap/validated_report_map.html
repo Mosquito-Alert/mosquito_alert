@@ -132,22 +132,26 @@ table, td, th {
             return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not sure' %}" : "{%  trans 'no' %}");
         }
 
-        var score_colorclass_dictionary = {'2':'red', '1':'orange', '0':'white', '-1': 'grey', '-2': 'black'};
+        function get_color_class(score) {
+            return score == 2 ? 'red' : (score == 1 ? 'orange' : (score == -1 ? 'grey' : (score == -2 ? 'black' : 'white')));
+        }
 
-        var score_text_dictionary = {'2':'Mosquito tigre', '1':'Posible mosquito tigre', '0':'No se sabe', '-1': 'Posible otra especie', '-2': 'Otra especie'};
 
+        function get_cat_text(score) {
+            return score == 2 ? 'Mosquito tigre' : (score == 1 ? 'Posible mosquito tigre' : (score == -1 ? 'Posible otra especie' : (score == -2 ? 'Otra especie' : 'No se sabe')));
+        }
+        
         function make_color_div(score){
             if(score != null){
-            return '<div class="color-box ' + score_colorclass_dictionary[score.toString()] + '>score_text_dictionary[score.toString()]</div>';
+            return '<div class="color-box ' + get_color_class(score) + '>' + get_cat_text(score) + '</div>';
             } else{
                 return '';
             }
-
         }
 
         function make_user_response_div(score, responses){
             if(score != null){
-            return '<div class="color-box ' + score_colorclass_dictionary[score.toString()] + '><table class="response-table"><tr><td>' + responses.q1_response + '</td><td>' + responses.q2_response + '</td><td>' + responses.q3_response + '</td></tr></table></div>';
+            return '<div class="color-box ' + get_color_class(score) + '"><table class="response-table"><tr><td>' + responses.q1_response + '</td><td>' + responses.q2_response + '</td><td>' + responses.q3_response + '</td></tr></table></div>';
             }else{
                 return '';
             }
