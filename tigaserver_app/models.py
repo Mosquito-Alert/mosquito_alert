@@ -600,7 +600,6 @@ class Photo(models.Model):
                 im.save(self.get_popup_path())
             return self.photo.url.replace('tigapics/', 'tigapics_popups/')
 
-
     def small_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_small_url())
 
