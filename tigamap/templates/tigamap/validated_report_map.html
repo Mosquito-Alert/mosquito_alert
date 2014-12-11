@@ -361,7 +361,7 @@ body{
 
                         $.each(data, function (index, value) {
                             if (value != null && value.lat != null && value.lon != null && value.type != null) {
-                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: getIcon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
+                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
 
                             }
                         });
