@@ -312,7 +312,7 @@ body{
 
         function make_user_response_row(score, responses){
             if(score != null){
-            return '<tr><td><table class="response-table color-box ' + get_color_class(score) + '"><tr class="response-table"><td class="response-table" style="border-right: 1px solid;">' + rc2s(responses.q1_response) + '</td><td class="response-table" style="border-right: 1px solid;">' + rc2s(responses.q2_response) + '</td><td class="response-table">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
+            return '<tr><td class="color box ' + get_color_class(score) + '><table class="response-table color-box ' + get_color_class(score) + '"><tr class="response-table"><td class="response-table" style="border-right: 1px solid !important;">' + rc2s(responses.q1_response) + '</td><td class="response-table" style="border-right: 1px solid !important;">' + rc2s(responses.q2_response) + '</td><td class="response-table">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
             }else{
                 return '';
             }
@@ -464,23 +464,23 @@ body{
         <div class="leaflet-popup legend-popup" style="opacity: 1;"><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 201px;">
             <table class="legend-popup-table">
                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><span class="helper"></span><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Expert Assessment</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Expert Assessment</td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><span class="helper"></span><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Crowd Assessment</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Crowd Assessment</td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><span class="helper"></span><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>"Tiger Answers"</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>"Tiger Answers"</td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><span class="helper"></span><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Photo</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Photo</td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><span class="helper"></span><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Notes</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Notes</td></tr></table></div>
             </td></tr>
 
             </table>
