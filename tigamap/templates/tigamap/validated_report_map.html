@@ -32,9 +32,10 @@ body{
 
 .response-table {
     text-align: center;
-    border: none;
+    border: none !important;
     padding-top: 10px;
     padding-bottom: 10px;
+    width: 100%;
 }
 
 .color-box{
@@ -285,7 +286,7 @@ body{
 
         function get_icon(movelab_annotation) {
             if(movelab_annotation != null){
-                score = movelab_annotation.tiger_certainty_category;
+                var score = movelab_annotation.tiger_certainty_category;
             return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
         } else{
                 return yellow_white_icon;
