@@ -6,7 +6,7 @@
 {% block leaflet_code %}
 
     <style>
-td {
+.popup-table td {
     padding: 0;
     vertical-align: bottom;
 }
@@ -19,14 +19,14 @@ body{
     overflow-y : auto;
 }
 
-table {
+.popup-table table {
     border-collapse: collapse;
     font-size:small;
     table-layout: fixed;
     width: 182px;
 }
 
-table, td, th {
+.popup-table table, td, th {
     border: 1px solid black;
 }
 
@@ -100,6 +100,133 @@ table, td, th {
             transition: width .6s ease;
         }
 
+    .legend{
+            background-color: rgb(200, 200, 200);
+            border-top-right-radius: 15px;
+            border-bottom-right-radius: 15px;
+            position: absolute;
+            left: -270px;
+            border: 1px solid;
+            bottom: 100px;
+            width: 370px;
+            height: 310px;
+            overflow: hidden;
+            -moz-transition: left 1s ease;
+    	   -webkit-transition: left 1s ease;
+    }
+
+    .legend:hover{
+        left:0;
+    }
+
+.legend-main-table{
+    max-width: 50px;
+    float: right;
+    margin-top: 30px;
+    }
+
+
+    .legend-main-table, .legend-main-table tr, .legend-main-table td{
+        border: none;
+        padding: 4px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: small;
+    }
+
+    .legend-popup{
+        position:absolute !important;
+        left: 10px !important;
+        bottom: 0 !important;
+        top: 10px !important;
+        z-index: 1;
+    }
+
+    .legend-popup-table{
+        width: 200px;
+        border: 1px solid;
+        padding: 0 !important;
+        text-align: center;
+        vertical-align: middle;
+        font-size: small;
+    }
+
+        .legend-popup-table td{
+        padding: 0 !important;
+    }
+
+
+    .legend-popup-infodiv{
+        padding-top: 5px;
+        padding-bottom: 5px;
+        width: 100%;
+        height: 100%;
+        background-color: grey;
+    }
+
+    .legend-popup-button{
+        background-color: white;
+    }
+
+    .info-button-background{
+        background-color: grey;
+        border-radius: 50%;
+        height: 30px;
+        width: 30px
+    }
+
+    .info-button-background:hover{
+         -webkit-animation-play-state: paused;
+    -moz-animation-play-state: paused;
+    -o-animation-play-state: paused;
+     animation-play-state: paused;
+                background-color: white !important;
+    }
+
+    .info-button-hover-background{
+    background-color: white;
+        opacity: 0;
+    }
+
+        .info-button-hover-background:hover{
+        opacity: 1;
+    }
+
+    .blink-background {
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+
+    -moz-animation-name: blinker;
+    -moz-animation-duration: 1s;
+    -moz-animation-timing-function: linear;
+    -moz-animation-iteration-count: infinite;
+
+    animation-name: blinker;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@-moz-keyframes blinker {
+    0% { background-color: grey; }
+    50% { background-color: lightblue; }
+    100% { background-color: grey; }
+}
+
+@-webkit-keyframes blinker {
+    0% { background-color: grey; }
+    50% { background-color: lightblue; }
+    100% { background-color: grey; }
+}
+
+@keyframes blinker {
+    0% { background-color: grey; }
+    50% { background-color: lightblue; }
+    100% { background-color: grey; }
+}
+
     </style>
 
     {% leaflet_js plugins="marker_cluster_yellow" %}
@@ -113,12 +240,38 @@ table, td, th {
 
         var markers_clustered = new L.MarkerClusterGroup();
 
-        var YellowIcon = L.Icon.Default.extend({
+        var YellowRedIcon = L.Icon.Default.extend({
             options: {
-                iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+                iconUrl: '{% static "tigamap/yellow_red_dot.png" %}'
             }
         });
-        var thisIcon = new YellowIcon();
+        var YellowOrangeIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_orange_dot.png" %}'
+            }
+        });
+        var YellowWhiteIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_white_dot.png" %}'
+            }
+        });
+        var YellowGreyIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_grey_dot.png" %}'
+            }
+        });
+        var YellowBlackIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_black_dot.png" %}'
+            }
+        });
+
+
+        var yellow_red_icon = new YellowRedIcon();
+        var yellow_orange_icon = new YellowOrangeIcon();
+        var yellow_white_icon = new YellowWhiteIcon();
+        var yellow_grey_icon = new YellowGreyIcon();
+        var yellow_black_icon = new YellowBlackIcon();
         var percent_done;
         var progress_bar;
         var progress_bar_container;
@@ -135,6 +288,15 @@ table, td, th {
             } else{
             return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not sure' %}" : "{%  trans 'no' %}");
         }
+        }
+
+        function get_icon(movelab_annotation) {
+            if(movelab_annotation != null){
+                score = movelab_annotation.tiger_certainty_category;
+            return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
+        } else{
+                return yellow_white_icon;
+            }
         }
 
         function get_color_class(score) {
@@ -181,9 +343,9 @@ table, td, th {
 
         function make_popup_text(value){
         if(value.movelab_annotation != null){
-        return '<table>' + make_color_row(value.movelab_annotation.tiger_certainty_category) + make_color_row(value.movelab_annotation.crowdcrafting_score_cat) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+        return '<table class="popup-table">' + make_color_row(value.movelab_annotation.tiger_certainty_category) + make_color_row(value.movelab_annotation.crowdcrafting_score_cat) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else{
-            return '<table>' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
+            return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
         }
         }
 
@@ -206,7 +368,7 @@ table, td, th {
 
                         $.each(data, function (index, value) {
                             if (value != null && value.lat != null && value.lon != null && value.type != null) {
-                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: thisIcon}).bindPopup(make_popup_text(value), popup_options));
+                                markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: getIcon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
 
                             }
                         });
@@ -257,6 +419,77 @@ table, td, th {
         <div id="progress_bar" class="my-progress-bar">
         </div>
     </div>
+
+    <div class="legend">
+    <table class="legend-main-table">
+        <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_red_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Mosquito tigre' %}
+            </td>
+            </tr>
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_orange_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Posible mosquito tigre' %}
+            </td>
+            </tr>
+
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_white_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'No se sabe' %}
+            </td>
+            </tr>
+
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_grey_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Posible otra especie' %}
+            </td>
+            </tr>
+
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_black_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Otra especie' %}
+            </td>
+            </tr>
+    </table>
+
+        <div class="leaflet-popup legend-popup" style="opacity: 1;"><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 201px;">
+            <table class="legend-popup-table">
+                <tr><td>
+                <div class="legend-popup-infodiv"><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background blink-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a> Expert Assessment</div>
+            </td></tr>
+                <tr><td>
+                                <div class="legend-popup-infodiv"><a href="http://atrapaeltigre.com" target="_blank" class="btn btn-primary legend-popup-button"><span class="glyphicon glyphicon-info-sign"></span> Crowd Assessment</a></div>
+</td></tr>
+                <tr><td>
+                                <div class="legend-popup-infodiv"><a href="http://atrapaeltigre.com" target="_blank" class="btn btn-primary legend-popup-button"><span class="glyphicon glyphicon-info-sign"></span> "Tiger Answers"</a></div>
+</td></tr>
+                <tr><td>
+                                <div class="legend-popup-infodiv"><a href="http://atrapaeltigre.com" target="_blank" class="btn btn-primary legend-popup-button"><span class="glyphicon glyphicon-info-sign"></span> Photo</a></div>
+</td></tr>
+                <tr><td>
+                                <div class="legend-popup-infodiv"><a href="http://atrapaeltigre.com" target="_blank" class="btn btn-primary legend-popup-button"><span class="glyphicon glyphicon-info-sign"></span> Note</a></div>
+</td></tr>
+            </table>
+        </div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div>
+
+
+    </div>
+
 
 {% endblock %}
 
