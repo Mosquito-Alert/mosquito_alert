@@ -21,7 +21,7 @@ body{
 
 .popup-table table {
     border-collapse: collapse;
-    font-size:small;
+    font-size:small !important;
     table-layout: fixed;
     width: 182px;
 }
@@ -33,9 +33,9 @@ body{
 .response-table {
     text-align: center;
     border: none !important;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    width: 100%;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    width: 100% !important;
 }
 
 .color-box{
@@ -302,17 +302,18 @@ body{
             return score == 2 ? 'Mosquito tigre' : (score == 1 ? 'Posible mosquito tigre' : (score == -1 ? 'Posible otra especie' : (score == -2 ? 'Otra especie' : 'No se sabe')));
         }
 
-        function make_color_row(score){
+        function make_color_row(score, source){
             if(score != null){
-            return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + get_cat_text(score) + '</div></td></tr>';
+            return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + source + ': ' + get_cat_text(score) + '</div></td></tr>';
             } else{
                 return '';
             }
         }
 
+
         function make_user_response_row(score, responses){
             if(score != null){
-            return '<tr><td class="color box ' + get_color_class(score) + '"><table class="response-table color-box ' + get_color_class(score) + '"><tr class="response-table"><td class="response-table" style="border-right: 1px solid !important;">' + rc2s(responses.q1_response) + '</td><td class="response-table" style="border-right: 1px solid !important;">' + rc2s(responses.q2_response) + '</td><td class="response-table">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
+            return '<tr><td class="color box ' + get_color_class(score) + '">"Tiger Answers":</td></tr><tr><td class="color box ' + get_color_class(score) + '"><table class="response-table color-box ' + get_color_class(score) + '"><tr class="response-table"><td class="response-table" style="border-right: 1px solid !important;">' + rc2s(responses.q1_response) + '</td><td class="response-table" style="border-right: 1px solid !important;">' + rc2s(responses.q2_response) + '</td><td class="response-table">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
             }else{
                 return '';
             }
@@ -337,7 +338,7 @@ body{
 
         function make_popup_text(value){
         if(value.movelab_annotation != null){
-        return '<table class="popup-table">' + make_color_row(value.movelab_annotation.tiger_certainty_category) + make_color_row(value.movelab_annotation.crowdcrafting_score_cat) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+        return '<table class="popup-table">' + make_color_row(value.movelab_annotation.tiger_certainty_category, 'Experts') + make_color_row(value.movelab_annotation.crowdcrafting_score_cat, 'Crowd') + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else{
             return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
         }
