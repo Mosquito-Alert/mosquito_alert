@@ -45,6 +45,8 @@ body{
     vertical-align: middle;
     padding-top: 10px;
     padding-bottom: 10px;
+    padding-left: 2px;
+    padding-right: 2px;
     font-size: smaller;
 }
 
@@ -125,6 +127,7 @@ body{
 .legend-main-table{
     max-width: 50px;
     float: right;
+    margin-right: 7px;
     margin-top: 30px;
     }
 
@@ -132,7 +135,7 @@ body{
     .legend-main-table, .legend-main-table tr, .legend-main-table td{
         border: none;
         padding: 4px;
-        text-align: center;
+        text-align: left;
         vertical-align: middle;
         font-size: small;
     }
@@ -151,7 +154,7 @@ body{
         padding: 0 !important;
         text-align: center;
         vertical-align: middle;
-        font-size: small;
+        font-size: x-small;
     }
 
         .legend-popup-table td{
@@ -164,15 +167,12 @@ body{
         padding-bottom: 5px;
         width: 100%;
         height: 100%;
-        background-color: grey;
+        background-color: #aaaaaa;
     }
 
-    .legend-popup-button{
-        background-color: white;
-    }
 
     .info-button-background{
-        background-color: grey;
+        background-color: #aaaaaa;
         border-radius: 50%;
         height: 30px;
         width: 30px;
@@ -184,10 +184,6 @@ body{
     }
 
     .info-button-background:hover{
-         -webkit-animation-play-state: paused;
-    -moz-animation-play-state: paused;
-    -o-animation-play-state: paused;
-     animation-play-state: paused;
                 background-color: white !important;
     }
 
@@ -195,7 +191,7 @@ body{
         padding: 3px;
         vertical-align: middle;
         text-align: left;
-        font-size: small;
+        font-size: 1.2em;
     }
 
     .infodiv-table td{
@@ -205,23 +201,6 @@ body{
     }
 
 
-@-moz-keyframes blinker {
-    0% { background-color: grey; }
-    50% { background-color: lightblue; }
-    100% { background-color: grey; }
-}
-
-@-webkit-keyframes blinker {
-    0% { background-color: grey; }
-    50% { background-color: lightblue; }
-    100% { background-color: grey; }
-}
-
-@keyframes blinker {
-    0% { background-color: grey; }
-    50% { background-color: lightblue; }
-    100% { background-color: grey; }
-}
 
     </style>
 
@@ -324,7 +303,7 @@ body{
 
         function make_user_response_row(score, responses){
             if(score != null){
-            return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table" style="border-right: 1px dotted !important;">Small, black, white stripes?<br><span style="font-size:larger;">' + rc2s(responses.q1_response) + '</span></td><td class="response-table" style="border-right: 1px dotted !important;">Stripe on head and thorax?<br><span style="font-size:larger;">' + rc2s(responses.q2_response) + '</span></td><td class="response-table">Stripes on abdomen and legs?<br><span style="font-size: larger;">' + rc2s(responses.q3_response) + '</span></td></tr></table></td></tr>';
+            return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table" style="border-right: 1px dotted !important;">Small, black, white stripes?<br><span style="font-size:larger;">' + rc2s(responses.q1_response) + '</span></td><td class="response-table" style="border-right: 1px dotted !important;">Stripe: head + thorax?<br><span style="font-size:larger;">' + rc2s(responses.q2_response) + '</span></td><td class="response-table">Stripes: abdomen + legs?<br><span style="font-size: larger;">' + rc2s(responses.q3_response) + '</span></td></tr></table></td></tr>';
             }else{
                 return '';
             }
@@ -363,7 +342,7 @@ body{
                 contentType: 'application/json',
                 dataType: 'json',
                 headers: {
-                    'Authorization': 'Token {{ request.user.auth_token.key }}'
+                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
                 },
                 beforeSend: function (xhr, settings) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
@@ -476,23 +455,23 @@ body{
         <div class="leaflet-popup legend-popup" style="opacity: 1;"><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 201px;">
             <table class="legend-popup-table">
                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Expert Assessment</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Experts:</strong> Assessment of scientists who study tiger mosquitoes</td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Crowd Assessment</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Crowd:</strong> Assessments of <a style="font-weight:bold;color: #00ee00; text-shadow: 1px 1px #333333;" href="http://crowdcrafting.org/app/Tigafotos/" target="_blank">crowdcrafting</a> volunteers</td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>"Tiger Answers"</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Report:</strong> Observer's assessment of <a style="font-weight:bold; color: #ff6600; text-shadow: 1px 1px #333333;" href="http://atrapaeltigre.com/web/mosquito-tigre/" target="_blank">the three tiger principles</a></td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Photo</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Photo:</strong> If available and reviewed by exerts.</td></tr></table></div>
             </td></tr>
 
                                 <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td>Notes</td></tr></table></div>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Notes:</strong> From experts, but including user notes in some cases.</td></tr></table></div>
             </td></tr>
 
             </table>
