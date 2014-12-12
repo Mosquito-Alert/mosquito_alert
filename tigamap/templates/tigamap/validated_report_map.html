@@ -304,13 +304,22 @@ body{
             return score == 2 ? 'Mosquito tigre' : (score == 1 ? 'Posible mosquito tigre' : (score == -1 ? 'Posible otra especie' : (score == -2 ? 'Otra especie' : 'No se sabe')));
         }
 
-        function make_color_row(score, source){
+        function make_experts_row(score){
             if(score != null){
-            return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + source + ': ' + get_cat_text(score) + '</div></td></tr>';
+            return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + 'Experts: ' + get_cat_text(score) + '</div></td></tr>';
             } else{
                 return '';
             }
         }
+
+        function make_crowd_row(score, n_responses){
+            if(score != null){
+            return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + 'Crowd: '+ get_cat_text(score) + (n_responses < 30? '<br><a href="http://crowdcrafting.org/app/Tigafotos/" target="_blank"><span style="x-small">More responses needed</span></a>' : '') + '</div></td></tr>';
+            } else{
+                return '';
+            }
+        }
+
 
 
         function make_user_response_row(score, responses){
@@ -340,7 +349,7 @@ body{
 
         function make_popup_text(value){
         if(value.movelab_annotation != null){
-        return '<table class="popup-table">' + make_color_row(value.movelab_annotation.tiger_certainty_category, 'Experts') + make_color_row(value.movelab_annotation.crowdcrafting_score_cat, 'Crowd') + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+        return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else{
             return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
         }
