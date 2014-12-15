@@ -1,0 +1,243 @@
+{% extends "tigamap/base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block head_additions %}
+
+     <script src="{% static "tigamap/tigamap_scripts.js" %}"></script>
+
+    <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap-theme.min.css" %}>
+{% block custom_map_style %}    <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}> {% endblock %}
+<script>
+// The following code is adapted from Creare's 'Implied Consent' EU Cookie Law Banner v:2.4
+// Conceived by Robert Kent, James Bavington & Tom Foyster
+
+var dropCookie = true;                      // false disables the Cookie, allowing you to style the banner
+var cookieDuration = 14;                    // Number of days before the cookie expires, and the banner reappears
+var cookieName = 'complianceCookie';        // Name of our cookie
+var cookieValue = 'on';                     // Value of cookie
+
+function createDiv(){
+    var bodytag = document.getElementsByTagName('body')[0];
+    var div = document.createElement('div');
+    div.style.textAlign='center';
+    div.style.backgroundColor='#F6D10A';
+    div.setAttribute('id','cookie-law');
+    div.innerHTML = "{% trans 'Our website uses cookies. By continuing we assume your permission to deploy cookies. For more information on our site policies, please see our' %} <a href='{% url 'help.show_privacy' %}'' rel='nofollow' title='{% trans 'Privacy Policy' %}'>{% trans 'privacy policy' %}</a> {% trans 'and'  %} <a href='{% url 'help.show_terms' %}' rel='nofollow' title='{% trans 'User Agreement' %}'>{% trans 'user agreement' %}</a>.&nbsp;&nbsp;<a class='close-cookie-banner' href='javascript:void(0);' onclick='removeMe();'><span style='cursor: pointer;'>X</span></a>";
+ // Be advised the Close Banner 'X' link requires jQuery
+
+    // bodytag.appendChild(div); // Adds the Cookie Law Banner just before the closing </body> tag
+    // or
+  bodytag.insertBefore(div,bodytag.firstChild); // Adds the Cookie Law Banner just after the opening <body> tag
+
+    document.getElementsByTagName('body')[0].className+=' cookiebanner'; //Adds a class tothe <body> tag when the banner is visible
+
+}
+
+
+function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    if(window.dropCookie) {
+        document.cookie = name+"="+value+expires+"; path=/";
+    }
+}
+
+function checkCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+
+function eraseCookie(name) {
+    createCookie(name,"",-1);
+}
+
+window.onload = function(){
+    if(checkCookie(window.cookieName) != window.cookieValue){
+        createDiv();
+    }
+}
+
+function removeMe(){
+	var element = document.getElementById('cookie-law');
+	element.parentNode.removeChild(element);
+    createCookie(window.cookieName,window.cookieValue, window.cookieDuration); // Create the cookie
+
+}
+
+//
+
+
+
+</script>
+
+{% endblock %}
+
+{% block main_body %}
+
+    <!-- NAVBAR
+    ================================================== -->
+    <div class="navbar-wrapper">
+        <div class="container">
+
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">{% trans "navbar_toggle_navigation" %}</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand" style="color:#fff;">{{ title }}</div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+
+                                            <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        {%  trans 'Adult tiger mosquitoes' %}<b
+                                class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href={{ hrefs.adults_all }}
+                                >{% trans 'All reports' %}</a></li>
+                        <li><a href={{ hrefs.adults_medium }}>
+                            {% trans 'Medium and high probability reports only' %}</a></li>
+                        <li><a href={{ hrefs.adults_high }}>
+                            {% trans 'High probability reports only' %}</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'Breeding site reports' %}<b
+                            class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href={{ hrefs.sites_all }}
+                                >{% trans 'All sites' %}</a></li>
+                        <li>
+                            <a href={{ hrefs.sites_drains_fountains }}
+                                    >{% trans 'Storm drains and fountains' %}</a>
+                        </li>
+                        <li><a href={{ hrefs.sites_basins }}
+                                >{% trans 'Basins' %}</a></li>
+                        <li><a href={{ hrefs.sites_buckets_wells }}>
+                            {% trans 'Buckets and wells' %}</a></li>
+                        <li><a href={{ hrefs.sites_other }}
+                                >{% trans 'Other' %}</a></li>
+                    </ul>
+                </li>
+                <li><a href="{{ hrefs.coverage }}"
+                        >{% trans 'Coverage' %}</a></li>
+                <li>
+                <a href="{% trans 'http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
+                </li>
+
+
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                {% if request.user.is_authenticated %}
+
+                    <li><p class="navbar-text">{{ request.user.username }} /
+                        <a href="{% url "auth_logout" %}">logout</a></p>
+                    </li>
+
+                {% endif %}
+
+                        </ul>
+
+                                <form class="navbar-form navbar-right" action="{% url 'set_language' %}" method="post">
+                <div class="form-group">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.get_full_path|slice:'3:' }}"/>
+                    <select class="form-control" name="language" onchange="this.form.submit()">
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                    selected="selected"{% endif %}>
+                                {{ language.name_local|title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+
+{% block map_area %}
+<div id="tigamap" class="leaflet-container-default"></div>
+{% endblock %}
+
+    <script type="text/javascript">
+(function () {
+
+    function loadmap() {
+
+				var centerLat = loadSavedLat();
+				var centerLng = loadSavedLng();
+				var initialZoom = loadSavedZoom();
+
+				if (isNaN(centerLat) || isNaN(centerLng)) {
+					centerLat = 40.0000;
+					centerLng = -4.0000;
+				}
+
+				if (isNaN(initialZoom)) {
+					initialZoom = 6;
+				}
+
+
+        var djoptions = {"layers": [["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]],
+                    "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                    "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [[-90,
+                        -180], [90,
+                        180]], "resetview": true, "srid": null, "fitextent": true},
+            options = {djoptions: djoptions, initfunc: loadmap,
+                       globals: false, callback: window.map_init_basic};
+        L.Map.djangoMap('tigamap', options);
+    }
+    var loadevents = ["load"];
+    if (loadevents.length === 0) loadmap();
+    else if (window.addEventListener) for (var i=0; i<loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+    else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+
+})();
+</script>
+
+
+{% endblock %}
+
+{% block logo %}
+
+    <a href="http://atrapaeltigre.com"><img
+            src={% static "tigamap/tigatrapp_logo.png" %} style="position:absolute;width:20%;bottom:20px;right:10px"></a>
+
+{% endblock %}
+
+
+
+    {% block end_body %}
+    <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
+
+    <script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
+
+
+{% endblock %}

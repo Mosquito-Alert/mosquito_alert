@@ -3,7 +3,7 @@ from django.db.models import Q
 from datetime import date
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-from tigaserver_app.models import Fix, Report
+from tigaserver_app.models import Fix, Report, CoverageArea
 from tigacrafting.models import MoveLabAnnotation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
@@ -33,7 +33,7 @@ def strip_lang(path):
     return no_lang_path
 
 
-class CoverageArea():
+class SimpleCoverageArea():
     lat = float
     lon = float
     n_fixes = int
@@ -82,7 +82,7 @@ def get_coverage(fix_list, report_list):
         unique_lons = set(these_lons)
         for this_lon in unique_lons:
             n_fixes = len([l for l in these_lons if l == this_lon])
-            result.append(CoverageArea(this_lat, this_lon, n_fixes))
+            result.append(SimpleCoverageArea(this_lat, this_lon, n_fixes))
     return result
 
 
@@ -250,3 +250,15 @@ def show_validated_report_map(request):
     context = {'redirect_to': redirect_path, 'end_day': get_n_days()}
     context.update(csrf(request))
     return render(request, 'tigamap/validated_report_map.html', context)
+
+
+from tigaserver_app.views import update_coverage_model
+
+
+def show_new_coverage_map(request):
+    update_coverage_model()
+    href_url_name = 'new_coverage_map'
+    redirect_path = strip_lang(reverse(href_url_name))
+    context = {'redirect_to': redirect_path, 'last_id': CoverageArea.objects.order_by('id').last().id}
+    context.update(csrf(request))
+    return render(request, 'tigamap/coverage_map_new.html', context)

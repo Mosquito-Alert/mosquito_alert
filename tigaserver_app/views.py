@@ -11,11 +11,11 @@ from datetime import datetime
 import pytz
 import calendar
 import json
-
+from operator import attrgetter
 from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
-    ConfigurationSerializer, MapDataSerializer
+    ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer
 from models import TigaUser, Mission, Report, Photo, \
-    Fix, Configuration
+    Fix, Configuration, CoverageArea
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -292,8 +292,6 @@ def lookup_photo(request, token, photo_uuid, size):
         return HttpResponseRedirect(url)
 
 
-
-
 def get_data_time_info(request):
     # setting fixed start time based on release date to avoid the pre-release beta reports
     start_time = settings.START_TIME
@@ -347,21 +345,130 @@ class MapDataFilter(django_filters.FilterSet):
         fields = ['day', 'week']
 
 
-from operator import attrgetter
+class CoverageMapFilter(django_filters.FilterSet):
+    id_range_start = django_filters.NumberFilter(name='id', lookup_type='gte')
+    id_range_end = django_filters.NumberFilter(name='id', lookup_type='lte')
+
+    class Meta:
+        model = CoverageArea
+        fields = ['id_range_start', 'id_range_end']
 
 
-def get_latest_reports_qs(reports):
-    unique_report_ids = set([r.report_id for r in reports])
+def get_latest_reports_qs(reports, property_filter=None):
+    if property_filter == 'movelab_cat_ge1':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'modelab_annotation') and x.movelab_annotation.tiger_certainty_category >= 1, reports.iterator()))
+    elif property_filter == 'movelab_cat_ge2':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'modelab_annotation') and x.movelab_annotation.tiger_certainty_category == 2, reports.iterator()))
+    elif property_filter == 'embornals':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.embornals, reports.iterator()))
+    elif property_filter == 'fonts':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.fonts, reports.iterator()))
+    elif property_filter == 'basins':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.basins, reports.iterator()))
+    elif property_filter == 'buckets':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.buckets, reports.iterator()))
+    elif property_filter == 'wells':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.wells, reports.iterator()))
+    elif property_filter == 'other':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.other, reports.iterator()))
+    else:
+        unique_report_ids = set([r.report_id for r in reports])
     result_ids = list()
     for this_id in unique_report_ids:
-        these_reports = sorted([report for report in reports if report.report_id == this_id],
-                               key=attrgetter('version_number'))
+        these_reports = sorted([report for report in reports if report.report_id == this_id], key=attrgetter('version_number'))
         if these_reports[0].version_number > -1:
             result_ids.append(these_reports[-1].version_UUID)
     return Report.objects.filter(version_UUID__in=result_ids)
 
 
-class MapDataViewSet(ReadOnlyModelViewSet):
+class AdultMapViewSetAll(ReadOnlyModelViewSet):
     queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
+
+
+class AdultMapViewSetCatGE2(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='movelab_cat_ge2')
+    serializer_class = MapDataSerializer
+    filter_class = MapDataFilter
+
+
+class AdultMapViewSetCatGE1(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='movelab_cat_ge1')
+    serializer_class = MapDataSerializer
+    filter_class = MapDataFilter
+
+
+class SiteMapViewSetAll(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+    serializer_class = SiteMapSerializer
+    filter_class = MapDataFilter
+
+
+class SiteMapViewSetEmbornals(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='embornals')
+    serializer_class = SiteMapSerializer
+    filter_class = MapDataFilter
+
+
+class SiteMapViewSetFonts(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='fonts')
+    serializer_class = SiteMapSerializer
+    filter_class = MapDataFilter
+
+
+class SiteMapViewSetBasins(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='basins')
+    serializer_class = SiteMapSerializer
+    filter_class = MapDataFilter
+
+
+class SiteMapViewSetBuckets(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='buckets')
+    serializer_class = SiteMapSerializer
+    filter_class = MapDataFilter
+
+
+class SiteMapViewSetWells(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='wells')
+    serializer_class = SiteMapSerializer
+    filter_class = MapDataFilter
+
+
+class SiteMapViewSetOther(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='other')
+    serializer_class = SiteMapSerializer
+    filter_class = MapDataFilter
+
+
+def update_coverage_model():
+    if CoverageArea.objects.all().count() > 0 :
+        latest_report_last_modified = CoverageArea.objects.latest('latest_report_last_modified').latest_report_last_modified
+        latest_fix_last_modified = CoverageArea.objects.latest('latest_fix_last_modified').latest_fix_last_modified
+    else:
+        latest_report_last_modified = pytz.utc.localize(datetime(1970, 1, 1))
+        latest_fix_last_modified = pytz.utc.localize(datetime(1970, 1, 1))
+    if CoverageArea.objects.all().count() == 0 or latest_report_last_modified < Report.objects.latest('version_time').version_time or latest_fix_last_modified < Fix.objects.latest('fix_time').fix_time:
+        report_list = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).filter(version_time__gt=latest_report_last_modified))
+        fix_list = Fix.objects.filter(fix_time__gt=max(settings.START_TIME, latest_fix_last_modified))
+        full_lat_list = [f.masked_lat for f in fix_list] + [r.masked_lat for r in report_list if r.masked_lat is not None]
+        unique_lats = set(full_lat_list)
+        for this_lat in unique_lats:
+            these_lons = [f.masked_lon for f in fix_list if f.masked_lat == this_lat] + [r.masked_lon for r in report_list if r.masked_lat is not None and r.masked_lat == this_lat]
+            unique_lons = set(these_lons)
+            for this_lon in unique_lons:
+                n_fixes = len([l for l in these_lons if l == this_lon])
+                if CoverageArea.objects.filter(lat=this_lat, lon=this_lon).count() > 0:
+                    this_coverage_area = CoverageArea.objects.get(lat=this_lat, lon=this_lon)
+                    this_coverage_area.n_fixes += n_fixes
+                else:
+                    this_coverage_area = CoverageArea(lat=this_lat, lon=this_lon, n_fixes=n_fixes)
+                this_coverage_area.latest_fix_last_modified = fix_list.latest('fix_time').fix_time
+                this_coverage_area.latest_report_last_modified = report_list.latest('version_time').version_time
+                this_coverage_area.save()
+
+
+class CoverageMapViewSet(ReadOnlyModelViewSet):
+    queryset = CoverageArea.objects.all()
+    serializer_class = CoverageMapSerializer
+    filter_class = CoverageMapFilter

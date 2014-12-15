@@ -1,4 +1,4 @@
-{% extends "tigamap/app.html" %}
+{% extends "tigamap/app_new.html" %}
 {% load staticfiles %}
 {% load i18n %}
 {% load leaflet_tags %}
@@ -73,7 +73,6 @@ body{
 .note-div{
     font-size:smaller;
     padding:5px;
-    font-family: "Courier New", Courier, monospace;
 }
 
 
@@ -213,6 +212,13 @@ body{
 
     <script type="text/javascript">
 
+        var percent_done;
+        var progress_bar;
+        var progress_bar_container;
+
+
+        {% block marker_placement %}
+
         var markers_clustered = new L.MarkerClusterGroup();
 
         var YellowRedIcon = L.Icon.Default.extend({
@@ -247,9 +253,6 @@ body{
         var yellow_white_icon = new YellowWhiteIcon();
         var yellow_grey_icon = new YellowGreyIcon();
         var yellow_black_icon = new YellowBlackIcon();
-        var percent_done;
-        var progress_bar;
-        var progress_bar_container;
         var day_just_finished = 0;
         var popup_options ={
                 'minWidth': 182,
@@ -373,6 +376,9 @@ body{
             });
         }
 
+            {% endblock %}
+
+
 
         function map_init_basic(map, options) {
 
@@ -385,10 +391,14 @@ body{
 
             progress_bar = $("#progress_bar");
             progress_bar_container = $("#progress_bar_container");
+
+                    {% block map_init_call_for_date %}
+
             for(var d = 0; d <= {{ end_day }}; d++){
             get_data(d, map);
             }
 
+                        {% endblock %}
         }
 
     </script>
@@ -404,6 +414,8 @@ body{
         <div id="progress_bar" class="my-progress-bar">
         </div>
     </div>
+
+    {% block legend %}
 
     <div class="legend">
     <table class="legend-main-table">
@@ -479,6 +491,8 @@ body{
 
 
     </div>
+
+        {% endblock %}
 
 
 {% endblock %}

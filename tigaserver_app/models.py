@@ -325,7 +325,7 @@ class Report(models.Model):
 
     def get_site_embornals(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = ''
+        result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
@@ -335,7 +335,7 @@ class Report(models.Model):
 
     def get_site_fonts(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = ''
+        result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
@@ -345,7 +345,7 @@ class Report(models.Model):
 
     def get_site_basins(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = ''
+        result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
@@ -355,7 +355,7 @@ class Report(models.Model):
 
     def get_site_buckets(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = ''
+        result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
@@ -365,7 +365,7 @@ class Report(models.Model):
 
     def get_site_wells(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = ''
+        result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
@@ -375,7 +375,7 @@ class Report(models.Model):
 
     def get_site_other(self):
         these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = ''
+        result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
@@ -681,3 +681,18 @@ class Configuration(models.Model):
 
     def __unicode__(self):
         return str(self.samples_per_day)
+
+
+class CoverageArea(models.Model):
+    lat = models.FloatField()
+    lon = models.FloatField()
+    n_fixes = models.PositiveIntegerField()
+    last_modified = models.DateTimeField(auto_now=True)
+    latest_report_last_modified = models.DateTimeField()
+    latest_fix_last_modified = models.DateTimeField()
+
+    def __unicode__(self):
+        return str(self.id)
+
+    class Meta:
+        unique_together = ("lat", "lon")

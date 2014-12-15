@@ -1,0 +1,153 @@
+{% extends "tigamap/validated_report_map.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load leaflet_tags %}
+
+
+        {% block marker_placement %}
+
+        var id_just_finished = 0;
+
+        var fill_opacity = .3;
+        var color = '#f00';
+
+        function get_data(id_start, id_stop, map) {
+            var csrftoken = $.cookie('csrftoken');
+            $.ajax({
+                url: 'http://tigaserver.atrapaeltigre.com/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: {
+                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+                },
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                success: function (data) {
+
+                    if (data != null && data.length > 0) {
+
+                        $.each(data, function (index, value) {
+                            if (value != null && value.lat != null && value.lon != null && value.n_fixes != null) {
+
+                                if(value.n_fixes > 100){
+                                    fill_opacity = .5;
+                                  }
+                                L.polygon([
+                                [value.lat, value.lon],
+                                [value.lat + 0.05, value.lon],
+                                [value.lat + 0.05, value.lon + 0.05],
+                                [value.lat, value.lon + 0.05]
+                                ], {weight: 0.5, opacity: 1, color: color, fillOpacity: fill_opacity, fillColor: color}).addTo(map);
+
+                            }
+                        });
+
+                    }
+                        percent_done = Math.floor(100 * id_stop /{{ last_id }});
+                        progress_bar.css("width", percent_done.toString() + "%");
+                        if (percent_done > 10) {
+                            progress_bar.html(percent_done.toString() + "%");
+                        }
+                    if(percent_done >= 100){
+                        progress_bar_container.fadeOut(2000);
+                    }
+                }
+            });
+        }
+
+            {% endblock %}
+
+
+
+                    {% block map_init_call_for_date %}
+
+            var increment = 50;
+            for(var id = 0; id <= {{ last_id }}; id += increment){
+            get_data(id, id + (increment-1), map);
+            }
+
+                        {% endblock %}
+
+
+    {% block legend %}
+
+    <div class="legend">
+    <table class="legend-main-table">
+        <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_red_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Mosquito tigre' %}
+            </td>
+            </tr>
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_orange_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Posible mosquito tigre' %}
+            </td>
+            </tr>
+
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_white_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'No se sabe' %}
+            </td>
+            </tr>
+
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_grey_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Posible otra especie' %}
+            </td>
+            </tr>
+
+                <tr>
+            <td>
+                <img src="{% static 'tigamap/yellow_black_dot.png' %}">
+            </td>
+            <td>
+                {% trans 'Otra especie' %}
+            </td>
+            </tr>
+    </table>
+
+        <div class="leaflet-popup legend-popup" style="opacity: 1;"><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 201px;">
+            <table class="legend-popup-table">
+                <tr><td>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Experts:</strong> Assessment of scientists who study tiger mosquitoes</td></tr></table></div>
+            </td></tr>
+
+                                <tr><td>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Crowd:</strong> Assessments of <a style="font-weight:bold;color: #00ee00; text-shadow: 1px 1px #333333;" href="http://crowdcrafting.org/app/Tigafotos/" target="_blank">crowdcrafting</a> volunteers</td></tr></table></div>
+            </td></tr>
+
+                                <tr><td>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Report:</strong> Observer's assessment of <a style="font-weight:bold; color: #ff6600; text-shadow: 1px 1px #333333;" href="http://atrapaeltigre.com/web/mosquito-tigre/" target="_blank">the three tiger principles</a></td></tr></table></div>
+            </td></tr>
+
+                                <tr><td>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Photo:</strong> If available and reviewed by exerts.</td></tr></table></div>
+            </td></tr>
+
+                                <tr><td>
+                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Notes:</strong> From experts, but including user notes in some cases.</td></tr></table></div>
+            </td></tr>
+
+            </table>
+        </div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div>
+
+
+    </div>
+
+        {% endblock %}
+
+
+
