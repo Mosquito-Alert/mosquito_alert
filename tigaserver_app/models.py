@@ -688,8 +688,8 @@ class CoverageArea(models.Model):
     lon = models.FloatField()
     n_fixes = models.PositiveIntegerField()
     last_modified = models.DateTimeField(auto_now=True)
-    latest_report_last_modified = models.DateTimeField()
-    latest_fix_last_modified = models.DateTimeField()
+    latest_report_server_upload_time = models.DateTimeField()
+    latest_fix_id = models.PositiveIntegerField()
 
     def __unicode__(self):
         return str(self.id)

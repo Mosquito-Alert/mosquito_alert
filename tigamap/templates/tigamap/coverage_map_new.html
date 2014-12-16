@@ -4,17 +4,167 @@
 {% load leaflet_tags %}
 
 
-        {% block marker_placement %}
+{% block map_style %}
+    <style>
+
+        body {
+            padding-top: 50px;
+        }
+
+        .leaflet-popup-content {
+            overflow-y: auto;
+        }
+
+        .my-progress-bar-container {
+            background-color: rgba(0, 0, 0, .25);
+            border-radius: 15px;
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            width: 60%;
+            height: 20px;
+        }
+
+        .my-progress-bar {
+            background-image: -webkit-linear-gradient(top, #428bca 0, #3071a9 100%);
+            background-image: linear-gradient(to bottom, #428bca 0, #3071a9 100%);
+            background-repeat: repeat-x;
+            height: 100%;
+            width: 0;
+            font-size: 12px;
+            line-height: 20px;
+            color: #fff;
+            text-align: center;
+            background-color: #428bca;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+            border-radius: 15px;
+            -webkit-transition: width .6s ease;
+            transition: width .6s ease;
+        }
+
+        .legend {
+            background-color: rgb(200, 200, 200);
+            border-top-right-radius: 15px;
+            border-bottom-right-radius: 15px;
+            position: absolute;
+            left: -270px;
+            border: 1px solid;
+            bottom: 80px;
+            width: 370px;
+            height: 330px;
+            overflow: hidden;
+            -moz-transition: left 1s ease;
+            -webkit-transition: left 1s ease;
+        }
+
+        .legend:hover {
+            left: 0;
+        }
+
+        .legend-main-table {
+            max-width: 60px;
+            float: right;
+            margin-right: 2px;
+            margin-top: 30px;
+        }
+
+        .legend-main-table, .legend-main-table tr, .legend-main-table td {
+            border: none;
+            padding: 2px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: .9em;
+        }
+
+        .legend-blurb {
+            position: absolute !important;
+            left: 10px !important;
+            bottom: 0 !important;
+            top: 20px !important;
+            text-align: justify;
+            z-index: 1;
+            font-size: small;
+            max-width: 250px;
+        }
+
+        .info-button-background {
+            background-color: #aaaaaa;
+            border-radius: 50%;
+            height: 30px;
+            width: 30px;
+        }
+
+        .info-button-background img {
+            vertical-align: middle;
+        }
+
+        .info-button-background:hover {
+            background-color: white !important;
+        }
+
+        .infodiv-table {
+            padding: 3px;
+            vertical-align: middle;
+            text-align: left;
+            font-size: 1.2em;
+        }
+
+        .infodiv-table td {
+            vertical-align: middle;
+            padding-left: 5px !important;
+            border: none !important;
+        }
+
+
+    </style>
+
+{% endblock %}
+
+
+{% block marker_js %}
+    <script>
+
+
+        var percent_done;
+        var progress_bar;
+        var progress_bar_container;
 
         var id_just_finished = 0;
 
-        var fill_opacity = .3;
         var color = '#f00';
+
+        var popup_options = {
+            'minWidth': 10,
+            'closeButton': false
+        };
+
+        function make_popup_text(n_fixes) {
+            var fixes = '{% trans 'fixes' %}';
+            if (n_fixes == 1) {
+                fixes = '{% trans 'fix' %}';
+            }
+            return '<p style="text-align:center; font-size: 1.3em;">' + n_fixes + ' ' + fixes + '</p>';
+        }
+
+        function make_opacity(n_fixes) {
+            var opacity = .3;
+            if (n_fixes > 100) {
+                opacity = .5;
+            }
+            if (n_fixes > 500) {
+                opacity = .6;
+            }
+            if (n_fixes > 1000) {
+                opacity = .7;
+            }
+            return opacity;
+        }
 
         function get_data(id_start, id_stop, map) {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
-                url: 'http://tigaserver.atrapaeltigre.com/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
+                url: 'http://localhost:8000/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
                 contentType: 'application/json',
                 dataType: 'json',
                 headers: {
@@ -30,124 +180,138 @@
                         $.each(data, function (index, value) {
                             if (value != null && value.lat != null && value.lon != null && value.n_fixes != null) {
 
-                                if(value.n_fixes > 100){
-                                    fill_opacity = .5;
-                                  }
                                 L.polygon([
-                                [value.lat, value.lon],
-                                [value.lat + 0.05, value.lon],
-                                [value.lat + 0.05, value.lon + 0.05],
-                                [value.lat, value.lon + 0.05]
-                                ], {weight: 0.5, opacity: 1, color: color, fillOpacity: fill_opacity, fillColor: color}).addTo(map);
+                                    [value.lat, value.lon],
+                                    [value.lat + 0.05, value.lon],
+                                    [value.lat + 0.05, value.lon + 0.05],
+                                    [value.lat, value.lon + 0.05]
+                                ], {weight: 0.5, opacity: 1, color: color, fillOpacity: make_opacity(value.n_fixes), fillColor: color}).bindPopup(make_popup_text(value.n_fixes), popup_options).addTo(map);
 
                             }
                         });
 
                     }
-                        percent_done = Math.floor(100 * id_stop /{{ last_id }});
-                        progress_bar.css("width", percent_done.toString() + "%");
-                        if (percent_done > 10) {
-                            progress_bar.html(percent_done.toString() + "%");
-                        }
-                    if(percent_done >= 100){
+                    percent_done = Math.floor(100 * id_stop /{{ last_id }});
+                    progress_bar.css("width", percent_done.toString() + "%");
+                    if (percent_done > 10) {
+                        progress_bar.html(percent_done.toString() + "%");
+                    }
+                    if (percent_done >= 100) {
                         progress_bar_container.fadeOut(2000);
                     }
                 }
             });
         }
 
-            {% endblock %}
+        function update_data() {
+            var csrftoken = $.cookie('csrftoken');
+            $.ajax({
+                url: 'http://localhost:8000/api/update_coverage/',
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: {
+                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+                },
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                success: function (data) {
+
+                    // do nothing (user will not always have the most updated data, since it will update after grabbing it, but this way the user gets the data fast and it is updated for the next call
+
+                }
+            });
+        }
 
 
+        function map_init_basic(map, options) {
 
-                    {% block map_init_call_for_date %}
+            map.on('zoomend', function (e) {
+                saveMapState(map)
+            });
+            map.on('dragend', function (e) {
+                saveMapState(map)
+            });
+
+            progress_bar = $("#progress_bar");
+            progress_bar_container = $("#progress_bar_container");
 
             var increment = 50;
-            for(var id = 0; id <= {{ last_id }}; id += increment){
-            get_data(id, id + (increment-1), map);
+            for (var id = 0; id <= {{ last_id }}; id += increment) {
+                get_data(id, id + (increment - 1), map);
             }
 
-                        {% endblock %}
+            update_data();
+
+        }
 
 
-    {% block legend %}
+    </script>
+{% endblock %}
+
+
+{% block legend %}
 
     <div class="legend">
-    <table class="legend-main-table">
-        <tr>
-            <td>
-                <img src="{% static 'tigamap/yellow_red_dot.png' %}">
-            </td>
-            <td>
-                {% trans 'Mosquito tigre' %}
-            </td>
+        <table class="legend-main-table">
+            <tr>
+                <td colspan="2">
+                    <p style="font-weight: bold; font-size: 1.2em; text-align: center;">Number of observations</p>
+                </td>
             </tr>
-                <tr>
-            <td>
-                <img src="{% static 'tigamap/yellow_orange_dot.png' %}">
-            </td>
-            <td>
-                {% trans 'Posible mosquito tigre' %}
-            </td>
+            <tr>
+                <td>
+                    <div style="background-color: rgba(255, 0,0,.7);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
+
+                </td>
+                <td style="white-space: nowrap;">
+                    >1000
+                </td>
             </tr>
+            <tr>
+                <td>
+                    <div style="background-color: rgba(255, 0,0,.6);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
 
-                <tr>
-            <td>
-                <img src="{% static 'tigamap/yellow_white_dot.png' %}">
-            </td>
-            <td>
-                {% trans 'No se sabe' %}
-            </td>
+                </td>
+                <td style="white-space: nowrap;">
+                    501-1000
+                </td>
             </tr>
+            <tr>
+                <td>
+                    <div style="background-color: rgba(255, 0,0,.5);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
 
-                <tr>
-            <td>
-                <img src="{% static 'tigamap/yellow_grey_dot.png' %}">
-            </td>
-            <td>
-                {% trans 'Posible otra especie' %}
-            </td>
+                </td>
+                <td style="white-space: nowrap;">
+                    101-500
+                </td>
             </tr>
+            <tr>
+                <td>
+                    <div style="background-color: rgba(255, 0,0,.3);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
 
-                <tr>
-            <td>
-                <img src="{% static 'tigamap/yellow_black_dot.png' %}">
-            </td>
-            <td>
-                {% trans 'Otra especie' %}
-            </td>
+                </td>
+                <td style="white-space: nowrap;">
+
+                    1-100
+
+                </td>
             </tr>
-    </table>
+        </table>
 
-        <div class="leaflet-popup legend-popup" style="opacity: 1;"><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 201px;">
-            <table class="legend-popup-table">
-                <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Experts:</strong> Assessment of scientists who study tiger mosquitoes</td></tr></table></div>
-            </td></tr>
+        <div class="legend-blurb"><p style="font-weight: bold; text-align: center">Coverage Information</p>
 
-                                <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Crowd:</strong> Assessments of <a style="font-weight:bold;color: #00ee00; text-shadow: 1px 1px #333333;" href="http://crowdcrafting.org/app/Tigafotos/" target="_blank">crowdcrafting</a> volunteers</td></tr></table></div>
-            </td></tr>
+            <p>The Android version of Tigatrapp includes optional background location tracking. The app records user’s
+                locations at 5 random times each day. It only shows the approximate position (the red squares on the
+                map) in order to maintain user anonymity. Darker squares indicate more user coverage.</p>
 
-                                <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Report:</strong> Observer's assessment of <a style="font-weight:bold; color: #ff6600; text-shadow: 1px 1px #333333;" href="http://atrapaeltigre.com/web/mosquito-tigre/" target="_blank">the three tiger principles</a></td></tr></table></div>
-            </td></tr>
-
-                                <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Photo:</strong> If available and reviewed by exerts.</td></tr></table></div>
-            </td></tr>
-
-                                <tr><td>
-                <div class="legend-popup-infodiv"><table class="infodiv-table"><tr><td><a href="http://atrapaeltigre.com" target="_blank"><div class="info-button-background"><img width="30px" height="30px" src="{% static "tigamap/info_button.png" %}"></div></a></td><td><strong>Notes:</strong> From experts, but including user notes in some cases.</td></tr></table></div>
-            </td></tr>
-
-            </table>
-        </div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div>
-
+            <p>This information is used to identify which areas are being explored and which areas do not, to create
+                specific missions in particular areas, and to learn about general trends of mobility during the summer,
+                related to tiger mosquito dispersion.</p></div>
 
     </div>
 
-        {% endblock %}
+{% endblock %}
 
 
 

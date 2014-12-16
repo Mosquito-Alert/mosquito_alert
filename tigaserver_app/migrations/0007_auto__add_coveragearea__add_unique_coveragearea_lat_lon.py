@@ -15,7 +15,7 @@ class Migration(SchemaMigration):
             ('lon', self.gf('django.db.models.fields.FloatField')()),
             ('n_fixes', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('last_modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('latest_report_id', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
+            ('latest_report_server_upload_time', self.gf('django.db.models.fields.DateTimeField')()),
             ('latest_fix_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
         ))
         db.send_create_signal(u'tigaserver_app', ['CoverageArea'])
@@ -45,7 +45,7 @@ class Migration(SchemaMigration):
             'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'lat': ('django.db.models.fields.FloatField', [], {}),
             'latest_fix_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'latest_report_id': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
+            'latest_report_server_upload_time': ('django.db.models.fields.DateTimeField', [], {}),
             'lon': ('django.db.models.fields.FloatField', [], {}),
             'n_fixes': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
@@ -115,7 +115,7 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'photo': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
             'report': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'photos'", 'to': u"orm['tigaserver_app.Report']"}),
-            'uuid': ('django.db.models.fields.CharField', [], {'default': "'90d7d749-9609-47b0-b531-d2866e928191'", 'max_length': '36'})
+            'uuid': ('django.db.models.fields.CharField', [], {'default': "'055a5dc7-e497-47b3-a6e3-5a9c1ffed411'", 'max_length': '36'})
         },
         u'tigaserver_app.report': {
             'Meta': {'unique_together': "(('user', 'version_UUID'),)", 'object_name': 'Report'},

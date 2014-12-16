@@ -25,6 +25,7 @@ router.register(r'coverage', views.CoverageMapViewSet, base_name='coverage')
 
 urlpatterns = patterns('tigaserver_app.views',
     url(r'^time_info/$', 'get_data_time_info'),
+    url(r'^update_coverage/$', 'update_coverage_model'),
     url(r'^photos/$', 'post_photo'),
     url(r'^configuration/$', 'get_current_configuration'),
     url(r'^missions/$', 'get_new_missions'),

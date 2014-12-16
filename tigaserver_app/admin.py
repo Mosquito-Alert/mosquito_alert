@@ -1,6 +1,6 @@
 from django.contrib import admin
 from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration
+    Fix, Configuration, CoverageArea
 from rest_framework.authtoken.models import Token
 import csv
 from django.utils.encoding import smart_str
@@ -240,6 +240,14 @@ class ReportResponseAdmin(admin.ModelAdmin):
         return False
 
 
+class CoverageAreaAdmin(admin.ModelAdmin):
+    list_display = ('lat', 'lon', 'n_fixes', 'last_modified', 'latest_report_server_upload_time', 'latest_fix_id')
+    fields = ('lat', 'lon', 'n_fixes', 'last_modified', 'latest_report_server_upload_time', 'latest_fix_id')
+
+    def has_add_permission(self, request):
+        return False
+
+
 admin.site.register(TigaUser, UserAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(Fix, FixAdmin)
@@ -247,3 +255,4 @@ admin.site.register(Configuration, ConfigurationAdmin)
 admin.site.register(Mission, MissionAdmin)
 admin.site.register(Photo, PhotoAdmin)
 admin.site.register(ReportResponse, ReportResponseAdmin)
+admin.site.register(CoverageArea, CoverageAreaAdmin)

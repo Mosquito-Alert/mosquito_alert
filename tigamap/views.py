@@ -252,13 +252,13 @@ def show_validated_report_map(request):
     return render(request, 'tigamap/validated_report_map.html', context)
 
 
-from tigaserver_app.views import update_coverage_model
-
-
 def show_new_coverage_map(request):
-    update_coverage_model()
-    href_url_name = 'new_coverage_map'
+    href_url_name = 'coverage_map'
     redirect_path = strip_lang(reverse(href_url_name))
-    context = {'redirect_to': redirect_path, 'last_id': CoverageArea.objects.order_by('id').last().id}
+    if CoverageArea.objects.all().count() > 0:
+        last_id = CoverageArea.objects.order_by('id').last().id
+    else:
+        last_id = 0
+    context = {'redirect_to': redirect_path, 'last_id': last_id}
     context.update(csrf(request))
     return render(request, 'tigamap/coverage_map_new.html', context)

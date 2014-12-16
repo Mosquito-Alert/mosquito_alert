@@ -441,16 +441,17 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 
-def update_coverage_model():
-    if CoverageArea.objects.all().count() > 0 :
-        latest_report_last_modified = CoverageArea.objects.latest('latest_report_last_modified').latest_report_last_modified
-        latest_fix_last_modified = CoverageArea.objects.latest('latest_fix_last_modified').latest_fix_last_modified
+def update_coverage_model(request):
+    json_response = {'updated': False}
+    if CoverageArea.objects.all().count() > 0:
+        latest_report_server_upload_time = CoverageArea.objects.order_by('latest_report_server_upload_time').last().latest_report_server_upload_time
+        latest_fix_id = CoverageArea.objects.order_by('latest_fix_id').last().latest_fix_id
     else:
-        latest_report_last_modified = pytz.utc.localize(datetime(1970, 1, 1))
-        latest_fix_last_modified = pytz.utc.localize(datetime(1970, 1, 1))
-    if CoverageArea.objects.all().count() == 0 or latest_report_last_modified < Report.objects.latest('version_time').version_time or latest_fix_last_modified < Fix.objects.latest('fix_time').fix_time:
-        report_list = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).filter(version_time__gt=latest_report_last_modified))
-        fix_list = Fix.objects.filter(fix_time__gt=max(settings.START_TIME, latest_fix_last_modified))
+        latest_report_server_upload_time = pytz.utc.localize(datetime(1970, 1, 1))
+        latest_fix_id = 0
+    if CoverageArea.objects.all().count() == 0 or latest_report_server_upload_time < Report.objects.order_by('server_upload_time').last().server_upload_time or latest_fix_id < Fix.objects.order_by('id').last().id:
+        report_list = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).filter(server_upload_time__gt=latest_report_server_upload_time))
+        fix_list = Fix.objects.filter(fix_time__gt=settings.START_TIME, id__gt=latest_fix_id)
         full_lat_list = [f.masked_lat for f in fix_list] + [r.masked_lat for r in report_list if r.masked_lat is not None]
         unique_lats = set(full_lat_list)
         for this_lat in unique_lats:
@@ -463,9 +464,17 @@ def update_coverage_model():
                     this_coverage_area.n_fixes += n_fixes
                 else:
                     this_coverage_area = CoverageArea(lat=this_lat, lon=this_lon, n_fixes=n_fixes)
-                this_coverage_area.latest_fix_last_modified = fix_list.latest('fix_time').fix_time
-                this_coverage_area.latest_report_last_modified = report_list.latest('version_time').version_time
+                if fix_list and fix_list.count() > 0:
+                    this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
+                else:
+                    this_coverage_area.latest_fix_id = latest_fix_id
+                if report_list and report_list.count() > 0:
+                    this_coverage_area.latest_report_server_upload_time = report_list.order_by('server_upload_time').last().server_upload_time
+                else:
+                    this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
                 this_coverage_area.save()
+        json_response['updated'] = True
+    return HttpResponse(json.dumps(json_response))
 
 
 class CoverageMapViewSet(ReadOnlyModelViewSet):
