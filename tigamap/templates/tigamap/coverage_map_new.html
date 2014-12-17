@@ -164,7 +164,7 @@
         function get_data(id_start, id_stop, map) {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
-                url: 'http://localhost:8000/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
+                url: 'http://{{ domain }}/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
                 contentType: 'application/json',
                 dataType: 'json',
                 headers: {
@@ -206,7 +206,7 @@
         function update_data() {
             var csrftoken = $.cookie('csrftoken');
             $.ajax({
-                url: 'http://localhost:8000/api/update_coverage/',
+                url: 'http://{{ domain }}/api/update_coverage/',
                 contentType: 'application/json',
                 dataType: 'json',
                 headers: {

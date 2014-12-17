@@ -215,7 +215,7 @@
                 function get_data(month, map) {
                     var csrftoken = $.cookie('csrftoken');
                     $.ajax({
-                        url: 'http://localhost:8000/api/{{ endpoint }}/?month=' + month,
+                        url: 'http://{{ domain }}/api/{{ endpoint }}/?month=' + month,
                         contentType: 'application/json',
                         dataType: 'json',
                         headers: {
