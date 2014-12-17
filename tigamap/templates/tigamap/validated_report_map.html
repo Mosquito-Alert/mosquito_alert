@@ -394,7 +394,7 @@
 
             function rc2s(response_code) {
                 if (response_code == null) {
-                    return "{% trans 'not sure' %}"
+                    return "{% trans 'not_sure' %}"
                 } else {
                     return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not_sure' %}" : "{%  trans 'no' %}");
                 }
