@@ -140,7 +140,7 @@ function removeMe(){
                 <li><a href="{{ hrefs.coverage }}"
                         >{% trans 'Coverage' %}</a></li>
                 <li>
-                <a href="{% trans 'http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
+                <a style="max-width: 20px;" href="{% trans 'http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
                 </li>
 
 
@@ -148,7 +148,7 @@ function removeMe(){
                         <ul class="nav navbar-nav navbar-right">
                 {% if request.user.is_authenticated %}
 
-                    <li><p class="navbar-text">{{ request.user.username }} /
+                    <li><p style="padding-left: 10px;" class="navbar-text">{{ request.user.username }} /
                         <a href="{% url "auth_logout" %}">logout</a></p>
                     </li>
 
@@ -156,7 +156,7 @@ function removeMe(){
 
                         </ul>
 
-                                <form class="navbar-form navbar-right" action="{% url 'set_language' %}" method="post">
+                                <form style="max-width: 200px;" class="navbar-form navbar-right" action="{% url 'set_language' %}" method="post">
                 <div class="form-group">
                     {% csrf_token %}
                     <input name="next" type="hidden" value="{{ request.get_full_path|slice:'3:' }}"/>

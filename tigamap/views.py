@@ -250,6 +250,12 @@ def show_adult_map(request, type='all'):
         current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
+    if type == 'probable':
+        this_title = _('Adult tiger mosquitoes') + ': ' + _('menu_adults_prob')
+    elif type == 'definite':
+        this_title = _('Adult tiger mosquitoes') + ': ' + _('menu_adults_definite')
+    else:
+        this_title = _('Adult tiger mosquitoes: All reports')
     href_url_name = 'adult_map_type'
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
@@ -266,7 +272,7 @@ def show_adult_map(request, type='all'):
         endpoint = type_dic[type]
     except KeyError:
         endpoint = 'all_adults'
-    context = {'domain': current_domain, 'redirect_to': redirect_path, 'hrefs': hrefs, 'end_day': get_n_days(), 'endpoint': endpoint}
+    context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs, 'end_day': get_n_days(), 'endpoint': endpoint}
     context.update(csrf(request))
     return render(request, 'tigamap/validated_report_map.html', context)
 
@@ -276,6 +282,11 @@ def show_site_map(request, type='all'):
         current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
+    title_dic = {'embornals_fonts': _('Breeding sites: Storm drains and fountains'), 'all': _('Breeding sites: All reports'), 'other': _('Breeding sites: Other'), 'buckets_wells':  _('Breeding sites: Buckets and wells'), 'basins':  _('Breeding sites: Basins')}
+    try:
+        this_title = title_dic[type]
+    except KeyError:
+        this_title = _('Breeding sites: All reports')
     href_url_name = 'site_map_type'
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
@@ -292,7 +303,7 @@ def show_site_map(request, type='all'):
         endpoint = type_dic[type]
     except KeyError:
         endpoint = 'all_sites'
-    context = {'domain': current_domain, 'redirect_to': redirect_path,  'hrefs': hrefs, 'end_month': get_n_months(), 'endpoint': endpoint}
+    context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path,  'hrefs': hrefs, 'end_month': get_n_months(), 'endpoint': endpoint}
     context.update(csrf(request))
     return render(request, 'tigamap/site_map.html', context)
 
@@ -302,6 +313,7 @@ def show_new_coverage_map(request):
         current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
+    this_title = _('Coverage Map')
     href_url_name = 'coverage_map'
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
@@ -317,6 +329,6 @@ def show_new_coverage_map(request):
         last_id = CoverageArea.objects.order_by('id').last().id
     else:
         last_id = 0
-    context = {'domain': current_domain, 'redirect_to': redirect_path,  'hrefs': hrefs, 'last_id': last_id}
+    context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path,  'hrefs': hrefs, 'last_id': last_id}
     context.update(csrf(request))
     return render(request, 'tigamap/coverage_map_new.html', context)

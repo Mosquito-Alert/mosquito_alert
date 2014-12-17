@@ -43,79 +43,121 @@
             transition: width .6s ease;
         }
 
-        .legend {
-            background-color: rgb(200, 200, 200);
-            border-top-right-radius: 15px;
-            border-bottom-right-radius: 15px;
-            position: absolute;
-            left: -270px;
-            border: 1px solid;
-            bottom: 80px;
-            width: 370px;
-            min-height: 330px;
-            overflow: hidden;
-            -moz-transition: left 1s ease;
-            -webkit-transition: left 1s ease;
+        @media (max-width: 669px) and (max-height: 699px) {
+            .legend {
+                display: none
+            }
+
+            .legend-main-table {
+                display: none
+            }
+
+            .legend-main-table, .legend-main-table tr, .legend-main-table td {
+                display: none
+            }
+
+            .legend-blurb {
+                display: none
+            }
+
+            .info-button-background {
+                display: none
+            }
+
+            .info-button-background img {
+                display: none
+            }
+
+            .info-button-background:hover {
+                display: none
+            }
+
+            .infodiv-table {
+                display: none
+            }
+
+            .infodiv-table td {
+                display: none
+            }
+
         }
 
-        .legend:hover {
-            left: 0;
-        }
+        @media (min-width: 670px) and (min-height: 700px) {
 
-        .legend-main-table {
-            max-width: 60px;
-            float: right;
-            margin-right: 2px;
-            margin-top: 30px;
-        }
+            .legend {
+                background-color: rgb(200, 200, 200);
+                border-top-right-radius: 15px;
+                border-bottom-right-radius: 15px;
+                position: absolute;
+                left: -270px;
+                border: 1px solid;
+                bottom: 80px;
+                width: 370px;
+                min-height: 330px;
+                overflow: hidden;
+                -moz-transition: left 1s ease;
+                -webkit-transition: left 1s ease;
+            }
 
-        .legend-main-table, .legend-main-table tr, .legend-main-table td {
-            border: none;
-            padding: 2px;
-            text-align: left;
-            vertical-align: middle;
-            font-size: .9em;
-        }
+            .legend:hover {
+                left: 0;
+            }
 
-        .legend-blurb {
-            position: absolute !important;
-            left: 10px !important;
-            bottom: 0 !important;
-            top: 20px !important;
-            text-align: justify;
-            z-index: 1;
-            font-size: small;
-            max-width: 250px;
-        }
+            .legend-main-table {
+                max-width: 60px;
+                float: right;
+                margin-right: 2px;
+                margin-top: 30px;
+            }
 
-        .info-button-background {
-            background-color: #aaaaaa;
-            border-radius: 50%;
-            height: 30px;
-            width: 30px;
-        }
+            .legend-main-table, .legend-main-table tr, .legend-main-table td {
+                border: none;
+                padding: 2px;
+                text-align: left;
+                vertical-align: middle;
+                font-size: .9em;
+            }
 
-        .info-button-background img {
-            vertical-align: middle;
-        }
+            .legend-blurb {
+                position: absolute !important;
+                left: 10px !important;
+                bottom: 0 !important;
+                top: 20px !important;
+                text-align: justify;
+                z-index: 1;
+                font-size: small;
+                max-width: 250px;
+            }
 
-        .info-button-background:hover {
-            background-color: white !important;
-        }
+            .info-button-background {
+                background-color: #aaaaaa;
+                border-radius: 50%;
+                height: 30px;
+                width: 30px;
+            }
 
-        .infodiv-table {
-            padding: 3px;
-            vertical-align: middle;
-            text-align: left;
-            font-size: 1.2em;
-        }
+            .info-button-background img {
+                vertical-align: middle;
+            }
 
-        .infodiv-table td {
-            vertical-align: middle;
-            padding-left: 5px !important;
-            border: none !important;
-        }
+            .info-button-background:hover {
+                background-color: white !important;
+            }
 
+            .infodiv-table {
+                padding: 3px;
+                vertical-align: middle;
+                text-align: left;
+                font-size: 1.2em;
+            }
+
+            .infodiv-table td {
+                vertical-align: middle;
+                padding-left: 5px !important;
+                border: none !important;
+            }
+
+        }
 
     </style>
 
