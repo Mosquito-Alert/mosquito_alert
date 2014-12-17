@@ -298,7 +298,7 @@
         <table class="legend-main-table">
             <tr>
                 <td colspan="2">
-                    <p style="font-weight: bold; font-size: 1.2em; text-align: center;">Number of observations</p>
+                    <p style="font-weight: bold; font-size: 1.2em; text-align: center;">{% trans 'coverage_legend_main_title' %}</p>
                 </td>
             </tr>
             <tr>
@@ -341,15 +341,9 @@
             </tr>
         </table>
 
-        <div class="legend-blurb"><p style="font-weight: bold; text-align: center">Coverage Information</p>
-
-            <p>The Android version of Tigatrapp includes optional background location tracking. The app records user’s
-                locations at 5 random times each day. It only shows the approximate position (the red squares on the
-                map) in order to maintain user anonymity. Darker squares indicate more user coverage.</p>
-
-            <p>This information is used to identify which areas are being explored and which areas do not, to create
-                specific missions in particular areas, and to learn about general trends of mobility during the summer,
-                related to tiger mosquito dispersion.</p></div>
+        <div class="legend-blurb"><p style="font-weight: bold; text-align: center">{% trans 'coverage_legend_info_title' %}</p>
+            {% trans 'coverage_legend_info_blurb' %}
+        </div>
 
     </div>
 
