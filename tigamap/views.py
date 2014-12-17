@@ -244,34 +244,66 @@ def show_validated_photo_map(request):
     return render(request, 'tigamap/validated_photo_map.html', context)
 
 
-def show_validated_report_map(request):
-    href_url_name = 'validated_photo_map'
-    redirect_path = strip_lang(reverse(href_url_name))
-    context = {'redirect_to': redirect_path, 'end_day': get_n_days()}
+def show_adult_map(request, type='all'):
+    href_url_name = 'adult_map_type'
+    hrefs = {'coverage': reverse('coverage_map'),
+                 'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
+                 'adults_medium': reverse('adult_map_type', kwargs={'type': 'probable'}),
+                 'adults_high': reverse('adult_map_type', kwargs={'type': 'definite'}),
+                 'sites_all': reverse('site_map_type', kwargs={'type': 'all'}),
+                 'sites_drains_fountains': reverse('site_map_type', kwargs={'type': 'embornals_fonts'}),
+                 'sites_basins': reverse('site_map_type', kwargs={'type': 'basins'}),
+                 'sites_buckets_wells': reverse('site_map_type', kwargs={'type': 'buckets_wells'}),
+                 'sites_other': reverse('site_map_type', kwargs={'type': 'other'})}
+    redirect_path = strip_lang(reverse(href_url_name, kwargs={'type': type}))
+    type_dic = {'all': 'all_adults', 'probable': 'cat1_adults', 'definite': 'cat2_adults'}
+    try:
+        endpoint = type_dic[type]
+    except KeyError:
+        endpoint = 'all_adults'
+    context = {'redirect_to': redirect_path, 'hrefs': hrefs, 'end_day': get_n_days(), 'endpoint': endpoint}
     context.update(csrf(request))
     return render(request, 'tigamap/validated_report_map.html', context)
 
 
 def show_site_map(request, type='all'):
-    href_url_name = 'site_map'
-    redirect_path = strip_lang(reverse(href_url_name))
+    href_url_name = 'site_map_type'
+    hrefs = {'coverage': reverse('coverage_map'),
+                 'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
+                 'adults_medium': reverse('adult_map_type', kwargs={'type': 'probable'}),
+                 'adults_high': reverse('adult_map_type', kwargs={'type': 'definite'}),
+                 'sites_all': reverse('site_map_type', kwargs={'type': 'all'}),
+                 'sites_drains_fountains': reverse('site_map_type', kwargs={'type': 'embornals_fonts'}),
+                 'sites_basins': reverse('site_map_type', kwargs={'type': 'basins'}),
+                 'sites_buckets_wells': reverse('site_map_type', kwargs={'type': 'buckets_wells'}),
+                 'sites_other': reverse('site_map_type', kwargs={'type': 'other'})}
+    redirect_path = strip_lang(reverse(href_url_name, kwargs={'type': type}))
     type_dic = {'embornals_fonts': 'embornals', 'all': 'all_sites', 'other': 'other_sites', 'buckets_wells':  'buckets', 'basins': 'basins'}
     try:
         endpoint = type_dic[type]
     except KeyError:
         endpoint = 'all_sites'
-    context = {'redirect_to': redirect_path, 'end_month': get_n_months(), 'endpoint': endpoint}
+    context = {'redirect_to': redirect_path,  'hrefs': hrefs, 'end_month': get_n_months(), 'endpoint': endpoint}
     context.update(csrf(request))
     return render(request, 'tigamap/site_map.html', context)
 
 
 def show_new_coverage_map(request):
     href_url_name = 'coverage_map'
+    hrefs = {'coverage': reverse('coverage_map'),
+                 'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
+                 'adults_medium': reverse('adult_map_type', kwargs={'type': 'probable'}),
+                 'adults_high': reverse('adult_map_type', kwargs={'type': 'definite'}),
+                 'sites_all': reverse('site_map_type', kwargs={'type': 'all'}),
+                 'sites_drains_fountains': reverse('site_map_type', kwargs={'type': 'embornals_fonts'}),
+                 'sites_basins': reverse('site_map_type', kwargs={'type': 'basins'}),
+                 'sites_buckets_wells': reverse('site_map_type', kwargs={'type': 'buckets_wells'}),
+                 'sites_other': reverse('site_map_type', kwargs={'type': 'other'})}
     redirect_path = strip_lang(reverse(href_url_name))
     if CoverageArea.objects.all().count() > 0:
         last_id = CoverageArea.objects.order_by('id').last().id
     else:
         last_id = 0
-    context = {'redirect_to': redirect_path, 'last_id': last_id}
+    context = {'redirect_to': redirect_path,  'hrefs': hrefs, 'last_id': last_id}
     context.update(csrf(request))
     return render(request, 'tigamap/coverage_map_new.html', context)

@@ -377,9 +377,9 @@ class CoverageMapFilter(django_filters.FilterSet):
 
 def get_latest_reports_qs(reports, property_filter=None):
     if property_filter == 'movelab_cat_ge1':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'modelab_annotation') and x.movelab_annotation.tiger_certainty_category >= 1, reports.iterator()))
+        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] >= 1, reports.iterator()))
     elif property_filter == 'movelab_cat_ge2':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'modelab_annotation') and x.movelab_annotation.tiger_certainty_category == 2, reports.iterator()))
+        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] == 2, reports.iterator()))
     elif property_filter == 'embornals_fonts':
         unique_report_ids = set(r.report_id for r in filter(lambda x: x.embornals or x.fonts, reports.iterator()))
     elif property_filter == 'basins':

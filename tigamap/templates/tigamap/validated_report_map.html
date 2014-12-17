@@ -118,7 +118,7 @@
             border: 1px solid;
             bottom: 80px;
             width: 370px;
-            height: 330px;
+            min-height: 330px;
             overflow: hidden;
             -moz-transition: left 1s ease;
             -webkit-transition: left 1s ease;
@@ -366,7 +366,7 @@
                 function get_data(day, map) {
                     var csrftoken = $.cookie('csrftoken');
                     $.ajax({
-                        url: 'http://localhost:8000/api/all_adults/?day=' + day,
+                        url: 'http://localhost:8000/api/{{ endpoint }}/?day=' + day,
                         contentType: 'application/json',
                         dataType: 'json',
                         headers: {
