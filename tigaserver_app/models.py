@@ -383,6 +383,20 @@ class Report(models.Model):
                     this_response.answer == 'Otros'
         return result
 
+    def get_site_cat(self):
+        if self.get_site_embornals():
+            return 0
+        elif self.get_site_fonts():
+            return 1
+        elif self.get_site_basins():
+            return 2
+        elif self.get_site_buckets():
+            return 3
+        elif self.get_site_wells():
+            return 4
+        else:
+            return 5
+
     def get_masked_lat(self):
         if self.lat is not None:
             return round(floor(self.lat/.05)*.05, 2)
@@ -506,6 +520,7 @@ class Report(models.Model):
     tigaprob_text = property(get_tigaprob_text)
     site_type = property(get_site_type)
     site_type_trans = property(get_site_type_trans)
+    site_cat = property(get_site_cat)
     embornals = property(get_site_embornals)
     fonts = property(get_site_fonts)
     basins = property(get_site_basins)

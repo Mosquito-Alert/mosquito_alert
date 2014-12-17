@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Count
 import math
 from django.core.context_processors import csrf
-from tigaserver_app.views import get_n_days
+from tigaserver_app.views import get_n_days, get_n_months
 
 
 def show_grid_05(request):
@@ -250,6 +250,19 @@ def show_validated_report_map(request):
     context = {'redirect_to': redirect_path, 'end_day': get_n_days()}
     context.update(csrf(request))
     return render(request, 'tigamap/validated_report_map.html', context)
+
+
+def show_site_map(request, type='all'):
+    href_url_name = 'site_map'
+    redirect_path = strip_lang(reverse(href_url_name))
+    type_dic = {'embornals_fonts': 'embornals', 'all': 'all_sites', 'other': 'other_sites', 'buckets_wells':  'buckets', 'basins': 'basins'}
+    try:
+        endpoint = type_dic[type]
+    except KeyError:
+        endpoint = 'all_sites'
+    context = {'redirect_to': redirect_path, 'end_month': get_n_months(), 'endpoint': endpoint}
+    context.update(csrf(request))
+    return render(request, 'tigamap/site_map.html', context)
 
 
 def show_new_coverage_map(request):

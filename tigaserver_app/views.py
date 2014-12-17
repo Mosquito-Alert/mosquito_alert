@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 import django_filters
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import calendar
 import json
@@ -298,7 +298,9 @@ def get_data_time_info(request):
     end_time = Report.objects.latest('creation_time').creation_time
     # adding 1 to include the last dayin the set
     days = (end_time - start_time).days + 1
-    json_response = {'start_time_posix': calendar.timegm(start_time.utctimetuple()), 'end_time_posix': calendar.timegm(end_time.utctimetuple()), 'n_days': days}
+    weeks = ((end_time - start_time).days / 7) + 1
+    months = ((end_time - start_time).days / 28) + 1
+    json_response = {'start_time_posix': calendar.timegm(start_time.utctimetuple()), 'end_time_posix': calendar.timegm(end_time.utctimetuple()), 'n_days': days, 'n_weeks': weeks, 'n_months': months}
     return HttpResponse(json.dumps(json_response))
 
 
@@ -309,7 +311,13 @@ def get_n_days():
     # adding 1 to include the last dayin the set
     return (end_time - start_time).days + 1
 
-from datetime import timedelta
+
+def get_n_months():
+    # setting fixed start time based on release date to avoid the pre-release beta reports
+    start_time = settings.START_TIME
+    end_time = Report.objects.latest('creation_time').creation_time
+    # adding 1 to include the last dayin the set
+    return ((end_time - start_time).days / 28) + 1
 
 
 def filter_creation_day(queryset, days_since_launch):
@@ -336,13 +344,26 @@ def filter_creation_week(queryset, weeks_since_launch):
         return queryset
 
 
+def filter_creation_month(queryset, months_since_launch):
+    if not months_since_launch:
+        return queryset
+    try:
+        target_month_start = settings.START_TIME + timedelta(weeks=int(months_since_launch)*4)
+        target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch)*4)+1)
+        result = queryset.filter(creation_time__range=(target_month_start, target_month_end))
+        return result
+    except ValueError:
+        return queryset
+
+
 class MapDataFilter(django_filters.FilterSet):
     day = django_filters.Filter(action=filter_creation_day)
     week = django_filters.Filter(action=filter_creation_week)
+    month = django_filters.Filter(action=filter_creation_month)
 
     class Meta:
         model = Report
-        fields = ['day', 'week']
+        fields = ['day', 'week', 'month']
 
 
 class CoverageMapFilter(django_filters.FilterSet):
@@ -359,16 +380,12 @@ def get_latest_reports_qs(reports, property_filter=None):
         unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'modelab_annotation') and x.movelab_annotation.tiger_certainty_category >= 1, reports.iterator()))
     elif property_filter == 'movelab_cat_ge2':
         unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'modelab_annotation') and x.movelab_annotation.tiger_certainty_category == 2, reports.iterator()))
-    elif property_filter == 'embornals':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.embornals, reports.iterator()))
-    elif property_filter == 'fonts':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.fonts, reports.iterator()))
+    elif property_filter == 'embornals_fonts':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.embornals or x.fonts, reports.iterator()))
     elif property_filter == 'basins':
         unique_report_ids = set(r.report_id for r in filter(lambda x: x.basins, reports.iterator()))
-    elif property_filter == 'buckets':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.buckets, reports.iterator()))
-    elif property_filter == 'wells':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.wells, reports.iterator()))
+    elif property_filter == 'buckets_wells':
+        unique_report_ids = set(r.report_id for r in filter(lambda x: x.buckets or x.wells, reports.iterator()))
     elif property_filter == 'other':
         unique_report_ids = set(r.report_id for r in filter(lambda x: x.other, reports.iterator()))
     else:
@@ -405,14 +422,8 @@ class SiteMapViewSetAll(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 
-class SiteMapViewSetEmbornals(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='embornals')
-    serializer_class = SiteMapSerializer
-    filter_class = MapDataFilter
-
-
-class SiteMapViewSetFonts(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='fonts')
+class SiteMapViewSetEmbornalsFonts(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='embornals_fonts')
     serializer_class = SiteMapSerializer
     filter_class = MapDataFilter
 
@@ -423,14 +434,8 @@ class SiteMapViewSetBasins(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 
-class SiteMapViewSetBuckets(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='buckets')
-    serializer_class = SiteMapSerializer
-    filter_class = MapDataFilter
-
-
-class SiteMapViewSetWells(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='wells')
+class SiteMapViewSetBucketsWells(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='buckets_wells')
     serializer_class = SiteMapSerializer
     filter_class = MapDataFilter
 

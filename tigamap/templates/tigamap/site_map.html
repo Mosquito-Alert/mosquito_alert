@@ -1,0 +1,281 @@
+{% extends "tigamap/validated_report_map.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load leaflet_tags %}
+
+
+{% block map_style %}
+    <style>
+
+        body {
+            padding-top: 50px;
+        }
+
+        .leaflet-popup-content {
+            overflow-y: auto;
+        }
+
+        .my-progress-bar-container {
+            background-color: rgba(0, 0, 0, .25);
+            border-radius: 15px;
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            width: 60%;
+            height: 20px;
+        }
+
+        .my-progress-bar {
+            background-image: -webkit-linear-gradient(top, #428bca 0, #3071a9 100%);
+            background-image: linear-gradient(to bottom, #428bca 0, #3071a9 100%);
+            background-repeat: repeat-x;
+            height: 100%;
+            width: 0;
+            font-size: 12px;
+            line-height: 20px;
+            color: #fff;
+            text-align: center;
+            background-color: #428bca;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+            border-radius: 15px;
+            -webkit-transition: width .6s ease;
+            transition: width .6s ease;
+        }
+
+
+        .legend {
+            background-color: rgb(200, 200, 200);
+            border-top-right-radius: 15px;
+            border-bottom-right-radius: 15px;
+            position: absolute;
+            left: -270px;
+            border: 1px solid;
+            bottom: 80px;
+            width: 370px;
+            height: 330px;
+            overflow: hidden;
+            -moz-transition: left 1s ease;
+            -webkit-transition: left 1s ease;
+        }
+
+        .legend:hover {
+            left: 0;
+        }
+
+        #hand-left {
+            opacity: 1;
+            -moz-transition: opacity 2s ease;
+            -webkit-transition: opacity 2s ease;
+        }
+
+        #more_info_div {
+            opacity: 0;
+            -moz-transition: opacity 3s ease;
+            -webkit-transition: opacity 3s ease;
+
+        }
+
+        .legend:hover #hand-left {
+            opacity: 0;
+        }
+
+        .legend:hover #more_info_div {
+            opacity: 1;
+        }
+
+        .legend-main-table {
+            max-width: 50px;
+            float: right;
+            margin-right: 7px;
+            margin-top: 10px;
+        }
+
+        .legend-main-table, .legend-main-table tr, .legend-main-table td {
+            border: none;
+            padding: 4px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: small;
+        }
+
+        .legend-popup-area {
+            position: absolute !important;
+            left: 10px !important;
+            bottom: 0 !important;
+            top: 14px !important;
+            width: 255px;
+        }
+
+        .legend-popup {
+            z-index: 1;
+        }
+
+        .legend-popup-table {
+            width: 200px;
+            border: 1px solid;
+            text-align: left;
+            padding: 5px !important;
+            vertical-align: middle;
+            font-size: .85em;
+        }
+
+        .legend-popup-table td {
+            padding: 5px !important;
+        }
+
+        .legend-popup-infodiv {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-button-background {
+            background-color: #aaaaaa;
+            border-radius: 50%;
+            height: 30px;
+            width: 30px;
+        }
+
+        .info-button-background img {
+            vertical-align: middle;
+        }
+
+        .info-button-background:hover {
+            background-color: white !important;
+        }
+
+        .infodiv-table {
+            padding: 3px;
+            vertical-align: middle;
+            text-align: left;
+            font-size: 1.2em;
+        }
+
+        .infodiv-table td {
+            vertical-align: middle;
+            padding-left: 5px !important;
+            border: none !important;
+        }
+
+    </style>
+
+{% endblock %}
+
+
+    {% block leaflet_marker_clusters %}
+    {% leaflet_js plugins="marker_cluster_blue" %}
+    {% leaflet_css plugins="marker_cluster_blue" %}
+    {% endblock %}
+
+
+{% block marker_js %}
+    <script>
+
+            var percent_done;
+            var progress_bar;
+            var progress_bar_container;
+
+
+                var markers_clustered = new L.MarkerClusterGroup();
+                var month_just_finished = 0;
+                var popup_options = {
+                    'minWidth': 182,
+                    'maxHeight': 330,
+                    'closeButton': false
+                };
+
+                function make_popup_text(value) {
+                    if (value.site_cat != null) {
+                        if(value.site_cat == 0){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Embornal' %}</p>';
+                        }
+                        else if(value.site_cat == 1){
+                           return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Font' %}</p>';
+                        }
+                        else if(value.site_cat == 2){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Basin' %}</p>';
+                        }
+                        else if(value.site_cat == 3){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Bucket' %}</p>';
+                        }
+                        else if(value.site_cat == 4){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Well' %}</p>';
+                        }
+                        else {
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Other' %}</p>';
+                        }
+                    } else {
+                        return '';
+                    }
+                }
+
+
+                function get_data(month, map) {
+                    var csrftoken = $.cookie('csrftoken');
+                    $.ajax({
+                        url: 'http://localhost:8000/api/{{ endpoint }}/?month=' + month,
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        headers: {
+                            'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+                        },
+                        beforeSend: function (xhr, settings) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        },
+                        success: function (data) {
+
+                            if (data != null && data.length > 0) {
+
+                                $.each(data, function (index, value) {
+                                    if (value != null && value.lat != null && value.lon != null && value.type != null) {
+                                        markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: new L.Icon.Default()}).bindPopup(make_popup_text(value), popup_options));
+
+                                    }
+                                });
+
+                                markers_clustered.addTo(map);
+
+                            }
+                            percent_done = Math.floor(100 * month_just_finished++ /{{ end_month }});
+                            progress_bar.css("width", percent_done.toString() + "%");
+                            if (percent_done > 10) {
+                                progress_bar.html(percent_done.toString() + "%");
+                            }
+                            if (percent_done >= 100) {
+                                progress_bar_container.fadeOut(2000);
+                            }
+                        }
+                    });
+                }
+
+
+
+
+            function map_init_basic(map, options) {
+
+                map.on('zoomend', function (e) {
+                    saveMapState(map)
+                });
+                map.on('dragend', function (e) {
+                    saveMapState(map)
+                });
+
+                progress_bar = $("#progress_bar");
+                progress_bar_container = $("#progress_bar_container");
+
+
+                    for (var m = 0; m <= {{ end_month }}; m++) {
+                        get_data(m, map);
+                    }
+            }
+
+    </script>
+{% endblock %}
+
+
+
+{% block legend %}
+{% endblock %}
+

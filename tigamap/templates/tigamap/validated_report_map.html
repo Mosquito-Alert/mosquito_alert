@@ -14,201 +14,223 @@
     {% block map_style %}
 
         <style>
-            .popup-table td {
-                padding: 0;
-                vertical-align: bottom;
-            }
+        .popup-table td {
+            padding: 0;
+            vertical-align: bottom;
+        }
 
-            body {
-                padding-top: 50px;
-            }
+        body {
+            padding-top: 50px;
+        }
 
-            .leaflet-popup-content {
-                overflow-y: auto;
-            }
+        .leaflet-popup-content {
+            overflow-y: auto;
+        }
 
-            .popup-table table {
-                border-collapse: collapse;
-                font-size: smaller !important;
-                table-layout: fixed;
-                width: 182px;
-            }
+        .popup-table table {
+            border-collapse: collapse;
+            font-size: smaller !important;
+            table-layout: fixed;
+            width: 182px;
+        }
 
-            .popup-table table, td, th {
-                border: 1px solid black;
-            }
+        .popup-table table, td, th {
+            border: 1px solid black;
+        }
 
-            .response-table {
-                text-align: center;
-                border: none !important;
-                padding-top: 10px !important;
-                padding-bottom: 10px !important;
-                width: 100% !important;
-                font-size: xx-small;
-            }
+        .response-table {
+            text-align: center;
+            border: none !important;
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
+            width: 100% !important;
+            font-size: xx-small;
+        }
 
-            .color-box {
-                width: 100%;
-                text-align: center;
-                vertical-align: middle;
-                padding-top: 10px;
-                padding-bottom: 10px;
-                padding-left: 2px;
-                padding-right: 2px;
-                font-size: smaller;
-            }
+        .color-box {
+            width: 100%;
+            text-align: center;
+            vertical-align: middle;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-left: 2px;
+            padding-right: 2px;
+            font-size: smaller;
+        }
 
-            .black {
-                background-color: black;
-                color: white;
-            }
+        .black {
+            background-color: black;
+            color: white;
+        }
 
-            .grey {
-                background-color: grey;
-                color: white;
-            }
+        .grey {
+            background-color: grey;
+            color: white;
+        }
 
-            .red {
-                background-color: red;
-            }
+        .red {
+            background-color: red;
+        }
 
-            .orange {
-                background-color: orange;
-            }
+        .orange {
+            background-color: orange;
+        }
 
-            .note-div {
-                font-size: smaller;
-                padding: 5px;
-            }
+        .note-div {
+            font-size: smaller;
+            padding: 5px;
+        }
 
-            .my-progress-bar-container {
-                background-color: rgba(0, 0, 0, .25);
-                border-radius: 15px;
-                position: absolute;
-                bottom: 30px;
-                left: 10px;
-                width: 60%;
-                height: 20px;
-            }
+        .my-progress-bar-container {
+            background-color: rgba(0, 0, 0, .25);
+            border-radius: 15px;
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            width: 60%;
+            height: 20px;
+        }
 
-            .my-progress-bar {
-                background-image: -webkit-linear-gradient(top, #428bca 0, #3071a9 100%);
-                background-image: linear-gradient(to bottom, #428bca 0, #3071a9 100%);
-                background-repeat: repeat-x;
-                height: 100%;
-                width: 0;
-                font-size: 12px;
-                line-height: 20px;
-                color: #fff;
-                text-align: center;
-                background-color: #428bca;
-                -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
-                box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
-                border-radius: 15px;
-                -webkit-transition: width .6s ease;
-                transition: width .6s ease;
-            }
+        .my-progress-bar {
+            background-image: -webkit-linear-gradient(top, #428bca 0, #3071a9 100%);
+            background-image: linear-gradient(to bottom, #428bca 0, #3071a9 100%);
+            background-repeat: repeat-x;
+            height: 100%;
+            width: 0;
+            font-size: 12px;
+            line-height: 20px;
+            color: #fff;
+            text-align: center;
+            background-color: #428bca;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+            border-radius: 15px;
+            -webkit-transition: width .6s ease;
+            transition: width .6s ease;
+        }
 
-            .legend {
-                background-color: rgb(200, 200, 200);
-                border-top-right-radius: 15px;
-                border-bottom-right-radius: 15px;
-                position: absolute;
-                left: -270px;
-                border: 1px solid;
-                bottom: 80px;
-                width: 370px;
-                height: 330px;
-                overflow: hidden;
-                -moz-transition: left 1s ease;
-                -webkit-transition: left 1s ease;
-            }
+        .legend {
+            background-color: rgb(200, 200, 200);
+            border-top-right-radius: 15px;
+            border-bottom-right-radius: 15px;
+            position: absolute;
+            left: -270px;
+            border: 1px solid;
+            bottom: 80px;
+            width: 370px;
+            height: 330px;
+            overflow: hidden;
+            -moz-transition: left 1s ease;
+            -webkit-transition: left 1s ease;
+        }
 
-            .legend:hover {
-                left: 0;
-            }
+        .legend:hover {
+            left: 0;
+        }
 
-            .legend-main-table {
-                max-width: 50px;
-                float: right;
-                margin-right: 7px;
-                margin-top: 10px;
-            }
+        #hand-left {
+            opacity: 1;
+            -moz-transition: opacity 2s ease;
+            -webkit-transition: opacity 2s ease;
+        }
 
-            .legend-main-table, .legend-main-table tr, .legend-main-table td {
-                border: none;
-                padding: 4px;
-                text-align: left;
-                vertical-align: middle;
-                font-size: small;
-            }
+        #more_info_div {
+            opacity: 0;
+            -moz-transition: opacity 3s ease;
+            -webkit-transition: opacity 3s ease;
 
-            .legend-popup-area {
-                position: absolute !important;
-                left: 10px !important;
-                bottom: 0 !important;
-                top: 14px !important;
-            }
+        }
 
-            .legend-popup {
-                z-index: 1;
-            }
+        .legend:hover #hand-left {
+            opacity: 0;
+        }
 
-            .legend-popup-table {
-                width: 200px;
-                border: 1px solid;
-                text-align: left;
-                padding: 5px !important;
-                vertical-align: middle;
-                font-size: .8em;
-            }
+        .legend:hover #more_info_div {
+            opacity: 1;
+        }
 
-            .legend-popup-table td{
-                padding: 5px !important;
-            }
+        .legend-main-table {
+            max-width: 50px;
+            float: right;
+            margin-right: 7px;
+            margin-top: 10px;
+        }
 
+        .legend-main-table, .legend-main-table tr, .legend-main-table td {
+            border: none;
+            padding: 4px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: small;
+        }
 
-            .legend-popup-infodiv {
-                padding-top: 5px;
-                padding-bottom: 5px;
-                width: 100%;
-                height: 100%;
-            }
+        .legend-popup-area {
+            position: absolute !important;
+            left: 10px !important;
+            bottom: 0 !important;
+            top: 14px !important;
+            width: 255px;
+        }
 
-            .info-button-background {
-                background-color: #aaaaaa;
-                border-radius: 50%;
-                height: 30px;
-                width: 30px;
-            }
+        .legend-popup {
+            z-index: 1;
+        }
 
-            .info-button-background img {
-                vertical-align: middle;
-            }
+        .legend-popup-table {
+            width: 200px;
+            border: 1px solid;
+            text-align: left;
+            padding: 5px !important;
+            vertical-align: middle;
+            font-size: .85em;
+        }
 
-            .info-button-background:hover {
-                background-color: white !important;
-            }
+        .legend-popup-table td {
+            padding: 5px !important;
+        }
 
-            .infodiv-table {
-                padding: 3px;
-                vertical-align: middle;
-                text-align: left;
-                font-size: 1.2em;
-            }
+        .legend-popup-infodiv {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            width: 100%;
+            height: 100%;
+        }
 
-            .infodiv-table td {
-                vertical-align: middle;
-                padding-left: 5px !important;
-                border: none !important;
-            }
+        .info-button-background {
+            background-color: #aaaaaa;
+            border-radius: 50%;
+            height: 30px;
+            width: 30px;
+        }
+
+        .info-button-background img {
+            vertical-align: middle;
+        }
+
+        .info-button-background:hover {
+            background-color: white !important;
+        }
+
+        .infodiv-table {
+            padding: 3px;
+            vertical-align: middle;
+            text-align: left;
+            font-size: 1.2em;
+        }
+
+        .infodiv-table td {
+            vertical-align: middle;
+            padding-left: 5px !important;
+            border: none !important;
+        }
         </style>
 
     {% endblock %}
 
+    {% block leaflet_marker_clusters %}
     {% leaflet_js plugins="marker_cluster_yellow" %}
     {% leaflet_css plugins="marker_cluster_yellow" %}
-
+    {% endblock %}
 
     <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
     <script src="{% static "tigamap/jquery.cookie.js" %}"></script>
@@ -221,8 +243,6 @@
             var progress_bar;
             var progress_bar_container;
 
-
-            {% block marker_placement %}
 
                 var markers_clustered = new L.MarkerClusterGroup();
 
@@ -346,7 +366,7 @@
                 function get_data(day, map) {
                     var csrftoken = $.cookie('csrftoken');
                     $.ajax({
-                        url: 'http://localhost:8000/api/map_data/?day=' + day,
+                        url: 'http://localhost:8000/api/all_adults/?day=' + day,
                         contentType: 'application/json',
                         dataType: 'json',
                         headers: {
@@ -381,7 +401,6 @@
                     });
                 }
 
-            {% endblock %}
 
 
 
@@ -397,13 +416,10 @@
                 progress_bar = $("#progress_bar");
                 progress_bar_container = $("#progress_bar_container");
 
-                {% block map_init_call_for_date %}
 
                     for (var d = 0; d <= {{ end_day }}; d++) {
                         get_data(d, map);
                     }
-
-                {% endblock %}
             }
 
         </script>
@@ -477,7 +493,7 @@
 
                 <tr>
                     <td colspan="2">
-                        <i style="padding-left:30px;" class="fa fa-hand-o-left fa-2x"></i>
+                        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
                     </td>
                 </tr>
 
@@ -485,8 +501,9 @@
 
             <div class="legend-popup-area">
                 <div style="width:200px">
-                <p style="margin-left: auto;margin-right: auto;width: 90%;font-weight:bold; font-size: .9em; text-align:center;">Popup Legend</p>
-                    </div>
+                    <p style="margin-left: auto;margin-right: auto;width: 90%;font-weight:bold; font-size: .9em; text-align:center;">
+                        Popup Legend</p>
+                </div>
                 <div class="leaflet-popup legend-popup" style="opacity: 1;">
                     <div class="leaflet-popup-content-wrapper">
                         <div class="leaflet-popup-content" style="width: 201px;">
@@ -531,9 +548,19 @@
                     </div>
                 </div>
 
-                                <div style="width:200px; position:absolute; bottom: 10px; left: 50px">
-                <a role="button" class="btn btn-primary">More Info</a>
-                    </div>
+
+                <div id="more_info_div" style="position:absolute; bottom: 10px; right: 35px;"><span
+                        style="font-weight:bold; font-style:italic;font-size:.9em;color:#444444;">more info
+</span>
+
+                </div>
+
+                <div style="position:absolute; bottom: 5px; right: 0;">
+                    <a href="http://atrapaeltigre.com" target="_blank">
+                        <div class="info-button-background"><img width="30px" height="30px"
+                                                                 src="{% static "tigamap/info_button.png" %}"></div>
+                    </a>
+                </div>
 
 
             </div>
