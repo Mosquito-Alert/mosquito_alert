@@ -16,6 +16,7 @@ from serializers import UserSerializer, ReportSerializer, MissionSerializer, Pho
     ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer
 from models import TigaUser, Mission, Report, Photo, \
     Fix, Configuration, CoverageArea
+from math import ceil
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -296,10 +297,9 @@ def get_data_time_info(request):
     # setting fixed start time based on release date to avoid the pre-release beta reports
     start_time = settings.START_TIME
     end_time = Report.objects.latest('creation_time').creation_time
-    # adding 1 to include the last dayin the set
     days = (end_time - start_time).days + 1
-    weeks = ((end_time - start_time).days / 7) + 1
-    months = ((end_time - start_time).days / 28) + 1
+    weeks = ceil(days / 7.0)
+    months = ceil(days / 28.0)
     json_response = {'start_time_posix': calendar.timegm(start_time.utctimetuple()), 'end_time_posix': calendar.timegm(end_time.utctimetuple()), 'n_days': days, 'n_weeks': weeks, 'n_months': months}
     return HttpResponse(json.dumps(json_response))
 
@@ -349,7 +349,7 @@ def filter_creation_month(queryset, months_since_launch):
         return queryset
     try:
         target_month_start = settings.START_TIME + timedelta(weeks=int(months_since_launch)*4)
-        target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch)*4)+1)
+        target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch)*4)+4)
         result = queryset.filter(creation_time__range=(target_month_start, target_month_end))
         return result
     except ValueError:
@@ -394,7 +394,13 @@ def get_latest_reports_qs(reports, property_filter=None):
     for this_id in unique_report_ids:
         these_reports = sorted([report for report in reports if report.report_id == this_id], key=attrgetter('version_number'))
         if these_reports[0].version_number > -1:
-            result_ids.append(these_reports[-1].version_UUID)
+            # taking the version with the highest movelab score, if this is a adult report cat_ge1 or cat_ge2 request, otherwise most recent version
+            if property_filter in ('movelab_cat_ge1', 'movelab_cat_ge2'):
+                movelab_sorted_reports = sorted(filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation, these_reports), key=attrgetter('movelab_score'))
+                this_version_UUID = movelab_sorted_reports[-1].version_UUID
+            else:
+                this_version_UUID = these_reports[-1].version_UUID
+            result_ids.append(this_version_UUID)
     return Report.objects.filter(version_UUID__in=result_ids)
 
 

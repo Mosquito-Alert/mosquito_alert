@@ -493,6 +493,14 @@ class Report(models.Model):
             return None
         return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
 
+    def get_movelab_score(self):
+        if self.type != 'adult':
+            return None
+        max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').first()
+        if max_movelab_annotation is None:
+            return None
+        return max_movelab_annotation.tiger_certainty_category
+
     def get_tiger_responses(self):
         if self.type != 'adult':
             return None
@@ -538,6 +546,7 @@ class Report(models.Model):
     other_versions = property(get_other_versions)
     latest_version = property(get_is_latest)
     movelab_annotation = property(get_movelab_annotation)
+    movelab_score = property(get_movelab_annotation)
     tiger_responses = property(get_tiger_responses)
     creation_date = property(get_creation_date)
     creation_day_since_launch = property(get_creation_day_since_launch)
