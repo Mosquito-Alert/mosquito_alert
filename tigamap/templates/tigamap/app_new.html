@@ -24,7 +24,7 @@ function createDiv(){
     div.style.textAlign='center';
     div.style.backgroundColor='#F6D10A';
     div.setAttribute('id','cookie-law');
-    div.innerHTML = "{% trans 'Our website uses cookies. By continuing we assume your permission to deploy cookies. For more information on our site policies, please see our' %} <a href='{% url 'help.show_privacy' %}'' rel='nofollow' title='{% trans 'Privacy Policy' %}'>{% trans 'privacy policy' %}</a> {% trans 'and'  %} <a href='{% url 'help.show_terms' %}' rel='nofollow' title='{% trans 'User Agreement' %}'>{% trans 'user agreement' %}</a>.&nbsp;&nbsp;<a class='close-cookie-banner' href='javascript:void(0);' onclick='removeMe();'><span style='cursor: pointer;'>X</span></a>";
+    div.innerHTML = "{% trans 'our-website-uses-cookies' %} <a href='{% url 'help.show_privacy' %}'' rel='nofollow' title='{% trans 'privacy-policy' %}'>{% trans 'privacy-policy' %}</a> {% trans 'and'  %} <a href='{% url 'help.show_terms' %}' rel='nofollow' title='{% trans 'user-agreement' %}'>{% trans 'user-agreement' %}</a>.&nbsp;&nbsp;<a class='close-cookie-banner' href='javascript:void(0);' onclick='removeMe();'><span style='cursor: pointer;'>X</span></a>";
  // Be advised the Close Banner 'X' link requires jQuery
 
     // bodytag.appendChild(div); // Adds the Cookie Law Banner just before the closing </body> tag
@@ -108,11 +108,11 @@ function removeMe(){
 
                                             <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        {%  trans 'Adult tiger mosquitoes' %}<b
+                        {%  trans 'adult-tiger-mosquitoes' %}<b
                                 class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a href={{ hrefs.adults_all }}
-                                >{% trans 'All reports' %}</a></li>
+                                >{% trans 'all-reports' %}</a></li>
                         <li><a href={{ hrefs.adults_medium }}>
                             {% trans 'menu_adults_prob' %}</a></li>
                         <li><a href={{ hrefs.adults_high }}>
@@ -120,19 +120,19 @@ function removeMe(){
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'Breeding site reports' %}<b
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'breeding-site-reports' %}<b
                             class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a href={{ hrefs.sites_all }}
-                                >{% trans 'All sites' %}</a></li>
+                                >{% trans 'all-sites' %}</a></li>
                         <li>
                             <a href={{ hrefs.sites_drains_fountains }}
-                                    >{% trans 'Storm drains and fountains' %}</a>
+                                    >{% trans 'storm-drains-and-fountains' %}</a>
                         </li>
                         <li><a href={{ hrefs.sites_basins }}
                                 >{% trans 'Basins' %}</a></li>
                         <li><a href={{ hrefs.sites_buckets_wells }}>
-                            {% trans 'Buckets and wells' %}</a></li>
+                            {% trans 'buckets-and-wells' %}</a></li>
                         <li><a href={{ hrefs.sites_other }}
                                 >{% trans 'Other' %}</a></li>
                     </ul>
@@ -140,7 +140,7 @@ function removeMe(){
                 <li><a href="{{ hrefs.coverage }}"
                         >{% trans 'Coverage' %}</a></li>
                 <li>
-                <a style="max-width: 20px;" href="{% trans 'http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
+                <a style="max-width: 20px;" href="{% trans 'http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
                 </li>
 
 

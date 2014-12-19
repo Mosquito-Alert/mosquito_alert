@@ -142,7 +142,7 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
     if report_type == 'coverage':
         these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
         coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
-        this_title = _('Coverage Map')
+        this_title = _('coverage-map')
         context = {'coverage_list': coverage_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
         return render(request, 'tigamap/coverage_map.html', context)
 
@@ -166,19 +166,19 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
         else:
             these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
             if category == 'medium':
-                this_title = _('Adult tiger mosquitoes: Medium and high probability reports')
+                this_title = _('adult-tiger-mosquitoes-medium-and-high-probability-reports')
                 if these_reports:
                     report_list = filter(lambda x: x.tigaprob > 0, these_reports)
                 else:
                     report_list = None
             elif category == 'high':
-                this_title = _('Adult tiger mosquitoes: High probability reports')
+                this_title = _('adult-tiger-mosquitoes-high-probability-reports')
                 if these_reports:
                     report_list = filter(lambda x: x.tigaprob == 1, these_reports)
                 else:
                     report_list = None
             else:
-                this_title = _('Adult tiger mosquitoes: All reports')
+                this_title = _('adult-tiger-mosquitoes-all-reports')
                 report_list = these_reports
 
     #  now sites
@@ -194,22 +194,22 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
             these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
             # TODO change these list comprehensions to filters if it gains speed (not sure it would)
             if category == 'drains_fountains':
-                this_title = _('Breeding sites: Storm drains and fountains')
+                this_title = _('breeding-sites-storm-drains-and-fountains')
                 report_list = [report for report in these_reports if report.embornals or report.fonts]
             elif category == 'basins':
-                this_title = _('Breeding sites: Basins')
+                this_title = _('breeding-sites-basins')
                 report_list = [report for report in these_reports if report.basins]
             elif category == 'buckets_wells':
-                this_title = _('Breeding sites: Buckets and wells')
+                this_title = _('breeding-sites-buckets-and-wells')
                 report_list = [report for report in these_reports if report.buckets or report.wells]
             elif category == 'other':
-                this_title = _('Breeding sites: Other')
+                this_title = _('breeding-sites-other')
                 report_list = [report for report in these_reports if report.other]
             else:
-                this_title = _('Breeding sites: All reports')
+                this_title = _('breeding-sites-all-reports')
                 report_list = these_reports
     else:
-        this_title = _('Adult tiger mosquitoes: All reports')
+        this_title = _('adult-tiger-mosquitoes-all-reports')
         report_list = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
     context = {'title': this_title, 'report_list': report_list, 'report_type': report_type,
                'redirect_to': redirect_path, 'hrefs': hrefs, 'detailed': detail, 'validation': validation}
@@ -251,11 +251,11 @@ def show_adult_map(request, type='all'):
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     if type == 'probable':
-        this_title = _('Adult tiger mosquitoes') + ': ' + _('menu_adults_prob')
+        this_title = _('adult-tiger-mosquitoes') + ': ' + _('menu_adults_prob')
     elif type == 'definite':
-        this_title = _('Adult tiger mosquitoes') + ': ' + _('menu_adults_definite')
+        this_title = _('adult-tiger-mosquitoes') + ': ' + _('menu_adults_definite')
     else:
-        this_title = _('Adult tiger mosquitoes: All reports')
+        this_title = _('adult-tiger-mosquitoes-all-reports')
     href_url_name = 'adult_map_type'
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
@@ -282,11 +282,11 @@ def show_site_map(request, type='all'):
         current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
-    title_dic = {'embornals_fonts': _('Breeding sites: Storm drains and fountains'), 'all': _('Breeding sites: All reports'), 'other': _('Breeding sites: Other'), 'buckets_wells':  _('Breeding sites: Buckets and wells'), 'basins':  _('Breeding sites: Basins')}
+    title_dic = {'embornals_fonts': _('breeding-sites-storm-drains-and-fountains'), 'all': _('breeding-sites-all-reports'), 'other': _('breeding-sites-other'), 'buckets_wells':  _('breeding-sites-buckets-and-wells'), 'basins':  _('breeding-sites-basins')}
     try:
         this_title = title_dic[type]
     except KeyError:
-        this_title = _('Breeding sites: All reports')
+        this_title = _('breeding-sites-all-reports')
     href_url_name = 'site_map_type'
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
@@ -313,7 +313,7 @@ def show_new_coverage_map(request):
         current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
-    this_title = _('Coverage Map')
+    this_title = _('coverage-map')
     href_url_name = 'coverage_map'
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),

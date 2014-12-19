@@ -313,7 +313,7 @@ class Report(models.Model):
 
     def get_site_type_trans(self):
         if self.embornals:
-            return _('Storm drain')
+            return _('storm-drain')
         if self.fonts:
             return _('Fountain')
         if self.basins:

@@ -61,7 +61,7 @@
             },
             yAxis: {
                 title: {
-                    text: '{% trans 'Cumulative Total' %}'
+                    text: '{% trans 'cumulative-total' %}'
                 },
                 floor: 0,
                 plotLines: [{
@@ -82,7 +82,7 @@
                 borderWidth: 0
             },
             series: [{
-                name: '{% trans 'Number of citizen scientists' %}',
+                name: '{% trans 'number-of-citizen-scientists' %}',
                 data: users,
                 color: '#2ca25f',
                 marker: {
@@ -91,7 +91,7 @@
                     lineColor: '#000',
                     lineWidth: 1
                   }},
-                {name: '{% trans 'Number of tiger mosquito reports' %}',
+                {name: '{% trans 'number-of-tiger-mosquito-reports' %}',
                  data: adult_reports,
                  color: '#EBB101',
                 marker: {
@@ -100,7 +100,7 @@
                     lineColor: '#000',
                     lineWidth: 1
                   }},
-                {name: '{% trans 'Number of breeding site reports' %}',
+                {name: '{% trans 'number-of-breeding-site-reports' %}',
                  data: site_reports,
                  color: '#126FC6',
                 marker: {
