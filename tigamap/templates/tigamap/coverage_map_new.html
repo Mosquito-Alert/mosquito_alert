@@ -43,7 +43,7 @@
             transition: width .6s ease;
         }
 
-        @media (max-width: 700px), (max-height: 590px) {
+        @media (max-width: 700px), (max-height: 570px) {
             .legend {
                 display: none;
             }
@@ -62,22 +62,10 @@
             .legend-main-table, .legend-main-table tr, .legend-main-table td {
                 display: none;
             }
-            .legend-popup-area {
-                display: none;
-            }
-            .legend-popup {
-                display: none;
-            }
-            .legend-popup-table {
-                display: none;
-            }
             .legend-popup-table td {
                 display: none;
             }
             .legend-popup-table a {
-                display: none;
-            }
-            .legend-popup-infodiv {
                 display: none;
             }
             .info-button-background {
@@ -99,10 +87,10 @@
                 border-top-right-radius: 15px;
                 border-bottom-right-radius: 15px;
                 position: absolute;
-                left: -270px;
+                left: -350px;
                 border: 1px solid;
                 bottom: 80px;
-                width: 370px;
+                width: 460px;
                 min-height: 330px;
                 overflow: hidden;
                 -moz-transition: left 1s ease;
@@ -136,7 +124,7 @@
                 text-align: justify;
                 z-index: 1;
                 font-size: small;
-                max-width: 250px;
+                max-width: 330px;
             }
 
             .info-button-background {
@@ -166,6 +154,40 @@
                 padding-left: 5px !important;
                 border: none !important;
             }
+
+                #hand-left {
+                opacity: 1;
+                    position:absolute;
+                    right: 35px;
+                    bottom: 10px;
+                -moz-transition: opacity 2s ease;
+                -webkit-transition: opacity 2s ease;
+            }
+
+            #more_info_div {
+                position: absolute;
+                bottom: 10px;
+                right: 160px;
+                opacity: 0;
+                -moz-transition: opacity 3s ease;
+                -webkit-transition: opacity 3s ease;
+
+            }
+
+            #more_info_button {
+                position: absolute;
+                bottom: 6px;
+                right: 120px;
+            }
+
+            .legend:hover #hand-left {
+                opacity: 0;
+            }
+
+            .legend:hover #more_info_div {
+                opacity: 1;
+            }
+
 
     </style>
 
@@ -201,9 +223,6 @@
             var opacity = .3;
             if (n_fixes > 100) {
                 opacity = .5;
-            }
-            if (n_fixes > 500) {
-                opacity = .6;
             }
             if (n_fixes > 1000) {
                 opacity = .7;
@@ -312,6 +331,7 @@
             <tr>
                 <td>
                     <div style="background-color: rgba(255, 0,0,.7);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
+                    <br>
 
                 </td>
                 <td style="white-space: nowrap;">
@@ -320,25 +340,17 @@
             </tr>
             <tr>
                 <td>
-                    <div style="background-color: rgba(255, 0,0,.6);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
-
-                </td>
-                <td style="white-space: nowrap;">
-                    501-1000
-                </td>
-            </tr>
-            <tr>
-                <td>
                     <div style="background-color: rgba(255, 0,0,.5);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
-
+                    <br>
                 </td>
                 <td style="white-space: nowrap;">
-                    101-500
+                    101-1000
                 </td>
             </tr>
             <tr>
                 <td>
                     <div style="background-color: rgba(255, 0,0,.3);padding:0; border: 1px solid red; width: 40px; height: 50px;"></div>
+                    <br>
 
                 </td>
                 <td style="white-space: nowrap;">
@@ -347,11 +359,35 @@
 
                 </td>
             </tr>
+
         </table>
 
         <div class="legend-blurb"><p style="font-weight: bold; text-align: center">{% trans 'coverage_legend_info_title' %}</p>
             {% trans 'coverage_legend_info_blurb' %}
         </div>
+
+<div id="more_info_div"><span
+                        style="font-weight:bold; font-style:italic;font-size:.9em;color:#444444;">{% trans 'more_info' %}
+</span>
+
+                </div>
+
+                <div id="more_info_button">
+                    <a href="http://atrapaeltigre.com" target="_blank">
+                        <div class="info-button-background"><img width="30px" height="30px"
+                                                                 src="{% static "tigamap/info_button.png" %}"></div>
+                    </a>
+                </div>
+
+
+
+                        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
+
+
+
+            </div>
+
+
 
     </div>
 

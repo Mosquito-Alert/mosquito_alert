@@ -122,7 +122,7 @@
             transition: width .6s ease;
         }
 
-        @media (max-width: 700px), (max-height: 590px) {
+        @media (max-width: 700px), (max-height: 570px) {
             .legend {
                 display: none;
             }
@@ -180,9 +180,9 @@
                 position: absolute;
                 left: -320px;
                 border: 1px solid;
-                bottom: 80px;
+                bottom: 60px;
                 width: 430px;
-                min-height: 330px;
+                min-height: 370px;
                 overflow: hidden;
                 -moz-transition: left 1s ease;
                 -webkit-transition: left 1s ease;
@@ -194,6 +194,10 @@
 
             #hand-left {
                 opacity: 1;
+                                    position:absolute;
+                    right: 35px;
+                    bottom: 10px;
+
                 -moz-transition: opacity 2s ease;
                 -webkit-transition: opacity 2s ease;
             }
@@ -242,7 +246,7 @@
                 left: 10px !important;
                 bottom: 0 !important;
                 top: 14px !important;
-                width: 255px;
+                width: 310px;
             }
 
             .legend-popup {
@@ -519,7 +523,7 @@
             <table class="legend-main-table">
                 <tr>
                     <td colspan="2">
-                        <p style="font-weight: bold;">Color Legend</p>
+                        <p style="font-weight: bold;">{% trans 'adult_report_legend_main_title' %}</p>
                     </td>
                 </tr>
 
@@ -567,18 +571,13 @@
                     </td>
                 </tr>
 
-                <tr>
-                    <td colspan="2">
-                        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
-                    </td>
-                </tr>
 
             </table>
 
             <div class="legend-popup-area">
                 <div style="width:200px">
                     <p style="margin-left: auto;margin-right: auto;width: 90%;font-weight:bold; font-size: .9em; text-align:center;">
-                        Popup Legend</p>
+                        {% trans 'adult_report_legend_info_title' %}</p>
                 </div>
                 <div class="leaflet-popup legend-popup" style="opacity: 1;">
                     <div class="leaflet-popup-content-wrapper">
@@ -632,7 +631,11 @@
                 </div>
 
 
+
             </div>
+
+
+                        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
 
         </div>
 

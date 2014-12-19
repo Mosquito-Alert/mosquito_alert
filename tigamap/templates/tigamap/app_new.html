@@ -8,6 +8,59 @@
 
     <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap.min.css" %}>
     <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap-theme.min.css" %}>
+
+<style>
+
+@media (min-width: 1150px) and (max-width: 1200px){
+.shrinking-text{
+font-size: .9em;
+  max-width: 350px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+}
+
+
+@media (min-width: 1100px) and (max-width: 1150px){
+.shrinking-text{
+font-size: .9em;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+}
+
+
+@media (min-width: 1050px) and (max-width: 1100px){
+.shrinking-text{
+font-size: .9em;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+}
+
+@media (min-width: 1000px) and (max-width: 1050px){
+.shrinking-text{
+font-size: .8em;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+}
+
+
+@media (max-width: 1000px){
+.shrinking-text{
+display: none;}
+}
+
+</style>
+
 {% block custom_map_style %}    <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}> {% endblock %}
 <script>
 // The following code is adapted from Creare's 'Implied Consent' EU Cookie Law Banner v:2.4
@@ -101,7 +154,7 @@ function removeMe(){
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <div class="navbar-brand" style="color:#fff;">{{ title }}</div>
+                        <div class="navbar-brand shrinking-text" style="color:#fff;">{{ title }}</div>
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
