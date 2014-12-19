@@ -1,509 +1,510 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Tigaserver Project 1.0\n"
+"Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-17 17:46+0100\n"
-"PO-Revision-Date: 2014-06-20 14:15+0100\n"
-"Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
-"Language-Team: MoveLab <johnrbpalmer@gmail.com>\n"
-"Language: \n"
+"POT-Creation-Date: 2014-12-17 17:03+0000\n"
+"PO-Revision-Date: 2014-12-19 11:49+0000\n"
+"Last-Translator: John Palmer\n"
+"Language-Team: John Palmer\n"
+"Language: Spanish\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-Language: Spanish\n"
-"X-Poedit-Country: Spain\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"X-Generator: Loco https://localise.biz\n"
+"X-Loco-Source-Locale: en_US\n"
+"X-Loco-Target-Locale: es_ES\n"
+"X-Loco-Project-Id: 4656\n"
+"X-Loco-Lookup: id\n"
+"X-Loco-Api-Version: 1.0.8"
 
-#: stats/templates/stats/chart.html:64
-#: stats/templates/stats/fix_user_chart.html:78
-#: stats/templates/stats/report_user_chart.html:78
-msgid "Cumulative Total"
-msgstr "Total acumulado"
+#. Source text: Basin
+#: tigamap/templates/tigamap/site_map.html:198 tigaserver_app/models.py:320 loco:#: 5491b78ff1612903df10626b
+msgid "Basin"
+msgstr "Pequeña balsa artificial"
 
-#: stats/templates/stats/chart.html:85
-msgid "Number of citizen scientists"
-msgstr "Científicos ciudadanos"
-
-#: stats/templates/stats/chart.html:94
-msgid "Number of tiger mosquito reports"
-msgstr "Informes de mosquito tigre"
-
-#: stats/templates/stats/chart.html:103
-msgid "Number of breeding site reports"
-msgstr "Informes de lugares de cría"
-
-#: stats/templates/stats/fix_user_chart.html:99
-msgid "Participants with over 20 fixes"
-msgstr ""
-
-#: stats/templates/stats/fix_user_chart.html:108
-msgid "Participants with over 15 fixes"
-msgstr ""
-
-#: stats/templates/stats/fix_user_chart.html:117
-msgid "Participants with over 10 fixes"
-msgstr ""
-
-#: stats/templates/stats/fix_user_chart.html:126
-msgid "Participants with over 5 fixes"
-msgstr ""
-
-#: stats/templates/stats/fix_user_chart.html:135
-msgid "Participants with at least 1 fix"
-msgstr ""
-
-#: stats/templates/stats/report_user_chart.html:99
-msgid "Participants with at least 1 report"
-msgstr ""
-
-#: stats/templates/stats/report_user_chart.html:108
-msgid "Participants with over 1 reports"
-msgstr ""
-
-#: stats/templates/stats/report_user_chart.html:117
-msgid "Participants with over 2 reports"
-msgstr ""
-
-#: stats/templates/stats/report_user_chart.html:126
-msgid "Participants with over 3 reports"
-msgstr ""
-
-#: stats/templates/stats/report_user_chart.html:135
-msgid "Participants with over 4 reports"
-msgstr ""
-
-#: templates/admin/base_site.html:4
-msgid "Tigaserver admin"
-msgstr "Tigaserver admin"
-
-#: templates/admin/base_site.html:7
-msgid "Tigaserver administration"
-msgstr "Tigaserver administration"
-
-#: tigacrafting/templates/tigacrafting/expert_validation.html:88
-#: tigacrafting/templates/tigacrafting/movelab_validation.html:88
-msgid "Toggle navigation"
-msgstr ""
-
-#: tigacrafting/templates/tigacrafting/expert_validation.html:98
-msgid "Menu"
-msgstr ""
-
-#: tigacrafting/templates/tigacrafting/expert_validation.html:101
-msgid "New batch"
-msgstr ""
-
-#: tigacrafting/templates/tigacrafting/expert_validation.html:102
-msgid "Photos you have taken notes on but not yet scored"
-msgstr ""
-
-#: tigacrafting/templates/tigacrafting/expert_validation.html:103
-msgid "Photos you have already scored"
-msgstr ""
-
-#: tigacrafting/templates/tigacrafting/expert_validation.html:171
-#: tigacrafting/templates/tigacrafting/movelab_validation.html:195
-msgid "Save"
-msgstr ""
-
-#: tigacrafting/templates/tigacrafting/movelab_validation.html:103
-msgid "Photos per page"
-msgstr ""
-
-#: tigahelp/templates/tigahelp/policies.html:30
-#: tigahelp/templates/tigahelp/policies_en.html:29
-#: tigamap/templates/tigamap/app.html:27
-#: tigamap/templates/tigamap/app_new.html:27
-msgid "User Agreement"
-msgstr "Acuerdo del usuario"
-
-#: tigahelp/templates/tigahelp/policies.html:35
-#: tigahelp/templates/tigahelp/policies_en.html:34
-#: tigamap/templates/tigamap/app.html:27
-#: tigamap/templates/tigamap/app_new.html:27
-msgid "Privacy Policy"
-msgstr "Política de privacidad"
-
-#: tigamap/views.py:145 tigamap/views.py:316
-msgid "Coverage Map"
-msgstr "Zonas exploradas"
-
-#: tigamap/views.py:153
-msgid "Pseudo Occurrence-Exposure Map"
-msgstr ""
-
-#: tigamap/views.py:160
-#, fuzzy
-msgid "Adult tiger mosquitoes: Validated reports"
-msgstr "Mosquitos tigre: Todos"
-
-#: tigamap/views.py:169
-msgid "Adult tiger mosquitoes: Medium and high probability reports"
-msgstr "Mosquitos tigre: Sólo probabilidad media y alta"
-
-#: tigamap/views.py:175
-msgid "Adult tiger mosquitoes: High probability reports"
-msgstr "Mosquitos tigre: Sólo probabilidad alta"
-
-#: tigamap/views.py:181 tigamap/views.py:212 tigamap/views.py:258
-msgid "Adult tiger mosquitoes: All reports"
-msgstr "Mosquitos tigre: Todos"
-
-#: tigamap/views.py:187
-#, fuzzy
-msgid "Breeding Sites: Validated reports"
-msgstr "Lugares de cría: Todos"
-
-#: tigamap/views.py:197 tigamap/views.py:285
-msgid "Breeding sites: Storm drains and fountains"
-msgstr "Lugares de cría: Sumideros y fuentes"
-
-#: tigamap/views.py:200 tigamap/views.py:285
-msgid "Breeding sites: Basins"
-msgstr "Lugares de cría: Pequeñas balsas artificiales"
-
-#: tigamap/views.py:203 tigamap/views.py:285
-msgid "Breeding sites: Buckets and wells"
-msgstr "Lugares de cría: Bidones y pozos"
-
-#: tigamap/views.py:206 tigamap/views.py:285
-msgid "Breeding sites: Other"
-msgstr "Lugares de cría: Otros"
-
-#: tigamap/views.py:209 tigamap/views.py:285 tigamap/views.py:289
-msgid "Breeding sites: All reports"
-msgstr "Lugares de cría: Todos"
-
-#: tigamap/views.py:254 tigamap/views.py:256
-#: tigamap/templates/tigamap/app.html:122
-#: tigamap/templates/tigamap/app_new.html:111
-msgid "Adult tiger mosquitoes"
-msgstr "Mosquitos tigre"
-
-#: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117
-msgid "menu_adults_prob"
-msgstr "Sólo possible mosquito tigre y mosquito tigre"
-
-#: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119
-msgid "menu_adults_definite"
-msgstr "Sólo mosquito tigre"
-
-#: tigamap/templates/tigamap/app.html:27
-#: tigamap/templates/tigamap/app_new.html:27
-msgid ""
-"Our website uses cookies. By continuing we assume your permission to deploy "
-"cookies. For more information on our site policies, please see our"
-msgstr ""
-"Nuestro sitio web utiliza cookies. Si continuas navegando asumimos tu "
-"permiso para utilizar cookies. Para más información sobre las políticas de "
-"nuestro sitio web, por favor consulta nuestra"
-
-#: tigamap/templates/tigamap/app.html:27
-#: tigamap/templates/tigamap/app_new.html:27
-msgid "privacy policy"
-msgstr "política de privacidad"
-
-#: tigamap/templates/tigamap/app.html:27
-#: tigamap/templates/tigamap/app_new.html:27
-msgid "and"
-msgstr "y"
-
-#: tigamap/templates/tigamap/app.html:27
-#: tigamap/templates/tigamap/app_new.html:27
-msgid "user agreement"
-msgstr "acuerdo de usuario"
-
-#: tigamap/templates/tigamap/app.html:126
-#: tigamap/templates/tigamap/app_new.html:115
-msgid "All reports"
-msgstr "Todos"
-
-#: tigamap/templates/tigamap/app.html:128
-msgid "Medium and high probability reports only"
-msgstr "Sólo probabilidad media y alta"
-
-#: tigamap/templates/tigamap/app.html:130
-msgid "High probability reports only"
-msgstr "Sólo probabilidad alta"
-
-#: tigamap/templates/tigamap/app.html:134
-#: tigamap/templates/tigamap/app_new.html:123
-msgid "Breeding site reports"
-msgstr "Lugares de cría"
-
-#: tigamap/templates/tigamap/app.html:138
-#: tigamap/templates/tigamap/app_new.html:127
-msgid "All sites"
-msgstr "Todos"
-
-#: tigamap/templates/tigamap/app.html:141
-#: tigamap/templates/tigamap/app_new.html:130
-msgid "Storm drains and fountains"
-msgstr "Sumideros y fuentes"
-
+#. Source text: Basins
 #: tigamap/templates/tigamap/app.html:144
-#: tigamap/templates/tigamap/app_new.html:133
+#: tigamap/templates/tigamap/app_new.html:133 loco:5491b78ef1612903df106258
 msgid "Basins"
 msgstr "Pequeñas balsas artificiales"
 
-#: tigamap/templates/tigamap/app.html:146
-#: tigamap/templates/tigamap/app_new.html:135
-msgid "Buckets and wells"
-msgstr "Bidones y pozos"
+#. Source text: Bucket
+#: tigamap/templates/tigamap/site_map.html:201 loco:5491b78ff1612903df10626c
+msgid "Bucket"
+msgstr "Bidón"
 
-#: tigamap/templates/tigamap/app.html:148
-#: tigamap/templates/tigamap/app_new.html:137
-#: tigamap/templates/tigamap/site_map.html:207 tigaserver_app/models.py:324
-msgid "Other"
-msgstr "Otros"
+#. Source text: Catalan
+#: tigaserver_project/settings.py:109 loco:5491b790f1612903df10628d
+msgid "Catalan"
+msgstr "Catalán"
 
+#. Source text: Coverage
 #: tigamap/templates/tigamap/app.html:152
 #: tigamap/templates/tigamap/app_new.html:141
-#: tigamap/templates/tigamap/coverage_map_beta.html:82
+#: tigamap/templates/tigamap/coverage_map_beta.html:82 loco:#: 5491b78ff1612903df10625b
 msgid "Coverage"
 msgstr "Zonas exploradas"
 
+#. Source text: English
+#: tigaserver_project/settings.py:110 loco:5491b790f1612903df10628e
+msgid "English"
+msgstr "Inglés"
+
+#. Source text: Fountain
+#: tigamap/templates/tigamap/site_map.html:195 tigaserver_app/models.py:318 loco:#: 5491b78ff1612903df10626a
+msgid "Fountain"
+msgstr "Fuente"
+
+#. Source text: High
+#: tigaserver_app/models.py:299 loco:5491b790f1612903df106289
+msgid "High"
+msgstr "Alta"
+
+#. Source text: Low
+#: tigaserver_app/models.py:303 loco:5491b790f1612903df10628b
+msgid "Low"
+msgstr "Baja"
+
+#. Source text: Medium
+#: tigaserver_app/models.py:301 loco:5491b790f1612903df10628a
+msgid "Medium"
+msgstr "Media"
+
+#. Source text: Other
+#: tigamap/templates/tigamap/app.html:148
+#: tigamap/templates/tigamap/app_new.html:137
+#: tigamap/templates/tigamap/site_map.html:207 tigaserver_app/models.py:324 loco:#: 5491b78ff1612903df10625a
+msgid "Other"
+msgstr "Otros"
+
+#. Source text: Photos
+#: tigamap/templates/tigamap/validated_photo_map.html:169 loco:#: 5491b78ff1612903df10626e
+msgid "Photos"
+msgstr "Fotos"
+
+#. Source text: Spanish
+#: tigaserver_project/settings.py:108 loco:5491b790f1612903df10628c
+msgid "Spanish"
+msgstr "Español"
+
+#. Source text: Well
+#: tigamap/templates/tigamap/site_map.html:204 tigaserver_app/models.py:322 loco:#: 5491b78ff1612903df10626d
+msgid "Well"
+msgstr "Pozo"
+
+#. Source text: Adult tiger mosquitoes
+#: tigamap/views.py:254 tigamap/views.py:256
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:111 loco:5491b78ef1612903df10624b
+msgid "adult-tiger-mosquitoes"
+msgstr "Mosquitos tigre"
+
+#. Source text: Adult tiger mosquitoes: All reports
+#: tigamap/views.py:181 tigamap/views.py:212 tigamap/views.py:258 loco:#: 5491b78ef1612903df106244
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Mosquitos tigre: Todos"
+
+#. Source text: Adult tiger mosquitoes: High probability reports
+#: tigamap/views.py:175 loco:5491b78ef1612903df106243
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Mosquitos tigre: Sólo probabilidad alta"
+
+#. Source text: Adult tiger mosquitoes: Medium and high probability reports
+#: tigamap/views.py:169 loco:5491b78ef1612903df106242
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Mosquitos tigre: Sólo probabilidad media y alta"
+
+#. Source text: Adult tiger mosquitoes: Validated reports
+#: tigamap/views.py:160 loco:5491b78ef1612903df106241
+#, fuzzy
+msgid "adult-tiger-mosquitoes-validated-reports"
+msgstr "Mosquitos tigre: Todos"
+
+#. Source text: All Photos
+#: tigamap/templates/tigamap/validated_photo_map.html:173 loco:#: 5491b78ff1612903df10626f
+#, fuzzy
+msgid "all-photos"
+msgstr "Todos"
+
+#. Source text: All reports
+#: tigamap/templates/tigamap/app.html:126
+#: tigamap/templates/tigamap/app_new.html:115 loco:5491b78ef1612903df106252
+msgid "all-reports"
+msgstr "Todos"
+
+#. Source text: All sites
+#: tigamap/templates/tigamap/app.html:138
+#: tigamap/templates/tigamap/app_new.html:127 loco:5491b78ef1612903df106256
+msgid "all-sites"
+msgstr "Todos"
+
+#. Source text: and
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_new.html:27 loco:5491b78ef1612903df106250
+msgid "and"
+msgstr "y"
+
+#. Source text: Breeding site reports
+#: tigamap/templates/tigamap/app.html:134
+#: tigamap/templates/tigamap/app_new.html:123 loco:5491b78ef1612903df106255
+msgid "breeding-site-reports"
+msgstr "Lugares de cría"
+
+#. Source text: Breeding sites: All repors
+#: tigamap/views.py:209 tigamap/views.py:285 tigamap/views.py:289 loco:#: 5491b78ef1612903df10624a
+msgid "breeding-sites-all-reports"
+msgstr "Lugares de cría: Todos"
+
+#. Source text: Breeding sites: Basins
+#: tigamap/views.py:200 tigamap/views.py:285 loco:5491b78ef1612903df106247
+msgid "breeding-sites-basins"
+msgstr "Lugares de cría: Pequeñas balsas artificiales"
+
+#. Source text: Breeding sites: Buckets and wells
+#: tigamap/views.py:203 tigamap/views.py:285 loco:5491b78ef1612903df106248
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Lugares de cría: Bidones y pozos"
+
+#. Source text: Breeding sites: Other
+#: tigamap/views.py:206 tigamap/views.py:285 loco:5491b78ef1612903df106249
+msgid "breeding-sites-other"
+msgstr "Lugares de cría: Otros"
+
+#. Source text: Breeding sites: Storm drains and fountains
+#: tigamap/views.py:197 tigamap/views.py:285 loco:5491b78ef1612903df106246
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Lugares de cría: Sumideros y fuentes"
+
+#. Source text: Breeding sites: All reports
+#: tigamap/views.py:187 loco:5491b78ef1612903df106245
+#, fuzzy
+msgid "breeding-sites-validated-reports"
+msgstr "Lugares de cría: Todos"
+
+#. Source text: Buckets and wells
+#: tigamap/templates/tigamap/app.html:146
+#: tigamap/templates/tigamap/app_new.html:135 loco:5491b78ff1612903df106259
+msgid "buckets-and-wells"
+msgstr "Bidones y pozos"
+
+#. Source text: Clusters
+#: tigamap/templates/tigamap/report_map.html:149
+#: tigamap/templates/tigamap/validated_photo_map.html:152 loco:#: 5491b78ff1612903df106267
+msgid "clusters"
+msgstr "Valores agregados"
+
+#. Source text: Coverage Map
+#: tigamap/views.py:145 tigamap/views.py:316 loco:5491b78ef1612903df10623f
+msgid "coverage-map"
+msgstr "Zonas exploradas"
+
+#. Source text: <p>The Android version of Tigatrapp includes optional background location tracking. The app records user’s locations at 5 random times each day. It only shows the approximate position (the red squares on the map) in order to maintain user anonymity. Darker squares indicate more user coverage.</p><p>This information is used to identify which areas are being explored and which areas do not, to create specific missions in particular areas, and to learn about general trends of mobility during the summer, related to tiger mosquito dispersion.</p>
+#: tigamap/templates/tigamap/coverage_map_new.html:345 loco:#: 5491b78ff1612903df106265
+msgid "coverage_legend_info_blurb"
+msgstr ""
+"<p>La versión Android de Tigatrapp recoge en <em>background</em> (si el "
+"usuario lo permite), 5 datos de posición al día. Solamente se recoge la "
+"posición aproximada (los recuadros rojos del mapa). El color del recuadro "
+"aumenta de intensidad a medida que hay más datos de posición en ese recuadro.</"
+"p><p>Esta información sirve para conocer qué zonas están siendo exploradas y "
+"qué zonas no, así como para crear misiones específicas para zonas concretas y "
+"para conocer tendencias generales de movilidad en verano, relacionadas con la "
+"dispersión del mosquito tigre.</p>"
+
+#. Source text: Coverage Information
+#: tigamap/templates/tigamap/coverage_map_new.html:344 loco:#: 5491b78ff1612903df106264
+msgid "coverage_legend_info_title"
+msgstr "Zonas exploradas"
+
+#. Source text: Number of observations
+#: tigamap/templates/tigamap/coverage_map_new.html:301 loco:#: 5491b78ff1612903df106263
+msgid "coverage_legend_main_title"
+msgstr "Leyenda de colores"
+
+#. Source text: Assessments of <a href='http://crowdcrafting.org/app/Tigafotos/' target='_blank'>crowdcrafting</a> volunteers
+#: tigamap/templates/tigamap/validated_report_map.html:621 loco:#: 5491b790f1612903df106281
+msgid "crowd_row_help"
+msgstr ""
+"Evaluación hecha por voluntarios en <a href=\"http://crowdcrafting.org/app/"
+"Tigafotos/\" target=\"_blank\">Crowdcrafting</a>"
+
+#. Source text: More responses needed
+#: tigamap/templates/tigamap/validated_report_map.html:431 loco:#: 5491b790f1612903df10627c
+msgid "crowd_row_more_responses_needed"
+msgstr "Faltan respuestas"
+
+#. Source text: Crowd
+#: tigamap/templates/tigamap/validated_report_map.html:431
+#: tigamap/templates/tigamap/validated_report_map.html:621 loco:#: 5491b790f1612903df10627b
+msgid "crowd_row_title"
+msgstr "Comunidad"
+
+#. Source text: Cumulative Total
+#: stats/templates/stats/chart.html:64
+#: stats/templates/stats/fix_user_chart.html:78
+#: stats/templates/stats/report_user_chart.html:78 loco:5491b78df1612903df106226
+msgid "cumulative-total"
+msgstr "Total acumulado"
+
+#. Source text: Other species
+#: tigamap/templates/tigamap/validated_report_map.html:418
+#: tigamap/templates/tigamap/validated_report_map.html:594 loco:#: 5491b790f1612903df106278
+msgid "expert_cat_other"
+msgstr "Otra especie "
+
+#. Source text: Possible other species
+#: tigamap/templates/tigamap/validated_report_map.html:418
+#: tigamap/templates/tigamap/validated_report_map.html:585 loco:#: 5491b790f1612903df106277
+msgid "expert_cat_possible_other"
+msgstr "Posible otra especie"
+
+#. Source text: Possible tiger mosquito
+#: tigamap/templates/tigamap/validated_report_map.html:418
+#: tigamap/templates/tigamap/validated_report_map.html:567 loco:#: 5491b78ff1612903df106276
+msgid "expert_cat_possible_tiger"
+msgstr " Posible mosquito tigre"
+
+#. Source text: Tiger mosquito
+#: tigamap/templates/tigamap/validated_report_map.html:418
+#: tigamap/templates/tigamap/validated_report_map.html:559 loco:#: 5491b78ff1612903df106275
+msgid "expert_cat_tiger"
+msgstr "Mosquito tigre"
+
+#. Source text: Unknown
+#: tigamap/templates/tigamap/validated_report_map.html:418
+#: tigamap/templates/tigamap/validated_report_map.html:576 loco:#: 5491b790f1612903df106279
+msgid "expert_cat_unknown"
+msgstr "No se sabe"
+
+#. Source text: Assessment of scientists who study tiger mosquitoes
+#: tigamap/templates/tigamap/validated_report_map.html:616 loco:#: 5491b790f1612903df106280
+msgid "expert_row_help"
+msgstr "Evaluación hecha por científicos que estudian el mosquito tigre"
+
+#. Source text: Experts
+#: tigamap/templates/tigamap/validated_report_map.html:423
+#: tigamap/templates/tigamap/validated_report_map.html:616 loco:#: 5491b790f1612903df10627a
+msgid "expert_row_title"
+msgstr "Expertos"
+
+#. Source text: fix
+#: tigamap/templates/tigamap/coverage_map_new.html:187 loco:#: 5491b78ff1612903df106262
+msgid "fix"
+msgstr "fix"
+
+#. Source text: fixes
+#: tigamap/templates/tigamap/coverage_map_new.html:185 loco:#: 5491b78ff1612903df106261
+msgid "fixes"
+msgstr "fixes"
+
+#. Source text: High probability photos only
+#: tigamap/templates/tigamap/validated_photo_map.html:177 loco:#: 5491b78ff1612903df106271
+#, fuzzy
+msgid "high-probability-photos-only"
+msgstr "Sólo probabilidad alta"
+
+#. Source text: High probability reports only
+#: tigamap/templates/tigamap/app.html:130 loco:5491b78ef1612903df106254
+msgid "high-probability-reports-only"
+msgstr "Sólo probabilidad alta"
+
+#. Source text: http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/
 #: tigamap/templates/tigamap/app.html:154
-#: tigamap/templates/tigamap/app_new.html:143
-msgid "http://atrapaeltigre.com/web/el-mapa-del-mosquit-tigre-2014/"
+#: tigamap/templates/tigamap/app_new.html:143 loco:5491b78ff1612903df10625c
+msgid "http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014"
 msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 
-#: tigamap/templates/tigamap/app_new.html:99
-msgid "navbar_toggle_navigation"
-msgstr "navbar toggle"
-
-#: tigamap/templates/tigamap/coverage_map_beta.html:79
+#. Source text: Low
+#: tigamap/templates/tigamap/coverage_map_beta.html:79 loco:#: 5491b78ff1612903df10625e
 #, fuzzy
 msgid "low"
 msgstr "Baja"
 
-#: tigamap/templates/tigamap/coverage_map_beta.html:79
+#. Source text: Medium
+#: tigamap/templates/tigamap/coverage_map_beta.html:79 loco:#: 5491b78ff1612903df10625f
 #, fuzzy
 msgid "medium"
 msgstr "Media"
 
-#: tigamap/templates/tigamap/coverage_map_beta.html:79
-msgid "high"
+#. Source text: Medium and high probability photos only
+#: tigamap/templates/tigamap/validated_photo_map.html:175 loco:#: 5491b78ff1612903df106270
+#, fuzzy
+msgid "medium-and-high-probability-photos-only"
+msgstr "Sólo probabilidad media y alta"
+
+#. Source text: Medium and high probability reports only
+#: tigamap/templates/tigamap/app.html:128 loco:5491b78ef1612903df106253
+msgid "medium-and-high-probability-reports-only"
+msgstr "Sólo probabilidad media y alta"
+
+#. Source text: Tiger mosquitoes
+#: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119 loco:#: 5491b78ef1612903df10624d
+msgid "menu_adults_definite"
+msgstr "Mosquitos tigre"
+
+#. Source text: Probable tiger mosquitoes
+#: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117 loco:#: 5491b78ef1612903df10624c
+msgid "menu_adults_prob"
+msgstr "Solo posible mosquito tigre y mosquito tigre"
+
+#. Source text: more info
+#: tigamap/templates/tigamap/validated_report_map.html:650 loco:#: 5491b790f1612903df106288
+msgid "more_info"
+msgstr "más información"
+
+#. Source text: Toggle navigation
+#: tigamap/templates/tigamap/app_new.html:99 loco:5491b78ff1612903df10625d
+msgid "navbar_toggle_navigation"
+msgstr "navbar toggle"
+
+#. Source text: no
+#: tigamap/templates/tigamap/validated_report_map.html:399 loco:#: 5491b78ff1612903df106274
+msgid "no"
+msgstr "no"
+
+#. Source text: not sure
+#: tigamap/templates/tigamap/validated_report_map.html:397
+#: tigamap/templates/tigamap/validated_report_map.html:399 loco:#: 5491b78ff1612903df106272
+msgid "not_sure"
+msgstr "no lo sé"
+
+#. Source text: From experts, but including user notes in some cases
+#: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106287
+msgid "notes_row_help"
+msgstr "Comentarios añadidos por expertos o por los propios participantes"
+
+#. Source text: Notes
+#: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106286
+msgid "notes_row_title"
+msgstr "Notas"
+
+#. Source text: Breeding site reports
+#: stats/templates/stats/chart.html:103 loco:5491b78df1612903df106229
+msgid "number-of-breeding-site-reports"
+msgstr "Informes de lugares de cría"
+
+#. Source text: Citizen scientists
+#: stats/templates/stats/chart.html:85 loco:5491b78df1612903df106227
+msgid "number-of-citizen-scientists"
+msgstr "Participantes"
+
+#. Source text: Tiger mosquito reports
+#: stats/templates/stats/chart.html:94 loco:5491b78df1612903df106228
+msgid "number-of-tiger-mosquito-reports"
+msgstr "Informes de mosquito tigre"
+
+#. Source text: Our website uses cookies. By continuing we assume your permission to deploy cookies. For more information on our site policies, please see our
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_new.html:27 loco:5491b78ef1612903df10624e
+msgid ""
+"our-website-uses-cookies-by-continuing-we-assume-your-permission-to-deploy-"
+"cookies-for-more-informat"
 msgstr ""
+"Nuestro sitio web utiliza cookies. Si continuas navegando asumimos tu permiso "
+"para utilizar cookies. Para más información sobre las políticas de nuestro "
+"sitio web, por favor consulta nuestra"
 
-#: tigamap/templates/tigamap/coverage_map_new.html:185
-msgid "fixes"
-msgstr ""
+#. Source text: If available and reviewed by exerts
+#: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106285
+msgid "photo_row_help"
+msgstr "Enviadas por los participantes (si las hay)"
 
-#: tigamap/templates/tigamap/coverage_map_new.html:187
-msgid "fix"
-msgstr ""
+#. Source text: Photos
+#: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106284
+msgid "photo_row_title"
+msgstr "Fotos"
 
-#: tigamap/templates/tigamap/coverage_map_new.html:301
-msgid "coverage_legend_main_title"
-msgstr "Leyenda de colores"
-
-#: tigamap/templates/tigamap/coverage_map_new.html:344
-msgid "coverage_legend_info_title"
-msgstr "Zonas exploradas"
-
-#: tigamap/templates/tigamap/coverage_map_new.html:345
-msgid "coverage_legend_info_blurb"
-msgstr "<p>La versión Android de Tigatrapp recoge en <em>background</em> (si el usuario lo permite), 5 datos de posición al día. Solamente se recoge la posición aproximada (los recuadros rojos del mapa). El color del recuadro aumenta de intensidad a medida que hay más datos de posición en ese recuadro.</p><p>Esta información sirve para conocer qué zonas están siendo exploradas y qué zonas no, así como para crear misiones específicas para zonas concretas y para conocer tendencias generales de movilidad en verano, relacionadas con la dispersión del mosquito tigre.</p>"
-
-#: tigamap/templates/tigamap/report_map.html:112
-#: tigamap/templates/tigamap/report_map.html:125
-msgid "type"
-msgstr "Tipo"
-
-#: tigamap/templates/tigamap/report_map.html:149
-#: tigamap/templates/tigamap/validated_photo_map.html:152
-msgid "clusters"
-msgstr "Valores agregados"
-
+#. Source text: Points
 #: tigamap/templates/tigamap/report_map.html:150
-#: tigamap/templates/tigamap/validated_photo_map.html:153
+#: tigamap/templates/tigamap/validated_photo_map.html:153 loco:#: 5491b78ff1612903df106268
 msgid "points"
 msgstr "Puntos"
 
-#: tigamap/templates/tigamap/site_map.html:192 tigaserver_app/models.py:316
-msgid "Storm drain"
-msgstr "Sumidero"
+#. Source text: Privacy Policy
+#: tigahelp/templates/tigahelp/policies.html:35
+#: tigahelp/templates/tigahelp/policies_en.html:34
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_new.html:27 loco:5491b78ef1612903df10623e
+msgid "privacy-policy"
+msgstr "Política de privacidad"
 
-#: tigamap/templates/tigamap/site_map.html:195 tigaserver_app/models.py:318
-msgid "Fountain"
-msgstr "Fuente"
+#. Source text: privacy policy
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_new.html:27 loco:5491b78ef1612903df10624f
+msgid "privacy-policy-ca0f9a86ca33f1d6baa9051bd7f4ed21"
+msgstr "política de privacidad"
 
-#: tigamap/templates/tigamap/site_map.html:198 tigaserver_app/models.py:320
-msgid "Basin"
-msgstr "Pequeña balsa artificial"
-
-#: tigamap/templates/tigamap/site_map.html:201
-msgid "Bucket"
-msgstr ""
-
-#: tigamap/templates/tigamap/site_map.html:204 tigaserver_app/models.py:322
-msgid "Well"
-msgstr "Pozo"
-
-#: tigamap/templates/tigamap/validated_photo_map.html:169
-msgid "Photos"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_photo_map.html:173
-#, fuzzy
-msgid "All photos"
-msgstr "Todos"
-
-#: tigamap/templates/tigamap/validated_photo_map.html:175
-#, fuzzy
-msgid "Medium and high probability photos only"
-msgstr "Sólo probabilidad media y alta"
-
-#: tigamap/templates/tigamap/validated_photo_map.html:177
-#, fuzzy
-msgid "High probability photos only"
-msgstr "Sólo probabilidad alta"
-
-#: tigamap/templates/tigamap/validated_report_map.html:397
-#: tigamap/templates/tigamap/validated_report_map.html:399
-msgid "not_sure"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:399
-msgid "yes"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:399
-msgid "no"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:418
-#: tigamap/templates/tigamap/validated_report_map.html:559
-msgid "expert_cat_tiger"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:418
-#: tigamap/templates/tigamap/validated_report_map.html:567
-msgid "expert_cat_possible_tiger"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:418
-#: tigamap/templates/tigamap/validated_report_map.html:585
-msgid "expert_cat_possible_other"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:418
-#: tigamap/templates/tigamap/validated_report_map.html:594
-msgid "expert_cat_other"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:418
-#: tigamap/templates/tigamap/validated_report_map.html:576
-msgid "expert_cat_unknown"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:423
-#: tigamap/templates/tigamap/validated_report_map.html:616
-msgid "expert_row_title"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:431
-#: tigamap/templates/tigamap/validated_report_map.html:621
-msgid "crowd_row_title"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:431
-msgid "crowd_row_more_responses_needed"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:440
-msgid "user_response_row_q1"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:440
-msgid "user_response_row_q2"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:440
-msgid "user_response_row_q3"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:616
-msgid "expert_row_help"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:621
-msgid "crowd_row_help"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:626
-msgid "report_row_title"
-msgstr ""
-
-#: tigamap/templates/tigamap/validated_report_map.html:626
+#. Source text: Observer's assessment of <a href='http://atrapaeltigre.com/web/mosquito-tigre/' target='_blank'>the three tiger principles</a>
+#: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106283
 msgid "report_row_help"
 msgstr ""
+"Evaluación taxonómica de los <a href=\"http://atrapaeltigre.com/web/mosquito-"
+"tigre/\" target=\"_blank\">3 tigre principios</a> hecha por el observador"
 
-#: tigamap/templates/tigamap/validated_report_map.html:631
-msgid "photo_row_title"
-msgstr ""
+#. Source text: Report
+#: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106282
+msgid "report_row_title"
+msgstr "Informe"
 
-#: tigamap/templates/tigamap/validated_report_map.html:631
-msgid "photo_row_help"
-msgstr ""
+#. Source text: Storm drain
+#: tigamap/templates/tigamap/site_map.html:192 tigaserver_app/models.py:316 loco:#: 5491b78ff1612903df106269
+msgid "storm-drain"
+msgstr "Sumidero"
 
-#: tigamap/templates/tigamap/validated_report_map.html:636
-msgid "notes_row_title"
-msgstr ""
+#. Source text: Storm drains and fountains
+#: tigamap/templates/tigamap/app.html:141
+#: tigamap/templates/tigamap/app_new.html:130 loco:5491b78ef1612903df106257
+msgid "storm-drains-and-fountains"
+msgstr "Sumideros y fuentes"
 
-#: tigamap/templates/tigamap/validated_report_map.html:636
-msgid "notes_row_help"
-msgstr ""
+#. Source text: Tigaserver admin
+#: templates/admin/base_site.html:4 loco:5491b78ef1612903df106234
+msgid "tigaserver-admin"
+msgstr "Tigaserver admin"
 
-#: tigamap/templates/tigamap/validated_report_map.html:650
-msgid "more_info"
-msgstr ""
+#. Source text: Tigaserver administration
+#: templates/admin/base_site.html:7 loco:5491b78ef1612903df106235
+msgid "tigaserver-administration"
+msgstr "Tigaserver administration"
 
-#: tigaserver_app/models.py:299
-msgid "High"
-msgstr "Alta"
+#. Source text: Type
+#: tigamap/templates/tigamap/report_map.html:112
+#: tigamap/templates/tigamap/report_map.html:125 loco:5491b78ff1612903df106266
+msgid "type"
+msgstr "Tipo"
 
-#: tigaserver_app/models.py:301
-msgid "Medium"
-msgstr "Media"
+#. Source text: User Agreement
+#: tigahelp/templates/tigahelp/policies.html:30
+#: tigahelp/templates/tigahelp/policies_en.html:29
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_new.html:27 loco:5491b78ef1612903df10623d
+msgid "user-agreement"
+msgstr "Acuerdo del usuario"
 
-#: tigaserver_app/models.py:303
-msgid "Low"
-msgstr "Baja"
+#. Source text: user agreement
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_new.html:27 loco:5491b78ef1612903df106251
+msgid "user-agreement-fae79e3d24931cf70966f51ed1c8204c"
+msgstr "acuerdo de usuario"
 
-#: tigaserver_project/settings.py:108
-msgid "Spanish"
-msgstr "español"
+#. Source text: Small, black, white stripes?
+#: tigamap/templates/tigamap/validated_report_map.html:440 loco:#: 5491b790f1612903df10627d
+msgid "user_response_row_q1"
+msgstr "¿Pequeño, negro, con rayas blancas?"
 
-#: tigaserver_project/settings.py:109
-msgid "Catalan"
-msgstr "catalán"
+#. Source text: Stripe on head and thorax?
+#: tigamap/templates/tigamap/validated_report_map.html:440 loco:#: 5491b790f1612903df10627e
+msgid "user_response_row_q2"
+msgstr " ¿Raya blanca en cabeza y tórax?"
 
-#: tigaserver_project/settings.py:110
-msgid "English"
-msgstr "Inglés"
+#. Source text: Stripes on abdomen and legs?
+#: tigamap/templates/tigamap/validated_report_map.html:440 loco:#: 5491b790f1612903df10627f
+msgid "user_response_row_q3"
+msgstr "¿Rayas blancas en abdomen y patas?"
 
-#~ msgid "Tigatrapp Participation"
-#~ msgstr "Datos de Tigatrapp"
-
-#~ msgid "Real-time data"
-#~ msgstr "obtenidos a tiempo real"
-
-#~ msgid "title"
-#~ msgstr "title"
-
-#~ msgid "Tigaserver Map"
-#~ msgstr "Mapa del mosquito tigre 2014"
-
-#~ msgid "Adults"
-#~ msgstr "Avistamientos de mosquito tigre"
-
-#~ msgid "Sites"
-#~ msgstr "Lugares de cría"
+#. Source text: yes
+#: tigamap/templates/tigamap/validated_report_map.html:399 loco:#: 5491b78ff1612903df106273
+msgid "yes"
+msgstr "sí"
