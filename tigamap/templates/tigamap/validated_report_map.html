@@ -122,6 +122,7 @@
             transition: width .6s ease;
         }
 
+        {% block conditional_legend %}
         @media (max-width: 700px), (max-height: 570px) {
             .legend {
                 display: none;
@@ -172,7 +173,7 @@
                 display: none;
             }
         }
-
+            {% endblock %}
             .legend {
                 background-color: rgb(200, 200, 200);
                 border-top-right-radius: 15px;
