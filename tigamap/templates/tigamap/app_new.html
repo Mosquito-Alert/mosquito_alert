@@ -139,6 +139,7 @@ function removeMe(){
 
 {% block main_body %}
 
+    {% block navbar %}
     <!-- NAVBAR
     ================================================== -->
     <div class="navbar-wrapper">
@@ -232,7 +233,7 @@ function removeMe(){
         </div>
     </div>
 
-
+{% endblock %}
 
 {% block map_area %}
 <div id="tigamap" class="leaflet-container-default"></div>

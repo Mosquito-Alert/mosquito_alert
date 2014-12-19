@@ -1,11 +1,23 @@
-{% extends "tigamap/vaidated_report_map.html" %}
+{% extends "tigamap/validated_report_map.html" %}
 {% load staticfiles %}
 {% load i18n %}
 {% load leaflet_tags %}
 
+{% block head_additions %}
+   {{ block.super }}
+    <style>
+    body {
+    padding-top: 0 !important;
+    }
+    </style>
+{% endblock %}
+
 {% block navbar %}
-    {% endblock %}
+{% endblock %}
 
-    {% block conditional_legend %}
+{% block conditional_legend %}
+{% endblock %}
 
-    {% endblock %}
+
+{% block logo %}
+{% endblock %}
