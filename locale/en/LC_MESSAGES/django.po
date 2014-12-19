@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2014-12-19 14:57+0000\n"
+"PO-Revision-Date: 2014-12-19 15:11+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: English (USA)\n"
@@ -121,6 +121,16 @@ msgstr "Adult tiger mosquitoes: Medium and high probability reports"
 #, fuzzy
 msgid "adult-tiger-mosquitoes-validated-reports"
 msgstr "Adult tiger mosquitoes: Validated reports"
+
+#. Source text: Popup Legend
+#: loco:54943e8bf1612903df10a230
+msgid "adult_report_legend_info_title"
+msgstr "Popup Legend"
+
+#. Source text: Color Legend
+#: loco:54943e64f1612903df10a226
+msgid "adult_report_legend_main_title"
+msgstr "Color Legend"
 
 #. Source text: All Photos
 #: tigamap/templates/tigamap/validated_photo_map.html:173 loco:#: 5491b78ff1612903df10626f

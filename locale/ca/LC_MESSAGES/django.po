@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2014-12-19 14:57+0000\n"
+"PO-Revision-Date: 2014-12-19 15:11+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: Catalan (Spain)\n"
@@ -122,6 +122,16 @@ msgstr "Mosquits tigre: Només probabilitat mitjana i alta"
 msgid "adult-tiger-mosquitoes-validated-reports"
 msgstr "Mosquits tigre: Tots"
 
+#. Source text: Popup Legend
+#: loco:54943e8bf1612903df10a230
+msgid "adult_report_legend_info_title"
+msgstr "Popup Legend"
+
+#. Source text: Color Legend
+#: loco:54943e64f1612903df10a226
+msgid "adult_report_legend_main_title"
+msgstr "Llegenda de colors"
+
 #. Source text: All Photos
 #: tigamap/templates/tigamap/validated_photo_map.html:173 loco:#: 5491b78ff1612903df10626f
 #, fuzzy
@@ -221,7 +231,7 @@ msgstr "Zones explorades"
 #. Source text: Number of observations
 #: tigamap/templates/tigamap/coverage_map_new.html:301 loco:#: 5491b78ff1612903df106263
 msgid "coverage_legend_main_title"
-msgstr "Llegenda de colors"
+msgstr "Number of observations"
 
 #. Source text: Assessments of <a href='http://crowdcrafting.org/app/Tigafotos/' target='_blank'>crowdcrafting</a> volunteers
 #: tigamap/templates/tigamap/validated_report_map.html:621 loco:#: 5491b790f1612903df106281
