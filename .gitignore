@@ -4,3 +4,6 @@ tigaserver_project/settings/local.pyc
 *pyc
 *.egg-info
 .idea/*
+*.sublime-project
+*.sublime-workspace
+*.sublime*
