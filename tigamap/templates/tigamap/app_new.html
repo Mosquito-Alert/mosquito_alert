@@ -62,7 +62,12 @@ display: none;}
 </style>
 
 {% block custom_map_style %}    <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}> {% endblock %}
-<script>
+
+    {% block extra_style %}  {% endblock %}
+
+
+    {% block cookiewarning %}
+    <script>
 // The following code is adapted from Creare's 'Implied Consent' EU Cookie Law Banner v:2.4
 // Conceived by Robert Kent, James Bavington & Tom Foyster
 
@@ -134,6 +139,7 @@ function removeMe(){
 
 
 </script>
+{% endblock %}
 
 {% endblock %}
 

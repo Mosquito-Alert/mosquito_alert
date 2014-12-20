@@ -3,13 +3,16 @@
 {% load i18n %}
 {% load leaflet_tags %}
 
-{% block head_additions %}
+{% block extra_style %}
    {{ block.super }}
     <style>
     body {
     padding-top: 0 !important;
     }
     </style>
+{% endblock %}
+
+{% block cookiewarning %}
 {% endblock %}
 
 {% block navbar %}
