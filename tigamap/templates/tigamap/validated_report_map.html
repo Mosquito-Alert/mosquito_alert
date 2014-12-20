@@ -227,11 +227,16 @@
                 opacity: 1;
             }
 
+            .legend-main-table-container {
+                max-width: 50px;
+                position: absolute;
+                right: 50px;
+                top: 10px;
+            }
+
+
             .legend-main-table {
                 max-width: 50px;
-                float: right;
-                margin-right: 7px;
-                margin-top: 10px;
             }
 
             .legend-main-table, .legend-main-table tr, .legend-main-table td {
@@ -239,7 +244,7 @@
                 padding: 4px;
                 text-align: left;
                 vertical-align: middle;
-                font-size: small;
+                font-size: 1em;
             }
 
             .legend-popup-area {
@@ -523,6 +528,7 @@
     {% block legend %}
 
         <div class="legend">
+            <div class="legend-main-table-container">
             <table class="legend-main-table">
                 <tr>
                     <td colspan="2">
@@ -573,9 +579,8 @@
                         {% trans 'expert_cat_other' %}
                     </td>
                 </tr>
-
-
             </table>
+        </div>
 
             <div class="legend-popup-area">
                 <div style="width:200px">
