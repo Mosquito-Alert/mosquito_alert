@@ -26,13 +26,18 @@ from django.forms.models import modelformset_factory
 from django import forms
 from django.utils.translation import ugettext as _
 from forms import AnnotationForm, MovelabAnnotationForm
-
+from zipfile import ZipFile
+from io import BytesIO
 
 def import_tasks():
     errors = []
     warnings = []
     r = requests.get('http://crowdcrafting.org/app/Tigafotos/tasks/export?type=task&format=json')
-    task_array = json.loads(r.text)
+    try:
+        task_array = json.loads(r.text)
+    except ValueError:
+        zipped_file = ZipFile(BytesIO(r.content))
+        task_array = json.loads(zipped_file.open(zipped_file.namelist()[0]).read())
     last_task_id = CrowdcraftingTask.objects.all().aggregate(Max('task_id'))['task_id__max']
     if last_task_id:
         new_tasks = filter(lambda x: x['id'] > last_task_id, task_array)
