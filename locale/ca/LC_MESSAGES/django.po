@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2014-12-19 15:11+0000\n"
+"PO-Revision-Date: 2015-01-08 11:49+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: Catalan (Spain)\n"
@@ -94,7 +94,7 @@ msgstr "Espanyol"
 msgid "Well"
 msgstr "Pou"
 
-#. Source text: Adult tiger mosquitoes
+#. Source text: Tiger Mosquitoes
 #: tigamap/views.py:254 tigamap/views.py:256
 #: tigamap/templates/tigamap/app.html:122
 #: tigamap/templates/tigamap/app_new.html:111 loco:5491b78ef1612903df10624b
@@ -116,21 +116,21 @@ msgstr "Mosquits tigre: Només probabilitat alta"
 msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
 msgstr "Mosquits tigre: Només probabilitat mitjana i alta"
 
-#. Source text: Adult tiger mosquitoes: Validated reports
+#. Source text: Mosquitoes: Validated reports
 #: tigamap/views.py:160 loco:5491b78ef1612903df106241
 #, fuzzy
 msgid "adult-tiger-mosquitoes-validated-reports"
-msgstr "Mosquits tigre: Tots"
+msgstr "Mosquits: Tots"
 
 #. Source text: Popup Legend
 #: loco:54943e8bf1612903df10a230
 msgid "adult_report_legend_info_title"
-msgstr "Popup Legend"
+msgstr "Contingut del pop-up"
 
-#. Source text: Color Legend
+#. Source text: Colors
 #: loco:54943e64f1612903df10a226
 msgid "adult_report_legend_main_title"
-msgstr "Llegenda de colors"
+msgstr "Colors"
 
 #. Source text: All Photos
 #: tigamap/templates/tigamap/validated_photo_map.html:173 loco:#: 5491b78ff1612903df10626f
@@ -231,7 +231,7 @@ msgstr "Zones explorades"
 #. Source text: Number of observations
 #: tigamap/templates/tigamap/coverage_map_new.html:301 loco:#: 5491b78ff1612903df106263
 msgid "coverage_legend_main_title"
-msgstr "Number of observations"
+msgstr "Observacions"
 
 #. Source text: Assessments of <a href='http://crowdcrafting.org/app/Tigafotos/' target='_blank'>crowdcrafting</a> volunteers
 #: tigamap/templates/tigamap/validated_report_map.html:621 loco:#: 5491b790f1612903df106281
@@ -288,10 +288,10 @@ msgstr "Mosquit tigre"
 msgid "expert_cat_unknown"
 msgstr "No se sap"
 
-#. Source text: Assessment of scientists who study tiger mosquitoes
+#. Source text: Assessment by scientists
 #: tigamap/templates/tigamap/validated_report_map.html:616 loco:#: 5491b790f1612903df106280
 msgid "expert_row_help"
-msgstr "Avaluació feta per científics que estudien el mosquit tigre"
+msgstr "Avaluació feta per científics"
 
 #. Source text: Experts
 #: tigamap/templates/tigamap/validated_report_map.html:423
@@ -302,12 +302,12 @@ msgstr "Experts"
 #. Source text: fix
 #: tigamap/templates/tigamap/coverage_map_new.html:187 loco:#: 5491b78ff1612903df106262
 msgid "fix"
-msgstr "fix"
+msgstr ""
 
 #. Source text: fixes
 #: tigamap/templates/tigamap/coverage_map_new.html:185 loco:#: 5491b78ff1612903df106261
 msgid "fixes"
-msgstr "fixes"
+msgstr ""
 
 #. Source text: High probability photos only
 #: tigamap/templates/tigamap/validated_photo_map.html:177 loco:#: 5491b78ff1612903df106271
@@ -349,10 +349,10 @@ msgstr "Només probabilitat mitjana i alta"
 msgid "medium-and-high-probability-reports-only"
 msgstr "Només probabilitat mitjana i alta"
 
-#. Source text: Tiger mosquitoes
+#. Source text: Mosquitoes
 #: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119 loco:#: 5491b78ef1612903df10624d
 msgid "menu_adults_definite"
-msgstr "Mosquits tigre"
+msgstr "Mosquits"
 
 #. Source text: Probable tiger mosquitoes
 #: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117 loco:#: 5491b78ef1612903df10624c
@@ -367,7 +367,7 @@ msgstr "més informació"
 #. Source text: Toggle navigation
 #: tigamap/templates/tigamap/app_new.html:99 loco:5491b78ff1612903df10625d
 msgid "navbar_toggle_navigation"
-msgstr "Toggle navigation"
+msgstr ""
 
 #. Source text: no
 #: tigamap/templates/tigamap/validated_report_map.html:399 loco:#: 5491b78ff1612903df106274
@@ -380,10 +380,10 @@ msgstr "no"
 msgid "not_sure"
 msgstr "no ho sé"
 
-#. Source text: From experts, but including user notes in some cases
+#. Source text: From experts or users
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106287
 msgid "notes_row_help"
-msgstr "Comentaris afegits pels experts o pels propis participants"
+msgstr "Afegides per experts o participants"
 
 #. Source text: Notes
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106286
@@ -414,10 +414,10 @@ msgstr ""
 "el teu permís per utilitzar galetes. Per a més informació sobre les "
 "polítiques del nostre lloc web, si us plau consulta la nostra"
 
-#. Source text: If available and reviewed by exerts
+#. Source text: Sent by participants
 #: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106285
 msgid "photo_row_help"
-msgstr "Enviades pels participants (si n'hi ha)"
+msgstr "Fetes pels participants (optatiu)"
 
 #. Source text: Photos
 #: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106284
@@ -448,8 +448,8 @@ msgstr "política de privacitat"
 #: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106283
 msgid "report_row_help"
 msgstr ""
-"Avaluació taxonòmica dels <a href=\"http://atrapaeltigre.com/web/mosquito-"
-"tigre/\" target=\"_blank\">3 tigre principis</a> feta per l'observador "
+"Observació dels <a href=\"http://atrapaeltigre.com/web/mosquito-tigre/\" target=\"_"
+"blank\">3 tigre principis</a> feta pel participant"
 
 #. Source text: Report
 #: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106282

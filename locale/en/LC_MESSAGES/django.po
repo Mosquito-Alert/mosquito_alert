@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2014-12-19 15:11+0000\n"
+"PO-Revision-Date: 2015-01-08 11:49+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: English (USA)\n"
@@ -94,12 +94,12 @@ msgstr "Spanish"
 msgid "Well"
 msgstr "Well"
 
-#. Source text: Adult tiger mosquitoes
+#. Source text: Tiger Mosquitoes
 #: tigamap/views.py:254 tigamap/views.py:256
 #: tigamap/templates/tigamap/app.html:122
 #: tigamap/templates/tigamap/app_new.html:111 loco:5491b78ef1612903df10624b
 msgid "adult-tiger-mosquitoes"
-msgstr "Adult tiger mosquitoes"
+msgstr "Tiger Mosquitoes"
 
 #. Source text: Adult tiger mosquitoes: All reports
 #: tigamap/views.py:181 tigamap/views.py:212 tigamap/views.py:258 loco:#: 5491b78ef1612903df106244
@@ -116,21 +116,21 @@ msgstr "Adult tiger mosquitoes: High probability reports"
 msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
 msgstr "Adult tiger mosquitoes: Medium and high probability reports"
 
-#. Source text: Adult tiger mosquitoes: Validated reports
+#. Source text: Mosquitoes: Validated reports
 #: tigamap/views.py:160 loco:5491b78ef1612903df106241
 #, fuzzy
 msgid "adult-tiger-mosquitoes-validated-reports"
-msgstr "Adult tiger mosquitoes: Validated reports"
+msgstr "Mosquitoes: Validated reports"
 
 #. Source text: Popup Legend
 #: loco:54943e8bf1612903df10a230
 msgid "adult_report_legend_info_title"
 msgstr "Popup Legend"
 
-#. Source text: Color Legend
+#. Source text: Colors
 #: loco:54943e64f1612903df10a226
 msgid "adult_report_legend_main_title"
-msgstr "Color Legend"
+msgstr "Colors"
 
 #. Source text: All Photos
 #: tigamap/templates/tigamap/validated_photo_map.html:173 loco:#: 5491b78ff1612903df10626f
@@ -287,10 +287,10 @@ msgstr "Tiger mosquito"
 msgid "expert_cat_unknown"
 msgstr "Unknown"
 
-#. Source text: Assessment of scientists who study tiger mosquitoes
+#. Source text: Assessment by scientists
 #: tigamap/templates/tigamap/validated_report_map.html:616 loco:#: 5491b790f1612903df106280
 msgid "expert_row_help"
-msgstr "Assessment of scientists who study tiger mosquitoes"
+msgstr "Assessment by scientists"
 
 #. Source text: Experts
 #: tigamap/templates/tigamap/validated_report_map.html:423
@@ -346,10 +346,10 @@ msgstr "Medium and high probability photos only"
 msgid "medium-and-high-probability-reports-only"
 msgstr "Medium and high probability reports only"
 
-#. Source text: Tiger mosquitoes
+#. Source text: Mosquitoes
 #: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119 loco:#: 5491b78ef1612903df10624d
 msgid "menu_adults_definite"
-msgstr "Tiger mosquitoes"
+msgstr "Mosquitoes"
 
 #. Source text: Probable tiger mosquitoes
 #: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117 loco:#: 5491b78ef1612903df10624c
@@ -377,10 +377,10 @@ msgstr "no"
 msgid "not_sure"
 msgstr "not sure"
 
-#. Source text: From experts, but including user notes in some cases
+#. Source text: From experts or users
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106287
 msgid "notes_row_help"
-msgstr "From experts, but including user notes in some cases"
+msgstr "From experts or users"
 
 #. Source text: Notes
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106286
@@ -410,10 +410,10 @@ msgstr ""
 "Our website uses cookies. By continuing we assume your permission to deploy "
 "cookies. For more information on our site policies, please see our"
 
-#. Source text: If available and reviewed by exerts
+#. Source text: Sent by participants
 #: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106285
 msgid "photo_row_help"
-msgstr "If available and reviewed by exerts"
+msgstr "Sent by participants"
 
 #. Source text: Photos
 #: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106284
