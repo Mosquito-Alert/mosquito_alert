@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2015-01-08 11:49+0000\n"
+"PO-Revision-Date: 2015-01-12 10:25+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: English (USA)\n"
@@ -94,17 +94,17 @@ msgstr "Spanish"
 msgid "Well"
 msgstr "Well"
 
-#. Source text: Tiger Mosquitoes
+#. Source text: Mosquito reports
 #: tigamap/views.py:254 tigamap/views.py:256
 #: tigamap/templates/tigamap/app.html:122
 #: tigamap/templates/tigamap/app_new.html:111 loco:5491b78ef1612903df10624b
 msgid "adult-tiger-mosquitoes"
-msgstr "Tiger Mosquitoes"
+msgstr "Mosquito reports"
 
-#. Source text: Adult tiger mosquitoes: All reports
+#. Source text: Mosquitoes: All reports
 #: tigamap/views.py:181 tigamap/views.py:212 tigamap/views.py:258 loco:#: 5491b78ef1612903df106244
 msgid "adult-tiger-mosquitoes-all-reports"
-msgstr "Adult tiger mosquitoes: All reports"
+msgstr "Mosquitoes: All reports"
 
 #. Source text: Adult tiger mosquitoes: High probability reports
 #: tigamap/views.py:175 loco:5491b78ef1612903df106243
@@ -127,10 +127,10 @@ msgstr "Mosquitoes: Validated reports"
 msgid "adult_report_legend_info_title"
 msgstr "Popup Legend"
 
-#. Source text: Colors
+#. Source text: Markers
 #: loco:54943e64f1612903df10a226
 msgid "adult_report_legend_main_title"
-msgstr "Colors"
+msgstr "Markers"
 
 #. Source text: All Photos
 #: tigamap/templates/tigamap/validated_photo_map.html:173 loco:#: 5491b78ff1612903df10626f
@@ -209,18 +209,16 @@ msgstr "Clusters"
 msgid "coverage-map"
 msgstr "Coverage Map"
 
-#. Source text: <p>The Android version of Tigatrapp includes optional background location tracking. The app records user’s locations at 5 random times each day. It only shows the approximate position (the red squares on the map) in order to maintain user anonymity. Darker squares indicate more user coverage.</p><p>This information is used to identify which areas are being explored and which areas do not, to create specific missions in particular areas, and to learn about general trends of mobility during the summer, related to tiger mosquito dispersion.</p>
+#. Source text: <p>The Android version of Tigatrapp includes optional background location tracking. The app records users' locations at 5 random times each day. It records only the approximate position (red squares on the map) in order to maintain user anonymity.<br /><br />The number of observations in a given square is the accumulated number of positions recorded in that square for all participants. The darker it is, the more an area has been explored.</p>
 #: tigamap/templates/tigamap/coverage_map_new.html:345 loco:#: 5491b78ff1612903df106265
 msgid "coverage_legend_info_blurb"
 msgstr ""
 "<p>The Android version of Tigatrapp includes optional background location "
-"tracking. The app records user’s locations at 5 random times each day. It "
-"only shows the approximate position (the red squares on the map) in order to "
-"maintain user anonymity. Darker squares indicate more user coverage.</p><p>"
-"This information is used to identify which areas are being explored and which "
-"areas do not, to create specific missions in particular areas, and to learn "
-"about general trends of mobility during the summer, related to tiger mosquito "
-"dispersion.</p>"
+"tracking. The app records users' locations at 5 random times each day. It "
+"records only the approximate position (red squares on the map) in order to "
+"maintain user anonymity.<br /><br />The number of observations in a given "
+"square is the accumulated number of positions recorded in that square for all "
+"participants. The darker it is, the more an area has been explored.</p>"
 
 #. Source text: Coverage Information
 #: tigamap/templates/tigamap/coverage_map_new.html:344 loco:#: 5491b78ff1612903df106264
@@ -232,12 +230,12 @@ msgstr "Coverage Information"
 msgid "coverage_legend_main_title"
 msgstr "Number of observations"
 
-#. Source text: Assessments of <a href='http://crowdcrafting.org/app/Tigafotos/' target='_blank'>crowdcrafting</a> volunteers
+#. Source text: Assessments at <a href='http://crowdcrafting.org/app/Tigafotos/' target='_blank'>crowdcrafting</a> from volunteers (if photo available)
 #: tigamap/templates/tigamap/validated_report_map.html:621 loco:#: 5491b790f1612903df106281
 msgid "crowd_row_help"
 msgstr ""
-"Assessments of <a href='http://crowdcrafting.org/app/Tigafotos/' target='_"
-"blank'>crowdcrafting</a> volunteers"
+"Assessments at <a href='http://crowdcrafting.org/app/Tigafotos/' target='_"
+"blank'>crowdcrafting</a> from volunteers (if photo available)"
 
 #. Source text: More responses needed
 #: tigamap/templates/tigamap/validated_report_map.html:431 loco:#: 5491b790f1612903df10627c
@@ -287,16 +285,18 @@ msgstr "Tiger mosquito"
 msgid "expert_cat_unknown"
 msgstr "Unknown"
 
-#. Source text: Assessment by scientists
+#. Source text: Assessment by scientists (if photo available)
 #: tigamap/templates/tigamap/validated_report_map.html:616 loco:#: 5491b790f1612903df106280
 msgid "expert_row_help"
-msgstr "Assessment by scientists"
+msgstr "Assessment by scientists (if photo available)"
 
-#. Source text: Experts
+#. Source text: <a href="http://atrapaeltigre.com/web/en/citizen-scientist-map/" target="_blank">Experts</a>
 #: tigamap/templates/tigamap/validated_report_map.html:423
 #: tigamap/templates/tigamap/validated_report_map.html:616 loco:#: 5491b790f1612903df10627a
 msgid "expert_row_title"
-msgstr "Experts"
+msgstr ""
+"<a href=\"http://atrapaeltigre.com/web/en/citizen-scientist-map/\" target=\"_"
+"blank\">Experts</a>"
 
 #. Source text: fix
 #: tigamap/templates/tigamap/coverage_map_new.html:187 loco:#: 5491b78ff1612903df106262
@@ -330,6 +330,11 @@ msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 msgid "low"
 msgstr "Low"
 
+#. Source text: http://atrapaeltigre.com/web/en/citizen-scientist-map/
+#: loco:54b3a0b014d725e17b8b4568
+msgid "map_help_url_new"
+msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
+
 #. Source text: Medium
 #: tigamap/templates/tigamap/coverage_map_beta.html:79 loco:#: 5491b78ff1612903df10625f
 #, fuzzy
@@ -346,15 +351,15 @@ msgstr "Medium and high probability photos only"
 msgid "medium-and-high-probability-reports-only"
 msgstr "Medium and high probability reports only"
 
-#. Source text: Mosquitoes
+#. Source text: Only tiger mosquitoes
 #: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119 loco:#: 5491b78ef1612903df10624d
 msgid "menu_adults_definite"
-msgstr "Mosquitoes"
+msgstr "Only tiger mosquitoes"
 
-#. Source text: Probable tiger mosquitoes
+#. Source text: Possible tiger mosquitoes
 #: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117 loco:#: 5491b78ef1612903df10624c
 msgid "menu_adults_prob"
-msgstr "Probable tiger mosquitoes"
+msgstr "Possible tiger mosquitoes"
 
 #. Source text: more info
 #: tigamap/templates/tigamap/validated_report_map.html:650 loco:#: 5491b790f1612903df106288
@@ -377,10 +382,10 @@ msgstr "no"
 msgid "not_sure"
 msgstr "not sure"
 
-#. Source text: From experts or users
+#. Source text: From experts or users (optional)
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106287
 msgid "notes_row_help"
-msgstr "From experts or users"
+msgstr "From experts or users (optional)"
 
 #. Source text: Notes
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106286
@@ -410,10 +415,10 @@ msgstr ""
 "Our website uses cookies. By continuing we assume your permission to deploy "
 "cookies. For more information on our site policies, please see our"
 
-#. Source text: Sent by participants
+#. Source text: Sent by participants (optional)
 #: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106285
 msgid "photo_row_help"
-msgstr "Sent by participants"
+msgstr "Sent by participants (optional)"
 
 #. Source text: Photos
 #: tigamap/templates/tigamap/validated_report_map.html:631 loco:#: 5491b790f1612903df106284
@@ -440,17 +445,17 @@ msgstr "Privacy Policy"
 msgid "privacy-policy-ca0f9a86ca33f1d6baa9051bd7f4ed21"
 msgstr "privacy policy"
 
-#. Source text: Observer's assessment of <a href='http://atrapaeltigre.com/web/mosquito-tigre/' target='_blank'>the three tiger principles</a>
+#. Source text: Observer's assessment
 #: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106283
 msgid "report_row_help"
-msgstr ""
-"Observer's assessment of <a href='http://atrapaeltigre.com/web/mosquito-tigre/' "
-"target='_blank'>the three tiger principles</a>"
+msgstr "Observer's assessment"
 
-#. Source text: Report
+#. Source text: <a href="http://atrapaeltigre.com/web/en/asian-tiger-mosquito/" target="_blank">Tiger principles</a>
 #: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106282
 msgid "report_row_title"
-msgstr "Report"
+msgstr ""
+"<a href=\"http://atrapaeltigre.com/web/en/asian-tiger-mosquito/\" target=\"_"
+"blank\">Tiger principles</a>"
 
 #. Source text: Storm drain
 #: tigamap/templates/tigamap/site_map.html:192 tigaserver_app/models.py:316 loco:#: 5491b78ff1612903df106269

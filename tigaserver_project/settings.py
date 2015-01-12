@@ -152,6 +152,10 @@ LEAFLET_CONFIG = {
             'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow.css'],
             'js': 'tigamap/leaflet.markercluster.js',
         },
+        'marker_cluster_yellow_single': {
+            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow_single.css'],
+            'js': 'tigamap/leaflet.markercluster.js',
+        },
         'marker_cluster_blue': {
             'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_blue.css'],
             'js': 'tigamap/leaflet.markercluster.js',
