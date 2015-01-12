@@ -265,9 +265,9 @@ def show_adult_map(request, type='all'):
         current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
-    if type == 'possible':
+    if type == 'possible' or type == 'medium':
         this_title = _('adult-tiger-mosquitoes') + ': ' + _('menu_adults_prob')
-    elif type == 'definite':
+    elif type == 'confirmed' or type == 'high':
         this_title = _('adult-tiger-mosquitoes') + ': ' + _('menu_adults_definite')
     else:
         this_title = _('adult-tiger-mosquitoes-all-reports')
@@ -275,14 +275,14 @@ def show_adult_map(request, type='all'):
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
                  'adults_medium': reverse('adult_map_type', kwargs={'type': 'possible'}),
-                 'adults_high': reverse('adult_map_type', kwargs={'type': 'definite'}),
+                 'adults_high': reverse('adult_map_type', kwargs={'type': 'confirmed'}),
                  'sites_all': reverse('site_map_type', kwargs={'type': 'all'}),
                  'sites_drains_fountains': reverse('site_map_type', kwargs={'type': 'embornals_fonts'}),
                  'sites_basins': reverse('site_map_type', kwargs={'type': 'basins'}),
                  'sites_buckets_wells': reverse('site_map_type', kwargs={'type': 'buckets_wells'}),
                  'sites_other': reverse('site_map_type', kwargs={'type': 'other'})}
     redirect_path = strip_lang(reverse(href_url_name, kwargs={'type': type}))
-    type_dic = {'all': 'all_adults', 'possible': 'cat1_adults', 'definite': 'cat2_adults'}
+    type_dic = {'all': 'all_adults', 'possible': 'cat1_adults', 'confirmed': 'cat2_adults', 'medium': 'cat1_adults', 'high': 'cat2_adults'}
     try:
         endpoint = type_dic[type]
     except KeyError:
@@ -306,7 +306,7 @@ def show_site_map(request, type='all'):
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
                  'adults_medium': reverse('adult_map_type', kwargs={'type': 'possible'}),
-                 'adults_high': reverse('adult_map_type', kwargs={'type': 'definite'}),
+                 'adults_high': reverse('adult_map_type', kwargs={'type': 'confirmed'}),
                  'sites_all': reverse('site_map_type', kwargs={'type': 'all'}),
                  'sites_drains_fountains': reverse('site_map_type', kwargs={'type': 'embornals_fonts'}),
                  'sites_basins': reverse('site_map_type', kwargs={'type': 'basins'}),
@@ -333,7 +333,7 @@ def show_new_coverage_map(request):
     hrefs = {'coverage': reverse('coverage_map'),
                  'adults_all': reverse('adult_map_type', kwargs={'type': 'all'}),
                  'adults_medium': reverse('adult_map_type', kwargs={'type': 'possible'}),
-                 'adults_high': reverse('adult_map_type', kwargs={'type': 'definite'}),
+                 'adults_high': reverse('adult_map_type', kwargs={'type': 'confirmed'}),
                  'sites_all': reverse('site_map_type', kwargs={'type': 'all'}),
                  'sites_drains_fountains': reverse('site_map_type', kwargs={'type': 'embornals_fonts'}),
                  'sites_basins': reverse('site_map_type', kwargs={'type': 'basins'}),
