@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2015-01-12 10:25+0000\n"
+"PO-Revision-Date: 2015-01-12 14:10+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: English (USA)\n"
@@ -273,11 +273,11 @@ msgstr "Possible other species"
 msgid "expert_cat_possible_tiger"
 msgstr "Possible tiger mosquito"
 
-#. Source text: Tiger mosquito
+#. Source text: Confirmed tiger mosquito
 #: tigamap/templates/tigamap/validated_report_map.html:418
 #: tigamap/templates/tigamap/validated_report_map.html:559 loco:#: 5491b78ff1612903df106275
 msgid "expert_cat_tiger"
-msgstr "Tiger mosquito"
+msgstr "Confirmed tiger mosquito"
 
 #. Source text: Unknown
 #: tigamap/templates/tigamap/validated_report_map.html:418
@@ -351,15 +351,15 @@ msgstr "Medium and high probability photos only"
 msgid "medium-and-high-probability-reports-only"
 msgstr "Medium and high probability reports only"
 
-#. Source text: Only tiger mosquitoes
+#. Source text: Confirmed tiger mosquitoes
 #: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119 loco:#: 5491b78ef1612903df10624d
 msgid "menu_adults_definite"
-msgstr "Only tiger mosquitoes"
+msgstr "Confirmed tiger mosquitoes"
 
-#. Source text: Possible tiger mosquitoes
+#. Source text: Possible and confirmed tiger mosquitoes
 #: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117 loco:#: 5491b78ef1612903df10624c
 msgid "menu_adults_prob"
-msgstr "Possible tiger mosquitoes"
+msgstr "Possible and confirmed tiger mosquitoes"
 
 #. Source text: more info
 #: tigamap/templates/tigamap/validated_report_map.html:650 loco:#: 5491b790f1612903df106288
@@ -382,10 +382,10 @@ msgstr "no"
 msgid "not_sure"
 msgstr "not sure"
 
-#. Source text: From experts or users (optional)
+#. Source text: From experts or observers (optional)
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106287
 msgid "notes_row_help"
-msgstr "From experts or users (optional)"
+msgstr "From experts or observers (optional)"
 
 #. Source text: Notes
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106286

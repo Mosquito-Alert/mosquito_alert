@@ -82,7 +82,7 @@ def import_tasks():
 def import_task_responses():
     errors = []
     warnings = []
-    r = requests.get('http://crowdcrafting.org/app/Tigafotos/tasks/export?type=task_run&format=json')   
+    r = requests.get('http://crowdcrafting.org/app/Tigafotos/tasks/export?type=task_run&format=json')
     try:
         response_array = json.loads(r.text)
     except ValueError:

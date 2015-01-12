@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2015-01-12 10:25+0000\n"
+"PO-Revision-Date: 2015-01-12 14:10+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: Catalan (Spain)\n"
@@ -275,7 +275,7 @@ msgstr "Possible altra espècie"
 msgid "expert_cat_possible_tiger"
 msgstr "Possible mosquit tigre"
 
-#. Source text: Tiger mosquito
+#. Source text: Confirmed tiger mosquito
 #: tigamap/templates/tigamap/validated_report_map.html:418
 #: tigamap/templates/tigamap/validated_report_map.html:559 loco:#: 5491b78ff1612903df106275
 msgid "expert_cat_tiger"
@@ -355,12 +355,12 @@ msgstr "Només probabilitat mitjana i alta"
 msgid "medium-and-high-probability-reports-only"
 msgstr "Només probabilitat mitjana i alta"
 
-#. Source text: Only tiger mosquitoes
+#. Source text: Confirmed tiger mosquitoes
 #: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119 loco:#: 5491b78ef1612903df10624d
 msgid "menu_adults_definite"
 msgstr "Només mosquits tigre"
 
-#. Source text: Possible tiger mosquitoes
+#. Source text: Possible and confirmed tiger mosquitoes
 #: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117 loco:#: 5491b78ef1612903df10624c
 msgid "menu_adults_prob"
 msgstr "Només possible mosquit tigre i mosquit tigre"
@@ -386,7 +386,7 @@ msgstr "no"
 msgid "not_sure"
 msgstr "no ho sé"
 
-#. Source text: From experts or users (optional)
+#. Source text: From experts or observers (optional)
 #: tigamap/templates/tigamap/validated_report_map.html:636 loco:#: 5491b790f1612903df106287
 msgid "notes_row_help"
 msgstr "Afegides per experts o participants (optatiu)"
@@ -453,7 +453,7 @@ msgstr "política de privacitat"
 #. Source text: Observer's assessment
 #: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106283
 msgid "report_row_help"
-msgstr "Observats pel participant"
+msgstr "Observats pels participants"
 
 #. Source text: <a href="http://atrapaeltigre.com/web/en/asian-tiger-mosquito/" target="_blank">Tiger principles</a>
 #: tigamap/templates/tigamap/validated_report_map.html:626 loco:#: 5491b790f1612903df106282
