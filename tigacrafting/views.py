@@ -82,8 +82,12 @@ def import_tasks():
 def import_task_responses():
     errors = []
     warnings = []
-    r = requests.get('http://crowdcrafting.org/app/Tigafotos/tasks/export?type=task_run&format=json')
-    response_array = json.loads(r.text)
+    r = requests.get('http://crowdcrafting.org/app/Tigafotos/tasks/export?type=task_run&format=json')   
+    try:
+        response_array = json.loads(r.text)
+    except ValueError:
+        zipped_file = ZipFile(BytesIO(r.content))
+        response_array = json.loads(zipped_file.open(zipped_file.namelist()[0]).read())
     last_response_id = CrowdcraftingResponse.objects.all().aggregate(Max('response_id'))['response_id__max']
     if last_response_id:
         new_responses = filter(lambda x: x['id'] > last_response_id, response_array)
