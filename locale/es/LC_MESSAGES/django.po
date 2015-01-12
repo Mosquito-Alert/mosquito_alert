@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-17 17:03+0000\n"
-"PO-Revision-Date: 2015-01-12 14:10+0000\n"
+"PO-Revision-Date: 2015-01-12 15:46+0000\n"
 "Last-Translator: John Palmer\n"
 "Language-Team: John Palmer\n"
 "Language: Spanish\n"
@@ -358,12 +358,12 @@ msgstr "Sólo probabilidad media y alta"
 #. Source text: Confirmed tiger mosquitoes
 #: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:119 loco:#: 5491b78ef1612903df10624d
 msgid "menu_adults_definite"
-msgstr "Solo mosquitos tigre"
+msgstr "Mosquitos tigre confirmados"
 
 #. Source text: Possible and confirmed tiger mosquitoes
 #: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:117 loco:#: 5491b78ef1612903df10624c
 msgid "menu_adults_prob"
-msgstr "Solo posible mosquito tigre y mosquito tigre"
+msgstr "Mosquitos tigre confirmados y posibles"
 
 #. Source text: more info
 #: tigamap/templates/tigamap/validated_report_map.html:650 loco:#: 5491b790f1612903df106288
