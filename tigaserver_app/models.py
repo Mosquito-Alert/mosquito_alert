@@ -507,7 +507,7 @@ class Report(models.Model):
         max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('crowdcrafting_score_cat').last()
         if max_movelab_annotation is None:
             return None
-        return max_movelab_annotation.crowdcrafting_score_cat
+        return max_movelab_annotation.task.tiger_validation_score_cat
 
 
     def get_tiger_responses(self):
