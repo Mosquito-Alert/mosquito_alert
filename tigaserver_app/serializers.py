@@ -153,6 +153,7 @@ class ConfigurationSerializer(serializers.ModelSerializer):
 
 
 class MapDataSerializer(serializers.ModelSerializer):
+    version_UUID = serializers.CharField()
     creation_time = serializers.DateTimeField()
     creation_date = serializers.DateTimeField()
     creation_day_since_launch = serializers.Field()
