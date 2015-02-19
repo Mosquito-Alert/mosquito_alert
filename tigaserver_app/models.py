@@ -501,6 +501,15 @@ class Report(models.Model):
             return None
         return max_movelab_annotation.tiger_certainty_category
 
+    def get_crowd_score(self):
+        if self.type != 'adult':
+            return None
+        max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('crowdcrafting_score_cat').last()
+        if max_movelab_annotation is None:
+            return None
+        return max_movelab_annotation.crowdcrafting_score_cat
+
+
     def get_tiger_responses(self):
         if self.type != 'adult':
             return None
@@ -547,6 +556,7 @@ class Report(models.Model):
     latest_version = property(get_is_latest)
     movelab_annotation = property(get_movelab_annotation)
     movelab_score = property(get_movelab_score)
+    crowd_score = property(get_crowd_score)
     tiger_responses = property(get_tiger_responses)
     creation_date = property(get_creation_date)
     creation_day_since_launch = property(get_creation_day_since_launch)
