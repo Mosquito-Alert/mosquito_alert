@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
+from tigaserver_app.models import Report
 
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
@@ -149,6 +150,20 @@ class MoveLabAnnotation(models.Model):
     tiger_certainty_category = models.IntegerField('Certainty', choices=CATEGORIES, blank=True, null=True)
     certainty_notes = models.TextField(blank=True)
     hide = models.BooleanField('Hide photo from public', default=False)
+    edited_user_notes = models.TextField(blank=True)
+    last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+
+
+class ExpertReportAnnotation(models.Model):
+    user = models.ForeignKey(User, related_name="expert_report_annotation")
+    report = models.ForeignKey(Report, related_name='expert_report_annotation')
+    TIGER_CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
+    tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, blank=True, null=True)
+    tiger_certainty_notes = models.TextField(blank=True)
+    SITE_CATEGORIES = ((-2, 'Definitely not a breeding site'), (-1, 'Probably not a breeding site'), (0, 'Not sure'), (1, 'Probably a breeding site'), (2, 'Definitely a breeding site'))
+    site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, blank=True, null=True)
+    site_certainty_notes = models.TextField(blank=True)
     edited_user_notes = models.TextField(blank=True)
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
