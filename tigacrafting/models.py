@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
-from tigaserver_app.models import Report
 
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
@@ -10,7 +9,7 @@ def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
 
 
 class CrowdcraftingTask(models.Model):
-    task_id = models.IntegerField(unique=True)
+    task_id = models.IntegerField(unique=True, null=True)
     photo = models.OneToOneField('tigaserver_app.Photo')
 
     def __unicode__(self):
@@ -155,9 +154,12 @@ class MoveLabAnnotation(models.Model):
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
 
+from tigaserver_app.models import Report as R
+
+
 class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotation")
-    report = models.ForeignKey(Report, related_name='expert_report_annotation')
+    report = models.ForeignKey(R, related_name='expert_report_annotation')
     TIGER_CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, blank=True, null=True)
     tiger_certainty_notes = models.TextField(blank=True)

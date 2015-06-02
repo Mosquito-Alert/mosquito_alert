@@ -25,9 +25,19 @@ from django.http import HttpResponse
 from django.forms.models import modelformset_factory
 from django import forms
 from django.utils.translation import ugettext as _
-from forms import AnnotationForm, MovelabAnnotationForm
+from forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm
 from zipfile import ZipFile
 from io import BytesIO
+
+
+def photos_to_tasks():
+    these_photos = Photo.objects.filter(crowdcraftingtask=None).exclude(report__hide=True).exclude(hide=True)
+    if these_photos:
+        for p in these_photos:
+            new_task = CrowdcraftingTask()
+            new_task.photo = p
+            new_task.save()
+
 
 def import_tasks():
     errors = []
@@ -46,23 +56,42 @@ def import_tasks():
     for task in new_tasks:
         existing_task = CrowdcraftingTask.objects.filter(task_id=task['id'])
         if not existing_task:
-            task_model = CrowdcraftingTask()
-            task_model.task_id = task['id']
-            existing_photo = Photo.objects.filter(id=int(task['info'][u'\ufeffid']))
-            if existing_photo:
-                this_photo = Photo.objects.get(id=task['info'][u'\ufeffid'])
-                # check for tasks that already have this photo: There should not be any BUT I accidentially added photos 802-810 in both the first and second crowdcrafting task batches
-                if CrowdcraftingTask.objects.filter(photo=this_photo).count() > 0:
-                    # do nothing if photo id beteen 802 and 810 since I already know about this
-                    if this_photo.id in range(802, 811):
-                        pass
+            existing_empty_task = CrowdcraftingTask.objects.filter(photo=task['info'][u'\ufeffid'])
+            if not existing_empty_task:
+                task_model = CrowdcraftingTask()
+                task_model.task_id = task['id']
+                existing_photo = Photo.objects.filter(id=int(task['info'][u'\ufeffid']))
+                if existing_photo:
+                    this_photo = Photo.objects.get(id=task['info'][u'\ufeffid'])
+                    # check for tasks that already have this photo: There should not be any BUT I accidentially added photos 802-810 in both the first and second crowdcrafting task batches
+                    if CrowdcraftingTask.objects.filter(photo=this_photo).count() > 0:
+                        # do nothing if photo id beteen 802 and 810 since I already know about this
+                        if this_photo.id in range(802, 811):
+                            pass
+                        else:
+                            errors.append('Task with Photo ' + str(this_photo.id) + ' already exists. Not importing this task.')
                     else:
-                        errors.append('Task with Photo ' + str(this_photo.id) + ' already exists. Not importing this task.')
+                        task_model.photo = this_photo
+                        task_model.save()
                 else:
-                    task_model.photo = this_photo
-                    task_model.save()
+                    errors.append('Photo with id=' + task['info'][u'\ufeffid'] + ' does not exist.')
             else:
-                errors.append('Photo with id=' + task['info'][u'\ufeffid'] + ' does not exist.')
+                existing_empty_task.task_id = task['id']
+                existing_photo = Photo.objects.filter(id=int(task['info'][u'\ufeffid']))
+                if existing_photo:
+                    this_photo = Photo.objects.get(id=task['info'][u'\ufeffid'])
+                    # check for tasks that already have this photo: There should not be any BUT I accidentially added photos 802-810 in both the first and second crowdcrafting task batches
+                    if CrowdcraftingTask.objects.filter(photo=this_photo).count() > 0:
+                        # do nothing if photo id beteen 802 and 810 since I already know about this
+                        if this_photo.id in range(802, 811):
+                            pass
+                        else:
+                            errors.append('Task with Photo ' + str(this_photo.id) + ' already exists. Not importing this task.')
+                    else:
+                        existing_empty_task.photo = this_photo
+                        existing_empty_task.save()
+                else:
+                    errors.append('Photo with id=' + task['info'][u'\ufeffid'] + ' does not exist.')
         else:
             warnings.append('Task ' + str(existing_task[0].task_id) + ' already exists, not saved.')
     # write errors and warnings to files that we can check
@@ -258,6 +287,7 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50'):
             else:
                 return HttpResponse('error')
         else:
+            photos_to_tasks()
             import_tasks()
             tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
             tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
@@ -282,3 +312,49 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50'):
         return render(request, 'tigacrafting/movelab_validation.html', args)
     else:
         return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
+
+
+@login_required
+def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
+    this_user = request.user
+    if request.user.groups.filter(name='expert').exists():
+        args = {}
+        args.update(csrf(request))
+        args['scroll_position'] = scroll_position
+        AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=ExpertReportAnnotationForm, extra=0)
+        if request.method == 'POST':
+            scroll_position = request.POST.get("scroll_position", '0')
+            formset = AnnotationFormset(request.POST)
+            if formset.is_valid():
+                formset.save()
+                page = request.GET.get('page')
+                if not page:
+                    page = '1'
+                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
+            else:
+                return HttpResponse('error')
+        else:
+            import_tasks()
+            tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
+            tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
+            for this_task in tasks_without_annotations:
+                new_annotation = MoveLabAnnotation(task=this_task)
+                new_annotation.save()
+            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
+            paginator = Paginator(all_annotations, int(tasks_per_page))
+            page = request.GET.get('page')
+            try:
+                objects = paginator.page(page)
+            except PageNotAnInteger:
+                objects = paginator.page(1)
+            except EmptyPage:
+                objects = paginator.page(paginator.num_pages)
+            page_query = all_annotations.filter(id__in=[object.id for object in objects])
+            this_formset = AnnotationFormset(queryset=page_query)
+            args['formset'] = this_formset
+            args['objects'] = objects
+            args['pages'] = range(1, objects.paginator.num_pages+1)
+            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
+        return render(request, 'tigacrafting/expert_report_annotation.html', args)
+    else:
+        return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

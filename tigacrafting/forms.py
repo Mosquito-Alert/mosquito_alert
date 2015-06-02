@@ -1,5 +1,5 @@
 import floppyforms.__future__ as forms
-from models import Annotation, MoveLabAnnotation
+from models import Annotation, MoveLabAnnotation, ExpertReportAnnotation
 
 
 class Slider(forms.RangeInput):
@@ -23,3 +23,9 @@ class MovelabAnnotationForm(forms.ModelForm):
     class Meta:
         model = MoveLabAnnotation
         fields = ('tiger_certainty_category', 'certainty_notes', 'hide', 'edited_user_notes')
+
+
+class ExpertReportAnnotationForm(forms.ModelForm):
+    class Meta:
+        model = ExpertReportAnnotation
+        fields = ('tiger_certainty_category', 'tiger_certainty_notes', 'edited_user_notes')

@@ -509,7 +509,6 @@ class Report(models.Model):
             return None
         return max_movelab_annotation.task.tiger_validation_score_cat
 
-
     def get_tiger_responses(self):
         if self.type != 'adult':
             return None

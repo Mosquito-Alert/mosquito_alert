@@ -10,7 +10,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap import views
 from stats.views import show_usage, show_report_users, show_fix_users
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks, movelab_annotation
+from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks, movelab_annotation, expert_report_annotation
 
 admin.autodiscover()
 
@@ -69,6 +69,9 @@ urlpatterns += i18n_patterns('',
     url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
     url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),
     url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation, name='movelab_annotation_scroll_position'),
+    url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
+    url(r'^experts/(?P<tasks_per_page>[0-9]+)/$', expert_report_annotation, name='expert_report_annotation_tasks_per_page'),
+    url(r'^experts/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', expert_report_annotation, name='expert_report_annotation_scroll_position'),
     url(r'^coveragestats/$', show_fix_users),
     url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
     url(r'^processing/$', show_processing),

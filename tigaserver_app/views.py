@@ -356,14 +356,25 @@ def filter_creation_month(queryset, months_since_launch):
         return queryset
 
 
+def filter_creation_year(queryset, year):
+    if not year:
+        return queryset
+    try:
+        result = queryset.filter(creation_time__year=year)
+        return result
+    except ValueError:
+        return queryset
+
+
 class MapDataFilter(django_filters.FilterSet):
     day = django_filters.Filter(action=filter_creation_day)
     week = django_filters.Filter(action=filter_creation_week)
     month = django_filters.Filter(action=filter_creation_month)
+    year = django_filters.Filter(action=filter_creation_year)
 
     class Meta:
         model = Report
-        fields = ['day', 'week', 'month']
+        fields = ['day', 'week', 'month', 'year']
 
 
 class CoverageMapFilter(django_filters.FilterSet):
