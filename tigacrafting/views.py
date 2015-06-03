@@ -321,6 +321,11 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='a
 
 
 @login_required
+def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50'):
+    movelab_annotation(request=request, scroll_position=scroll_position, tasks_per_page=tasks_per_page, type='pending')
+
+
+@login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
     this_user = request.user
     if request.user.groups.filter(name='expert').exists():
