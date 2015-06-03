@@ -28,4 +28,3 @@ class MovelabAnnotationForm(forms.ModelForm):
 class ExpertReportAnnotationForm(forms.ModelForm):
     class Meta:
         model = ExpertReportAnnotation
-        fields = ('tiger_certainty_category', 'tiger_certainty_notes', 'edited_user_notes')
