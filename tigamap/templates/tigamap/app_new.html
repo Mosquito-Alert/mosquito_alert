@@ -161,25 +161,29 @@ function removeMe(){
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
+                        <div class="navbar-brand shrinking-text" style="color:#fff;">{{ title }}</div>
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
 
                                             <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        {%  trans 'Report Type' %}<b
+                        {%  trans 'adult-tiger-mosquitoes' %}<b
                                 class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        <li>{%  trans 'adult-tiger-mosquitoes' %}</li>
                         <li><a href={{ hrefs.adults_all }}
                                 >{% trans 'all-reports' %}</a></li>
                         <li><a href={{ hrefs.adults_medium }}>
                             {% trans 'menu_adults_prob' %}</a></li>
                         <li><a href={{ hrefs.adults_high }}>
                             {% trans 'menu_adults_definite' %}</a></li>
-                         <li class="divider"></li>
-                        <li>{% trans 'breeding-site-reports' %}</li>
-                               <li><a href={{ hrefs.sites_all }}
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'breeding-site-reports' %}<b
+                            class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href={{ hrefs.sites_all }}
                                 >{% trans 'all-sites' %}</a></li>
                         <li>
                             <a href={{ hrefs.sites_drains_fountains }}
@@ -191,22 +195,10 @@ function removeMe(){
                             {% trans 'buckets-and-wells' %}</a></li>
                         <li><a href={{ hrefs.sites_other }}
                                 >{% trans 'Other' %}</a></li>
-                         <li class="divider"></li>
-                        <li>{% trans 'Coverage' %}</li>
-                        <li><a href="{{ hrefs.coverage }}"
-                                >{% trans 'Coverage' %}</a></li>
                     </ul>
                 </li>
-                <li class="dropdown">
-                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">Year
-                                    <span class="caret"></span></a>
-                                <ul class="dropdown-menu" role="menu">
-                                    <li>All Years</li>
-                            <li>2015</li>
-                            <li>2014</li>
-                                    </ul>
-
-
+                <li><a href="{{ hrefs.coverage }}"
+                        >{% trans 'Coverage' %}</a></li>
                 <li>
                 <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
                 </li>
