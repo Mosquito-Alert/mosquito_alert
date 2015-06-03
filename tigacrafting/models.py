@@ -154,12 +154,9 @@ class MoveLabAnnotation(models.Model):
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
 
-from tigaserver_app.models import Report as R
-
-
 class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotation")
-    report = models.ForeignKey(R, related_name='expert_report_annotation')
+    report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotation')
     TIGER_CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, blank=True, null=True)
     tiger_certainty_notes = models.TextField(blank=True)
