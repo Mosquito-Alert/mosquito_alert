@@ -298,7 +298,6 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='a
                 new_annotation = MoveLabAnnotation(task=this_task)
                 new_annotation.save()
             all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            type = request.GET.get('type', 'all')
             if type == 'pending':
                 all_annotations = all_annotations.exclude(tiger_certainty_category__in=[-2, -1, 0, 1, 2])
             paginator = Paginator(all_annotations, int(tasks_per_page))
@@ -351,7 +350,6 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
                 new_annotation = MoveLabAnnotation(task=this_task)
                 new_annotation.save()
             all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            type = request.GET.get('type', 'all')
             if type == 'pending':
                 all_annotations = all_annotations.exclude(tiger_certainty_category__in=[-2, -1, 0, 1, 2])
             paginator = Paginator(all_annotations, int(tasks_per_page))
