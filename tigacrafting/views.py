@@ -245,7 +245,7 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
             this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, working_on=True))
         if which == 'new':
             import_task_responses()
-            annotated_task_ids = Annotation.objects.filter(user=this_user).exclude( tiger_certainty_percent=None).exclude(value_changed=False).values('task__id')
+            annotated_task_ids = Annotation.objects.filter(user=this_user).exclude(tiger_certainty_percent=None).exclude(value_changed=False).values('task__id')
             validated_tasks = CrowdcraftingTask.objects.exclude(id__in=annotated_task_ids).exclude(photo__report__hide=True).exclude(photo__hide=True).filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30)
             validated_tasks_filtered = filter_tasks(validated_tasks)
             shuffle(validated_tasks_filtered)
@@ -268,7 +268,7 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
 
 
 @login_required
-def movelab_annotation(request, scroll_position='', tasks_per_page='50'):
+def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='all'):
     this_user = request.user
     if request.user.groups.filter(name='movelab').exists():
         args = {}
@@ -283,7 +283,7 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50'):
                 page = request.GET.get('page')
                 if not page:
                     page = '1'
-                return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
+                return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page + '&type='+type)
             else:
                 return HttpResponse('error')
         else:
@@ -295,6 +295,9 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50'):
                 new_annotation = MoveLabAnnotation(task=this_task)
                 new_annotation.save()
             all_annotations = MoveLabAnnotation.objects.all().order_by('id')
+            type = request.GET.get('type', 'all')
+            if type == 'pending':
+                all_annotations = all_annotations.exclude(tiger_certainty_category__in=[-2, -1, 0, 1, 2])
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
