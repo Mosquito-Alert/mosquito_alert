@@ -283,7 +283,10 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='a
                 page = request.GET.get('page')
                 if not page:
                     page = '1'
-                return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page + '&type='+type)
+                if type == 'pending':
+                    return HttpResponseRedirect(reverse('movelab_annotation_pending_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
+                else:
+                    return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
             else:
                 return HttpResponse('error')
         else:
