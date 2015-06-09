@@ -181,14 +181,14 @@ function removeMe(){
                         </select>
                     </form>
 
-                       <ul class="nav navbar-nav navbar-left">
+
+                        <ul class="nav navbar-nav navbar-right">
+                         
                         <li>
                         <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
                         </li>
-                       </ul>
 
 
-                        <ul class="nav navbar-nav navbar-right">
                 {% if request.user.is_authenticated %}
 
                     <li><p style="padding-left: 10px;" class="navbar-text">{{ request.user.username }} /
