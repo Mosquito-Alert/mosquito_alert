@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap.min.css" %}>
     <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap-theme.min.css" %}>
+    <link rel="stylesheet" href={% static "tigamap/bootstrap-select/css/bootstrap-select.min.css" %}>
 
 <style>
 
@@ -164,47 +165,29 @@ function removeMe(){
                         <div class="navbar-brand shrinking-text" style="color:#fff;">{{ title }}</div>
                     </div>
                     <div class="navbar-collapse collapse">
-                        <ul class="nav navbar-nav">
+                     <form class="navbar-search pull-left">
+                          <select class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="true" data-size="15">
+                                <option value="ADULTS_ALL">{% trans 'all-reports' %}</option>
+                                <option value="ADULTS_PROB" >{% trans 'menu_adults_prob' %}</option>
+                                <option value="ADULTS_DEF" >{% trans 'menu_adults_definite' %}</option>
+                               <option data-divider="true"></option>
+                                <option value="SITES_ALL">{% trans 'all-sites' %}</option>
+                                <option value="SITES_DRAINS" >{% trans 'storm-drains-and-fountains' %}</option>
+                                <option value="SITES_BASINS" >{% trans 'Basins' %}</option>
+                                <option value="SITES_BUCKETS" >{% trans 'buckets-and-wells' %}</option>
+                                <option value="SITES_OTHER" >{% trans 'Other' %}</option>
+                               <option data-divider="true"></option>
+                                <option value="COVERAGE">{% trans 'Coverage' %}</option>
+                        </select>
+                    </form>
 
-                                            <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        {%  trans 'adult-tiger-mosquitoes' %}<b
-                                class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li><a href={{ hrefs.adults_all }}
-                                >{% trans 'all-reports' %}</a></li>
-                        <li><a href={{ hrefs.adults_medium }}>
-                            {% trans 'menu_adults_prob' %}</a></li>
-                        <li><a href={{ hrefs.adults_high }}>
-                            {% trans 'menu_adults_definite' %}</a></li>
-                    </ul>
-                </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'breeding-site-reports' %}<b
-                            class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li><a href={{ hrefs.sites_all }}
-                                >{% trans 'all-sites' %}</a></li>
+                       <ul class="nav navbar-nav navbar-left">
                         <li>
-                            <a href={{ hrefs.sites_drains_fountains }}
-                                    >{% trans 'storm-drains-and-fountains' %}</a>
+                        <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
                         </li>
-                        <li><a href={{ hrefs.sites_basins }}
-                                >{% trans 'Basins' %}</a></li>
-                        <li><a href={{ hrefs.sites_buckets_wells }}>
-                            {% trans 'buckets-and-wells' %}</a></li>
-                        <li><a href={{ hrefs.sites_other }}
-                                >{% trans 'Other' %}</a></li>
-                    </ul>
-                </li>
-                <li><a href="{{ hrefs.coverage }}"
-                        >{% trans 'Coverage' %}</a></li>
-                <li>
-                <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}" class="btn btn-inverse btn-lg"><span class="glyphicon glyphicon-info-sign"></span></a>
-                </li>
+                       </ul>
 
 
-                        </ul>
                         <ul class="nav navbar-nav navbar-right">
                 {% if request.user.is_authenticated %}
 
@@ -298,6 +281,7 @@ function removeMe(){
     <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
 
     <script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "tigamap/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
 
 
 {% endblock %}
