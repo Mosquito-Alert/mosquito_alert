@@ -160,25 +160,26 @@
 <strong>Report: {{ form.instance.report.version_UUID }}</strong>, Created: {{ form.instance.report.creation_time }} UTC
                  </div>
                 <div class="col-md-3">
-                    <br><br>
                     {{ form.as_p }}
                 </div>
 
                 <div class="col-md-5">
 
-                    <div style="overflow: auto;max-height: 500px;margin-top:10px;">
+                    <div style="overflow: auto;max-height: 800px;margin-top:10px;">
 
                     {{ form.instance.report.photo_html_for_report_validation | safe}}
 
                     </div>
 
-                    <br><br><br>
+                    <br><br>
                     <strong>User Notes:</strong><br>
+                    <div  style="overflow: auto;height: 200px;margin-top:10px;border:solid;">
                     {{ form.instance.report.note }}
+                        </div>
                 </div>
 
                 <div class="col-md-4">
-                    <div id="map{{ form.instance.id }}" class="task_map-container" style="margin-top:10px;"></div>
+                    <div id="map{{ form.instance.id }}" class="task_map-container" style="margin-top:20px;"></div>
                 </div>
 
             </div>
