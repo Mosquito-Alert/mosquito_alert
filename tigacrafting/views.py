@@ -2,7 +2,7 @@ from django.shortcuts import render, render_to_response, get_object_or_404
 import requests
 import json
 from tigacrafting.models import *
-from tigaserver_app.models import Photo
+from tigaserver_app.models import Photo, Report
 import dateutil.parser
 from django.db.models import Count
 import pytz
@@ -373,7 +373,6 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
-    this_user = request.user
     if request.user.groups.filter(name='expert').exists():
         args = {}
         args.update(csrf(request))
@@ -391,14 +390,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
             else:
                 return HttpResponse('error')
         else:
-            import_tasks()
+            these_reports =Report.objects.all()
             tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
-            tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
-            for this_task in tasks_without_annotations:
-                new_annotation = MoveLabAnnotation(task=this_task)
-                new_annotation.save()
-            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            paginator = Paginator(all_annotations, int(tasks_per_page))
+            paginator = Paginator(these_reports, int(tasks_per_page))
             page = request.GET.get('page')
             try:
                 objects = paginator.page(page)
@@ -406,12 +400,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
                 objects = paginator.page(1)
             except EmptyPage:
                 objects = paginator.page(paginator.num_pages)
-            page_query = all_annotations.filter(id__in=[object.id for object in objects])
+            page_query = these_reports.filter(version_UUID__in=[object.version_UUID for object in objects])
             this_formset = AnnotationFormset(queryset=page_query)
             args['formset'] = this_formset
             args['objects'] = objects
             args['pages'] = range(1, objects.paginator.num_pages+1)
-            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
+            args['tasks_per_page_choices'] = range(25, min(200, these_reports.count())+1, 25)
         return render(request, 'tigacrafting/expert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

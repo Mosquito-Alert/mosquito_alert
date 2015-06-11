@@ -1,0 +1,328 @@
+{% load staticfiles %}
+{% load leaflet_tags %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+
+    {% block encoding %}<meta charset="utf-8">{% endblock  %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta name="description" content="Tigacrafting">
+    <meta name="author" content="Movement Ecology Laboratory">
+
+    <title>{% block page_title %}Tigacrafting{% endblock %}</title>
+
+    {% block bootstrap_css %}
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    {% endblock %}
+
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+<style>
+    #ex1Slider .slider-selection {
+	background: #BABABA;
+}
+
+</style>
+
+    {% block fa_css %}
+        <!-- FA CSS -->
+        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    {% endblock %}
+
+
+{% block fallback_bs_js %}
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% endblock %}
+
+    {% leaflet_js %}
+    {% leaflet_css %}
+
+
+        <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+
+    <script type="text/javascript">
+
+        var mosquito_icon_class = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+            }
+        });
+
+        var mosquito_icon = new mosquito_icon_class;
+
+        {% for form in formset %}
+        function map_init_basic{{ form.instance.report.version_UUID }}(map, options) {
+
+            L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).addTo(map);
+
+
+        }
+        {%  endfor %}
+
+    </script>
+
+</head>
+
+<body style="padding-top: 70px;">
+
+{% block navbar %}
+    <!-- NAVBAR
+================================================== -->
+           <div class="navbar-wrapper">
+            <div class="container">
+             <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">{% trans "Toggle navigation" %}</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div id="gear" class="navbar-brand"><span style="color:#ff9900">Tigatrapp Movelab Validation</span></div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+
+
+
+                        <ul class="nav navbar-nav navbar-right">
+
+
+                                                   <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Photos per page" %}
+                                    <span class="caret"></span></a>
+                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                    {% for n in tasks_per_page_choices %}
+                                    <li><a href="{% url 'movelab_annotation_tasks_per_page' n %}">{{ n }}</a></li>
+                                       {% endfor %}
+                                </ul>
+                            </li>
+
+
+
+
+                    <li><p class="navbar-text">Logged in as: {{ request.user.username }}</p></li>
+                        <li><a href="{% url "auth_logout" %}">logout</a>
+                    </li>
+                       </ul>
+
+                                                                <form class="navbar-form navbar-right" style="margin-right: 5px">
+  <div class="form-group">
+    <input type="number" min="1" max="{{ objects.paginator.num_pages }}" class="form-control input-sm" id="page_input" placeholder="Go to page" style="width:100px;">
+     <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+ </div>
+
+                                                                </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block main_body %}
+
+    <div class="container theme-showcase" role="main">
+
+            <div class="starter-template">
+
+            <div class="page-header">
+                        <div id="page_title" class="page-header">
+<h3>Instructions</h3>
+</div>
+
+            <p>For each report: (1) select a category for your degree of belief that the report contains at least one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the report contains at least one photo showing a tiger mosquito breeding site, (3) add any note you want to see displayed on the public map along with the report (e.g. an edited version of the user's original note), (4) indicate if the photo should be hidden from public view (this will automatically remove it from the public map), and (5) add any internal notes you want. Click "Save" to save your responses on the server.</p>
+
+
+            </div>
+
+                {% if objects %}
+
+    <form method="post">{% csrf_token %}
+    {{ formset.management_form }}
+        {% for form in formset %}
+            <div class="row">
+
+                <div class="col-md-3">
+<strong>Report {{ form.instance.report.version_UUID }}}</strong>
+                    <br><br>
+                    {{ form.as_p }}
+                </div>
+
+                <div class="col-md-5">
+
+                    {{ form.instance.report.photo_html | safe}}
+
+                    <br><br><br>
+                    <strong>User Notes:</strong><br>
+                    {{ form.instance.report.note }}
+                </div>
+
+                <div class="col-md-4">
+                <p>{{ form.instance.report.creation_time }} UTC</p>
+                    <div id="report{{ form.instance.report.version_UUID }}" class="task_map-container"></div>
+                </div>
+
+            </div>
+
+<br>
+            <div class="border-row">
+
+            <br>
+
+            </div>
+
+
+        {% endfor %}
+
+    <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
+
+    <button id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;">
+  <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
+</button>
+</form>
+
+<div class="row">
+
+                <div class="col-md-12">
+
+  <div class="pagination">
+        <span class="step-links">
+            {% if objects.has_previous %}
+                <a href="?page={{ objects.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+            </span>
+
+            {% if objects.has_next %}
+                <a href="?page={{ objects.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+
+
+</div>
+                    </div>
+
+{% else %}
+    <p>There are no objects.</p>
+{% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block body_scripts %}
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/docs.min.js" %}></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
+
+
+        <script type="text/javascript">
+        (function () {
+            function loadmap() {
+
+                {% for form in formset %}
+
+                var centerLat = {{ form.instance.task.photo.report.lat }};
+                var centerLng = {{ form.instance.task.photo.report.lon }};
+                var initialZoom = 6;
+                var djoptions = {"layers": [
+                            ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
+                        ],
+                            "minimap": true, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                                [-90,
+                                    -180],
+                                [90,
+                                    180]
+                            ], "resetview": true, "srid": null, "fitextent": true},
+                        options = {djoptions: djoptions, initfunc: loadmap,
+                            globals: false, callback: window.map_init_basic};
+
+                    L.Map.djangoMap('report{{ form.instance.report.version_UUID }}', {djoptions: djoptions, initfunc: loadmap,
+                        globals: false, callback: eval("window.map_init_basic{{ form.instance.report.version_UUID }}")});
+                {% endfor %}
+
+            }
+
+            var loadevents = ["load"];
+            if (loadevents.length === 0) loadmap();
+            else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+            else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+        })();
+    </script>
+
+
+
+        <script>
+    var scroll_position = parseInt({{ scroll_position }});
+    if(scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)){
+    $(window).scrollTop(scroll_position);
+    }
+
+
+    $('input[id~="value_changed"]').hide();
+    $('label[for~="value_changed"]').hide();
+
+ $(document).ready(function() {
+    $("form").addClass("form-horizontal").attr("role", "form");
+
+    $("#save_button").click(function() {
+    $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');}).position({
+        my: "middle top",
+        at: "middle bottom",
+        of: "#navbar",
+        collision: "fit"
+      });
+
+ })
+
+var scroll_position_input = $("#scroll_position");
+
+$(window).scroll(function (event) {
+    var scroll = $(window).scrollTop();
+    scroll_position_input.val(scroll);
+});
+
+
+$("#page_button").on('click', function () {
+
+    window.location.href = "?page=" + $("#page_input").val();
+
+  })
+
+    </script>
+
+
+
+
+{% endblock %}
+
+</body>
+</html>

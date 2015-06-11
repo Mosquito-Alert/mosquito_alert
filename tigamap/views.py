@@ -262,7 +262,7 @@ def show_embedded_adult_map(request, legend=''):
 
 def show_adult_map(request, type='all'):
     if settings.DEBUG:
-        current_domain = 'localhost:8000'
+        current_domain = 'http://humboldt.ceab.csic.es'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     if type == 'possible' or type == 'medium':
