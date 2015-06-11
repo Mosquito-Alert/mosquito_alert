@@ -18,7 +18,7 @@
     {% block bootstrap_css %}
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-           <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
     {% endblock %}
 
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
@@ -99,7 +99,7 @@
 
                         <ul class="nav navbar-nav navbar-right">
 
-                                                        <li class="dropdown">
+                            <li class="dropdown">
                                 <a href="#" class="dropdown-toggle"
                                    data-toggle="dropdown">{% trans "Reports per page" %}
                                     <span class="caret"></span></a>
@@ -250,33 +250,38 @@
     </div>
 
 
-                        <button id="show_filters_button" class="btn btn-default btn-lg" style="position:fixed;">
-                        <span class="glyphicon glyphicon-filter"></span>
-                    </button>
+    <button id="show_filters_button" class="btn btn-default btn-lg" style="position:fixed;">
+        <span class="glyphicon glyphicon-filter"></span>
+    </button>
 
 
-<div id="filters_div" style="display:none;position:absolute;top:30px;left:30px">
-<form role="form">
-  <div class="form-group">
-    <label for="year_select">Year:</label>
-                          <select id="year_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="false" data-size="15">
-                                <option value="all">{% trans 'All' %}</option>
-                                <option value="2015">2015</option>
-                                <option value="2014">2014</option>
-                        </select>
-  </div>
-  <div class="form-group">
-    <label for="pwd">Password:</label>
-    <input type="password" class="form-control" id="pwd">
-  </div>
-  <div class="checkbox">
-    <label><input type="checkbox"> Remember me</label>
-  </div>
-  <button type="submit" class="btn btn-default">Submit</button>
-</form>
+    <div id="filters_div"
+         style="display:none;position:absolute;top:30px;left:30px; background-color: rgba(0,0,0,.6); border:1px solid rgba(0,0,0,.8); border-radius: 5px;">
+        <form role="form">
+            <div class="form-group">
+                <label for="year_select">Year:</label>
+                <select id="year_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more"
+                        data-live-search="false" data-size="15">
+                    <option value="all">{% trans 'All' %}</option>
+                    <option value="2015">2015</option>
+                    <option value="2014">2014</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tiger_score_select">Tiger Certainty Category:</label>
+                <select id="tiger_score_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more"
+                        data-live-search="false" data-size="15">
+                    <option value="all">{% trans 'All' %}</option>
+                    <option value="-2">-2</option>
+                    <option value="-1">-1</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
 
 
-</div>
+    </div>
 
 {% endblock %}
 
@@ -292,7 +297,7 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
 
-        <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
 
     <script type="text/javascript">
         (function () {
@@ -356,10 +361,11 @@
 
 
             $("#show_filters_button").click(function () {
-                $("#filters_div").show('slow')}).position({
+                $("#filters_div").show()
+            }).position({
                 my: "left top",
                 at: "left bottom",
-                of: "#navbar",
+                of: "#show_filters_button",
                 collision: "fit"
             });
 
