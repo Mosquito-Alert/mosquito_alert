@@ -39,6 +39,14 @@ img{
     border: solid;
 }
 
+.report_annotation_map-container {
+    width: 100%;
+    height: 800px;
+    border: 1px solid #333333;
+    margin-top:10px;
+}
+
+
 .border-row {
     border-top: 1px solid #444;
 }
