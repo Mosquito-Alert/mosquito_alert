@@ -378,7 +378,7 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10'):
     this_user = request.user
     if this_user.groups.filter(name='expert').exists():
         args = {}
@@ -402,7 +402,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
             for this_report in reports_without_annotations:
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 new_annotation.save()
-            all_annotations = ExpertReportAnnotation.objects.all().order_by('id')
+            all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).order_by('id')
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
