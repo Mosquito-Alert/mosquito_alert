@@ -262,7 +262,7 @@ def show_embedded_adult_map(request, legend=''):
 
 def show_adult_map(request, type='all'):
     if settings.DEBUG:
-        current_domain = 'http://humboldt.ceab.csic.es'
+        current_domain = 'humboldt.ceab.csic.es'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     if type == 'possible' or type == 'medium':
@@ -294,7 +294,7 @@ def show_adult_map(request, type='all'):
 
 def show_site_map(request, type='all'):
     if settings.DEBUG:
-        current_domain = 'localhost:8000'
+        current_domain = 'humboldt.ceab.csic.es'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     title_dic = {'embornals_fonts': _('breeding-sites-storm-drains-and-fountains'), 'all': _('breeding-sites-all-reports'), 'other': _('breeding-sites-other'), 'buckets_wells':  _('breeding-sites-buckets-and-wells'), 'basins':  _('breeding-sites-basins')}
@@ -325,7 +325,7 @@ def show_site_map(request, type='all'):
 
 def show_new_coverage_map(request):
     if settings.DEBUG:
-        current_domain = 'localhost:8000'
+        current_domain = 'humboldt.ceab.csic.es'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     this_title = _('coverage-map')

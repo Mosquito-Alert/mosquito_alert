@@ -391,7 +391,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
                 return HttpResponse('error')
         else:
             these_reports =Report.objects.all()
-            tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
             paginator = Paginator(these_reports, int(tasks_per_page))
             page = request.GET.get('page')
             try:
