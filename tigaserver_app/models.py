@@ -420,6 +420,13 @@ class Report(models.Model):
             result = result + photo.small_image_() + '&nbsp;'
         return result
 
+    def get_photo_html_for_report_validation(self):
+        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
+        result = ''
+        for photo in these_photos:
+            result = result + photo.medium_image_for_validation_() + '<br>'
+        return result
+
     def get_formatted_date(self):
         return self.version_time.strftime("%d-%m-%Y %H:%M")
 
@@ -547,6 +554,7 @@ class Report(models.Model):
     masked_lon = property(get_masked_lon)
     n_photos = property(get_n_photos)
     photo_html = property(get_photo_html)
+    photo_html_for_report_validation= property(get_photo_html_for_report_validation)
     formatted_date = property(get_formatted_date)
     response_html = property(get_response_html)
     response_string = property(get_response_string)
@@ -659,6 +667,10 @@ class Photo(models.Model):
 
     def medium_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
+
+    def medium_image_for_validation_(self):
+        return '<a target="_blank" href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
+
 
     medium_image_.allow_tags = True
 
