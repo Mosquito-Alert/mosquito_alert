@@ -90,7 +90,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <div id="gear" class="navbar-brand"><span style="color:#ff9900">Tigatrapp Movelab Validation</span></div>
+                        <div id="gear" class="navbar-brand"><span style="color:#ff9900">Tigatrapp Expert Validation</span></div>
                     </div>
                     <div class="navbar-collapse collapse">
 
@@ -156,7 +156,9 @@
     {{ formset.management_form }}
         {% for form in formset %}
             <div class="row">
+             <div class="col-md-12">
 <strong>Report {{ form.instance.report.version_UUID }}</strong>
+                 </div>
                 <div class="col-md-3">
                     <br><br>
                     {{ form.as_p }}
@@ -251,8 +253,8 @@
 
                 {% for form in formset %}
 
-                var centerLat = {{ form.instance.task.photo.report.lat }};
-                var centerLng = {{ form.instance.task.photo.report.lon }};
+                var centerLat = {{ form.instance.report.lat }};
+                var centerLng = {{ form.instance.report.lon }};
                 var initialZoom = 6;
                 var djoptions = {"layers": [
                             ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
