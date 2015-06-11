@@ -256,11 +256,11 @@
 
 
     <div id="filters_div"
-         style="display:none;background-color: rgba(0,0,0,.6); border:1px solid rgba(0,0,0,.8); border-radius: 5px;">
+         style="display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; width:50%; margin:5px;">
         <form role="form">
             <div class="form-group">
                 <label for="year_select">Year:</label>
-                <select id="year_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more"
+                <select id="year_select" class="left selectpicker show-tick form-control" data-width="20%" data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="2015">2015</option>
@@ -269,7 +269,7 @@
             </div>
             <div class="form-group">
                 <label for="tiger_score_select">Tiger Certainty Category:</label>
-                <select id="tiger_score_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more"
+                <select id="tiger_score_select" class="left selectpicker show-tick form-control" data-width="20%" data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="-2">-2</option>
