@@ -397,7 +397,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
             else:
                 return HttpResponse('error')
         else:
-            reports_without_annotations_unfiltered = Report.objects.exclude(hide=True).annotate(num_annotations=Count('expert_report_annotations')).filter(num_annotations__lt=3)
+            reports_without_annotations_unfiltered = Report.objects.exclude(hide=True).exclude(photos=None).annotate(num_annotations=Count('expert_report_annotations')).filter(num_annotations__lt=3)
             reports_without_annotations = filter_reports(reports_without_annotations_unfiltered)
             for this_report in reports_without_annotations:
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
