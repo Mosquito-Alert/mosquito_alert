@@ -96,40 +96,6 @@
                                 style="color:#ff9900">Tigatrapp Expert Validation</span></div>
                     </div>
                     <div class="navbar-collapse collapse">
-                        <ul class="nav navbar-nav navbar-left">
-
-                        <li>
-
-                          <select id="year_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="false" data-size="15">
-                                <option value="all">{% trans 'All years' %}</option>
-                                <option value="2015">2015</option>
-                                <option value="2014">2014</option>
-                        </select>
-
-                        </li>
-
-
-                                                <li>
-                     <form class="navbar-search pull-left">
-                          <select id="reports_per_page_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="false" data-size="15">
-                                <option value="all">{% trans 'All years' %}</option>
-                                <option value="2015">2015</option>
-                                <option value="2014">2014</option>
-                        </select>
-                    </form>
-                        </li>
-
-
-
-                            <li>
-                                <p class="navbar-btn">
-                                    <button id="options_button" class="btn btn-default btn-sm active" type="button">Go
-                                    </button>
-                                </p>
-                            </li>
-
-                        </ul>
-
 
                         <ul class="nav navbar-nav navbar-right">
 
@@ -283,6 +249,35 @@
         </div>
     </div>
 
+
+                        <button id="show_filters_button" class="btn btn-default btn-lg" style="position:fixed;">
+                        <span class="glyphicon glyphicon-filter"></span>
+                    </button>
+
+
+<div id="filters_div" style="display:none;position:absolute;top:30px;left:30px">
+<form role="form">
+  <div class="form-group">
+    <label for="year_select">Year:</label>
+                          <select id="year_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="false" data-size="15">
+                                <option value="all">{% trans 'All' %}</option>
+                                <option value="2015">2015</option>
+                                <option value="2014">2014</option>
+                        </select>
+  </div>
+  <div class="form-group">
+    <label for="pwd">Password:</label>
+    <input type="password" class="form-control" id="pwd">
+  </div>
+  <div class="checkbox">
+    <label><input type="checkbox"> Remember me</label>
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+
+
+</div>
+
 {% endblock %}
 
 
@@ -355,6 +350,15 @@
             }).position({
                 my: "middle top",
                 at: "middle bottom",
+                of: "#navbar",
+                collision: "fit"
+            });
+
+
+            $("#show_filters_button").click(function () {
+                $("#filters_div").show('slow').position({
+                my: "left top",
+                at: "left bottom",
                 of: "#navbar",
                 collision: "fit"
             });
