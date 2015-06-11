@@ -424,7 +424,7 @@ class Report(models.Model):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         result = ''
         for photo in these_photos:
-            result = result + photo.medium_image_for_validation_() + '<br>'
+            result = result + '<div style="border:solid;margin:1px;' + photo.medium_image_for_validation_() + '</div><br>'
         return result
 
     def get_formatted_date(self):
