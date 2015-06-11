@@ -6,7 +6,8 @@
 <html lang={% block language %}"en"{% endblock %}>
 <head>
 
-    {% block encoding %}<meta charset="utf-8">{% endblock  %}
+    {% block encoding %}
+        <meta charset="utf-8">{% endblock %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
     <meta name="description" content="Tigacrafting">
@@ -17,17 +18,18 @@
     {% block bootstrap_css %}
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+           <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
     {% endblock %}
 
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
-<style>
-    #ex1Slider .slider-selection {
-	background: #BABABA;
-}
+    <style>
+        #ex1Slider .slider-selection {
+            background: #BABABA;
+        }
 
-</style>
+    </style>
 
     {% block fa_css %}
         <!-- FA CSS -->
@@ -35,10 +37,10 @@
     {% endblock %}
 
 
-{% block fallback_bs_js %}
+    {% block fallback_bs_js %}
 
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
@@ -48,7 +50,7 @@
     {% leaflet_css %}
 
 
-        <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
 
     <script type="text/javascript">
 
@@ -61,12 +63,12 @@
         var mosquito_icon = new mosquito_icon_class;
 
         {% for form in formset %}
-        function map_init_basic{{ form.instance.id }}(map, options) {
+            function map_init_basic{{ form.instance.id }}(map, options) {
 
-            L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).addTo(map);
+                L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).addTo(map);
 
 
-        }
+            }
         {%  endfor %}
 
     </script>
@@ -78,9 +80,9 @@
 {% block navbar %}
     <!-- NAVBAR
 ================================================== -->
-           <div class="navbar-wrapper">
-            <div class="container">
-             <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
                 <div id="navbar" class="container">
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
@@ -90,40 +92,64 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <div id="gear" class="navbar-brand"><span style="color:#ff9900">Tigatrapp Expert Validation</span></div>
+                        <div id="gear" class="navbar-brand"><span
+                                style="color:#ff9900">Tigatrapp Expert Validation</span></div>
                     </div>
                     <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-left">
 
+                        <li>
+                     <form class="navbar-search pull-left">
+                          <select id="year_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="true" data-size="15">
+                                <option value="all">{% trans 'All years' %}</option>
+                                <option value="2015">2015</option>
+                                <option value="2014">2014</option>
+                        </select>
+                    </form>
+                        </li>
+
+
+                                                <li>
+                     <form class="navbar-search pull-left">
+                          <select id="reports_per_page_select" class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="true" data-size="15">
+                                <option value="all">{% trans 'All years' %}</option>
+                                <option value="2015">2015</option>
+                                <option value="2014">2014</option>
+                        </select>
+                    </form>
+                        </li>
+
+
+
+                            <li>
+                                <p class="navbar-btn">
+                                    <button id="options_button" class="btn btn-default btn-sm active" type="button">Go
+                                    </button>
+                                </p>
+                            </li>
+
+                        </ul>
 
 
                         <ul class="nav navbar-nav navbar-right">
 
-
-                                                   <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Reports per page" %}
+                                                        <li class="dropdown">
+                                <a href="#" class="dropdown-toggle"
+                                   data-toggle="dropdown">{% trans "Reports per page" %}
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
-                                    <li><a href="{% url 'movelab_annotation_tasks_per_page' n %}">{{ n }}</a></li>
-                                       {% endfor %}
+                                        <li><a href="{% url 'movelab_annotation_tasks_per_page' n %}">{{ n }}</a></li>
+                                    {% endfor %}
                                 </ul>
                             </li>
 
 
+                            <li><p class="navbar-text">Logged in as: {{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            </li>
+                        </ul>
 
-
-                    <li><p class="navbar-text">Logged in as: {{ request.user.username }}</p></li>
-                        <li><a href="{% url "auth_logout" %}">logout</a>
-                    </li>
-                       </ul>
-
-                                                                <form class="navbar-form navbar-right" style="margin-right: 5px">
-  <div class="form-group">
-    <input type="number" min="1" max="{{ objects.paginator.num_pages }}" class="form-control input-sm" id="page_input" placeholder="Go to page" style="width:100px;">
-     <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
- </div>
-
-                                                                </form>
 
                     </div>
                 </div>
@@ -138,78 +164,88 @@
 
     <div class="container theme-showcase" role="main">
 
-            <div class="starter-template">
+        <div class="starter-template">
 
             <div class="page-header">
-                        <div id="page_title" class="page-header">
-<h3>Instructions</h3>
-</div>
+                <div id="page_title" class="page-header">
+                    <h3>Instructions</h3>
+                </div>
 
-            <p>For each report: (1) select a category for your degree of belief that the report contains at least one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the report contains at least one photo showing a tiger mosquito breeding site, (3) add any note you want to see displayed on the public map along with the report (e.g. an edited version of the user's original note), (4) indicate if the photo should be hidden from public view (this will automatically remove it from the public map), and (5) add any internal notes you want. Click "Save" to save your responses on the server.</p>
+                <p>For each report: (1) select a category for your degree of belief that the report contains at least
+                    one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
+                    report contains at least one photo showing a tiger mosquito breeding site, (3) add any note you want
+                    to see displayed on the public map along with the report (e.g. an edited version of the user's
+                    original note), (4) indicate if the photo should be hidden from public view (this will automatically
+                    remove it from the public map), and (5) add any internal notes you want. Click "Save" to save your
+                    responses on the server.</p>
 
 
             </div>
 
-                {% if objects %}
+            {% if objects %}
 
-    <form method="post">{% csrf_token %}
-    {{ formset.management_form }}
-        {% for form in formset %}
-            <div class="row">
-             <div class="col-md-12">
-<strong>Report: {{ form.instance.report.version_UUID }}</strong>, Created: {{ form.instance.report.creation_time }} UTC
-                 </div>
-                <div class="col-md-3">
-                   <br>
-                    {{ form.as_p }}
-                </div>
+                <form method="post">{% csrf_token %}
+                    {{ formset.management_form }}
+                    {% for form in formset %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <strong>Report: {{ form.instance.report.version_UUID }}</strong>,
+                                Created: {{ form.instance.report.creation_time }} UTC
+                            </div>
+                            <div class="col-md-3">
+                                <br>
+                                {{ form.as_p }}
+                            </div>
 
-                <div class="col-md-5">
-                    <br>
-                <strong>Photos</strong> (scroll to see all; click to enlarge)<br>
-                    <div style="overflow: auto;height: 814px;">
+                            <div class="col-md-5">
+                                <br>
+                                <strong>Photos</strong> (scroll to see all; click to enlarge)<br>
 
-                    {{ form.instance.report.photo_html_for_report_validation | safe}}
+                                <div style="overflow: auto;height: 814px;">
 
-                    </div>
+                                    {{ form.instance.report.photo_html_for_report_validation | safe }}
 
-                </div>
+                                </div>
 
-                <div class="col-md-4">
-                                        <br>
-                    <strong>Location</strong>
-                    <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
-                    <br>
-                    <strong>User Notes</strong><br>
-                    <div  style="overflow: auto;height: 314px;border:1px solid #333333;">
-                    {{ form.instance.report.note }}
+                            </div>
+
+                            <div class="col-md-4">
+                                <br>
+                                <strong>Location</strong>
+
+                                <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
+                                <br>
+                                <strong>User Notes</strong><br>
+
+                                <div style="overflow: auto;height: 270px;border:1px solid #333333;">
+                                    {{ form.instance.report.note }}
+                                </div>
+                            </div>
+
                         </div>
-                </div>
 
-            </div>
+                        <br>
+                        <div class="border-row">
 
-<br>
-            <div class="border-row">
+                            <br>
 
-            <br>
-
-            </div>
+                        </div>
 
 
-        {% endfor %}
+                    {% endfor %}
 
-    <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
+                    <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
 
-    <button id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;">
-  <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
-</button>
-</form>
+                    <button id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;">
+                        <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
+                    </button>
+                </form>
 
-<div class="row">
+                <div class="row">
 
-                <div class="col-md-12">
+                    <div class="col-md-12">
 
-  <div class="pagination">
+                        <div class="pagination">
         <span class="step-links">
             {% if objects.has_previous %}
                 <a href="?page={{ objects.previous_page_number }}">Previous</a>
@@ -221,20 +257,31 @@
 
             {% if objects.has_next %}
                 <a href="?page={{ objects.next_page_number }}">next</a>
-            {% endif %}
-        </span>
-    </div>
 
-
-</div>
+                <form class="navbar-form navbar-right" style="margin-right: 5px">
+                    <div class="form-group">
+                        <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
+                               class="form-control input-sm" id="page_input" placeholder="Go to page"
+                               style="width:100px;">
+                        <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
                     </div>
 
-{% else %}
-    <p>There are no objects.</p>
-{% endif %}
+                </form>
 
+            {% endif %}
+        </span>
+                        </div>
+
+
+                    </div>
+                </div>
+
+            {% else %}
+                <p>There are no objects.</p>
+            {% endif %}
+
+        </div>
     </div>
-</div>
 
 {% endblock %}
 
@@ -250,29 +297,30 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
 
+        <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
 
-        <script type="text/javascript">
+    <script type="text/javascript">
         (function () {
             function loadmap() {
 
                 {% for form in formset %}
 
-                var centerLat = {{ form.instance.report.lat }};
-                var centerLng = {{ form.instance.report.lon }};
-                var initialZoom = 6;
-                var djoptions = {"layers": [
-                            ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
-                        ],
-                            "minimap": true, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
-                                [-90,
-                                    -180],
-                                [90,
-                                    180]
-                            ], "resetview": true, "srid": null, "fitextent": true},
-                        options = {djoptions: djoptions, initfunc: loadmap,
-                            globals: false, callback: window.map_init_basic};
+                    var centerLat = {{ form.instance.report.lat }};
+                    var centerLng = {{ form.instance.report.lon }};
+                    var initialZoom = 6;
+                    var djoptions = {"layers": [
+                                ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                    "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
+                            ],
+                                "minimap": true, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                                "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                                    [-90,
+                                        -180],
+                                    [90,
+                                        180]
+                                ], "resetview": true, "srid": null, "fitextent": true},
+                            options = {djoptions: djoptions, initfunc: loadmap,
+                                globals: false, callback: window.map_init_basic};
 
                     L.Map.djangoMap('map{{ form.instance.id }}', {djoptions: djoptions, initfunc: loadmap,
                         globals: false, callback: eval("window.map_init_basic{{ form.instance.id }}")});
@@ -289,42 +337,43 @@
 
 
 
-        <script>
-    var scroll_position = parseInt({{ scroll_position }});
-    if(scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)){
-    $(window).scrollTop(scroll_position);
-    }
+    <script>
+        var scroll_position = parseInt({{ scroll_position }});
+        if (scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)) {
+            $(window).scrollTop(scroll_position);
+        }
 
 
-    $('input[id~="value_changed"]').hide();
-    $('label[for~="value_changed"]').hide();
+        $('input[id~="value_changed"]').hide();
+        $('label[for~="value_changed"]').hide();
 
- $(document).ready(function() {
-    $("form").addClass("form-horizontal").attr("role", "form");
+        $(document).ready(function () {
+            $("form").addClass("form-horizontal").attr("role", "form");
 
-    $("#save_button").click(function() {
-    $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');}).position({
-        my: "middle top",
-        at: "middle bottom",
-        of: "#navbar",
-        collision: "fit"
-      });
+            $("#save_button").click(function () {
+                $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+            }).position({
+                my: "middle top",
+                at: "middle bottom",
+                of: "#navbar",
+                collision: "fit"
+            });
 
- })
+        })
 
-var scroll_position_input = $("#scroll_position");
+        var scroll_position_input = $("#scroll_position");
 
-$(window).scroll(function (event) {
-    var scroll = $(window).scrollTop();
-    scroll_position_input.val(scroll);
-});
+        $(window).scroll(function (event) {
+            var scroll = $(window).scrollTop();
+            scroll_position_input.val(scroll);
+        });
 
 
-$("#page_button").on('click', function () {
+        $("#page_button").on('click', function () {
 
-    window.location.href = "?page=" + $("#page_input").val();
+            window.location.href = "?page=" + $("#page_input").val();
 
-  })
+        })
 
     </script>
 
