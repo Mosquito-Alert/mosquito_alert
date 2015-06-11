@@ -164,5 +164,6 @@ class ExpertReportAnnotation(models.Model):
     site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, blank=True, null=True)
     site_certainty_notes = models.TextField(blank=True)
     edited_user_notes = models.TextField(blank=True)
+    flag = models.BooleanField(default=False)
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())

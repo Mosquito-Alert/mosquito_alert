@@ -378,7 +378,7 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, max_annotations=None):
     this_user = request.user
     if this_user.groups.filter(name='expert').exists():
         args = {}
@@ -397,12 +397,46 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10'):
             else:
                 return HttpResponse('error')
         else:
-            reports_without_annotations_unfiltered = Report.objects.exclude(hide=True).exclude(photos=None).annotate(num_annotations=Count('expert_report_annotations')).filter(num_annotations__lt=3)
+            reports_without_annotations_unfiltered = Report.objects.exclude(hide=True).exclude(photos=None)
+            if max_annotations:
+                try:
+                    this_max = int(max_annotations)
+                    reports_without_annotations_unfiltered = reports_without_annotations_unfiltered.annotate(num_annotations=Count('expert_report_annotations')).filter(num_annotations__lt=this_max)
+                except ValueError:
+                    pass
             reports_without_annotations = filter_reports(reports_without_annotations_unfiltered)
             for this_report in reports_without_annotations:
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 new_annotation.save()
-            all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).order_by('id')
+            all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).order_by('report__creation_time')
+            if year:
+                try:
+                    this_year = int(year)
+                    all_annotations = all_annotations.filter(report__creation_time__year=this_year)
+                except ValueError:
+                    pass
+            if tiger_certainty:
+                try:
+                    this_certainty = int(tiger_certainty)
+                    all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
+                except ValueError:
+                    pass
+            if site_certainty:
+                try:
+                    this_certainty = int(site_certainty)
+                    all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
+                except ValueError:
+                    pass
+            if tiger_pending == "pending":
+                all_annotations = all_annotations.filter(tiger_certainty_category=None)
+            if tiger_pending == "complete":
+                all_annotations = all_annotations.exclude(tiger_certainty_category=None)
+            if site_pending == "pending":
+                all_annotations = all_annotations.filter(site_certainty_category=None)
+            if site_pending == "complete":
+                all_annotations = all_annotations.exclude(site_certainty_category=None)
+            if flagged == "flagged":
+                all_annotations = all_annotations.filter(flagged=True)
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
@@ -416,7 +450,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10'):
             args['formset'] = this_formset
             args['objects'] = objects
             args['pages'] = range(1, objects.paginator.num_pages+1)
-            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
+            args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

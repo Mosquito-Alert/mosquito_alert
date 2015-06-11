@@ -100,7 +100,7 @@
 
 
                                                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Photos per page" %}
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Reports per page" %}
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
@@ -167,7 +167,7 @@
                 <div class="col-md-5">
                     <br>
                 <strong>Photos</strong> (scroll to see all; click to enlarge)<br>
-                    <div style="overflow: auto;height: 700px;">
+                    <div style="overflow: auto;height: 814px;">
 
                     {{ form.instance.report.photo_html_for_report_validation | safe}}
 
@@ -181,7 +181,7 @@
                     <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
                     <br>
                     <strong>User Notes</strong><br>
-                    <div  style="overflow: auto;height: 200px;border:1px solid #333333;">
+                    <div  style="overflow: auto;height: 314px;border:1px solid #333333;">
                     {{ form.instance.report.note }}
                         </div>
                 </div>
