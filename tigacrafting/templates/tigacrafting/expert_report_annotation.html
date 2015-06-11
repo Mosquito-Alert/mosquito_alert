@@ -157,7 +157,7 @@
         {% for form in formset %}
             <div class="row">
              <div class="col-md-12">
-<strong>Report {{ form.instance.report.version_UUID }}</strong>
+<strong>Report: {{ form.instance.report.version_UUID }}</strong>, Created: {{ form.instance.report.creation_time }} UTC
                  </div>
                 <div class="col-md-3">
                     <br><br>
@@ -166,7 +166,7 @@
 
                 <div class="col-md-5">
 
-                    <div style="overflow: auto;max-height: 500px;">
+                    <div style="overflow: auto;max-height: 500px;margin-top:5px;">
 
                     {{ form.instance.report.photo_html_for_report_validation | safe}}
 
@@ -178,7 +178,6 @@
                 </div>
 
                 <div class="col-md-4">
-                <p>{{ form.instance.report.creation_time }} UTC</p>
                     <div id="map{{ form.instance.id }}" class="task_map-container"></div>
                 </div>
 
