@@ -162,11 +162,12 @@ function removeMe(){
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <div class="navbar-brand shrinking-text" style="color:#fff;">{{ title }}</div>
-                    </div>
                     <div class="navbar-collapse collapse">
-                     <form class="navbar-search pull-left">
-                          <select class="left selectpicker show-tick" data-width="20%" data-style="btn-more" data-live-search="true" data-size="15">
+
+                                            <ul class="nav navbar-nav">
+
+                        <li class="navbar-search">
+                          <select class="selectpicker">
                                 <option value="ADULTS_ALL">{% trans 'all-reports' %}</option>
                                 <option value="ADULTS_PROB" >{% trans 'menu_adults_prob' %}</option>
                                 <option value="ADULTS_DEF" >{% trans 'menu_adults_definite' %}</option>
@@ -179,8 +180,8 @@ function removeMe(){
                                <option data-divider="true"></option>
                                 <option value="COVERAGE">{% trans 'Coverage' %}</option>
                         </select>
-                    </form>
-
+                            </li>
+                                            </ul>
 
                         <ul class="nav navbar-nav navbar-right">
                          
@@ -214,7 +215,7 @@ function removeMe(){
                     </select>
                 </div>
             </form>
-
+</div>
                     </div>
                 </div>
             </div>
