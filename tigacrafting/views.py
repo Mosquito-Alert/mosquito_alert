@@ -191,6 +191,12 @@ def filter_tasks(tasks):
     tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, tasks)
     return tasks_filtered
 
+
+def filter_reports(reports):
+    reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
+    return reports_filtered
+
+
 @xframe_options_exempt
 def show_validated_photos(request, type='tiger'):
     title_dic = {'mosquito': 'Mosquito Validation Results', 'site': 'Breeding Site Validation Results', 'tiger': 'Tiger Mosquito Validation Results'}
@@ -390,8 +396,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
             else:
                 return HttpResponse('error')
         else:
-            these_reports =Report.objects.all()
-            paginator = Paginator(these_reports, int(tasks_per_page))
+            reports_without_annotations_unfiltered = Report.objects.exclude(hide=True).filter(expert_report_annotations=None)
+            reports_without_annotations = filter_reports(reports_without_annotations_unfiltered)
+            for this_report in reports_without_annotations:
+                new_annotation = MoveLabAnnotation(task=this_task)
+                new_annotation.save()
+            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
+
+            paginator = Paginator(these_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
                 objects = paginator.page(page)
@@ -399,12 +411,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='50'):
                 objects = paginator.page(1)
             except EmptyPage:
                 objects = paginator.page(paginator.num_pages)
-            page_query = these_reports.filter(version_UUID__in=[object.version_UUID for object in objects])
+            page_query = these_annotations.filter(id__in=[object.id for object in objects])
             this_formset = AnnotationFormset(queryset=page_query)
             args['formset'] = this_formset
             args['objects'] = objects
             args['pages'] = range(1, objects.paginator.num_pages+1)
-            args['tasks_per_page_choices'] = range(25, min(200, these_reports.count())+1, 25)
+            args['tasks_per_page_choices'] = range(25, min(200, these_annotations.count())+1, 25)
         return render(request, 'tigacrafting/expert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
