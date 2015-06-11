@@ -356,14 +356,14 @@
 
 
             $("#show_filters_button").click(function () {
-                $("#filters_div").show('slow').position({
+                $("#filters_div").show('slow')}).position({
                 my: "left top",
                 at: "left bottom",
                 of: "#navbar",
                 collision: "fit"
             });
 
-        })
+        });
 
         var scroll_position_input = $("#scroll_position");
 
@@ -377,7 +377,7 @@
 
             window.location.href = "?page=" + $("#page_input").val();
 
-        })
+        });
 
     </script>
 
