@@ -163,7 +163,7 @@
                                 Certainty
                                 Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
-                                {{ form.instance.report.expert_annotation_html }}
+                                {{ form.instance.get_others_annotation_html }}
                             </div>
                             <div class="col-md-3">
                                 <br>
@@ -264,7 +264,7 @@
 
     <div id="filters_div"
          style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin:5px;padding:5px;">
-        <form role="form">
+        <form role="form" class="form-inline">
             <div class="form-group">
                 <label for="year_select">Year:</label>
                 <select id="year_select" class="left selectpicker show-tick form-control" data-width="90%"

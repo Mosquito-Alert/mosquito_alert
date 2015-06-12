@@ -543,9 +543,9 @@ class Report(models.Model):
         n = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).count()
         return n
 
-    def get_expert_annotations_html(self):
+    def get_expert_annotations_html(self, this_user):
         result = ''
-        for ano in self.expert_report_annotations.all():
+        for ano in self.expert_report_annotations.exclude(user=this_user):
             result += '<p>User: ' + ano.user.username + ', Last Edited: ' + ano.last_modified + '</p>'
             result += '<p>Tiger Certainty: ' + str(ano.tiger_certainty_category) + '</p>'
             result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
@@ -554,7 +554,6 @@ class Report(models.Model):
             result += '<p>Flagged?: ' + str(ano.flag) + '</p>'
         return result
 
-    expert_annotation_html = property(get_expert_annotations_html)
     lon = property(get_lon)
     lat = property(get_lat)
     tigaprob = property(get_tigaprob)
