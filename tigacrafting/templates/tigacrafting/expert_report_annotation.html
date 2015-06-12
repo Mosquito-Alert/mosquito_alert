@@ -453,8 +453,12 @@
 
         });
 
-        $("#year_select").val({{ year }});
-        $("#tiger_certainty_select").val({{ tiger_certainty }});
+        $("#year_select").val("{{ year }}");
+        $("#tiger_certainty_select").val("{{ tiger_certainty }}");
+        $("#site_certainty_select").val("{{ site_certainty }}");
+        $("#tiger_pending_select").val("{{ tiger_pending }}");
+        $("#site_pending_select").val("{{ site_pending }}");
+        $("#flagged_select").val("{{ flagged }}");
 
         $("#filters_submit_button").on('click', function () {
             var qp = "?year=" + $("#year_select").val();
