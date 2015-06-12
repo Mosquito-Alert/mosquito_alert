@@ -128,6 +128,7 @@
 
 {% block main_body %}
 
+
     <div class="container theme-showcase" role="main">
 
         <div class="starter-template">
@@ -150,13 +151,16 @@
 
             {% if objects %}
 
-                <form method="post">{% csrf_token %}
+                <form id="formset_forms" method="post">{% csrf_token %}
                     {{ formset.management_form }}
                     {% for form in formset %}
                         <div class="row">
                             <div class="col-md-12">
                                 <strong>Report: {{ form.instance.report.version_UUID }}</strong>,
-                                Created: {{ form.instance.report.creation_time }} UTC
+                                Created: {{ form.instance.report.creation_time }} UTC, Tiger Certainty
+                                Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Site
+                                Certainty
+                                Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
                             </div>
                             <div class="col-md-3">
                                 <br>
@@ -255,11 +259,13 @@
     </button>
 
 
-        <form role="form" id="filters_div"
-         style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; width:50%; margin:5px;">
+    <div id="filters_div"
+         style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin:5px;padding:5px;">
+        <form role="form">
             <div class="form-group">
                 <label for="year_select">Year:</label>
-                <select id="year_select" class="left selectpicker show-tick form-control" data-width="20%" data-style="btn-more"
+                <select id="year_select" class="left selectpicker show-tick form-control" data-width="90%"
+                        data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="2015">2015</option>
@@ -268,16 +274,18 @@
             </div>
             <div class="form-group">
                 <label for="tiger_score_select">Tiger Certainty Category:</label>
-                <select id="tiger_score_select" class="left selectpicker show-tick form-control" data-width="20%" data-style="btn-more"
+                <select id="tiger_score_select" class="left selectpicker show-tick form-control" data-width="90%"
+                        data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="-2">-2</option>
                     <option value="-1">-1</option>
                 </select>
             </div>
-
-            <button type="submit" class="btn btn-default">Submit</button>
+            <button type="submit" class="btn btn-success">Submit</button>
         </form>
+    </div>
+
 
 
 
@@ -346,7 +354,7 @@
         $('label[for~="value_changed"]').hide();
 
         $(document).ready(function () {
-            $("form").addClass("form-horizontal").attr("role", "form");
+            $("#formset_forms form").addClass("form-horizontal").attr("role", "form");
 
             $("#save_button").click(function () {
                 $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
@@ -358,19 +366,28 @@
             });
 
 
-            $("#show_filters_button").click(function () {
-                $("#filters_div").show().position({
-                my: "left top",
-                at: "left bottom",
-                of: "#show_filters_button",
-                collision: "fit"
-            });
-            }).position({
+            var show_filters_button = $("#show_filters_button").position({
                 my: "left top",
                 at: "left bottom",
                 of: "#navbar",
                 collision: "fit"
             });
+
+            var filters_div = $("#filters_div").position({
+                my: "left top",
+                at: "left bottom",
+                of: "#show_filters_button",
+                collision: "fit"
+            });
+
+
+            show_filters_button.click(function () {
+                if (filters_div.is(":visible")) {
+                    filters_div.hide();
+                } else {
+                    filters_div.show();
+                }
+            })
 
         });
 

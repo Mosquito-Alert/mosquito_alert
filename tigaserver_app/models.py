@@ -8,7 +8,7 @@ from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
-from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation
+from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
@@ -535,6 +535,13 @@ class Report(models.Model):
     def get_creation_day_since_launch(self):
         return (self.creation_time - settings.START_TIME).days
 
+    def get_n_expert_report_annotations_tiger_certainty(self):
+        n = ExpertReportAnnotation.objects.filter(report=self).exclude(tiger_certainty_category=None).count()
+        return n
+
+    def get_n_expert_report_annotations_site_certainty(self):
+        n = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).count()
+        return n
 
     lon = property(get_lon)
     lat = property(get_lat)

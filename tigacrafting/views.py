@@ -28,6 +28,7 @@ from django.utils.translation import ugettext as _
 from forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm
 from zipfile import ZipFile
 from io import BytesIO
+from operator import attrgetter
 
 
 def photos_to_tasks():
@@ -193,7 +194,8 @@ def filter_tasks(tasks):
 
 
 def filter_reports(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
+    reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),
+                               key=attrgetter('n_annotations'))
     return reports_filtered
 
 
@@ -378,7 +380,7 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, max_annotations=None):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, max_pending=20, max_given=3):
     this_user = request.user
     if this_user.groups.filter(name='expert').exists():
         args = {}
@@ -397,17 +399,23 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
             else:
                 return HttpResponse('error')
         else:
-            reports_without_annotations_unfiltered = Report.objects.exclude(hide=True).exclude(photos=None)
-            if max_annotations:
-                try:
-                    this_max = int(max_annotations)
-                    reports_without_annotations_unfiltered = reports_without_annotations_unfiltered.annotate(num_annotations=Count('expert_report_annotations')).filter(num_annotations__lt=this_max)
-                except ValueError:
-                    pass
-            reports_without_annotations = filter_reports(reports_without_annotations_unfiltered)
-            for this_report in reports_without_annotations:
-                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                new_annotation.save()
+            year = request.GET.get('year', year)
+            tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
+            site_certainty = request.GET.get('site_certainty', site_certainty)
+            tiger_pending = request.GET.get('tiger_pending', tiger_pending)
+            site_pending = request.GET.get('site_pending', site_pending)
+            flagged = request.GET.get('flagged', flagged)
+            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(tiger_certainty_category=None).filter(site_certainty_category=None).count()
+            if current_pending < max_pending:
+                n_to_get = max_pending - current_pending
+                my_reports = ExpertReportAnnotation.objects.filter(user=this_user)
+                new_reports_unfiltered = Report.objects.exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
+                if new_reports_unfiltered:
+                    new_reports = filter_reports(new_reports_unfiltered)
+                    reports_to_take = new_reports[1:max_pending]
+                    for this_report in reports_to_take:
+                        new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                        new_annotation.save()
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).order_by('report__creation_time')
             if year:
                 try:
