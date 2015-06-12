@@ -164,9 +164,8 @@
                                 Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
                                 <div style="display:none;" id='other_annotations_alert{{ form.instance.id }}'
-                                     class='alert alert-info .alert-dismissable' role='alert'>
-                                    <button type="button" class="close" data-dismiss="alert"
-                                            aria-hidden="true">&times;</button>
+                                     class='alert alert-info' role='alert'>
+                                    <a class="close" onclick="$('.alert').hide()">×</a>
                                     {{ form.instance.get_others_annotation_html | safe }}
                                 </div>
 
