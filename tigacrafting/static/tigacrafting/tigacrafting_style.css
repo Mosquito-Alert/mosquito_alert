@@ -62,7 +62,7 @@ textarea{
 }
 
 .form-inline > * {
-   margin:5px 3px;
+   margin:5px 5px !important;
 }
 
 /* CUSTOMIZE THE NAVBAR
