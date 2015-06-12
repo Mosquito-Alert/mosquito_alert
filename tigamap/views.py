@@ -289,7 +289,7 @@ def show_adult_map(request, type='all'):
         endpoint = 'all_adults'
     context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs, 'end_day': get_n_days(), 'endpoint': endpoint}
     context.update(csrf(request))
-    return render(request, 'tigamap/validated_report_map.html', context)
+    return render(request, 'tigamap/validated_report_map_filters.html', context)
 
 
 def show_site_map(request, type='all'):
