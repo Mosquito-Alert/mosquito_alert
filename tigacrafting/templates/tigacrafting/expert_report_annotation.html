@@ -241,7 +241,9 @@
             </span>
 
             {% if objects.has_next %}
-                <a href="?page={{ objects.next_page_number }}">next</a>
+
+                <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
+
 
                 <form class="navbar-form navbar-right" style="margin-right: 5px">
                     <div class="form-group">
@@ -462,7 +464,6 @@
             });
 
 
-
         });
 
         var scroll_position_input = $("#scroll_position");
@@ -475,9 +476,32 @@
 
         $("#page_button").on('click', function () {
 
-            window.location.href = "?page=" + $("#page_input").val();
+            var qp = "?year=" + $("#year_select").val();
+            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
+            qp += "&site_certainty=" + $("#site_certainty_select").val();
+            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
+            qp += "&site_pending=" + $("#site_pending_select").val();
+            qp += "&flagged=" + $("#flagged_select").val();
+            qp += "&flagged_others=" + $("#flagged_others_select").val();
+            qp += "&page=" + $("#page_input").val();
+            window.location.href = qp;
 
         });
+
+        $("#next_page_button").on('click', function () {
+
+            var qp = "?year=" + $("#year_select").val();
+            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
+            qp += "&site_certainty=" + $("#site_certainty_select").val();
+            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
+            qp += "&site_pending=" + $("#site_pending_select").val();
+            qp += "&flagged=" + $("#flagged_select").val();
+            qp += "&flagged_others=" + $("#flagged_others_select").val();
+            qp += "&page={{ objects.next_page_number }}";
+            window.location.href = qp;
+
+        });
+
 
         $("#year_select").val("{{ year }}");
         $("#tiger_certainty_select").val("{{ tiger_certainty }}");
@@ -499,11 +523,11 @@
         })
 
 
-                $(".alert").hide();
+        $(".alert").hide();
 
-            function show_other_annotations(ano_id) {
-                $("#other_annotations_alert" + ano_id).show();
-            }
+        function show_other_annotations(ano_id) {
+            $("#other_annotations_alert" + ano_id).show();
+        }
 
 
     </script>
