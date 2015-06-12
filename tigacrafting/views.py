@@ -408,7 +408,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(tiger_certainty_category=None).filter(site_certainty_category=None).count()
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
-                my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('reports')
+                my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
                 new_reports_unfiltered = Report.objects.exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
                 if new_reports_unfiltered:
                     new_reports = filter_reports(new_reports_unfiltered)
