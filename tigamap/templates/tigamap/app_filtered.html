@@ -240,13 +240,13 @@ function removeMe(){
         </div>
     </div>
 
-            <button id="show_filters_button" class="btn btn-default btn-lg" style="position:fixed;">
+            <button id="show_filters_button" class="btn btn-default btn-lg" style="position:fixed;z-index:1000;">
         <span class="glyphicon glyphicon-filter"></span>
     </button>
 
 
             <div id="filters_div"
-         style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin:5px;padding:5px;">
+         style="z-index:1000;position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin:5px;padding:5px;">
         <form role="form" class="form-inline">
             <div class="form-group">
                 <label for="year_select">Year:</label>
