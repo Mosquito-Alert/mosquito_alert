@@ -331,6 +331,16 @@
                     <option value="unflagged">Unflagged only</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="flagged_others_select">Flagged Status:</label>
+                <select id="flagged_others_select" class="left selectpicker show-tick form-control" data-width="90%"
+                        data-style="btn-more"
+                        data-live-search="false" data-size="15">
+                    <option value="all">{% trans 'All' %}</option>
+                    <option value="flagged">Flagged by someone</option>
+                </select>
+            </div>
+
         </form>
         <button id="filters_submit_button" class="btn btn-success">Submit</button>
 
@@ -461,6 +471,7 @@
         $("#tiger_pending_select").val("{{ tiger_pending }}");
         $("#site_pending_select").val("{{ site_pending }}");
         $("#flagged_select").val("{{ flagged }}");
+        $("#flagged_others_select").val("{{ flagged_others }}");
 
         $("#filters_submit_button").on('click', function () {
             var qp = "?year=" + $("#year_select").val();
@@ -469,6 +480,7 @@
             qp += "&tiger_pending=" + $("#tiger_pending_select").val();
             qp += "&site_pending=" + $("#site_pending_select").val();
             qp += "&flagged=" + $("#flagged_select").val();
+            qp += "&flagged_others=" + $("#flagged_others_select").val();
             window.location.href = qp;
         })
 

@@ -380,7 +380,7 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, max_pending=20, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=20, max_given=3):
     this_user = request.user
     if this_user.groups.filter(name='expert').exists():
         args = {}
@@ -447,8 +447,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
                 all_annotations = all_annotations.filter(flag=True)
             if flagged == "unflagged":
                 all_annotations = all_annotations.filter(flag=False)
-
-          #      all_annotations = all_annotations.filter(report__expert_report_annotations__flag=True)
+            if flagged_others == "flagged":
+                all_annotations = all_annotations.filter(report__expert_report_annotations__flag=True)
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
@@ -468,6 +468,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
             args['tiger_pending'] = tiger_pending
             args['site_pending'] = site_pending
             args['flagged'] = flagged
+            args['flagged_others'] = flagged_others
             args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html', args)
     else:
