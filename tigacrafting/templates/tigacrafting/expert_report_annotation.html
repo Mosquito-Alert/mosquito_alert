@@ -461,11 +461,6 @@
                 }
             });
 
-            $(".alert").hide();
-
-            function show_other_annotations(ano_id) {
-                $("#other_annotations_alert" + ano_id).show();
-            }
 
 
         });
@@ -502,6 +497,13 @@
             qp += "&flagged_others=" + $("#flagged_others_select").val();
             window.location.href = qp;
         })
+
+
+                $(".alert").hide();
+
+            function show_other_annotations(ano_id) {
+                $("#other_annotations_alert" + ano_id).show();
+            }
 
 
     </script>
