@@ -447,6 +447,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
                 all_annotations = all_annotations.filter(flag=True)
             if flagged == "unflagged":
                 all_annotations = all_annotations.filter(flag=False)
+
+          #      all_annotations = all_annotations.filter(report__expert_report_annotations__flag=True)
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
