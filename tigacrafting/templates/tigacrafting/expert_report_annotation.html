@@ -105,7 +105,8 @@
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
-                                        <li><a href="{% url 'expert_report_annotation_tasks_per_page' n %}">{{ n }}</a></li>
+                                        <li><a href="{% url 'expert_report_annotation_tasks_per_page' n %}">{{ n }}</a>
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             </li>
@@ -273,8 +274,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="tiger_score_select">Tiger Certainty Category:</label>
-                <select id="tiger_score_select" class="left selectpicker show-tick form-control" data-width="90%"
+                <label for="tiger_certainty_select">Tiger Certainty Category:</label>
+                <select id="tiger_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
                         data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
@@ -286,8 +287,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="site_score_select">Site Certainty Category:</label>
-                <select id="site_score_select" class="left selectpicker show-tick form-control" data-width="90%"
+                <label for="site_certainty_select">Site Certainty Category:</label>
+                <select id="site_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
                         data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
@@ -320,17 +321,17 @@
             </div>
             <div class="form-group">
                 <label for="flagged_select">Flagged Status:</label>
-                <select id="site_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
+                <select id="flagged_select" class="left selectpicker show-tick form-control" data-width="90%"
                         data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
-                    <option value="pending">Flagged only</option>
-                    <option value="complete">Unflagged only</option>
+                    <option value="flagged">Flagged only</option>
+                    <option value="unflagged">Unflagged only</option>
                 </select>
             </div>
-
-            <button id="filters_submit_button" onclick="submit_filters()" type="submit" class="btn btn-success">Submit</button>
         </form>
+        <button id="filters_submit_button" class="btn btn-success">Submit</button>
+
     </div>
 
 
@@ -452,14 +453,18 @@
 
         });
 
-    function submit_filters(){
-        var year  = $("#year_select").val();
+        $("#year_select").val({{ year }});
+        $("#tiger_certainty_select").val({{ tiger_certainty }});
 
-
-        var url = "{% url 'expert_report_annotation' %}?year=" + year;
-        $(location).attr('href',url);
-
-    }
+        $("#filters_submit_button").on('click', function () {
+            var qp = "?year=" + $("#year_select").val();
+            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
+            qp += "&site_certainty=" + $("#site_certainty_select").val();
+            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
+            qp += "&site_pending=" + $("#site_pending_select").val();
+            qp += "&flagged=" + $("#flagged_select").val();
+            window.location.href = qp;
+        })
 
     </script>
 

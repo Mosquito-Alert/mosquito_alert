@@ -444,7 +444,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
             if site_pending == "complete":
                 all_annotations = all_annotations.exclude(site_certainty_category=None)
             if flagged == "flagged":
-                all_annotations = all_annotations.filter(flagged=True)
+                all_annotations = all_annotations.filter(flag=True)
+            if flagged == "unflagged":
+                all_annotations = all_annotations.filter(flag=False)
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
@@ -458,6 +460,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
             args['formset'] = this_formset
             args['objects'] = objects
             args['pages'] = range(1, objects.paginator.num_pages+1)
+            args['year'] = year
+            args['tiger_certainty'] = tiger_certainty
+            args['site_certainty'] = site_certainty
+            args['tiger_pending'] = tiger_pending
+            args['site_pending'] = site_pending
+            args['flagged'] = flagged
             args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html', args)
     else:
