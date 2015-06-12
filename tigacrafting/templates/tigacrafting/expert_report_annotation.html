@@ -163,13 +163,13 @@
                                 Certainty
                                 Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
-                                <div id='other_annotations_alert{{ form.instance.id }}' class='alert alert-info .alert-dismissable' role='alert'><button type="button" class="close" data-dismiss="alert"
-      aria-hidden="true">
-      &times;
-   </button> {{ form.instance.get_others_annotation_html }} </div>
+                                <div id='other_annotations_alert{{ form.instance.id }}' class='alert alert-info .alert-dismissable' role='alert'><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                    {{ form.instance.get_others_annotation_html }}
+                                </div>
 
+                                {% if form.instance.report.expert_report_annotations.count > 1 %}
                                 <button onchange="show_other_annotations({{ form.instance.id }})" class="btn btn-default btn-sm">Show Others' Annotations</button>
-
+{% endif %}
 
                             </div>
                             <div class="col-md-3">
@@ -456,6 +456,12 @@
                 }
             })
 
+            $("#other_annotations_alert" + ref_id).hide()
+                  function show_other_annotations(ano_id){
+        $("#other_annotations_alert" + ref_id).show();
+    }
+
+
         });
 
         var scroll_position_input = $("#scroll_position");
@@ -492,9 +498,6 @@
         })
 
 
-      function show_other_annotations(ano_id){
-        $("#other_annotations_alert" + ref_id).show();
-    }
 
     </script>
 
