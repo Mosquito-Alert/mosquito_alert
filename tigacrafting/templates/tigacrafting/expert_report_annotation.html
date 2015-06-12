@@ -171,7 +171,7 @@
                                 </div>
 
                                 {% if form.instance.report.expert_report_annotations.count > 1 %}
-                                    <button onclick="show_other_annotations({{ form.instance.id }})"
+                                    <button type="button" onclick="show_other_annotations({{ form.instance.id }})"
                                             class="btn btn-default btn-sm">Show Others' Annotations
                                     </button>
                                 {% endif %}
