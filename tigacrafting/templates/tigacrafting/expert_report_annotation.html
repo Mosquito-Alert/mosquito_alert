@@ -163,7 +163,7 @@
                                 Certainty
                                 Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
-                                <div id='other_annotations_alert{{ form.instance.id }}'
+                                <div style="display:none;" id='other_annotations_alert{{ form.instance.id }}'
                                      class='alert alert-info .alert-dismissable' role='alert'>
                                     <button type="button" class="close" data-dismiss="alert"
                                             aria-hidden="true">&times;</button>
@@ -171,9 +171,7 @@
                                 </div>
 
                                 {% if form.instance.report.expert_report_annotations.count > 1 %}
-                                    <button type="button" onclick="show_other_annotations({{ form.instance.id }})"
-                                            class="btn btn-default btn-sm">Show Others' Annotations
-                                    </button>
+                                    <button type="button" onclick="$('#other_annotations_alert{{ form.instance.id }}').show();" class="btn btn-default btn-sm">Show Others' Annotations</button>
                                 {% endif %}
 
                             </div>
@@ -521,13 +519,6 @@
             qp += "&flagged_others=" + $("#flagged_others_select").val();
             window.location.href = qp;
         })
-
-
-        $(".alert").hide();
-
-        function show_other_annotations(ano_id) {
-            $("#other_annotations_alert" + ano_id).show();
-        }
 
 
     </script>
