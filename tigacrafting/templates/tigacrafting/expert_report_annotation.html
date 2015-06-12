@@ -105,7 +105,7 @@
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
-                                        <li><a href="{% url 'movelab_annotation_tasks_per_page' n %}">{{ n }}</a></li>
+                                        <li><a href="{% url 'expert_report_annotation_tasks_per_page' n %}">{{ n }}</a></li>
                                     {% endfor %}
                                 </ul>
                             </li>
@@ -278,11 +278,58 @@
                         data-style="btn-more"
                         data-live-search="false" data-size="15">
                     <option value="all">{% trans 'All' %}</option>
-                    <option value="-2">-2</option>
-                    <option value="-1">-1</option>
+                    <option value="-2">Definitely not a tiger mosquito</option>
+                    <option value="-1">Probably not a tiger mosquito</option>
+                    <option value="0">Not sure</option>
+                    <option value="1">Probably a tiger mosquito</option>
+                    <option value="2">Definitely a tiger mosquito</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-success">Submit</button>
+            <div class="form-group">
+                <label for="site_score_select">Site Certainty Category:</label>
+                <select id="site_score_select" class="left selectpicker show-tick form-control" data-width="90%"
+                        data-style="btn-more"
+                        data-live-search="false" data-size="15">
+                    <option value="all">{% trans 'All' %}</option>
+                    <option value="-2">Definitely not a breeding site</option>
+                    <option value="-1">Probably not a breeding site</option>
+                    <option value="0">Not sure</option>
+                    <option value="1">Probably a breeding site</option>
+                    <option value="2">Definitely a breeding site</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tiger_pending_select">Status of Tiger Annotations:</label>
+                <select id="tiger_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
+                        data-style="btn-more"
+                        data-live-search="false" data-size="15">
+                    <option value="all">{% trans 'All' %}</option>
+                    <option value="pending">Pending only</option>
+                    <option value="complete">Complete only</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="site_pending_select">Status of Site Annotations:</label>
+                <select id="site_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
+                        data-style="btn-more"
+                        data-live-search="false" data-size="15">
+                    <option value="all">{% trans 'All' %}</option>
+                    <option value="pending">Pending only</option>
+                    <option value="complete">Complete only</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="flagged_select">Flagged Status:</label>
+                <select id="site_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
+                        data-style="btn-more"
+                        data-live-search="false" data-size="15">
+                    <option value="all">{% trans 'All' %}</option>
+                    <option value="pending">Flagged only</option>
+                    <option value="complete">Unflagged only</option>
+                </select>
+            </div>
+
+            <button id="filters_submit_button" onclick="submit_filters()" type="submit" class="btn btn-success">Submit</button>
         </form>
     </div>
 
@@ -404,6 +451,15 @@
             window.location.href = "?page=" + $("#page_input").val();
 
         });
+
+    function submit_filters(){
+        var year  = $("#year_select").val();
+
+
+        var url = "{% url 'expert_report_annotation' %}?year=" + year;
+        $(location).attr('href',url);
+
+    }
 
     </script>
 
