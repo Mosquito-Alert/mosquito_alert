@@ -546,7 +546,7 @@ class Report(models.Model):
     def get_expert_annotations_html(self, this_user):
         result = ''
         for ano in self.expert_report_annotations.exclude(user=this_user):
-            result += '<p>User: ' + ano.user.username + ', Last Edited: ' + ano.last_modified + '</p>'
+            result += '<p>User: ' + ano.user.username + ', Last Edited: ' + str(ano.last_modified) + '</p>'
             result += '<p>Tiger Certainty: ' + str(ano.tiger_certainty_category) + '</p>'
             result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
             result += '<p>Site Certainty: ' + str(ano.site_certainty_category) + '</p>'
