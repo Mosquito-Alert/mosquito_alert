@@ -97,6 +97,13 @@
                     </div>
                     <div class="navbar-collapse collapse">
 
+                        <ul class="nav navbar-nav navbar-left">
+
+                            <li><p class="navbar-text" style="color:cornflowerblue">Pending: {{ n_pending }}, Complete: {{ n_complete }}</p></li>
+                        <li><button id="grab_reports_button" role="button" class="btn btn-primary btn-sm navbar-btn">Get More Reports</button></li>
+                        </ul>
+
+
                         <ul class="nav navbar-nav navbar-right">
 
                             <li class="dropdown">
@@ -420,6 +427,15 @@
             $(window).scrollTop(scroll_position);
         }
 
+        var grab_reports_button  = $("#grab_reports_button");
+        var n_pending = {{ n_pending }};
+        function toggle_grab_repors_button(){
+            if(n_pending < 20){
+                grab_reports_button.show();
+            } else{
+                grab_reports_button.hide();
+            }
+        }
 
         $('input[id~="value_changed"]').hide();
         $('label[for~="value_changed"]').hide();
@@ -429,6 +445,7 @@
 
             $("#save_button").click(function () {
                 $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+                toggle_grab_repors_button();
             }).position({
                 my: "middle top",
                 at: "middle bottom",
@@ -460,7 +477,7 @@
                 }
             });
 
-
+            toggle_grab_repors_button();
         });
 
         var scroll_position_input = $("#scroll_position");
@@ -516,6 +533,19 @@
             qp += "&site_pending=" + $("#site_pending_select").val();
             qp += "&flagged=" + $("#flagged_select").val();
             qp += "&flagged_others=" + $("#flagged_others_select").val();
+            window.location.href = qp;
+        })
+
+
+            grab_reports_button.on('click', function () {
+            var qp = "?year=" + $("#year_select").val();
+            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
+            qp += "&site_certainty=" + $("#site_certainty_select").val();
+            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
+            qp += "&site_pending=" + $("#site_pending_select").val();
+            qp += "&flagged=" + $("#flagged_select").val();
+            qp += "&flagged_others=" + $("#flagged_others_select").val();
+            qp += "&load_new_reports=T";
             window.location.href = qp;
         })
 

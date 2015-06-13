@@ -29,6 +29,7 @@ from forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationF
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
+from django.db.models import Q
 
 
 def photos_to_tasks():
@@ -380,7 +381,7 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=20, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=20, max_given=3):
     this_user = request.user
     if this_user.groups.filter(name='expert').exists():
         args = {}
@@ -405,17 +406,18 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
             tiger_pending = request.GET.get('tiger_pending', tiger_pending)
             site_pending = request.GET.get('site_pending', site_pending)
             flagged = request.GET.get('flagged', flagged)
-            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(tiger_certainty_category=None).filter(site_certainty_category=None).count()
-            if current_pending < max_pending:
-                n_to_get = max_pending - current_pending
-                my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-                new_reports_unfiltered = Report.objects.exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
-                if new_reports_unfiltered:
-                    new_reports = filter_reports(new_reports_unfiltered)
-                    reports_to_take = new_reports[1:(1+n_to_get)]
-                    for this_report in reports_to_take:
-                        new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                        new_annotation.save()
+            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(Q(tiger_certainty_category__isnull=True) | Q(site_certainty_category__isnull=True)).count()
+            if load_new_reports == 'T':
+                if current_pending < max_pending:
+                    n_to_get = max_pending - current_pending
+                    my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
+                    new_reports_unfiltered = Report.objects.exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
+                    if new_reports_unfiltered:
+                        new_reports = filter_reports(new_reports_unfiltered)
+                        reports_to_take = new_reports[0:(n_to_get-1)]
+                        for this_report in reports_to_take:
+                            new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                            new_annotation.save()
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).order_by('report__creation_time')
             if year:
                 try:
@@ -462,6 +464,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', y
             args['formset'] = this_formset
             args['objects'] = objects
             args['pages'] = range(1, objects.paginator.num_pages+1)
+            args['n_pending'] = current_pending
+            args['n_complete'] = ExpertReportAnnotation.objects.filter(user=this_user).filter(tiger_certainty_category__isnull=False,site_certainty_category__isnull=False).count()
             args['year'] = year
             args['tiger_certainty'] = tiger_certainty
             args['site_certainty'] = site_certainty
