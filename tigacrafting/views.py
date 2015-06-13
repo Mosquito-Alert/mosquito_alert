@@ -465,6 +465,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['formset'] = this_formset
             args['objects'] = objects
             args['pages'] = range(1, objects.paginator.num_pages+1)
+            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(Q(tiger_certainty_category__isnull=True) | Q(site_certainty_category__isnull=True)).count()
             args['n_pending'] = current_pending
             args['n_complete'] = ExpertReportAnnotation.objects.filter(user=this_user).filter(tiger_certainty_category__isnull=False,site_certainty_category__isnull=False).count()
             args['year'] = year

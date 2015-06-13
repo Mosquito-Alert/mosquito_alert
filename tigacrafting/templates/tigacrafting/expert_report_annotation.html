@@ -103,7 +103,7 @@
                                 Complete: {{ n_complete }}</p></li>
                             <li>
                                 <button id="grab_reports_button" role="button"
-                                        class="btn btn-primary btn-sm navbar-btn">Get More Reports
+                                        class="btn btn-primary btn-sm navbar-btn"> <span class="glyphicon glyphicon-download"></span> Get More Reports
                                 </button>
                             </li>
                         </ul>
@@ -513,6 +513,7 @@
         var nb = $("#next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
+                 $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
                 var qp = "?year=" + $("#year_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -536,6 +537,7 @@
         $("#flagged_others_select").val("{{ flagged_others }}");
 
         $("#filters_submit_button").on('click', function () {
+             $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -548,6 +550,7 @@
 
 
         grab_reports_button.on('click', function () {
+             $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
