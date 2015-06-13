@@ -406,6 +406,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             tiger_pending = request.GET.get('tiger_pending', tiger_pending)
             site_pending = request.GET.get('site_pending', site_pending)
             flagged = request.GET.get('flagged', flagged)
+            load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(Q(tiger_certainty_category__isnull=True) | Q(site_certainty_category__isnull=True)).count()
             if load_new_reports == 'T':
                 if current_pending < max_pending:
