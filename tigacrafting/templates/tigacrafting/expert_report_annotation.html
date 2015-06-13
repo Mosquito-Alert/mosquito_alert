@@ -99,8 +99,13 @@
 
                         <ul class="nav navbar-nav navbar-left">
 
-                            <li><p class="navbar-text" style="color:cornflowerblue">Pending: {{ n_pending }}, Complete: {{ n_complete }}</p></li>
-                        <li><button id="grab_reports_button" role="button" class="btn btn-primary btn-sm navbar-btn">Get More Reports</button></li>
+                            <li><p class="navbar-text" style="color:cornflowerblue">Pending: {{ n_pending }},
+                                Complete: {{ n_complete }}</p></li>
+                            <li>
+                                <button id="grab_reports_button" role="button"
+                                        class="btn btn-primary btn-sm navbar-btn">Get More Reports
+                                </button>
+                            </li>
                         </ul>
 
 
@@ -177,7 +182,10 @@
                                 </div>
 
                                 {% if form.instance.report.expert_report_annotations.count > 1 %}
-                                    <button type="button" onclick="$('#other_annotations_alert{{ form.instance.id }}').show();" class="btn btn-default btn-sm">Show Others' Annotations</button>
+                                    <button type="button"
+                                            onclick="$('#other_annotations_alert{{ form.instance.id }}').show();"
+                                            class="btn btn-default btn-sm">Show Others' Annotations
+                                    </button>
                                 {% endif %}
 
                             </div>
@@ -248,7 +256,7 @@
 
                 <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
 
-<br>
+                <br>
                 <form role="form" class="form-inline">
                     <div class="form-group">
                         <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
@@ -427,12 +435,12 @@
             $(window).scrollTop(scroll_position);
         }
 
-        var grab_reports_button  = $("#grab_reports_button");
+        var grab_reports_button = $("#grab_reports_button");
         var n_pending = {{ n_pending }};
-        function toggle_grab_repors_button(){
-            if(n_pending < 20){
+        function toggle_grab_repors_button() {
+            if (n_pending < 20) {
                 grab_reports_button.show();
-            } else{
+            } else {
                 grab_reports_button.hide();
             }
         }
@@ -502,20 +510,22 @@
 
         });
 
-        $("#next_page_button").on('click', function () {
-
-            var qp = "?year=" + $("#year_select").val();
-            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
-            qp += "&site_certainty=" + $("#site_certainty_select").val();
-            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
-            qp += "&site_pending=" + $("#site_pending_select").val();
-            qp += "&flagged=" + $("#flagged_select").val();
-            qp += "&flagged_others=" + $("#flagged_others_select").val();
-            qp += "&page=1";
-            window.location.href = qp;
-
-        });
-
+        var nb = $("#next_page_button");
+        {% if objects.has_next %}
+            nb.show().on('click', function () {
+                var qp = "?year=" + $("#year_select").val();
+                qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
+                qp += "&site_certainty=" + $("#site_certainty_select").val();
+                qp += "&tiger_pending=" + $("#tiger_pending_select").val();
+                qp += "&site_pending=" + $("#site_pending_select").val();
+                qp += "&flagged=" + $("#flagged_select").val();
+                qp += "&flagged_others=" + $("#flagged_others_select").val();
+                qp += "&page={{ objects.next_page_number }}";
+                window.location.href = qp;
+            });
+        {% else %}
+            nb.hide();
+        {% endif %}
 
         $("#year_select").val("{{ year }}");
         $("#tiger_certainty_select").val("{{ tiger_certainty }}");
@@ -537,7 +547,7 @@
         })
 
 
-            grab_reports_button.on('click', function () {
+        grab_reports_button.on('click', function () {
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
