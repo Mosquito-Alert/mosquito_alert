@@ -415,7 +415,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     new_reports_unfiltered = Report.objects.exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
                     if new_reports_unfiltered:
                         new_reports = filter_reports(new_reports_unfiltered)
-                        reports_to_take = new_reports[0:(n_to_get-1)]
+                        reports_to_take = new_reports[0:n_to_get]
                         for this_report in reports_to_take:
                             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                             new_annotation.save()
