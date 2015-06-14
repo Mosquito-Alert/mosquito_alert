@@ -92,8 +92,8 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <div id="gear" class="navbar-brand"><span
-                                style="color:#ff9900">Tigatrapp Expert Validation</span></div>
+                        <div class="navbar-brand"><span
+                                style="color:#ff9900">Tigatrapp Expert Validation</span> <span id="gear" style="color:#ff9900"><i class="fa fa-refresh fa-spin"></i></span></div>
                     </div>
                     <div class="navbar-collapse collapse">
 
@@ -449,9 +449,9 @@
         var n_pending = {{ n_pending }};
         function toggle_grab_repors_button() {
             if (n_pending < 20) {
-                grab_reports_button.show();
+                grab_reports_button.css("visibility", "visible");
             } else {
-                grab_reports_button.hide();
+                grab_reports_button.css("visibility", "hidden");
             }
         }
 
@@ -459,10 +459,13 @@
         $('label[for~="value_changed"]').hide();
 
         $(document).ready(function () {
+
+            var gear =  $("#gear").css("visibility", "hidden");
+
             $("#formset_forms form").addClass("form-horizontal").attr("role", "form");
 
             $("#save_button").click(function () {
-                $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+                gear.css("visibility", "visible");
                 toggle_grab_repors_button();
             });
 
@@ -513,7 +516,7 @@
         var nb = $("#next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
-                $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+                gear.css("visibility", "visible");
                 var qp = "?year=" + $("#year_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -537,7 +540,7 @@
         $("#flagged_others_select").val("{{ flagged_others }}");
 
         $("#filters_submit_button").on('click', function () {
-            $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+                gear.css("visibility", "visible");
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -550,7 +553,7 @@
 
 
         grab_reports_button.on('click', function () {
-            $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+                gear.css("visibility", "visible");
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
