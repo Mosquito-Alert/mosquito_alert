@@ -103,9 +103,24 @@
                                 Complete: {{ n_complete }}</p></li>
                             <li>
                                 <button id="grab_reports_button" role="button"
-                                        class="btn btn-primary btn-sm navbar-btn"> <span class="glyphicon glyphicon-download"></span> Get More Reports
+                                        class="btn btn-primary btn-sm navbar-btn"><span
+                                        class="glyphicon glyphicon-download"></span> Get More Reports
                                 </button>
                             </li>
+
+                            <li>
+                                <button id="show_filters_button" class="btn btn-warning btn-sm navbar-btn"><span
+                                        class="glyphicon glyphicon-filter"></span> Filter
+                                </button>
+                            </li>
+
+
+                            <li>
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn">
+                                    <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
+                                </button>
+                            </li>
+
                         </ul>
 
 
@@ -233,9 +248,6 @@
 
                     <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
 
-                    <button id="save_button" type="submit" class="btn btn-success btn-lg" style="position:fixed;">
-                        <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
-                    </button>
                 </form>
 
                 <div class="row">
@@ -255,8 +267,9 @@
             {% if objects.has_next %}
 
                 <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
+            {% endif %}
 
-                <br>
+            <br>
                 <form role="form" class="form-inline">
                     <div class="form-group">
                         <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
@@ -267,7 +280,6 @@
 
                 </form>
 
-            {% endif %}
         </span>
                         </div>
 
@@ -283,9 +295,6 @@
     </div>
 
 
-    <button id="show_filters_button" class="btn btn-default btn-lg" style="position:fixed;">
-        <span class="glyphicon glyphicon-filter"></span>
-    </button>
 
 
     <div id="filters_div"
@@ -513,7 +522,7 @@
         var nb = $("#next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
-                 $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+                $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
                 var qp = "?year=" + $("#year_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -537,7 +546,7 @@
         $("#flagged_others_select").val("{{ flagged_others }}");
 
         $("#filters_submit_button").on('click', function () {
-             $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+            $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -550,7 +559,7 @@
 
 
         grab_reports_button.on('click', function () {
-             $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
+            $("#gear").html('<span style="color:#ff9900">Tigatrapp Expert Validation <i class="fa fa-refresh fa-spin"></i></span>');
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
