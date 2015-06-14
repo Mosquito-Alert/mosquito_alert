@@ -109,15 +109,13 @@
                             </li>
 
                             <li>
-                                <button id="show_filters_button" class="btn btn-warning btn-sm navbar-btn"><span
-                                        class="glyphicon glyphicon-filter"></span> Filter
+                                <button id="show_filters_button" class="btn btn-warning btn-sm navbar-btn" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span> Filter
                                 </button>
                             </li>
 
 
                             <li>
-                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn">
-                                    <span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn" style="margin-left:5px"><span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
                                 </button>
                             </li>
 
@@ -458,9 +456,10 @@
         $('input[id~="value_changed"]').hide();
         $('label[for~="value_changed"]').hide();
 
+        var gear =  $("#gear").hide();
+
         $(document).ready(function () {
 
-            var gear =  $("#gear").hide();
 
             $("#formset_forms form").addClass("form-horizontal").attr("role", "form");
 
