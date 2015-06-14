@@ -298,7 +298,7 @@
 
 
     <div id="filters_div"
-         style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin-left:5px; margin-right:5px; width:90%; padding:5px;">
+         style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin-left:5px; margin-right:5px; width:99%; padding:5px;z-index:100;">
         <form role="form" class="form-inline">
             <div class="form-group">
                 <label for="year_select">Year:</label>
@@ -378,7 +378,7 @@
 
         </form>
         <br>
-        <button style="margin: 0 auto;" id="filters_submit_button" class="btn btn-danger">Submit</button>
+        <button style="margin: 0 auto;width:30%" id="filters_submit_button" class="btn btn-warning">Apply Filter</button>
 
     </div>
 
@@ -449,9 +449,9 @@
         var n_pending = {{ n_pending }};
         function toggle_grab_reports_button() {
             if (n_pending < 20) {
-                grab_reports_button.css("visibility", "visible");
+                grab_reports_button.prop('disabled', false);
             } else {
-                grab_reports_button.css("visibility", "hidden");
+                grab_reports_button.prop('disabled', true);
             }
         }
 
@@ -460,12 +460,12 @@
 
         $(document).ready(function () {
 
-            var gear =  $("#gear").css("visibility", "hidden");
+            var gear =  $("#gear").hide();
 
             $("#formset_forms form").addClass("form-horizontal").attr("role", "form");
 
             $("#save_button").click(function () {
-                gear.css("visibility", "visible");
+                gear.show();
                 toggle_grab_reports_button();
                 $("#formset_forms").submit();
             });
@@ -517,7 +517,7 @@
         var nb = $("#next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
-                gear.css("visibility", "visible");
+                gear.show();
                 var qp = "?year=" + $("#year_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -541,7 +541,7 @@
         $("#flagged_others_select").val("{{ flagged_others }}");
 
         $("#filters_submit_button").on('click', function () {
-                gear.css("visibility", "visible");
+                gear.show();
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -554,7 +554,7 @@
 
 
         grab_reports_button.on('click', function () {
-                gear.css("visibility", "visible");
+                gear.show();
             var qp = "?year=" + $("#year_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
