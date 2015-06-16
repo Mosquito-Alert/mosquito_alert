@@ -73,7 +73,10 @@
 
     {% block filter_script %}
         <script>
-            var selected_year = 0;
+            var selected_year = 2015;
+            var selected_month = 0;
+            var selected_type = 'adult';
+            var selected_validation = -2;
 
 
         </script>
@@ -255,6 +258,28 @@
                                     </select>
                                 </div>
                             </div>
+                                                        <div class="form-group">
+                                <label for="month_select" class="col-sm-4 control-label">Month:</label>
+
+                                <div class="col-sm-8">
+                                    <select id="month_select" class="selectpicker show-tick form-control">
+                                        <option value="0" data-subtext="All months">All</option>
+                                        <option value="1" data-subtext="Only reports made in January">January</option>
+                                        <option value="2" data-subtext="Only reports made in February">February</option>
+                                        <option value="3" data-subtext="Only reports made in March">March</option>
+                                        <option value="4" data-subtext="Only reports made in April">April</option>
+                                        <option value="5" data-subtext="Only reports made in May">May</option>
+                                        <option value="6" data-subtext="Only reports made in June">June</option>
+                                        <option value="7" data-subtext="Only reports made in July">July</option>
+                                        <option value="8" data-subtext="Only reports made in August">August</option>
+                                        <option value="9" data-subtext="Only reports made in September">September</option>
+                                        <option value="10" data-subtext="Only reports made in October">October</option>
+                                        <option value="11" data-subtext="Only reports made in November">November</option>
+                                        <option value="12" data-subtext="Only reports made in December">December</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <label for="type_select" class="col-sm-4 control-label">Report Type:</label>
 
@@ -273,14 +298,12 @@
 
                                 <div class="col-sm-8">
                                     <select id="validation_select" class="selectpicker show-tick form-control">
-                                        <option value="definite_yes" data-subtext="Only highly probably reports">Strong
-                                            Validation
+                                        <option value="2" data-subtext="Only highly probably reports">Strong Validation
                                         </option>
-                                        <option value="definite_yes"
-                                                data-subtext="Only probably and highly probably reports">Medium
-                                            Validation
+                                        <option value="1"
+                                                data-subtext="Only probably and highly probably reports">Medium Validation
                                         </option>
-                                        <option value="all" data-subtext="No validation filter">All Reports</option>
+                                        <option value="-2" data-subtext="No validation filter">All Reports</option>
                                     </select>
                                 </div>
                             </div>
@@ -368,6 +391,9 @@
 
 
         $("#year_select").val(selected_year);
+        $("#month_select").val(selected_month);
+        $("#type_select").val(selected_type);
+        $("#validation_select").val(selected_validation);
 
         {% block filter_function %}
 
