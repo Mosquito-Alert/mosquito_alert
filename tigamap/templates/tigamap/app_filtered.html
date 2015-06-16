@@ -166,8 +166,13 @@ function removeMe(){
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
+   <li>
+                                <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal" data-target=".bs-example-modal-lg"
+                                        style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span> Filter
+                                </button>
+                            </li>
 
-                                            <li class="dropdown">
+                    <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         {%  trans 'adult-tiger-mosquitoes' %}<b
                                 class="caret"></b></a>
@@ -240,22 +245,38 @@ function removeMe(){
         </div>
     </div>
 
-            <button id="show_filters_button" class="btn btn-default btn-lg" style="position:fixed;z-index:1000;">
-        <span class="glyphicon glyphicon-filter"></span>
-    </button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
-            <div id="filters_div"
-         style="z-index:1000;position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin:5px;padding:5px;">
+    <div id="filters_div"
+         style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin-left:5px; margin-right:5px; width:99%; padding:5px;z-index:100;">
         <form role="form" class="form-inline">
             <div class="form-group">
-                <label for="year_select">Year:</label>
-                <select id="year_select" class="left selectpicker show-tick form-control" data-width="90%"
+                <label for="orderby_select">Order By:</label>
+                <select id="orderby_select" class="left selectpicker show-tick form-control" data-width="90%"
                         data-style="btn-more"
                         data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="2015">2015</option>
-                    <option value="2014">2014</option>
+                    <option value="date">Report Date</option>
+                    <option value="tiger_score">Tiger Certainty Score</option>
+                    <option value="site_score">Site Certainty Score</option>
                 </select>
             </div>
             <div class="form-group">
@@ -325,9 +346,12 @@ function removeMe(){
             </div>
 
         </form>
-        <button id="filters_submit_button" class="btn btn-success">Submit</button>
+        <br>
+        <button style="margin: 0 auto;width:30%" id="filters_submit_button" class="btn btn-warning">Apply Filter
+        </button>
 
     </div>
+
 
 {% endblock %}
 
@@ -393,22 +417,16 @@ function removeMe(){
 
             $(document).ready(function () {
 
-            var show_filters_button = $("#show_filters_button").position({
-                my: "right top",
-                at: "right bottom",
+
+            var filters_div = $("#filters_div").position({
+             my: "middle top",
+                at: "middle bottom",
                 of: "#navbar",
                 collision: "fit"
             });
 
-            var filters_div = $("#filters_div").position({
-                my: "left top",
-                at: "left bottom",
-                of: "#show_filters_button",
-                collision: "fit"
-            });
 
-
-            show_filters_button.click(function () {
+            $("#show_filters_button").click(function () {
                 if (filters_div.is(":visible")) {
                     filters_div.hide();
                 } else {

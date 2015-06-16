@@ -1,5 +1,10 @@
 
 
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
 table {
     border-collapse: collapse;
     font-size: small;
@@ -64,6 +69,7 @@ textarea{
 .form-inline > * {
    margin:5px 5px !important;
 }
+
 
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */

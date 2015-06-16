@@ -1,6 +1,8 @@
 {% load staticfiles %}
 {% load leaflet_tags %}
 {% load i18n %}
+{% load floppyforms %}
+
 
 <!DOCTYPE html>
 <html lang={% block language %}"en"{% endblock %}>
@@ -75,7 +77,7 @@
 
 </head>
 
-<body style="padding-top: 70px;">
+<body>
 
 {% block navbar %}
     <!-- NAVBAR
@@ -101,8 +103,8 @@
 
                         <ul class="nav navbar-nav navbar-left">
 
-                            <li><p class="navbar-text" style="color:cornflowerblue">Pending: {{ n_pending }},
-                                Complete: {{ n_complete }}</p></li>
+                            <li><p class="navbar-text" style="color:cornflowerblue">Pending: <span class="badge">{{ n_pending }}</span>
+                                Complete: <span class="badge">{{ n_complete }}</span></p></li>
                             <li>
                                 <button id="grab_reports_button" role="button"
                                         class="btn btn-primary btn-sm navbar-btn"><span
@@ -160,14 +162,15 @@
 {% block main_body %}
 
 
-    <div class="container theme-showcase" role="main">
+    <div class="container">
 
         <div class="starter-template">
 
-            <div class="page-header">
-                <div id="page_title" class="page-header">
-                    <h3>Instructions</h3>
-                </div>
+                    <h1>Expert Report Validation</h1>
+
+
+       <div style="text-align: left">
+    <h4> Instructions</h4>
 
                 <p>For each report: (1) select a category for your degree of belief that the report contains at least
                     one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
@@ -177,12 +180,12 @@
                     remove it from the public map), and (5) add any internal notes you want. Click "Save" to save your
                     responses on the server.</p>
 
-
-            </div>
+</div>
+   </div>
 
             {% if objects %}
 
-                <form id="formset_forms" method="post">{% csrf_token %}
+                <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
                     {{ formset.management_form }}
                     {% for form in formset %}
                         <div class="row">
@@ -207,9 +210,14 @@
                                 {% endif %}
 
                             </div>
+                        </div>
+                            <div class="row">
                             <div class="col-md-3">
                                 <br>
-                                {{ form.as_p }}
+
+
+                                  {% form form using "floppyforms/layouts/bootstrap.html" %}
+
                             </div>
 
                             <div class="col-md-5">
@@ -466,8 +474,7 @@
 
         $(document).ready(function () {
 
-
-            $("#formset_forms form").addClass("form-horizontal").attr("role", "form");
+          $('[data-toggle="tooltip"]').tooltip()
 
             $("select").selectpicker({
                 width: 'auto'
