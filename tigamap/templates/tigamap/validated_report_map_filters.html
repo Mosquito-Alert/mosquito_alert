@@ -466,14 +466,7 @@
             }
 
 
-            {% block filter_function %}
 
-
-                function apply_filter() {
-                    // to be extended in later templates
-                }
-
-            {%  endblock %}
 
             function add_to_layer(data, layer, filter) {
                 $.each(data, function (index, value) {
@@ -484,6 +477,17 @@
                     }
                 });
             }
+
+                {% block filter_function %}
+
+
+                function apply_filter() {
+
+                    markers_clustered.clearLayers();
+                     add_to_layer(data, markers_clustered, true);
+                }
+
+            {%  endblock %}
 
             function get_data(day, map) {
                 var csrftoken = $.cookie('csrftoken');
@@ -501,7 +505,8 @@
 
                         if (data != null && data.length > 0) {
 
-                            add_to_layer(data, markers_clustered, false)
+                            add_to_layer(data, markers_clustered, true);
+                            add_to_layer(data, markers_all, false);
 
                         }
                         percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
