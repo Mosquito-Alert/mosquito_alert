@@ -381,7 +381,7 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=20, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=20, max_given=3):
     this_user = request.user
     if this_user.groups.filter(name='expert').exists():
         args = {}
@@ -400,7 +400,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             else:
                 return HttpResponse('error')
         else:
-            year = request.GET.get('year', year)
+            orderby = request.GET.get('orderby', orderby)
             tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
             site_certainty = request.GET.get('site_certainty', site_certainty)
             tiger_pending = request.GET.get('tiger_pending', tiger_pending)
@@ -412,14 +412,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 if current_pending < max_pending:
                     n_to_get = max_pending - current_pending
                     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-                    new_reports_unfiltered = Report.objects.exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
+                    new_reports_unfiltered = Report.objects.exclude(creation_time__year__lte=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
                     if new_reports_unfiltered:
                         new_reports = filter_reports(new_reports_unfiltered)
                         reports_to_take = new_reports[0:n_to_get]
                         for this_report in reports_to_take:
                             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                             new_annotation.save()
-            all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).order_by('report__creation_time')
+            all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
             if year:
                 try:
                     this_year = int(year)
@@ -452,6 +452,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 all_annotations = all_annotations.filter(flag=False)
             if flagged_others == "flagged":
                 all_annotations = all_annotations.filter(report__expert_report_annotations__flag=True)
+            all_annotations = all_annotations.order_by('report__creation_time')
+            if orderby == "site_score":
+                all_annotations = all_annotations.order_by('site_certainty_category')
+            elif orderby == "tiger_score":
+                all_annotations = all_annotations.order_by('tiger_certainty_category')
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
@@ -469,6 +474,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['n_pending'] = current_pending
             args['n_complete'] = ExpertReportAnnotation.objects.filter(user=this_user).filter(tiger_certainty_category__isnull=False,site_certainty_category__isnull=False).count()
             args['year'] = year
+            args['orderby'] = orderby
             args['tiger_certainty'] = tiger_certainty
             args['site_certainty'] = site_certainty
             args['tiger_pending'] = tiger_pending

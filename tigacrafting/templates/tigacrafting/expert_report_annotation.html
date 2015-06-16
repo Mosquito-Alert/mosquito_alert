@@ -93,7 +93,9 @@
                             <span class="icon-bar"></span>
                         </button>
                         <div class="navbar-brand"><span
-                                style="color:#ff9900">Tigatrapp Expert Validation <i id="gear" class="fa fa-refresh fa-spin"></i></span></div>
+                                style="color:#ff9900">Tigatrapp Expert Validation <i id="gear"
+                                                                                     class="fa fa-refresh fa-spin"></i></span>
+                        </div>
                     </div>
                     <div class="navbar-collapse collapse">
 
@@ -109,13 +111,16 @@
                             </li>
 
                             <li>
-                                <button id="show_filters_button" class="btn btn-warning btn-sm navbar-btn" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span> Filter
+                                <button id="show_filters_button" class="btn btn-warning btn-sm navbar-btn"
+                                        style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span> Filter
                                 </button>
                             </li>
 
 
                             <li>
-                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn" style="margin-left:5px"><span class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px"><span
+                                        class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
                                 </button>
                             </li>
 
@@ -299,13 +304,13 @@
          style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin-left:5px; margin-right:5px; width:99%; padding:5px;z-index:100;">
         <form role="form" class="form-inline">
             <div class="form-group">
-                <label for="year_select">Year:</label>
-                <select id="year_select" class="left selectpicker show-tick form-control" data-width="90%"
+                <label for="orderby_select">Order By:</label>
+                <select id="orderby_select" class="left selectpicker show-tick form-control" data-width="90%"
                         data-style="btn-more"
                         data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="2015">2015</option>
-                    <option value="2014">2014</option>
+                    <option value="date">Report Date</option>
+                    <option value="tiger_score">Tiger Certainty Score</option>
+                    <option value="site_score">Site Certainty Score</option>
                 </select>
             </div>
             <div class="form-group">
@@ -376,7 +381,8 @@
 
         </form>
         <br>
-        <button style="margin: 0 auto;width:30%" id="filters_submit_button" class="btn btn-warning">Apply Filter</button>
+        <button style="margin: 0 auto;width:30%" id="filters_submit_button" class="btn btn-warning">Apply Filter
+        </button>
 
     </div>
 
@@ -456,14 +462,16 @@
         $('input[id~="value_changed"]').hide();
         $('label[for~="value_changed"]').hide();
 
-        var gear =  $("#gear").hide();
+        var gear = $("#gear").hide();
 
         $(document).ready(function () {
 
 
             $("#formset_forms form").addClass("form-horizontal").attr("role", "form");
 
-            $("select").selectpicker();
+            $("select").selectpicker({
+                width: 'auto'
+            });
 
             $("#save_button").click(function () {
                 gear.show();
@@ -503,7 +511,7 @@
 
         $("#page_button").on('click', function () {
 
-            var qp = "?year=" + $("#year_select").val();
+            var qp = "?orderby=" + $("#orderby_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
             qp += "&tiger_pending=" + $("#tiger_pending_select").val();
@@ -519,7 +527,7 @@
         {% if objects.has_next %}
             nb.show().on('click', function () {
                 gear.show();
-                var qp = "?year=" + $("#year_select").val();
+                var qp = "?orderby=" + $("#orderby_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
                 qp += "&tiger_pending=" + $("#tiger_pending_select").val();
@@ -533,7 +541,7 @@
             nb.hide();
         {% endif %}
 
-        $("#year_select").val("{{ year }}");
+        $("#orderby_select").val("{{ orderby }}");
         $("#tiger_certainty_select").val("{{ tiger_certainty }}");
         $("#site_certainty_select").val("{{ site_certainty }}");
         $("#tiger_pending_select").val("{{ tiger_pending }}");
@@ -542,8 +550,8 @@
         $("#flagged_others_select").val("{{ flagged_others }}");
 
         $("#filters_submit_button").on('click', function () {
-                gear.show();
-            var qp = "?year=" + $("#year_select").val();
+            gear.show();
+            var qp = "?orderby=" + $("#orderby_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
             qp += "&tiger_pending=" + $("#tiger_pending_select").val();
@@ -555,8 +563,8 @@
 
 
         grab_reports_button.on('click', function () {
-                gear.show();
-            var qp = "?year=" + $("#year_select").val();
+            gear.show();
+            var qp = "?orderby=" + $("#orderby_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
             qp += "&tiger_pending=" + $("#tiger_pending_select").val();
