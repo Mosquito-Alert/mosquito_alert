@@ -468,11 +468,11 @@
 
 
 
-            function add_to_layer(data, layer, filter) {
+            function add_to_layer(data, this_layer, filter) {
                 $.each(data, function (index, value) {
                     if (value != null && value.lat != null && value.lon != null && value.type != null && (!filter ||
-                            (selected_year == 0 || value.year == selected_year))) {
-                        layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
+                            (selected_year == 0 || value.creation_year == selected_year))) {
+                        this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
 
                     }
                 });
