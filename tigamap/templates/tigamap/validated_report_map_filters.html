@@ -539,7 +539,7 @@
 
                 markers_clustered.addTo(map);
 
-                for (var d = 0; d <= {{ end_day }}; d++) {
+                for (var d = {{ end_day }}; d >= 0; d--) {
                     get_data(d, map);
                 }
             }
