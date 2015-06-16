@@ -402,9 +402,7 @@
         }
 
         function get_icon(movelab_annotation) {
-            if (selected_type == 'site') {
-                return blue_icon;
-            } else {
+
 
                 if (movelab_annotation != null) {
                     var score = movelab_annotation.tiger_certainty_category;
@@ -412,7 +410,7 @@
                 } else {
                     return yellow_white_icon;
                 }
-            }
+            
         }
 
         function get_color_class(score) {
