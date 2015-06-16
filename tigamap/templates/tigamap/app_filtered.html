@@ -73,7 +73,7 @@
 
     {% block filter_script %}
         <script>
-            var selected_year = 2015;
+            var selected_year = 0;
 
 
         </script>
@@ -381,6 +381,8 @@
             selected_year = $("#year_select").val();
 
             apply_filter();
+
+            $('#myModal').modal('hide');
         })
 
 
