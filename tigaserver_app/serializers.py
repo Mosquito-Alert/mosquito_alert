@@ -157,6 +157,8 @@ class MapDataSerializer(serializers.ModelSerializer):
     creation_time = serializers.DateTimeField()
     creation_date = serializers.DateTimeField()
     creation_day_since_launch = serializers.Field()
+    creation_year = serializers.Field()
+    creation_month = serializers.Field()
     type = serializers.CharField()
     lon = serializers.Field()
     lat = serializers.Field()

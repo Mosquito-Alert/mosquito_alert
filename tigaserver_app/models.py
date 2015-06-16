@@ -529,6 +529,12 @@ class Report(models.Model):
         result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
         return result
 
+    def get_creation_year(self):
+        return self.creation_time.year
+
+    def get_creation_month(self):
+        return self.creation_time.month
+
     def get_creation_date(self):
         return self.creation_time.date()
 
@@ -585,6 +591,8 @@ class Report(models.Model):
     tiger_responses = property(get_tiger_responses)
     creation_date = property(get_creation_date)
     creation_day_since_launch = property(get_creation_day_since_launch)
+    creation_year = property(get_creation_year)
+    creation_month = property(get_creation_month)
 
     class Meta:
         unique_together = ("user", "version_UUID")

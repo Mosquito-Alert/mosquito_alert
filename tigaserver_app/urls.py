@@ -19,6 +19,8 @@ router.register(r'basins', views.SiteMapViewSetBasins, base_name='basin')
 router.register(r'buckets', views.SiteMapViewSetBucketsWells, base_name='bucket')
 router.register(r'other_sites', views.SiteMapViewSetOther, base_name='other_site')
 router.register(r'coverage', views.CoverageMapViewSet, base_name='coverage')
+router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_reports')
+
 
 
 urlpatterns = patterns('tigaserver_app.views',

@@ -463,6 +463,12 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 
+class AllReportsMapViewSet(ReadOnlyModelViewSet):
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='other')
+    serializer_class = MapDataSerializer
+    filter_class = MapDataFilter
+
+
 def update_coverage_model(request):
     json_response = {'updated': False}
     if CoverageArea.objects.all().count() > 0:
