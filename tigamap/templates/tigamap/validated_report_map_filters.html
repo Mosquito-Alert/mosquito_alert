@@ -350,7 +350,7 @@
 
         var markers_clustered = new L.MarkerClusterGroup();
 
-        var BlueIcon = L.Icon.Default();
+        var BlueIcon = L.Icon.Default;
 
 
         var YellowRedIcon = L.Icon.Default.extend({
@@ -523,7 +523,7 @@
                         add_to_layer(data, markers_clustered, true);
                         full_data = full_data.concat(data);
 
-                
+
                     }
                     percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
                     progress_bar.css("width", percent_done.toString() + "%");
