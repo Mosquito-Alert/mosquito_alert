@@ -477,7 +477,7 @@
             $.each(data, function (index, value) {
                 if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
                         ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || value.movelab_annotation.tiger_certainty_category >= selected_validation)))) {
-                    this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value)}));
+                    this_layer.addLayer(L.marker([value.lat, value.lon] ));
 //.bindPopup(make_popup_text(value), popup_options)
                 }
             });
