@@ -332,8 +332,8 @@
     {% endblock %}
 
     {% block leaflet_marker_clusters %}
-        {% leaflet_js plugins="marker_cluster_yellow" %}
-        {% leaflet_css plugins="marker_cluster_yellow" %}
+        {% leaflet_js plugins="marker_cluster_blue_yellow" %}
+        {% leaflet_css plugins="marker_cluster_blue_yellow" %}
     {% endblock %}
 
 
@@ -496,7 +496,7 @@
                     $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").addClass('blue');
 
                 }else{
-                    $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
+             //       $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
 
                 }
                 add_to_layer(full_data, markers_clustered, true);
