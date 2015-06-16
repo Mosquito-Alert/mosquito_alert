@@ -652,5 +652,14 @@
 
 {% endblock %}
 
+{% block end_body %}
+
+    {{ block.super }}
+
+    <script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
+
+
+{% endblock %}
+
 
 
