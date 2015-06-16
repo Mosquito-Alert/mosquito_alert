@@ -171,37 +171,6 @@ function removeMe(){
                                 </button>
                             </li>
 
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        {%  trans 'adult-tiger-mosquitoes' %}<b
-                                class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li><a href={{ hrefs.adults_all }}
-                                >{% trans 'all-reports' %}</a></li>
-                        <li><a href={{ hrefs.adults_medium }}>
-                            {% trans 'menu_adults_prob' %}</a></li>
-                        <li><a href={{ hrefs.adults_high }}>
-                            {% trans 'menu_adults_definite' %}</a></li>
-                    </ul>
-                </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'breeding-site-reports' %}<b
-                            class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li><a href={{ hrefs.sites_all }}
-                                >{% trans 'all-sites' %}</a></li>
-                        <li>
-                            <a href={{ hrefs.sites_drains_fountains }}
-                                    >{% trans 'storm-drains-and-fountains' %}</a>
-                        </li>
-                        <li><a href={{ hrefs.sites_basins }}
-                                >{% trans 'Basins' %}</a></li>
-                        <li><a href={{ hrefs.sites_buckets_wells }}>
-                            {% trans 'buckets-and-wells' %}</a></li>
-                        <li><a href={{ hrefs.sites_other }}
-                                >{% trans 'Other' %}</a></li>
-                    </ul>
-                </li>
                 <li><a href="{{ hrefs.coverage }}"
                         >{% trans 'Coverage' %}</a></li>
                 <li>
@@ -254,82 +223,38 @@ function removeMe(){
         <h4 class="modal-title" id="myModalLabel">Map Filters</h4>
       </div>
       <div class="modal-body">
-        <form role="form" class="form-inline">
+        <form role="form" class="form-horizontal">
             <div class="form-group">
-                <label for="orderby_select">Order By:</label>
-                <select id="orderby_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="date">Report Date</option>
-                    <option value="tiger_score">Tiger Certainty Score</option>
-                    <option value="site_score">Site Certainty Score</option>
+                <label for="year_select" class="col-sm-4 control-label">Year:</label>
+                <div class="col-sm-8">
+                <select id="year_select" class="selectpicker show-tick form-control">
+                    <option value="2015" data-subtext="Only reports made in 2015">2015</option>
+                    <option value="2014" data-subtext="Only reports made in 2014">2014</option>
+                    <option value="all" data-subtext="All reports">All</option>
                 </select>
+                    </div>
             </div>
             <div class="form-group">
-                <label for="tiger_certainty_select">Tiger Certainty Category:</label>
-                <select id="tiger_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="-2">Definitely not a tiger mosquito</option>
-                    <option value="-1">Probably not a tiger mosquito</option>
-                    <option value="0">Not sure</option>
-                    <option value="1">Probably a tiger mosquito</option>
-                    <option value="2">Definitely a tiger mosquito</option>
+                <label for="type_select" class="col-sm-4 control-label">Report Type:</label>
+                <div class="col-sm-8">
+                <select id="type_select" class="selectpicker show-tick form-control">
+                    <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
+                    <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding sites</option>
                 </select>
+                    </div>
             </div>
-            <div class="form-group">
-                <label for="site_certainty_select">Site Certainty Category:</label>
-                <select id="site_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="-2">Definitely not a breeding site</option>
-                    <option value="-1">Probably not a breeding site</option>
-                    <option value="0">Not sure</option>
-                    <option value="1">Probably a breeding site</option>
-                    <option value="2">Definitely a breeding site</option>
+
+                        <div class="form-group">
+                <label for="validation_select" class="col-sm-4 control-label">Expert Validation:</label>
+                <div class="col-sm-8">
+                <select id="validation_select" class="selectpicker show-tick form-control">
+                    <option value="definite_yes" data-subtext="Only highly probably reports">Strong Validation</option>
+                    <option value="definite_yes" data-subtext="Only probably and highly probably reports">Medium Validation</option>
+                    <option value="all" data-subtext="No validation filter">All Reports</option>
                 </select>
+                    </div>
             </div>
-            <div class="form-group">
-                <label for="tiger_pending_select">Status of Tiger Annotations:</label>
-                <select id="tiger_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="pending">Pending only</option>
-                    <option value="complete">Complete only</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="site_pending_select">Status of Site Annotations:</label>
-                <select id="site_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="pending">Pending only</option>
-                    <option value="complete">Complete only</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="flagged_select">Flagged By Me:</label>
-                <select id="flagged_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="flagged">Flagged only</option>
-                    <option value="unflagged">Unflagged only</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="flagged_others_select">Flagged By Others:</label>
-                <select id="flagged_others_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="flagged">Flagged by someone</option>
-                </select>
-            </div>
+
 
         </form>
       </div>
@@ -392,8 +317,8 @@ function removeMe(){
 
 {% block logo %}
 
-    <a href="http://atrapaeltigre.com"><img
-            src={% static "tigamap/tigatrapp_logo.png" %} style="position:absolute;width:20%;bottom:20px;right:10px"></a>
+    <a href="http://atrapaeltigre.com"><img style="position:absolute;width:20%;bottom:20px;right:10px;"
+            src={% static "tigamap/tigatrapp_logo.png" %}></a>
 
 {% endblock %}
 
@@ -402,41 +327,15 @@ function removeMe(){
     {% block end_body %}
     <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
     <script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
-    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="{% static "tigamap/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
 
     <script>
 
-            $(document).ready(function () {
-
-
-            var filters_div = $("#filters_div").position({
-             my: "middle top",
-                at: "middle bottom",
-                of: "#navbar",
-                collision: "fit"
-            });
-
-
-            $("#show_filters_button").click(function () {
-                if (filters_div.is(":visible")) {
-                    filters_div.hide();
-                } else {
-                    filters_div.show();
-                }
-            });
-
-
-        });
 
 
 
-        $("#year_select").val("{{ year }}");
-        $("#tiger_certainty_select").val("{{ tiger_certainty }}");
-        $("#site_certainty_select").val("{{ site_certainty }}");
-        $("#tiger_pending_select").val("{{ tiger_pending }}");
-        $("#site_pending_select").val("{{ site_pending }}");
-        $("#flagged_select").val("{{ flagged }}");
-        $("#flagged_others_select").val("{{ flagged_others }}");
+  //      $("#year_select").val("{{ year }}");
+
 
         $("#filters_submit_button").on('click', function () {
             var qp = "?year=" + $("#year_select").val();
