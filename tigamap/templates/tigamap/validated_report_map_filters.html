@@ -472,7 +472,7 @@
                                 }
                             });
 
-                            markers_clustered.addTo(map);
+
 
                         }
                         percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
@@ -500,6 +500,7 @@
                 progress_bar = $("#progress_bar");
                 progress_bar_container = $("#progress_bar_container");
 
+                 markers_clustered.addTo(map);
 
                 for (var d = 0; d <= {{ end_day }}; d++) {
                     get_data(d, map);
