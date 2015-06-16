@@ -332,8 +332,8 @@
     {% endblock %}
 
     {% block leaflet_marker_clusters %}
-        {% leaflet_js plugins="marker_cluster_blue_yellow" %}
-        {% leaflet_css plugins="marker_cluster_blue_yellow" %}
+        {% leaflet_js plugins="marker_cluster_yellow" %}
+        {% leaflet_css plugins="marker_cluster_yellow" %}
     {% endblock %}
 
 
@@ -349,8 +349,6 @@
         var full_data = [];
 
         var markers_clustered = new L.MarkerClusterGroup();
-
-       var BlueIcon = L.Icon.Default;
 
 
         var YellowRedIcon = L.Icon.Default.extend({
@@ -380,7 +378,6 @@
         });
 
 
-       var blue_icon = new BlueIcon();
         var yellow_red_icon = new YellowRedIcon();
         var yellow_orange_icon = new YellowOrangeIcon();
         var yellow_white_icon = new YellowWhiteIcon();
