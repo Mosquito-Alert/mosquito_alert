@@ -506,7 +506,7 @@
                         if (data != null && data.length > 0) {
 
                             add_to_layer(data, markers_clustered, true);
-                            full_data = markers_all.concat(data);
+                            full_data = full_data.concat(data);
 
                             console.log("data", data);
                             console.log("all", full_data);
