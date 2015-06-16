@@ -346,7 +346,7 @@
             var progress_bar_container;
 
 
-            var markers_all = new L.MarkerClusterGroup();
+            var full_data = [];
 
             var markers_clustered = new L.MarkerClusterGroup();
 
@@ -506,7 +506,10 @@
                         if (data != null && data.length > 0) {
 
                             add_to_layer(data, markers_clustered, true);
-                            add_to_layer(data, markers_all, false);
+                            full_data = markers_all.concat(data);
+
+                            console.log("data", data);
+                            console.log("all", full_data);
 
                         }
                         percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
