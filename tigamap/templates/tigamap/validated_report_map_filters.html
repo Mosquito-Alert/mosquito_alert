@@ -332,8 +332,8 @@
     {% endblock %}
 
     {% block leaflet_marker_clusters %}
-        {% leaflet_js plugins="marker_cluster_yellow" %}
-        {% leaflet_css plugins="marker_cluster_yellow_single" %}
+        {% leaflet_js plugins="marker_cluster_blue_yellow" %}
+        {% leaflet_css plugins="marker_cluster_blue_yellow" %}
     {% endblock %}
 
 
@@ -341,63 +341,70 @@
     {% block marker_js %}
         <script type="text/javascript">
 
-            var percent_done;
-            var progress_bar;
-            var progress_bar_container;
+        var percent_done;
+        var progress_bar;
+        var progress_bar_container;
 
 
-            var full_data = [];
+        var full_data = [];
 
-            var markers_clustered = new L.MarkerClusterGroup();
+        var markers_clustered = new L.MarkerClusterGroup();
 
-            var YellowRedIcon = L.Icon.Default.extend({
-                options: {
-                    iconUrl: '{% static "tigamap/yellow_red_dot.png" %}'
-                }
-            });
-            var YellowOrangeIcon = L.Icon.Default.extend({
-                options: {
-                    iconUrl: '{% static "tigamap/yellow_orange_dot.png" %}'
-                }
-            });
-            var YellowWhiteIcon = L.Icon.Default.extend({
-                options: {
-                    iconUrl: '{% static "tigamap/yellow_white_dot.png" %}'
-                }
-            });
-            var YellowGreyIcon = L.Icon.Default.extend({
-                options: {
-                    iconUrl: '{% static "tigamap/yellow_grey_dot.png" %}'
-                }
-            });
-            var YellowBlackIcon = L.Icon.Default.extend({
-                options: {
-                    iconUrl: '{% static "tigamap/yellow_black_dot.png" %}'
-                }
-            });
+        var BlueIcon = L.Icon.Default();
 
 
-            var yellow_red_icon = new YellowRedIcon();
-            var yellow_orange_icon = new YellowOrangeIcon();
-            var yellow_white_icon = new YellowWhiteIcon();
-            var yellow_grey_icon = new YellowGreyIcon();
-            var yellow_black_icon = new YellowBlackIcon();
-            var day_just_finished = 0;
-            var popup_options = {
-                'minWidth': 182,
-                'maxHeight': 330,
-                'closeButton': false
-            };
-
-            function rc2s(response_code) {
-                if (response_code == null) {
-                    return "{% trans 'not_sure' %}"
-                } else {
-                    return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not_sure' %}" : "{%  trans 'no' %}");
-                }
+        var YellowRedIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_red_dot.png" %}'
             }
+        });
+        var YellowOrangeIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_orange_dot.png" %}'
+            }
+        });
+        var YellowWhiteIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_white_dot.png" %}'
+            }
+        });
+        var YellowGreyIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_grey_dot.png" %}'
+            }
+        });
+        var YellowBlackIcon = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_black_dot.png" %}'
+            }
+        });
 
-            function get_icon(movelab_annotation) {
+
+        var yellow_red_icon = new YellowRedIcon();
+        var yellow_orange_icon = new YellowOrangeIcon();
+        var yellow_white_icon = new YellowWhiteIcon();
+        var yellow_grey_icon = new YellowGreyIcon();
+        var yellow_black_icon = new YellowBlackIcon();
+        var day_just_finished = 0;
+        var popup_options = {
+            'minWidth': 182,
+            'maxHeight': 330,
+            'closeButton': false
+        };
+
+        function rc2s(response_code) {
+            if (response_code == null) {
+                return "{% trans 'not_sure' %}"
+            } else {
+                return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not_sure' %}" : "{%  trans 'no' %}");
+            }
+        }
+
+        function get_icon(movelab_annotation) {
+            if (selected_type == 'site') {
+                return blue_icon;
+            } else {
+
                 if (movelab_annotation != null) {
                     var score = movelab_annotation.tiger_certainty_category;
                     return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
@@ -405,144 +412,151 @@
                     return yellow_white_icon;
                 }
             }
+        }
 
-            function get_color_class(score) {
-                return score == 2 ? 'red' : (score == 1 ? 'orange' : (score == -1 ? 'grey' : (score == -2 ? 'black' : 'white')));
+        function get_color_class(score) {
+            return score == 2 ? 'red' : (score == 1 ? 'orange' : (score == -1 ? 'grey' : (score == -2 ? 'black' : 'white')));
+        }
+
+
+        function get_cat_text(score) {
+            return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : '{% trans 'expert_cat_unknown' %}')));
+        }
+
+        function make_experts_row(score) {
+            if (score != null) {
+                return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: ' + get_cat_text(score) + '</div></td></tr>';
+            } else {
+                return '';
             }
+        }
 
-
-            function get_cat_text(score) {
-                return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : '{% trans 'expert_cat_unknown' %}')));
+        function make_crowd_row(score, n_responses) {
+            if (score != null) {
+                return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'crowd_row_title' %}: ' + get_cat_text(score) + (n_responses < 30 ? '<br><a href="http://crowdcrafting.org/app/Tigafotos/" target="_blank"><span style="x-small">{% trans 'crowd_row_more_responses_needed' %}</span></a>' : '') + '</div></td></tr>';
+            } else {
+                return '';
             }
+        }
 
-            function make_experts_row(score) {
-                if (score != null) {
-                    return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: ' + get_cat_text(score) + '</div></td></tr>';
-                } else {
-                    return '';
+
+        function make_user_response_row(score, responses) {
+            if (score != null) {
+                return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_q2' %}</td><td class="response-table question">{% trans 'user_response_row_q3' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td><td class="response-table response">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
+            } else {
+                return '';
+            }
+        }
+
+        function make_photo_row(photo_html) {
+            if (photo_html != null) {
+                return '<tr><td align="center" style="background-color: black;">' + photo_html + '</td></tr>';
+            } else {
+                return '';
+            }
+        }
+
+
+        function make_user_note_row(notes) {
+            if (notes != null && notes != '') {
+                return '<tr><td><div class="note-div">' + notes + '</div></td></tr>';
+            } else {
+                return '';
+            }
+        }
+
+        function make_popup_text(value) {
+            if (value.movelab_annotation != null) {
+                return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+            } else {
+                return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
+            }
+        }
+
+
+        function add_to_layer(data, this_layer, filter) {
+            $.each(data, function (index, value) {
+                if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
+                        ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || value.movelab_annotation.tiger_certainty_category >= selected_validation)))) {
+                    this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
+
                 }
-            }
+            });
+        }
 
-            function make_crowd_row(score, n_responses) {
-                if (score != null) {
-                    return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'crowd_row_title' %}: ' + get_cat_text(score) + (n_responses < 30 ? '<br><a href="http://crowdcrafting.org/app/Tigafotos/" target="_blank"><span style="x-small">{% trans 'crowd_row_more_responses_needed' %}</span></a>' : '') + '</div></td></tr>';
-                } else {
-                    return '';
+        {% block filter_function %}
+
+
+            function apply_filter() {
+
+                markers_clustered.clearLayers();
+                if(selected_type == 'site'){
+
+                    $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").addClass('blue');
+
+                }else{
+                    $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
+
                 }
+                add_to_layer(full_data, markers_clustered, true);
             }
 
+        {%  endblock %}
 
-            function make_user_response_row(score, responses) {
-                if (score != null) {
-                    return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_q2' %}</td><td class="response-table question">{% trans 'user_response_row_q3' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td><td class="response-table response">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
-                } else {
-                    return '';
-                }
-            }
+        function get_data(day, map) {
+            var csrftoken = $.cookie('csrftoken');
+            $.ajax({
+                url: 'http://{{ domain }}/api/{{ endpoint }}/?day=' + day,
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: {
+                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+                },
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                success: function (data) {
 
-            function make_photo_row(photo_html) {
-                if (photo_html != null) {
-                    return '<tr><td align="center" style="background-color: black;">' + photo_html + '</td></tr>';
-                } else {
-                    return '';
-                }
-            }
+                    if (data != null && data.length > 0) {
 
+                        add_to_layer(data, markers_clustered, true);
+                        full_data = full_data.concat(data);
 
-            function make_user_note_row(notes) {
-                if (notes != null && notes != '') {
-                    return '<tr><td><div class="note-div">' + notes + '</div></td></tr>';
-                } else {
-                    return '';
-                }
-            }
-
-            function make_popup_text(value) {
-                if (value.movelab_annotation != null) {
-                    return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
-                } else {
-                    return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
-                }
-            }
-
-
-
-
-            function add_to_layer(data, this_layer, filter) {
-                $.each(data, function (index, value) {
-                    if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
-                            ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || value.movelab_annotation.tiger_certainty_category >= selected_validation))) ) {
-                        this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
+                        console.log("data", data);
+                        console.log("all", full_data);
 
                     }
-                });
-            }
-
-                {% block filter_function %}
-
-
-                function apply_filter() {
-
-                    markers_clustered.clearLayers();
-                     add_to_layer(full_data, markers_clustered, true);
-                }
-
-            {%  endblock %}
-
-            function get_data(day, map) {
-                var csrftoken = $.cookie('csrftoken');
-                $.ajax({
-                    url: 'http://{{ domain }}/api/{{ endpoint }}/?day=' + day,
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    headers: {
-                        'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
-                    },
-                    beforeSend: function (xhr, settings) {
-                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                    },
-                    success: function (data) {
-
-                        if (data != null && data.length > 0) {
-
-                            add_to_layer(data, markers_clustered, true);
-                            full_data = full_data.concat(data);
-
-                            console.log("data", data);
-                            console.log("all", full_data);
-
-                        }
-                        percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
-                        progress_bar.css("width", percent_done.toString() + "%");
-                        if (percent_done > 10) {
-                            progress_bar.html(percent_done.toString() + "%");
-                        }
-                        if (percent_done >= 100) {
-                            progress_bar_container.fadeOut(2000);
-                        }
+                    percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
+                    progress_bar.css("width", percent_done.toString() + "%");
+                    if (percent_done > 10) {
+                        progress_bar.html(percent_done.toString() + "%");
                     }
-                });
-            }
-
-
-            function map_init_basic(map, options) {
-
-                map.on('zoomend', function (e) {
-                    saveMapState(map)
-                });
-                map.on('dragend', function (e) {
-                    saveMapState(map)
-                });
-
-                progress_bar = $("#progress_bar");
-                progress_bar_container = $("#progress_bar_container");
-
-                markers_clustered.addTo(map);
-
-                for (var d = {{ end_day }}; d >= 0; d--) {
-                    get_data(d, map);
+                    if (percent_done >= 100) {
+                        progress_bar_container.fadeOut(2000);
+                    }
                 }
+            });
+        }
+
+
+        function map_init_basic(map, options) {
+
+            map.on('zoomend', function (e) {
+                saveMapState(map)
+            });
+            map.on('dragend', function (e) {
+                saveMapState(map)
+            });
+
+            progress_bar = $("#progress_bar");
+            progress_bar_container = $("#progress_bar_container");
+
+            markers_clustered.addTo(map);
+
+            for (var d = {{ end_day }}; d >= 0; d--) {
+                get_data(d, map);
             }
+        }
 
         </script>
 
