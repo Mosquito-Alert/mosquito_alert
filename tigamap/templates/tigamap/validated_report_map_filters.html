@@ -321,8 +321,6 @@
         {% leaflet_css plugins="marker_cluster_yellow_single" %}
     {% endblock %}
 
-    <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
-    <script src="{% static "tigamap/jquery.cookie.js" %}"></script>
 
 
     {% block marker_js %}
@@ -651,15 +649,5 @@
 
 
 {% endblock %}
-
-{% block end_body %}
-
-    {{ block.super }}
-
-    <script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
-
-
-{% endblock %}
-
 
 

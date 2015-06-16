@@ -10,6 +10,11 @@
     <link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap-theme.min.css" %}>
         <link rel="stylesheet" href={% static "tigamap/bootstrap-select/css/bootstrap-select.min.css" %}>
 
+       <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
+    <script src="{% static "tigamap/jquery.cookie.js" %}"></script>
+
+
+
 <style>
 
 @media (min-width: 1150px) and (max-width: 1200px){
@@ -325,7 +330,6 @@ function removeMe(){
 
 
     {% block end_body %}
-    <script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
     <script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
     <script src="{% static "tigamap/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
 
