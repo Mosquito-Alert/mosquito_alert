@@ -331,6 +331,8 @@
             var progress_bar_container;
 
 
+            var markers_all = new L.MarkerClusterGroup();
+
             var markers_clustered = new L.MarkerClusterGroup();
 
             var YellowRedIcon = L.Icon.Default.extend({
@@ -450,10 +452,10 @@
 
 
 
-            function add_to_layer(data){
+            function add_to_layer(data, layer, filter){
                  $.each(data, function (index, value) {
                                 if (value != null && value.lat != null && value.lon != null && value.type != null) {
-                                    markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
+                                    layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value.movelab_annotation)}).bindPopup(make_popup_text(value), popup_options));
 
                                 }
                             });
@@ -475,7 +477,7 @@
 
                         if (data != null && data.length > 0) {
 
-                           add_to_layer(data)
+                           add_to_layer(data, markers_clustered, false)
 
                         }
                         percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});

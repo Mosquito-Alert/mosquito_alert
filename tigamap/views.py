@@ -347,3 +347,14 @@ def show_new_coverage_map(request):
     context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path,  'hrefs': hrefs, 'last_id': last_id}
     context.update(csrf(request))
     return render(request, 'tigamap/coverage_map_new.html', context)
+
+
+def show_filterable_report_map(request):
+    if settings.DEBUG:
+        current_domain = 'humboldt.ceab.csic.es'
+    else:
+        current_domain = 'tigaserver.atrapaeltigre.com'
+    endpoint = 'all_reports'
+    context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint}
+    context.update(csrf(request))
+    return render(request, 'tigamap/validated_report_map_filters.html', context)
