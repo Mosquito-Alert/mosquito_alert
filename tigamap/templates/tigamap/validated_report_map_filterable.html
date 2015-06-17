@@ -22,6 +22,8 @@
 {% leaflet_js plugins="marker_cluster_blue_yellow" %}
 {% leaflet_css plugins="marker_cluster_blue_yellow" %}
 
+<link id="cluster_color_css" rel="stylesheet" href={% static "tigamap/MarkerCluster.tigamap_yellow.css" %}>
+
 <link rel="stylesheet" href={% static "tigamap/base_style.css" %}>
 <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}>
 <link rel="stylesheet" href={% static "tigamap/tigamap_shrink.css" %}>
@@ -300,10 +302,12 @@ function apply_filter() {
 
         $(".legend").hide();
         $(".marker-cluster").addClass('blue');
+        $("#cluster_color_css").attr({href : "/static/tigamap/MarkerCluster.tigamap_blue.css"});
 
     } else {
         $(".legend").show();
         $(".marker-cluster").removeClass('blue');
+        $("#cluster_color_css").attr({href : "/static/tigamap/MarkerCluster.tigamap_yellow.css"});
 
     }
 }
