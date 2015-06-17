@@ -516,11 +516,14 @@
                 },
                 success: function (data) {
 
+                                            markers_clustered.addLayer(L.marker([30, 30]));
+
                     if (data != null && data.length > 0) {
 
 //                        add_to_layer(data, markers_clustered, true);
   //                      full_data = full_data.concat(data);
 
+                        markers_clustered.addLayer(L.marker([20, 20]));
 
 
                  $.each(data, function (index, value) {
