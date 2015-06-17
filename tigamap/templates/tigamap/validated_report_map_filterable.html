@@ -847,7 +847,7 @@ function map_init_basic(map, options) {
                 initialZoom = 6;
             }
 
-
+            {% block map_options %}
             var djoptions = {"layers": [
                         ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                             "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
@@ -861,6 +861,7 @@ function map_init_basic(map, options) {
                         ], "resetview": true, "srid": null, "fitextent": true},
                     options = {djoptions: djoptions, initfunc: loadmap,
                         globals: false, callback: window.map_init_basic, zoomControl: false};
+            {% endblock %}
             L.Map.djangoMap('tigamap', options);
         }
 
