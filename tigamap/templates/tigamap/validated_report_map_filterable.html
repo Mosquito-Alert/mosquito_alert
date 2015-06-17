@@ -449,6 +449,8 @@ function update_coverage_data() {
 
 function map_init_basic(map, options) {
 
+    new L.Control.Zoom({ position: 'topright' }).addTo(map);
+
     map.on('zoomend', function (e) {
         saveMapState(map)
     });
@@ -851,7 +853,7 @@ function map_init_basic(map, options) {
                                 180]
                         ], "resetview": true, "srid": null, "fitextent": true},
                     options = {djoptions: djoptions, initfunc: loadmap,
-                        globals: false, callback: window.map_init_basic, zoomControl: true};
+                        globals: false, callback: window.map_init_basic, zoomControl: false};
             L.Map.djangoMap('tigamap', options);
         }
 
