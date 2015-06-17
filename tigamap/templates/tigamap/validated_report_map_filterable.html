@@ -353,7 +353,7 @@ function apply_filter() {
         $(".legend").hide();
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
-        $("#year_select, #month_select, #validation_select").prop('disabled', false);
+        $("#year_select, #month_select, #validation_select, .btn[data-id=year_select], .btn[data-id=month_select], .btn[data-id=validation_select]").prop('disabled', false);
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
         $(".coverage_legend").hide();
@@ -361,10 +361,10 @@ function apply_filter() {
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
-        $("#year_select, #month_select, #validation_select").prop('disabled', false);
+        $("#year_select, #month_select, #validation_select, .btn[data-id=year_select], .btn[data-id=month_select], .btn[data-id=validation_select]").prop('disabled', false);
 
     } else if (selected_type == 'coverage') {
-        $("#year_select, #month_select, #validation_select").prop('disabled', true);
+        $("#year_select, #month_select, #validation_select, .btn[data-id=year_select], .btn[data-id=month_select], .btn[data-id=validation_select]").prop('disabled', true);
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
         $(".legend").hide();
         $(".coverage_legend").show();
