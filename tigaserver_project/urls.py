@@ -57,7 +57,7 @@ urlpatterns += i18n_patterns('',
     url(r'^webmap/coverage/$', views.show_new_coverage_map, name='coverage_map'),
     url(r'^webmap/$', views.show_adult_map, name='webmap.show_map_defaults'),
     url(r'^$', views.show_filterable_report_map),
-    url(r'^bcn/$', {'limit': 'bcn'}, views.show_filterable_report_map)
+    url(r'^bcn/$', {'limit': 'bcn'}, views.show_filterable_report_map),
     url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', views.show_single_report_map, name='webmap.single_report'),
     url(r'^photomap/$', views.show_validated_photo_map, name='validated_photo_map'),
     url(r'^stats/$', show_usage),
