@@ -412,7 +412,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 if current_pending < max_pending:
                     n_to_get = max_pending - current_pending
                     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-                    new_reports_unfiltered = Report.objects.exclude(creation_time__year__lte=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
+                    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
                     if new_reports_unfiltered:
                         new_reports = filter_reports(new_reports_unfiltered)
                         reports_to_take = new_reports[0:n_to_get]

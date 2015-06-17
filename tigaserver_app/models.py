@@ -767,3 +767,20 @@ class CoverageArea(models.Model):
 
     class Meta:
         unique_together = ("lat", "lon")
+
+
+class CoverageAreaMonth(models.Model):
+    lat = models.FloatField()
+    lon = models.FloatField()
+    year = models.IntegerField()
+    month = models.IntegerField()
+    n_fixes = models.PositiveIntegerField()
+    last_modified = models.DateTimeField(auto_now=True)
+    latest_report_server_upload_time = models.DateTimeField()
+    latest_fix_id = models.PositiveIntegerField()
+
+    def __unicode__(self):
+        return str(self.id)
+
+    class Meta:
+        unique_together = ("lat", "lon", "year", "month")
