@@ -462,7 +462,9 @@ function map_init_basic(map, options) {
     }
 
     var increment = 50;
+      console.log("about to");
     for (var id = 0; id <= {{ last_coverage_id }}; id += increment) {
+          console.log("callit");
         get_coverage_data(id, id + (increment - 1), map);
     }
 
