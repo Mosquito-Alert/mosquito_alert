@@ -31,7 +31,7 @@
 
 
 <script>
-    var selected_year = 0;
+    var selected_year = 2015;
     var selected_month = 0;
     var selected_type = 'adult';
     var selected_validation = -2;
@@ -397,6 +397,19 @@ function map_init_basic(map, options) {
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
+
+                        <li>
+                         <form class="navbar-form" role="search">
+                    <div class="form-group">
+                            <select id="year_select_nav" class="selectpicker show-tick">
+                                <option value="2015" data-subtext="Only reports made in 2015">2015</option>
+                                <option value="2014" data-subtext="Only reports made in 2014">2014</option>
+                                <option value="0" data-subtext="All reports">All</option>
+                            </select>
+                        </div>
+                             </form>
+
+</li>
                         <li>
                             <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
                                     data-target="#myModal" style="margin-left:5px"><span
