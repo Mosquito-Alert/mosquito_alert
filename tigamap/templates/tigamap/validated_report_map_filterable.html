@@ -406,8 +406,11 @@ function get_coverage_data(id_start, id_stop, map) {
         },
         success: function (data) {
 
+            console.log("succcess");
             if (data != null && data.length > 0) {
                 full_coverage_data = full_coverage_data.concat(data);
+
+                            console.log("succcess2", data);
 
             }
 
