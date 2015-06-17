@@ -266,8 +266,7 @@ function add_to_layer(data, this_layer, filter) {
     $.each(data, function (index, value) {
         if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
                 ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || value.movelab_annotation.tiger_certainty_category >= selected_validation)))) {
-            this_layer.addLayer(L.marker([value.lat, value.lon]));
-//.bindPopup(make_popup_text(value), popup_options)
+            this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value)})).bindPopup(make_popup_text(value), popup_options);
         }
     });
 }
@@ -278,10 +277,12 @@ function apply_filter() {
     markers_clustered.clearLayers();
     if (selected_type == 'site') {
 
-        $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").addClass('blue');
+        $(".legend").hide();
+        $(".marker-cluster").addClass('blue');
 
     } else {
-        $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
+        $(".legend").show();
+        $(".marker-cluster").removeClass('blue');
 
     }
     add_to_layer(full_data, markers_clustered, true);
