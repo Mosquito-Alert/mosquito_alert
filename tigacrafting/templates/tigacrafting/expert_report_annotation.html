@@ -322,20 +322,19 @@
                 <form role="form" class="form-horizontal">
 
             <div class="form-group">
-                <label for="orderby_select">Order By:</label>
-                <select id="orderby_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
+                <label for="orderby_select" class="col-sm-4 control-label">Order By:</label>
+                 <div class="col-sm-8">
+                <select id="orderby_select" class="selectpicker show-tick form-control">
                     <option value="date">Report Date</option>
                     <option value="tiger_score">Tiger Certainty Score</option>
                     <option value="site_score">Site Certainty Score</option>
                 </select>
+                     </div>
             </div>
             <div class="form-group">
-                <label for="tiger_certainty_select">Tiger Certainty Category:</label>
-                <select id="tiger_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
+                <label for="tiger_certainty_select" class="col-sm-4 control-label">Tiger Certainty Category:</label>
+                 <div class="col-sm-8">
+                <select id="tiger_certainty_select" class="selectpicker show-tick form-control">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="-2">Definitely not a tiger mosquito</option>
                     <option value="-1">Probably not a tiger mosquito</option>
@@ -343,12 +342,12 @@
                     <option value="1">Probably a tiger mosquito</option>
                     <option value="2">Definitely a tiger mosquito</option>
                 </select>
+                     </div>
             </div>
             <div class="form-group">
-                <label for="site_certainty_select">Site Certainty Category:</label>
-                <select id="site_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
+                <label for="site_certainty_select" class="col-sm-4 control-label">Site Certainty Category:</label>
+                 <div class="col-sm-8">
+                <select id="site_certainty_select" class="selectpicker show-tick form-control">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="-2">Definitely not a breeding site</option>
                     <option value="-1">Probably not a breeding site</option>
@@ -356,45 +355,46 @@
                     <option value="1">Probably a breeding site</option>
                     <option value="2">Definitely a breeding site</option>
                 </select>
+                     </div>
             </div>
             <div class="form-group">
-                <label for="tiger_pending_select">Status of Tiger Annotations:</label>
-                <select id="tiger_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
+                <label for="tiger_pending_select" class="col-sm-4 control-label">Status of Tiger Annotations:</label>
+                 <div class="col-sm-8">
+                <select id="tiger_pending_select" class="selectpicker show-tick form-control">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="pending">Pending only</option>
                     <option value="complete">Complete only</option>
                 </select>
+                     </div>
             </div>
             <div class="form-group">
-                <label for="site_pending_select">Status of Site Annotations:</label>
-                <select id="site_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
+                <label for="site_pending_select" class="col-sm-4 control-label">Status of Site Annotations:</label>
+                 <div class="col-sm-8">
+                <select id="site_pending_select" class="selectpicker show-tick form-control">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="pending">Pending only</option>
                     <option value="complete">Complete only</option>
                 </select>
+                     </div>
             </div>
             <div class="form-group">
-                <label for="flagged_select">Flagged By Me:</label>
-                <select id="flagged_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
+                <label for="flagged_select" class="col-sm-4 control-label">Flagged By Me:</label>
+                 <div class="col-sm-8">
+                <select id="flagged_select" class="selectpicker show-tick form-control">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="flagged">Flagged only</option>
                     <option value="unflagged">Unflagged only</option>
                 </select>
+                     </div>
             </div>
             <div class="form-group">
-                <label for="flagged_others_select">Flagged By Others:</label>
-                <select id="flagged_others_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
+                <label for="flagged_others_select" class="col-sm-4 control-label">Flagged By Others:</label>
+                 <div class="col-sm-8">
+                <select id="flagged_others_select" class="selectpicker show-tick form-control">
                     <option value="all">{% trans 'All' %}</option>
                     <option value="flagged">Flagged by someone</option>
                 </select>
+                     </div>
             </div>
 
 
@@ -409,92 +409,6 @@
 </div>
 
 
-
-    <div id="filters_div"
-         style="position:fixed; display:none;background-color: rgba(200,200,200,1); border:1px solid rgba(100,100,100,1); border-radius: 5px; margin-left:5px; margin-right:5px; width:99%; padding:5px;z-index:100;">
-        <form role="form" class="form-inline">
-            <div class="form-group">
-                <label for="orderby_select">Order By:</label>
-                <select id="orderby_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="date">Report Date</option>
-                    <option value="tiger_score">Tiger Certainty Score</option>
-                    <option value="site_score">Site Certainty Score</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="tiger_certainty_select">Tiger Certainty Category:</label>
-                <select id="tiger_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="-2">Definitely not a tiger mosquito</option>
-                    <option value="-1">Probably not a tiger mosquito</option>
-                    <option value="0">Not sure</option>
-                    <option value="1">Probably a tiger mosquito</option>
-                    <option value="2">Definitely a tiger mosquito</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="site_certainty_select">Site Certainty Category:</label>
-                <select id="site_certainty_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="-2">Definitely not a breeding site</option>
-                    <option value="-1">Probably not a breeding site</option>
-                    <option value="0">Not sure</option>
-                    <option value="1">Probably a breeding site</option>
-                    <option value="2">Definitely a breeding site</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="tiger_pending_select">Status of Tiger Annotations:</label>
-                <select id="tiger_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="pending">Pending only</option>
-                    <option value="complete">Complete only</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="site_pending_select">Status of Site Annotations:</label>
-                <select id="site_pending_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="pending">Pending only</option>
-                    <option value="complete">Complete only</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="flagged_select">Flagged By Me:</label>
-                <select id="flagged_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="flagged">Flagged only</option>
-                    <option value="unflagged">Unflagged only</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="flagged_others_select">Flagged By Others:</label>
-                <select id="flagged_others_select" class="left selectpicker show-tick form-control" data-width="90%"
-                        data-style="btn-more"
-                        data-live-search="false" data-size="15">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="flagged">Flagged by someone</option>
-                </select>
-            </div>
-
-        </form>
-        <br>
-        <button style="margin: 0 auto;width:30%" id="filters_submit_button" class="btn btn-warning">Apply Filter
-        </button>
-
-    </div>
 
 
 
