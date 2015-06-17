@@ -276,14 +276,14 @@ function add_to_layer(data, this_layer, filter) {
 function apply_filter() {
 
     markers_clustered.clearLayers();
-    if (selected_type == 'site') {
+ //   if (selected_type == 'site') {
 
-        $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").addClass('blue');
+//        $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").addClass('blue');
 
-    } else {
-        $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
+  //  } else {
+   //     $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
 
-    }
+   // }
     add_to_layer(full_data, markers_clustered, true);
 }
 
