@@ -139,8 +139,11 @@ var progress_bar_container;
 
 
 var full_data = [];
+var full_coverage_data = [];
 
 var markers_clustered = new L.MarkerClusterGroup();
+var coverage_fg = new L.FeatureGroup();
+
 
 var YellowRedIcon = L.Icon.Default.extend({
     options: {
@@ -290,6 +293,25 @@ function make_popup_text(value) {
 }
 
 
+    function make_coverage_popup_text(n_fixes) {
+            var fixes = '{% trans 'fixes' %}';
+            if (n_fixes == 1) {
+                fixes = '{% trans 'fix' %}';
+            }
+            return '<p style="text-align:center; font-size: 1.3em;">' + n_fixes + ' ' + fixes + '</p>';
+        }
+
+        function make_opacity(n_fixes) {
+            var opacity = .3;
+            if (n_fixes > 100) {
+                opacity = .5;
+            }
+            if (n_fixes > 1000) {
+                opacity = .7;
+            }
+            return opacity;
+        }
+
 function add_to_layer(data, this_layer, filter) {
     $.each(data, function (index, value) {
         if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
@@ -299,21 +321,37 @@ function add_to_layer(data, this_layer, filter) {
     });
 }
 
+function add_to_coverage_fg(data, this_fg, filter){
+     $.each(data, function (index, value) {
+                            if (value != null && value.lat != null && value.lon != null && value.n_fixes != null) {
+
+                             this_fg.addLayer(L.polygon([
+                                    [value.lat, value.lon],
+                                    [value.lat + 0.05, value.lon],
+                                    [value.lat + 0.05, value.lon + 0.05],
+                                    [value.lat, value.lon + 0.05]
+                                ], {weight: 0.5, opacity: 1, color: color, fillOpacity: make_opacity(value.n_fixes), fillColor: color}).bindPopup(make_coverage_popup_text(value.n_fixes), popup_options));
+
+                            }
+                        });
+
+}
 
 function apply_filter() {
     markers_clustered.clearLayers();
-    add_to_layer(full_data, markers_clustered, true);
     if (selected_type == 'site') {
-
+        add_to_layer(full_data, markers_clustered, true);
         $(".legend").hide();
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
-
-    } else {
+    } else if (selected_type == 'adult'{
+        add_to_layer(full_data, markers_clustered, true);
         $(".legend").show();
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
 
+    } else if (selected_type == 'coverage'){
+        add_to_coverage_fg(full_coverage_data, coverage_fg, true);
     }
 }
 
@@ -351,6 +389,30 @@ function get_data(day, map) {
 }
 
 
+        function get_coverage_data(id_start, id_stop, map) {
+            var csrftoken = $.cookie('csrftoken');
+            $.ajax({
+                url: 'http://{{ domain }}/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: {
+                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+                },
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                success: function (data) {
+
+                    if (data != null && data.length > 0) {
+                        full_coverage_data = full_coverage_data.concat(data);
+
+                    }
+
+                }
+            });
+        }
+
+
 function map_init_basic(map, options) {
 
     map.on('zoomend', function (e) {
@@ -363,11 +425,10 @@ function map_init_basic(map, options) {
     progress_bar = $("#progress_bar");
     progress_bar_container = $("#progress_bar_container");
 
-    markers_clustered.addLayer(L.marker([0, 0]));
 
     markers_clustered.addTo(map);
 
-    markers_clustered.addLayer(L.marker([10, 10]));
+    coverage_fg.addTo(map);
 
 
     for (var d = {{ end_day }}; d >= 0; d--) {
