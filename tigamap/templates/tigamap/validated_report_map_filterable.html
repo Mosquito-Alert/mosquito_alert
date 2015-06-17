@@ -9,8 +9,6 @@
 <meta name="format-detection" content="telephone=no">
 <title>Tigatrapp Map</title>
 
-<link rel="stylesheet" href={% static "tigamap/base_style.css" %}>
-
 
 <script src="{% static "tigamap/tigamap_scripts.js" %}"></script>
 
@@ -24,10 +22,10 @@
 {% leaflet_js plugins="marker_cluster_blue_yellow" %}
 {% leaflet_css plugins="marker_cluster_blue_yellow" %}
 
-
-<link rel="stylesheet" href={% static "tigamap/tigamap_shrink.css" %}>
-
+<link rel="stylesheet" href={% static "tigamap/base_style.css" %}>
 <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}>
+<link rel="stylesheet" href={% static "tigamap/tigamap_shrink.css" %}>
+<link rel="stylesheet" href={% static "tigamap/tigamap_legend.css" %}>
 
 
 <script>
