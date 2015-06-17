@@ -120,6 +120,11 @@
     }
 
 
+.navbar-form{
+        padding-right: 1px;
+        padding-left: 1px;
+    }
+
 </style>
 
 <!-- FA CSS -->
@@ -259,28 +264,28 @@ function make_popup_text(value) {
             return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
         }
     } else {
-             if (value.site_cat != null) {
-                        if(value.site_cat == 0){
-                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'storm-drain' %}</p>';
-                        }
-                        else if(value.site_cat == 1){
-                           return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Fountain' %}</p>';
-                        }
-                        else if(value.site_cat == 2){
-                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Basin' %}</p>';
-                        }
-                        else if(value.site_cat == 3){
-                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Bucket' %}</p>';
-                        }
-                        else if(value.site_cat == 4){
-                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Well' %}</p>';
-                        }
-                        else {
-                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Other' %}</p>';
-                        }
-                    } else {
-                        return '';
-                    }
+        if (value.site_cat != null) {
+            if (value.site_cat == 0) {
+                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'storm-drain' %}</p>';
+            }
+            else if (value.site_cat == 1) {
+                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Fountain' %}</p>';
+            }
+            else if (value.site_cat == 2) {
+                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Basin' %}</p>';
+            }
+            else if (value.site_cat == 3) {
+                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Bucket' %}</p>';
+            }
+            else if (value.site_cat == 4) {
+                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Well' %}</p>';
+            }
+            else {
+                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Other' %}</p>';
+            }
+        } else {
+            return '';
+        }
     }
 }
 
@@ -301,13 +306,13 @@ function apply_filter() {
     if (selected_type == 'site') {
 
         $(".legend").hide();
-    //    $(".marker-cluster").addClass('blue');
-        $("#cluster_color_css").attr({href : "/static/tigamap/MarkerCluster.tigamap_blue.css"});
+        //    $(".marker-cluster").addClass('blue');
+        $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
 
     } else {
         $(".legend").show();
-    //    $(".marker-cluster").removeClass('blue');
-        $("#cluster_color_css").attr({href : "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
+        //    $(".marker-cluster").removeClass('blue');
+        $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
 
     }
 }
@@ -392,33 +397,84 @@ function map_init_basic(map, options) {
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <div class="navbar-brand" title="Tigatrapp Map" style="color:orange;margin-right:15px">
+                    <div class="navbar-brand shrinking-text" title="Tigatrapp Map" style="color:orange;">
                         <strong>Tigatrapp Map</strong></div>
                 </div>
                 <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
 
-                        <li>
-                         <form class="navbar-form" role="search">
-                    <div class="form-group">
-                            <select id="year_select_nav" class="selectpicker show-tick" data-style="btn-primary">
-                                <option value="2015">2015</option>
-                                <option value="2014">2014</option>
-                                <option value="0">All years</option>
-                            </select>
-                        </div>
-                             </form>
+                            <form class="navbar-form navbar-left" role="search">
+                                <div class="form-group">
+                                    <select id="year_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-primary" style="margin-right: 3px;">
+                                        <option value="2015">2015</option>
+                                        <option value="2014">2014</option>
+                                        <option value="0">All years</option>
+                                    </select>
+                                </div>
+                            </form>
 
-</li>
-                        <li>
-                            <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
-                                    data-target="#myModal" style="margin-left:5px"><span
-                                    class="glyphicon glyphicon-filter"></span> Filter
-                            </button>
-                        </li>
 
-                        <li><a href="{{ hrefs.coverage }}"
-                                >{% trans 'Coverage' %}</a></li>
+                            <form class="navbar-form navbar-left" role="search">
+
+                                <div class="form-group">
+                                    <select id="month_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-success">
+                                        <option value="0">All months</option>
+                                        <option value="1">January
+                                        </option>
+                                        <option value="2">February
+                                        </option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September
+                                        </option>
+                                        <option value="10">October
+                                        </option>
+                                        <option value="11">November
+                                        </option>
+                                        <option value="12">December
+                                        </option>
+                                    </select>
+                                </div>
+
+                            </form>
+
+                            <form class="navbar-form navbar-left" role="search">
+                                <div class="form-group">
+                                    <select id="type_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-warning">
+                                        <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
+                                        <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
+                                            sites
+                                        </option>
+                                        <option value="coverage" data-subtext="Tigatrapp coverage">{% trans 'Coverage' %}</option>
+                                    </select>
+                                </div>
+                            </form>
+
+                            <form class="navbar-form navbar-left" role="search">
+                                <div class="form-group">
+                                    <select id="validation_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-info">
+                                        <option value="2" data-subtext="Only highly probably reports">Strong Validation
+                                        </option>
+                                        <option value="1"
+                                                data-subtext="Only probably and highly probably reports">Medium
+                                            Validation
+                                        </option>
+                                        <option value="-2" data-subtext="No validation filter">All Reports</option>
+                                    </select>
+                                </div>
+                            </form>
+
+
+
+                 <ul class="nav navbar-nav navbar-left">
+
                         <li>
                             <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}"
                                class="btn btn-inverse btn-lg"><span
@@ -438,12 +494,13 @@ function map_init_basic(map, options) {
 
                     </ul>
 
-                    <form style="max-width: 200px;" class="navbar-form navbar-right"
+
+                                                    <form style="max-width: 200px;" class="navbar-form navbar-right"
                           action="{% url 'set_language' %}" method="post">
                         <div class="form-group">
                             {% csrf_token %}
                             <input name="next" type="hidden" value="{{ request.get_full_path|slice:'3:' }}"/>
-                            <select class="form-control" name="language" onchange="this.form.submit()">
+                            <select class="selectpicker show-tick form-control" name="language" onchange="this.form.submit()" data-style="btn-inverse">
                                 {% get_language_info_list for LANGUAGES as languages %}
                                 {% for language in languages %}
                                     <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
@@ -454,6 +511,7 @@ function map_init_basic(map, options) {
                             </select>
                         </div>
                     </form>
+
 
                 </div>
             </div>
@@ -475,70 +533,6 @@ function map_init_basic(map, options) {
             </div>
             <div class="modal-body">
                 <form role="form" class="form-horizontal">
-                    <div class="form-group">
-                        <label for="year_select" class="col-sm-4 control-label">Year:</label>
-
-                        <div class="col-sm-8">
-                            <select id="year_select" class="selectpicker show-tick form-control">
-                                <option value="2015" data-subtext="Only reports made in 2015">2015</option>
-                                <option value="2014" data-subtext="Only reports made in 2014">2014</option>
-                                <option value="0" data-subtext="All reports">All</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="month_select" class="col-sm-4 control-label">Month:</label>
-
-                        <div class="col-sm-8">
-                            <select id="month_select" class="selectpicker show-tick form-control">
-                                <option value="0" data-subtext="All months">All</option>
-                                <option value="1" data-subtext="Only reports made in January">January</option>
-                                <option value="2" data-subtext="Only reports made in February">February</option>
-                                <option value="3" data-subtext="Only reports made in March">March</option>
-                                <option value="4" data-subtext="Only reports made in April">April</option>
-                                <option value="5" data-subtext="Only reports made in May">May</option>
-                                <option value="6" data-subtext="Only reports made in June">June</option>
-                                <option value="7" data-subtext="Only reports made in July">July</option>
-                                <option value="8" data-subtext="Only reports made in August">August</option>
-                                <option value="9" data-subtext="Only reports made in September">September
-                                </option>
-                                <option value="10" data-subtext="Only reports made in October">October</option>
-                                <option value="11" data-subtext="Only reports made in November">November
-                                </option>
-                                <option value="12" data-subtext="Only reports made in December">December
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="type_select" class="col-sm-4 control-label">Report Type:</label>
-
-                        <div class="col-sm-8">
-                            <select id="type_select" class="selectpicker show-tick form-control">
-                                <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
-                                <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
-                                    sites
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="validation_select" class="col-sm-4 control-label">Expert Validation:</label>
-
-                        <div class="col-sm-8">
-                            <select id="validation_select" class="selectpicker show-tick form-control">
-                                <option value="2" data-subtext="Only highly probably reports">Strong Validation
-                                </option>
-                                <option value="1"
-                                        data-subtext="Only probably and highly probably reports">Medium
-                                    Validation
-                                </option>
-                                <option value="-2" data-subtext="No validation filter">All Reports</option>
-                            </select>
-                        </div>
-                    </div>
 
 
                 </form>
