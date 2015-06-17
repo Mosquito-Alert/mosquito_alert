@@ -344,7 +344,7 @@ function apply_filter() {
         $(".legend").hide();
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
-    } else if (selected_type == 'adult'{
+    } else if (selected_type == 'adult'){
         add_to_layer(full_data, markers_clustered, true);
         $(".legend").show();
         //    $(".marker-cluster").removeClass('blue');
@@ -413,6 +413,26 @@ function get_data(day, map) {
         }
 
 
+     function update_coverage_data() {
+            var csrftoken = $.cookie('csrftoken');
+            $.ajax({
+                url: 'http://{{ domain }}/api/update_coverage/',
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: {
+                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+                },
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                success: function (data) {
+
+                    // do nothing (user will not always have the most updated data, since it will update after grabbing it, but this way the user gets the data fast and it is updated for the next call
+
+                }
+            });
+        }
+
 function map_init_basic(map, options) {
 
     map.on('zoomend', function (e) {
@@ -434,6 +454,14 @@ function map_init_basic(map, options) {
     for (var d = {{ end_day }}; d >= 0; d--) {
         get_data(d, map);
     }
+
+    var increment = 50;
+            for (var id = 0; id <= {{ last_id }}; id += increment) {
+                get_data(id, id + (increment - 1), map);
+            }
+
+            update_coverage_data();
+
 }
 
 </script>
