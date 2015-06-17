@@ -27,7 +27,7 @@
 <link rel="stylesheet" href={% static "tigamap/base_style.css" %}>
 <link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}>
 <link rel="stylesheet" href={% static "tigamap/tigamap_shrink.css" %}>
-<link rel="stylesheet" href={% static "tigamap/tigamap_legend.css" %}>
+<link id="legend_css" rel="stylesheet" href={% static "tigamap/tigamap_legend.css" %}>
 
 
 <script>
@@ -355,8 +355,10 @@ function apply_filter() {
         $(".legend").show();
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
+        $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
 
     } else if (selected_type == 'coverage') {
+        $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
         $(".coverage_legend").show();
         $(".legend").hide();
         add_to_coverage_fg(full_coverage_data, coverage_fg, true);
@@ -627,7 +629,7 @@ function map_init_basic(map, options) {
 </div>
 
 
-<div class="coverage_legend">
+<div class="coverage_legend" style="display: none;">
 
     <div class="legend-main-table-container">
         <table class="legend-main-table">
