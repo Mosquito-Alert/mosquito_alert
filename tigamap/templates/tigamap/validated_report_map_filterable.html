@@ -457,7 +457,7 @@ function map_init_basic(map, options) {
 
     var increment = 50;
             for (var id = 0; id <=500; id += increment) {
-                get_data(id, id + (increment - 1), map);
+                get_coverage_data(id, id + (increment - 1), map);
             }
 
             update_coverage_data();
