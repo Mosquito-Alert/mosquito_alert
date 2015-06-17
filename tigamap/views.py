@@ -255,9 +255,9 @@ def show_embedded_adult_map(request, legend=''):
     context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint}
     context.update(csrf(request))
     if legend == 'legend':
-        return render(request, 'tigamap/embedded_new_legend.html', context)
+        return render(request, 'tigamap/embedded_2015.html', context)
     else:
-        return render(request, 'tigamap/embedded_new_no_legend.html', context)
+        return render(request, 'tigamap/embedded_2015_no_legend.html', context)
 
 
 def show_adult_map(request, type='all'):
