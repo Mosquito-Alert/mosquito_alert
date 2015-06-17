@@ -405,7 +405,7 @@ function map_init_basic(map, options) {
                             <form class="navbar-form navbar-left" role="search">
                                 <div class="form-group">
                                     <select id="year_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-primary" style="margin-right: 3px;">
+                                            data-style="btn-primary" onchange="update_filters()">
                                         <option value="2015">2015</option>
                                         <option value="2014">2014</option>
                                         <option value="0">All years</option>
@@ -418,7 +418,7 @@ function map_init_basic(map, options) {
 
                                 <div class="form-group">
                                     <select id="month_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-success">
+                                            data-style="btn-success" onchange="update_filters()">
                                         <option value="0">All months</option>
                                         <option value="1">January
                                         </option>
@@ -446,7 +446,7 @@ function map_init_basic(map, options) {
                             <form class="navbar-form navbar-left" role="search">
                                 <div class="form-group">
                                     <select id="type_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-warning">
+                                            data-style="btn-warning" onchange="update_filters()">
                                         <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
                                         <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
                                             sites
@@ -459,7 +459,7 @@ function map_init_basic(map, options) {
                             <form class="navbar-form navbar-left" role="search">
                                 <div class="form-group">
                                     <select id="validation_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-info">
+                                            data-style="btn-info" onchange="update_filters()">
                                         <option value="2" data-subtext="Only highly probably reports">Strong Validation
                                         </option>
                                         <option value="1"
@@ -734,7 +734,7 @@ function map_init_basic(map, options) {
     $("#validation_select").val(selected_validation);
 
 
-    $("#filters_submit_button").on('click', function () {
+    function update_filters() {
         selected_year = $("#year_select").val();
         selected_month = $("#month_select").val();
         selected_type = $("#type_select").val();
@@ -742,8 +742,7 @@ function map_init_basic(map, options) {
 
         apply_filter();
 
-        $('#myModal').modal('hide');
-    })
+    }
 
 
 </script>
