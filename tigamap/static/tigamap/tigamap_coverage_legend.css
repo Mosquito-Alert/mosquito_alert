@@ -36,7 +36,7 @@
         }
 
         @media (max-width: 700px), (max-height: 570px) {
-            .legend {
+            .coverage_legend {
                 display: none;
             }
             #hand-left {
@@ -74,7 +74,7 @@
             }
         }
 
-            .legend {
+            .coverage_legend {
                 background-color: rgb(200, 200, 200);
                 border-top-right-radius: 15px;
                 border-bottom-right-radius: 15px;
@@ -89,7 +89,7 @@
                 -webkit-transition: left 1s ease;
             }
 
-            .legend:hover {
+            .coverage_legend:hover {
                 left: 0;
             }
 
@@ -178,10 +178,10 @@
                 z-index: 1000;
             }
 
-            .legend:hover #hand-left {
+            .coverage_legend:hover #hand-left {
                 opacity: 0;
             }
 
-            .legend:hover #more_info_div {
+            .coverage_legend:hover #more_info_div {
                 opacity: 1;
             }
