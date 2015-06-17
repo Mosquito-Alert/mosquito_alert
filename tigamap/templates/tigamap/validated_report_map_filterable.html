@@ -387,7 +387,7 @@ function get_data(day, map) {
             }
             if (percent_done >= 100) {
                 progress_bar_container.fadeOut(2000);
-                apply_filter();
+
             }
         }
     });
@@ -412,7 +412,7 @@ function get_coverage_data(id_start, id_stop, map) {
             if (data != null && data.length > 0) {
                 full_coverage_data = full_coverage_data.concat(data);
 
-
+            apply_filter();
 
             }
 
@@ -458,16 +458,10 @@ function map_init_basic(map, options) {
 
     coverage_fg.addTo(map);
 
+    get_coverage_data(0, {{ last_coverage_id }}, map);
 
     for (var d = {{ end_day }}; d >= 0; d--) {
         get_data(d, map);
-    }
-
-    var increment = 50;
-
-    for (var id = 0; id <= {{ last_coverage_id }}; id += increment) {
-
-        get_coverage_data(id, id + (increment - 1), map);
     }
 
     update_coverage_data();
