@@ -5,8 +5,10 @@
 
 {% block map_options %}
 
-    var southWest = L.latLng(41.195641, 1.360680),
-    northEast = L.latLng(42.323299, 2.778270),
+
+
+    var southWest = L.latLng(41.321049, 2.052380),
+    northEast = L.latLng(41.468609, 2.225610),
     bounds = L.latLngBounds(southWest, northEast),
     bounds_array = [[southWest.lat, southWest.lng],[northEast.lat, northEast.lng]];
 
@@ -15,7 +17,7 @@
                             "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
                     ],
                         "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                        "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": bounds_array, "resetview": true, "srid": null, "fitextent": true},
+                        "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 14, "extent": bounds_array, "resetview": true, "srid": null, "fitextent": true},
                     options = {djoptions: djoptions, initfunc: loadmap,
                         globals: false, callback: window.map_init_basic, zoomControl: false, maxBounds: bounds};
 
