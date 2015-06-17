@@ -342,6 +342,7 @@ function add_to_coverage_fg(data, this_fg, filter) {
 
 function apply_filter() {
     markers_clustered.clearLayers();
+    coverage_fg.clearLayers();
     if (selected_type == 'site') {
         add_to_layer(full_data, markers_clustered, true);
         $(".legend").hide();
@@ -386,6 +387,7 @@ function get_data(day, map) {
             }
             if (percent_done >= 100) {
                 progress_bar_container.fadeOut(2000);
+                apply_filter();
             }
         }
     });
@@ -406,7 +408,7 @@ function get_coverage_data(id_start, id_stop, map) {
         },
         success: function (data) {
 
-            
+
             if (data != null && data.length > 0) {
                 full_coverage_data = full_coverage_data.concat(data);
 
