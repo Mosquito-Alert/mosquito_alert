@@ -359,8 +359,8 @@ function apply_filter() {
 
     } else if (selected_type == 'coverage') {
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
-        $(".coverage_legend").show();
         $(".legend").hide();
+        $(".coverage_legend").show();
         add_to_coverage_fg(full_coverage_data, coverage_fg, true);
     }
 }

@@ -113,10 +113,11 @@
                             </li>
 
                             <li>
-                                <button id="show_filters_button" class="btn btn-warning btn-sm navbar-btn"
-                                        style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span> Filter
-                                </button>
-                            </li>
+                            <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
+                                    data-target="#myModal" style="margin-left:5px"><span
+                                    class="glyphicon glyphicon-filter"></span> Filter
+                            </button>
+                        </li>
 
 
                             <li>
@@ -666,6 +667,7 @@
             qp += "&site_pending=" + $("#site_pending_select").val();
             qp += "&flagged=" + $("#flagged_select").val();
             qp += "&flagged_others=" + $("#flagged_others_select").val();
+            $('#myModal').modal('hide');
             window.location.href = qp;
         })
 
