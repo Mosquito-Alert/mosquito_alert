@@ -321,6 +321,10 @@ function add_to_layer(data, this_layer, filter) {
     });
 }
 
+
+  var cov_color = '#f00';
+
+
 function add_to_coverage_fg(data, this_fg, filter){
      $.each(data, function (index, value) {
                             if (value != null && value.lat != null && value.lon != null && value.n_fixes != null) {
@@ -330,7 +334,7 @@ function add_to_coverage_fg(data, this_fg, filter){
                                     [value.lat + 0.05, value.lon],
                                     [value.lat + 0.05, value.lon + 0.05],
                                     [value.lat, value.lon + 0.05]
-                                ], {weight: 0.5, opacity: 1, color: color, fillOpacity: make_opacity(value.n_fixes), fillColor: color}).bindPopup(make_coverage_popup_text(value.n_fixes), popup_options));
+                                ], {weight: 0.5, opacity: 1, color: cov_color, fillOpacity: make_opacity(value.n_fixes), fillColor: color}).bindPopup(make_coverage_popup_text(value.n_fixes), popup_options));
 
                             }
                         });
