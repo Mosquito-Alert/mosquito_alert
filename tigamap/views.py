@@ -289,7 +289,7 @@ def show_adult_map(request, type='all'):
         endpoint = 'all_adults'
     context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs, 'end_day': get_n_days(), 'endpoint': endpoint}
     context.update(csrf(request))
-    return render(request, 'tigamap/validated_report_map_filters.html', context)
+    return render(request, 'tigamap/validated_report_map_filterable.html', context)
 
 
 def show_site_map(request, type='all'):
@@ -357,4 +357,4 @@ def show_filterable_report_map(request):
     endpoint = 'all_reports'
     context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint}
     context.update(csrf(request))
-    return render(request, 'tigamap/validated_report_map_filters.html', context)
+    return render(request, 'tigamap/validated_report_map_filterable.html', context)

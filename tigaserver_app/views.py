@@ -464,7 +464,7 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
 
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), property_filter='other')
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
