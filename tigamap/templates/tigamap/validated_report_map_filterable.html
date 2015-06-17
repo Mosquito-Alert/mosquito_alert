@@ -333,7 +333,7 @@ function add_to_coverage_fg(data, this_fg, filter) {
                 [value.lat + 0.05, value.lon],
                 [value.lat + 0.05, value.lon + 0.05],
                 [value.lat, value.lon + 0.05]
-            ], {weight: 0.5, opacity: 1, color: cov_color, fillOpacity: make_opacity(value.n_fixes), fillColor: color}).bindPopup(make_coverage_popup_text(value.n_fixes), popup_options));
+            ], {weight: 0.5, opacity: 1, color: cov_color, fillOpacity: make_opacity(value.n_fixes), fillColor: cov_color}).bindPopup(make_coverage_popup_text(value.n_fixes), popup_options));
 
         }
     });
@@ -614,29 +614,6 @@ function map_init_basic(map, options) {
 </div>
 
 
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Map Filters</h4>
-            </div>
-            <div class="modal-body">
-                <form role="form" class="form-horizontal">
-
-
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 
 <div id="tigamap" class="leaflet-container-default"></div>
