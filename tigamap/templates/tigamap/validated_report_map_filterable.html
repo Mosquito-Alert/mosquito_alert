@@ -126,7 +126,6 @@
 <link rel="stylesheet" href={% static "tigamap/font-awesome-4.2.0/css/font-awesome.min.css" %}>
 
 
-
 <script type="text/javascript">
 
 var percent_done;
@@ -137,7 +136,6 @@ var progress_bar_container;
 var full_data = [];
 
 var markers_clustered = new L.MarkerClusterGroup();
-
 
 var YellowRedIcon = L.Icon.Default.extend({
     options: {
@@ -166,6 +164,7 @@ var YellowBlackIcon = L.Icon.Default.extend({
 });
 
 
+var blue_icon = new L.Icon.Default;
 var yellow_red_icon = new YellowRedIcon();
 var yellow_orange_icon = new YellowOrangeIcon();
 var yellow_white_icon = new YellowWhiteIcon();
@@ -188,11 +187,15 @@ function rc2s(response_code) {
 
 function get_icon(report) {
 
-    if (report.movelab_annotation != null) {
-        var score = report.movelab_annotation.tiger_certainty_category;
-        return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
+    if (report.type == 'adult') {
+        if (report.movelab_annotation != null) {
+            var score = report.movelab_annotation.tiger_certainty_category;
+            return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
+        } else {
+            return yellow_white_icon;
+        }
     } else {
-        return yellow_white_icon;
+        return blue_icon;
     }
 
 }
