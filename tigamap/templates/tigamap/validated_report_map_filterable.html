@@ -1,721 +1,726 @@
-{% extends "tigamap/app_filtered.html" %}
 {% load staticfiles %}
 {% load i18n %}
 {% load leaflet_tags %}
 
-{% block leaflet_code %}
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<meta name="format-detection" content="telephone=no">
+<title>Tigatrapp Map</title>
 
-    {% block fa_css %}
-        <!-- FA CSS -->
-        <link rel="stylesheet" href={% static "tigamap/font-awesome-4.2.0/css/font-awesome.min.css" %}>
-    {% endblock %}
+<link rel="stylesheet" href={% static "tigamap/base_style.css" %}>
 
 
-    {% block map_style %}
+<script src="{% static "tigamap/tigamap_scripts.js" %}"></script>
+
+<link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap.min.css" %}>
+<link rel="stylesheet" href={% static "tigamap/bootstrap-3.1.1-dist/css/bootstrap-theme.min.css" %}>
+<link rel="stylesheet" href={% static "tigamap/bootstrap-select/css/bootstrap-select.min.css" %}>
+
+<script src="{% static "tigamap/jquery-1.11.1.min.js" %}"></script>
+<script src="{% static "tigamap/jquery.cookie.js" %}"></script>
+
+{% leaflet_js plugins="marker_cluster_blue_yellow" %}
+{% leaflet_css plugins="marker_cluster_blue_yellow" %}
 
 
-        <style>
-        .popup-table td {
-            padding: 0;
-            vertical-align: bottom;
+<link rel="stylesheet" href={% static "tigamap/tigamap_shrink.css" %}>
+
+<link rel="stylesheet" href={% static "tigamap/map_app_style.css" %}>
+
+
+<script>
+    var selected_year = 0;
+    var selected_month = 0;
+    var selected_type = 'adult';
+    var selected_validation = -2;
+
+
+</script>
+
+<script>
+    // The following code is adapted from Creare's 'Implied Consent' EU Cookie Law Banner v:2.4
+    // Conceived by Robert Kent, James Bavington & Tom Foyster
+
+    var dropCookie = true;                      // false disables the Cookie, allowing you to style the banner
+    var cookieDuration = 14;                    // Number of days before the cookie expires, and the banner reappears
+    var cookieName = 'complianceCookie';        // Name of our cookie
+    var cookieValue = 'on';                     // Value of cookie
+
+    function createDiv() {
+        var bodytag = document.getElementsByTagName('body')[0];
+        var div = document.createElement('div');
+        div.style.textAlign = 'center';
+        div.style.backgroundColor = '#F6D10A';
+        div.setAttribute('id', 'cookie-law');
+        div.innerHTML = "{% trans 'our-website-uses-cookies' %} <a href='{% url 'help.show_privacy' %}'' rel='nofollow' title='{% trans 'privacy-policy' %}'>{% trans 'privacy-policy' %}</a> {% trans 'and'  %} <a href='{% url 'help.show_terms' %}' rel='nofollow' title='{% trans 'user-agreement' %}'>{% trans 'user-agreement' %}</a>.&nbsp;&nbsp;<a class='close-cookie-banner' href='javascript:void(0);' onclick='removeMe();'><span style='cursor: pointer;'>X</span></a>";
+        // Be advised the Close Banner 'X' link requires jQuery
+
+        // bodytag.appendChild(div); // Adds the Cookie Law Banner just before the closing </body> tag
+        // or
+        bodytag.insertBefore(div, bodytag.firstChild); // Adds the Cookie Law Banner just after the opening <body> tag
+
+        document.getElementsByTagName('body')[0].className += ' cookiebanner'; //Adds a class tothe <body> tag when the banner is visible
+
+    }
+
+
+    function createCookie(name, value, days) {
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            var expires = "; expires=" + date.toGMTString();
         }
-
-        body {
-            padding-top: 50px;
+        else var expires = "";
+        if (window.dropCookie) {
+            document.cookie = name + "=" + value + expires + "; path=/";
         }
+    }
 
-        .leaflet-popup-content {
-            overflow-y: auto;
+    function checkCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
         }
+        return null;
+    }
 
-        .popup-table table {
-            border-collapse: collapse;
-            font-size: .9em !important;
-            table-layout: fixed;
-            width: 182px;
+    function eraseCookie(name) {
+        createCookie(name, "", -1);
+    }
+
+    window.onload = function () {
+        if (checkCookie(window.cookieName) != window.cookieValue) {
+            createDiv();
         }
+    }
 
-        .popup-table table, td, th {
-            border: 1px solid black;
+    function removeMe() {
+        var element = document.getElementById('cookie-law');
+        element.parentNode.removeChild(element);
+        createCookie(window.cookieName, window.cookieValue, window.cookieDuration); // Create the cookie
+
+    }
+
+    //
+
+
+</script>
+
+
+<style>
+    .leaflet-container {
+        /* all maps */
+        width: 100%;
+        height: 100%;
+    }
+
+
+</style>
+
+<!-- FA CSS -->
+<link rel="stylesheet" href={% static "tigamap/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+
+
+
+<script type="text/javascript">
+
+var percent_done;
+var progress_bar;
+var progress_bar_container;
+
+
+var full_data = [];
+
+var markers_clustered = new L.MarkerClusterGroup();
+
+
+var YellowRedIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/yellow_red_dot.png" %}'
+    }
+});
+var YellowOrangeIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/yellow_orange_dot.png" %}'
+    }
+});
+var YellowWhiteIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/yellow_white_dot.png" %}'
+    }
+});
+var YellowGreyIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/yellow_grey_dot.png" %}'
+    }
+});
+var YellowBlackIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/yellow_black_dot.png" %}'
+    }
+});
+
+
+var yellow_red_icon = new YellowRedIcon();
+var yellow_orange_icon = new YellowOrangeIcon();
+var yellow_white_icon = new YellowWhiteIcon();
+var yellow_grey_icon = new YellowGreyIcon();
+var yellow_black_icon = new YellowBlackIcon();
+var day_just_finished = 0;
+var popup_options = {
+    'minWidth': 182,
+    'maxHeight': 330,
+    'closeButton': false
+};
+
+function rc2s(response_code) {
+    if (response_code == null) {
+        return "{% trans 'not_sure' %}"
+    } else {
+        return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not_sure' %}" : "{%  trans 'no' %}");
+    }
+}
+
+function get_icon(report) {
+
+    if (report.movelab_annotation != null) {
+        var score = report.movelab_annotation.tiger_certainty_category;
+        return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
+    } else {
+        return yellow_white_icon;
+    }
+
+}
+
+function get_color_class(score) {
+    return score == 2 ? 'red' : (score == 1 ? 'orange' : (score == -1 ? 'grey' : (score == -2 ? 'black' : 'white')));
+}
+
+
+function get_cat_text(score) {
+    return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : '{% trans 'expert_cat_unknown' %}')));
+}
+
+function make_experts_row(score) {
+    if (score != null) {
+        return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: ' + get_cat_text(score) + '</div></td></tr>';
+    } else {
+        return '';
+    }
+}
+
+function make_crowd_row(score, n_responses) {
+    if (score != null) {
+        return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'crowd_row_title' %}: ' + get_cat_text(score) + (n_responses < 30 ? '<br><a href="http://crowdcrafting.org/app/Tigafotos/" target="_blank"><span style="x-small">{% trans 'crowd_row_more_responses_needed' %}</span></a>' : '') + '</div></td></tr>';
+    } else {
+        return '';
+    }
+}
+
+
+function make_user_response_row(score, responses) {
+    if (score != null) {
+        return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_q2' %}</td><td class="response-table question">{% trans 'user_response_row_q3' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td><td class="response-table response">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
+    } else {
+        return '';
+    }
+}
+
+function make_photo_row(photo_html) {
+    if (photo_html != null) {
+        return '<tr><td align="center" style="background-color: black;">' + photo_html + '</td></tr>';
+    } else {
+        return '';
+    }
+}
+
+
+function make_user_note_row(notes) {
+    if (notes != null && notes != '') {
+        return '<tr><td><div class="note-div">' + notes + '</div></td></tr>';
+    } else {
+        return '';
+    }
+}
+
+function make_popup_text(value) {
+    if (value.type == 'adult') {
+        if (value.movelab_annotation != null) {
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+        } else {
+            return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
         }
-
-        .response-table {
-            text-align: center;
-            border: none !important;
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
-            width: 100% !important;
-            font-size: 1em;
-        }
-
-        .response-table .border-right {
-            border-right: 1px dotted !important;
-        }
-
-        .response-table .question {
-            font-size: .8em;
-            font-style: italic;
-            font-align: left;
-            padding: 3px;
-            vertical-align: top;
-        }
-
-        .color-box {
-            width: 100%;
-            text-align: center;
-            vertical-align: middle;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            padding-left: 2px;
-            padding-right: 2px;
-            font-size: .9em;
-        }
-
-        .black {
-            background-color: black;
-            color: white;
-        }
-
-        .grey {
-            background-color: grey;
-            color: white;
-        }
-
-        .red {
-            background-color: red;
-        }
-
-        .orange {
-            background-color: orange;
-        }
-
-        .note-div {
-            font-size: .9em;
-            padding: 5px;
-        }
-
-        .my-progress-bar-container {
-            background-color: rgba(0, 0, 0, .25);
-            border-radius: 15px;
-            position: absolute;
-            bottom: 30px;
-            left: 10px;
-            width: 60%;
-            height: 20px;
-        }
-
-        .my-progress-bar {
-            background-image: -webkit-linear-gradient(top, #428bca 0, #3071a9 100%);
-            background-image: linear-gradient(to bottom, #428bca 0, #3071a9 100%);
-            background-repeat: repeat-x;
-            height: 100%;
-            width: 0;
-            font-size: 12px;
-            line-height: 20px;
-            color: #fff;
-            text-align: center;
-            background-color: #428bca;
-            -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
-            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
-            border-radius: 15px;
-            -webkit-transition: width .6s ease;
-            transition: width .6s ease;
-        }
-
-        {% block conditional_legend %}
-            @media (max-width: 700px), (max-height: 570px) {
-                .legend {
-                    display: none;
-                }
-
-                #hand-left {
-                    display: none;
-                }
-
-                #more_info_div {
-                    display: none;
-                }
-
-                #more_info_button {
-                    display: none;
-                }
-
-                .legend-main-table {
-                    display: none;
-                }
-
-                .legend-main-table, .legend-main-table tr, .legend-main-table td {
-                    display: none;
-                }
-
-                .legend-popup-area {
-                    display: none;
-                }
-
-                .legend-popup {
-                    display: none;
-                }
-
-                .legend-popup-table {
-                    display: none;
-                }
-
-                .legend-popup-table td {
-                    display: none;
-                }
-
-                .legend-popup-table a {
-                    display: none;
-                }
-
-                .legend-popup-infodiv {
-                    display: none;
-                }
-
-                .info-button-background {
-                    display: none;
-                }
-
-                .info-button-background img {
-                    display: none;
-                }
-
-                .infodiv-table {
-                    display: none;
-                }
-
-                .infodiv-table td {
-                    display: none;
-                }
-            }
-        {% endblock %}
-
-        .legend {
-            background-color: rgb(200, 200, 200);
-            border-top-right-radius: 15px;
-            border-bottom-right-radius: 15px;
-            position: absolute;
-            left: -320px;
-            border: 1px solid;
-            bottom: 60px;
-            width: 430px;
-            min-height: 340px;
-            overflow: hidden;
-            -moz-transition: left 1s ease;
-            -webkit-transition: left 1s ease;
-        }
-
-        .legend:hover {
-            left: 0;
-        }
-
-        #hand-left {
-            opacity: 1;
-            position: absolute;
-            right: 35px;
-            bottom: 10px;
-
-            -moz-transition: opacity 2s ease;
-            -webkit-transition: opacity 2s ease;
-        }
-
-        #more_info_div {
-            position: absolute;
-            bottom: 10px;
-            right: 35px;
-            opacity: 0;
-            -moz-transition: opacity 3s ease;
-            -webkit-transition: opacity 3s ease;
-
-        }
-
-        #more_info_button {
-            position: absolute;
-            bottom: 5px;
-            right: 0;
-        }
-
-        .legend:hover #hand-left {
-            opacity: 0;
-        }
-
-        .legend:hover #more_info_div {
-            opacity: 1;
-        }
-
-        .legend-main-table-container {
-            max-width: 50px;
-            position: absolute;
-            right: 50px;
-            top: 10px;
-        }
-
-        .legend-main-table {
-            max-width: 50px;
-        }
-
-        .legend-main-table, .legend-main-table tr, .legend-main-table td {
-            border: none;
-            padding: 4px;
-            text-align: left;
-            vertical-align: middle;
-            font-size: .9em;
-        }
-
-        .legend-popup-area {
-            position: absolute !important;
-            left: 10px !important;
-            bottom: 0 !important;
-            top: 14px !important;
-            width: 310px;
-        }
-
-        .legend-popup {
-            z-index: 1;
-        }
-
-        .legend-popup-table {
-            width: 240px !important;
-            border: 1px solid;
-            text-align: left;
-            padding: 5px !important;
-            vertical-align: middle;
-            font-size: .85em;
-        }
-
-        .legend-popup-table td {
-            padding: 5px !important;
-        }
-
-        .legend-popup-table a {
-            font-weight: bold;
-            color: #000000;
-        }
-
-        .legend-popup-infodiv {
-            padding-top: 5px;
-            padding-bottom: 5px;
-            width: 100%;
-            height: 100%;
-        }
-
-        .info-button-background {
-            background-color: #aaaaaa;
-            border-radius: 50%;
-            height: 30px;
-            width: 30px;
-        }
-
-        .info-button-background img {
-            vertical-align: middle;
-        }
-
-        .info-button-background:hover {
-            background-color: white !important;
-        }
-
-        .infodiv-table {
-            padding: 3px;
-            vertical-align: middle;
-            text-align: left;
-            font-size: 1.2em;
-        }
-
-        .infodiv-table td {
-            vertical-align: middle;
-            padding-left: 5px !important;
-            border: none !important;
-        }
-
-        </style>
-
-    {% endblock %}
-
-    {% block leaflet_marker_clusters %}
-        {% leaflet_js plugins="marker_cluster_yellow" %}
-        {% leaflet_css plugins="marker_cluster_yellow" %}
-    {% endblock %}
-
-
-
-    {% block marker_js %}
-        <script type="text/javascript">
-
-        var percent_done;
-        var progress_bar;
-        var progress_bar_container;
-
-
-        var full_data = [];
-
-        var markers_clustered = new L.MarkerClusterGroup();
-
-
-        var YellowRedIcon = L.Icon.Default.extend({
-            options: {
-                iconUrl: '{% static "tigamap/yellow_red_dot.png" %}'
-            }
-        });
-        var YellowOrangeIcon = L.Icon.Default.extend({
-            options: {
-                iconUrl: '{% static "tigamap/yellow_orange_dot.png" %}'
-            }
-        });
-        var YellowWhiteIcon = L.Icon.Default.extend({
-            options: {
-                iconUrl: '{% static "tigamap/yellow_white_dot.png" %}'
-            }
-        });
-        var YellowGreyIcon = L.Icon.Default.extend({
-            options: {
-                iconUrl: '{% static "tigamap/yellow_grey_dot.png" %}'
-            }
-        });
-        var YellowBlackIcon = L.Icon.Default.extend({
-            options: {
-                iconUrl: '{% static "tigamap/yellow_black_dot.png" %}'
-            }
-        });
-
-
-        var yellow_red_icon = new YellowRedIcon();
-        var yellow_orange_icon = new YellowOrangeIcon();
-        var yellow_white_icon = new YellowWhiteIcon();
-        var yellow_grey_icon = new YellowGreyIcon();
-        var yellow_black_icon = new YellowBlackIcon();
-        var day_just_finished = 0;
-        var popup_options = {
-            'minWidth': 182,
-            'maxHeight': 330,
-            'closeButton': false
-        };
-
-        function rc2s(response_code) {
-            if (response_code == null) {
-                return "{% trans 'not_sure' %}"
-            } else {
-                return response_code == 1 ? "{% trans 'yes' %}" : (response_code == 0 ? "{% trans 'not_sure' %}" : "{%  trans 'no' %}");
-            }
-        }
-
-        function get_icon(report) {
-
-            if(report.movelab_annotation !=null){
-                    var score = report.movelab_annotation.tiger_certainty_category;
-                    return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
-                } else {
-                    return yellow_white_icon;
-                }
-
-        }
-
-        function get_color_class(score) {
-            return score == 2 ? 'red' : (score == 1 ? 'orange' : (score == -1 ? 'grey' : (score == -2 ? 'black' : 'white')));
-        }
-
-
-        function get_cat_text(score) {
-            return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : '{% trans 'expert_cat_unknown' %}')));
-        }
-
-        function make_experts_row(score) {
-            if (score != null) {
-                return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: ' + get_cat_text(score) + '</div></td></tr>';
-            } else {
-                return '';
-            }
-        }
-
-        function make_crowd_row(score, n_responses) {
-            if (score != null) {
-                return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'crowd_row_title' %}: ' + get_cat_text(score) + (n_responses < 30 ? '<br><a href="http://crowdcrafting.org/app/Tigafotos/" target="_blank"><span style="x-small">{% trans 'crowd_row_more_responses_needed' %}</span></a>' : '') + '</div></td></tr>';
-            } else {
-                return '';
-            }
-        }
-
-
-        function make_user_response_row(score, responses) {
-            if (score != null) {
-                return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_q2' %}</td><td class="response-table question">{% trans 'user_response_row_q3' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td><td class="response-table response">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
-            } else {
-                return '';
-            }
-        }
-
-        function make_photo_row(photo_html) {
-            if (photo_html != null) {
-                return '<tr><td align="center" style="background-color: black;">' + photo_html + '</td></tr>';
-            } else {
-                return '';
-            }
-        }
-
-
-        function make_user_note_row(notes) {
-            if (notes != null && notes != '') {
-                return '<tr><td><div class="note-div">' + notes + '</div></td></tr>';
-            } else {
-                return '';
-            }
-        }
-
-        function make_popup_text(value) {
-            if(value.type == 'adult'){
-            if (value.movelab_annotation != null) {
-                return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
-            } else {
-                return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
-            }
-            } else{
-                return '';
-            }
-        }
-
-
-        function add_to_layer(data, this_layer, filter) {
-            $.each(data, function (index, value) {
-                if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
-                        ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || value.movelab_annotation.tiger_certainty_category >= selected_validation)))) {
-                    this_layer.addLayer(L.marker([value.lat, value.lon] ));
+    } else {
+        return '';
+    }
+}
+
+
+function add_to_layer(data, this_layer, filter) {
+    $.each(data, function (index, value) {
+        if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
+                ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || value.movelab_annotation.tiger_certainty_category >= selected_validation)))) {
+            this_layer.addLayer(L.marker([value.lat, value.lon]));
 //.bindPopup(make_popup_text(value), popup_options)
-                }
-            });
         }
+    });
+}
 
-        {% block filter_function %}
+
+function apply_filter() {
+
+    markers_clustered.clearLayers();
+    if (selected_type == 'site') {
+
+        $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").addClass('blue');
+
+    } else {
+        $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
+
+    }
+    add_to_layer(full_data, markers_clustered, true);
+}
 
 
-            function apply_filter() {
+function get_data(day, map) {
+    var csrftoken = $.cookie('csrftoken');
+    $.ajax({
+        url: 'http://{{ domain }}/api/{{ endpoint }}/?day=' + day,
+        contentType: 'application/json',
+        dataType: 'json',
+        headers: {
+            'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+        },
+        beforeSend: function (xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        },
+        success: function (data) {
 
-                markers_clustered.clearLayers();
-               // if(selected_type == 'site'){
+            if (data != null && data.length > 0) {
 
-           //         $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").addClass('blue');
+                add_to_layer(data, markers_clustered, true);
+                full_data = full_data.concat(data);
 
-             //   }else{
-             //       $(".marker-cluster-small .marker-cluster-medium .marker-cluster-large").removeClass('blue');
-
-               // }
-                add_to_layer(full_data, markers_clustered, true);
             }
-
-        {%  endblock %}
-
-        function get_data(day, map) {
-            var csrftoken = $.cookie('csrftoken');
-            $.ajax({
-                url: 'http://{{ domain }}/api/{{ endpoint }}/?day=' + day,
-                contentType: 'application/json',
-                dataType: 'json',
-                headers: {
-                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
-                },
-                beforeSend: function (xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                },
-                success: function (data) {
-
-                                            markers_clustered.addLayer(L.marker([30, 30]));
-
-                    if (data != null && data.length > 0) {
-
-//                        add_to_layer(data, markers_clustered, true);
-  //                      full_data = full_data.concat(data);
-
-                        markers_clustered.addLayer(L.marker([20, 20]));
-
-
-                 $.each(data, function (index, value) {
-                if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == 'adult'){
-                    markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value)}));
-//.bindPopup(make_popup_text(value), popup_options)
-                }
-            });
-
-
-
-                    }
-                    percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
-                    progress_bar.css("width", percent_done.toString() + "%");
-                    if (percent_done > 10) {
-                        progress_bar.html(percent_done.toString() + "%");
-                    }
-                    if (percent_done >= 100) {
-                        progress_bar_container.fadeOut(2000);
-                    }
-                }
-            });
-        }
-
-
-
-
-        function map_init_basic(map, options) {
-
-            map.on('zoomend', function (e) {
-                saveMapState(map)
-            });
-            map.on('dragend', function (e) {
-                saveMapState(map)
-            });
-
-            progress_bar = $("#progress_bar");
-            progress_bar_container = $("#progress_bar_container");
-
-            markers_clustered.addLayer(L.marker([0, 0]));
-
-            markers_clustered.addTo(map);
-
-                        markers_clustered.addLayer(L.marker([10, 10]));
-
-
-            for (var d = {{ end_day }}; d >= 0; d--) {
-                get_data(d, map);
+            percent_done = Math.floor(100 * day_just_finished++ /{{ end_day }});
+            progress_bar.css("width", percent_done.toString() + "%");
+            if (percent_done > 10) {
+                progress_bar.html(percent_done.toString() + "%");
+            }
+            if (percent_done >= 100) {
+                progress_bar_container.fadeOut(2000);
             }
         }
-
-        </script>
-
-    {% endblock %}
-
-{% endblock %}
+    });
+}
 
 
+function map_init_basic(map, options) {
 
-{% block map_area %}
+    map.on('zoomend', function (e) {
+        saveMapState(map)
+    });
+    map.on('dragend', function (e) {
+        saveMapState(map)
+    });
 
-    {{ block.super }}
+    progress_bar = $("#progress_bar");
+    progress_bar_container = $("#progress_bar_container");
 
-    <div id="progress_bar_container" class="my-progress-bar-container">
-        <div id="progress_bar" class="my-progress-bar">
-        </div>
-    </div>
+    markers_clustered.addLayer(L.marker([0, 0]));
 
-    {% block legend %}
+    markers_clustered.addTo(map);
 
-        <div class="legend">
-            <div class="legend-main-table-container">
-                <table class="legend-main-table">
-                    <tr>
-                        <td colspan="2">
-                            <p style="font-weight: bold; font-size: 1.2em;">{% trans 'adult_report_legend_main_title' %}</p>
-                        </td>
-                    </tr>
+    markers_clustered.addLayer(L.marker([10, 10]));
 
-                    <tr>
-                        <td>
-                            <img src="{% static 'tigamap/yellow_red_dot.png' %}">
-                        </td>
-                        <td>
-                            {% trans 'expert_cat_tiger' %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <img src="{% static 'tigamap/yellow_orange_dot.png' %}">
-                        </td>
-                        <td>
-                            {% trans 'expert_cat_possible_tiger' %}
-                        </td>
-                    </tr>
 
-                    <tr>
-                        <td>
-                            <img src="{% static 'tigamap/yellow_white_dot.png' %}">
-                        </td>
-                        <td>
-                            {% trans 'expert_cat_unknown' %}
-                        </td>
-                    </tr>
+    for (var d = {{ end_day }}; d >= 0; d--) {
+        get_data(d, map);
+    }
+}
 
-                    <tr>
-                        <td>
-                            <img src="{% static 'tigamap/yellow_grey_dot.png' %}">
-                        </td>
-                        <td>
-                            {% trans 'expert_cat_possible_other' %}
-                        </td>
-                    </tr>
+</script>
 
-                    <tr>
-                        <td>
-                            <img src="{% static 'tigamap/yellow_black_dot.png' %}">
-                        </td>
-                        <td>
-                            {% trans 'expert_cat_other' %}
-                        </td>
-                    </tr>
-                </table>
-            </div>
 
-            <div class="legend-popup-area">
-                <div style="width:200px">
-                    <p style="margin-left: auto;margin-right: auto;width: 90%;font-weight:bold; font-size: .9em; text-align:center;">
-                        {% trans 'adult_report_legend_info_title' %}</p>
+</head>
+<body>
+
+
+<!-- NAVBAR
+================================================== -->
+<div class="navbar-wrapper">
+    <div class="container">
+
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target=".navbar-collapse">
+                        <span class="sr-only">{% trans "navbar_toggle_navigation" %}</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <div class="navbar-brand" title="Tigatrapp Map" style="color:orange;margin-right:15px">
+                        <strong>Tigatrapp Map</strong></div>
                 </div>
-                <div class="leaflet-popup legend-popup" style="opacity: 1;">
-                    <div class="leaflet-popup-content-wrapper">
-                        <div class="leaflet-popup-content" style="width: 250px;">
-                            <table class="legend-popup-table">
-                                <tr>
-                                    <td><strong>{% trans 'expert_row_title' %}:</strong> {% trans 'expert_row_help' %}
-                                    </td>
-                                </tr>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
+                                    data-target="#myModal" style="margin-left:5px"><span
+                                    class="glyphicon glyphicon-filter"></span> Filter
+                            </button>
+                        </li>
 
-                                <tr>
-                                    <td><strong>{% trans 'crowd_row_title' %}:</strong> {% trans 'crowd_row_help' %}
-                                    </td>
-                                </tr>
+                        <li><a href="{{ hrefs.coverage }}"
+                                >{% trans 'Coverage' %}</a></li>
+                        <li>
+                            <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}"
+                               class="btn btn-inverse btn-lg"><span
+                                    class="glyphicon glyphicon-info-sign"></span></a>
+                        </li>
 
-                                <tr>
-                                    <td><strong>{% trans 'report_row_title' %}:</strong> {% trans 'report_row_help' %}
-                                    </td>
-                                </tr>
 
-                                <tr>
-                                    <td><strong>{% trans 'photo_row_title' %}:</strong> {% trans 'photo_row_help' %}
-                                    </td>
-                                </tr>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        {% if request.user.is_authenticated %}
 
-                                <tr>
-                                    <td><strong>{% trans 'notes_row_title' %}:</strong> {% trans 'notes_row_help' %}
-                                    </td>
-                                </tr>
+                            <li><p style="padding-left: 10px;" class="navbar-text">{{ request.user.username }} /
+                                <a href="{% url "auth_logout" %}">logout</a></p>
+                            </li>
 
-                            </table>
+                        {% endif %}
+
+                    </ul>
+
+                    <form style="max-width: 200px;" class="navbar-form navbar-right"
+                          action="{% url 'set_language' %}" method="post">
+                        <div class="form-group">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path|slice:'3:' }}"/>
+                            <select class="form-control" name="language" onchange="this.form.submit()">
+                                {% get_language_info_list for LANGUAGES as languages %}
+                                {% for language in languages %}
+                                    <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                            selected="selected"{% endif %}>
+                                        {{ language.name_local|title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Map Filters</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label for="year_select" class="col-sm-4 control-label">Year:</label>
+
+                        <div class="col-sm-8">
+                            <select id="year_select" class="selectpicker show-tick form-control">
+                                <option value="2015" data-subtext="Only reports made in 2015">2015</option>
+                                <option value="2014" data-subtext="Only reports made in 2014">2014</option>
+                                <option value="0" data-subtext="All reports">All</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="leaflet-popup-tip-container">
-                        <div class="leaflet-popup-tip"></div>
+                    <div class="form-group">
+                        <label for="month_select" class="col-sm-4 control-label">Month:</label>
+
+                        <div class="col-sm-8">
+                            <select id="month_select" class="selectpicker show-tick form-control">
+                                <option value="0" data-subtext="All months">All</option>
+                                <option value="1" data-subtext="Only reports made in January">January</option>
+                                <option value="2" data-subtext="Only reports made in February">February</option>
+                                <option value="3" data-subtext="Only reports made in March">March</option>
+                                <option value="4" data-subtext="Only reports made in April">April</option>
+                                <option value="5" data-subtext="Only reports made in May">May</option>
+                                <option value="6" data-subtext="Only reports made in June">June</option>
+                                <option value="7" data-subtext="Only reports made in July">July</option>
+                                <option value="8" data-subtext="Only reports made in August">August</option>
+                                <option value="9" data-subtext="Only reports made in September">September
+                                </option>
+                                <option value="10" data-subtext="Only reports made in October">October</option>
+                                <option value="11" data-subtext="Only reports made in November">November
+                                </option>
+                                <option value="12" data-subtext="Only reports made in December">December
+                                </option>
+                            </select>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="form-group">
+                        <label for="type_select" class="col-sm-4 control-label">Report Type:</label>
+
+                        <div class="col-sm-8">
+                            <select id="type_select" class="selectpicker show-tick form-control">
+                                <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
+                                <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
+                                    sites
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="validation_select" class="col-sm-4 control-label">Expert Validation:</label>
+
+                        <div class="col-sm-8">
+                            <select id="validation_select" class="selectpicker show-tick form-control">
+                                <option value="2" data-subtext="Only highly probably reports">Strong Validation
+                                </option>
+                                <option value="1"
+                                        data-subtext="Only probably and highly probably reports">Medium
+                                    Validation
+                                </option>
+                                <option value="-2" data-subtext="No validation filter">All Reports</option>
+                            </select>
+                        </div>
+                    </div>
 
 
-                <div id="more_info_div"><span
-                        style="font-weight:bold; font-style:italic;font-size:.9em;color:#444444;">{% trans 'more_info' %}
-</span>
-
-                </div>
-
-                <div id="more_info_button">
-                    <a href="{% trans 'map_help_url_new' %}" target="_blank">
-                        <div class="info-button-background"><img width="30px" height="30px"
-                                                                 src="{% static "tigamap/info_button.png" %}"></div>
-                    </a>
-                </div>
-
-
+                </form>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
-            <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
+<div id="tigamap" class="leaflet-container-default"></div>
+
+<div id="progress_bar_container" class="my-progress-bar-container">
+    <div id="progress_bar" class="my-progress-bar">
+    </div>
+</div>
+
+
+<div class="legend">
+    <div class="legend-main-table-container">
+        <table class="legend-main-table">
+            <tr>
+                <td colspan="2">
+                    <p style="font-weight: bold; font-size: 1.2em;">{% trans 'adult_report_legend_main_title' %}</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/yellow_red_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_tiger' %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/yellow_orange_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_possible_tiger' %}
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/yellow_white_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_unknown' %}
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/yellow_grey_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_possible_other' %}
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/yellow_black_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_other' %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="legend-popup-area">
+        <div style="width:200px">
+            <p style="margin-left: auto;margin-right: auto;width: 90%;font-weight:bold; font-size: .9em; text-align:center;">
+                {% trans 'adult_report_legend_info_title' %}</p>
+        </div>
+        <div class="leaflet-popup legend-popup" style="opacity: 1;">
+            <div class="leaflet-popup-content-wrapper">
+                <div class="leaflet-popup-content" style="width: 250px;">
+                    <table class="legend-popup-table">
+                        <tr>
+                            <td><strong>{% trans 'expert_row_title' %}:</strong> {% trans 'expert_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'crowd_row_title' %}:</strong> {% trans 'crowd_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'report_row_title' %}:</strong> {% trans 'report_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'photo_row_title' %}:</strong> {% trans 'photo_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'notes_row_title' %}:</strong> {% trans 'notes_row_help' %}
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+            <div class="leaflet-popup-tip-container">
+                <div class="leaflet-popup-tip"></div>
+            </div>
+        </div>
+
+
+        <div id="more_info_div"><span
+                style="font-weight:bold; font-style:italic;font-size:.9em;color:#444444;">{% trans 'more_info' %}
+</span>
 
         </div>
 
-    {% endblock %}
+        <div id="more_info_button">
+            <a href="{% trans 'map_help_url_new' %}" target="_blank">
+                <div class="info-button-background"><img width="30px" height="30px"
+                                                         src="{% static "tigamap/info_button.png" %}"></div>
+            </a>
+        </div>
 
 
-{% endblock %}
+    </div>
+
+
+    <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
+
+</div>
+
+
+<script type="text/javascript">
+    (function () {
+
+        function loadmap() {
+
+            var centerLat = loadSavedLat();
+            var centerLng = loadSavedLng();
+            var initialZoom = loadSavedZoom();
+
+            if (isNaN(centerLat) || isNaN(centerLng)) {
+                centerLat = 40.0000;
+                centerLng = -4.0000;
+            }
+
+            if (isNaN(initialZoom)) {
+                initialZoom = 6;
+            }
+
+
+            var djoptions = {"layers": [
+                        ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
+                    ],
+                        "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                        "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                            [-90,
+                                -180],
+                            [90,
+                                180]
+                        ], "resetview": true, "srid": null, "fitextent": true},
+                    options = {djoptions: djoptions, initfunc: loadmap,
+                        globals: false, callback: window.map_init_basic, zoomControl: true};
+            L.Map.djangoMap('tigamap', options);
+        }
+
+        var loadevents = ["load"];
+        if (loadevents.length === 0) loadmap();
+        else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+        else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+
+    })();
+</script>
+
+
+<a href="http://atrapaeltigre.com"><img style="position:absolute;width:20%;bottom:20px;right:10px;"
+                                        src={% static "tigamap/tigatrapp_logo.png" %}></a>
+
+
+<script src="{% static "tigamap/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
+<script src="{% static "tigamap/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+
+<script>
+
+
+    $("#year_select").val(selected_year);
+    $("#month_select").val(selected_month);
+    $("#type_select").val(selected_type);
+    $("#validation_select").val(selected_validation);
+
+
+    function apply_filter() {
+        // to be extended in later templates
+    }
+
+    $("#filters_submit_button").on('click', function () {
+        selected_year = $("#year_select").val();
+        selected_month = $("#month_select").val();
+        selected_type = $("#type_select").val();
+        selected_validation = $("#validation_select").val();
+
+        apply_filter();
+
+        $('#myModal').modal('hide');
+    })
+
+
+</script>
+
+</body>
+</html>
+
 
 
