@@ -257,7 +257,28 @@ function make_popup_text(value) {
             return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
         }
     } else {
-        return '';
+             if (value.site_cat != null) {
+                        if(value.site_cat == 0){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'storm-drain' %}</p>';
+                        }
+                        else if(value.site_cat == 1){
+                           return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Fountain' %}</p>';
+                        }
+                        else if(value.site_cat == 2){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Basin' %}</p>';
+                        }
+                        else if(value.site_cat == 3){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Bucket' %}</p>';
+                        }
+                        else if(value.site_cat == 4){
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Well' %}</p>';
+                        }
+                        else {
+                            return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Other' %}</p>';
+                        }
+                    } else {
+                        return '';
+                    }
     }
 }
 
