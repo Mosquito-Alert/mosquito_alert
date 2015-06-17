@@ -301,12 +301,12 @@ function apply_filter() {
     if (selected_type == 'site') {
 
         $(".legend").hide();
-        $(".marker-cluster").addClass('blue');
+    //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href : "/static/tigamap/MarkerCluster.tigamap_blue.css"});
 
     } else {
         $(".legend").show();
-        $(".marker-cluster").removeClass('blue');
+    //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href : "/static/tigamap/MarkerCluster.tigamap_yellow.css"});
 
     }
