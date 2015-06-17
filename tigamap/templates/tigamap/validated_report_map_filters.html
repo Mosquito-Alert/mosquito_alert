@@ -521,8 +521,18 @@
 
                     if (data != null && data.length > 0) {
 
-                        add_to_layer(data, markers_clustered, true);
-                        full_data = full_data.concat(data);
+//                        add_to_layer(data, markers_clustered, true);
+  //                      full_data = full_data.concat(data);
+
+
+
+                 $.each(data, function (index, value) {
+                if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == 'adult'){
+                    markers_clustered.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value)}));
+//.bindPopup(make_popup_text(value), popup_options)
+                }
+            });
+
 
 
                     }
