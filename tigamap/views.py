@@ -354,7 +354,11 @@ def show_filterable_report_map(request):
         current_domain = 'humboldt.ceab.csic.es'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
+    if CoverageArea.objects.all().count() > 0:
+        last_coverage_id = CoverageArea.objects.order_by('id').last().id
+    else:
+        last_coverage_id = 0
     endpoint = 'all_reports'
-    context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint}
+    context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
     context.update(csrf(request))
     return render(request, 'tigamap/validated_report_map_filterable.html', context)

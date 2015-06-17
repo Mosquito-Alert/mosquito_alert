@@ -119,8 +119,7 @@
         height: 100%;
     }
 
-
-.navbar-form{
+    .navbar-form {
         padding-right: 1px;
         padding-left: 1px;
     }
@@ -293,24 +292,24 @@ function make_popup_text(value) {
 }
 
 
-    function make_coverage_popup_text(n_fixes) {
-            var fixes = '{% trans 'fixes' %}';
-            if (n_fixes == 1) {
-                fixes = '{% trans 'fix' %}';
-            }
-            return '<p style="text-align:center; font-size: 1.3em;">' + n_fixes + ' ' + fixes + '</p>';
-        }
+function make_coverage_popup_text(n_fixes) {
+    var fixes = '{% trans 'fixes' %}';
+    if (n_fixes == 1) {
+        fixes = '{% trans 'fix' %}';
+    }
+    return '<p style="text-align:center; font-size: 1.3em;">' + n_fixes + ' ' + fixes + '</p>';
+}
 
-        function make_opacity(n_fixes) {
-            var opacity = .3;
-            if (n_fixes > 100) {
-                opacity = .5;
-            }
-            if (n_fixes > 1000) {
-                opacity = .7;
-            }
-            return opacity;
-        }
+function make_opacity(n_fixes) {
+    var opacity = .3;
+    if (n_fixes > 100) {
+        opacity = .5;
+    }
+    if (n_fixes > 1000) {
+        opacity = .7;
+    }
+    return opacity;
+}
 
 function add_to_layer(data, this_layer, filter) {
     $.each(data, function (index, value) {
@@ -322,22 +321,22 @@ function add_to_layer(data, this_layer, filter) {
 }
 
 
-  var cov_color = '#f00';
+var cov_color = '#f00';
 
 
-function add_to_coverage_fg(data, this_fg, filter){
-     $.each(data, function (index, value) {
-                            if (value != null && value.lat != null && value.lon != null && value.n_fixes != null) {
+function add_to_coverage_fg(data, this_fg, filter) {
+    $.each(data, function (index, value) {
+        if (value != null && value.lat != null && value.lon != null && value.n_fixes != null) {
 
-                             this_fg.addLayer(L.polygon([
-                                    [value.lat, value.lon],
-                                    [value.lat + 0.05, value.lon],
-                                    [value.lat + 0.05, value.lon + 0.05],
-                                    [value.lat, value.lon + 0.05]
-                                ], {weight: 0.5, opacity: 1, color: cov_color, fillOpacity: make_opacity(value.n_fixes), fillColor: color}).bindPopup(make_coverage_popup_text(value.n_fixes), popup_options));
+            this_fg.addLayer(L.polygon([
+                [value.lat, value.lon],
+                [value.lat + 0.05, value.lon],
+                [value.lat + 0.05, value.lon + 0.05],
+                [value.lat, value.lon + 0.05]
+            ], {weight: 0.5, opacity: 1, color: cov_color, fillOpacity: make_opacity(value.n_fixes), fillColor: color}).bindPopup(make_coverage_popup_text(value.n_fixes), popup_options));
 
-                            }
-                        });
+        }
+    });
 
 }
 
@@ -348,13 +347,13 @@ function apply_filter() {
         $(".legend").hide();
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
-    } else if (selected_type == 'adult'){
+    } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
         $(".legend").show();
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
 
-    } else if (selected_type == 'coverage'){
+    } else if (selected_type == 'coverage') {
         add_to_coverage_fg(full_coverage_data, coverage_fg, true);
     }
 }
@@ -393,49 +392,49 @@ function get_data(day, map) {
 }
 
 
-        function get_coverage_data(id_start, id_stop, map) {
-            var csrftoken = $.cookie('csrftoken');
-            $.ajax({
-                url: 'http://{{ domain }}/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
-                contentType: 'application/json',
-                dataType: 'json',
-                headers: {
-                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
-                },
-                beforeSend: function (xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                },
-                success: function (data) {
+function get_coverage_data(id_start, id_stop, map) {
+    var csrftoken = $.cookie('csrftoken');
+    $.ajax({
+        url: 'http://{{ domain }}/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
+        contentType: 'application/json',
+        dataType: 'json',
+        headers: {
+            'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+        },
+        beforeSend: function (xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        },
+        success: function (data) {
 
-                    if (data != null && data.length > 0) {
-                        full_coverage_data = full_coverage_data.concat(data);
+            if (data != null && data.length > 0) {
+                full_coverage_data = full_coverage_data.concat(data);
 
-                    }
+            }
 
-                }
-            });
         }
+    });
+}
 
 
-     function update_coverage_data() {
-            var csrftoken = $.cookie('csrftoken');
-            $.ajax({
-                url: 'http://{{ domain }}/api/update_coverage/',
-                contentType: 'application/json',
-                dataType: 'json',
-                headers: {
-                    'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
-                },
-                beforeSend: function (xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                },
-                success: function (data) {
+function update_coverage_data() {
+    var csrftoken = $.cookie('csrftoken');
+    $.ajax({
+        url: 'http://{{ domain }}/api/update_coverage/',
+        contentType: 'application/json',
+        dataType: 'json',
+        headers: {
+            'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+        },
+        beforeSend: function (xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        },
+        success: function (data) {
 
-                    // do nothing (user will not always have the most updated data, since it will update after grabbing it, but this way the user gets the data fast and it is updated for the next call
+            // do nothing (user will not always have the most updated data, since it will update after grabbing it, but this way the user gets the data fast and it is updated for the next call
 
-                }
-            });
         }
+    });
+}
 
 function map_init_basic(map, options) {
 
@@ -460,11 +459,11 @@ function map_init_basic(map, options) {
     }
 
     var increment = 50;
-            for (var id = 0; id <=500; id += increment) {
-                get_coverage_data(id, id + (increment - 1), map);
-            }
+    for (var id = 0; id <= {{ last_coverage_id }}; id += increment) {
+        get_coverage_data(id, id + (increment - 1), map);
+    }
 
-            update_coverage_data();
+    update_coverage_data();
 
 }
 
@@ -495,78 +494,78 @@ function map_init_basic(map, options) {
                 </div>
                 <div class="navbar-collapse collapse">
 
-                            <form class="navbar-form navbar-left" role="search">
-                                <div class="form-group">
-                                    <select id="year_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-primary" onchange="update_filters()">
-                                        <option value="2015">2015</option>
-                                        <option value="2014">2014</option>
-                                        <option value="0">All years</option>
-                                    </select>
-                                </div>
-                            </form>
+                    <form class="navbar-form navbar-left" role="search">
+                        <div class="form-group">
+                            <select id="year_select" class="selectpicker show-tick form-control"
+                                    data-style="btn-primary" onchange="update_filters()">
+                                <option value="2015">2015</option>
+                                <option value="2014">2014</option>
+                                <option value="0">All years</option>
+                            </select>
+                        </div>
+                    </form>
 
 
-                            <form class="navbar-form navbar-left" role="search">
+                    <form class="navbar-form navbar-left" role="search">
 
-                                <div class="form-group">
-                                    <select id="month_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-success" onchange="update_filters()">
-                                        <option value="0">All months</option>
-                                        <option value="1">January
-                                        </option>
-                                        <option value="2">February
-                                        </option>
-                                        <option value="3">March</option>
-                                        <option value="4">April</option>
-                                        <option value="5">May</option>
-                                        <option value="6">June</option>
-                                        <option value="7">July</option>
-                                        <option value="8">August</option>
-                                        <option value="9">September
-                                        </option>
-                                        <option value="10">October
-                                        </option>
-                                        <option value="11">November
-                                        </option>
-                                        <option value="12">December
-                                        </option>
-                                    </select>
-                                </div>
+                        <div class="form-group">
+                            <select id="month_select" class="selectpicker show-tick form-control"
+                                    data-style="btn-success" onchange="update_filters()">
+                                <option value="0">All months</option>
+                                <option value="1">January
+                                </option>
+                                <option value="2">February
+                                </option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September
+                                </option>
+                                <option value="10">October
+                                </option>
+                                <option value="11">November
+                                </option>
+                                <option value="12">December
+                                </option>
+                            </select>
+                        </div>
 
-                            </form>
+                    </form>
 
-                            <form class="navbar-form navbar-left" role="search">
-                                <div class="form-group">
-                                    <select id="type_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-warning" onchange="update_filters()">
-                                        <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
-                                        <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
-                                            sites
-                                        </option>
-                                        <option value="coverage" data-subtext="Tigatrapp coverage">{% trans 'Coverage' %}</option>
-                                    </select>
-                                </div>
-                            </form>
+                    <form class="navbar-form navbar-left" role="search">
+                        <div class="form-group">
+                            <select id="type_select" class="selectpicker show-tick form-control"
+                                    data-style="btn-warning" onchange="update_filters()">
+                                <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
+                                <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
+                                    sites
+                                </option>
+                                <option value="coverage"
+                                        data-subtext="Tigatrapp coverage">{% trans 'Coverage' %}</option>
+                            </select>
+                        </div>
+                    </form>
 
-                            <form class="navbar-form navbar-left" role="search">
-                                <div class="form-group">
-                                    <select id="validation_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-info" onchange="update_filters()">
-                                        <option value="2" data-subtext="Only highly probably reports">Strong Validation
-                                        </option>
-                                        <option value="1"
-                                                data-subtext="Only probably and highly probably reports">Medium
-                                            Validation
-                                        </option>
-                                        <option value="-2" data-subtext="No validation filter">All Reports</option>
-                                    </select>
-                                </div>
-                            </form>
+                    <form class="navbar-form navbar-left" role="search">
+                        <div class="form-group">
+                            <select id="validation_select" class="selectpicker show-tick form-control"
+                                    data-style="btn-info" onchange="update_filters()">
+                                <option value="2" data-subtext="Only highly probably reports">Strong Validation
+                                </option>
+                                <option value="1"
+                                        data-subtext="Only probably and highly probably reports">Medium
+                                    Validation
+                                </option>
+                                <option value="-2" data-subtext="No validation filter">All Reports</option>
+                            </select>
+                        </div>
+                    </form>
 
 
-
-                 <ul class="nav navbar-nav navbar-left">
+                    <ul class="nav navbar-nav navbar-left">
 
                         <li>
                             <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}"
@@ -588,12 +587,13 @@ function map_init_basic(map, options) {
                     </ul>
 
 
-                                                    <form style="max-width: 200px;" class="navbar-form navbar-right"
+                    <form style="max-width: 200px;" class="navbar-form navbar-right"
                           action="{% url 'set_language' %}" method="post">
                         <div class="form-group">
                             {% csrf_token %}
                             <input name="next" type="hidden" value="{{ request.get_full_path|slice:'3:' }}"/>
-                            <select class="selectpicker show-tick form-control" name="language" onchange="this.form.submit()" data-style="btn-inverse">
+                            <select class="selectpicker show-tick form-control" name="language"
+                                    onchange="this.form.submit()" data-style="btn-inverse">
                                 {% get_language_info_list for LANGUAGES as languages %}
                                 {% for language in languages %}
                                     <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
