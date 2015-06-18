@@ -245,21 +245,6 @@ def show_validated_photo_map(request):
     return render(request, 'tigamap/validated_photo_map.html', context)
 
 
-@xframe_options_exempt
-def show_embedded_adult_map(request, legend=''):
-    if settings.DEBUG:
-        current_domain = 'localhost:8000'
-    else:
-        current_domain = 'tigaserver.atrapaeltigre.com'
-    endpoint = 'all_adults'
-    context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint}
-    context.update(csrf(request))
-    if legend == 'legend':
-        return render(request, 'tigamap/embedded_2015.html', context)
-    else:
-        return render(request, 'tigamap/embedded_2015_no_legend.html', context)
-
-
 def show_adult_map(request, type='all'):
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
@@ -365,3 +350,23 @@ def show_filterable_report_map(request, limit=None):
         return render(request, 'tigamap/bcn_map.html', context)
     else:
         return render(request, 'tigamap/validated_report_map_filterable.html', context)
+
+
+@xframe_options_exempt
+def show_embedded_adult_map(request, legend=''):
+    if settings.DEBUG:
+        current_domain = 'localhost:8000'
+    else:
+        current_domain = 'tigaserver.atrapaeltigre.com'
+    if CoverageArea.objects.all().count() > 0:
+        last_coverage_id = CoverageArea.objects.order_by('id').last().id
+    else:
+        last_coverage_id = 0
+    endpoint = 'all_reports'
+    context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
+    context.update(csrf(request))
+    context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint}
+    if legend == 'legend':
+        return render(request, 'tigamap/embedded_2015.html', context)
+    else:
+        return render(request, 'tigamap/embedded_2015_no_legend.html', context)
