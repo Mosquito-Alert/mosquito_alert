@@ -4,7 +4,7 @@ import json
 from tigacrafting.models import *
 from tigaserver_app.models import Photo, Report
 import dateutil.parser
-from django.db.models import Count
+from django.db.models import Count, Sum
 import pytz
 import datetime
 from django.db.models import Max
@@ -381,9 +381,11 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=20, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=5, max_given=3):
     this_user = request.user
-    if this_user.groups.filter(name='expert').exists():
+    this_user_is_expert = this_user.groups.filter(name='expert').exists()
+    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    if this_user_is_expert or this_user_is_superexpert:
         args = {}
         args.update(csrf(request))
         args['scroll_position'] = scroll_position
@@ -408,7 +410,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             flagged = request.GET.get('flagged', flagged)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(Q(tiger_certainty_category__isnull=True) | Q(site_certainty_category__isnull=True)).count()
-            if load_new_reports == 'T':
+            if this_user_is_expert and load_new_reports == 'T':
                 if current_pending < max_pending:
                     n_to_get = max_pending - current_pending
                     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
@@ -419,6 +421,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         for this_report in reports_to_take:
                             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                             new_annotation.save()
+            elif this_user_is_superexpert:
+                my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
+                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(photos=None).annotate(n_complete_annotations=Sum('expert_report_annotations__validation_complete')).exclude(hide=False, flag=False, n_complete_annotations=0)
+                if new_reports_unfiltered:
+                    new_reports = filter_reports(new_reports_unfiltered)
+                    for this_report in new_reports:
+                        new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                        new_annotation.save()
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
             if year:
                 try:

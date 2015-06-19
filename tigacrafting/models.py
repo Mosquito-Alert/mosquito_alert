@@ -164,9 +164,11 @@ class ExpertReportAnnotation(models.Model):
     site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
     site_certainty_notes = models.TextField(blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField(blank=True, help_text='Notes to display on public map')
-    flag = models.BooleanField(default=False, help_text='Flag report internally for yourself or other experts')
+    flag = models.BooleanField(default=False, help_text='Flag report internally for yourself or other experts. Flagged reports will not be displayed on the public map until reviewed by super-experts.')
     hide = models.BooleanField(default=False, help_text='Hide report from public view')
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public. (You can_still change your annotation later at any time.')
+    best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
     def get_others_annotation_html(self):
