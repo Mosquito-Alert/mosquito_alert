@@ -381,7 +381,7 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, max_pending=5, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, hidden=None, hidden_others=None, max_pending=5, max_given=3):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -408,6 +408,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             tiger_pending = request.GET.get('tiger_pending', tiger_pending)
             site_pending = request.GET.get('site_pending', site_pending)
             flagged = request.GET.get('flagged', flagged)
+            flagged_others = request.GET.get('flagged_others', flagged_others)
+            hidden = request.GET.get('hidden', hidden)
+            hidden_others = request.GET.get('hidden_others', hidden_others)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(Q(tiger_certainty_category__isnull=True) | Q(site_certainty_category__isnull=True)).count()
             if this_user_is_expert and load_new_reports == 'T':
@@ -423,7 +426,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                             new_annotation.save()
             elif this_user_is_superexpert:
                 my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(photos=None).annotate(n_complete_annotations=Sum('expert_report_annotations__validation_complete')).exclude(hide=False, flag=False, n_complete_annotations=0)
+                unmapped_reports = ExpertReportAnnotation.objects.filter(validation_complete=False)
+                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(photos=None).exclude(hide=False, flag=False, version_UUID__in=unmapped_reports)
                 if new_reports_unfiltered:
                     new_reports = filter_reports(new_reports_unfiltered)
                     for this_report in new_reports:
@@ -462,6 +466,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 all_annotations = all_annotations.filter(flag=False)
             if flagged_others == "flagged":
                 all_annotations = all_annotations.filter(report__expert_report_annotations__flag=True)
+            if hidden == "hidden":
+                all_annotations = all_annotations.filter(report__expert_report_annotations__flag=True)
+            if hidden_others == "hidden":
+                all_annotations = all_annotations.filter(report__expert_report_annotations__flag=True)
             all_annotations = all_annotations.order_by('report__creation_time')
             if orderby == "site_score":
                 all_annotations = all_annotations.order_by('site_certainty_category')
@@ -491,6 +499,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['site_pending'] = site_pending
             args['flagged'] = flagged
             args['flagged_others'] = flagged_others
+            args['hidden'] = hidden
+            args['hidden_others'] = hidden
             args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html', args)
     else:

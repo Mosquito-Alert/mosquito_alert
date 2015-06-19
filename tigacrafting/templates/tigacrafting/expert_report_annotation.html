@@ -103,7 +103,8 @@
 
                         <ul class="nav navbar-nav navbar-left">
 
-                            <li><p class="navbar-text" style="color:cornflowerblue">Pending: <span class="badge">{{ n_pending }}</span>
+                            <li><p class="navbar-text" style="color:cornflowerblue">Pending: <span
+                                    class="badge">{{ n_pending }}</span>
                                 Complete: <span class="badge">{{ n_complete }}</span></p></li>
                             <li>
                                 <button id="grab_reports_button" role="button"
@@ -113,11 +114,11 @@
                             </li>
 
                             <li>
-                            <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
-                                    data-target="#myModal" style="margin-left:5px"><span
-                                    class="glyphicon glyphicon-filter"></span> Filter
-                            </button>
-                        </li>
+                                <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
+                                        data-target="#myModal" style="margin-left:5px"><span
+                                        class="glyphicon glyphicon-filter"></span> Filter
+                                </button>
+                            </li>
 
 
                             <li>
@@ -167,11 +168,11 @@
 
         <div class="starter-template">
 
-                    <h1>Expert Report Validation</h1>
+            <h1>Expert Report Validation</h1>
 
 
-       <div style="text-align: left">
-    <h4> Instructions</h4>
+            <div style="text-align: left">
+                <h4> Instructions</h4>
 
                 <p>For each report: (1) select a category for your degree of belief that the report contains at least
                     one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
@@ -181,92 +182,92 @@
                     remove it from the public map), and (5) add any internal notes you want. Click "Save" to save your
                     responses on the server.</p>
 
-</div>
-   </div>
+            </div>
+        </div>
 
-            {% if objects %}
+        {% if objects %}
 
-                <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
-                    {{ formset.management_form }}
-                    {% for form in formset %}
-                        <div class="row">
-                            <div class="col-md-12">
-                                <strong>Report: {{ form.instance.report.version_UUID }}</strong>,
-                                Created: {{ form.instance.report.creation_time }} UTC, Tiger Certainty
-                                Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Site
-                                Certainty
-                                Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
+            <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
+                {{ formset.management_form }}
+                {% for form in formset %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Report: {{ form.instance.report.version_UUID }}</strong>,
+                            Created: {{ form.instance.report.creation_time }} UTC, Tiger Certainty
+                            Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Site
+                            Certainty
+                            Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
-                                <div style="display:none;" id='other_annotations_alert{{ form.instance.id }}'
-                                     class='alert alert-info' role='alert'>
-                                    <a class="close" onclick="$('.alert').hide()">×</a>
-                                    {{ form.instance.get_others_annotation_html | safe }}
-                                </div>
-
-                                {% if form.instance.report.expert_report_annotations.count > 1 %}
-                                    <button type="button"
-                                            onclick="$('#other_annotations_alert{{ form.instance.id }}').show();"
-                                            class="btn btn-default btn-sm">Show Others' Annotations
-                                    </button>
-                                {% endif %}
-
-                            </div>
-                        </div>
-                            <div class="row">
-                            <div class="col-md-3">
-                                <br>
-
-
-                                  {% form form using "floppyforms/layouts/bootstrap.html" %}
-
+                            <div style="display:none;" id='other_annotations_alert{{ form.instance.id }}'
+                                 class='alert alert-info' role='alert'>
+                                <a class="close" onclick="$('.alert').hide()">×</a>
+                                {{ form.instance.get_others_annotation_html | safe }}
                             </div>
 
-                            <div class="col-md-5">
-                                <br>
-                                <strong>Photos</strong> (scroll to see all; click to enlarge)<br>
-
-                                <div style="overflow: auto;height: 814px;">
-
-                                    {{ form.instance.report.photo_html_for_report_validation | safe }}
-
-                                </div>
-
-                            </div>
-
-                            <div class="col-md-4">
-                                <br>
-                                <strong>Location</strong>
-
-                                <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
-                                <br>
-                                <strong>User Notes</strong><br>
-
-                                <div style="overflow: auto;height: 270px;border:1px solid #333333;">
-                                    {{ form.instance.report.note }}
-                                </div>
-                            </div>
+                            {% if form.instance.report.expert_report_annotations.count > 1 %}
+                                <button type="button"
+                                        onclick="$('#other_annotations_alert{{ form.instance.id }}').show();"
+                                        class="btn btn-default btn-sm">Show Others' Annotations
+                                </button>
+                            {% endif %}
 
                         </div>
-
-                        <br>
-                        <div class="border-row">
-
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
                             <br>
 
+
+                            {% form form using "floppyforms/layouts/bootstrap.html" %}
+
                         </div>
 
+                        <div class="col-md-5">
+                            <br>
+                            <strong>Photos</strong> (scroll to see all; click to enlarge)<br>
 
-                    {% endfor %}
+                            <div style="overflow: auto;height: 814px;">
 
-                    <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
+                                {{ form.instance.report.photo_html_for_report_validation | safe }}
 
-                </form>
+                            </div>
 
-                <div class="row">
+                        </div>
 
-                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <br>
+                            <strong>Location</strong>
 
-                        <div class="pagination">
+                            <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
+                            <br>
+                            <strong>User Notes</strong><br>
+
+                            <div style="overflow: auto;height: 270px;border:1px solid #333333;">
+                                {{ form.instance.report.note }}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <br>
+                    <div class="border-row">
+
+                        <br>
+
+                    </div>
+
+
+                {% endfor %}
+
+                <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
+
+            </form>
+
+            <div class="row">
+
+                <div class="col-md-12">
+
+                    <div class="pagination">
         <span class="step-links">
             {% if objects.has_previous %}
                 <a href="?page={{ objects.previous_page_number }}">Previous</a>
@@ -293,120 +294,155 @@
                 </form>
 
         </span>
-                        </div>
-
-
                     </div>
+
+
                 </div>
+            </div>
 
-            {% else %}
-                <p>You do not yet have any reports in your stack. Click "Get more reports" to start validating.</p>
-            {% endif %}
+        {% else %}
+            <p>You do not yet have any reports in your stack. Click "Get more reports" to start validating.</p>
+        {% endif %}
 
-        </div>
+    </div>
     </div>
 
 
 
     <!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Filters</h4>
-            </div>
-            <div class="modal-body">
-                <form role="form" class="form-horizontal">
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Filters</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" class="form-horizontal">
 
-            <div class="form-group">
-                <label for="orderby_select" class="col-sm-4 control-label">Order By:</label>
-                 <div class="col-sm-8">
-                <select id="orderby_select" class="selectpicker show-tick form-control">
-                    <option value="date">Report Date</option>
-                    <option value="tiger_score">Tiger Certainty Score</option>
-                    <option value="site_score">Site Certainty Score</option>
-                </select>
-                     </div>
-            </div>
-            <div class="form-group">
-                <label for="tiger_certainty_select" class="col-sm-4 control-label">Tiger Certainty Category:</label>
-                 <div class="col-sm-8">
-                <select id="tiger_certainty_select" class="selectpicker show-tick form-control">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="-2">Definitely not a tiger mosquito</option>
-                    <option value="-1">Probably not a tiger mosquito</option>
-                    <option value="0">Not sure</option>
-                    <option value="1">Probably a tiger mosquito</option>
-                    <option value="2">Definitely a tiger mosquito</option>
-                </select>
-                     </div>
-            </div>
-            <div class="form-group">
-                <label for="site_certainty_select" class="col-sm-4 control-label">Site Certainty Category:</label>
-                 <div class="col-sm-8">
-                <select id="site_certainty_select" class="selectpicker show-tick form-control">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="-2">Definitely not a breeding site</option>
-                    <option value="-1">Probably not a breeding site</option>
-                    <option value="0">Not sure</option>
-                    <option value="1">Probably a breeding site</option>
-                    <option value="2">Definitely a breeding site</option>
-                </select>
-                     </div>
-            </div>
-            <div class="form-group">
-                <label for="tiger_pending_select" class="col-sm-4 control-label">Status of Tiger Annotations:</label>
-                 <div class="col-sm-8">
-                <select id="tiger_pending_select" class="selectpicker show-tick form-control">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="pending">Pending only</option>
-                    <option value="complete">Complete only</option>
-                </select>
-                     </div>
-            </div>
-            <div class="form-group">
-                <label for="site_pending_select" class="col-sm-4 control-label">Status of Site Annotations:</label>
-                 <div class="col-sm-8">
-                <select id="site_pending_select" class="selectpicker show-tick form-control">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="pending">Pending only</option>
-                    <option value="complete">Complete only</option>
-                </select>
-                     </div>
-            </div>
-            <div class="form-group">
-                <label for="flagged_select" class="col-sm-4 control-label">Flagged By Me:</label>
-                 <div class="col-sm-8">
-                <select id="flagged_select" class="selectpicker show-tick form-control">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="flagged">Flagged only</option>
-                    <option value="unflagged">Unflagged only</option>
-                </select>
-                     </div>
-            </div>
-            <div class="form-group">
-                <label for="flagged_others_select" class="col-sm-4 control-label">Flagged By Others:</label>
-                 <div class="col-sm-8">
-                <select id="flagged_others_select" class="selectpicker show-tick form-control">
-                    <option value="all">{% trans 'All' %}</option>
-                    <option value="flagged">Flagged by someone</option>
-                </select>
-                     </div>
-            </div>
+                        <div class="form-group">
+                            <label for="orderby_select" class="col-sm-4 control-label">Order By:</label>
+
+                            <div class="col-sm-8">
+                                <select id="orderby_select" class="selectpicker show-tick form-control">
+                                    <option value="date">Report Date</option>
+                                    <option value="tiger_score">Tiger Certainty Score</option>
+                                    <option value="site_score">Site Certainty Score</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tiger_certainty_select" class="col-sm-4 control-label">Tiger Certainty
+                                Category:</label>
+
+                            <div class="col-sm-8">
+                                <select id="tiger_certainty_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="-2">Definitely not a tiger mosquito</option>
+                                    <option value="-1">Probably not a tiger mosquito</option>
+                                    <option value="0">Not sure</option>
+                                    <option value="1">Probably a tiger mosquito</option>
+                                    <option value="2">Definitely a tiger mosquito</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="site_certainty_select" class="col-sm-4 control-label">Site Certainty
+                                Category:</label>
+
+                            <div class="col-sm-8">
+                                <select id="site_certainty_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="-2">Definitely not a breeding site</option>
+                                    <option value="-1">Probably not a breeding site</option>
+                                    <option value="0">Not sure</option>
+                                    <option value="1">Probably a breeding site</option>
+                                    <option value="2">Definitely a breeding site</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tiger_pending_select" class="col-sm-4 control-label">Status of Tiger
+                                Annotations:</label>
+
+                            <div class="col-sm-8">
+                                <select id="tiger_pending_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="pending">Pending only</option>
+                                    <option value="complete">Complete only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="site_pending_select" class="col-sm-4 control-label">Status of Site
+                                Annotations:</label>
+
+                            <div class="col-sm-8">
+                                <select id="site_pending_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="pending">Pending only</option>
+                                    <option value="complete">Complete only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="flagged_select" class="col-sm-4 control-label">Flagged By Me:</label>
+
+                            <div class="col-sm-8">
+                                <select id="flagged_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="flagged">Flagged only</option>
+                                    <option value="unflagged">Unflagged only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="flagged_others_select" class="col-sm-4 control-label">Flagged By Others:</label>
+
+                            <div class="col-sm-8">
+                                <select id="flagged_others_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="flagged">Flagged by someone</option>
+                                </select>
+                            </div>
+                        </div>
 
 
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
+                        <div class="form-group">
+                            <label for="hidden_select" class="col-sm-4 control-label">Hidden By Me:</label>
+
+                            <div class="col-sm-8">
+                                <select id="hidden_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="hidden">Hidden only</option>
+                                    <option value="unhidden">Not hidden only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="hidden_others_select" class="col-sm-4 control-label">Hidden By Others:</label>
+
+                            <div class="col-sm-8">
+                                <select id="hidden_others_select" class="selectpicker show-tick form-control">
+                                    <option value="all">{% trans 'All' %}</option>
+                                    <option value="hidden">Hidden by someone</option>
+                                    <option value="unhidden">Not hidden by anyone</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
 
@@ -490,7 +526,7 @@
 
         $(document).ready(function () {
 
-          $('[data-toggle="tooltip"]').tooltip()
+            $('[data-toggle="tooltip"]').tooltip()
 
             $("select").selectpicker({
                 width: 'auto'
@@ -531,9 +567,7 @@
             scroll_position_input.val(scroll);
         });
 
-
-        $("#page_button").on('click', function () {
-
+        function query_selectors() {
             var qp = "?orderby=" + $("#orderby_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
@@ -541,6 +575,13 @@
             qp += "&site_pending=" + $("#site_pending_select").val();
             qp += "&flagged=" + $("#flagged_select").val();
             qp += "&flagged_others=" + $("#flagged_others_select").val();
+            qp += "&hidden=" + $("#hidden_select").val();
+            qp += "&hidden_others=" + $("#hidden_others_select").val();
+            return(qp);
+        }
+
+        $("#page_button").on('click', function () {
+            var qp = query_selectors();
             qp += "&page=" + $("#page_input").val();
             window.location.href = qp;
 
@@ -550,13 +591,7 @@
         {% if objects.has_next %}
             nb.show().on('click', function () {
                 gear.show();
-                var qp = "?orderby=" + $("#orderby_select").val();
-                qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
-                qp += "&site_certainty=" + $("#site_certainty_select").val();
-                qp += "&tiger_pending=" + $("#tiger_pending_select").val();
-                qp += "&site_pending=" + $("#site_pending_select").val();
-                qp += "&flagged=" + $("#flagged_select").val();
-                qp += "&flagged_others=" + $("#flagged_others_select").val();
+                var qp = query_selectors();
                 qp += "&page={{ objects.next_page_number }}";
                 window.location.href = qp;
             });
@@ -571,30 +606,20 @@
         $("#site_pending_select").val("{{ site_pending }}");
         $("#flagged_select").val("{{ flagged }}");
         $("#flagged_others_select").val("{{ flagged_others }}");
+        $("#hidden_select").val("{{ hidden }}");
+        $("#hidden_others_select").val("{{ hidden_others }}");
 
         $("#filters_submit_button").on('click', function () {
             gear.show();
-            var qp = "?orderby=" + $("#orderby_select").val();
-            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
-            qp += "&site_certainty=" + $("#site_certainty_select").val();
-            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
-            qp += "&site_pending=" + $("#site_pending_select").val();
-            qp += "&flagged=" + $("#flagged_select").val();
-            qp += "&flagged_others=" + $("#flagged_others_select").val();
+            var qp = query_selectors();
             $('#myModal').modal('hide');
             window.location.href = qp;
-        })
+        });
 
 
         grab_reports_button.on('click', function () {
             gear.show();
-            var qp = "?orderby=" + $("#orderby_select").val();
-            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
-            qp += "&site_certainty=" + $("#site_certainty_select").val();
-            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
-            qp += "&site_pending=" + $("#site_pending_select").val();
-            qp += "&flagged=" + $("#flagged_select").val();
-            qp += "&flagged_others=" + $("#flagged_others_select").val();
+            var qp = query_selectors();
             qp += "&load_new_reports=T";
             window.location.href = qp;
         })
