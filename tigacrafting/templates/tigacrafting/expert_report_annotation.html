@@ -192,7 +192,7 @@
                 {% for form in formset %}
                     <div class="row">
                         <div class="col-md-12">
-                            <strong>Report: {{ form.instance.report.version_UUID }}</strong>,
+                            <strong>Report: {{ form.instance.report.version_UUID }}</strong>, Type: {{ form.instance.report.type }}{% if form.instance.report.type == 'site' %} ({{ form.instance.report.site_type_trans }}){% endif %},
                             Created: {{ form.instance.report.creation_time }} UTC, Tiger Certainty
                             Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Site
                             Certainty
@@ -224,7 +224,7 @@
 
                         <div class="col-md-5">
                             <br>
-                            <strong>Photos</strong> (scroll to see all; click to enlarge)<br>
+                            <strong>Photos</strong><br>
 
                             <div style="overflow: auto;height: 814px;">
 
@@ -240,11 +240,17 @@
 
                             <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
                             <br>
+                            <strong>User Responses</strong><br>
+                            <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                                {{ form.instance.report.response_html  | safe}}
+                            </div>
+                            <br>
                             <strong>User Notes</strong><br>
 
-                            <div style="overflow: auto;height: 270px;border:1px solid #333333;">
+                            <div style="overflow: auto;height: 270px;border:1px solid #333333;padding:2px;">
                                 {{ form.instance.report.note }}
                             </div>
+
                         </div>
 
                     </div>
@@ -255,6 +261,17 @@
                         <br>
 
                     </div>
+
+                    <script>
+                    if($('#' + '{{ form.best_photo.auto_id }}').val() !== undefined){
+$('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).attr('checked',true);
+}
+
+$('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function() {
+       $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
+    });
+
+                    </script>
 
 
                 {% endfor %}
@@ -304,7 +321,6 @@
             <p>You do not yet have any reports in your stack. Click "Get more reports" to start validating.</p>
         {% endif %}
 
-    </div>
     </div>
 
 
@@ -462,7 +478,6 @@
     <!-- Placed at the end of the document so the pages load faster -->
 
     <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
-    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/docs.min.js" %}></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
 
@@ -515,7 +530,7 @@
         var grab_reports_button = $("#grab_reports_button");
         var n_pending = {{ n_pending }};
         function toggle_grab_reports_button() {
-            if (n_pending < 20) {
+            if (n_pending < 5) {
                 grab_reports_button.prop('disabled', false);
             } else {
                 grab_reports_button.prop('disabled', true);
@@ -542,6 +557,8 @@
             });
 
             toggle_grab_reports_button();
+
+
         });
 
         var scroll_position_input = $("#scroll_position");

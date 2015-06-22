@@ -424,7 +424,7 @@ class Report(models.Model):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         result = ''
         for photo in these_photos:
-            result = result + '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>'
+            result += '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) +'">Display this photo on public map:<br><div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div><br>'
         return result
 
     def get_formatted_date(self):
@@ -529,6 +529,17 @@ class Report(models.Model):
         result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
         return result
 
+    def get_site_responses(self):
+        if self.type != 'site':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        q1r = these_responses.get(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
+        q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
+        result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
+        result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
+        return result
+
     def get_creation_year(self):
         return self.creation_time.year
 
@@ -589,6 +600,7 @@ class Report(models.Model):
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)
     tiger_responses = property(get_tiger_responses)
+    site_responses = property(get_tiger_responses)
     creation_date = property(get_creation_date)
     creation_day_since_launch = property(get_creation_day_since_launch)
     creation_year = property(get_creation_year)
