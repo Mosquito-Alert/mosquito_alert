@@ -499,11 +499,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 all_annotations = all_annotations.filter(report__expert_report_annotations__hide=False)
             if public == "public":
                 all_annotations = all_annotations.filter(report__expert_report_annotations__validation_complete=True, report__expert_report_annotations__hide=False, report__expert_report_annotations__flag=False)
-            all_annotations = all_annotations.order_by('report__creation_time')
-            if orderby == "site_score":
-                all_annotations = all_annotations.order_by('site_certainty_category')
-            elif orderby == "tiger_score":
-                all_annotations = all_annotations.order_by('tiger_certainty_category')
+            if all_annotations:
+                all_annotations = all_annotations.order_by('report__creation_time')
+                if orderby == "site_score":
+                    all_annotations = all_annotations.order_by('site_certainty_category')
+                elif orderby == "tiger_score":
+                    all_annotations = all_annotations.order_by('tiger_certainty_category')
             paginator = Paginator(all_annotations, int(tasks_per_page))
             page = request.GET.get('page')
             try:
