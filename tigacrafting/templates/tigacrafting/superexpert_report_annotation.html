@@ -132,8 +132,6 @@
             var qp = "?orderby=" + $("#orderby_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
-            qp += "&tiger_pending=" + $("#tiger_pending_select").val();
-            qp += "&site_pending=" + $("#site_pending_select").val();
             qp += "&flagged=" + $("#flagged_select").val();
             qp += "&hidden=" + $("#hidden_select").val();
 
@@ -144,8 +142,6 @@
         $("#orderby_select").val("{{ orderby }}");
         $("#tiger_certainty_select").val("{{ tiger_certainty }}");
         $("#site_certainty_select").val("{{ site_certainty }}");
-        $("#tiger_pending_select").val("{{ tiger_pending }}");
-        $("#site_pending_select").val("{{ site_pending }}");
         $("#flagged_select").val("{{ flagged }}");
         $("#hidden_select").val("{{ hidden }}");
 

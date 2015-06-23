@@ -105,39 +105,38 @@
                         <ul class="nav navbar-nav navbar-left">
                             {% block navbar_left_items %}
                             {% endblock %}
-                                <li>
+                            <li>
 
-                                    <div class="btn-group" id="status_grp" data-toggle="buttons">
-                                        <label class="btn btn-info btn-sm navbar-btn" id="pending_btn">
-                                            <input type="radio" name="status" autocomplete="off"> Pending <span
-                                                class="badge">{{ n_pending }}</span></label>
-                                        <label class="btn btn-info btn-sm navbar-btn" id="complete_btn">
-                                            <input type="radio" name="status" autocomplete="off"> Complete <span
-                                                class="badge">{{ n_complete }}</span>
-                                        </label>
-                                        <label class="btn btn-info btn-sm navbar-btn" id="all_btn">
-                                            <input type="radio" name="status" autocomplete="off"> All <span
-                                                class="badge">{{ n_total }}</span>
-                                        </label>
-                                    </div>
-                                </li>
-
-
-
-                                <li>
-                                    <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
-                                            data-target="#myModal" style="margin-left:5px"><span
-                                            class="glyphicon glyphicon-filter"></span> Filter
-                                    </button>
-                                </li>
+                                <div class="btn-group" id="status_grp" data-toggle="buttons">
+                                    <label class="btn btn-info btn-sm navbar-btn" id="pending_btn">
+                                        <input type="radio" name="status" autocomplete="off"> Pending <span
+                                            class="badge">{{ n_pending }}</span></label>
+                                    <label class="btn btn-info btn-sm navbar-btn" id="complete_btn">
+                                        <input type="radio" name="status" autocomplete="off"> Complete <span
+                                            class="badge">{{ n_complete }}</span>
+                                    </label>
+                                    <label class="btn btn-info btn-sm navbar-btn" id="all_btn">
+                                        <input type="radio" name="status" autocomplete="off"> All <span
+                                            class="badge">{{ n_total }}</span>
+                                    </label>
+                                </div>
+                            </li>
 
 
-                                <li>
-                                    <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
-                                            style="margin-left:5px"><span
-                                            class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
-                                    </button>
-                                </li>
+                            <li>
+                                <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
+                                        data-target="#myModal" style="margin-left:5px"><span
+                                        class="glyphicon glyphicon-filter"></span> Filter
+                                </button>
+                            </li>
+
+
+                            <li>
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px"><span
+                                        class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
+                                </button>
+                            </li>
                         </ul>
 
 
@@ -591,20 +590,20 @@
             $("#hidden_others_select").val("{{ hidden_others }}");
 
 
-        function submit_queries() {
-            gear.show();
-            var qp = query_selectors();
-            $('#myModal').modal('hide');
-            window.location.href = qp;
-        }
+            function submit_queries() {
+                gear.show();
+                var qp = query_selectors();
+                $('#myModal').modal('hide');
+                window.location.href = qp;
+            }
 
 
-        function submit_queries_plus(event) {
-            gear.show();
-            var qp = query_selectors();
-            qp += event.data.extr;
-            window.location.href = qp;
-        }
+            function submit_queries_plus(event) {
+                gear.show();
+                var qp = query_selectors();
+                qp += event.data.extr;
+                window.location.href = qp;
+            }
 
 
         </script>
@@ -614,17 +613,9 @@
 
         var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn"), all_btn = $("#all_btn");
 
-
-        if ("{{ pending }}" == "pending") {
-            pending_btn.addClass("active");
-        }
-        else if ("{{ pending }}" == "completed") {
-            complete_btn.addClass("active");
-        }
-        else {
-            all_btn.addClass("active");
-        }
-
+        var pending = "{{ pending }}";
+        pending == "pending" ?
+                pending_btn.addClass("active") : (pending == "complete") ? complete_btn.addClass("active") : all_btn.addClass("active");
 
         pending_btn.on('click', {extr: '&pending=pending'}, submit_queries_plus);
         complete_btn.on('click', { extr: '&pending=complete'}, submit_queries_plus);
