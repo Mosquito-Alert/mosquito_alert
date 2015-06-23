@@ -95,30 +95,32 @@
                             <span class="icon-bar"></span>
                         </button>
                         <div class="navbar-brand"><span
-                                style="color:#ff9900">{% block title %}Tigatrapp Expert Validation{% endblock %} <i id="gear"
-                                                                                     class="fa fa-refresh fa-spin"></i></span>
+                                style="color:#ff9900">{% block title %}Tigatrapp Expert Validation{% endblock %} <i
+                                id="gear"
+                                class="fa fa-refresh fa-spin"></i></span>
                         </div>
                     </div>
                     <div class="navbar-collapse collapse">
 
                         <ul class="nav navbar-nav navbar-left">
                             {% block navbar_left_items %}
-<li>
+                            {% endblock %}
+                                <li>
 
-                                        <div class="btn-group" id="type_grp" data-toggle="buttons">
-            <label class="btn btn-primary btn-sm navbar-btn" id="pending_btn">
-                <input type="radio" name="options" autocomplete="off"> Pending <span
-                    class="badge">{{ n_pending }}</span></label>
-            <label class="btn btn-primary btn-sm navbar-btn" id="complete_btn">
-                <input type="radio" name="options" autocomplete="off"> Complete <span
-                    class="badge">{{ n_complete }}</span>
-            </label>
-            <label class="btn btn-primary btn-sm navbar-btn" id="all_btn">
-                <input type="radio" name="options" autocomplete="off"> All <span
-                    class="badge">{{ n_total }}</span>
-            </label>
-        </div>
-    </li>
+                                    <div class="btn-group" id="type_grp" data-toggle="buttons">
+                                        <label class="btn btn-primary btn-sm navbar-btn" id="pending_btn">
+                                            <input type="radio" name="options" autocomplete="off"> Pending <span
+                                                class="badge">{{ n_pending }}</span></label>
+                                        <label class="btn btn-primary btn-sm navbar-btn" id="complete_btn">
+                                            <input type="radio" name="options" autocomplete="off"> Complete <span
+                                                class="badge">{{ n_complete }}</span>
+                                        </label>
+                                        <label class="btn btn-primary btn-sm navbar-btn" id="all_btn">
+                                            <input type="radio" name="options" autocomplete="off"> All <span
+                                                class="badge">{{ n_total }}</span>
+                                        </label>
+                                    </div>
+                                </li>
 
 
 
@@ -136,7 +138,6 @@
                                             class="glyphicon glyphicon-floppy-disk"></span> {% trans "Save" %}
                                     </button>
                                 </li>
-                            {% endblock %}
                         </ul>
 
 
@@ -185,10 +186,17 @@
 
                 <p>For each report: (1) select a category for your degree of belief that the report contains at least
                     one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
-                    report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal notes for yourself or other experts regarding your reasons for each selection, (4) add any note you want
+                    report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal
+                    notes for yourself or other experts regarding your reasons for each selection, (4) add any note you
+                    want
                     to see displayed on the public map along with the report (e.g. an edited version of the user's
-                    original note), (5) flag the report if you want to bring it to the attention of other experts (because it is an especially interesting report or because you have doubts), (6) indicate if the report should be hidden from public view (this will automatically
-                    remove it from the public map), and (7) select which (if any) of the reports photos should be displayed on the public map (only one photo will be displayed). You can save your work as you go using the "save" button at the top of the screen. When you are done with a given report, check the "validation complete" box.</p>
+                    original note), (5) flag the report if you want to bring it to the attention of other experts
+                    (because it is an especially interesting report or because you have doubts), (6) indicate if the
+                    report should be hidden from public view (this will automatically
+                    remove it from the public map), and (7) select which (if any) of the reports photos should be
+                    displayed on the public map (only one photo will be displayed). You can save your work as you go
+                    using the "save" button at the top of the screen. When you are done with a given report, check the
+                    "validation complete" box.</p>
 
             </div>
         </div>
@@ -200,18 +208,20 @@
                 {% for form in formset %}
                     <div class="row">
                         <div class="col-md-12">
-                            <strong>Report: {{ form.instance.report.version_UUID }}</strong>, Type: {{ form.instance.report.type }}{% if form.instance.report.type == 'site' %} ({{ form.instance.report.site_type_trans }}){% endif %},
+                            <strong>Report: {{ form.instance.report.version_UUID }}</strong>, Type:
+                            {{ form.instance.report.type }}{% if form.instance.report.type == 'site' %} (
+                                {{ form.instance.report.site_type_trans }}){% endif %},
                             Created: {{ form.instance.report.creation_time }} UTC, Tiger Certainty
                             Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Site
                             Certainty
                             Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
                             {% if form.instance.report.expert_report_annotations.count > 1 %}
-                                  <div style="display:none;" id='other_annotations_alert{{ form.instance.id }}'
-                                 class='alert alert-info' role='alert'>
-                                <a class="close" onclick="$('.alert').hide()">×</a>
-                                {{ form.instance.get_others_annotation_html | safe }}
-                            </div>
+                                <div style="display:none;" id='other_annotations_alert{{ form.instance.id }}'
+                                     class='alert alert-info' role='alert'>
+                                    <a class="close" onclick="$('.alert').hide()">×</a>
+                                    {{ form.instance.get_others_annotation_html | safe }}
+                                </div>
 
                                 <button type="button"
                                         onclick="$('#other_annotations_alert{{ form.instance.id }}').show();"
@@ -249,8 +259,9 @@
                             <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
                             <br>
                             <strong>User Responses</strong><br>
+
                             <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
-                                {{ form.instance.report.response_html  | safe}}
+                                {{ form.instance.report.response_html  | safe }}
                             </div>
                             <br>
                             <strong>User Notes</strong><br>
@@ -271,13 +282,13 @@
                     </div>
 
                     <script>
-                    if($('#' + '{{ form.best_photo.auto_id }}').val() !== undefined){
-$('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).attr('checked',true);
-}
+                        if ($('#' + '{{ form.best_photo.auto_id }}').val() !== undefined) {
+                            $('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).attr('checked', true);
+                        }
 
-$('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function() {
-       $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
-    });
+                        $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function () {
+                            $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
+                        });
 
                     </script>
 
@@ -552,20 +563,17 @@ $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version
             scroll_position_input.val(scroll);
         });
 
+
     </script>
 
     {% block filterjs %}
         <script>
 
 
-            var pending_btn = $("#pendingc_btn"), complete_btn = $("#complete_btn"), all_btn = $("#all_btn");
-
             function query_selectors() {
                 var qp = "?orderby=" + $("#orderby_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
-                qp += "&tiger_pending=" + $("#tiger_pending_select").val();
-                qp += "&site_pending=" + $("#site_pending_select").val();
                 qp += "&flagged=" + $("#flagged_select").val();
                 qp += "&flagged_others=" + $("#flagged_others_select").val();
                 qp += "&hidden=" + $("#hidden_select").val();
@@ -577,14 +585,13 @@ $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version
             $("#orderby_select").val("{{ orderby }}");
             $("#tiger_certainty_select").val("{{ tiger_certainty }}");
             $("#site_certainty_select").val("{{ site_certainty }}");
-            $("#tiger_pending_select").val("{{ tiger_pending }}");
-            $("#site_pending_select").val("{{ site_pending }}");
             $("#flagged_select").val("{{ flagged }}");
             $("#flagged_others_select").val("{{ flagged_others }}");
             $("#hidden_select").val("{{ hidden }}");
             $("#hidden_others_select").val("{{ hidden_others }}");
 
-                    function submit_queries () {
+
+        function submit_queries() {
             gear.show();
             var qp = query_selectors();
             $('#myModal').modal('hide');
@@ -592,26 +599,41 @@ $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version
         }
 
 
-          function submit_queries_plus (event) {
+        function submit_queries_plus(event) {
             gear.show();
             var qp = query_selectors();
             qp += event.data.extr;
             window.location.href = qp;
         }
 
-        pending_btn.on('click', {extr: '&pending=pending'} ,submit_queries_plus);
-        complete_btn.on('click', { extr: '&pending=complete'}, submit_queries_plus);
-        all_btn.on('click', {extr:'&pending=all'}, submit_queries_plus);
-
-
-
-            $("#filters_submit_button").on('click', submit_queries);
-
 
         </script>
     {% endblock %}
 
     <script>
+
+        var pending_btn = $("#pendingc_btn"), complete_btn = $("#complete_btn"), all_btn = $("#all_btn");
+
+
+        if ("{{ pending }}" == "pending") {
+            pending_btn.addClass("active");
+        }
+        else if ("{{ pending }}" == "completed") {
+            complete_btn.addClass("active");
+        }
+        else {
+            all_btn.addClass("active");
+        }
+
+
+        pending_btn.on('click', {extr: '&pending=pending'}, submit_queries_plus);
+        complete_btn.on('click', { extr: '&pending=complete'}, submit_queries_plus);
+        all_btn.on('click', {extr: '&pending=all'}, submit_queries_plus);
+
+
+        $("#filters_submit_button").on('click', submit_queries);
+
+
         grab_reports_button.on('click', function () {
             gear.show();
             var qp = query_selectors();
