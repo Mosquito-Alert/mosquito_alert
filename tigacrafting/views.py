@@ -380,11 +380,16 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
         return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
 
 
+BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
+
+
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, hidden=None, hidden_others=None, public=None, max_pending=5, max_given=3):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
+
     if this_user_is_expert or this_user_is_superexpert:
         args = {}
         args.update(csrf(request))
@@ -419,6 +424,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     n_to_get = max_pending - current_pending
                     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
                     new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
+                    if this_user_is_team_bcn:
+                        new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                     if new_reports_unfiltered:
                         new_reports = filter_reports(new_reports_unfiltered)
                         reports_to_take = new_reports[0:n_to_get]
@@ -431,6 +438,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
                 needs_review = ExpertReportAnnotation.objects.exclude(validation_complete=False).values('report')
                 new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(photos=None).filter(version_UUID__in=needs_review)
+                if this_user_is_team_bcn:
+                        new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered:
                     new_reports = filter_reports(new_reports_unfiltered)
                     for this_report in new_reports:
