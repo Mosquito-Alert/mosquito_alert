@@ -387,7 +387,7 @@ BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending=None, flagged=None, flagged_others=None, hidden=None, hidden_others=None, public=None, max_pending=5, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending='all', flagged=None, flagged_others=None, hidden=None, hidden_others=None, public=None, max_pending=5, max_given=3):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -480,7 +480,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             if pending == "pending":
                 all_annotations = all_annotations.filter(validation_complete=True)
             if pending == "complete":
-                all_annotations = all_annotations.filter(validation_complete=False)
+                all_annotations = all_annotations.exclude(validation_complete=True)
             if flagged == "flagged":
                 all_annotations = all_annotations.filter(flag=True)
             if flagged == "unflagged":
