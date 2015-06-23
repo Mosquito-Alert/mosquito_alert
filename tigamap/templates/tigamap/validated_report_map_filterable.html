@@ -108,11 +108,14 @@
 {% endblock %}
 
 <script>
-    var selected_year = 2015;
-    var selected_month = 0;
-    var selected_type = 'adult';
-    var selected_validation = -2;
 
+    var selected_year =  parseInt("{{ year }}");
+    if(selected_year == null || isNaN(selected_year) || !isFinite(selected_year)){
+        selected_year = 2015;
+    }
+    var selected_month = 0;
+    var selected_type = "{{ map_type }}";
+    var selected_validation = -2;
 
 </script>
 
@@ -930,6 +933,13 @@ function map_init_basic(map, options) {
             if (isNaN(initialZoom)) {
                 initialZoom = 6;
             }
+
+            // override zoom based on url parameter if present
+            var par_zoom = parseInt("{{ zoom }}");
+            if(par_zoom != null && !isNaN(par_zoom) && isFinite(par_zoom)){
+                initialZoom = par_zoom;
+            }
+
 
             {% block map_options %}
                 var djoptions = {"layers": [

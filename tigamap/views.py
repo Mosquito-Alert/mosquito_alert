@@ -334,7 +334,7 @@ def show_new_coverage_map(request):
     return render(request, 'tigamap/coverage_map_new.html', context)
 
 
-def show_filterable_report_map(request, limit=None):
+def show_filterable_report_map(request, limit=None, zoom='on', map_type='adult', scroll_zoom='on', year='2015'):
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
     else:
@@ -346,6 +346,10 @@ def show_filterable_report_map(request, limit=None):
     endpoint = 'all_reports'
     context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
     context.update(csrf(request))
+    context['zoom'] = zoom
+    context['map_type'] = map_type
+    context['scroll_zoom'] = scroll_zoom
+    context['year'] = year
     if limit == 'bcn':
         return render(request, 'tigamap/bcn_map.html', context)
     else:
