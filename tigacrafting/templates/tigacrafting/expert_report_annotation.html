@@ -103,15 +103,24 @@
 
                         <ul class="nav navbar-nav navbar-left">
                             {% block navbar_left_items %}
-                                <li><p class="navbar-text" style="color:cornflowerblue">Pending: <span
-                                        class="badge">{{ n_pending }}</span>
-                                    Complete: <span class="badge">{{ n_complete }}</span></p></li>
-                                <li>
-                                    <button id="grab_reports_button" role="button"
-                                            class="btn btn-primary btn-sm navbar-btn"><span
-                                            class="glyphicon glyphicon-download"></span> Get More Reports
-                                    </button>
-                                </li>
+<li>
+
+                                        <div class="btn-group" id="type_grp" data-toggle="buttons">
+            <label class="btn btn-primary btn-sm navbar-btn" id="pending_btn">
+                <input type="radio" name="options" autocomplete="off"> Pending <span
+                    class="badge">{{ n_pending }}</span></label>
+            <label class="btn btn-primary btn-sm navbar-btn" id="complete_btn">
+                <input type="radio" name="options" autocomplete="off"> Complete <span
+                    class="badge">{{ n_complete }}</span>
+            </label>
+            <label class="btn btn-primary btn-sm navbar-btn" id="all_btn">
+                <input type="radio" name="options" autocomplete="off"> All <span
+                    class="badge">{{ n_total }}</span>
+            </label>
+        </div>
+    </li>
+
+
 
                                 <li>
                                     <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
@@ -379,30 +388,6 @@ $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="tiger_pending_select" class="col-sm-4 control-label">Status of Tiger
-                                    Annotations:</label>
-
-                                <div class="col-sm-8">
-                                    <select id="tiger_pending_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
-                                        <option value="pending">Pending only</option>
-                                        <option value="complete">Complete only</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="site_pending_select" class="col-sm-4 control-label">Status of Site
-                                    Annotations:</label>
-
-                                <div class="col-sm-8">
-                                    <select id="site_pending_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
-                                        <option value="pending">Pending only</option>
-                                        <option value="complete">Complete only</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label for="flagged_select" class="col-sm-4 control-label">Flagged By Me:</label>
 
                                 <div class="col-sm-8">
@@ -571,6 +556,10 @@ $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version
 
     {% block filterjs %}
         <script>
+
+
+            var pending_btn = $("#pendingc_btn"), complete_btn = $("#complete_btn"), all_btn = $("#all_btn");
+
             function query_selectors() {
                 var qp = "?orderby=" + $("#orderby_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
@@ -595,12 +584,28 @@ $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version
             $("#hidden_select").val("{{ hidden }}");
             $("#hidden_others_select").val("{{ hidden_others }}");
 
-            $("#filters_submit_button").on('click', function () {
-                gear.show();
-                var qp = query_selectors();
-                $('#myModal').modal('hide');
-                window.location.href = qp;
-            });
+                    function submit_queries () {
+            gear.show();
+            var qp = query_selectors();
+            $('#myModal').modal('hide');
+            window.location.href = qp;
+        }
+
+
+          function submit_queries_plus (event) {
+            gear.show();
+            var qp = query_selectors();
+            qp += event.data.extr;
+            window.location.href = qp;
+        }
+
+        pending_btn.on('click', {extr: '&pending=pending'} ,submit_queries_plus);
+        complete_btn.on('click', { extr: '&pending=complete'}, submit_queries_plus);
+        all_btn.on('click', {extr:'&pending=all'}, submit_queries_plus);
+
+
+
+            $("#filters_submit_button").on('click', submit_queries);
 
 
         </script>

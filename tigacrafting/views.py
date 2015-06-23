@@ -387,7 +387,7 @@ BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, tiger_pending=None, site_pending=None, flagged=None, flagged_others=None, hidden=None, hidden_others=None, public=None, max_pending=5, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending=None, flagged=None, flagged_others=None, hidden=None, hidden_others=None, public=None, max_pending=5, max_given=3):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -414,8 +414,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             orderby = request.GET.get('orderby', orderby)
             tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
             site_certainty = request.GET.get('site_certainty', site_certainty)
-            tiger_pending = request.GET.get('tiger_pending', tiger_pending)
-            site_pending = request.GET.get('site_pending', site_pending)
+            pending = request.GET.get('pending', pending)
             flagged = request.GET.get('flagged', flagged)
             flagged_others = request.GET.get('flagged_others', flagged_others)
             hidden = request.GET.get('hidden', hidden)
@@ -478,14 +477,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
                 except ValueError:
                     pass
-            if tiger_pending == "pending":
-                all_annotations = all_annotations.filter(tiger_certainty_category=None)
-            if tiger_pending == "complete":
-                all_annotations = all_annotations.exclude(tiger_certainty_category=None)
-            if site_pending == "pending":
-                all_annotations = all_annotations.filter(site_certainty_category=None)
-            if site_pending == "complete":
-                all_annotations = all_annotations.exclude(site_certainty_category=None)
+            if pending == "pending":
+                all_annotations = all_annotations.filter(validation_complete=True)
+            if pending == "complete":
+                all_annotations = all_annotations.filter(validation_complete=False)
             if flagged == "flagged":
                 all_annotations = all_annotations.filter(flag=True)
             if flagged == "unflagged":
@@ -529,8 +524,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['orderby'] = orderby
             args['tiger_certainty'] = tiger_certainty
             args['site_certainty'] = site_certainty
-            args['tiger_pending'] = tiger_pending
-            args['site_pending'] = site_pending
+            args['pending'] = pending
             args['flagged'] = flagged
             args['flagged_others'] = flagged_others
             args['hidden'] = hidden
