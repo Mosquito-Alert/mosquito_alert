@@ -180,9 +180,10 @@ class ExpertReportAnnotation(models.Model):
         other_annotations = ExpertReportAnnotation.objects.filter(report=this_report).exclude(user=this_user)
         for ano in other_annotations.all():
             result += '<p>User: ' + ano.user.username + ', Last Edited: ' + str(ano.last_modified) + '</p>'
-            result += '<p>Tiger Certainty: ' + TIGER_CATEGORIES[ano.tiger_certainty_category][1] + '</p>'
+            result += '<p>Tiger Certainty: ' + TIGER_CATEGORIES[ano.tiger_certainty_category][1] if ano.tiger_certainty_category else '' + '</p>'
             result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
-            result += '<p>Site Certainty: ' + SITE_CATEGORIES[ano.site_certainty_category][1] + '</p>'
+            result += '<p>Site Certainty: ' + SITE_CATEGORIES[ano.site_certainty_category][1] if ano.site_certainty_category else '' + '</p>'
             result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
-            result += '<p>Flagged?: ' + str(ano.flag) + '</p><hr>'
+            result += '<p>Flagged? ' + str(ano.flag) + '</p><hr>'
+            result += '<p>Hidden? ' + str(ano.hide) + '</p><hr>'
         return result
