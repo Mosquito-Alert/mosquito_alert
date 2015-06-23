@@ -194,9 +194,12 @@ def filter_tasks(tasks):
     return tasks_filtered
 
 
-def filter_reports(reports):
-    reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),
+def filter_reports(reports, sort=True):
+    if sort:
+        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),
                                key=attrgetter('n_annotations'))
+    else:
+        reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
     return reports_filtered
 
 
@@ -441,7 +444,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 if new_reports_unfiltered and this_user_is_team_bcn:
                         new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered:
-                    new_reports = filter_reports(new_reports_unfiltered)
+                    new_reports = filter_reports(new_reports_unfiltered, sort=False)
                     for this_report in new_reports:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         new_annotation.save()
