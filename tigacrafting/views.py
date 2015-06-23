@@ -424,7 +424,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     n_to_get = max_pending - current_pending
                     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
                     new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
-                    if this_user_is_team_bcn:
+                    if new_reports_unfiltered and this_user_is_team_bcn:
                         new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                     if new_reports_unfiltered:
                         new_reports = filter_reports(new_reports_unfiltered)
@@ -438,7 +438,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
                 needs_review = ExpertReportAnnotation.objects.exclude(validation_complete=False).values('report')
                 new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(photos=None).filter(version_UUID__in=needs_review)
-                if this_user_is_team_bcn:
+                if new_reports_unfiltered and this_user_is_team_bcn:
                         new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered:
                     new_reports = filter_reports(new_reports_unfiltered)
