@@ -416,9 +416,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
             my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-            flagged_others_reports = ExpertReportAnnotation.objects.exclude(report__in=my_reports).filter(validation_complete=True, flag=True).values('report')
-            hidden_others_reports = ExpertReportAnnotation.objects.exclude(report__in=my_reports).filter(validation_complete=True, hide=True).values('report')
-            public_others_reports = ExpertReportAnnotation.objects.exclude(report__in=my_reports).filter(validation_complete=True, hide=False, flag=False).values('report')
+            flagged_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, flag=True).values('report')
+            hidden_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, hide=True).values('report')
+            public_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, hide=False, flag=False).values('report')
             if this_user_is_expert and load_new_reports == 'T':
                 if current_pending < max_pending:
                     n_to_get = max_pending - current_pending
