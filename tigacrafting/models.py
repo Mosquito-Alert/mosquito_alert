@@ -185,7 +185,7 @@ class ExpertReportAnnotation(models.Model):
             result += '<p>Site Certainty: ' + SITE_CATEGORIES[ano.site_certainty_category][1] if ano.site_certainty_category else '' + '</p>'
             result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
             result += '<p>Edited User Notes: ' + ano.edited_user_notes + '</p>'
-            result += '<p>Flagged? ' + str(ano.flag) + '</p><hr>'
-            result += '<p>Hidden? ' + str(ano.hide) + '</p><hr>'
+            result += '<p>Flagged? ' + str(ano.flag) + '</p>'
+            result += '<p>Hidden? ' + str(ano.hide) + '</p>'
             result += '<p>Validation Complete? ' + str(ano.validation_complete) + '</p><hr>'
         return result

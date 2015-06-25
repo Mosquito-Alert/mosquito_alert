@@ -454,11 +454,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         new_annotation.save()
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
             if this_user_is_superexpert:
-                args['n_public_pending'] = all_annotations.filter(report__expert_report_annotations__validation_complete=True, report__expert_report_annotations__hide=False, report__expert_report_annotations__flag=False).count()
                 flagged_reports = ExpertReportAnnotation.objects.filter(validation_complete=True, flag=True).values('report')
                 hidden_reports = ExpertReportAnnotation.objects.filter(validation_complete=True, hide=True).values('report')
-                args['n_flagged_pending'] = all_annotations.filter(report__version_UUID__in=flagged_reports).count()
-                args['n_hidden_pending'] = all_annotations.filter(report__version_UUID__in=hidden_reports).count()
+                n_flagged = all_annotations.filter(report__version_UUID__in=flagged_reports).count()
+                n_hidden = all_annotations.filter(report__version_UUID__in=hidden_reports).count()
+                n_public = all_annotations.count() - n_flagged - n_hidden
+                args['n_flagged'] = n_flagged
+                args['n_hidden'] = n_hidden
+                args['n_public'] = n_public
             if year:
                 try:
                     this_year = int(year)
