@@ -95,7 +95,7 @@
                             <span class="icon-bar"></span>
                         </button>
                         <div class="navbar-brand"><span
-                                style="color:#ff9900">{% block title %}Tigatrapp Expert Validation{% endblock %} <i
+                                style="color:#ff9900; font-size: small">{% block title %}Tigatrapp Expert Validation{% endblock %} <i
                                 id="gear"
                                 class="fa fa-refresh fa-spin"></i></span>
                         </div>
@@ -108,14 +108,14 @@
                             <li>
 
                                 <div class="btn-group" id="status_grp" data-toggle="buttons">
-                                    <label class="btn btn-info btn-sm navbar-btn" id="all_btn">
+                                    <label class="btn btn-primary btn-sm navbar-btn" id="all_btn">
                                         <input type="radio" name="status" autocomplete="off"> All <span
                                             class="badge">{{ n_total }}</span>
                                     </label>
-                                    <label class="btn btn-info btn-sm navbar-btn" id="pending_btn">
+                                    <label class="btn btn-primary btn-sm navbar-btn" id="pending_btn">
                                         <input type="radio" name="status" autocomplete="off"> Pending <span
                                             class="badge">{{ n_pending }}</span></label>
-                                    <label class="btn btn-info btn-sm navbar-btn" id="complete_btn">
+                                    <label class="btn btn-primary btn-sm navbar-btn" id="complete_btn">
                                         <input type="radio" name="status" autocomplete="off"> Complete <span
                                             class="badge">{{ n_complete }}</span>
                                     </label>
@@ -155,7 +155,7 @@
                             </li>
 
 
-                            <li><p class="navbar-text">Logged in as: {{ request.user.username }}</p></li>
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
                             <li><a href="{% url "auth_logout" %}">logout</a>
                             </li>
                         </ul>

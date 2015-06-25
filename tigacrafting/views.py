@@ -454,11 +454,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         new_annotation.save()
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
             if this_user_is_superexpert:
-                args['n_public_pending'] = all_annotations.filter(report__expert_report_annotations__validation_complete=True, report__expert_report_annotations__hide=False, report__expert_report_annotations__flag=False, validation_complete=False).count()
+                args['n_public_pending'] = all_annotations.filter(report__expert_report_annotations__validation_complete=True, report__expert_report_annotations__hide=False, report__expert_report_annotations__flag=False).count()
                 flagged_reports = ExpertReportAnnotation.objects.filter(validation_complete=True, flag=True).values('report')
                 hidden_reports = ExpertReportAnnotation.objects.filter(validation_complete=True, hide=True).values('report')
-                args['n_flagged_pending'] = all_annotations.filter(report__version_UUID__in=flagged_reports, validation_complete=False).count()
-                args['n_hidden_pending'] = all_annotations.filter(report__version_UUID__in=hidden_reports, validation_complete=False).count()
+                args['n_flagged_pending'] = all_annotations.filter(report__version_UUID__in=flagged_reports).count()
+                args['n_hidden_pending'] = all_annotations.filter(report__version_UUID__in=hidden_reports).count()
             if year:
                 try:
                     this_year = int(year)
@@ -518,7 +518,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['formset'] = this_formset
             args['objects'] = objects
             args['pages'] = range(1, objects.paginator.num_pages+1)
-            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(Q(tiger_certainty_category__isnull=True) | Q(site_certainty_category__isnull=True)).count()
+            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
             args['n_pending'] = current_pending
             n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
             args['n_complete'] = n_complete
