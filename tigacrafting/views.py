@@ -409,7 +409,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 page = request.GET.get('page')
                 if not page:
                     page = '1'
-                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position, 'pending': pending, 'flagged_others': flagged_others, 'hidden_others': hidden_others, 'public': public, 'orderby': orderby, 'tiger_certainty': tiger_certainty, 'site_certainty': site_certainty, 'flagged': flagged, 'hidden': hidden}) + '?page='+page)
+                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page+'&pending='+pending+'&flagged_others='+flagged_others+'&hidden_others='+hidden_others+'&public='+public+'&orderby='+orderby+'&tiger_certainty='+tiger_certainty+'&site_certainty='+site_certainty+'&flagged='+flagged+'&hidden='+hidden)
             else:
                 return HttpResponse('error')
         else:
