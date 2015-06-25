@@ -133,6 +133,15 @@
         min_lat = -90, min_lon = -180, max_lat = 90, max_lon = 180;
     }
 
+    var min_zoom = parseInt("{{ min_zoom }}");
+    if (min_zoom == null || isNaN(min_zoom) || !isFinite(min_zoom)) {
+        min_zoom = 0;
+    }
+    var max_zoom = parseInt("{{ max_zoom }}");
+    if (max_zoom == null || isNaN(max_zoom) || !isFinite(max_zoom)) {
+        max_zoom = 18;
+    }
+    
 
 </script>
 
@@ -999,7 +1008,7 @@ function map_init_basic(map, options) {
                                 "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
                         ],
                             "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": bounds_array, "resetview": true, "srid": null, "fitextent": true},
+                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": max_zoom, "minzoom": min_zoom, "extent": bounds_array, "resetview": true, "srid": null, "fitextent": true},
                         options = {djoptions: djoptions, initfunc: loadmap,
                             globals: false, callback: window.map_init_basic, zoomControl: false, scrollWheelZoom: scroll_wheel_zoom, maxBounds: bounds};
             {% endblock %}

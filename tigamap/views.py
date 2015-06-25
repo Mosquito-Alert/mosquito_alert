@@ -335,7 +335,7 @@ def show_new_coverage_map(request):
 
 
 @xframe_options_exempt
-def show_filterable_report_map(request, limit=None, zoom=None, map_type='adult', scroll_zoom='on', year='2015', month='0', selected_validation='-2', center_lon=None, center_lat=None, legend='on', fullscreen='on', min_lat = -90, min_lon = -180, max_lat = 90, max_lon=180):
+def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_type='adult', scroll_zoom='on', year='2015', month='0', selected_validation='-2', center_lon=None, center_lat=None, legend='on', fullscreen='on', min_lat = -90, min_lon = -180, max_lat = 90, max_lon=180):
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
     else:
@@ -358,6 +358,8 @@ def show_filterable_report_map(request, limit=None, zoom=None, map_type='adult',
     max_lon = request.GET.get('max_lon', max_lon)
     fullscreen = request.GET.get('fullscreen', fullscreen)
     legend = request.GET.get('legend', legend)
+    min_zoom = request.GET.get('min_zoom', min_zoom)
+    max_zoom = request.GET.get('max_zoomo', max_zoom)
     endpoint ='all_reports'
     context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
     context.update(csrf(request))
@@ -378,10 +380,9 @@ def show_filterable_report_map(request, limit=None, zoom=None, map_type='adult',
     context['max_lon'] = max_lon
     context['fullscreen'] = fullscreen
     context['legend'] = legend
-    if limit == 'bcn':
-        return render(request, 'tigamap/bcn_map.html', context)
-    else:
-        return render(request, 'tigamap/validated_report_map_filterable.html', context)
+    context['min_zoom'] = min_zoom
+    context['max_zoom'] = max_zoom
+    return render(request, 'tigamap/validated_report_map_filterable.html', context)
 
 
 @xframe_options_exempt
