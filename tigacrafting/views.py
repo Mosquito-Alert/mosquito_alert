@@ -478,9 +478,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 except ValueError:
                     pass
             if pending == "pending":
-                all_annotations = all_annotations.filter(validation_complete=True)
+                all_annotations = all_annotations.filter(validation_complete=False)
             if pending == "complete":
-                all_annotations = all_annotations.exclude(validation_complete=True)
+                all_annotations = all_annotations.filter(validation_complete=True)
             if flagged == "flagged":
                 all_annotations = all_annotations.filter(flag=True)
             if flagged == "unflagged":
