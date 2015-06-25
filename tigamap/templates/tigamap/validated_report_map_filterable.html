@@ -103,8 +103,11 @@
 {% endblock %}
 
 {% block legend %}
+    {% if legend == "on" %}
 
     <link id="legend_css" rel="stylesheet" href={% static "tigamap/tigamap_legend.css" %}>
+
+    {% endif %}
 {% endblock %}
 
 <script>
@@ -587,7 +590,7 @@ function map_init_basic(map, options) {
 
 
 {% block navbar %}
-
+{% if navbar == 'on' %}
     <!-- NAVBAR
     ================================================== -->
     <div class="navbar-wrapper">
@@ -727,6 +730,7 @@ function map_init_basic(map, options) {
         </div>
     </div>
 
+    {% endif %}
 {% endblock %}
 
 <div id="tigamap" class="leaflet-container-default"></div>
