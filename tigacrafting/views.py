@@ -451,7 +451,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             if this_user_is_superexpert:
                 n_flagged = all_annotations.filter(report__version_UUID__in=flagged_others_reports).count()
                 n_hidden = all_annotations.filter(report__version_UUID__in=hidden_others_reports).count()
-                n_public = all_annotations.count() - n_flagged - n_hidden
+                n_public = all_annotations.filter(report__version_UUID__in=public_others_reports).count()
                 args['n_flagged'] = n_flagged
                 args['n_hidden'] = n_hidden
                 args['n_public'] = n_public
