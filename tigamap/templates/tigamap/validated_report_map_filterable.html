@@ -30,82 +30,84 @@
 
 
 {% block conditional_legend %}
-    <style>
 
-        @media (max-width: 700px), (max-height: 570px) {
-            .legend .coverage_legend {
-                display: none;
+    {% if fullscreen == "on" %}
+        <style>
+
+            @media (max-width: 700px), (max-height: 570px) {
+                .legend .coverage_legend {
+                    display: none;
+                }
+
+                #hand-left {
+                    display: none;
+                }
+
+                #more_info_div {
+                    display: none;
+                }
+
+                #more_info_button {
+                    display: none;
+                }
+
+                .legend-main-table {
+                    display: none;
+                }
+
+                .legend-main-table, .legend-main-table tr, .legend-main-table td {
+                    display: none;
+                }
+
+                .legend-popup-area {
+                    display: none;
+                }
+
+                .legend-popup {
+                    display: none;
+                }
+
+                .legend-popup-table {
+                    display: none;
+                }
+
+                .legend-popup-table td {
+                    display: none;
+                }
+
+                .legend-popup-table a {
+                    display: none;
+                }
+
+                .legend-popup-infodiv {
+                    display: none;
+                }
+
+                .info-button-background {
+                    display: none;
+                }
+
+                .info-button-background img {
+                    display: none;
+                }
+
+                .infodiv-table {
+                    display: none;
+                }
+
+                .infodiv-table td {
+                    display: none;
+                }
             }
 
-            #hand-left {
-                display: none;
-            }
-
-            #more_info_div {
-                display: none;
-            }
-
-            #more_info_button {
-                display: none;
-            }
-
-            .legend-main-table {
-                display: none;
-            }
-
-            .legend-main-table, .legend-main-table tr, .legend-main-table td {
-                display: none;
-            }
-
-            .legend-popup-area {
-                display: none;
-            }
-
-            .legend-popup {
-                display: none;
-            }
-
-            .legend-popup-table {
-                display: none;
-            }
-
-            .legend-popup-table td {
-                display: none;
-            }
-
-            .legend-popup-table a {
-                display: none;
-            }
-
-            .legend-popup-infodiv {
-                display: none;
-            }
-
-            .info-button-background {
-                display: none;
-            }
-
-            .info-button-background img {
-                display: none;
-            }
-
-            .infodiv-table {
-                display: none;
-            }
-
-            .infodiv-table td {
-                display: none;
-            }
-        }
-
-    </style>
-
+        </style>
+    {% endif %}
 {% endblock %}
 
 {% block legend %}
     {% if legend == "on" %}
 
-    <link id="legend_css" rel="stylesheet" href={% static "tigamap/tigamap_legend.css" %}>
+        <link id="legend_css" rel="stylesheet" href={% static "tigamap/tigamap_legend.css" %}>
 
     {% endif %}
 {% endblock %}
@@ -135,77 +137,81 @@
 </script>
 
 {% block cookiewarning %}
-    <script>
-        // The following code is adapted from Creare's 'Implied Consent' EU Cookie Law Banner v:2.4
-        // Conceived by Robert Kent, James Bavington & Tom Foyster
 
-        var dropCookie = true;                      // false disables the Cookie, allowing you to style the banner
-        var cookieDuration = 14;                    // Number of days before the cookie expires, and the banner reappears
-        var cookieName = 'complianceCookie';        // Name of our cookie
-        var cookieValue = 'on';                     // Value of cookie
+    {% if fullscreen == "on" %}
 
-        function createDiv() {
-            var bodytag = document.getElementsByTagName('body')[0];
-            var div = document.createElement('div');
-            div.style.textAlign = 'center';
-            div.style.backgroundColor = '#F6D10A';
-            div.setAttribute('id', 'cookie-law');
-            div.innerHTML = "{% trans 'our-website-uses-cookies' %} <a href='{% url 'help.show_privacy' %}'' rel='nofollow' title='{% trans 'privacy-policy' %}'>{% trans 'privacy-policy' %}</a> {% trans 'and'  %} <a href='{% url 'help.show_terms' %}' rel='nofollow' title='{% trans 'user-agreement' %}'>{% trans 'user-agreement' %}</a>.&nbsp;&nbsp;<a class='close-cookie-banner' href='javascript:void(0);' onclick='removeMe();'><span style='cursor: pointer;'>X</span></a>";
-            // Be advised the Close Banner 'X' link requires jQuery
+        <script>
+            // The following code is adapted from Creare's 'Implied Consent' EU Cookie Law Banner v:2.4
+            // Conceived by Robert Kent, James Bavington & Tom Foyster
 
-            // bodytag.appendChild(div); // Adds the Cookie Law Banner just before the closing </body> tag
-            // or
-            bodytag.insertBefore(div, bodytag.firstChild); // Adds the Cookie Law Banner just after the opening <body> tag
+            var dropCookie = true;                      // false disables the Cookie, allowing you to style the banner
+            var cookieDuration = 14;                    // Number of days before the cookie expires, and the banner reappears
+            var cookieName = 'complianceCookie';        // Name of our cookie
+            var cookieValue = 'on';                     // Value of cookie
 
-            document.getElementsByTagName('body')[0].className += ' cookiebanner'; //Adds a class tothe <body> tag when the banner is visible
+            function createDiv() {
+                var bodytag = document.getElementsByTagName('body')[0];
+                var div = document.createElement('div');
+                div.style.textAlign = 'center';
+                div.style.backgroundColor = '#F6D10A';
+                div.setAttribute('id', 'cookie-law');
+                div.innerHTML = "{% trans 'our-website-uses-cookies' %} <a href='{% url 'help.show_privacy' %}'' rel='nofollow' title='{% trans 'privacy-policy' %}'>{% trans 'privacy-policy' %}</a> {% trans 'and'  %} <a href='{% url 'help.show_terms' %}' rel='nofollow' title='{% trans 'user-agreement' %}'>{% trans 'user-agreement' %}</a>.&nbsp;&nbsp;<a class='close-cookie-banner' href='javascript:void(0);' onclick='removeMe();'><span style='cursor: pointer;'>X</span></a>";
+                // Be advised the Close Banner 'X' link requires jQuery
 
-        }
+                // bodytag.appendChild(div); // Adds the Cookie Law Banner just before the closing </body> tag
+                // or
+                bodytag.insertBefore(div, bodytag.firstChild); // Adds the Cookie Law Banner just after the opening <body> tag
 
+                document.getElementsByTagName('body')[0].className += ' cookiebanner'; //Adds a class tothe <body> tag when the banner is visible
 
-        function createCookie(name, value, days) {
-            if (days) {
-                var date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                var expires = "; expires=" + date.toGMTString();
             }
-            else var expires = "";
-            if (window.dropCookie) {
-                document.cookie = name + "=" + value + expires + "; path=/";
+
+
+            function createCookie(name, value, days) {
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    var expires = "; expires=" + date.toGMTString();
+                }
+                else var expires = "";
+                if (window.dropCookie) {
+                    document.cookie = name + "=" + value + expires + "; path=/";
+                }
             }
-        }
 
-        function checkCookie(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for (var i = 0; i < ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            function checkCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
             }
-            return null;
-        }
 
-        function eraseCookie(name) {
-            createCookie(name, "", -1);
-        }
-
-        window.onload = function () {
-            if (checkCookie(window.cookieName) != window.cookieValue) {
-                createDiv();
+            function eraseCookie(name) {
+                createCookie(name, "", -1);
             }
-        }
 
-        function removeMe() {
-            var element = document.getElementById('cookie-law');
-            element.parentNode.removeChild(element);
-            createCookie(window.cookieName, window.cookieValue, window.cookieDuration); // Create the cookie
+            window.onload = function () {
+                if (checkCookie(window.cookieName) != window.cookieValue) {
+                    createDiv();
+                }
+            }
 
-        }
+            function removeMe() {
+                var element = document.getElementById('cookie-law');
+                element.parentNode.removeChild(element);
+                createCookie(window.cookieName, window.cookieValue, window.cookieDuration); // Create the cookie
 
-        //
+            }
+
+            //
 
 
-    </script>
+        </script>
+    {% endif %}
 {% endblock %}
 
 <style>
@@ -582,6 +588,16 @@ function map_init_basic(map, options) {
 </script>
 
 {% block extra_style %}
+    {% if fullscreen == "off" %}
+        <style>
+            body {
+                padding-top: 0 !important;
+            }
+        </style>
+
+    {% endif %}
+
+
 {% endblock %}
 
 
@@ -590,145 +606,145 @@ function map_init_basic(map, options) {
 
 
 {% block navbar %}
-{% if navbar == 'on' %}
-    <!-- NAVBAR
-    ================================================== -->
-    <div class="navbar-wrapper">
-        <div class="container">
+    {% if fullscreen == 'on' %}
+        <!-- NAVBAR
+        ================================================== -->
+        <div class="navbar-wrapper">
+            <div class="container">
 
-            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-                <div class="container">
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                                data-target=".navbar-collapse">
-                            <span class="sr-only">{% trans "navbar_toggle_navigation" %}</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <div class="navbar-brand shrinking-text" title="Tigatrapp Map" style="color:orange;">
-                            <strong>Tigatrapp Map</strong></div>
-                    </div>
-                    <div class="navbar-collapse collapse">
+                <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                    data-target=".navbar-collapse">
+                                <span class="sr-only">{% trans "navbar_toggle_navigation" %}</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <div class="navbar-brand shrinking-text" title="Tigatrapp Map" style="color:orange;">
+                                <strong>Tigatrapp Map</strong></div>
+                        </div>
+                        <div class="navbar-collapse collapse">
 
-                        <form class="navbar-form navbar-left" role="search">
-                            <div class="form-group">
-                                <select id="year_select" class="selectpicker show-tick form-control"
-                                        data-style="btn-primary" onchange="update_filters()">
-                                    <option value="2015">2015</option>
-                                    <option value="2014">2014</option>
-                                    <option value="0">All years</option>
-                                </select>
-                            </div>
-                        </form>
-
-
-                        <form class="navbar-form navbar-left" role="search">
-
-                            <div class="form-group">
-                                <select id="month_select" class="selectpicker show-tick form-control"
-                                        data-style="btn-success" onchange="update_filters()">
-                                    <option value="0">All months</option>
-                                    <option value="1">January
-                                    </option>
-                                    <option value="2">February
-                                    </option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September
-                                    </option>
-                                    <option value="10">October
-                                    </option>
-                                    <option value="11">November
-                                    </option>
-                                    <option value="12">December
-                                    </option>
-                                </select>
-                            </div>
-
-                        </form>
-
-                        <form class="navbar-form navbar-left" role="search">
-                            <div class="form-group">
-                                <select id="type_select" class="selectpicker show-tick form-control"
-                                        data-style="btn-warning" onchange="update_filters()">
-                                    <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
-                                    <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
-                                        sites
-                                    </option>
-                                    <option value="coverage"
-                                            data-subtext="Tigatrapp coverage">{% trans 'Coverage' %}</option>
-                                </select>
-                            </div>
-                        </form>
-
-                        <form class="navbar-form navbar-left" role="search">
-                            <div class="form-group">
-                                <select id="validation_select" class="selectpicker show-tick form-control"
-                                        data-style="btn-info" onchange="update_filters()">
-                                    <option value="2" data-subtext="Only highly probably reports">Strong Validation
-                                    </option>
-                                    <option value="1"
-                                            data-subtext="Only probably and highly probably reports">Medium
-                                        Validation
-                                    </option>
-                                    <option value="-2" data-subtext="No validation filter">All Reports</option>
-                                </select>
-                            </div>
-                        </form>
+                            <form class="navbar-form navbar-left" role="search">
+                                <div class="form-group">
+                                    <select id="year_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-primary" onchange="update_filters()">
+                                        <option value="2015">2015</option>
+                                        <option value="2014">2014</option>
+                                        <option value="0">All years</option>
+                                    </select>
+                                </div>
+                            </form>
 
 
-                        <ul class="nav navbar-nav navbar-left">
+                            <form class="navbar-form navbar-left" role="search">
 
-                            <li>
-                                <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}"
-                                   class="btn btn-inverse btn-lg"><span
-                                        class="glyphicon glyphicon-info-sign"></span></a>
-                            </li>
+                                <div class="form-group">
+                                    <select id="month_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-success" onchange="update_filters()">
+                                        <option value="0">All months</option>
+                                        <option value="1">January
+                                        </option>
+                                        <option value="2">February
+                                        </option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September
+                                        </option>
+                                        <option value="10">October
+                                        </option>
+                                        <option value="11">November
+                                        </option>
+                                        <option value="12">December
+                                        </option>
+                                    </select>
+                                </div>
+
+                            </form>
+
+                            <form class="navbar-form navbar-left" role="search">
+                                <div class="form-group">
+                                    <select id="type_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-warning" onchange="update_filters()">
+                                        <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
+                                        <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
+                                            sites
+                                        </option>
+                                        <option value="coverage"
+                                                data-subtext="Tigatrapp coverage">{% trans 'Coverage' %}</option>
+                                    </select>
+                                </div>
+                            </form>
+
+                            <form class="navbar-form navbar-left" role="search">
+                                <div class="form-group">
+                                    <select id="validation_select" class="selectpicker show-tick form-control"
+                                            data-style="btn-info" onchange="update_filters()">
+                                        <option value="2" data-subtext="Only highly probably reports">Strong Validation
+                                        </option>
+                                        <option value="1"
+                                                data-subtext="Only probably and highly probably reports">Medium
+                                            Validation
+                                        </option>
+                                        <option value="-2" data-subtext="No validation filter">All Reports</option>
+                                    </select>
+                                </div>
+                            </form>
 
 
-                        </ul>
-                        <ul class="nav navbar-nav navbar-right">
-                            {% if request.user.is_authenticated %}
+                            <ul class="nav navbar-nav navbar-left">
 
-                                <li><p style="padding-left: 10px;" class="navbar-text">{{ request.user.username }} /
-                                    <a href="{% url "auth_logout" %}">logout</a></p>
+                                <li>
+                                    <a style="max-width: 20px;" href="{% trans 'map_help_url_new' %}"
+                                       class="btn btn-inverse btn-lg"><span
+                                            class="glyphicon glyphicon-info-sign"></span></a>
                                 </li>
 
-                            {% endif %}
 
-                        </ul>
+                            </ul>
+                            <ul class="nav navbar-nav navbar-right">
+                                {% if request.user.is_authenticated %}
 
+                                    <li><p style="padding-left: 10px;" class="navbar-text">{{ request.user.username }} /
+                                        <a href="{% url "auth_logout" %}">logout</a></p>
+                                    </li>
 
-                        <form style="max-width: 200px;" class="navbar-form navbar-right"
-                              action="{% url 'set_language' %}" method="post">
-                            <div class="form-group">
-                                {% csrf_token %}
-                                <input name="next" type="hidden" value="{{ request.get_full_path|slice:'3:' }}"/>
-                                <select class="selectpicker show-tick form-control" name="language"
-                                        onchange="this.form.submit()" data-style="btn-inverse">
-                                    {% get_language_info_list for LANGUAGES as languages %}
-                                    {% for language in languages %}
-                                        <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
-                                                selected="selected"{% endif %}>
-                                            {{ language.name_local|title }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </form>
+                                {% endif %}
+
+                            </ul>
 
 
+                            <form style="max-width: 200px;" class="navbar-form navbar-right"
+                                  action="{% url 'set_language' %}" method="post">
+                                <div class="form-group">
+                                    {% csrf_token %}
+                                    <input name="next" type="hidden" value="{{ request.get_full_path|slice:'3:' }}"/>
+                                    <select class="selectpicker show-tick form-control" name="language"
+                                            onchange="this.form.submit()" data-style="btn-inverse">
+                                        {% get_language_info_list for LANGUAGES as languages %}
+                                        {% for language in languages %}
+                                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                                    selected="selected"{% endif %}>
+                                                {{ language.name_local|title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+
+
+                        </div>
                     </div>
                 </div>
-            </div>
 
+            </div>
         </div>
-    </div>
 
     {% endif %}
 {% endblock %}
@@ -998,8 +1014,10 @@ function map_init_basic(map, options) {
 </script>
 
 {% block logo %}
-    <a href="http://atrapaeltigre.com"><img style="position:absolute;width:20%;bottom:20px;right:10px;"
-                                            src={% static "tigamap/tigatrapp_logo.png" %}></a>
+    {% if fullscreen == "on" %}
+        <a href="http://atrapaeltigre.com"><img style="position:absolute;width:20%;bottom:20px;right:10px;"
+                                                src={% static "tigamap/tigatrapp_logo.png" %}></a>
+    {% endif %}
 {% endblock %}
 
 
