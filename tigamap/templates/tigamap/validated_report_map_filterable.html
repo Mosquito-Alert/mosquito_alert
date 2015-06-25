@@ -756,7 +756,7 @@ function map_init_basic(map, options) {
     </div>
 </div>
 
-
+{% if legend == "on" %}
 <div class="coverage_legend" style="display: none;">
 
     <div class="legend-main-table-container">
@@ -947,6 +947,7 @@ function map_init_basic(map, options) {
 
 </div>
 
+{% endif %}
 
 <script type="text/javascript">
     (function () {
