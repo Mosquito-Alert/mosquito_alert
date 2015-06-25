@@ -394,17 +394,22 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=ExpertReportAnnotationForm, extra=0)
         if request.method == 'POST':
             scroll_position = request.POST.get("scroll_position", '0')
-            pending = request.POST.get("pending", 'all')
-            flagged_others = request.POST.get("flagged_others", flagged_others)
-            hidden_others = request.POST.get("hidden_others", hidden_others)
-            public = request.POST.get("hidden_others", public)
+            orderby = request.POST.get('orderby', orderby)
+            tiger_certainty = request.POST.get('tiger_certainty', tiger_certainty)
+            site_certainty = request.POST.get('site_certainty', site_certainty)
+            pending = request.POST.get('pending', pending)
+            flagged = request.POST.get('flagged', flagged)
+            flagged_others = request.POST.get('flagged_others', flagged_others)
+            hidden = request.POST.get('hidden', hidden)
+            hidden_others = request.POST.get('hidden_others', hidden_others)
+            public = request.POST.get('public', public)
             formset = AnnotationFormset(request.POST)
             if formset.is_valid():
                 formset.save()
                 page = request.GET.get('page')
                 if not page:
                     page = '1'
-                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position, 'pending': pending, 'flagged_others': flagged_others, 'hidden_others': hidden_others}) + '?page='+page)
+                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position, 'pending': pending, 'flagged_others': flagged_others, 'hidden_others': hidden_others, 'public': public, 'orderby': orderby, 'tiger_certainty': tiger_certainty, 'site_certainty': site_certainty, 'flagged': flagged, 'hidden': hidden}) + '?page='+page)
             else:
                 return HttpResponse('error')
         else:
