@@ -334,7 +334,7 @@ def show_new_coverage_map(request):
     return render(request, 'tigamap/coverage_map_new.html', context)
 
 
-def show_filterable_report_map(request, limit=None, zoom='on', map_type='adult', scroll_zoom='on', year='2015', month='0'):
+def show_filterable_report_map(request, limit=None, zoom=None, map_type='adult', scroll_zoom='on', year='2015', month='0', center_lon=None, center_lat=None):
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
     else:
@@ -343,6 +343,8 @@ def show_filterable_report_map(request, limit=None, zoom='on', map_type='adult',
         last_coverage_id = CoverageArea.objects.order_by('id').last().id
     else:
         last_coverage_id = 0
+    center_lon = request.GET.get('center_lon', center_lon)
+    center_lat = request.GET.get('center_lat', center_lat)
     year = request.GET.get('year', year)
     month = request.GET.get('month', month)
     zoom = request.GET.get('zoom', zoom)
@@ -351,10 +353,16 @@ def show_filterable_report_map(request, limit=None, zoom='on', map_type='adult',
     endpoint = 'all_reports'
     context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
     context.update(csrf(request))
-    context['zoom'] = zoom
+    if zoom:
+        context['zoom'] = zoom
+    if center_lon:
+        context['center_lon'] = center_lon
+    if center_lat:
+        context['center_lat'] = center_lat
     context['map_type'] = map_type
     context['scroll_zoom'] = scroll_zoom
     context['year'] = year
+    context['month'] = month
     if limit == 'bcn':
         return render(request, 'tigamap/bcn_map.html', context)
     else:

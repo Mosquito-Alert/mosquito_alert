@@ -939,7 +939,16 @@ function map_init_basic(map, options) {
             if(par_zoom != null && !isNaN(par_zoom) && isFinite(par_zoom)){
                 initialZoom = par_zoom;
             }
+            var par_center_lon = parseInt("{{ center_lon }}");
+            if(par_center_lon != null && !isNaN(par_center_lon) && isFinite(par_center_lon)){
+                centerLng = par_center_lon;
+            }
+            var par_center_lat = parseInt("{{ center_lat }}");
+            if(par_center_lat != null && !isNaN(par_center_lat) && isFinite(par_center_lat)){
+                centerLat = par_center_lat;
+            }
 
+            var scroll_wheel_zoom = "{{ scroll_zoom }}" == 'on';
 
             {% block map_options %}
                 var djoptions = {"layers": [
@@ -947,7 +956,7 @@ function map_init_basic(map, options) {
                                 "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
                         ],
                             "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                            "attributionprefix": null, "scrollWheelZoom": scroll_wheel_zoom, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
                                 [-90,
                                     -180],
                                 [90,
