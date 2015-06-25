@@ -15,7 +15,7 @@ from operator import attrgetter
 from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
     ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer
 from models import TigaUser, Mission, Report, Photo, \
-    Fix, Configuration, CoverageArea
+    Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 
 
@@ -484,6 +484,42 @@ def update_coverage_model(request):
         unique_lats = set(full_lat_list)
         for this_lat in unique_lats:
             these_lons = [f.masked_lon for f in fix_list if f.masked_lat == this_lat] + [r.masked_lon for r in report_list if r.masked_lat is not None and r.masked_lat == this_lat]
+            unique_lons = set(these_lons)
+            for this_lon in unique_lons:
+                n_fixes = len([l for l in these_lons if l == this_lon])
+                if CoverageArea.objects.filter(lat=this_lat, lon=this_lon).count() > 0:
+                    this_coverage_area = CoverageArea.objects.get(lat=this_lat, lon=this_lon)
+                    this_coverage_area.n_fixes += n_fixes
+                else:
+                    this_coverage_area = CoverageArea(lat=this_lat, lon=this_lon, n_fixes=n_fixes)
+                if fix_list and fix_list.count() > 0:
+                    this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
+                else:
+                    this_coverage_area.latest_fix_id = latest_fix_id
+                if report_list and report_list.count() > 0:
+                    this_coverage_area.latest_report_server_upload_time = report_list.order_by('server_upload_time').last().server_upload_time
+                else:
+                    this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
+                this_coverage_area.save()
+        json_response['updated'] = True
+    return HttpResponse(json.dumps(json_response))
+
+
+def update_coverage_area_month_model(request):
+    json_response = {'updated': False}
+    if CoverageAreaMonth.objects.all().count() > 0:
+        latest_report_server_upload_time = CoverageAreaMonth.objects.order_by('latest_report_server_upload_time').last().latest_report_server_upload_time
+        latest_fix_id = CoverageAreaMonth.objects.order_by('latest_fix_id').last().latest_fix_id
+    else:
+        latest_report_server_upload_time = pytz.utc.localize(datetime(1970, 1, 1))
+        latest_fix_id = 0
+    if CoverageAreaMonth.objects.all().count() == 0 or latest_report_server_upload_time < Report.objects.order_by('server_upload_time').last().server_upload_time or latest_fix_id < Fix.objects.order_by('id').last().id:
+        report_list = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).filter(server_upload_time__gt=latest_report_server_upload_time))
+        fix_list = Fix.objects.filter(fix_time__gt=settings.START_TIME, id__gt=latest_fix_id)
+        full_lat_list = [(f.masked_lat, f.fix_time.year, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.year, r.creation_time.month) for r in report_list if r.masked_lat is not None]
+        unique_lats = set(full_lat_list)
+        for this_lat in unique_lats:
+            these_lons = [(f.masked_lon, f.fix_time.year, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.year == this_lat[1] and f.fix_time.month == this_lat[2])] + [(r.masked_lon, r.creation_time.year, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.year = this_lat[1])]
             unique_lons = set(these_lons)
             for this_lon in unique_lons:
                 n_fixes = len([l for l in these_lons if l == this_lon])
