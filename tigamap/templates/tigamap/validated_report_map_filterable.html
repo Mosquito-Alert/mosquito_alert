@@ -117,6 +117,9 @@
     var selected_type = "{{ map_type }}";
     var selected_validation = -2;
 
+    var scroll_wheel_zoom = "{{ scroll_zoom }}" == 'on';
+
+
 </script>
 
 {% block cookiewarning %}
@@ -948,13 +951,14 @@ function map_init_basic(map, options) {
                 centerLat = par_center_lat;
             }
 
+
             {% block map_options %}
                 var djoptions = {"layers": [
                             ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                                 "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
                         ],
                             "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                            "attributionprefix": null, "scrollWheelZoom": "{{ scroll_zoom }}" == 'on', "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                            "attributionprefix": null, "scrollWheelZoom": scroll_wheel_zoom, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
                                 [-90,
                                     -180],
                                 [90,
