@@ -95,7 +95,8 @@
                             <span class="icon-bar"></span>
                         </button>
                         <div class="navbar-brand"><span
-                                style="color:#ff9900; font-size: small">{% block title %}Tigatrapp Expert Validation{% endblock %} <i
+                                style="color:#ff9900; font-size: small">{% block title %}Tigatrapp Expert
+                            Validation{% endblock %} <i
                                 id="gear"
                                 class="fa fa-refresh fa-spin"></i></span>
                         </div>
@@ -104,12 +105,6 @@
 
                         <ul class="nav navbar-nav navbar-left">
                             {% block navbar_left_items %}
-                                    <li>
-                                    <button style="margin-right: 5px;" id="grab_reports_button" role="button"
-                                            class="btn btn-danger btn-sm navbar-btn"><span
-                                            class="glyphicon glyphicon-download"></span>
-                                    </button>
-                                </li>
                             {% endblock %}
                             <li>
 
@@ -135,6 +130,14 @@
                                         class="glyphicon glyphicon-filter"></span>
                                 </button>
                             </li>
+                            {% block grab_reports_button %}
+                                <li>
+                                    <button style="margin-right: 5px;" id="grab_reports_button" role="button"
+                                            class="btn btn-danger btn-sm navbar-btn"><span
+                                            class="glyphicon glyphicon-download"></span>
+                                    </button>
+                                </li>
+                            {% endblock %}
 
 
                             <li>

@@ -26,6 +26,10 @@
 
 {% endblock %}
 
+{% block grab_reports_button %}
+{% endblock %}
+
+
 
 {% block filter_modal %}
     <!-- Modal -->
@@ -125,7 +129,7 @@
 {% block filterjs %}
     <script>
 
-    var public_btn = $("#public_btn"), flagged_btn = $("#flagged_btn"), hidden_btn = $("#hidden_btn");
+        var public_btn = $("#public_btn"), flagged_btn = $("#flagged_btn"), hidden_btn = $("#hidden_btn");
 
 
         function query_selectors() {
@@ -145,34 +149,34 @@
         $("#flagged_select").val("{{ flagged }}");
         $("#hidden_select").val("{{ hidden }}");
 
-        if("{{ public }}" == "public"){
+        if ("{{ public }}" == "public") {
             public_btn.addClass("active");
         }
-        else if("{{ flagged_others }}" == "flagged"){
+        else if ("{{ flagged_others }}" == "flagged") {
             flagged_btn.addClass("active");
         }
-        else if("{{ hidden_others }}" == "hidden"){
+        else if ("{{ hidden_others }}" == "hidden") {
             hidden_btn.addClass("active");
         }
 
 
-        function submit_queries () {
+        function submit_queries() {
             gear.show();
             var qp = query_selectors();
             $('#myModal').modal('hide');
             window.location.href = qp;
         }
 
-        function submit_queries_plus (event) {
+        function submit_queries_plus(event) {
             gear.show();
             var qp = query_selectors();
             qp += event.data.extr;
             window.location.href = qp;
         }
 
-        public_btn.on('click', {extr: '&public=public'} ,submit_queries_plus);
+        public_btn.on('click', {extr: '&public=public'}, submit_queries_plus);
         flagged_btn.on('click', { extr: '&flagged_others=flagged'}, submit_queries_plus);
-        hidden_btn.on('click', {extr:'&hidden_others=hidden'}, submit_queries_plus);
+        hidden_btn.on('click', {extr: '&hidden_others=hidden'}, submit_queries_plus);
 
 
     </script>
