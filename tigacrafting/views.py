@@ -416,9 +416,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
             my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-            flagged_others_reports = ExpertReportAnnotation.objects.exclude(report__version_UUID__in=my_reports).filter(validation_complete=True, flag=True).values('report')
-            hidden_others_reports = ExpertReportAnnotation.objects.exclude(report__version_UUID__in=my_reports).filter(validation_complete=True, hide=True).values('report')
-            public_others_reports = ExpertReportAnnotation.objects.exclude(report__version_UUID__in=my_reports).filter(validation_complete=True, hide=False, flag=False).values('report')
+            flagged_others_reports = ExpertReportAnnotation.objects.exclude(report__in=my_reports).filter(validation_complete=True, flag=True).values('report')
+            hidden_others_reports = ExpertReportAnnotation.objects.exclude(report__in=my_reports).filter(validation_complete=True, hide=True).values('report')
+            public_others_reports = ExpertReportAnnotation.objects.exclude(report__in=my_reports).filter(validation_complete=True, hide=False, flag=False).values('report')
             if this_user_is_expert and load_new_reports == 'T':
                 if current_pending < max_pending:
                     n_to_get = max_pending - current_pending
@@ -449,9 +449,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         new_annotation.save()
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
             if this_user_is_superexpert:
-                n_flagged = all_annotations.filter(report__version_UUID__in=flagged_others_reports).count()
-                n_hidden = all_annotations.filter(report__version_UUID__in=hidden_others_reports).count()
-                n_public = all_annotations.filter(report__version_UUID__in=public_others_reports).exclude(report__version_UUID__in=flagged_others_reports).exclude(report__version_UUID__in=hidden_others_reports).count()
+                n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
+                n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
+                n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
                 args['n_flagged'] = n_flagged
                 args['n_hidden'] = n_hidden
                 args['n_public'] = n_public
@@ -482,19 +482,19 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             if flagged == "unflagged":
                 all_annotations = all_annotations.filter(flag=False)
             if flagged_others == "flagged":
-                all_annotations = all_annotations.filter(report__version_UUID__in=flagged_others_reports)
+                all_annotations = all_annotations.filter(report__in=flagged_others_reports)
             if flagged_others == "unflagged":
-                all_annotations = all_annotations.exclude(report__version_UUID__in=flagged_others_reports)
+                all_annotations = all_annotations.exclude(report__in=flagged_others_reports)
             if hidden == "hidden":
                 all_annotations = all_annotations.filter(hide=True)
             if hidden == "unhidden":
                 all_annotations = all_annotations.filter(hide=False)
             if hidden_others == "hidden":
-                all_annotations = all_annotations.filter(report__version_UUID__in=hidden_others_reports)
+                all_annotations = all_annotations.filter(report__in=hidden_others_reports)
             if hidden_others == "unhidden":
-                all_annotations = all_annotations.exclude(report__version_UUID__in=hidden_others_reports)
+                all_annotations = all_annotations.exclude(report__in=hidden_others_reports)
             if public == "public":
-                all_annotations = all_annotations.filter(report__version_UUID__in=public_others_reports).exclude(report__version_UUID__in=flagged_others_reports).exclude(report__version_UUID__in=hidden_others_reports)
+                all_annotations = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports)
             if all_annotations:
                 all_annotations = all_annotations.order_by('report__creation_time')
                 if orderby == "site_score":
