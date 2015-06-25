@@ -108,16 +108,16 @@
                             <li>
 
                                 <div class="btn-group" id="status_grp" data-toggle="buttons">
+                                    <label class="btn btn-info btn-sm navbar-btn" id="all_btn">
+                                        <input type="radio" name="status" autocomplete="off"> All <span
+                                            class="badge">{{ n_total }}</span>
+                                    </label>
                                     <label class="btn btn-info btn-sm navbar-btn" id="pending_btn">
                                         <input type="radio" name="status" autocomplete="off"> Pending <span
                                             class="badge">{{ n_pending }}</span></label>
                                     <label class="btn btn-info btn-sm navbar-btn" id="complete_btn">
                                         <input type="radio" name="status" autocomplete="off"> Complete <span
                                             class="badge">{{ n_complete }}</span>
-                                    </label>
-                                    <label class="btn btn-info btn-sm navbar-btn" id="all_btn">
-                                        <input type="radio" name="status" autocomplete="off"> All <span
-                                            class="badge">{{ n_total }}</span>
                                     </label>
                                 </div>
                             </li>
