@@ -115,9 +115,18 @@
     }
     var selected_month = 0;
     var selected_type = "{{ map_type }}";
-    var selected_validation = -2;
+    var selected_validation = parseInt("{{ validation_score }}");
+    if (selected_validation == null || isNaN(selected_validation) || !isFinite(selected_validation)) {
+        selected_validation = -2;
+    }
 
     var scroll_wheel_zoom = "{{ scroll_zoom }}" == 'on';
+
+    var min_lat = parseFloat("{{ min_lat }}"), min_lon = parseFloat("{{ min_lon }}"), max_lat = parseFloat("{{ max_lat }}"), max_lon = parseFloat("{{ max_lon }}")
+
+    if (min_lat == null || isNaN(min_lat) || !isFinite(min_lat) || min_lon == null || isNaN(min_lon) || !isFinite(min_lon) || max_lat == null || isNaN(max_lat) || !isFinite(max_lat) || max_lon == null || isNaN(max_lon) || !isFinite(max_lon)) {
+        min_lat = -90, min_lon = -180, max_lat = 90, max_lon = 180;
+    }
 
 
 </script>
@@ -953,19 +962,25 @@ function map_init_basic(map, options) {
 
 
             {% block map_options %}
+
+
+                var southWest = L.latLng(min_lat, min_lon),
+                        northEast = L.latLng(max_lat, max_lon),
+                        bounds = L.latLngBounds(southWest, northEast),
+                        bounds_array = [
+                            [southWest.lat, southWest.lng],
+                            [northEast.lat, northEast.lng]
+                        ];
+
+
                 var djoptions = {"layers": [
                             ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                                 "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
                         ],
                             "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
-                                [-90,
-                                    -180],
-                                [90,
-                                    180]
-                            ], "resetview": true, "srid": null, "fitextent": true},
+                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": bounds_array, "resetview": true, "srid": null, "fitextent": true},
                         options = {djoptions: djoptions, initfunc: loadmap,
-                            globals: false, callback: window.map_init_basic, zoomControl: false, "scrollWheelZoom": scroll_wheel_zoom};
+                            globals: false, callback: window.map_init_basic, zoomControl: false, scrollWheelZoom: scroll_wheel_zoom, maxBounds: bounds};
             {% endblock %}
             L.Map.djangoMap('tigamap', options);
         }
