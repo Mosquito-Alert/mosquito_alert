@@ -958,14 +958,14 @@ function map_init_basic(map, options) {
                                 "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
                         ],
                             "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                            "attributionprefix": null, "scrollWheelZoom": false, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                            "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
                                 [-90,
                                     -180],
                                 [90,
                                     180]
                             ], "resetview": true, "srid": null, "fitextent": true},
                         options = {djoptions: djoptions, initfunc: loadmap,
-                            globals: false, callback: window.map_init_basic, zoomControl: false};
+                            globals: false, callback: window.map_init_basic, zoomControl: false, "scrollWheelZoom": scroll_wheel_zoom};
             {% endblock %}
             L.Map.djangoMap('tigamap', options);
         }
