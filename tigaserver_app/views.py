@@ -13,7 +13,7 @@ import calendar
 import json
 from operator import attrgetter
 from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
-    ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer
+    ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
 from models import TigaUser, Mission, Report, Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
@@ -386,6 +386,14 @@ class CoverageMapFilter(django_filters.FilterSet):
         fields = ['id_range_start', 'id_range_end']
 
 
+class CoverageMonthMapFilter(django_filters.FilterSet):
+    id_range_start = django_filters.NumberFilter(name='id', lookup_type='gte')
+    id_range_end = django_filters.NumberFilter(name='id', lookup_type='lte')
+
+    class Meta:
+        model = CoverageAreaMonth
+        fields = ['id_range_start', 'id_range_end']
+
 def get_latest_reports_qs(reports, property_filter=None):
     if property_filter == 'movelab_cat_ge1':
         unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] >= 1, reports.iterator()))
@@ -519,15 +527,15 @@ def update_coverage_area_month_model(request):
         full_lat_list = [(f.masked_lat, f.fix_time.year, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.year, r.creation_time.month) for r in report_list if r.masked_lat is not None]
         unique_lats = set(full_lat_list)
         for this_lat in unique_lats:
-            these_lons = [(f.masked_lon, f.fix_time.year, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.year == this_lat[1] and f.fix_time.month == this_lat[2])] + [(r.masked_lon, r.creation_time.year, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.year = this_lat[1])]
+            these_lons = [(f.masked_lon, f.fix_time.year, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.year == this_lat[1] and f.fix_time.month == this_lat[2])] + [(r.masked_lon, r.creation_time.year, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.year == this_lat[1] and r.creation_time.month == this_lat[2])]
             unique_lons = set(these_lons)
             for this_lon in unique_lons:
                 n_fixes = len([l for l in these_lons if l == this_lon])
-                if CoverageArea.objects.filter(lat=this_lat, lon=this_lon).count() > 0:
-                    this_coverage_area = CoverageArea.objects.get(lat=this_lat, lon=this_lon)
+                if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2]).count() > 0:
+                    this_coverage_area = CoverageArea.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2])
                     this_coverage_area.n_fixes += n_fixes
                 else:
-                    this_coverage_area = CoverageArea(lat=this_lat, lon=this_lon, n_fixes=n_fixes)
+                    this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2], n_fixes=n_fixes)
                 if fix_list and fix_list.count() > 0:
                     this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
                 else:
@@ -545,3 +553,10 @@ class CoverageMapViewSet(ReadOnlyModelViewSet):
     queryset = CoverageArea.objects.all()
     serializer_class = CoverageMapSerializer
     filter_class = CoverageMapFilter
+
+
+class CoverageMonthMapViewSet(ReadOnlyModelViewSet):
+    queryset = CoverageAreaMonth.objects.all()
+    serializer_class = CoverageMonthMapSerializer
+    filter_class = CoverageMonthMapFilter
+

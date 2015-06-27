@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea
+    Fix, Configuration, CoverageArea, CoverageAreaMonth
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -191,3 +191,10 @@ class CoverageMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverageArea
         fields = ('lat', 'lon', 'n_fixes')
+
+
+class CoverageMonthMapSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CoverageAreaMonth
+        fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
