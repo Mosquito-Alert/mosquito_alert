@@ -442,7 +442,7 @@ var cov_color = '#f00';
 function add_to_coverage_fg(data, this_fg, filter) {
     $.each(data, function (index, value) {
         if (value != null && value.lat != null && value.lon != null && value.n_fixes != null && (!filter ||
-                ( (selected_year == 0 || value.year == selected_year) && (selected_month == 0 || value.month == selected_month) )))  {
+                ( (selected_year == 0 || value.year == selected_year) && (value.month == selected_month) )))  {
 
             this_fg.addLayer(L.polygon([
                 [value.lat, value.lon],
