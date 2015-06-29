@@ -534,7 +534,7 @@ def update_coverage_area_month_model(request):
             for this_lon in unique_lons:
                 n_fixes = len([l for l in these_lons if l == this_lon])
                 if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2]).count() > 0:
-                    this_coverage_area = CoverageArea.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2])
+                    this_coverage_area = CoverageAreaMonth.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2])
                     this_coverage_area.n_fixes += n_fixes
                 else:
                     this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2], n_fixes=n_fixes)
@@ -550,7 +550,7 @@ def update_coverage_area_month_model(request):
             for this_lon in unique_lons:
                 n_fixes = len([l for l in these_lons if l == this_lon])
                 if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2]).count() > 0:
-                    this_coverage_area = CoverageArea.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2])
+                    this_coverage_area = CoverageAreaMonth.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2])
                     this_coverage_area.n_fixes += n_fixes
                 else:
                     this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2], n_fixes=n_fixes)
@@ -570,7 +570,7 @@ def update_coverage_area_month_model(request):
             for this_lon in unique_lons_m0:
                 n_fixes = len([l for l in these_lons_m0 if l == this_lon])
                 if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0).count() > 0:
-                    this_coverage_area = CoverageArea.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0)
+                    this_coverage_area = CoverageAreaMonth.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0)
                     this_coverage_area.n_fixes += n_fixes
                 else:
                     this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0, n_fixes=n_fixes)
