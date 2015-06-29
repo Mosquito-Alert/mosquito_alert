@@ -465,7 +465,7 @@ function apply_filter() {
         $(".legend").hide();
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
-        $("#year_select, #month_select, #validation_select, .btn[data-id=year_select], .btn[data-id=month_select], .btn[data-id=validation_select]").prop('disabled', false);
+        $("#validation_select, .btn[data-id=validation_select]").prop('disabled', false);
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
         $(".coverage_legend").hide();
@@ -476,7 +476,7 @@ function apply_filter() {
         $("#year_select, #month_select, #validation_select, .btn[data-id=year_select], .btn[data-id=month_select], .btn[data-id=validation_select]").prop('disabled', false);
 
     } else if (selected_type == 'coverage') {
-        $("#year_select, #month_select, #validation_select, .btn[data-id=year_select], .btn[data-id=month_select], .btn[data-id=validation_select]").prop('disabled', true);
+        $("#validation_select, .btn[data-id=validation_select]").prop('disabled', true);
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
         $(".legend").hide();
         $(".coverage_legend").show();
@@ -654,24 +654,24 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="month_select" class="selectpicker show-tick form-control"
                                             data-style="btn-success" onchange="update_filters()">
-                                        <option value="0">All months</option>
-                                        <option value="1">January
+                                        <option value="0">{% trans 'All months' %}</option>
+                                        <option value="1">{% trans 'January' %}
                                         </option>
-                                        <option value="2">February
+                                        <option value="2">{% trans 'February' %}
                                         </option>
-                                        <option value="3">March</option>
-                                        <option value="4">April</option>
-                                        <option value="5">May</option>
-                                        <option value="6">June</option>
-                                        <option value="7">July</option>
-                                        <option value="8">August</option>
-                                        <option value="9">September
+                                        <option value="3">{% trans 'March' %}</option>
+                                        <option value="4">{% trans 'April' %}</option>
+                                        <option value="5">{% trans 'May' %}</option>
+                                        <option value="6">{% trans 'June' %}</option>
+                                        <option value="7">{% trans 'July' %}</option>
+                                        <option value="8">{% trans 'August' %}</option>
+                                        <option value="9">{% trans 'September' %}
                                         </option>
-                                        <option value="10">October
+                                        <option value="10">{% trans 'October' %}
                                         </option>
-                                        <option value="11">November
+                                        <option value="11">{% trans 'November' %}
                                         </option>
-                                        <option value="12">December
+                                        <option value="12">{% trans 'December' %}
                                         </option>
                                     </select>
                                 </div>
@@ -682,12 +682,11 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="type_select" class="selectpicker show-tick form-control"
                                             data-style="btn-warning" onchange="update_filters()">
-                                        <option value="adult" data-subtext="Adult tiger mosquitoes">Adults</option>
-                                        <option value="site" data-subtext="Tiger mosquito breeding sites">Breeding
-                                            sites
+                                        <option value="adult" data-subtext="{% trans 'Adult tiger mosquitoes' %}">{% trans 'Adults' %}</option>
+                                        <option value="site" data-subtext="{% trans 'Tiger mosquito breeding sites' %}">{% trans 'Breeding sites' %}
                                         </option>
                                         <option value="coverage"
-                                                data-subtext="Tigatrapp coverage">{% trans 'Coverage' %}</option>
+                                                data-subtext="{% trans 'Tigatrapp coverage' %}">{% trans 'Coverage' %}</option>
                                     </select>
                                 </div>
                             </form>
@@ -696,13 +695,12 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="validation_select" class="selectpicker show-tick form-control"
                                             data-style="btn-info" onchange="update_filters()">
-                                        <option value="2" data-subtext="Only highly probably reports">Strong Validation
+                                        <option value="2" data-subtext="{% trans 'Only highly probably reports' %}">{% trans 'Strong Validation' %}
                                         </option>
                                         <option value="1"
-                                                data-subtext="Only probably and highly probably reports">Medium
-                                            Validation
+                                                data-subtext="{% trans 'Only probably and highly probably reports' %}">{% trans 'Medium Validation' %}
                                         </option>
-                                        <option value="-2" data-subtext="No validation filter">All Reports</option>
+                                        <option value="-2" data-subtext="{% trans 'No validation filter' %}">{% trans 'All Reports' %}</option>
                                     </select>
                                 </div>
                             </form>
