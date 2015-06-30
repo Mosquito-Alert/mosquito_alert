@@ -153,14 +153,16 @@ class MoveLabAnnotation(models.Model):
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
+TIGER_CATEGORIES = ((2, 'Definitely a tiger mosquito'), (1, 'Probably a tiger mosquito'),  (0, 'Not sure'), (-1, 'Probably not a tiger mosquito'), (-2, 'Definitely not a tiger mosquito'))
+
+SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
+
 
 class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotations")
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations')
-    TIGER_CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     tiger_certainty_notes = models.TextField('Internal Tiger Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
-    SITE_CATEGORIES = ((-2, 'Definitely not a breeding site'), (-1, 'Probably not a breeding site'), (0, 'Not sure'), (1, 'Probably a breeding site'), (2, 'Definitely a breeding site'))
     site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
     site_certainty_notes = models.TextField('Internal Site Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
@@ -172,8 +174,6 @@ class ExpertReportAnnotation(models.Model):
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
     def get_others_annotation_html(self):
-        TIGER_CATEGORIES = ((2, 'Definitely a tiger mosquito'), (1, 'Probably a tiger mosquito'),  (0, 'Not sure'), (-1, 'Probably not a tiger mosquito'), (-2, 'Definitely not a tiger mosquito'))
-        SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
         result = ''
         this_user = self.user
         this_report = self.report
