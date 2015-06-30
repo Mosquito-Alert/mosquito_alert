@@ -12,10 +12,8 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, \
-    ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
-from models import TigaUser, Mission, Report, Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth
+from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
+from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 
 
@@ -564,7 +562,7 @@ def update_coverage_area_month_model(request):
                     this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
                 this_coverage_area.save()
 # now month 0 (all months combined)
-        for this_lat in unique_lats_m0:
+        for this_lat in list(unique_lats_m0):
             these_lons_m0 = [(f.masked_lon, f.fix_time.year) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.year == this_lat[1])] + [(r.masked_lon, r.creation_time.year) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.year == this_lat[1])]
             unique_lons_m0 = set(these_lons_m0)
             for this_lon in unique_lons_m0:
@@ -574,6 +572,14 @@ def update_coverage_area_month_model(request):
                     this_coverage_area.n_fixes += n_fixes
                 else:
                     this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0, n_fixes=n_fixes)
+                if fix_list and fix_list.count() > 0:
+                    this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
+                else:
+                    this_coverage_area.latest_fix_id = latest_fix_id
+                if report_list and report_list.count() > 0:
+                    this_coverage_area.latest_report_server_upload_time = report_list.order_by('server_upload_time').last().server_upload_time
+                else:
+                    this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
                 this_coverage_area.save()
 # response
         json_response['updated'] = True

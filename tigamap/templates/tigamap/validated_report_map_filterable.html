@@ -549,7 +549,7 @@ function get_coverage_data(id_start, id_stop, map) {
 function update_coverage_data() {
     var csrftoken = $.cookie('csrftoken');
     $.ajax({
-        url: 'http://{{ domain }}/api/update_coverage/',
+        url: 'http://{{ domain }}/api/update_coverage_month/',
         contentType: 'application/json',
         dataType: 'json',
         headers: {
