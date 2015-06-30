@@ -437,7 +437,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     if new_reports_unfiltered and this_user_is_team_not_bcn:
                         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                     if new_reports_unfiltered:
-                        new_reports = filter_reports(new_reports_unfiltered)
+                        new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
                         reports_to_take = new_reports[0:n_to_get]
                         for this_report in reports_to_take:
                             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)

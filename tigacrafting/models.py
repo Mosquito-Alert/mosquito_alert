@@ -172,8 +172,8 @@ class ExpertReportAnnotation(models.Model):
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
     def get_others_annotation_html(self):
-        TIGER_CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
-        SITE_CATEGORIES = ((-2, 'Definitely not a breeding site'), (-1, 'Probably not a breeding site'), (0, 'Not sure'), (1, 'Probably a breeding site'), (2, 'Definitely a breeding site'))
+        TIGER_CATEGORIES = ((2, 'Definitely a tiger mosquito'), (1, 'Probably a tiger mosquito'),  (0, 'Not sure'), (-1, 'Probably not a tiger mosquito'), (-2, 'Definitely not a tiger mosquito'))
+        SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
         result = ''
         this_user = self.user
         this_report = self.report

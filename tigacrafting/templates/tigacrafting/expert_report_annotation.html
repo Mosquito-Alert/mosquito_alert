@@ -224,18 +224,8 @@
                             Certainty
                             Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
-                            {% if form.instance.report.expert_report_annotations.count > 1 %}
-                                <div style="display:none;" id='other_annotations_alert{{ form.instance.id }}'
-                                     class='alert alert-info' role='alert'>
-                                    <a class="close" onclick="$('.alert').hide()">×</a>
-                                    {{ form.instance.get_others_annotation_html | safe }}
-                                </div>
-
-                                <button type="button"
-                                        onclick="$('#other_annotations_alert{{ form.instance.id }}').show();"
-                                        class="btn btn-default btn-sm">Show Others' Annotations
-                                </button>
-                            {% endif %}
+                        {% block view_others_annotations %}
+                        {% endblock %}
 
                         </div>
                     </div>
