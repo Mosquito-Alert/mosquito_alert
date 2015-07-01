@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-30 16:14+0200\n"
-"PO-Revision-Date: 2015-07-02 00:02+0100\n"
+"PO-Revision-Date: 2015-07-02 01:24+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Spanish\n"
@@ -663,7 +663,7 @@ msgstr "Sin filtro"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:703
 msgid "fmap_All_Reports"
-msgstr "Todos"
+msgstr "Todos los informes"
 
 #: tigaserver_app/models.py:299
 msgid "High"
