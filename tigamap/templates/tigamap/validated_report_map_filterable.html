@@ -522,7 +522,7 @@ function get_data(day, map) {
 function get_coverage_data(id_start, id_stop, map) {
     var csrftoken = $.cookie('csrftoken');
     $.ajax({
-        url: 'http://{{ domain }}/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
+        url: 'http://{{ domain }}/api/coverage_month/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
         contentType: 'application/json',
         dataType: 'json',
         headers: {
