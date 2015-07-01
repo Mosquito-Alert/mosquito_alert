@@ -643,7 +643,7 @@ function map_init_basic(map, options) {
                                             data-style="btn-primary" onchange="update_filters()">
                                         <option value="2015">2015</option>
                                         <option value="2014">2014</option>
-                                        <option value="0">All years</option>
+                                        <option value="0">{% trans 'fmap_All_years' %}</option>
                                     </select>
                                 </div>
                             </form>
@@ -654,7 +654,7 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="month_select" class="selectpicker show-tick form-control"
                                             data-style="btn-success" onchange="update_filters()">
-                                        <option value="0">{% trans 'All months' %}</option>
+                                        <option value="0">{% trans 'fmap_All_months' %}</option>
                                         <option value="1">{% trans 'January' %}
                                         </option>
                                         <option value="2">{% trans 'February' %}
@@ -682,11 +682,11 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="type_select" class="selectpicker show-tick form-control"
                                             data-style="btn-warning" onchange="update_filters()">
-                                        <option value="adult" data-subtext="{% trans 'Adult tiger mosquitoes' %}">{% trans 'Adults' %}</option>
-                                        <option value="site" data-subtext="{% trans 'Tiger mosquito breeding sites' %}">{% trans 'Breeding sites' %}
+                                        <option value="adult" data-subtext="{% trans 'fmap_Adult_tiger_mosquitoes' %}">{% trans 'fmap_Adults' %}</option>
+                                        <option value="site" data-subtext="{% trans 'fmap_Tiger_mosquito_breeding_sites' %}">{% trans 'fmap_Breeding_sites' %}
                                         </option>
                                         <option value="coverage"
-                                                data-subtext="{% trans 'Tigatrapp coverage' %}">{% trans 'Coverage' %}</option>
+                                                data-subtext="{% trans 'fmap_Tigatrapp_coverage' %}">{% trans 'fmap_Coverage' %}</option>
                                     </select>
                                 </div>
                             </form>
@@ -695,12 +695,12 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="validation_select" class="selectpicker show-tick form-control"
                                             data-style="btn-info" onchange="update_filters()">
-                                        <option value="2" data-subtext="{% trans 'Only highly probably reports' %}">{% trans 'Strong Validation' %}
+                                        <option value="2" data-subtext="{% trans 'fmap_Only_highly_probable_reports' %}">{% trans 'fmap_Strong_Validation' %}
                                         </option>
                                         <option value="1"
-                                                data-subtext="{% trans 'Only probably and highly probably reports' %}">{% trans 'Medium Validation' %}
+                                                data-subtext="{% trans 'fmap_Only_probable_and_highly_probable_reports' %}">{% trans 'fmap_Medium_Validation' %}
                                         </option>
-                                        <option value="-2" data-subtext="{% trans 'No validation filter' %}">{% trans 'All Reports' %}</option>
+                                        <option value="-2" data-subtext="{% trans 'fmap_No_validation_filter' %}">{% trans 'fmap_All_Reports' %}</option>
                                     </select>
                                 </div>
                             </form>
