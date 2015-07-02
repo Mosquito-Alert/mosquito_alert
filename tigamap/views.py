@@ -3,7 +3,7 @@ from django.db.models import Q
 from datetime import date
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-from tigaserver_app.models import Fix, Report, CoverageArea
+from tigaserver_app.models import Fix, Report, CoverageArea, CoverageAreaMonth
 from tigacrafting.models import MoveLabAnnotation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
@@ -340,8 +340,8 @@ def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_
         current_domain = 'humboldt.ceab.csic.es'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
-    if CoverageArea.objects.all().count() > 0:
-        last_coverage_id = CoverageArea.objects.order_by('id').last().id
+    if CoverageAreaMonth.objects.all().count() > 0:
+        last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
     else:
         last_coverage_id = 0
     center_lon = request.GET.get('center_lon', center_lon)
@@ -391,8 +391,8 @@ def show_embedded_adult_map(request, legend=''):
         current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
-    if CoverageArea.objects.all().count() > 0:
-        last_coverage_id = CoverageArea.objects.order_by('id').last().id
+    if CoverageAreaMonth.objects.all().count() > 0:
+        last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
     else:
         last_coverage_id = 0
     endpoint = 'all_reports'

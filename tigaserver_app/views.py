@@ -392,6 +392,7 @@ class CoverageMonthMapFilter(django_filters.FilterSet):
         model = CoverageAreaMonth
         fields = ['id_range_start', 'id_range_end']
 
+
 def get_latest_reports_qs(reports, property_filter=None):
     if property_filter == 'movelab_cat_ge1':
         unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] >= 1, reports.iterator()))
