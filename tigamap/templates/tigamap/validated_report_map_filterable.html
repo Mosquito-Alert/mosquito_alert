@@ -465,15 +465,20 @@ function add_to_coverage_fg(data, this_fg, filter) {
 }
 
 function make_validation_button_subtext(){
+    var vo_high = $("#validation_option_high");
+    var vo_med = $("#validation_option_medium");
+    var vo_all = $("#validation_option_all");
+
     if (selected_type == 'site'){
-        $("#validation_option_high").attr({'data-subtext':validation_button_subtext_sites_high});
-        $("#validation_option_medium").attr({'data-subtext':validation_button_subtext_sites_medium});
-        $("#validation_option_all").attr({'data-subtext':validation_button_subtext_sites_all});
+        vo_high.data('subtext', validation_button_subtext_sites_high);
+        vo_med.data('subtext',validation_button_subtext_sites_medium);
+        vo_all.data('subtext',validation_button_subtext_sites_all);
     } else if (selected_type == 'adult'){
-        $("#validation_option_high").attr({'data-subtext':validation_button_subtext_adults_high});
-        $("#validation_option_medium").attr({'data-subtext':validation_button_subtext_adults_medium});
-        $("#validation_option_all").attr({'data-subtext':validation_button_subtext_adults_all});
+        vo_high.data('subtext',validation_button_subtext_adults_high);
+        vo_med.data('subtext',validation_button_subtext_adults_medium);
+        vo_all.data('subtext',validation_button_subtext_adults_all);
     }
+    $("#validation_select").selectpicker("refresh")
 }
 
 function apply_filter() {
