@@ -121,6 +121,10 @@ body {
     -webkit-transition: left 1s ease;
 }
 
+.site_legend {
+    display: none;
+    min-height: 370px;
+}
 
 .legend:hover, .site_legend:hover {
     left: 0;
