@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-30 16:14+0200\n"
-"PO-Revision-Date: 2015-07-01 23:47+0100\n"
+"POT-Creation-Date: 2015-07-02 16:14+0200\n"
+"PO-Revision-Date: 2015-07-02 16:30+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Catalan (Spain)\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Loco https://localise.biz\n"
+"X-Generator: Poedit 1.5.4\n"
 "X-Loco-Source-Locale: en_US\n"
 "X-Loco-Target-Locale: ca_ES\n"
 "X-Loco-Project-Id: 4656\n"
@@ -153,8 +153,7 @@ msgstr "Acord de l'usuari"
 msgid "privacy-policy"
 msgstr "Política de privacitat"
 
-#: tigamap/views.py:145
-#: tigamap/views.py:316
+#: tigamap/views.py:145 tigamap/views.py:316
 msgid "coverage-map"
 msgstr "Zones explorades"
 
@@ -175,9 +174,7 @@ msgstr "Mosquits tigre: Només probabilitat mitjana i alta"
 msgid "adult-tiger-mosquitoes-high-probability-reports"
 msgstr "Mosquits tigre: Només probabilitat alta"
 
-#: tigamap/views.py:181
-#: tigamap/views.py:212
-#: tigamap/views.py:258
+#: tigamap/views.py:181 tigamap/views.py:212 tigamap/views.py:258
 msgid "adult-tiger-mosquitoes-all-reports"
 msgstr "Informes de mosquits: Tots"
 
@@ -186,46 +183,37 @@ msgstr "Informes de mosquits: Tots"
 msgid "Breeding Sites: Validated reports"
 msgstr "Llocs de cria: Tots"
 
-#: tigamap/views.py:197
-#: tigamap/views.py:285
+#: tigamap/views.py:197 tigamap/views.py:285
 msgid "breeding-sites-storm-drains-and-fountains"
 msgstr "Llocs de cria: Embornals i fonts"
 
-#: tigamap/views.py:200
-#: tigamap/views.py:285
+#: tigamap/views.py:200 tigamap/views.py:285
 msgid "breeding-sites-basins"
 msgstr "Llocs de cria: Basses artificials petites"
 
-#: tigamap/views.py:203
-#: tigamap/views.py:285
+#: tigamap/views.py:203 tigamap/views.py:285
 msgid "breeding-sites-buckets-and-wells"
 msgstr "Llocs de cria: Bidons i pous"
 
-#: tigamap/views.py:206
-#: tigamap/views.py:285
+#: tigamap/views.py:206 tigamap/views.py:285
 msgid "breeding-sites-other"
 msgstr "Llocs de cria: Altres"
 
-#: tigamap/views.py:209
-#: tigamap/views.py:285
-#: tigamap/views.py:289
+#: tigamap/views.py:209 tigamap/views.py:285 tigamap/views.py:289
 msgid "breeding-sites-all-reports"
 msgstr "Llocs de cria: Tots"
 
-#: tigamap/views.py:254
-#: tigamap/views.py:256
+#: tigamap/views.py:254 tigamap/views.py:256
 #: tigamap/templates/tigamap/app.html:122
 #: tigamap/templates/tigamap/app_new.html:171
 msgid "adult-tiger-mosquitoes"
 msgstr "Informes de mosquits"
 
-#: tigamap/views.py:254
-#: tigamap/templates/tigamap/app_new.html:177
+#: tigamap/views.py:254 tigamap/templates/tigamap/app_new.html:177
 msgid "menu_adults_prob"
 msgstr "Mosquits tigre confirmats i possibles"
 
-#: tigamap/views.py:256
-#: tigamap/templates/tigamap/app_new.html:179
+#: tigamap/views.py:256 tigamap/templates/tigamap/app_new.html:179
 msgid "menu_adults_definite"
 msgstr "Mosquits tigre confirmats"
 
@@ -234,7 +222,10 @@ msgstr "Mosquits tigre confirmats"
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:167
 msgid "our-website-uses-cookies"
-msgstr "El nostre lloc web utilitza galetes (cookies). Si continues navegant assumim el teu permís per utilitzar galetes. Per a més informació sobre les polítiques del nostre lloc web, si us plau consulta la nostra"
+msgstr ""
+"El nostre lloc web utilitza galetes (cookies). Si continues navegant assumim "
+"el teu permís per utilitzar galetes. Per a més informació sobre les "
+"polítiques del nostre lloc web, si us plau consulta la nostra"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
@@ -302,7 +293,7 @@ msgstr "http://atrapaeltigre.com/web/ca/el-mapa-del-mosquit-tigre-2014/"
 
 #: tigamap/templates/tigamap/app_filtered.html:175
 #: tigamap/templates/tigamap/app_new.html:159
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:630
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:635
 msgid "navbar_toggle_navigation"
 msgstr "Alternar panell de navegació"
 
@@ -310,9 +301,10 @@ msgstr "Alternar panell de navegació"
 #: tigamap/templates/tigamap/app_new.html:203
 #: tigamap/templates/tigamap/coverage_map_new.html:383
 #: tigamap/templates/tigamap/validated_report_map.html:635
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:712
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:822
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:944
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:717
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:827
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:949
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/ca/el-mapa-del-mosquit-tigre-2014/"
 
@@ -341,24 +333,32 @@ msgid "fix"
 msgstr "observacion"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:336
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:774
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:779
 msgid "coverage_legend_main_title"
 msgstr "Nombre d'observacions"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:372
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:811
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:816
 msgid "coverage_legend_info_title"
 msgstr "Zones explorades"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:373
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:812
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:817
 msgid "coverage_legend_info_blurb"
-msgstr "<p>La versi&oacute; Android de Tigatrapp recull en background (si l&rsquo;usuari ho permet), 5 dades de posici&oacute; al dia. Nom&eacute;s es recull la posici&oacute; aproximada (requadres vermells del mapa) per preservar l&rsquo;anonimat dels participants.<br /><br />El nombre d&rsquo;observacions en un determinat requadre &eacute;s el nombre acumulat de dades de posici&oacute; recollides en aquell requadre de tots els participants. Com m&eacute;s fosc el color, m&eacute;s explorada ha estat aquella zona.</p>"
+msgstr ""
+"<p>La versi&oacute; Android de Tigatrapp recull en background (si l&rsquo;"
+"usuari ho permet), 5 dades de posici&oacute; al dia. Nom&eacute;s es recull "
+"la posici&oacute; aproximada (requadres vermells del mapa) per preservar "
+"l&rsquo;anonimat dels participants.<br /><br />El nombre d&rsquo;"
+"observacions en un determinat requadre &eacute;s el nombre acumulat de dades "
+"de posici&oacute; recollides en aquell requadre de tots els participants. "
+"Com m&eacute;s fosc el color, m&eacute;s explorada ha estat aquella zona.</p>"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:377
 #: tigamap/templates/tigamap/validated_report_map.html:629
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:816
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:938
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:821
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:943
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1064
 msgid "more_info"
 msgstr "més informació"
 
@@ -445,51 +445,56 @@ msgstr "no"
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:544
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:331
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:853
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:858
 msgid "expert_cat_tiger"
 msgstr "Mosquit tigre"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:552
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:331
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:861
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:866
 msgid "expert_cat_possible_tiger"
 msgstr "Possible mosquit tigre"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:570
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:331
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:879
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:884
 msgid "expert_cat_possible_other"
 msgstr "Possible altra espècie"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:579
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:331
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:893
 msgid "expert_cat_other"
 msgstr "Altra espècie"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:561
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:331
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:870
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:996
 msgid "expert_cat_unknown"
 msgstr "No se sap"
 
 #: tigamap/templates/tigamap/validated_report_map.html:405
 #: tigamap/templates/tigamap/validated_report_map.html:595
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:336
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:904
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:909
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1030
 msgid "expert_row_title"
-msgstr "<a href=\"http://atrapaeltigre.com/web/ca/el-mapa-del-mosquit-tigre-2014/\" target=\"_blank\">Experts</a>"
+msgstr ""
+"<a href=\"http://atrapaeltigre.com/web/ca/el-mapa-del-mosquit-tigre-2014/\" "
+"target=\"_blank\">Resultat</a> validació experta"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map.html:600
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:344
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:909
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:914
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1035
 msgid "crowd_row_title"
-msgstr "Comunitat"
+msgstr "Resultat validació ciutadana"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:344
@@ -512,158 +517,191 @@ msgid "user_response_row_q3"
 msgstr "Ratlles blanques a abdomen i potes?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:535
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:844
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:849
 msgid "adult_report_legend_main_title"
 msgstr "Marcadors"
 
 #: tigamap/templates/tigamap/validated_report_map.html:588
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:897
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:902
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1023
 msgid "adult_report_legend_info_title"
 msgstr "Contingut del marcador"
 
 #: tigamap/templates/tigamap/validated_report_map.html:595
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:904
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:909
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1030
 msgid "expert_row_help"
-msgstr "Classificació feta per científics (si hi ha foto)"
+msgstr "Classificació feta per científics amb les fotos disponibles"
 
 #: tigamap/templates/tigamap/validated_report_map.html:600
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:909
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:914
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1035
 msgid "crowd_row_help"
-msgstr "Avaluació per voluntaris a <a href=\"http://crowdcrafting.org/app/Tigafotos/\" target=\"_blank\">Crowdcrafting</a> (si hi ha foto)"
+msgstr ""
+"Classificació feta per voluntaris a  <a href=\"http://crowdcrafting.org/app/"
+"Tigafotos/\" target=\"_blank\">Tigafotos</a> (si hi ha fotos)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:914
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:919
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1040
 msgid "report_row_title"
-msgstr "<a href=\"http://atrapaeltigre.com/web/ca/el-mosquit-tigre/\" target=\"_blank\">Tigre principis</a>"
+msgstr ""
+"<a href=\"http://atrapaeltigre.com/web/ca/el-mosquit-tigre/\" target=\"_blank"
+"\">Respostes</a> qüestionari Tigatrapp"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:914
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:919
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1040
 msgid "report_row_help"
-msgstr "Observats pels participants"
+msgstr "Observacions fetes pels participants"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:919
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:924
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1045
 msgid "photo_row_title"
 msgstr "Fotos"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:919
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:924
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1045
 msgid "photo_row_help"
-msgstr "Fetes pels participants (optatiu)"
+msgstr "Fetes pels participants (si hi ha fotos)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:924
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:929
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1050
 msgid "notes_row_title"
 msgstr "Notes"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:924
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:929
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1050
 msgid "notes_row_help"
-msgstr "Afegides per experts o participants (optatiu)"
+msgstr "Escrites per experts o participants (optatiu)"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:646
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:651
 msgid "fmap_All_years"
 msgstr "Tots els anys"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:657
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:662
 msgid "fmap_All_months"
 msgstr "Tots els mesos"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:658
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:663
 msgid "January"
 msgstr "gener"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:660
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:665
 msgid "February"
 msgstr "febrer"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:662
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:667
 msgid "March"
 msgstr "març"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:663
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:668
 msgid "April"
 msgstr "abril"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:664
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:669
 msgid "May"
 msgstr "maig"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:665
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:670
 msgid "June"
 msgstr "juny"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:666
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:671
 msgid "July"
 msgstr "juliol"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:667
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:672
 msgid "August"
 msgstr "agost"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:668
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:673
 msgid "September"
 msgstr "setembre"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:670
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:675
 msgid "October"
 msgstr "octubre"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:672
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:677
 msgid "November"
 msgstr "novembre"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:674
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:679
 msgid "December"
 msgstr "desembre"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:685
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:690
 msgid "fmap_Adult_tiger_mosquitoes"
 msgstr "Adults"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:685
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:690
 msgid "fmap_Adults"
 msgstr "Mosquits tigre"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:686
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:691
 msgid "fmap_Tiger_mosquito_breeding_sites"
 msgstr "Llocs de cria de mosquit tigre"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:686
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:691
 msgid "fmap_Breeding_sites"
 msgstr "Llocs de cria"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:689
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:694
 msgid "fmap_Tigatrapp_coverage"
 msgstr "Zones explorades"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:689
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:694
 msgid "fmap_Coverage"
 msgstr "Zones explorades"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:698
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:703
 msgid "fmap_Only_highly_probable_reports"
 msgstr "Només probabilitat alta"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:698
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:703
 msgid "fmap_Strong_Validation"
 msgstr "Alta"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:701
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:706
 msgid "fmap_Only_probable_and_highly_probable_reports"
 msgstr "Només probabilitat mitjana i alta"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:701
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:706
 msgid "fmap_Medium_Validation"
 msgstr "Mitjana"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:703
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:708
 msgid "fmap_No_validation_filter"
 msgstr "Sense filtre"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:703
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:708
 msgid "fmap_All_Reports"
 msgstr "Tots els informes"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:970
+msgid "site_report_legend_main_title"
+msgstr "Marcadors"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:979
+msgid "expert_cat_site"
+msgstr "Lloc de cria de mosquit tigre"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:987
+msgid "expert_cat_possible_site"
+msgstr "Possible lloc de cria de mosquit tigre"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
+msgid "expert_cat_possible_other_site"
+msgstr "Segurament no  lloc de cria de mosquit tigre"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1014
+msgid "expert_cat_other_site"
+msgstr " No  lloc de cria de mosquit tigre"
 
 #: tigaserver_app/models.py:299
 msgid "High"
@@ -688,6 +726,28 @@ msgstr "Català"
 #: tigaserver_project/settings.py:110
 msgid "English"
 msgstr "Anglès"
+
+#, fuzzy
+#~ msgid "expert_row_help_site"
+#~ msgstr "Classificació feta per científics (si hi ha foto)"
+
+#, fuzzy
+#~ msgid "crowd_row_help_site"
+#~ msgstr ""
+#~ "Avaluació per voluntaris a <a href=\"http://crowdcrafting.org/app/"
+#~ "Tigafotos/\" target=\"_blank\">Crowdcrafting</a> (si hi ha foto)"
+
+#, fuzzy
+#~ msgid "report_row_help_site"
+#~ msgstr "Observats pels participants"
+
+#, fuzzy
+#~ msgid "photo_row_help_site"
+#~ msgstr "Fetes pels participants (optatiu)"
+
+#, fuzzy
+#~ msgid "notes_row_help_site"
+#~ msgstr "Afegides per experts o participants (optatiu)"
 
 #~ msgid "privacy-policy-ca0f9a86ca33f1d6baa9051bd7f4ed21"
 #~ msgstr "política de privacitat"
