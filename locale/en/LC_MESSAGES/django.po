@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-02 16:14+0200\n"
-"PO-Revision-Date: 2015-07-02 00:06+0100\n"
+"PO-Revision-Date: 2015-07-02 16:50+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: English (USA)\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Loco https://localise.biz\n"
+"X-Generator: Poedit 1.5.4\n"
 "X-Loco-Source-Locale: en_US\n"
 "X-Loco-Target-Locale: en_US\n"
 "X-Loco-Project-Id: 4656\n"
@@ -474,8 +474,8 @@ msgstr "Unknown"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1030
 msgid "expert_row_title"
 msgstr ""
-"<a href=\"http://atrapaeltigre.com/web/en/citizen-scientist-map/\" target="
-"\"_blank\">Experts</a>"
+"Expert validation <a href=\"http://atrapaeltigre.com/web/en/citizen-"
+"scientist-map/\" target=\"_blank\">results</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map.html:600
@@ -483,7 +483,7 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:914
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1035
 msgid "crowd_row_title"
-msgstr "Crowd"
+msgstr "Citizen validation results"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:344
@@ -520,29 +520,29 @@ msgstr "Popup Legend"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:909
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1030
 msgid "expert_row_help"
-msgstr "Assessment by scientists (if photo available)"
+msgstr "Classification by scientists using available photos"
 
 #: tigamap/templates/tigamap/validated_report_map.html:600
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:914
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1035
 msgid "crowd_row_help"
 msgstr ""
-"Assessments at <a href='http://crowdcrafting.org/app/Tigafotos/' "
-"target='_blank'>crowdcrafting</a> from volunteers (if photo available)"
+"Classification by volunteers at <a href='http://crowdcrafting.org/app/"
+"Tigafotos/' target='_blank'>Tigafotos</a>  (if photo available)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:919
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1040
 msgid "report_row_title"
 msgstr ""
-"<a href=\"http://atrapaeltigre.com/web/en/asian-tiger-mosquito/\" target="
-"\"_blank\">Tiger principles</a>"
+"Tigatrapp question <a href=\"http://atrapaeltigre.com/web/en/asian-tiger-"
+"mosquito/\" target=\"_blank\">responses</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:919
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1040
 msgid "report_row_help"
-msgstr "Observer's assessment"
+msgstr "Observations by participant"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:924
@@ -554,7 +554,7 @@ msgstr "Photos"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:924
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1045
 msgid "photo_row_help"
-msgstr "Sent by participants (optional)"
+msgstr "Sent by participants (if there are photos)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:929
@@ -673,29 +673,24 @@ msgid "fmap_All_Reports"
 msgstr "All Reports"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:970
-#, fuzzy
 msgid "site_report_legend_main_title"
 msgstr "Markers"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:979
-#, fuzzy
 msgid "expert_cat_site"
-msgstr "Confirmed tiger mosquito"
+msgstr "Tiger mosquito breeding site"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:987
-#, fuzzy
 msgid "expert_cat_possible_site"
-msgstr "Possible tiger mosquito"
+msgstr "Possible tiger mosquito breeding site"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
-#, fuzzy
 msgid "expert_cat_possible_other_site"
-msgstr "Possible other species"
+msgstr "Probably not tiger mosquito breeding site"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1014
-#, fuzzy
 msgid "expert_cat_other_site"
-msgstr "Other species"
+msgstr "Not tiger mosquito breeding site"
 
 #: tigaserver_app/models.py:299
 msgid "High"
