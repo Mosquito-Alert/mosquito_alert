@@ -535,7 +535,7 @@ class Report(models.Model):
         these_responses = self.responses.all()
         result = {}
         q1r = these_responses.get(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).answer
-        q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'\xbfContiene agua estancada?')).answer
+        q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?')).answer
         result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
         result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
         return result
