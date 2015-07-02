@@ -534,8 +534,8 @@ class Report(models.Model):
             return None
         these_responses = self.responses.all()
         result = {}
-        q1r = these_responses.get(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
-        q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
+        q1r = these_responses.get(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).answer
+        q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'\xbfContiene agua estancada?')).answer
         result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
         result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
         return result
@@ -600,7 +600,7 @@ class Report(models.Model):
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)
     tiger_responses = property(get_tiger_responses)
-    site_responses = property(get_tiger_responses)
+    site_responses = property(get_site_responses)
     creation_date = property(get_creation_date)
     creation_day_since_launch = property(get_creation_day_since_launch)
     creation_year = property(get_creation_year)

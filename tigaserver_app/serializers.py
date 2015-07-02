@@ -165,6 +165,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     lat = serializers.Field()
     movelab_annotation = serializers.Field()
     tiger_responses = serializers.Field()
+    site_responses = serializers.Field()
     tigaprob_cat = serializers.Field()
 
     class Meta:

@@ -315,6 +315,33 @@ function rc2s(response_code) {
     }
 }
 
+
+function sc2s(site_cat) {
+
+            if (site_cat != null) {
+            if (site_cat == 0) {
+                return "{% trans 'storm-drain' %}";
+            }
+            else if (value.site_cat == 1) {
+                return "{% trans 'Fountain' %}";
+            }
+            else if (value.site_cat == 2) {
+                return "{% trans 'Basin' %}";
+            }
+            else if (value.site_cat == 3) {
+                return "{% trans 'Bucket' %}";
+            }
+            else if (value.site_cat == 4) {
+                return "{% trans 'Well' %}";
+            }
+            else {
+                return "{% trans 'Other' %}";
+            }
+        } else {
+            return '';
+        }
+}
+
 function get_icon(report) {
 
     if (report.type == 'adult') {
@@ -356,13 +383,23 @@ function make_crowd_row(score, n_responses) {
 }
 
 
-function make_user_response_row(score, responses) {
-    if (score != null) {
+function make_user_response_row(responses) {
+    if (responses != null) {
         return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_q2' %}</td><td class="response-table question">{% trans 'user_response_row_q3' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td><td class="response-table response">' + rc2s(responses.q3_response) + '</td></tr></table></td></tr>';
     } else {
         return '';
     }
 }
+
+
+function make_user_response_row_sites(responses, site_cat) {
+    if (responses != null) {
+        return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_sites_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_sites_q2' %}</td><td class="response-table question">{% trans 'user_response_row_sites_q3' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td><td class="response-table response">' + sc2s(site_cat) + '</td></tr></table></td></tr>';
+    } else {
+        return '';
+    }
+}
+
 
 function make_photo_row(photo_html) {
     if (photo_html != null) {
@@ -384,32 +421,13 @@ function make_user_note_row(notes) {
 function make_popup_text(value) {
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else {
-            return '<table class="popup-table">' + make_user_response_row(value.tigaprob_cat, value.tiger_responses) + '</table>';
+            return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>';
         }
     } else {
-        if (value.site_cat != null) {
-            if (value.site_cat == 0) {
-                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'storm-drain' %}</p>';
-            }
-            else if (value.site_cat == 1) {
-                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Fountain' %}</p>';
-            }
-            else if (value.site_cat == 2) {
-                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Basin' %}</p>';
-            }
-            else if (value.site_cat == 3) {
-                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Bucket' %}</p>';
-            }
-            else if (value.site_cat == 4) {
-                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Well' %}</p>';
-            }
-            else {
-                return '<p style="text-align:center; font-size: 1.3em;">{% trans 'Other' %}</p>';
-            }
-        } else {
-            return '';
+        if (value.site_responses != null && value.site_cat != null) {
+             return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>';
         }
     }
 }
