@@ -525,8 +525,10 @@ def update_coverage_area_month_model(request):
         fix_list = Fix.objects.filter(fix_time__gt=settings.START_TIME, id__gt=latest_fix_id)
         full_lat_list = [(f.masked_lat, f.fix_time.year, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.year, r.creation_time.month) for r in report_list if r.masked_lat is not None]
         full_lat_list_m0 = [(f.masked_lat, f.fix_time.year) for f in fix_list] + [(r.masked_lat, r.creation_time.year) for r in report_list if r.masked_lat is not None]
+        full_lat_list_y0 = [(f.masked_lat, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.month) for r in report_list if r.masked_lat is not None]
         unique_lats = set(full_lat_list)
         unique_lats_m0 = set(full_lat_list_m0)
+        unique_lats_y0 = set(full_lat_list_y0)
         for this_lat in unique_lats:
             these_lons = [(f.masked_lon, f.fix_time.year, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.year == this_lat[1] and f.fix_time.month == this_lat[2])] + [(r.masked_lon, r.creation_time.year, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.year == this_lat[1] and r.creation_time.month == this_lat[2])]
             unique_lons = set(these_lons)
@@ -573,6 +575,26 @@ def update_coverage_area_month_model(request):
                     this_coverage_area.n_fixes += n_fixes
                 else:
                     this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0, n_fixes=n_fixes)
+                if fix_list and fix_list.count() > 0:
+                    this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
+                else:
+                    this_coverage_area.latest_fix_id = latest_fix_id
+                if report_list and report_list.count() > 0:
+                    this_coverage_area.latest_report_server_upload_time = report_list.order_by('server_upload_time').last().server_upload_time
+                else:
+                    this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
+                this_coverage_area.save()
+# now year 0 (all years combined)
+        for this_lat in list(unique_lats_y0):
+            these_lons_y0 = [(f.masked_lon, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.month == this_lat[1])] + [(r.masked_lon, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.month == this_lat[1])]
+            unique_lons_y0 = set(these_lons_y0)
+            for this_lon in unique_lons_y0:
+                n_fixes = len([l for l in these_lons_y0 if l == this_lon])
+                if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], month=this_lat[1], year=0).count() > 0:
+                    this_coverage_area = CoverageAreaMonth.objects.get(lat=this_lat[0], lon=this_lon[0], month=this_lat[1], year=0)
+                    this_coverage_area.n_fixes += n_fixes
+                else:
+                    this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], month=this_lat[1], year=0, n_fixes=n_fixes)
                 if fix_list and fix_list.count() > 0:
                     this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
                 else:
