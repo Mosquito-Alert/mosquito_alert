@@ -141,7 +141,15 @@
     if (max_zoom == null || isNaN(max_zoom) || !isFinite(max_zoom)) {
         max_zoom = 18;
     }
-    
+
+
+    var validation_button_subtext_adults_high = "{% trans 'validation_button_subtext_adults_high' %}"
+    var validation_button_subtext_adults_medium = "{% trans 'validation_button_subtext_adults_medium' %}"
+    var validation_button_subtext_adults_all = "{% trans 'validation_button_subtext_adults_all' %}"
+
+    var validation_button_subtext_sites_high = "{% trans 'validation_button_subtext_sites_high' %}"
+    var validation_button_subtext_sites_medium = "{% trans 'validation_button_subtext_sites_medium' %}"
+    var validation_button_subtext_sites_all = "{% trans 'validation_button_subtext_sites_all' %}"
 
 </script>
 
@@ -456,6 +464,18 @@ function add_to_coverage_fg(data, this_fg, filter) {
 
 }
 
+function make_validation_button_subtext(){
+    if (selected_type == 'site'){
+        $("#validation_option_high").attr({'data-subtext':validation_button_subtext_sites_high});
+        $("#validation_option_medium").attr({'data-subtext':validation_button_subtext_sites_medium});
+        $("#validation_option_all").attr({'data-subtext':validation_button_subtext_sites_all});
+    } else if (selected_type == 'adult'){
+        $("#validation_option_high").attr({'data-subtext':validation_button_subtext_adults_high});
+        $("#validation_option_medium").attr({'data-subtext':validation_button_subtext_adults_medium});
+        $("#validation_option_all").attr({'data-subtext':validation_button_subtext_adults_all});
+    }
+}
+
 function apply_filter() {
     markers_clustered.clearLayers();
     coverage_fg.clearLayers();
@@ -468,6 +488,7 @@ function apply_filter() {
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', false);
+        make_validation_button_subtext();
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
         $(".coverage_legend").hide();
@@ -477,7 +498,7 @@ function apply_filter() {
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
         $("#year_select, #month_select, #validation_select, .btn[data-id=year_select], .btn[data-id=month_select], .btn[data-id=validation_select]").prop('disabled', false);
-
+        make_validation_button_subtext();
     } else if (selected_type == 'coverage') {
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', true);
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
@@ -700,12 +721,12 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="validation_select" class="selectpicker show-tick form-control"
                                             data-style="btn-info" onchange="update_filters()">
-                                        <option value="2" data-subtext="{% trans 'fmap_Only_highly_probable_reports' %}">{% trans 'fmap_Strong_Validation' %}
+                                        <option id="validation_option_high" value="2" data-subtext="{% trans 'validation_button_subtext_adults_high' %}">{% trans 'validation_button_text_high' %}
                                         </option>
-                                        <option value="1"
-                                                data-subtext="{% trans 'fmap_Only_probable_and_highly_probable_reports' %}">{% trans 'fmap_Medium_Validation' %}
+                                        <option id="validation_option_medium" value="1"
+                                                data-subtext="{% trans 'validation_button_subtext_adults_medium' %}">{% trans 'validation_button_text_medium' %}
                                         </option>
-                                        <option value="-2" data-subtext="{% trans 'fmap_No_validation_filter' %}">{% trans 'fmap_All_Reports' %}</option>
+                                        <option id="validation_option_all" value="-2" data-subtext="{% trans 'validation_button_subtext_adults_all' %}">{% trans 'validation_button_text_all' %}</option>
                                     </select>
                                 </div>
                             </form>
@@ -1178,6 +1199,8 @@ function map_init_basic(map, options) {
         apply_filter();
 
     }
+
+            make_validation_button_subtext();
 
 
 </script>
