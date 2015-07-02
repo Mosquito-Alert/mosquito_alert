@@ -121,6 +121,11 @@ body {
     -webkit-transition: left 1s ease;
 }
 
+.site_legend {
+    display: none;
+}
+
+
 .legend:hover, .site_legend:hover {
     left: 0;
 }
