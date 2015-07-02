@@ -106,7 +106,7 @@ body {
 }
 
 
-.legend {
+.legend, .site_legend {
     background-color: rgb(200, 200, 200);
     border-top-right-radius: 15px;
     border-bottom-right-radius: 15px;
@@ -121,7 +121,7 @@ body {
     -webkit-transition: left 1s ease;
 }
 
-.legend:hover {
+.legend:hover, .site_legend:hover {
     left: 0;
 }
 
@@ -151,11 +151,11 @@ body {
     right: 0;
 }
 
-.legend:hover #hand-left {
+.legend:hover #hand-left, .site_legend:hover #hand-left {
     opacity: 0;
 }
 
-.legend:hover #more_info_div {
+.legend:hover #more_info_div, .site_legend:hover #more_info_div {
     opacity: 1;
 }
 

@@ -466,6 +466,7 @@ function apply_filter() {
         $(".site_legend").show();
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
+        $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', false);
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
