@@ -463,12 +463,14 @@ function apply_filter() {
         add_to_layer(full_data, markers_clustered, true);
         $(".coverage_legend").hide();
         $(".legend").hide();
+        $(".site_legend").show();
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', false);
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
         $(".coverage_legend").hide();
+        $(".site_legend").hide();
         $(".legend").show();
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
@@ -479,6 +481,7 @@ function apply_filter() {
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', true);
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
         $(".legend").hide();
+        $(".site_legend").hide();
         $(".coverage_legend").show();
         add_to_coverage_fg(full_coverage_data, coverage_fg, true);
     }
@@ -955,6 +958,128 @@ function map_init_basic(map, options) {
     <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
 
 </div>
+
+
+
+<div class="site_legend">
+    <div class="legend-main-table-container">
+        <table class="legend-main-table">
+            <tr>
+                <td colspan="2">
+                    <p style="font-weight: bold; font-size: 1.2em;">{% trans 'site_report_legend_main_title' %}</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/blue_red_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_site' %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/blue_orange_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_possible_site' %}
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/blue_white_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_unknown' %}
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/blue_grey_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_possible_other_site' %}
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <img src="{% static 'tigamap/blue_black_dot.png' %}">
+                </td>
+                <td>
+                    {% trans 'expert_cat_other_site' %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="legend-popup-area">
+        <div style="width:200px">
+            <p style="margin-left: auto;margin-right: auto;width: 90%;font-weight:bold; font-size: .9em; text-align:center;">
+                {% trans 'adult_report_legend_info_title' %}</p>
+        </div>
+        <div class="leaflet-popup legend-popup" style="opacity: 1;">
+            <div class="leaflet-popup-content-wrapper">
+                <div class="leaflet-popup-content" style="width: 250px;">
+                    <table class="legend-popup-table">
+                        <tr>
+                            <td><strong>{% trans 'expert_row_title' %}:</strong> {% trans 'expert_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'crowd_row_title' %}:</strong> {% trans 'crowd_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'report_row_title' %}:</strong> {% trans 'report_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'photo_row_title' %}:</strong> {% trans 'photo_row_help' %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>{% trans 'notes_row_title' %}:</strong> {% trans 'notes_row_help' %}
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+            <div class="leaflet-popup-tip-container">
+                <div class="leaflet-popup-tip"></div>
+            </div>
+        </div>
+
+
+        <div id="more_info_div"><span
+                style="font-weight:bold; font-style:italic;font-size:.9em;color:#444444;">{% trans 'more_info' %}
+</span>
+
+        </div>
+
+        <div id="more_info_button">
+            <a href="{% trans 'map_help_url_new' %}" target="_blank">
+                <div class="info-button-background"><img width="30px" height="30px"
+                                                         src="{% static "tigamap/info_button.png" %}"></div>
+            </a>
+        </div>
+
+
+    </div>
+
+
+    <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
+
+</div>
+
 
 {% endif %}
 
