@@ -115,7 +115,7 @@ body {
     border: 1px solid;
     bottom: 60px;
     width: 430px;
-    min-height: 340px;
+    min-height: 370px;
     overflow: hidden;
     -moz-transition: left 1s ease;
     -webkit-transition: left 1s ease;
@@ -123,7 +123,6 @@ body {
 
 .site_legend {
     display: none;
-    min-height: 370px;
 }
 
 .legend:hover, .site_legend:hover {

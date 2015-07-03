@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-03 01:05+0200\n"
-"PO-Revision-Date: 2015-07-03 11:27+0100\n"
+"PO-Revision-Date: 2015-07-03 15:44+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Catalan (Spain)\n"
@@ -696,11 +696,11 @@ msgstr "Zones explorades"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:739
 msgid "validation_button_text_high"
-msgstr "Informes d'alta fiabilitat"
+msgstr "Informes de fiabilitat alta"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:742
 msgid "validation_button_text_medium"
-msgstr "Informes de mitjana fiabilitat"
+msgstr "Informes de fiabilitat mitja"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:744
 msgid "validation_button_text_all"
