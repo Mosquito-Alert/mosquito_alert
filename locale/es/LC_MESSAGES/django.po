@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-03 01:05+0200\n"
-"PO-Revision-Date: 2015-07-03 01:28+0100\n"
+"PO-Revision-Date: 2015-07-03 11:28+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Spanish\n"
@@ -537,13 +537,13 @@ msgstr "Clasificación hecha por científicos con las fotos disponibles"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:950
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1071
 msgid "crowd_row_help"
-msgstr "(Clasificación) hecha por voluntarios en <a href=\"http://crowdcrafting.org/app/Tigafotos/\" target=\"_blank\">Tigafotos</a>  (si hay fotos)"
+msgstr "Clasificación hecha por voluntarios en <a href=\"http://crowdcrafting.org/app/Tigafotos/\" target=\"_blank\">Tigafotos</a>  (si hay fotos)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:955
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1076
 msgid "report_row_title"
-msgstr "<a href=\"http://atrapaeltigre.com/web/mosquito-tigre/\" target=\"_blank\">Respuestas</a> cuestionario Tigatrapp"
+msgstr "<a href=\"http://atrapaeltigre.com/participa/tigatrapp/\" target=\"_blank\">Respuestas</a> cuestionario Tigatrapp"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:955

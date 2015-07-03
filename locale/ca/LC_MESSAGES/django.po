@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-03 01:05+0200\n"
-"PO-Revision-Date: 2015-07-03 01:29+0100\n"
+"PO-Revision-Date: 2015-07-03 11:27+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Catalan (Spain)\n"
@@ -543,7 +543,7 @@ msgstr "Classificació feta per voluntaris a  <a href=\"http://crowdcrafting.org
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:955
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1076
 msgid "report_row_title"
-msgstr "<a href=\"http://atrapaeltigre.com/web/ca/el-mosquit-tigre/\" target=\"_blank\">Respostes</a> qüestionari Tigatrapp"
+msgstr "<a href=\"http://atrapaeltigre.com/participa/tigatrapp/\" target=\"_blank\">Respostes</a> qüestionari Tigatrapp"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:955
