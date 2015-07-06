@@ -69,13 +69,7 @@
         {% for form in formset %}
             function map_init_basic{{ form.instance.id }}(map, options) {
 
-                L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).bindPopup('<p><strong>Lat:</strong> {{ form.instance.report.lat }}</p><p><strong>Lon:</strong> {{ form.instance.report.lon }}</p><div id="qrcode{{ form.instance.id }}"></div>').addTo(map);
-
-                jQuery('#qrcode{{ form.instance.id }}').qrcode({
-                    render	: "table",
-                    text	: "http://jetienne.com"
-                });
-
+                L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).bindPopup('<p><strong>Lat:</strong> {{ form.instance.report.lat }}</p><p><strong>Lon:</strong> {{ form.instance.report.lon }}</p>').addTo(map);
 
             }
         {%  endfor %}
@@ -261,7 +255,13 @@
                             <br>
                             <strong>Location</strong>
 
-                            <div id="map{{ form.instance.id }}" class="report_annotation_map-container"></div>
+                            <div id="map{{ form.instance.id }}" class="report_annotation_map-container">
+
+                                                                <div style="z-index:100; position:absolute; top:0; right:0;" id="qrcode{{ form.instance.id }}"></div>
+
+                            </div>
+
+
                             <br>
                             <strong>User Responses</strong><br>
 
@@ -569,7 +569,15 @@
 
             toggle_grab_reports_button();
 
+            {% for form in formset %}
 
+            jQuery('#qrcode{{ form.instance.id }}').qrcode({
+                width: 64,
+                height: 64,
+                text: "geo: {{ form.instance.report.lat }}, {{ form.instance.report.lon }}"
+            });
+
+            {% endfor %}
         });
 
         var scroll_position_input = $("#scroll_position");

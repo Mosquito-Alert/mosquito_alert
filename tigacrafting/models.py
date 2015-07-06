@@ -171,6 +171,7 @@ class ExpertReportAnnotation(models.Model):
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public. (You can_still change your annotation later at any time.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
+    linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
     def get_others_annotation_html(self):
