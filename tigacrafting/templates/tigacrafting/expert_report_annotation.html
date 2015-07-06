@@ -26,6 +26,8 @@
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+
+    <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
     <style>
         #ex1Slider .slider-selection {
             background: #BABABA;
@@ -67,7 +69,12 @@
         {% for form in formset %}
             function map_init_basic{{ form.instance.id }}(map, options) {
 
-                L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).addTo(map);
+                L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).bindPopup('<p><strong>Lat:</strong> {{ form.instance.report.lat }}</p><p><strong>Lon:</strong> {{ form.instance.report.lon }}</p><div id="qrcode{{ form.instance.id }}"></div>').addTo(map);
+
+                jQuery('#qrcode{{ form.instance.id }}').qrcode({
+                    render	: "table",
+                    text	: "http://jetienne.com"
+                });
 
 
             }
