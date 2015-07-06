@@ -492,13 +492,19 @@ class Report(models.Model):
             result += '<br>' + photo.small_image_() + '<br>'
         return result
 
+    # note that I am making this really get movelab or expert annotation,
+    # but keeping name for now to avoid refactoring templates
     def get_movelab_annotation(self):
-        if self.type != 'adult':
-            return None
-        max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
-        if max_movelab_annotation is None:
-            return None
-        return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
+        if self.creation_time.year == 2014:
+            if self.type == 'adult':
+                max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
+                if max_movelab_annotation is not None:
+                    return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
+        else:
+            these_expert_annotations = self.expert_report_annotations.all()
+            if these_expert_annotations is not None and these_expert_annotations.count() > 0:
+                pass # more to come
+        return None
 
     def get_movelab_score(self):
         if self.type != 'adult':
