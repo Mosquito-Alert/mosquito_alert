@@ -296,10 +296,10 @@
                         });
 
 
-                    $("#reset_button_{{ form.instance.id }}").onclick(function (){
+                    $("#reset_button_{{ form.instance.id }}").click(function (){
                          $('#' + '{{ form.best_photo.auto_id }}').val(null);
                         $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').removeAttr('checked');
-                        
+
                     });
 
 
