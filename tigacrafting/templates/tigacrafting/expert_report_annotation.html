@@ -241,7 +241,7 @@
 
                         <div class="col-md-5">
                             <br>
-                            <strong>Photos</strong><br>
+                            <strong>Photos</strong> <button id="clear_button_{{ form.instance.id }}" type="button" class="btn btn-default btn-sm">Reset</button><br>
 
                             <div style="overflow: auto;height: 814px;">
 
@@ -294,6 +294,14 @@
                         $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function () {
                             $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
                         });
+
+
+                    $("#reset_button_{{ form.instance.id }}").onclick(function (){
+                         $('#' + '{{ form.best_photo.auto_id }}').val(null);
+                        $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').removeAttr('checked');
+                        
+                    });
+
 
                     </script>
 
