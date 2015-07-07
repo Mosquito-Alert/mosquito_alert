@@ -574,7 +574,7 @@
             jQuery('#qrcode{{ form.instance.id }}').qrcode({
                 width: 64,
                 height: 64,
-                text: "geo: {{ form.instance.report.lat }}, {{ form.instance.report.lon }}"
+                text: "geo:{{ form.instance.report.lat }},{{ form.instance.report.lon }}"
             });
 
             {% endfor %}
