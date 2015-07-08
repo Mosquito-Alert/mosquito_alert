@@ -471,7 +471,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
                 n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
                 n_unchecked = all_annotations.filter(validation_complete=False).count()
-                n_confirmed = all_annotations.filter(vaidation_complete=True, revise=False).count()
+                n_confirmed = all_annotations.filter(validation_complete=True, revise=False).count()
                 n_revised = all_annotations.filter(validation_complete=True, revise=True).count()
                 args['n_flagged'] = n_flagged
                 args['n_hidden'] = n_hidden
