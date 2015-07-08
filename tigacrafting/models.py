@@ -157,6 +157,8 @@ TIGER_CATEGORIES = ((2, 'Definitely a tiger mosquito'), (1, 'Probably a tiger mo
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
+STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
+
 
 class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotations")
@@ -166,10 +168,11 @@ class ExpertReportAnnotation(models.Model):
     site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
     site_certainty_notes = models.TextField('Internal Site Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
-    flag = models.BooleanField(default=False, help_text='Flag report internally for yourself or other experts. Flagged reports will not be displayed on the public map until reviewed by super-experts.')
-    hide = models.BooleanField(default=False, help_text='Hide report from public view')
+    message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
+    status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
-    validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public. (You can_still change your annotation later at any time.')
+    validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public. (Warning: You will not be able to change your annotation once you have saved it with this box checked.')
+    reviewed = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public. (You can_still change your annotation later at any time.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())

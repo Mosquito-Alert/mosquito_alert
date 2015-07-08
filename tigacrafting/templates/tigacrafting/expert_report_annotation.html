@@ -109,9 +109,6 @@
                             <li>
 
                                 <div class="btn-group" id="status_grp" data-toggle="buttons">
-                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="All" id="all_btn">
-                                        <input type="radio" name="status" autocomplete="off"><i class="fa fa-circle fa-lg fa-fw"></i><span class="badge">{{ n_total }}</span>
-                                    </label>
                                     <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Pending" id="pending_btn">
                                         <input type="radio" name="status" autocomplete="off"><i class="fa fa-clock-o fa-lg fa-fw"></i><span class="badge">{{ n_pending }}</span></label>
                                     <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Complete" id="complete_btn">
@@ -208,7 +205,9 @@
 
         {% if objects %}
 
+            {% if pending == 'pending' %}
             <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
+            {% endif %}
                 {{ formset.management_form }}
                 {% for form in formset %}
                     <div class="row">
@@ -221,8 +220,6 @@
                             Certainty
                             Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
-                        {% block view_others_annotations %}
-                        {% endblock %}
 
                         </div>
                     </div>
@@ -230,8 +227,41 @@
                         <div class="col-md-3">
                             <br>
 
+            {% if pending == 'pending' %}
 
                             {% form form using "floppyforms/layouts/bootstrap.html" %}
+            {% else %}
+
+            {% block view_others_annotations %}
+            {% endblock %}
+
+
+                <strong>Tiger Certainty:</strong><br>
+                <div style="border:1px solid #333333;padding:2px;">
+                {% if form.instance.get_tiger_certainty_category_display %}{{ form.instance.get_tiger_certainty_category_display }}{% else %}---{% endif %}</div><br>
+                <strong>Internal Tiger Certainty Comments:</strong><br>
+                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                {{ form.instance.tiger_certainty_notes }}</div><br>
+                <strong>Site Certainty:</strong><br>
+                <div style="border:1px solid #333333;padding:2px;">
+                {% if form.instance.set_site_certainty_category_display %}{{ form.instance.set_site_certainty_category_display }}{% else %}---{% endif %}</div><br>
+                <strong>Internal Site Certainty Notes:</strong><br>
+                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                {{ form.instance.site_certainty_notees }}</div><br>
+                <strong>Public Note:</strong><br>
+                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                {{ form.instance.edited_user_notes }}</div><br>
+                <strong>Message To User:</strong><br>
+                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                {{ form.instance.message_for_user }}</div><br>
+                <strong>Status:</strong><br>
+                <div style="border:1px solid #333333;padding:2px;">
+                {%  if form.instance.get_status_display %}{{ form.instance.get_status_display }}{% else %}---{% endif %}</div><br>
+                <strong>Linked ID:</strong><br>
+                <div style="border:1px solid #333333;padding:2px;">
+                {% if form.instance.linked_id %}{{ form.instance.linked_id }}{%  else %}---{% endif %}</div>
+
+             {% endif %}
 
                         </div>
 
@@ -306,14 +336,11 @@
 
                 <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
                 <input id="pending_hidden_btn" type="text" name="pending" style="display: none;" value="{{ pending }}">
-                <input id="flagged_others_hidden_btn" type="text" name="flagged_others" style="display: none;" value="{{ flagged_others }}">
-                <input id="hidden_others_hidden_btn" type="text" name="hidden_others" style="display: none;" value="{{ hidden_others }}">
                 <input type="text" name="orderby" style="display: none;" value="{{ orderby }}">
                 <input type="text" name="tiger_certainty" style="display: none;" value="{{ tiger_certainty }}">
                 <input type="text" name="site_certainty" style="display: none;" value="{{ site_certainty }}">
-                <input type="text" name="hidden" style="display: none;" value="{{ hidden }}">
-                <input type="text" name="flagged" style="display: none;" value="{{ flagged }}">
-                <input type="text" name="public" style="display: none;" value="{{ public }}">
+                <input type="text" name="status" style="display: none;" value="{{ status }}">
+                <input type="text" name="final_status" style="display: none;" value="{{ final_status }}">
 
 
 
@@ -419,55 +446,17 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="flagged_select" class="col-sm-4 control-label">Flagged By Me:</label>
+                                <label for="status_select" class="col-sm-4 control-label">Status:</label>
 
                                 <div class="col-sm-8">
-                                    <select id="flagged_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
-                                        <option value="flagged">Flagged only</option>
-                                        <option value="unflagged">Unflagged only</option>
+                                    <select id="status_select" class="selectpicker show-tick form-control">
+                                        <option value="all">All</option>
+                                        <option value="public">Public</option>
+                                        <option value="flagged">Flagged</option>
+                                        <option value="hidden">Hidden</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="flagged_others_select" class="col-sm-4 control-label">Flagged By
-                                    Others:</label>
-
-                                <div class="col-sm-8">
-                                    <select id="flagged_others_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
-                                        <option value="flagged">Flagged by someone</option>
-                                        <option value="unflagged">Not flagged by anyone</option>
-                                    </select>
-                                </div>
-                            </div>
-
-
-                            <div class="form-group">
-                                <label for="hidden_select" class="col-sm-4 control-label">Hidden By Me:</label>
-
-                                <div class="col-sm-8">
-                                    <select id="hidden_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
-                                        <option value="hidden">Hidden only</option>
-                                        <option value="unhidden">Not hidden only</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="hidden_others_select" class="col-sm-4 control-label">Hidden By
-                                    Others:</label>
-
-                                <div class="col-sm-8">
-                                    <select id="hidden_others_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
-                                        <option value="hidden">Hidden by someone</option>
-                                        <option value="unhidden">Not hidden by anyone</option>
-                                    </select>
-                                </div>
-                            </div>
-
-
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -658,10 +647,7 @@
                 var qp = "?orderby=" + $("#orderby_select").val();
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
-                qp += "&flagged=" + $("#flagged_select").val();
-                qp += "&flagged_others=" + $("#flagged_others_select").val();
-                qp += "&hidden=" + $("#hidden_select").val();
-                qp += "&hidden_others=" + $("#hidden_others_select").val();
+                qp += "&status=" + $("#status_select").val();
                 return(qp);
             }
 
@@ -669,10 +655,7 @@
             $("#orderby_select").val("{{ orderby }}");
             $("#tiger_certainty_select").val("{{ tiger_certainty }}");
             $("#site_certainty_select").val("{{ site_certainty }}");
-            $("#flagged_select").val("{{ flagged }}");
-            $("#flagged_others_select").val("{{ flagged_others }}");
-            $("#hidden_select").val("{{ hidden }}");
-            $("#hidden_others_select").val("{{ hidden_others }}");
+            $("#status_select").val("{{ status }}");
 
 
 
@@ -692,20 +675,18 @@
             }
 
 
+        var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn");
+
+        var pending = "{{ pending }}";
+        pending == "complete" ? complete_btn.addClass("active") : pending_btn.addClass("active");
+        pending_btn.on('click', {extr: '&pending=pending'}, submit_queries_plus);
+        complete_btn.on('click', { extr: '&pending=complete'}, submit_queries_plus);
+
+
         </script>
     {% endblock %}
 
     <script>
-
-        var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn"), all_btn = $("#all_btn");
-
-        var pending = "{{ pending }}";
-        pending == "pending" ?
-                pending_btn.addClass("active") : (pending == "complete") ? complete_btn.addClass("active") : all_btn.addClass("active");
-
-        pending_btn.on('click', {extr: '&pending=pending'}, submit_queries_plus);
-        complete_btn.on('click', { extr: '&pending=complete'}, submit_queries_plus);
-        all_btn.on('click', {extr: '&pending=all'}, submit_queries_plus);
 
 
         $("#filters_submit_button").on('click', submit_queries);

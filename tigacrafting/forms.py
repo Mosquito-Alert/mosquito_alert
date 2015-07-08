@@ -29,7 +29,7 @@ class ExpertReportAnnotationForm(forms.ModelForm):
 
     class Meta:
         model = ExpertReportAnnotation
-        fields = ('tiger_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'best_photo', 'flag', 'hide', 'validation_complete', 'linked_id')
+        fields = ('tiger_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'message_for_user', 'best_photo', 'status', 'linked_id', 'validation_complete')
         widgets = {
             'best_photo': forms.HiddenInput,
         }
