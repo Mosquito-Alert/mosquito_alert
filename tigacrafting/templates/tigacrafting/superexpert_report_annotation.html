@@ -3,7 +3,17 @@
 {% load i18n %}
 
 {% block title %}
-    Tigatrapp Superexpert Validation
+    Superexpert Validation
+{% endblock %}
+
+{% block instructions %}
+    <p>Each of the reports displayed here has been validated by 3 experts. You may now review these reports and confirm them as is or make changes, using the same form that the experts used. Their instructions were as follows:</p>
+
+    {{ block.super }}
+{% endblock %}
+
+  {% block no_records_message %}
+      There are not yet any reports that have been validated by 3 experts. Please refresh this page later, once more expert validations have been completed.
 {% endblock %}
 
 {% block navbar_left_items %}

@@ -455,12 +455,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             my_version_uuids = all_annotations.values('report__version_UUID')
             my_linked_ids = all_annotations.values('linked_id')
             if this_user_is_superexpert:
+                if not final_status:
+                    final_status = 'public'
                 n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
                 n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
                 n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
-                n_unchecked = all_annotations.filter(reviewed=False)
-                n_confirmed = all_annotations.filter(reviewed=True, validation_complete=False)
-                n_revised = all_annotations.filter(reviewed=True, validation_complete=True)
+                n_unchecked = all_annotations.filter(reviewed=False).count()
+                n_confirmed = all_annotations.filter(reviewed=True, validation_complete=False).count()
+                n_revised = all_annotations.filter(reviewed=True, validation_complete=True).count()
                 args['n_flagged'] = n_flagged
                 args['n_hidden'] = n_hidden
                 args['n_public'] = n_public

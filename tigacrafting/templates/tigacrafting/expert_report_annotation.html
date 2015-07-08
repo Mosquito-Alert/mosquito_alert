@@ -96,8 +96,8 @@
                             <span class="icon-bar"></span>
                         </button>
                         <div class="navbar-brand"><span
-                                style="color:#ff9900; font-size: small">{% block title %}Tigatrapp Expert
-                            Validation{% endblock %} <i
+                                style="color:#ff9900; font-size: small">Tigatrapp
+                            Validation <i
                                 id="gear"
                                 class="fa fa-refresh fa-spin"></i></span>
                         </div>
@@ -180,12 +180,13 @@
 
         <div class="starter-template">
 
-            <h1>Expert Report Validation</h1>
+            <h1>{% block title %}Expert Report Validation:{% endblock %}</h1>
 
 
             <div style="text-align: left">
                 <h4> Instructions</h4>
 
+                {% block instructions %}
                 <p>For each report: (1) select a category for your degree of belief that the report contains at least
                     one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
                     report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal
@@ -200,6 +201,7 @@
                     using the "save" button at the top of the screen. When you are done with a given report, check the
                     "validation complete" box.</p>
 
+                    {% endblock %}
             </div>
         </div>
 
@@ -384,7 +386,9 @@
             </div>
 
         {% else %}
+            {% block no_records_message %}
             <p>You do not yet have any reports in your stack. Click "Get more reports" to start validating.</p>
+            {% endblock %}
         {% endif %}
 
     </div>
