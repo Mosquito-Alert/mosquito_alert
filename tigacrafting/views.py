@@ -18,7 +18,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
-from forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm
+from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -380,7 +380,7 @@ BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending='all', flagged=None, flagged_others=None, hidden=None, hidden_others=None, public=None, max_pending=5, max_given=3):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending='all', flagged=None, flagged_others=None, hidden=None, hidden_others=None, public=None, max_pending=5, max_given=3, version_UUID=None, linked_id=None):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -403,6 +403,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             hidden = request.POST.get('hidden', hidden)
             hidden_others = request.POST.get('hidden_others', hidden_others)
             public = request.POST.get('public', public)
+            version_UUID = request.POST.get('version_UUID', version_UUID)
+            linked_id = request.POST.get('linked_id', linked_id)
             formset = AnnotationFormset(request.POST)
             if formset.is_valid():
                 formset.save()
@@ -422,6 +424,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             hidden = request.GET.get('hidden', hidden)
             hidden_others = request.GET.get('hidden_others', hidden_others)
             public = request.GET.get('public', public)
+            version_UUID = request.GET.get('version_UUID', version_UUID)
+            linked_id = request.GET.get('linked_id', linked_id)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
             my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
@@ -457,6 +461,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         new_annotation.save()
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
+            my_version_uuids = all_annotations.values('report__version_UUID')
+            my_linked_ids = all_annotations.values('linked_id')
             if this_user_is_superexpert:
                 n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
                 n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
@@ -470,40 +476,45 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     all_annotations = all_annotations.filter(report__creation_time__year=this_year)
                 except ValueError:
                     pass
-            if tiger_certainty:
-                try:
-                    this_certainty = int(tiger_certainty)
-                    all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
-                except ValueError:
-                    pass
-            if site_certainty:
-                try:
-                    this_certainty = int(site_certainty)
-                    all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
-                except ValueError:
-                    pass
-            if pending == "pending":
-                all_annotations = all_annotations.filter(validation_complete=False)
-            if pending == "complete":
-                all_annotations = all_annotations.filter(validation_complete=True)
-            if flagged == "flagged":
-                all_annotations = all_annotations.filter(flag=True)
-            if flagged == "unflagged":
-                all_annotations = all_annotations.filter(flag=False)
-            if flagged_others == "flagged":
-                all_annotations = all_annotations.filter(report__in=flagged_others_reports)
-            if flagged_others == "unflagged":
-                all_annotations = all_annotations.exclude(report__in=flagged_others_reports)
-            if hidden == "hidden":
-                all_annotations = all_annotations.filter(hide=True)
-            if hidden == "unhidden":
-                all_annotations = all_annotations.filter(hide=False)
-            if hidden_others == "hidden":
-                all_annotations = all_annotations.filter(report__in=hidden_others_reports)
-            if hidden_others == "unhidden":
-                all_annotations = all_annotations.exclude(report__in=hidden_others_reports)
-            if public == "public":
-                all_annotations = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports)
+            if version_UUID:
+                all_annotations = all_annotations.filter(report__version_UUID=version_UUID)
+            if linked_id:
+                all_annotations = all_annotations.filter(linked_id=linked_id)
+            if not version_UUID and not linked_id:
+                if tiger_certainty:
+                    try:
+                        this_certainty = int(tiger_certainty)
+                        all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
+                    except ValueError:
+                        pass
+                if site_certainty:
+                    try:
+                        this_certainty = int(site_certainty)
+                        all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
+                    except ValueError:
+                        pass
+                if pending == "pending":
+                    all_annotations = all_annotations.filter(validation_complete=False)
+                if pending == "complete":
+                    all_annotations = all_annotations.filter(validation_complete=True)
+                if flagged == "flagged":
+                    all_annotations = all_annotations.filter(flag=True)
+                if flagged == "unflagged":
+                    all_annotations = all_annotations.filter(flag=False)
+                if flagged_others == "flagged":
+                    all_annotations = all_annotations.filter(report__in=flagged_others_reports)
+                if flagged_others == "unflagged":
+                    all_annotations = all_annotations.exclude(report__in=flagged_others_reports)
+                if hidden == "hidden":
+                    all_annotations = all_annotations.filter(hide=True)
+                if hidden == "unhidden":
+                    all_annotations = all_annotations.filter(hide=False)
+                if hidden_others == "hidden":
+                    all_annotations = all_annotations.filter(report__in=hidden_others_reports)
+                if hidden_others == "unhidden":
+                    all_annotations = all_annotations.exclude(report__in=hidden_others_reports)
+                if public == "public":
+                    all_annotations = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports)
             if all_annotations:
                 all_annotations = all_annotations.order_by('report__creation_time')
                 if orderby == "site_score":
@@ -538,6 +549,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['hidden'] = hidden
             args['hidden_others'] = hidden_others
             args['public'] = public
+            args['version_UUID'] = version_UUID
+            args['linked_id'] = linked_id
+            args['my_version_uuids'] = my_version_uuids
+            args['my_linked_ids'] = my_linked_ids
             args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
