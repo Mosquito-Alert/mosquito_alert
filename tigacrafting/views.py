@@ -380,7 +380,7 @@ BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending='pending', status=None, final_status=None, max_pending=5, max_given=3, version_uuid=None, linked_id=None):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending=None, checked=None, status=None, final_status=None, max_pending=5, max_given=3, version_uuid=None, linked_id=None):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -402,6 +402,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             final_status = request.POST.get('final_status', final_status)
             version_uuid = request.POST.get('version_UUID', version_uuid)
             linked_id = request.POST.get('linked_id', linked_id)
+            checked = request.POST.get('checked', checked)
             formset = AnnotationFormset(request.POST)
             if formset.is_valid():
                 formset.save()
@@ -420,6 +421,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             final_status = request.GET.get('final_status', final_status)
             version_uuid = request.GET.get('version_UUID', version_uuid)
             linked_id = request.GET.get('linked_id', linked_id)
+            checked = request.GET.get('checked', checked)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
             my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
@@ -454,9 +456,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
             my_version_uuids = all_annotations.values('report__version_UUID')
             my_linked_ids = all_annotations.values('linked_id')
+            if this_user_is_expert:
+                if not pending:
+                    pending = 'pending'
             if this_user_is_superexpert:
                 if not final_status:
                     final_status = 'public'
+                if not checked:
+                    checked = 'unchecked'
                 n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
                 n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
                 n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
@@ -492,9 +499,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
                     except ValueError:
                         pass
+
                 if pending == "complete":
                     all_annotations = all_annotations.filter(validation_complete=True)
-                else:
+                elif pending == 'pending':
                     all_annotations = all_annotations.filter(validation_complete=False)
                 if status == "flagged":
                     all_annotations = all_annotations.filter(status=0)
@@ -503,6 +511,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 elif status == "public":
                     all_annotations = all_annotations.filter(status=1)
                 if this_user_is_superexpert:
+                    if checked == "unchecked":
+                        all_annotations = all_annotations.filter(reviewed=False)
+                    elif checked == "confirmed":
+                        all_annotations all_annotations.filter(reviewed=True, validation_complete=False)
+                    elif checked == "revised":
+                        all_annotations = all_annotations.filter(reviewed=True, validation_complete=True).count()
                     if final_status == "flagged":
                         all_annotations = all_annotations.filter(report__in=flagged_others_reports)
                     elif final_status == "hidden":
