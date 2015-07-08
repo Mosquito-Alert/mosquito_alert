@@ -572,7 +572,7 @@ class Report(models.Model):
         sum_scores = 0
         scores = ExpertReportAnnotation.objects.filter(report=self).exclude(tiger_certainty_category=None).values('tiger_certainty_category')
         for this_score in scores:
-            sum_scores += this_score.values()
+            sum_scores += this_score.values()[0]
         mean_score = sum_scores/3
         return mean_score
 
@@ -580,7 +580,7 @@ class Report(models.Model):
         sum_scores = 0
         scores = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).values('site_certainty_category')
         for this_score in scores:
-            sum_scores += this_score
+            sum_scores += this_score.values()[0]
         mean_score = sum_scores/3
         return mean_score
 
