@@ -555,6 +555,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['tiger_certainty'] = tiger_certainty
             args['site_certainty'] = site_certainty
             args['pending'] = pending
+            args['checked'] = checked
             args['status'] = status
             args['final_status'] = final_status
             args['version_UUID'] = version_uuid

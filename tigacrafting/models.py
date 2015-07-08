@@ -185,9 +185,9 @@ class ExpertReportAnnotation(models.Model):
         for ano in other_annotations.all():
             result += '<p>User: ' + ano.user.username + '</p>'
             result += '<p>Last Edited: ' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC</p>'
-            result += '<p>Tiger Certainty: ' + ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "" + '</p>'
+            result += '<p>Tiger Certainty: ' + (ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "") + '</p>'
             result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
-            result += '<p>Site Certainty: ' + ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "" + '</p>'
+            result += '<p>Site Certainty: ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '</p>'
             result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
             result += '<p>Edited User Notes: ' + ano.edited_user_notes + '</p>'
             result += '<p>Message To User: ' + ano.message_for_user + '</p>'
