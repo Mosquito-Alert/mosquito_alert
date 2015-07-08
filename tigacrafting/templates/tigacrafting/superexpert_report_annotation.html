@@ -55,8 +55,8 @@
 {% endblock %}
 
 {% block view_others_annotations %}
-    <strong>Mean Adult Score: {{ form.instance.report.get_mean_expert_adult_score }}</strong><br>
-    <strong>Mean Site Score: {{ form.instance.report.get_mean_expert_site_score }}</strong><br>
+    <strong>Mean Tiger Certainty Score: {{ form.instance.report.get_mean_expert_adult_score }}</strong><br>
+    <strong>Mean Site Certainty Score: {{ form.instance.report.get_mean_expert_site_score }}</strong><br>
         <div style="overflow: auto; height: 500px;" id='other_annotations_alert{{ form.instance.id }}'
              class='alert alert-info' role='alert'>
             {{ form.instance.get_others_annotation_html | safe }}
