@@ -235,7 +235,6 @@
             {% else %}
 
             {% block view_others_annotations %}
-            {% endblock %}
 
 
                 <strong>Tiger Certainty:</strong><br>
@@ -262,6 +261,9 @@
                 <strong>Linked ID:</strong><br>
                 <div style="border:1px solid #333333;padding:2px;">
                 {% if form.instance.linked_id %}{{ form.instance.linked_id }}{%  else %}---{% endif %}</div>
+
+                            {% endblock %}
+
 
              {% endif %}
 

@@ -55,15 +55,13 @@
 {% endblock %}
 
 {% block view_others_annotations %}
-        <div style="overflow: auto; height: 900px;" id='other_annotations_alert{{ form.instance.id }}'
+        <div style="overflow: auto; height: 500px;" id='other_annotations_alert{{ form.instance.id }}'
              class='alert alert-info' role='alert'>
             {{ form.instance.get_others_annotation_html | safe }}
         </div>
 
-        <button type="button"
-                onclick="$('#other_annotations_alert{{ form.instance.id }}').show();"
-                class="btn btn-default btn-sm">Show Others' Annotations
-        </button>
+                                {% form form using "floppyforms/layouts/bootstrap.html" %}
+
 {% endblock %}
 
 
