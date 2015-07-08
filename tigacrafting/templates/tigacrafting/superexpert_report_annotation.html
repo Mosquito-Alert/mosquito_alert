@@ -9,20 +9,35 @@
 {% block navbar_left_items %}
     <li>
         <div class="btn-group" id="type_grp" data-toggle="buttons" style="margin-right:5px;">
-            <label class="btn btn-primary btn-sm navbar-btn" id="public_btn">
-                <input type="radio" name="options" autocomplete="off"> Public <span
+            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Public" id="public_btn">
+                <input type="radio" name="options" autocomplete="off"><span class="glyphicon glyphicon-globe"></span> <span
                     class="badge">{{ n_public }}</span></label>
-            <label class="btn btn-primary btn-sm navbar-btn" id="flagged_btn">
-                <input type="radio" name="options" autocomplete="off"> Flagged <span
+            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Flagged" id="flagged_btn">
+                <input type="radio" name="options" autocomplete="off"><span class="glyphicon glyphicon-flag"></span> <span
                     class="badge">{{ n_flagged }}</span>
             </label>
-            <label class="btn btn-primary btn-sm navbar-btn" id="hidden_btn">
-                <input type="radio" name="options" autocomplete="off"> Hidden <span
+            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Hidden" id="hidden_btn">
+                <input type="radio" name="options" autocomplete="off"><span class="glyphicon glyphicon-remove-circle"></span> <span
                     class="badge">{{ n_hidden }}</span>
             </label>
         </div>
     </li>
 
+                            <li>
+
+                                <div class="btn-group" id="status_grp" data-toggle="buttons">
+                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Unchecked" id="pending_btn">
+                                        <input type="radio" name="status" autocomplete="off"><span class="glyphicon glyphicon-time"></span> <span class="badge">{{ n_pending }}</span></label>
+                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Checked and confirmed" id="complete_btn">
+                                        <input type="radio" name="status" autocomplete="off"><span class="glyphicon glyphicon-thumbs-up"></span> <span
+                                            class="badge">{{ n_confirmed }}</span>
+                                    </label>
+                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Checked and revised" id="complete_btn">
+                                        <input type="radio" name="status" autocomplete="off"><span class="glyphicon glyphicon-thumbs-down"></span> <span
+                                            class="badge">{{ n_revised }}</span>
+                                    </label>
+                                </div>
+                            </li>
 
 {% endblock %}
 

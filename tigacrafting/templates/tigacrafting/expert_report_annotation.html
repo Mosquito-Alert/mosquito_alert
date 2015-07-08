@@ -106,44 +106,40 @@
 
                         <ul class="nav navbar-nav navbar-left">
                             {% block navbar_left_items %}
-                            {% endblock %}
                             <li>
 
                                 <div class="btn-group" id="status_grp" data-toggle="buttons">
-                                    <label class="btn btn-primary btn-sm navbar-btn" id="all_btn">
-                                        <input type="radio" name="status" autocomplete="off"> All <span
-                                            class="badge">{{ n_total }}</span>
+                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="All" id="all_btn">
+                                        <input type="radio" name="status" autocomplete="off"><i class="fa fa-circle fa-lg fa-fw"></i><span class="badge">{{ n_total }}</span>
                                     </label>
-                                    <label class="btn btn-primary btn-sm navbar-btn" id="pending_btn">
-                                        <input type="radio" name="status" autocomplete="off"> Pending <span
-                                            class="badge">{{ n_pending }}</span></label>
-                                    <label class="btn btn-primary btn-sm navbar-btn" id="complete_btn">
-                                        <input type="radio" name="status" autocomplete="off"> Complete <span
+                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Pending" id="pending_btn">
+                                        <input type="radio" name="status" autocomplete="off"><i class="fa fa-clock-o fa-lg fa-fw"></i><span class="badge">{{ n_pending }}</span></label>
+                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Complete" id="complete_btn">
+                                        <input type="radio" name="status" autocomplete="off"><i class="fa fa-check-circle-o fa-lg fa-fw"></i><span
                                             class="badge">{{ n_complete }}</span>
                                     </label>
                                 </div>
                             </li>
+                            {% endblock %}
 
 
                             <li>
-                                <button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="modal"
-                                        data-target="#myModal" style="margin-left:5px"><span
-                                        class="glyphicon glyphicon-filter"></span>
-                                </button>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span>
+                                </button></span>
                             </li>
+                            <li>
+                                <span data-toggle="modal" data-target="#searchModal"><button type="button" class="btn btn-warning btn-sm navbar-btn"  data-toggle="tooltip" data-placement="bottom" title="Search" style="margin-left:5px"><span class="glyphicon glyphicon-search"></span></button></span>
+                            </li>
+
                             {% block grab_reports_button %}
                                 <li>
-                                    <button style="margin-left: 5px;" id="grab_reports_button" role="button"
-                                            class="btn btn-danger btn-sm navbar-btn"><span
-                                            class="glyphicon glyphicon-download"></span>
-                                    </button>
+                                    <button style="margin-left: 5px;" id="grab_reports_button" role="button" class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Grab new reports"><span class="glyphicon glyphicon-download"></span></button>
                                 </li>
                             {% endblock %}
 
 
                             <li>
-                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
-                                        style="margin-left:5px"><span
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn" style="margin-left:5px"  data-toggle="tooltip" data-placement="bottom" title="Save"><span
                                         class="glyphicon glyphicon-floppy-disk"></span>
                                 </button>
                             </li>
@@ -151,20 +147,6 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
-
-                        <li>
-                                                        <form class="navbar-form navbar-left" role="search">
-                                <div class="form-group">
-                                    <select id="year_select" class="selectpicker show-tick form-control"
-                                            data-style="btn-primary" data-live-search="true">
-                                        {% for version_uuid in my_version_uuids %}
-                                        <option value="{{ version_uuid }}">{{ version_uuid }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </form>
-
-                        </li>
 
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle"
@@ -501,6 +483,62 @@
 
 
 
+        {% block search_modal %}
+        <!-- Modal -->
+        <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form" class="form-inline">
+
+                            <div class="form-group">
+                                <label for="version_uuid_select">Report ID:</label>
+
+                                    <select id="version_uuid_select" class="selectpicker show-tick form-control" data-live-search="true">
+                                    <option value=""></option>
+                                        {% for version_uuid in my_version_uuids %}
+                                        <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+<button type="button" id="search_version_uuid_submit_button" class="btn btn-default">Search</button>
+
+                        </form>
+
+                        <form role="form" class="form-inline">
+
+                            <div class="form-group">
+                                <label for="linked_id_select">Linked ID:</label>
+
+                                    <select id="linked_id_select" class="selectpicker show-tick form-control" data-live-search="true">
+                                    <option value=""></option>
+                                        {% for linked_id in my_linked_ids %}
+                                        <option value="{{ linked_id.values | first }}">{{ linked_id.values | first }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+<button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search</button>
+                        </form>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    {% endblock %}
+
+
 {% endblock %}
 
 
@@ -637,6 +675,7 @@
             $("#hidden_others_select").val("{{ hidden_others }}");
 
 
+
             function submit_queries() {
                 gear.show();
                 var qp = query_selectors();
@@ -670,6 +709,25 @@
 
 
         $("#filters_submit_button").on('click', submit_queries);
+
+
+
+            function submit_search_version_uuid() {
+                gear.show();
+                $('#searchModal').modal('hide');
+                window.location.href = "?version_UUID=" + $("#version_uuid_select").val();
+            }
+
+            function submit_search_linked_id() {
+                gear.show();
+                $('#searchModal').modal('hide');
+                window.location.href = "?linked_id=" + $("#linked_id_select").val();
+            }
+
+        $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
+
+
+         $("#search_linked_id_submit_button").on('click', submit_search_linked_id);
 
 
         grab_reports_button.on('click', function () {
