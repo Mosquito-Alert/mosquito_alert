@@ -207,7 +207,7 @@
 
         {% if objects %}
 
-            {% if pending == 'pending' or checked == 'checked' or checked == 'confirmed' or checked == 'revised' %}
+            {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
             <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
             {% endif %}
                 {{ formset.management_form }}
@@ -217,8 +217,8 @@
                             <strong>Report: {{ form.instance.report.version_UUID }}</strong>, Type:
                             {{ form.instance.report.type }}{% if form.instance.report.type == 'site' %} (
                                 {{ form.instance.report.site_type_trans }}){% endif %},
-                            Created: {{ form.instance.report.creation_time }} UTC, Tiger Certainty
-                            Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Site
+                            Created: {{ form.instance.report.creation_time }} UTC, Num. Tiger Certainty
+                            Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Num. Site
                             Certainty
                             Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
 
@@ -234,8 +234,8 @@
 
 
 
-            {% if pending == 'pending' or checked == 'checked' or checked == 'confirmed' or checked == 'revised' %}
-
+            {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+`
                             {% form form using "floppyforms/layouts/bootstrap.html" %}
             {% else %}
 

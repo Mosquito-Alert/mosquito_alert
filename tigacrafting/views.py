@@ -18,7 +18,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
-from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm
+from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -391,7 +391,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args = {}
         args.update(csrf(request))
         args['scroll_position'] = scroll_position
-        AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=ExpertReportAnnotationForm, extra=0)
+        if this_user_is_superexpert:
+            AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=SuperExpertReportAnnotationForm, extra=0)
+        else:
+            AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=ExpertReportAnnotationForm, extra=0)
         if request.method == 'POST':
             scroll_position = request.POST.get("scroll_position", '0')
             orderby = request.POST.get('orderby', orderby)
