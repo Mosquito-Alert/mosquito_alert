@@ -207,7 +207,7 @@
 
         {% if objects %}
 
-            {% if pending == 'pending' %}
+            {% if pending == 'pending' or checked == 'checked' or checked == 'confirmed' or checked == 'revised' %}
             <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
             {% endif %}
                 {{ formset.management_form }}
