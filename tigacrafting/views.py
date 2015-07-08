@@ -412,7 +412,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 page = request.GET.get('page')
                 if not page:
                     page = '1'
-                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page+'&pending='+pending+'&final_status='+final_status+'&version_UUID='+version_uuid+'&linked_id='+linked_id+'&orderby='+orderby+'&tiger_certainty='+tiger_certainty+'&site_certainty='+site_certainty+'&status='+status)
+                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page+'&pending='+pending+'&checked='+checked+'&final_status='+final_status+'&version_UUID='+version_uuid+'&linked_id='+linked_id+'&orderby='+orderby+'&tiger_certainty='+tiger_certainty+'&site_certainty='+site_certainty+'&status='+status)
             else:
                 return HttpResponse('error')
         else:
@@ -470,9 +470,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
                 n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
                 n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
-                n_unchecked = all_annotations.filter(reviewed=False).count()
-                n_confirmed = all_annotations.filter(reviewed=True, validation_complete=False).count()
-                n_revised = all_annotations.filter(reviewed=True, validation_complete=True).count()
+                n_unchecked = all_annotations.filter(validation_complete=False).count()
+                n_confirmed = all_annotations.filter(vaidation_complete=True, revise=False).count()
+                n_revised = all_annotations.filter(validation_complete=True, revise=True).count()
                 args['n_flagged'] = n_flagged
                 args['n_hidden'] = n_hidden
                 args['n_public'] = n_public
@@ -515,11 +515,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     all_annotations = all_annotations.filter(status=1)
                 if this_user_is_superexpert:
                     if checked == "unchecked":
-                        all_annotations = all_annotations.filter(reviewed=False)
+                        all_annotations = all_annotations.filter(validation_complete=False)
                     elif checked == "confirmed":
-                        all_annotations = all_annotations.filter(reviewed=True, validation_complete=False)
+                        all_annotations = all_annotations.filter(validation_complete=True, revise=False)
                     elif checked == "revised":
-                        all_annotations = all_annotations.filter(reviewed=True, validation_complete=True).count()
+                        all_annotations = all_annotations.filter(validation_complete=True, revise=True).count()
                     if final_status == "flagged":
                         all_annotations = all_annotations.filter(report__in=flagged_others_reports)
                     elif final_status == "hidden":
