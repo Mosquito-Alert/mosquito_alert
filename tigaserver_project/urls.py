@@ -73,5 +73,5 @@ urlpatterns += i18n_patterns('',
     url(r'^coveragestats/$', show_fix_users),
     url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
     url(r'^processing/$', show_processing),
-    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='auth_logout'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/experts/'}, name='auth_logout'),
 )
