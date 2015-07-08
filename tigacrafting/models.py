@@ -184,12 +184,12 @@ class ExpertReportAnnotation(models.Model):
         other_annotations = ExpertReportAnnotation.objects.filter(report=this_report).exclude(user=this_user)
         for ano in other_annotations.all():
             result += '<p>User: ' + ano.user.username + ', Last Edited: ' + str(ano.last_modified) + '</p>'
-            result += '<p>Tiger Certainty: ' + ano.get_tiger_certainty_category_display() + '</p>'
+            result += '<p>Tiger Certainty: ' + ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "" + '</p>'
             result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
-            result += '<p>Site Certainty: ' + ano.get_site_certainty_category_display() + '</p>'
+            result += '<p>Site Certainty: ' + ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "" + '</p>'
             result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
             result += '<p>Edited User Notes: ' + ano.edited_user_notes + '</p>'
             result += '<p>Message To User: ' + ano.message_for_user + '</p>'
-            result += '<p>Status: ' + ano.get_status_display() + '</p>'
+            result += '<p>Status: ' + ano.get_status_display() if ano.get_status_display() else "" + '</p>'
             result += '<p>Validation Complete? ' + str(ano.validation_complete) + '</p><hr>'
         return result
