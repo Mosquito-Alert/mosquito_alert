@@ -229,12 +229,15 @@
                         <div class="col-md-3">
                             <br>
 
-            {% if pending == 'pending' %}
+                {% block view_others_annotations %}
+                            {% endblock %}
+
+
+
+            {% if pending == 'pending' or checked == 'checked' or checked == 'confirmed' or checked == 'revised' %}
 
                             {% form form using "floppyforms/layouts/bootstrap.html" %}
             {% else %}
-
-            {% block view_others_annotations %}
 
 
                 <strong>Tiger Certainty:</strong><br>
@@ -262,7 +265,6 @@
                 <div style="border:1px solid #333333;padding:2px;">
                 {% if form.instance.linked_id %}{{ form.instance.linked_id }}{%  else %}---{% endif %}</div>
 
-                            {% endblock %}
 
 
              {% endif %}
