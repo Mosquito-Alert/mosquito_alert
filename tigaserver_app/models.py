@@ -570,7 +570,7 @@ class Report(models.Model):
 
     def get_mean_expert_adult_score(self):
         sum_scores = 0
-        scores = ExpertReportAnnotation.objects.filter(report=self).exclude(adult_certainty_category=None).values('adult_certainty_category')
+        scores = ExpertReportAnnotation.objects.filter(report=self).exclude(tiger_certainty_category=None).values('tiger_certainty_category')
         for this_score in scores:
             sum_scores += this_score.values()
         mean_score = sum_scores/3
