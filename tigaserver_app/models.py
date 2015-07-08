@@ -568,6 +568,22 @@ class Report(models.Model):
         n = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).count()
         return n
 
+    def get_mean_expert_adult_score(self):
+        sum_scores = 0
+        scores = ExpertReportAnnotation.objects.filter(report=self).exclude(adult_certainty_category=None).values('adult_certainty_category')
+        for this_score in scores:
+            sum_scores += this_score.values()
+        mean_score = sum_scores/3
+        return mean_score
+
+    def get_mean_expert_site_score(self):
+        sum_scores = 0
+        scores = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).values('site_certainty_category')
+        for this_score in scores:
+            sum_scores += this_score
+        mean_score = sum_scores/3
+        return mean_score
+
     def get_expert_annotations_html(self, this_user):
         result = ''
         for ano in self.expert_report_annotations.exclude(user=this_user):
