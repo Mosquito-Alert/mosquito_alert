@@ -514,7 +514,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     if checked == "unchecked":
                         all_annotations = all_annotations.filter(reviewed=False)
                     elif checked == "confirmed":
-                        all_annotations all_annotations.filter(reviewed=True, validation_complete=False)
+                        all_annotations = all_annotations.filter(reviewed=True, validation_complete=False)
                     elif checked == "revised":
                         all_annotations = all_annotations.filter(reviewed=True, validation_complete=True).count()
                     if final_status == "flagged":
