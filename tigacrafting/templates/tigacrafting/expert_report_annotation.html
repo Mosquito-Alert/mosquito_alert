@@ -251,7 +251,7 @@
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
             <div class="col-md-12">
-                <h4><strong>{{ form.instance.report.type|capfirst }} Report {{ form.instance.report.version_UUID }}</strong>{% if form.instance.report.type == 'site' %} {{ form.instance.report.site_type_trans }}{% endif %} Createds {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+                <h4><strong>{{ form.instance.report.type|capfirst }} Report {{ form.instance.report.version_UUID }}</strong>{% if form.instance.report.type == 'site' %} ({{ form.instance.report.site_type_trans }}){% endif %} Created {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
 
 
             </div>
@@ -372,7 +372,8 @@
 
         <script>
 
-    $('#{{ form.instance.best_photo.id }}').css({"border-color": "green", "border-width": "3px", "border-style": "solid"});
+        var best_photo_id = "{{ form.instance.best_photo.id }}";
+    $("#" + best_photo_id).css({"border-color": "green", "border-width": "3px", "border-style": "solid"});
 
             {% if form.instance.report.type == 'adult' %}
                 $(".row_for_{{ form.instance.report.version_UUID }}").css({"background-color": "#F2BB66"});
