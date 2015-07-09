@@ -275,14 +275,24 @@
 
                         <div class="col-md-5">
                             <br>
-                            <strong>Photos</strong> <button id="clear_button_{{ form.instance.id }}" type="button" class="btn btn-default btn-sm">Reset</button><br>
+                            <strong>Photos</strong>
+                                      {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+                            <button id="clear_button_{{ form.instance.id }}" type="button" class="btn btn-default btn-sm">Reset</button><br>
 
                             <div style="overflow: auto;height: 814px;">
 
                                 {{ form.instance.report.photo_html_for_report_validation | safe }}
 
                             </div>
+                        {% else %}
 
+                            <div style="overflow: auto;height: 814px;">
+
+                                {{ form.instance.report.photo_html_for_report_validation_completed | safe }}
+
+                            </div>
+
+                        {% endif %}
                         </div>
 
                         <div class="col-md-4">
@@ -321,6 +331,8 @@
                     </div>
 
                     <script>
+
+           {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
                         if ($('#' + '{{ form.best_photo.auto_id }}').val() !== undefined) {
                             $('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).attr('checked', true);
                         }
@@ -333,6 +345,14 @@
                     $("#clear_button_{{ form.instance.id }}").click(function (){
                          $('#' + '{{ form.best_photo.auto_id }}').val(null);
                         $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked',false);
+
+
+               {% else %}
+
+               ('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).css({"border-color": "green",
+             "border-width":"3px",
+             "border-style":"solid"});
+                        {% endif %}
 
                     });
 

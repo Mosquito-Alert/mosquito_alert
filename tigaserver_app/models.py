@@ -427,6 +427,13 @@ class Report(models.Model):
             result += '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) +'">Display this photo on public map:<br><div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div><br>'
         return result
 
+    def get_photo_html_for_report_validation_completed(self):
+        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
+        result = ''
+        for photo in these_photos:
+            result += '<div id="' + str(photo.id) + '" style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div><br>'
+        return result
+
     def get_formatted_date(self):
         return self.version_time.strftime("%d-%m-%Y %H:%M")
 
