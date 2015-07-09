@@ -595,11 +595,13 @@ class Report(models.Model):
         result = ''
         for ano in self.expert_report_annotations.exclude(user=this_user):
             result += '<p>User: ' + ano.user.username + ', Last Edited: ' + str(ano.last_modified) + '</p>'
-            result += '<p>Tiger Certainty: ' + str(ano.tiger_certainty_category) + '</p>'
-            result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
-            result += '<p>Site Certainty: ' + str(ano.site_certainty_category) + '</p>'
-            result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
-            result += '<p>Flagged?: ' + str(ano.flag) + '</p>'
+            if self.type == 'adult':
+                result += '<p>Tiger Certainty: ' + (ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "") + '</p>'
+                result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
+            elif self.type == 'site':
+                result += '<p>Site Certainty: ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '</p>'
+                result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
+            result += '<p>Status: ' + str(ano.statu) + '</p>'
         return result
 
     lon = property(get_lon)

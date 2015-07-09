@@ -98,47 +98,73 @@
                         <div class="navbar-brand"><span
                                 style="color:#ff9900; font-size: small">Tigatrapp
                             Validation <i
-                                id="gear"
-                                class="fa fa-refresh fa-spin"></i></span>
+                                    id="gear"
+                                    class="fa fa-refresh fa-spin"></i></span>
                         </div>
                     </div>
                     <div class="navbar-collapse collapse">
 
                         <ul class="nav navbar-nav navbar-left">
                             {% block navbar_left_items %}
-                            <li>
+                                <li>
 
-                                <div class="btn-group" id="status_grp" data-toggle="buttons">
-                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Pending" id="pending_btn">
-                                        <input type="radio" name="status" autocomplete="off"><span class="glyphicon glyphicon-time" {% if n_pending > 0 %}style="color:#FF8576"{% endif %}></span> <span class="badge">{{ n_pending }}</span></label>
-                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Complete" id="complete_btn">
-                                        <input type="radio" name="status" autocomplete="off"><span class="glyphicon glyphicon-check"></span> <span
-                                            class="badge">{{ n_complete }}</span>
-                                    </label>
-                                </div>
-                            </li>
+                                    <div class="btn-group" id="status_grp" data-toggle="buttons">
+                                        <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip"
+                                               data-placement="bottom" title="Pending" id="pending_btn">
+                                            <input type="radio" name="status" autocomplete="off"><span
+                                                class="glyphicon glyphicon-time"
+                                                {% if n_pending > 0 %}style="color:#FF8576"{% endif %}></span> <span
+                                                class="badge">{{ n_pending }}</span></label>
+                                        <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip"
+                                               data-placement="bottom" title="Complete" id="complete_btn">
+                                            <input type="radio" name="status" autocomplete="off"><span
+                                                class="glyphicon glyphicon-check"></span> <span
+                                                class="badge">{{ n_complete }}</span>
+                                        </label>
+                                    </div>
+                                </li>
 
-                            <li>
-                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter" {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
+                                <li>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button"
+                                                                                         class="btn btn-warning btn-sm navbar-btn"
+                                                                                         data-toggle="tooltip"
+                                                                                         data-placement="bottom"
+                                                                                         title="Filter"
+                                                                                         style="margin-left:5px"><span
+                                        class="glyphicon glyphicon-filter"
+                                        {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
                                 </button></span>
-                            </li>
+                                </li>
 
                             {% endblock %}
 
 
                             <li>
-                                <span data-toggle="modal" data-target="#searchModal"><button type="button" class="btn btn-warning btn-sm navbar-btn"  data-toggle="tooltip" data-placement="bottom" title="Search" style="margin-left:5px"><span class="glyphicon glyphicon-search" {% if version_uuid != 'na' or linked_id != 'na' %}style="color:black"{% endif %}></span></button></span>
+                                <span data-toggle="modal" data-target="#searchModal"><button type="button"
+                                                                                             class="btn btn-warning btn-sm navbar-btn"
+                                                                                             data-toggle="tooltip"
+                                                                                             data-placement="bottom"
+                                                                                             title="Search"
+                                                                                             style="margin-left:5px">
+                                    <span class="glyphicon glyphicon-search"
+                                          {% if version_uuid != 'na' or linked_id != 'na' %}style="color:black"{% endif %}></span>
+                                </button></span>
                             </li>
 
                             {% block grab_reports_button %}
                                 <li>
-                                    <button style="margin-left: 5px;" id="grab_reports_button" role="button" class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Grab new reports"><span class="glyphicon glyphicon-download"></span></button>
+                                    <button style="margin-left: 5px;" id="grab_reports_button" role="button"
+                                            class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip"
+                                            data-placement="bottom" title="Grab new reports"><span
+                                            class="glyphicon glyphicon-download"></span></button>
                                 </li>
                             {% endblock %}
 
 
                             <li>
-                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn" style="margin-left:5px"  data-toggle="tooltip" data-placement="bottom" title="Save"><span
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px" data-toggle="tooltip" data-placement="bottom"
+                                        title="Save"><span
                                         class="glyphicon glyphicon-floppy-disk"></span>
                                 </button>
                             </li>
@@ -153,7 +179,8 @@
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
-                                        <li><a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>
+                                        <li>
+                                            <a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>
                                         </li>
                                     {% endfor %}
                                 </ul>
@@ -180,208 +207,236 @@
 
     <div class="container">
 
-        <div class="starter-template">
+    <div class="starter-template">
 
-            {% block title %}
-                <h1>Expert Report Validation</h1>
-                <h2>{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed Reports{% endif %}</h2>
+        {% block title %}
+            <h1>Expert Report Validation</h1>
+            <h2>{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed
+                Reports{% endif %}</h2>
 
-            {% endblock %}
+        {% endblock %}
 
 
-            <div style="text-align: left">
-                <h4> Instructions</h4>
+        <div style="text-align: left">
+            <h4> Instructions</h4>
 
-                {% block instructions %}
+            {% block instructions %}
                 <p>For each report: (1) select a category for your degree of belief that the report contains at least
                     one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
                     report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal
                     notes for yourself or other experts regarding your reasons for each selection, (4) add any note you
                     want
                     to see displayed on the public map along with the report (e.g. an edited version of the user's
-                    original note), (5) add any notes that you want to be shown directly to the user (citizen scientist) who created the report, (6) flag the report if you want to bring it to the attention of other experts
+                    original note), (5) add any notes that you want to be shown directly to the user (citizen scientist)
+                    who created the report, (6) flag the report if you want to bring it to the attention of other
+                    experts
                     (because it is an especially interesting report or because you have doubts), (7) indicate if the
                     report should be hidden from public view (this will automatically
                     remove it from the public map), and (8) select which (if any) of the reports photos should be
                     displayed on the public map (only one photo will be displayed). You can save your work as you go
                     using the "save" button at the top of the screen. When you are done with a given report, check the
-                    "validation complete" box. You will not be able to modify your responses once you have saved a report marked with "validation complete."</p>
+                    "validation complete" box. You will not be able to modify your responses once you have saved a
+                    report marked with "validation complete."</p>
 
-                    {% endblock %}
+            {% endblock %}
+        </div>
+    </div>
+
+    {% if objects %}
+
+        {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+            <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
+        {% endif %}
+    {{ formset.management_form }}
+    {% for form in formset %}
+        <div class="row row_for_{{ form.instance.report.version_UUID }}">
+            <div class="col-md-12">
+                <h4><strong>{{ form.instance.report.type|capfirst }} Report {{ form.instance.report.version_UUID }}</strong>{% if form.instance.report.type == 'site' %} {{ form.instance.report.site_type_trans }}{% endif %} Createds {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+
+
             </div>
         </div>
-
-        {% if objects %}
-
-            {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
-            <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
-            {% endif %}
-                {{ formset.management_form }}
-                {% for form in formset %}
-                    <div class="row">
-                        <div class="col-md-12">
-                            <strong>Report: {{ form.instance.report.version_UUID }}</strong>, Type:
-                            {{ form.instance.report.type }}{% if form.instance.report.type == 'site' %} (
-                                {{ form.instance.report.site_type_trans }}){% endif %},
-                            Created: {{ form.instance.report.creation_time }} UTC, Num. Tiger Certainty
-                            Scores: {{ form.instance.report.get_n_expert_report_annotations_tiger_certainty }}, Num. Site
-                            Certainty
-                            Scores: {{ form.instance.report.get_n_expert_report_annotations_site_certainty }}
-
-
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3" id="{{ form.instance.report.version_UUID }}">
-                            <br>
+        <div class="row">
+            <div class="col-md-3" id="{{ form.instance.report.version_UUID }}">
+                <br>
 
                 {% block view_others_annotations %}
-                            {% endblock %}
+                {% endblock %}
 
+
+
+                {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+                    `
+                    {% form form using "floppyforms/layouts/bootstrap.html" %}
+                {% else %}
+
+                    {% if form.instance.report.type == 'adult' %}
+                        <strong>Tiger Certainty:</strong><br>
+                        <div style="border:1px solid #333333;padding:2px;">
+                            {% if form.instance.get_tiger_certainty_category_display %}
+                                {{ form.instance.get_tiger_certainty_category_display }}{% else %}---{% endif %}</div>
+                        <br>
+                        <strong>Internal Tiger Certainty Comments:</strong><br>
+                        <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                            {{ form.instance.tiger_certainty_notes }}</div><br>
+                    {% else %}
+                        <strong>Site Certainty:</strong><br>
+                        <div style="border:1px solid #333333;padding:2px;">
+                            {% if form.instance.get_site_certainty_category_display %}
+                                {{ form.instance.get_site_certainty_category_display }}{% else %}---{% endif %}</div>
+                        <br>
+                        <strong>Internal Site Certainty Notes:</strong><br>
+                        <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                            {{ form.instance.site_certainty_notees }}</div><br>
+                    {% endif %}
+
+                    <strong>Public Note:</strong><br>
+                    <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                        {{ form.instance.edited_user_notes }}</div><br>
+                    <strong>Message To User:</strong><br>
+                    <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                        {{ form.instance.message_for_user }}</div><br>
+                    <strong>Status:</strong><br>
+                    <div style="border:1px solid #333333;padding:2px;">
+                        {% if form.instance.get_status_display %}{{ form.instance.get_status_display }}{% else %}
+                            ---{% endif %}</div><br>
+                    <strong>Linked ID:</strong><br>
+                    <div style="border:1px solid #333333;padding:2px;">
+                        {% if form.instance.linked_id %}{{ form.instance.linked_id }}{% else %}---{% endif %}</div>
+
+
+
+                {% endif %}
+
+            </div>
+
+            <div class="col-md-5">
+                <br>
+                <strong>Photos</strong>
+                {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+                    <button id="clear_button_{{ form.instance.id }}" type="button" class="btn btn-default btn-sm">
+                        Reset
+                    </button><br>
+
+                    <div style="overflow: auto;height: 814px;">
+
+                        {{ form.instance.report.photo_html_for_report_validation | safe }}
+
+                    </div>
+                {% else %}
+
+                    <div style="overflow: auto;height: 814px;">
+
+                        {{ form.instance.report.get_photo_html_for_report_validation_completed | safe }}
+
+                    </div>
+
+                {% endif %}
+            </div>
+
+            <div class="col-md-4">
+                <br>
+                <strong>Location</strong>
+
+                <div id="map{{ form.instance.id }}" class="report_annotation_map-container">
+
+                    <div style="z-index:100; position:absolute; top:0; right:0;"
+                         id="qrcode{{ form.instance.id }}"></div>
+
+                </div>
+
+
+                <br>
+                <strong>User Responses</strong><br>
+
+                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
+                    {{ form.instance.report.response_html  | safe }}
+                </div>
+                <br>
+                <strong>User Notes</strong><br>
+
+                <div style="overflow: auto;height: 270px;border:1px solid #333333;padding:2px;">
+                    {{ form.instance.report.note }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <br>
+        <div class="border-row">
+
+            <br>
+
+        </div>
+
+        <script>
+
+    $('#{{ form.instance.best_photo.id }}').css({"border-color": "green", "border-width": "3px", "border-style": "solid"});
+
+            {% if form.instance.report.type == 'adult' %}
+                $(".row_for_{{ form.instance.report.version_UUID }}").css({"background-color": "#F2BB66"});
+            {% else %}
+                $(".row_for_{{ form.instance.report.version_UUID }}").css({"background-color": "#736AFF"});
+            {% endif %}
 
 
             {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
-`
-                            {% form form using "floppyforms/layouts/bootstrap.html" %}
-            {% else %}
+
+                {% if form.instance.report.type == 'adult' %}
+
+                    $("#" + "{{ form.site_certainty_category.auto_id }}").parent().parent().empty().remove();
+                    $("#" + "{{ form.site_certainty_notes.auto_id }}").parent().parent().empty().remove();
 
 
-                <strong>Tiger Certainty:</strong><br>
-                <div style="border:1px solid #333333;padding:2px;">
-                {% if form.instance.get_tiger_certainty_category_display %}{{ form.instance.get_tiger_certainty_category_display }}{% else %}---{% endif %}</div><br>
-                <strong>Internal Tiger Certainty Comments:</strong><br>
-                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
-                {{ form.instance.tiger_certainty_notes }}</div><br>
-                <strong>Site Certainty:</strong><br>
-                <div style="border:1px solid #333333;padding:2px;">
-                {% if form.instance.get_site_certainty_category_display %}{{ form.instance.get_site_certainty_category_display }}{% else %}---{% endif %}</div><br>
-                <strong>Internal Site Certainty Notes:</strong><br>
-                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
-                {{ form.instance.site_certainty_notees }}</div><br>
-                <strong>Public Note:</strong><br>
-                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
-                {{ form.instance.edited_user_notes }}</div><br>
-                <strong>Message To User:</strong><br>
-                <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
-                {{ form.instance.message_for_user }}</div><br>
-                <strong>Status:</strong><br>
-                <div style="border:1px solid #333333;padding:2px;">
-                {%  if form.instance.get_status_display %}{{ form.instance.get_status_display }}{% else %}---{% endif %}</div><br>
-                <strong>Linked ID:</strong><br>
-                <div style="border:1px solid #333333;padding:2px;">
-                {% if form.instance.linked_id %}{{ form.instance.linked_id }}{%  else %}---{% endif %}</div>
+                {% else %}
+
+                    $("#" + "{{ form.tiger_certainty_category.auto_id }}").parent().parent().empty().remove();
+                    $("#" + "{{ form.tiger_certainty_notes.auto_id }}").parent().parent().empty().remove();
+                {% endif %}
 
 
+                if ($('#' + '{{ form.best_photo.auto_id }}').val() !== undefined) {
+                    $('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).attr('checked', true);
+                }
 
-             {% endif %}
-
-                        </div>
-
-                        <div class="col-md-5">
-                            <br>
-                            <strong>Photos</strong>
-                                      {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
-                            <button id="clear_button_{{ form.instance.id }}" type="button" class="btn btn-default btn-sm">Reset</button><br>
-
-                            <div style="overflow: auto;height: 814px;">
-
-                                {{ form.instance.report.photo_html_for_report_validation | safe }}
-
-                            </div>
-                        {% else %}
-
-                            <div style="overflow: auto;height: 814px;">
-
-                                {{ form.instance.report.get_photo_html_for_report_validation_completed | safe }}
-
-                            </div>
-
-                        {% endif %}
-                        </div>
-
-                        <div class="col-md-4">
-                            <br>
-                            <strong>Location</strong>
-
-                            <div id="map{{ form.instance.id }}" class="report_annotation_map-container">
-
-                                                                <div style="z-index:100; position:absolute; top:0; right:0;" id="qrcode{{ form.instance.id }}"></div>
-
-                            </div>
+                $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function () {
+                    $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
+                });
 
 
-                            <br>
-                            <strong>User Responses</strong><br>
+                $("#clear_button_{{ form.instance.id }}").click(function () {
+                    $('#' + '{{ form.best_photo.auto_id }}').val(null);
+                    $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked', false);
 
-                            <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
-                                {{ form.instance.report.response_html  | safe }}
-                            </div>
-                            <br>
-                            <strong>User Notes</strong><br>
-
-                            <div style="overflow: auto;height: 270px;border:1px solid #333333;padding:2px;">
-                                {{ form.instance.report.note }}
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <br>
-                    <div class="border-row">
-
-                        <br>
-
-                    </div>
-
-                    <script>
-
-           {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
-                        if ($('#' + '{{ form.best_photo.auto_id }}').val() !== undefined) {
-                            $('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).attr('checked', true);
-                        }
-
-                        $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function () {
-                            $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
-                        });
+                });
 
 
-                    $("#clear_button_{{ form.instance.id }}").click(function (){
-                         $('#' + '{{ form.best_photo.auto_id }}').val(null);
-                        $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked',false);
-
-                    })
+            {% endif %}
 
 
-               {% else %}
-
-                              $('#' + {{ form.instance.best_photo.id }}).css({"border-color": "green", "border-width":"3px", "border-style":"solid"});
-
-                        {% endif %}
+        </script>
 
 
-                    </script>
+    {% endfor %}
 
-
-                {% endfor %}
-
-                <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
-                <input id="pending_hidden_btn" type="text" name="pending" style="display: none;" value="{{ pending }}">
-                <input type="text" name="orderby" style="display: none;" value="{{ orderby }}">
-                <input type="text" name="tiger_certainty" style="display: none;" value="{{ tiger_certainty }}">
-                <input type="text" name="site_certainty" style="display: none;" value="{{ site_certainty }}">
-                <input type="text" name="status" style="display: none;" value="{{ status }}">
-                <input type="text" name="final_status" style="display: none;" value="{{ final_status }}">
+    <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
+    <input id="pending_hidden_btn" type="text" name="pending" style="display: none;" value="{{ pending }}">
+    <input type="text" name="orderby" style="display: none;" value="{{ orderby }}">
+    <input type="text" name="tiger_certainty" style="display: none;" value="{{ tiger_certainty }}">
+    <input type="text" name="site_certainty" style="display: none;" value="{{ site_certainty }}">
+    <input type="text" name="status" style="display: none;" value="{{ status }}">
+    <input type="text" name="final_status" style="display: none;" value="{{ final_status }}">
 
 
 
-            </form>
+    </form>
 
-            <div class="row">
+        <div class="row">
 
-                <div class="col-md-12">
+            <div class="col-md-12">
 
-                    <div class="pagination">
+                <div class="pagination">
         <span class="step-links">
             {% if objects.has_previous %}
                 <a href="?page={{ objects.previous_page_number }}">Previous</a>
@@ -408,45 +463,53 @@
                 </form>
 
         </span>
-                    </div>
-
-
                 </div>
+
+
             </div>
+        </div>
 
-        {% else %}
-            {% block no_records_message %}
-                {% if pending == 'pending' and n_pending == 0 %}
-            <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start validating.</p>
-                {% else %}
-            <p>No reports match your search criteria.</p>
+    {% else %}
+        {% block no_records_message %}
+            {% if pending == 'pending' and n_pending == 0 %}
+                <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start
+                    validating.</p>
+            {% else %}
+                <p>No reports match your search criteria.</p>
 
-                {% endif %}
-            {% endblock %}
-        {% endif %}
+            {% endif %}
+        {% endblock %}
+    {% endif %}
 
     </div>
 
-        <div class="modal fade" id="save_warning_modal" tabindex="-1" role="dialog" aria-labelledby="save_warning_modal_label"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="save_warning_modal_label">Submit validation</h4>
-                    </div>
-                    <div id="save_warning_modal_body" class="modal-body">
-                        <p>You are about to submit your validations for the reports listed below. {% if pending == 'pending' %}<strong>You will not be able to modify these once you have submitted them.</strong>{% elif checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}<strong>Your submission may immediately appear on the public webmap.</strong>{% endif %} Are you sure you wish to proceed?</p>
-                         <div id="reports_being_saved_list"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button type="button" id="save_warning_submit_button" class="btn btn-success">Submit</button>
-                    </div>
+    <div class="modal fade" id="save_warning_modal" tabindex="-1" role="dialog"
+         aria-labelledby="save_warning_modal_label"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="save_warning_modal_label">Submit validation</h4>
+                </div>
+                <div id="save_warning_modal_body" class="modal-body">
+                    <p>You are about to submit your validations for the reports listed below.
+                        {% if pending == 'pending' %}<strong>
+                            You will not be able to modify these once you have submitted them.</strong>
+                            {% elif checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}<strong>Your
+                            submission may immediately appear on the public webmap.</strong>{% endif %} Are you sure you
+                        wish to proceed?</p>
+
+                    <div id="reports_being_saved_list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="save_warning_submit_button" class="btn btn-success">Submit</button>
                 </div>
             </div>
         </div>
+    </div>
 
 
 
@@ -532,7 +595,7 @@
 
 
 
-        {% block search_modal %}
+    {% block search_modal %}
         <!-- Modal -->
         <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
              aria-hidden="true">
@@ -549,14 +612,17 @@
                             <div class="form-group">
                                 <label for="version_uuid_select">Report ID:</label>
 
-                                    <select id="version_uuid_select" class="selectpicker show-tick form-control" data-live-search="true">
+                                <select id="version_uuid_select" class="selectpicker show-tick form-control"
+                                        data-live-search="true">
                                     <option value=""></option>
-                                        {% for version_uuid in my_version_uuids %}
+                                    {% for version_uuid in my_version_uuids %}
                                         <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-<button type="button" id="search_version_uuid_submit_button" class="btn btn-default">Search</button>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button" id="search_version_uuid_submit_button" class="btn btn-default">
+                                Search
+                            </button>
 
                         </form>
 
@@ -565,14 +631,16 @@
                             <div class="form-group">
                                 <label for="linked_id_select">Linked ID:</label>
 
-                                    <select id="linked_id_select" class="selectpicker show-tick form-control" data-live-search="true">
+                                <select id="linked_id_select" class="selectpicker show-tick form-control"
+                                        data-live-search="true">
                                     <option value=""></option>
-                                        {% for linked_id in my_linked_ids %}
+                                    {% for linked_id in my_linked_ids %}
                                         <option value="{{ linked_id.values | first }}">{{ linked_id.values | first }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-<button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search</button>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search
+                            </button>
                         </form>
 
 
@@ -674,7 +742,7 @@
                 width: 'auto'
             });
 
-            var save_warning_submit_button = $("#save_warning_submit_button").click(function(){
+            var save_warning_submit_button = $("#save_warning_submit_button").click(function () {
                 gear.show();
                 $("#scroll_position").val(0);
                 toggle_grab_reports_button();
@@ -683,35 +751,35 @@
             });
 
             var save_button = $("#save_button").click(function () {
-               if ($("[id*='validation_complete']").is(":checked")){
-                   var reports_list = $("#reports_being_saved_list").empty();
-                   reports_list.append('<ul>');
-                   $("[id*='validation_complete']:checked").parent().parent().parent().each(function(){
-                       reports_list.append('<li>' + $(this).attr('id') + '</li>');
-                   });
-                       reports_list.append('</ul>');
-                   $("#save_warning_modal").modal('show');
-               } else{
-                gear.show();
-                toggle_grab_reports_button();
-                $("#formset_forms").submit();
-               }
+                if ($("[id*='validation_complete']").is(":checked")) {
+                    var reports_list = $("#reports_being_saved_list").empty();
+                    reports_list.append('<ul>');
+                    $("[id*='validation_complete']:checked").parent().parent().parent().each(function () {
+                        reports_list.append('<li>' + $(this).attr('id') + '</li>');
+                    });
+                    reports_list.append('</ul>');
+                    $("#save_warning_modal").modal('show');
+                } else {
+                    gear.show();
+                    toggle_grab_reports_button();
+                    $("#formset_forms").submit();
+                }
             });
 
-         {% if pending == 'complete' %}
-         save_button.prop('disabled', true);
-        {% endif %}
+            {% if pending == 'complete' %}
+                save_button.prop('disabled', true);
+            {% endif %}
 
 
             toggle_grab_reports_button();
 
             {% for form in formset %}
 
-            jQuery('#qrcode{{ form.instance.id }}').qrcode({
-                width: 64,
-                height: 64,
-                text: "geo:{{ form.instance.report.lat }},{{ form.instance.report.lon }}"
-            });
+                jQuery('#qrcode{{ form.instance.id }}').qrcode({
+                    width: 64,
+                    height: 64,
+                    text: "geo:{{ form.instance.report.lat }},{{ form.instance.report.lon }}"
+                });
 
             {% endfor %}
         });
@@ -763,7 +831,6 @@
             complete_btn.on('click', { extr: 'complete'}, submit_queries_plus);
 
 
-
         </script>
     {% endblock %}
 
@@ -773,23 +840,22 @@
         $("#filters_submit_button").on('click', submit_queries);
 
 
+        function submit_search_version_uuid() {
+            gear.show();
+            $('#searchModal').modal('hide');
+            window.location.href = "?version_uuid=" + $("#version_uuid_select").val();
+        }
 
-            function submit_search_version_uuid() {
-                gear.show();
-                $('#searchModal').modal('hide');
-                window.location.href = "?version_uuid=" + $("#version_uuid_select").val();
-            }
-
-            function submit_search_linked_id() {
-                gear.show();
-                $('#searchModal').modal('hide');
-                window.location.href = "?linked_id=" + $("#linked_id_select").val();
-            }
+        function submit_search_linked_id() {
+            gear.show();
+            $('#searchModal').modal('hide');
+            window.location.href = "?linked_id=" + $("#linked_id_select").val();
+        }
 
         $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
 
 
-         $("#search_linked_id_submit_button").on('click', submit_search_linked_id);
+        $("#search_linked_id_submit_button").on('click', submit_search_linked_id);
 
 
         grab_reports_button.on('click', function () {
