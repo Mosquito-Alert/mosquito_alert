@@ -182,7 +182,11 @@
 
         <div class="starter-template">
 
-            <h1>{% block title %}Expert Report Validation:{% endblock %}</h1>
+            {% block title %}
+                <h1>Expert Report Validation</h1>
+                <h2>{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed Reports{% endif %}</h2>
+
+            {% endblock %}
 
 
             <div style="text-align: left">
@@ -195,13 +199,13 @@
                     notes for yourself or other experts regarding your reasons for each selection, (4) add any note you
                     want
                     to see displayed on the public map along with the report (e.g. an edited version of the user's
-                    original note), (5) flag the report if you want to bring it to the attention of other experts
-                    (because it is an especially interesting report or because you have doubts), (6) indicate if the
+                    original note), (5) add any notes that you want to be shown directly to the user (citizen scientist) who created the report, (6) flag the report if you want to bring it to the attention of other experts
+                    (because it is an especially interesting report or because you have doubts), (7) indicate if the
                     report should be hidden from public view (this will automatically
-                    remove it from the public map), and (7) select which (if any) of the reports photos should be
+                    remove it from the public map), and (8) select which (if any) of the reports photos should be
                     displayed on the public map (only one photo will be displayed). You can save your work as you go
                     using the "save" button at the top of the screen. When you are done with a given report, check the
-                    "validation complete" box.</p>
+                    "validation complete" box. You will not be able to modify your responses once you have saved a report marked with "validation complete."</p>
 
                     {% endblock %}
             </div>

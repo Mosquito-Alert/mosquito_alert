@@ -520,7 +520,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     elif checked == "confirmed":
                         all_annotations = all_annotations.filter(validation_complete=True, revise=False)
                     elif checked == "revised":
-                        all_annotations = all_annotations.filter(validation_complete=True, revise=True).count()
+                        all_annotations = all_annotations.filter(validation_complete=True, revise=True)
                     if final_status == "flagged":
                         all_annotations = all_annotations.filter(report__in=flagged_others_reports)
                     elif final_status == "hidden":

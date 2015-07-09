@@ -3,17 +3,20 @@
 {% load i18n %}
 
 {% block title %}
-    Superexpert Validation
+    <h1>Superexpert Validation</h1>
+    <h2>{% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}Confirmed  Reports{% elif checked == 'revised' %}Revised Reports{% endif %}</h2>
 {% endblock %}
 
 {% block instructions %}
-    <p>Each of the reports displayed here has been validated by 3 experts. You may now review these reports and confirm them as is or make changes, using the same form that the experts used. Their instructions were as follows:</p>
-
-    {{ block.super }}
+    <p>Each of the reports displayed here has been validated by 3 experts. You may now review these reports and confirm them as is or mark them for revision and make changes using the same form that the experts used</p>
 {% endblock %}
 
   {% block no_records_message %}
+      {% if n_unchecked == 0 %}
       There are not yet any reports that have been validated by 3 experts. Please refresh this page later, once more expert validations have been completed.
+      {% else %}
+      There are no reports that match your search criteria.
+      {% endif %}
 {% endblock %}
 
 {% block navbar_left_items %}
@@ -47,6 +50,11 @@
                                             class="badge">{{ n_revised }}</span>
                                     </label>
                                 </div>
+                            </li>
+
+                                <li>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter" {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
+                                </button></span>
                             </li>
 
 {% endblock %}
@@ -200,11 +208,11 @@
 
         var unchecked_btn = $("#unchecked_btn"), confirmed_btn = $("#confirmed_btn"), revised_btn = $("#revised_btn");
 
-        var pending = "{{ pending }}";
-        pending == "revised" ? revised_btn.addClass("active") : (pending == "confirmed"? confirmed_btn.addClass("active") : unchecked_btn.addClass("active"));
-        unchecked_btn.on('click', {extr: '&pending=unchecked'}, submit_queries_plus);
-        confirmed_btn.on('click', { extr: '&pending=confirmed'}, submit_queries_plus);
-        revised_btn.on('click', { extr: '&pending=revised'}, submit_queries_plus);
+        var checked = "{{ checked }}";
+        checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed"? confirmed_btn.addClass("active") : unchecked_btn.addClass("active"));
+        unchecked_btn.on('click', {extr: '&checked=unchecked'}, submit_queries_plus);
+        confirmed_btn.on('click', { extr: '&checked=confirmed'}, submit_queries_plus);
+        revised_btn.on('click', { extr: '&checked=revised'}, submit_queries_plus);
 
 
 
