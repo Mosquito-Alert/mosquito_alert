@@ -351,7 +351,7 @@
 
                {% else %}
 
-                              $('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).css({"border-color": "green", "border-width":"3px", "border-style":"solid"});
+                              $('#' + {{ form.instance.best_photo.id }}).css({"border-color": "green", "border-width":"3px", "border-style":"solid"});
 
                         {% endif %}
 
