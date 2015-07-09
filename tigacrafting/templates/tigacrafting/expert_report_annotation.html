@@ -634,6 +634,7 @@
             }
         }
 
+
         $('input[id~="value_changed"]').hide();
         $('label[for~="value_changed"]').hide();
 
@@ -647,11 +648,16 @@
                 width: 'auto'
             });
 
-            $("#save_button").click(function () {
+            var save_button = $("#save_button").click(function () {
                 gear.show();
                 toggle_grab_reports_button();
                 $("#formset_forms").submit();
             });
+
+         {% if pending == 'complete' %}
+         save_button.prop('disabled', true);
+        {% endif %}
+
 
             toggle_grab_reports_button();
 
