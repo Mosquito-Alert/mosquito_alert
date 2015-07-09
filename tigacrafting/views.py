@@ -412,7 +412,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 page = request.GET.get('page')
                 if not page:
                     page = '1'
-                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page+'&pending='+pending+'&checked='+checked+'&final_status='+final_status+'&version_UUID='+version_uuid+'&linked_id='+linked_id+'&orderby='+orderby+'&tiger_certainty='+tiger_certainty+'&site_certainty='+site_certainty+'&status='+status)
+                return HttpResponseRedirect(reverse('expert_report_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_UUID='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else ''))
             else:
                 return HttpResponse('error')
         else:
