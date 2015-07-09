@@ -153,7 +153,7 @@
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
-                                        <li><a href="{% url 'expert_report_annotation_tasks_per_page' n %}?orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}">{{ n }}</a>
+                                        <li><a href="{% url 'expert_report_annotation_tasks_per_page' n %}?orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>
                                         </li>
                                     {% endfor %}
                                 </ul>
@@ -393,7 +393,12 @@
 
         {% else %}
             {% block no_records_message %}
-            <p>You do not yet have any reports in your stack. Click "Get more reports" to start validating.</p>
+                {% if pending == 'pending' %}
+            <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start validating.</p>
+                {% else %}
+            <p>No reports match your search criteria.</p>
+
+                {% endif %}
             {% endblock %}
         {% endif %}
 
@@ -703,7 +708,7 @@
             function submit_search_version_uuid() {
                 gear.show();
                 $('#searchModal').modal('hide');
-                window.location.href = "?version_UUID=" + $("#version_uuid_select").val();
+                window.location.href = "?version_uuid=" + $("#version_uuid_select").val();
             }
 
             function submit_search_linked_id() {

@@ -37,7 +37,7 @@
 
                                 <div class="btn-group" id="status_grp" data-toggle="buttons">
                                     <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Unchecked" id="unchecked_btn">
-                                        <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-time" {% if n_pending > 0 %}style="color:#FF8576"{% endif %}></span> <span class="badge">{{ n_pending }}</span></label>
+                                        <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-time" {% if n_pending > 0 %}style="color:#FF8576"{% endif %}></span> <span class="badge">{{ n_unchecked }}</span></label>
                                     <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Checked and confirmed" id="confirmed_btn">
                                         <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-thumbs-up"></span> <span
                                             class="badge">{{ n_confirmed }}</span>
@@ -55,8 +55,8 @@
 {% endblock %}
 
 {% block view_others_annotations %}
-    <strong>Mean Tiger Certainty Score: {{ form.instance.report.get_mean_expert_adult_score }}</strong><br>
-    <strong>Mean Site Certainty Score: {{ form.instance.report.get_mean_expert_site_score }}</strong><br>
+    <strong>Mean Tiger Certainty Score: {{ form.instance.report.get_mean_expert_adult_score | floatformat }}</strong><br>
+    <strong>Mean Site Certainty Score: {{ form.instance.report.get_mean_expert_site_score | floatformat }}</strong><br>
         <div style="overflow: auto; height: 500px;" id='other_annotations_alert{{ form.instance.id }}'
              class='alert alert-info' role='alert'>
             {{ form.instance.get_others_annotation_html | safe }}
