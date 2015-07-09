@@ -228,7 +228,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-3" id="{{ form.instance.report.version_UUID }}">
                             <br>
 
                 {% block view_others_annotations %}
@@ -422,6 +422,28 @@
         {% endif %}
 
     </div>
+
+        <div class="modal fade" id="save_warning_modal" tabindex="-1" role="dialog" aria-labelledby="save_warning_modal_label"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="save_warning_modal_label">Submit validation</h4>
+                    </div>
+                    <div id="save_warning_modal_body" class="modal-body">
+                        <p>You are about to submit your validations for the reports listed below. {% if pending == 'pending' %}<strong>You will not be able to modify these once you have submitted them.</strong>{% elif checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}<strong>Your submission may immediately appear on the public webmap.</strong>{% endif %} Are you sure you wish to proceed?</p>
+                         <div id="reports_being_saved_list"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="button" id="save_warning_submit_button" class="btn btn-success">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
     {% block filter_modal %}
@@ -648,10 +670,28 @@
                 width: 'auto'
             });
 
+            var save_warning_submit_button = $("#save_warning_submit_button").click(function(){
+                gear.show();
+                $("#scroll_position").val(0);
+                toggle_grab_reports_button();
+                $("#formset_forms").submit();
+
+            });
+
             var save_button = $("#save_button").click(function () {
+               if ($("[id*='validation_complete']").is(":checked")){
+                   var reports_list = $("#reports_being_saved_list").empty();
+                   reports_list.append('<ul>');
+                   $("[id*='validation_complete']:checked").parent().parent().parent().each(function(){
+                       reports_list.append('<li>' + $(this).attr('id') + '</li>');
+                   });
+                       reports_list.append('</ul>');
+                   $("#save_warning_modal").modal('show');
+               } else{
                 gear.show();
                 toggle_grab_reports_button();
                 $("#formset_forms").submit();
+               }
             });
 
          {% if pending == 'complete' %}

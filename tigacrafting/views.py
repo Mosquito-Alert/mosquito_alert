@@ -415,6 +415,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             else:
                 return HttpResponse('error')
         else:
+            tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+            scroll_position = request.GET.get('scroll_position', scroll_position)
             orderby = request.GET.get('orderby', orderby)
             tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
             site_certainty = request.GET.get('site_certainty', site_certainty)
@@ -561,6 +563,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             args['linked_id'] = linked_id
             args['my_version_uuids'] = my_version_uuids
             args['my_linked_ids'] = my_linked_ids
+            args['tasks_per_page'] = tasks_per_page
+            args['scroll_position'] = scroll_position
             args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
