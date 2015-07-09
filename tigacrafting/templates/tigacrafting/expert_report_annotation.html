@@ -250,7 +250,7 @@
                 {{ form.instance.tiger_certainty_notes }}</div><br>
                 <strong>Site Certainty:</strong><br>
                 <div style="border:1px solid #333333;padding:2px;">
-                {% if form.instance.set_site_certainty_category_display %}{{ form.instance.set_site_certainty_category_display }}{% else %}---{% endif %}</div><br>
+                {% if form.instance.get_site_certainty_category_display %}{{ form.instance.set_site_certainty_category_display }}{% else %}---{% endif %}</div><br>
                 <strong>Internal Site Certainty Notes:</strong><br>
                 <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
                 {{ form.instance.site_certainty_notees }}</div><br>
