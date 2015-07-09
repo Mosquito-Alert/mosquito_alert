@@ -4,58 +4,80 @@
 
 {% block title %}
     <h1>Superexpert Validation</h1>
-    <h2>{% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}Confirmed  Reports{% elif checked == 'revised' %}Revised Reports{% endif %}</h2>
+    <h2>{% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}Confirmed
+        Reports{% elif checked == 'revised' %}Revised Reports{% endif %}</h2>
 {% endblock %}
 
 {% block instructions %}
-    <p>Each of the reports displayed here has been validated by 3 experts. You may now review these reports and confirm them as is or mark them for revision and make changes using the same form that the experts used</p>
+    <p>Each of the reports displayed here has been validated by 3 experts. You may now review these reports and confirm
+        them as is or mark them for revision and make changes using the same form that the experts used</p>
 {% endblock %}
 
-  {% block no_records_message %}
-      {% if n_unchecked == 0 %}
-      There are not yet any reports that have been validated by 3 experts. Please refresh this page later, once more expert validations have been completed.
-      {% else %}
-      There are no reports that match your search criteria.
-      {% endif %}
+{% block no_records_message %}
+    {% if n_unchecked == 0 %}
+        There are not yet any reports that have been validated by 3 experts. Please refresh this page later, once more
+        expert validations have been completed.
+    {% else %}
+        There are no reports that match your search criteria.
+    {% endif %}
 {% endblock %}
 
 {% block navbar_left_items %}
     <li>
         <div class="btn-group" id="type_grp" data-toggle="buttons" style="margin-right:5px;">
-            <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Public" id="public_btn">
+            <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Public"
+                   id="public_btn">
                 <input type="radio" name="options" autocomplete="off"><span class="glyphicon glyphicon-eye-open"></span> <span
                     class="badge">{{ n_public }}</span></label>
-            <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Flagged" id="flagged_btn">
-                <input type="radio" name="options" autocomplete="off"><span class="glyphicon glyphicon-flag"></span> <span
+            <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Flagged"
+                   id="flagged_btn">
+                <input type="radio" name="options" autocomplete="off"><span
+                    class="glyphicon glyphicon-flag"></span> <span
                     class="badge">{{ n_flagged }}</span>
             </label>
-            <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Hidden" id="hidden_btn">
-                <input type="radio" name="options" autocomplete="off"><span class="glyphicon glyphicon-eye-close"></span> <span
+            <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Hidden"
+                   id="hidden_btn">
+                <input type="radio" name="options" autocomplete="off"><span
+                    class="glyphicon glyphicon-eye-close"></span> <span
                     class="badge">{{ n_hidden }}</span>
             </label>
         </div>
     </li>
 
-                            <li>
+    <li>
 
-                                <div class="btn-group" id="status_grp" data-toggle="buttons">
-                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Unchecked" id="unchecked_btn">
-                                        <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-time" {% if n_unchecked > 0 %}style="color:#FF8576"{% endif %}></span> <span class="badge">{{ n_unchecked }}</span></label>
-                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Checked and confirmed" id="confirmed_btn">
-                                        <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-thumbs-up"></span> <span
-                                            class="badge">{{ n_confirmed }}</span>
-                                    </label>
-                                    <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Checked and revised" id="revised_btn">
-                                        <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-thumbs-down"></span> <span
-                                            class="badge">{{ n_revised }}</span>
-                                    </label>
-                                </div>
-                            </li>
+        <div class="btn-group" id="status_grp" data-toggle="buttons">
+            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom"
+                   title="Unchecked" id="unchecked_btn">
+                <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-time"
+                                                                            {% if n_unchecked > 0 %}style="color:#FF8576"{% endif %}></span>
+                <span class="badge">{{ n_unchecked }}</span></label>
+            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom"
+                   title="Checked and confirmed" id="confirmed_btn">
+                <input type="radio" name="pending" autocomplete="off"><span
+                    class="glyphicon glyphicon-thumbs-up"></span> <span
+                    class="badge">{{ n_confirmed }}</span>
+            </label>
+            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom"
+                   title="Checked and revised" id="revised_btn">
+                <input type="radio" name="pending" autocomplete="off"><span
+                    class="glyphicon glyphicon-thumbs-down"></span> <span
+                    class="badge">{{ n_revised }}</span>
+            </label>
+        </div>
+    </li>
 
-                                <li>
-                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter" {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
+    <li>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button"
+                                                                                         class="btn btn-warning btn-sm navbar-btn"
+                                                                                         data-toggle="tooltip"
+                                                                                         data-placement="bottom"
+                                                                                         title="Filter"
+                                                                                         style="margin-left:5px"><span
+                                        class="glyphicon glyphicon-filter"
+                                        {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
                                 </button></span>
-                            </li>
+    </li>
 
 {% endblock %}
 
@@ -63,12 +85,13 @@
 {% endblock %}
 
 {% block view_others_annotations %}
-    <strong>Mean Tiger Certainty Score: {{ form.instance.report.get_mean_expert_adult_score | floatformat }}</strong><br>
+    <strong>Mean Tiger Certainty Score: {{ form.instance.report.get_mean_expert_adult_score | floatformat }}</strong>
+    <br>
     <strong>Mean Site Certainty Score: {{ form.instance.report.get_mean_expert_site_score | floatformat }}</strong><br>
-        <div style="overflow: auto; height: 500px;" id='other_annotations_alert{{ form.instance.id }}'
-             class='alert alert-info' role='alert'>
-            {{ form.instance.get_others_annotation_html | safe }}
-        </div>
+    <div style="overflow: auto; height: 500px;" id='other_annotations_alert{{ form.instance.id }}'
+         class='alert alert-info' role='alert'>
+        {{ form.instance.get_others_annotation_html | safe }}
+    </div>
 
 {% endblock %}
 
@@ -128,18 +151,18 @@
                                 </select>
                             </div>
                         </div>
-                            <div class="form-group">
-                                <label for="status_select" class="col-sm-4 control-label">Status:</label>
+                        <div class="form-group">
+                            <label for="status_select" class="col-sm-4 control-label">Status:</label>
 
-                                <div class="col-sm-8">
-                                    <select id="status_select" class="selectpicker show-tick form-control">
-                                        <option value="all">All</option>
-                                        <option value="public">Public</option>
-                                        <option value="flagged">Flagged</option>
-                                        <option value="hidden">Hidden</option>
-                                    </select>
-                                </div>
+                            <div class="col-sm-8">
+                                <select id="status_select" class="selectpicker show-tick form-control">
+                                    <option value="all">All</option>
+                                    <option value="public">Public</option>
+                                    <option value="flagged">Flagged</option>
+                                    <option value="hidden">Hidden</option>
+                                </select>
                             </div>
+                        </div>
 
                     </form>
                 </div>
@@ -159,57 +182,64 @@
 {% block filterjs %}
     <script>
 
-        var public_btn = $("#public_btn"), flagged_btn = $("#flagged_btn"), hidden_btn = $("#hidden_btn");
 
         $("#orderby_select").val("{{ orderby }}");
         $("#tiger_certainty_select").val("{{ tiger_certainty }}");
         $("#site_certainty_select").val("{{ site_certainty }}");
         $("#status_select").val("{{ status }}");
 
-        if ("{{ final_status }}" == "public") {
-            public_btn.addClass("active");
-        }
-        else if ("{{ final_status }}" == "flagged") {
-            flagged_btn.addClass("active");
-        }
-        else if ("{{ final_status }}" == "hidden") {
-            hidden_btn.addClass("active");
-        }
+        var public_btn = $("#public_btn"), flagged_btn = $("#flagged_btn"), hidden_btn = $("#hidden_btn");
 
 
+        var final_status = "{{ final_status }}";
 
-                var unchecked_btn = $("#unchecked_btn"), confirmed_btn = $("#confirmed_btn"), revised_btn = $("#revised_btn");
 
-                        activise_checked_btns = function(){
-        checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed"? confirmed_btn.addClass("active") : unchecked_btn.addClass("active"));
-        }
+        var unchecked_btn = $("#unchecked_btn"), confirmed_btn = $("#confirmed_btn"), revised_btn = $("#revised_btn");
+
 
         var checked = "{{ checked }}";
-        activise_checked_btns();
+
+        function clear_btns(){
+           public_btn.removeClass("active");
+           flagged_btn.removeClass("active");
+           hidden_btn.removeClass("active");
+           unchecked_btn.removeClass("active");
+           revised_btn.removeClass("active");
+           confirmed_btn.removeClass("active");
+        }
+
+        function activate_btns() {
+            clear_btns();
+            final_status == "public" ? public_btn.addClass("active") : (final_status == "flagged" ? flagged_btn.addClass("active") : (final_status == "hidden" ? hidden_btn.addClass("active") : {}) );
+            checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed" ? confirmed_btn.addClass("active") : (checked == "unchecked" ? unchecked_btn.addClass("active") : {} ));
+
+        }
+
+        activate_btns();
+
 
         function query_selectors() {
             var qp = "?orderby=" + $("#orderby_select").val();
             qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
             qp += "&site_certainty=" + $("#site_certainty_select").val();
             qp += "&status=" + $("#status_select").val();
-            if(flagged_btn.hasClass("active")){
+            if (flagged_btn.hasClass("active")) {
                 qp += "&final_status=flagged";
-            } else if(hidden_btn.hasClass("active")){
+            } else if (hidden_btn.hasClass("active")) {
                 qp += "&final_status=hidden";
             } else {
                 qp += "&final_status=public";
             }
-            if(revised_btn.hasClass("active")){
+            if (revised_btn.hasClass("active")) {
                 qp += "&checked=revised";
-            } else if(confirmed_btn.hasClass("active")){
-                qp += "&checked=hidden";
+            } else if (confirmed_btn.hasClass("active")) {
+                qp += "&checked=confirmed";
             } else {
                 qp += "&checked=unchecked";
             }
 
             return(qp);
         }
-
 
 
         function submit_queries() {
@@ -221,20 +251,26 @@
 
         function submit_queries_final_status(event) {
             gear.show();
-            event.data.extr;
-            var qp = query_selectors();
-            window.location.href = qp;
+            final_status = event.data.extr;
+            activate_btns();
+            window.location.href = query_selectors();
+        }
+
+        function submit_queries_checked(event) {
+            gear.show();
+            checked = event.data.extr;
+            activate_btns();
+            window.location.href = query_selectors();
         }
 
         public_btn.on('click', {extr: 'public'}, submit_queries_final_status);
         flagged_btn.on('click', { extr: 'flagged'}, submit_queries_final_status);
-        hidden_btn.on('click', {extr: 'hidden'}, submit_queries_final_statu);
+        hidden_btn.on('click', {extr: 'hidden'}, submit_queries_final_status);
 
 
         unchecked_btn.on('click', {extr: 'unchecked'}, submit_queries_checked);
         confirmed_btn.on('click', { extr: 'confirmed'}, submit_queries_checked);
         revised_btn.on('click', { extr: 'revised'}, submit_queries_checked);
-
 
 
     </script>

@@ -758,7 +758,7 @@
             $("#site_certainty_select").val("{{ site_certainty }}");
             $("#status_select").val("{{ status }}");
             var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn");
-            pending == "complete" ? complete_btn.addClass("active") : pending_btn.addClass("active");
+            pending == "complete" ? complete_btn.addClass("active") : (pending == "pending" ? pending_btn.addClass("active") : {});
             pending_btn.on('click', {extr: 'pending'}, submit_queries_plus);
             complete_btn.on('click', { extr: 'complete'}, submit_queries_plus);
 

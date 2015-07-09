@@ -461,12 +461,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             my_version_uuids = all_annotations.values('report__version_UUID')
             my_linked_ids = all_annotations.values('linked_id')
             if this_user_is_expert:
-                if not pending or pending == 'na':
+                if (version_uuid == 'na' and linked_id == 'na') and (not pending or pending == 'na'):
                     pending = 'pending'
             if this_user_is_superexpert:
-                if not final_status or final_status == 'na':
+                if (version_uuid == 'na' and linked_id == 'na') and (not final_status or final_status == 'na'):
                     final_status = 'public'
-                if not checked or checked == 'na':
+                if (version_uuid == 'na' and linked_id == 'na') and (not checked or checked == 'na'):
                     checked = 'unchecked'
                 n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
                 n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
