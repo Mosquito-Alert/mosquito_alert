@@ -119,7 +119,7 @@
                             </li>
 
                             <li>
-                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter" {% if orderby != 'tiger_score' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter" {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
                                 </button></span>
                             </li>
 
@@ -127,7 +127,7 @@
 
 
                             <li>
-                                <span data-toggle="modal" data-target="#searchModal"><button type="button" class="btn btn-warning btn-sm navbar-btn"  data-toggle="tooltip" data-placement="bottom" title="Search" style="margin-left:5px"><span class="glyphicon glyphicon-search"></span></button></span>
+                                <span data-toggle="modal" data-target="#searchModal"><button type="button" class="btn btn-warning btn-sm navbar-btn"  data-toggle="tooltip" data-placement="bottom" title="Search" style="margin-left:5px"><span class="glyphicon glyphicon-search" {% if version_uuid != 'na' or linked_id != 'na' %}style="color:black"{% endif %}></span></button></span>
                             </li>
 
                             {% block grab_reports_button %}
