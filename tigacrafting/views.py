@@ -189,8 +189,7 @@ def filter_tasks(tasks):
 
 def filter_reports(reports, sort=True):
     if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),
-                               key=attrgetter('n_annotations'))
+        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports), key=attrgetter('n_annotations'), reverse=True)
     else:
         reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
     return reports_filtered
@@ -380,7 +379,7 @@ BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year=None, orderby='date', tiger_certainty=None, site_certainty=None, pending=None, checked=None, status=None, final_status=None, max_pending=5, max_given=3, version_uuid=None, linked_id=None):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='all', linked_id='all'):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -484,19 +483,19 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             if linked_id:
                 all_annotations = all_annotations.filter(linked_id=linked_id)
             if not version_uuid and not linked_id:
-                if year:
+                if year and year != 'all':
                     try:
                         this_year = int(year)
                         all_annotations = all_annotations.filter(report__creation_time__year=this_year)
                     except ValueError:
                         pass
-                if tiger_certainty:
+                if tiger_certainty and tiger_certainty != 'all':
                     try:
                         this_certainty = int(tiger_certainty)
                         all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
                     except ValueError:
                         pass
-                if site_certainty:
+                if site_certainty and site_certainty != 'all':
                     try:
                         this_certainty = int(site_certainty)
                         all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
