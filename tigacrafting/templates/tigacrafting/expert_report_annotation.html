@@ -288,7 +288,7 @@
 
                             <div style="overflow: auto;height: 814px;">
 
-                                {{ form.instance.report.photo_html_for_report_validation_completed | safe }}
+                                {{ form.instance.report.get_photo_html_for_report_validation_completed | safe }}
 
                             </div>
 
@@ -345,7 +345,7 @@
                     $("#clear_button_{{ form.instance.id }}").click(function (){
                          $('#' + '{{ form.best_photo.auto_id }}').val(null);
                         $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked',false);
-                        
+
                     })
 
 
