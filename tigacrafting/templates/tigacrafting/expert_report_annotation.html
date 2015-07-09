@@ -151,7 +151,7 @@
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
-                                        <li><a href="{% url 'expert_report_annotation_tasks_per_page' n %}?pending={{ pending }}">{{ n }}</a>
+                                        <li><a href="{% url 'expert_report_annotation_tasks_per_page' n %}?orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}">{{ n }}</a>
                                         </li>
                                     {% endfor %}
                                 </ul>
