@@ -345,13 +345,14 @@
                     $("#clear_button_{{ form.instance.id }}").click(function (){
                          $('#' + '{{ form.best_photo.auto_id }}').val(null);
                         $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked',false);
+                        
+                    })
 
 
                {% else %}
 
-               ('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).css({"border-color": "green",
-             "border-width":"3px",
-             "border-style":"solid"});
+                              $('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).css({"border-color": "green", "border-width":"3px", "border-style":"solid"});
+
                         {% endif %}
 
 
