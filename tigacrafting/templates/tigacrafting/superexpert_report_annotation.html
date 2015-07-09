@@ -161,16 +161,6 @@
 
         var public_btn = $("#public_btn"), flagged_btn = $("#flagged_btn"), hidden_btn = $("#hidden_btn");
 
-
-        function query_selectors() {
-            var qp = "?orderby=" + $("#orderby_select").val();
-            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
-            qp += "&site_certainty=" + $("#site_certainty_select").val();
-            qp += "&status=" + $("#status_select").val();
-            return(qp);
-        }
-
-
         $("#orderby_select").val("{{ orderby }}");
         $("#tiger_certainty_select").val("{{ tiger_certainty }}");
         $("#site_certainty_select").val("{{ site_certainty }}");
@@ -187,6 +177,41 @@
         }
 
 
+
+                var unchecked_btn = $("#unchecked_btn"), confirmed_btn = $("#confirmed_btn"), revised_btn = $("#revised_btn");
+
+                        activise_checked_btns = function(){
+        checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed"? confirmed_btn.addClass("active") : unchecked_btn.addClass("active"));
+        }
+
+        var checked = "{{ checked }}";
+        activise_checked_btns();
+
+        function query_selectors() {
+            var qp = "?orderby=" + $("#orderby_select").val();
+            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
+            qp += "&site_certainty=" + $("#site_certainty_select").val();
+            qp += "&status=" + $("#status_select").val();
+            if(flagged_btn.hasClass("active")){
+                qp += "&final_status=flagged";
+            } else if(hidden_btn.hasClass("active")){
+                qp += "&final_status=hidden";
+            } else {
+                qp += "&final_status=public";
+            }
+            if(revised_btn.hasClass("active")){
+                qp += "&checked=revised";
+            } else if(confirmed_btn.hasClass("active")){
+                qp += "&checked=hidden";
+            } else {
+                qp += "&checked=unchecked";
+            }
+
+            return(qp);
+        }
+
+
+
         function submit_queries() {
             gear.show();
             var qp = query_selectors();
@@ -194,25 +219,21 @@
             window.location.href = qp;
         }
 
-        function submit_queries_plus(event) {
+        function submit_queries_final_status(event) {
             gear.show();
+            event.data.extr;
             var qp = query_selectors();
-            qp += event.data.extr;
             window.location.href = qp;
         }
 
-        public_btn.on('click', {extr: '&final_status=public'}, submit_queries_plus);
-        flagged_btn.on('click', { extr: '&final_status=flagged'}, submit_queries_plus);
-        hidden_btn.on('click', {extr: '&final_status=hidden'}, submit_queries_plus);
+        public_btn.on('click', {extr: 'public'}, submit_queries_final_status);
+        flagged_btn.on('click', { extr: 'flagged'}, submit_queries_final_status);
+        hidden_btn.on('click', {extr: 'hidden'}, submit_queries_final_statu);
 
 
-        var unchecked_btn = $("#unchecked_btn"), confirmed_btn = $("#confirmed_btn"), revised_btn = $("#revised_btn");
-
-        var checked = "{{ checked }}";
-        checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed"? confirmed_btn.addClass("active") : unchecked_btn.addClass("active"));
-        unchecked_btn.on('click', {extr: '&checked=unchecked'}, submit_queries_plus);
-        confirmed_btn.on('click', { extr: '&checked=confirmed'}, submit_queries_plus);
-        revised_btn.on('click', { extr: '&checked=revised'}, submit_queries_plus);
+        unchecked_btn.on('click', {extr: 'unchecked'}, submit_queries_checked);
+        confirmed_btn.on('click', { extr: 'confirmed'}, submit_queries_checked);
+        revised_btn.on('click', { extr: 'revised'}, submit_queries_checked);
 
 
 
