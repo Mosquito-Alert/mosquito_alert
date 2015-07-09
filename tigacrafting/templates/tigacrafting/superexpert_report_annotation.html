@@ -37,7 +37,7 @@
 
                                 <div class="btn-group" id="status_grp" data-toggle="buttons">
                                     <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Unchecked" id="unchecked_btn">
-                                        <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-time" {% if n_pending > 0 %}style="color:yellow"{% endif %}></span> <span class="badge">{{ n_pending }}</span></label>
+                                        <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-time" {% if n_pending > 0 %}style="color:#FF8576"{% endif %}></span> <span class="badge">{{ n_pending }}</span></label>
                                     <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Checked and confirmed" id="confirmed_btn">
                                         <input type="radio" name="pending" autocomplete="off"><span class="glyphicon glyphicon-thumbs-up"></span> <span
                                             class="badge">{{ n_confirmed }}</span>
