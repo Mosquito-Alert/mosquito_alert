@@ -90,7 +90,7 @@
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
                                 data-target=".navbar-collapse">
-                            <span class="sr-only">{% trans "Toggle navigation" %}</span>
+                            <span class="sr-only">Toggle navigation</span>
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
@@ -147,7 +147,7 @@
 
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle"
-                                   data-toggle="dropdown">{% trans "Reports per page" %}
+                                   data-toggle="dropdown">Reports per page
                                     <span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     {% for n in tasks_per_page_choices %}
@@ -429,7 +429,7 @@
 
                                 <div class="col-sm-8">
                                     <select id="tiger_certainty_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
+                                        <option value="all">All</option>
                                         <option value="-2">Definitely not a tiger mosquito</option>
                                         <option value="-1">Probably not a tiger mosquito</option>
                                         <option value="0">Not sure</option>
@@ -444,7 +444,7 @@
 
                                 <div class="col-sm-8">
                                     <select id="site_certainty_select" class="selectpicker show-tick form-control">
-                                        <option value="all">{% trans 'All' %}</option>
+                                        <option value="all">All</option>
                                         <option value="-2">Definitely not a breeding site</option>
                                         <option value="-1">Probably not a breeding site</option>
                                         <option value="0">Not sure</option>
@@ -590,6 +590,9 @@
 
 
     <script>
+
+        var pending = "{{ pending }}";
+
         var scroll_position = parseInt({{ scroll_position }});
         if (scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)) {
             $(window).scrollTop(scroll_position);
@@ -656,16 +659,9 @@
                 qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
                 qp += "&site_certainty=" + $("#site_certainty_select").val();
                 qp += "&status=" + $("#status_select").val();
+                qp += "&pending=" + pending;
                 return(qp);
             }
-
-
-            $("#orderby_select").val("{{ orderby }}");
-            $("#tiger_certainty_select").val("{{ tiger_certainty }}");
-            $("#site_certainty_select").val("{{ site_certainty }}");
-            $("#status_select").val("{{ status }}");
-
-
 
             function submit_queries() {
                 gear.show();
@@ -677,18 +673,19 @@
 
             function submit_queries_plus(event) {
                 gear.show();
-                var qp = query_selectors();
-                qp += event.data.extr;
-                window.location.href = qp;
+                pending = event.data.extr;
+                window.location.href = query_selectors();
             }
 
+            $("#orderby_select").val("{{ orderby }}");
+            $("#tiger_certainty_select").val("{{ tiger_certainty }}");
+            $("#site_certainty_select").val("{{ site_certainty }}");
+            $("#status_select").val("{{ status }}");
+            var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn");
+            pending == "complete" ? complete_btn.addClass("active") : pending_btn.addClass("active");
+            pending_btn.on('click', {extr: 'pending'}, submit_queries_plus);
+            complete_btn.on('click', { extr: 'complete'}, submit_queries_plus);
 
-        var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn");
-
-        var pending = "{{ pending }}";
-        pending == "complete" ? complete_btn.addClass("active") : pending_btn.addClass("active");
-        pending_btn.on('click', {extr: '&pending=pending'}, submit_queries_plus);
-        complete_btn.on('click', { extr: '&pending=complete'}, submit_queries_plus);
 
 
         </script>
