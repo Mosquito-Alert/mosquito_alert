@@ -412,7 +412,7 @@
 
         {% else %}
             {% block no_records_message %}
-                {% if pending == 'pending' %}
+                {% if pending == 'pending' and n_pending == 0 %}
             <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start validating.</p>
                 {% else %}
             <p>No reports match your search criteria.</p>
