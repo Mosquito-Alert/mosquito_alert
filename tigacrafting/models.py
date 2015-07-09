@@ -191,7 +191,7 @@ class ExpertReportAnnotation(models.Model):
             elif this_report.type == 'site':
                 result += '<p>Site Certainty: ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '</p>'
                 result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
-            result += '<p>Selected photo: ' + ano.best_photo.popup_image() + '</p>'
+            result += '<p>Selected photo: ' + (ano.best_photo.popup_image() if ano.best_photo else "") + '</p>'
             result += '<p>Edited User Notes: ' + ano.edited_user_notes + '</p>'
             result += '<p>Message To User: ' + ano.message_for_user + '</p>'
             result += '<p>Status: ' + ano.get_status_display() if ano.get_status_display() else "" + '</p>'
