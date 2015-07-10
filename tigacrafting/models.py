@@ -197,3 +197,23 @@ class ExpertReportAnnotation(models.Model):
             result += '<p>Status: ' + ano.get_status_display() if ano.get_status_display() else "" + '</p>'
             result += '<p>Validation Complete? ' + str(ano.validation_complete) + '</p><hr>'
         return result
+
+    def get_score(self):
+        if self.report.type == 'site':
+            if self.site_certainty_category:
+                return self.site_certainty_category
+        elif self.report.type == 'adult':
+            if self.tiger_certainty_category:
+                return self.tiger_certainty_category
+        return -3
+
+    def get_category(self):
+        if self.report.type == 'site':
+            if self.get_site_certainty_category_display():
+                return self.get_site_certainty_category_display()
+        elif self.report.type == 'adult':
+            if self.get_tiger_certainty_category_display():
+                return self.get_tiger_certainty_category_display()
+        return 'Unscored'
+
+

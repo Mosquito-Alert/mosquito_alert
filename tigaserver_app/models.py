@@ -681,7 +681,7 @@ class Report(models.Model):
         if user:
             these_annotations.exclude(user=user)
         for ano in these_annotations:
-            result += '<li><strong>' + ano.user.username + ':</strong> <span data-toggle="tooltip" data-placement="bottom" title="' + ano.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if ano.status == 1 else ('glyphicon glyphicon-flag' if ano.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
+            result += '<li><strong>' + ano.user.username + ':</strong> <span data-toggle="tooltip" data-placement="bottom" title="' + ano.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if ano.status == 1 else ('glyphicon glyphicon-flag' if ano.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span> ' + '<span class="label label-default" style="background-color:' + ('red' if ano.get_score() == 2 else ('orange' if ano.get_score() == 1 else ('white' if ano.get_score() == 0 else ('grey' if ano.get_score() == -1 else 'black')))) + ';">' + ano.get_category() + '</span> '
             result += '<a class="btn btn-default btn-sm" role="button" data-toggle="collapse" href="#expert_collapse' + ano.report.version_UUID + str(ano.id) + '" aria-expanded="false" aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><span class="glyphicon glyphicon-chevron-down"></span></a><div class="collapse" id="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><div class="well">'
             result += '<strong>Expert:</strong> ' + ano.user.username + '<br>'
             result += '<strong>Last Edited:</strong> ' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC<br>'
