@@ -648,7 +648,7 @@ class Report(models.Model):
         return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3
 
     def get_final_expert_score_bootstrap(self):
-        result = '<span class="label label-default" style="background-color:' + ('"red"' if self.get_final_expert_score() == 2 else ('"orange"' if self.get_final_expert_score() == 1 else ('"white"' if self.get_final_expert_score() == 0 else ('"grey"' if self.get_final_expert_score() == -1 else '"black"')))) + ';">' + self.get_final_expert_category() + '</span>'
+        result = '<span class="label label-default" style="background-color:' + ('red' if self.get_final_expert_score() == 2 else ('orange' if self.get_final_expert_score() == 1 else ('white' if self.get_final_expert_score() == 0 else ('grey' if self.get_final_expert_score() == -1 else 'black')))) + ';">' + self.get_final_expert_category() + '</span>'
         return result
 
     def get_who_has(self):
@@ -667,7 +667,7 @@ class Report(models.Model):
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         i = these_annotations.count()
         for ano in these_annotations:
-            result += '<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + ('validated' if ano.validation_complete else 'pending') + '">' + ano.user.username + '<span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>'
+            result += '<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by ' + ano.user.username) if ano.validation_complete else ('pending with ' + ano.user.username) + '">' + ano.user.username + ' <span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>'
             i -= 1
             if i > 0:
                 result += ' '
