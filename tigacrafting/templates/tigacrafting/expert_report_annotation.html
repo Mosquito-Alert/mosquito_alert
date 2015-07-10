@@ -256,9 +256,9 @@
             </div>
         </div>
         {% block report_title_status_row %}
-        <div class="row row_for_{{ form.instance.report.version_UUID }}">
+        <div class="row">
             <div class="col-md-12">
-                <strong>Current Status: </strong>
+                <strong>Who else has this report? </strong> {{ form.instance.report.get_who_has_bootstrap | safe }}
             </div>
         </div>
         {% endblock %}
