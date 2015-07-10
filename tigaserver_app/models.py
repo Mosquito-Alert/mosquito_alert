@@ -12,6 +12,9 @@ from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertRepo
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
+from django.contrib.auth.models import User, Group
+from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES, STATUS_CATEGORIES
+from collections import Counter
 
 
 class TigaUser(models.Model):
@@ -577,19 +580,110 @@ class Report(models.Model):
 
     def get_mean_expert_adult_score(self):
         sum_scores = 0
-        scores = ExpertReportAnnotation.objects.filter(report=self).exclude(tiger_certainty_category=None).values('tiger_certainty_category')
-        for this_score in scores:
-            sum_scores += this_score.values()[0]
-        mean_score = sum_scores/3.0
+        mean_score = 0
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).values_list('tiger_certainty_category', flat=True)
+        if super_scores:
+            for this_score in super_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+            return mean_score
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).values_list('tiger_certainty_category', flat=True)
+        if expert_scores:
+            for this_score in expert_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores/float(expert_scores.count())
         return mean_score
 
     def get_mean_expert_site_score(self):
         sum_scores = 0
-        scores = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).values('site_certainty_category')
-        for this_score in scores:
-            sum_scores += this_score.values()[0]
-        mean_score = sum_scores/3.0
+        mean_score = 0
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).values_list('site_certainty_category', flat=True)
+        if super_scores:
+            for this_score in super_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+            return mean_score
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).values_list('site_certainty_category',flat=True)
+        if expert_scores:
+            for this_score in expert_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores/float(expert_scores.count())
         return mean_score
+
+    def get_final_expert_score(self):
+        if self.type == 'site':
+            return int(round(self.get_mean_expert_site_score()))
+        elif self.type == 'adult':
+            return int(round(self.get_mean_expert_adult_score()))
+
+    def get_final_expert_category(self):
+        if self.type == 'site':
+            return dict(SITE_CATEGORIES)[self.get_final_expert_score()]
+        elif self.type == 'adult':
+            return dict(TIGER_CATEGORIES)[self.get_final_expert_score()]
+
+    def get_final_expert_status(self):
+        result = 1
+        super_statuses = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).values_list('status', flat=True)
+        if super_statuses:
+            result = Counter(super_statuses).most_common()[0][0]
+            return result
+        expert_statuses = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).values_list('status', flat=True)
+        if expert_statuses:
+            result = Counter(expert_statuses).most_common()[0][0]
+        return result
+
+    def get_final_expert_status_text(self):
+        return dict(STATUS_CATEGORIES)[self.get_final_expert_status()]
+
+    def get_final_expert_status_bootstrap(self):
+        result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
+        return result
+
+    def get_is_expert_validated(self):
+        return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3
+
+    def get_final_expert_score_bootstrap(self):
+        result = '<span class="label label-default" style="background-color:' + ('"red"' if self.get_final_expert_score() == 2 else ('"orange"' if self.get_final_expert_score() == 1 else ('"white"' if self.get_final_expert_score() == 0 else ('"grey"' if self.get_final_expert_score() == -1 else '"black"')))) + ';">' + self.get_final_expert_status_text() + '</span>'
+        return result
+
+    def get_who_has(self):
+        result = ''
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        i = these_annotations.count()
+        for ano in these_annotations:
+            result += ano.user.username + (': pending' if ano.validation_complete else ': validated')
+            i -= 1
+            if i > 0:
+                result += ', '
+        return result
+
+    def get_expert_score_reports_bootstrap(self, user=None):
+        result = '<ul>'
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        if user:
+            these_annotations.exclude(user=user)
+        for ano in these_annotations:
+            result += '<li><strong>' + ano.user.username + ':</strong> <span data-toggle="tooltip" data-placement="bottom" title="' + ano.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if ano.status == 1 else ('glyphicon glyphicon-flag' if ano.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
+            result += '<a class="btn btn-default btn-sm" role="button" data-toggle="collapse" href="#expert_collapse' + ano.report.version_UUID + str(ano.id) + '" aria-expanded="false" aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><span class="glyphicon glyphicon-chevron-down"></span></a><div class="collapse" id="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><div class="well">'
+            result += '<strong>Expert:</strong> ' + ano.user.username + '<br>'
+            result += '<strong>Last Edited:</strong> ' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC<br>'
+            result += '<strong>Status:</strong> ' + (ano.get_status_display() if ano.get_status_display() else "") + '</br>'
+            if self.type == 'adult':
+                result += '<strong>Tiger Certainty:</strong> ' + (ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "") + '<br>'
+                result += '<strong>Tiger Notes:</strong> ' + ano.tiger_certainty_notes + '<br>'
+            elif self.type == 'site':
+                result += '<strong>Site Certainty:</strong> ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '<br>'
+                result += '<strong>Site Notes:</strong> ' + ano.site_certainty_notes + '<br>'
+            result += '<strong>Selected photo:</strong> ' + (ano.best_photo.popup_image() if ano.best_photo else "") + '<br>'
+            result += '<strong>Edited User Notes:</strong> ' + ano.edited_user_notes + '<br>'
+            result += '<strong>Message To User:</strong> ' + ano.message_for_user + '<br>'
+            result += '</div></div></li>'
+        return result
 
     def get_expert_annotations_html(self, this_user):
         result = ''

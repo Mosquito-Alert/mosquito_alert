@@ -123,8 +123,9 @@
                                         </label>
                                     </div>
                                 </li>
+                            {% endblock %}
 
-                                <li>
+                            <li>
                                 <span data-toggle="modal" data-target="#myModal"><button type="button"
                                                                                          class="btn btn-warning btn-sm navbar-btn"
                                                                                          data-toggle="tooltip"
@@ -134,10 +135,7 @@
                                         class="glyphicon glyphicon-filter"
                                         {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
                                 </button></span>
-                                </li>
-
-                            {% endblock %}
-
+                            </li>
 
                             <li>
                                 <span data-toggle="modal" data-target="#searchModal"><button type="button"
@@ -147,7 +145,7 @@
                                                                                              title="Search"
                                                                                              style="margin-left:5px">
                                     <span class="glyphicon glyphicon-search"
-                                          {% if version_uuid != 'na' or linked_id != 'na' %}style="color:black"{% endif %}></span>
+                                          {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}style="color:black"{% endif %}></span>
                                 </button></span>
                             </li>
 
@@ -172,19 +170,20 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
-
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle"
-                                   data-toggle="dropdown">Reports per page
-                                    <span class="caret"></span></a>
-                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                    {% for n in tasks_per_page_choices %}
-                                        <li>
-                                            <a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
+                            {% if task_perpage_choices %}
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle"
+                                       data-toggle="dropdown">Reports per page
+                                        <span class="caret"></span></a>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                        {% for n in tasks_per_page_choices %}
+                                            <li>
+                                                <a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
 
 
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
@@ -251,11 +250,19 @@
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
             <div class="col-md-12">
-                <h4><strong>{{ form.instance.report.type|capfirst }} Report {{ form.instance.report.version_UUID }}</strong>{% if form.instance.report.type == 'site' %} ({{ form.instance.report.site_type_trans }}){% endif %} Created {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
-
-
+                <h4><strong>{{ form.instance.report.type|capfirst }}
+                    Report {{ form.instance.report.version_UUID }}</strong>
+                    {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
             </div>
         </div>
+        {% block report_title_status_row %}
+        <div class="row row_for_{{ form.instance.report.version_UUID }}">
+            <div class="col-md-12">
+                <strong>Current Status: </strong>
+            </div>
+        </div>
+        {% endblock %}
+
         <div class="row">
             <div class="col-md-3" id="{{ form.instance.report.version_UUID }}">
                 <br>
@@ -372,8 +379,8 @@
 
         <script>
 
-        var best_photo_id = "{{ form.instance.best_photo.id }}";
-    $("#" + best_photo_id).css({"border-color": "green", "border-width": "3px", "border-style": "solid"});
+            var best_photo_id = "{{ form.instance.best_photo.id }}";
+            $("#" + best_photo_id).css({"border-color": "green", "border-width": "3px", "border-style": "solid"});
 
             {% if form.instance.report.type == 'adult' %}
                 $(".row_for_{{ form.instance.report.version_UUID }}").css({"background-color": "#F2BB66"});
@@ -413,6 +420,9 @@
                 });
 
 
+                var validation_complete_id = "{{ form.validation_complete.auto_id }}";
+                $("#" + validation_complete_id).css({"height":"100px","width" :"100%"})
+
             {% endif %}
 
 
@@ -433,11 +443,14 @@
 
     </form>
 
-        <div class="row">
+        {% if objects.has_next or objects.has_previous %}
 
-            <div class="col-md-12">
 
-                <div class="pagination">
+            <div class="row">
+
+                <div class="col-md-12">
+
+                    <div class="pagination">
         <span class="step-links">
             {% if objects.has_previous %}
                 <a href="?page={{ objects.previous_page_number }}">Previous</a>
@@ -464,22 +477,27 @@
                 </form>
 
         </span>
+                    </div>
+
+
                 </div>
+            </div>
 
+        {% endif %}
+    {% else %}
+        <div class="row">
+            <div class="col-md-12">
+                {% block no_records_message %}
+                    {% if pending == 'pending' and n_pending == 0 %}
+                        <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start
+                            validating.</p>
+                    {% else %}
+                        <p>No reports match your search criteria.</p>
 
+                    {% endif %}
+                {% endblock %}
             </div>
         </div>
-
-    {% else %}
-        {% block no_records_message %}
-            {% if pending == 'pending' and n_pending == 0 %}
-                <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start
-                    validating.</p>
-            {% else %}
-                <p>No reports match your search criteria.</p>
-
-            {% endif %}
-        {% endblock %}
     {% endif %}
 
     </div>
@@ -584,6 +602,10 @@
                         </form>
                     </div>
                     <div class="modal-footer">
+                        {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}
+                            <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}">Clear Filters</a>
+                        {% endif %}
+
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                         <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
                     </div>
@@ -647,6 +669,9 @@
 
                     </div>
                     <div class="modal-footer">
+                        {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}
+                            <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}">Clear Search</a>
+                        {% endif %}
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     </div>
                 </div>

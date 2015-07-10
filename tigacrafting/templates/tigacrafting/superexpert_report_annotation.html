@@ -67,116 +67,25 @@
         </div>
     </li>
 
-    <li>
-                                <span data-toggle="modal" data-target="#myModal"><button type="button"
-                                                                                         class="btn btn-warning btn-sm navbar-btn"
-                                                                                         data-toggle="tooltip"
-                                                                                         data-placement="bottom"
-                                                                                         title="Filter"
-                                                                                         style="margin-left:5px"><span
-                                        class="glyphicon glyphicon-filter"
-                                        {% if orderby != 'date' or tiger_certainty != 'all' or site_certainty != 'all' or status != 'all' %}style="color:black"{% endif %}></span>
-                                </button></span>
-    </li>
-
 {% endblock %}
 
 {% block grab_reports_button %}
 {% endblock %}
 
-{% block view_others_annotations %}
-    <strong>Mean Tiger Certainty Score: {{ form.instance.report.get_mean_expert_adult_score | floatformat }}</strong>
-    <br>
-    <strong>Mean Site Certainty Score: {{ form.instance.report.get_mean_expert_site_score | floatformat }}</strong><br>
-    <div style="overflow: auto; height: 500px;" id='other_annotations_alert{{ form.instance.id }}'
-         class='alert alert-info' role='alert'>
-        {{ form.instance.get_others_annotation_html | safe }}
-    </div>
-
-{% endblock %}
-
-
-{% block filter_modal %}
-    <!-- Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Filters</h4>
-                </div>
-                <div class="modal-body">
-                    <form role="form" class="form-horizontal">
-
-                        <div class="form-group">
-                            <label for="orderby_select" class="col-sm-4 control-label">Order By:</label>
-
-                            <div class="col-sm-8">
-                                <select id="orderby_select" class="selectpicker show-tick form-control">
-                                    <option value="date">Report Date</option>
-                                    <option value="tiger_score">Tiger Certainty Score</option>
-                                    <option value="site_score">Site Certainty Score</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="tiger_certainty_select" class="col-sm-4 control-label">Tiger Certainty
-                                Category:</label>
-
-                            <div class="col-sm-8">
-                                <select id="tiger_certainty_select" class="selectpicker show-tick form-control">
-                                    <option value="all">All</option>
-                                    <option value="-2">Definitely not a tiger mosquito</option>
-                                    <option value="-1">Probably not a tiger mosquito</option>
-                                    <option value="0">Not sure</option>
-                                    <option value="1">Probably a tiger mosquito</option>
-                                    <option value="2">Definitely a tiger mosquito</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="site_certainty_select" class="col-sm-4 control-label">Site Certainty
-                                Category:</label>
-
-                            <div class="col-sm-8">
-                                <select id="site_certainty_select" class="selectpicker show-tick form-control">
-                                    <option value="all">All</option>
-                                    <option value="-2">Definitely not a breeding site</option>
-                                    <option value="-1">Probably not a breeding site</option>
-                                    <option value="0">Not sure</option>
-                                    <option value="1">Probably a breeding site</option>
-                                    <option value="2">Definitely a breeding site</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="status_select" class="col-sm-4 control-label">Status:</label>
-
-                            <div class="col-sm-8">
-                                <select id="status_select" class="selectpicker show-tick form-control">
-                                    <option value="all">All</option>
-                                    <option value="public">Public</option>
-                                    <option value="flagged">Flagged</option>
-                                    <option value="hidden">Hidden</option>
-                                </select>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
-                </div>
-            </div>
+{% block report_title_status_row %}
+    <div class="row">
+        <div class="col-md-12">
+            <strong>Current Status:</strong> {{ form.instance.report.get_final_expert_status_bootstrap | safe }} {{ form.instance.report.get_final_expert_score_bootstrap | safe }}<br>
+            <strong>Individual Expert Responses:</strong><br>
+            {{ form.instance.report.get_expert_score_reports_bootstrap | safe }}
         </div>
     </div>
-
-
 {% endblock %}
 
+
+{% block view_others_annotations %}
+
+{% endblock %}
 
 
 {% block filterjs %}
@@ -199,13 +108,13 @@
 
         var checked = "{{ checked }}";
 
-        function clear_btns(){
-           public_btn.removeClass("active");
-           flagged_btn.removeClass("active");
-           hidden_btn.removeClass("active");
-           unchecked_btn.removeClass("active");
-           revised_btn.removeClass("active");
-           confirmed_btn.removeClass("active");
+        function clear_btns() {
+            public_btn.removeClass("active");
+            flagged_btn.removeClass("active");
+            hidden_btn.removeClass("active");
+            unchecked_btn.removeClass("active");
+            revised_btn.removeClass("active");
+            confirmed_btn.removeClass("active");
         }
 
         function activate_btns() {
