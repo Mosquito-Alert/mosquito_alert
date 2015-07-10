@@ -673,8 +673,6 @@ class Report(models.Model):
                 result += ' '
         return result
 
-
-
     def get_expert_score_reports_bootstrap(self, user=None):
         result = '<ul>'
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
