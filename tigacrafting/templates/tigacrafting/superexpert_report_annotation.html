@@ -4,8 +4,11 @@
 
 {% block title %}
     <h1>Superexpert Validation</h1>
-    <h2>{% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}Confirmed
+    <h2>{{ final_status | capfirst }} {% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}Confirmed
         Reports{% elif checked == 'revised' %}Revised Reports{% endif %}</h2>
+
+    <strong>Ordered by:</strong> {{ orderby }}<br>
+    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}
 {% endblock %}
 
 {% block instructions %}
