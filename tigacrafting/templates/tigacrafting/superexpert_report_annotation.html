@@ -134,11 +134,9 @@
                 </thead>
                 <tbody>
                     {% for ano in form.instance.report.expert_report_annotations.all %}
-                        {% if ano.validaton_complete %}
-                            {% if ano.is_superexpert and ano.revise %}
+                        {% if ano.validation_complete %}
+                            {% if ano.is_expert or ano.is_superexpert and ano.revise %}
 
-
-                             {% else %}
                 <tr>
                     <td><a role="button" data-toggle="collapse"
                            href="#expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}" aria-expanded="false"
