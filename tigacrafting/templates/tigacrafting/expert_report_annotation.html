@@ -63,13 +63,19 @@
                 iconUrl: '{% static "tigamap/yellow_icon.png" %}'
             }
         });
+        var site_icon_class = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/blue_icon.png" %}'
+            }
+        });
 
         var mosquito_icon = new mosquito_icon_class;
+        var site_icon = new site_icon_class;
 
         {% for form in formset %}
             function map_init_basic{{ form.instance.id }}(map, options) {
 
-                L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: mosquito_icon}).bindPopup('<p><strong>Lat:</strong> {{ form.instance.report.lat }}</p><p><strong>Lon:</strong> {{ form.instance.report.lon }}</p>').addTo(map);
+                L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon: {% if form.instance.report.type == 'site' %}site_icon{% else %}mosquito_icon{% endif %}}).bindPopup('<p><strong>Lat:</strong> {{ form.instance.report.lat }}</p><p><strong>Lon:</strong> {{ form.instance.report.lon }}</p>').addTo(map);
 
             }
         {%  endfor %}
