@@ -580,7 +580,7 @@ class Report(models.Model):
 
     def get_mean_expert_adult_score(self):
         sum_scores = 0
-        mean_score = 0
+        mean_score = -3
         super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).values_list('tiger_certainty_category', flat=True)
         if super_scores:
             for this_score in super_scores:
@@ -598,7 +598,7 @@ class Report(models.Model):
 
     def get_mean_expert_site_score(self):
         sum_scores = 0
-        mean_score = 0
+        mean_score = -3
         super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).values_list('site_certainty_category', flat=True)
         if super_scores:
             for this_score in super_scores:

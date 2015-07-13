@@ -261,7 +261,7 @@
         {% block report_title_status_row %}
         <div class="row">
             <div class="col-md-12">
-                <strong>Who else has this report? </strong> {{ form.instance.report.get_who_has_bootstrap | safe }}
+                <strong>Who has this report? </strong> {{ form.instance.report.get_who_has_bootstrap | safe }}
             </div>
         </div>
         {% endblock %}
@@ -440,9 +440,6 @@
 
                 });
 
-
-                var validation_complete_id = "{{ form.validation_complete.auto_id }}";
-                $("#" + validation_complete_id).css({"height":"80px","width" :"80%"})
 
             {% endif %}
 

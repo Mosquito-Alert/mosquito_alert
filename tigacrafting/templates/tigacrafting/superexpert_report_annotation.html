@@ -127,7 +127,7 @@
 {% block view_others_annotations %}
     <strong>Individual Expert Responses</strong><br>
         <div class="table-responsive">
-            <table class="table table-condensed borderless">
+            <table class="table table-condensed borderless" style="font-size: smaller;">
                 <thead>
                     <th></th>
                     <th></th>
@@ -145,7 +145,7 @@
                 <tr>
                     <td colspan="12" class="hiddenRow">
                         <div class="accordian-body collapse"
-                             id="expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}" style="font-size: smaller; border: 1px solid #333;padding:2px;">
+                             id="expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}" style="border: 1px solid #333;padding:2px;">
                             {{ ano.last_modified|date:"d/m/y H:i" }} UTC<br>
                             {% if form.instance.report.type == 'adult' %}
                                 <strong>Internal cmts:</strong> {{ ano.tiger_certainty_notes }}<br>
