@@ -1,0 +1,4 @@
+<span class="label label-default"
+      style="background-color: {% if score  == 2 %}red{% elif score == 1 %}orange{% elif score == 0 %}white; border:1px solid #000; color:black{% elif score == -1 %}grey{% elif score == -2 %}black{% else %}saddlebrown{% endif %};"
+      data-toggle="tooltip" data-placement="bottom"
+      title="Score that appears on map if not flagged or hidden: {{ text }}">{{ text }}</span>

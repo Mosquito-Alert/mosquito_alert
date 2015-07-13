@@ -5,25 +5,8 @@
   text-align: center;
 }
 
-table {
-    border-collapse: collapse;
-    font-size: small;
-    max-width: 100%;
-}
-
-table, td, th {
-    border: 1px solid black;
-}
-
-td, th {
-    padding: 5px;
-    vertical-align: top;
-    text-align: right;
-    width: 25%;
-}
-
-th{
-    text-align: center;
+.borderless tbody tr td, .borderless tbody tr th, .borderless thead tr th {
+    border: none;
 }
 
 img{

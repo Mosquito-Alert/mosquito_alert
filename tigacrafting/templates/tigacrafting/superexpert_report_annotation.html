@@ -75,15 +75,97 @@
 {% block report_title_status_row %}
     <div class="row">
         <div class="col-md-12">
-            <strong>Current Status:</strong> {{ form.instance.report.get_final_expert_status_bootstrap | safe }} {{ form.instance.report.get_final_expert_score_bootstrap | safe }}<br>
-            <strong>Individual Expert Responses:</strong><br>
-            {{ form.instance.report.get_expert_score_reports_bootstrap | safe }}
+            <a role="button" data-toggle="collapse" href="#current_status_collapse{{ form.instance.id }}"
+               aria-expanded="false" aria-controls="current_status_collapse{{ form.instance.id }}"><i
+                    class="fa fa-plus-square-o"></i></a> <strong>Current
+            Status:</strong> {{ form.instance.report.get_final_expert_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}
+
+
+
+            <div class="collapse" id="current_status_collapse{{ form.instance.id }}">
+                <div class="well">
+                    <div class="table-responsive">
+                        <table class="table table-condensed">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Photo
+                                </th>
+                                <th>
+                                    Public Note
+                                </th>
+                                <th>
+                                    Note to User
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    {{ form.instance.report.get_final_photo_html.popup_image | safe }}
+                                </td>
+                                <td>
+                                    {{ form.instance.report.get_final_public_note | safe }}
+                                </td>
+                                <td>
+                                    {{ form.instance.report.get_final_note_to_user_html | safe }}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
 
 
 {% block view_others_annotations %}
+    <strong>Individual Expert Responses</strong><br>
+        <div class="table-responsive">
+            <table class="table table-condensed borderless">
+                <thead>
+                    <th></th>
+                    <th></th>
+                </thead>
+                <tbody>
+                    {% for ano in form.instance.report.expert_report_annotations.all %}
+                <tr>
+                    <td><a role="button" data-toggle="collapse"
+                           href="#expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}" aria-expanded="false"
+                           aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i
+                            class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
+                    </td>
+                    <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=form.instance.get_score text=form.instance.get_category %}</td>
+                </tr>
+                <tr>
+                    <td colspan="12" class="hiddenRow">
+                        <div class="accordian-body collapse"
+                             id="expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}" style="font-size: smaller; border: 1px solid #333;padding:2px;">
+                            {{ ano.last_modified|date:"d/m/y H:i" }} UTC<br>
+                            {% if form.instance.report.type == 'adult' %}
+                                <strong>Internal cmts:</strong> {{ ano.tiger_certainty_notes }}<br>
+                            {% elif form.instance.report.type == 'site' %}
+                                <strong>Internal cmts:</strong> {{ ano.site_certainty_notes }}
+                                <br>
+                            {% endif %}
+                            <strong>Public Note:</strong> {{ ano.edited_user_notes }}<br>
+                            <strong>Message To User:</strong> {{ ano.message_for_user }}<br>
+                            <strong>Linked ID:</strong> {{ ano.linked_id }}<br>
+                            <strong>Photo:</strong> {% if ano.best_photo %}
+{{ ano.best_photo.popup_image | safe }}{% endif %}
+                        </div>
+                    </td>
+                </tr>
+
+    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+
+
 
 {% endblock %}
 

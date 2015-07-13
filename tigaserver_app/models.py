@@ -674,26 +674,29 @@ class Report(models.Model):
         return result
 
     def get_expert_score_reports_bootstrap(self, user=None):
-        result = '<ul>'
+        result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         if user:
             these_annotations.exclude(user=user)
         for ano in these_annotations:
-            result += '<li><strong>' + ano.user.username + ':</strong> <span data-toggle="tooltip" data-placement="bottom" title="' + ano.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if ano.status == 1 else ('glyphicon glyphicon-flag' if ano.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span> ' + '<span class="label label-default" style="background-color:' + ('red' if ano.get_score() == 2 else ('orange' if ano.get_score() == 1 else ('white' if ano.get_score() == 0 else ('grey' if ano.get_score() == -1 else 'black')))) + ';">' + ano.get_category() + '</span> '
-            result += '<a class="btn btn-default btn-sm" role="button" data-toggle="collapse" href="#expert_collapse' + ano.report.version_UUID + str(ano.id) + '" aria-expanded="false" aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><span class="glyphicon glyphicon-chevron-down"></span></a><div class="collapse" id="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><div class="well">'
-            result += '<strong>Expert:</strong> ' + ano.user.username + '<br>'
-            result += '<strong>Last Edited:</strong> ' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC<br>'
-            result += '<strong>Status:</strong> ' + (ano.get_status_display() if ano.get_status_display() else "") + '</br>'
+            result += '<div class="table-responsive"><table class="table table-condensed"><tbody><tr>'
+            result += '<td>' + ano.user.username + '</td>'
+            result += '<td>' + ano.get_status_bootstrap() + '</td>'
+            result += '<td>' + ano.get_score_bootstrap() + '</td>'
+            result += '<td><a role="button" data-toggle="collapse" href="#expert_collapse' + ano.report.version_UUID + str(ano.id) + '" aria-expanded="false" aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i class="fa fa-plus-square-o"></i></a></td>'
+            result += '</tr></tbody></table></div>'
+            result += '<div class="collapse" id="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><div class="well">'
+            result += '<div class="table-responsive"><table class="table table-condensed"><tbody>'
+            result += '<tr><td><strong>Expert:</strong></td><td>' + ano.user.username + '</td></tr>'
+            result += '<tr><td><strong>Last Edited:</strong></td><td>' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC</td>></tr>'
             if self.type == 'adult':
-                result += '<strong>Tiger Certainty:</strong> ' + (ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "") + '<br>'
-                result += '<strong>Tiger Notes:</strong> ' + ano.tiger_certainty_notes + '<br>'
+                result += '<tr><td><strong>Tiger Notes:</strong></td><td>' + ano.tiger_certainty_notes + '</td></tr>'
             elif self.type == 'site':
-                result += '<strong>Site Certainty:</strong> ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '<br>'
-                result += '<strong>Site Notes:</strong> ' + ano.site_certainty_notes + '<br>'
-            result += '<strong>Selected photo:</strong> ' + (ano.best_photo.popup_image() if ano.best_photo else "") + '<br>'
-            result += '<strong>Edited User Notes:</strong> ' + ano.edited_user_notes + '<br>'
-            result += '<strong>Message To User:</strong> ' + ano.message_for_user + '<br>'
-            result += '</div></div></li>'
+                result += '<tr><td><strong>Site Notes:</strong></td><td>' + ano.site_certainty_notes + '</td></tr>'
+            result += '<tr><td><strong>Selected photo:</strong></td><td>' + (ano.best_photo.popup_image() if ano.best_photo else "") + '</td></tr>'
+            result += '<tr><td><strong>Edited User Notes:</strong></td><td>' + ano.edited_user_notes + '</td></tr>'
+            result += '<tr><td><strong>Message To User:</strong></td><td>' + ano.message_for_user + '</td></tr>'
+            result += '</tbody></table></div></div></div>'
         return result
 
     def get_expert_annotations_html(self, this_user):
@@ -708,6 +711,58 @@ class Report(models.Model):
                 result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
             result += '<p>Status: ' + str(ano.statu) + '</p>'
         return result
+
+    def get_final_photo_html(self):
+        super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).values_list('best_photo', flat=True)
+        if super_photos:
+            winning_photo_id = Counter(super_photos).most_common()[0][0]
+            if winning_photo_id:
+                winning_photo = Photo.objects.filter(pk=winning_photo_id)
+                if winning_photo and winning_photo.count() > 0:
+                    return Photo.objects.get(pk=winning_photo_id)
+        expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).values_list('best_photo', flat=True)
+        if expert_photos:
+            winning_photo_id = Counter(expert_photos).most_common()[0][0]
+            if winning_photo_id:
+                winning_photo = Photo.objects.filter(pk=winning_photo_id)
+                if winning_photo and winning_photo.count() > 0:
+                    return Photo.objects.get(pk=winning_photo_id)
+
+    def get_final_public_note(self):
+        super_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
+        if super_notes:
+            winning_note = Counter(super_notes).most_common()[0][0]
+            if winning_note:
+                return winning_note
+        expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
+        if expert_notes:
+            winning_note = Counter(expert_notes).most_common()[0][0]
+            if winning_note:
+                return winning_note
+
+    def get_final_note_to_user_html(self):
+        notes = None
+        super_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
+        if super_notes:
+            notes = super_notes
+        else:
+            expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
+            if expert_notes:
+                notes = expert_notes
+        if notes:
+            n = len(notes)
+            if n == 1:
+                return '<strong>Message from Expert:</strong> ' + notes
+            elif n > 1:
+                result = ''
+                i = 1
+                for note in notes:
+                    result += '<strong>Message from Expert ' + str(i) + ':</strong> ' + note
+                    if i < n:
+                        result += '<br>'
+                return result
+        else:
+            return ''
 
     lon = property(get_lon)
     lat = property(get_lat)
