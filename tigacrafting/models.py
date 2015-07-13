@@ -177,6 +177,12 @@ class ExpertReportAnnotation(models.Model):
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
+    def is_superexpert(self):
+        return 'superexpert' in self.user.groups.values_list('name', flat=True)
+
+    def is_expert(self):
+        return 'expert' in self.user.groups.values_list('name', flat=True)
+
     def get_others_annotation_html(self):
         result = ''
         this_user = self.user
