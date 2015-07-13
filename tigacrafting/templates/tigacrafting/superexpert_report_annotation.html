@@ -140,7 +140,7 @@
                            aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i
                             class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
                     </td>
-                    <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=form.instance.get_score text=form.instance.get_category %}</td>
+                    <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
                 </tr>
                 <tr>
                     <td colspan="12" class="hiddenRow">
