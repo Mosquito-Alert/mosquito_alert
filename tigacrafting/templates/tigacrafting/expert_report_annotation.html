@@ -848,7 +848,6 @@
     <script>
 
         var pending = "{{ pending }}";
-        var checked = "{{ checked }}";
 
         var scroll_position = parseInt({{ scroll_position }});
         if (scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)) {
@@ -872,7 +871,7 @@
         var gear = $("#gear").hide();
 
         function background_save(qp) {
-            if ($("#formset_forms").length > 0 && (pending == 'pending'|| checked == 'unchecked')) {
+            if ($("#formset_forms").length > 0 && ("{{ pending }}" == 'pending'|| "{{ checked }}" == 'unchecked')) {
                 $("[id*='validation_complete']:checked").prop("checked", false);
                 $("#formset_forms").submit();
             } else {
