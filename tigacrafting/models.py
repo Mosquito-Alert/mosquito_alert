@@ -205,16 +205,21 @@ class ExpertReportAnnotation(models.Model):
         return result
 
     def get_score(self):
+        score = -3
         if self.report.type == 'site':
-            return self.site_certainty_category
+            score = self.site_certainty_category
         elif self.report.type == 'adult':
-            return self.tiger_certainty_category
+            score = self.tiger_certainty_category
+        if score:
+            return score
+        else:
+            return -3
 
     def get_category(self):
         if self.report.type == 'site':
-            return self.get_site_certainty_category_display()
+            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
         elif self.report.type == 'adult':
-            return self.get_tiger_certainty_category_display()
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
 
     def get_status_bootstrap(self):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'

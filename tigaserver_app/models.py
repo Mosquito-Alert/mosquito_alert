@@ -626,16 +626,18 @@ class Report(models.Model):
         score = -3
         if self.type == 'site':
             score = self.get_mean_expert_site_score()
-            return int(round(self.get_mean_expert_site_score()))
         elif self.type == 'adult':
             score = self.get_mean_expert_adult_score()
-        return int(round(score))
+        if score:
+            return int(round(score))
+        else:
+            return -3
 
     def get_final_expert_category(self):
         if self.type == 'site':
-            return dict([(-3, 'Unclassified')] + SITE_CATEGORIES)[self.get_final_expert_score()]
+            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
         elif self.type == 'adult':
-            return dict([(-3, 'Unclassified')] + TIGER_CATEGORIES)[self.get_final_expert_score()]
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_final_expert_score()]
 
     def get_final_expert_status(self):
         result = 1
