@@ -460,30 +460,46 @@
 
             {% if checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
 
-                var validation_complete_id = "{{ form.validation_complete.auto_id }}";
+                var validation_complete_id_{{ form.instance.id }} = "{{ form.validation_complete.auto_id }}";
 
-                var revise_id = "{{ form.revise.auto_id }}";
+                var revise_id_{{ form.instance.id }} = "{{ form.revise.auto_id }}";
 
-                var hidden_form_fields{{ form.instance.id }} = $("#" + "{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }},#" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + validation_complete_id);
+                var this_id = "{{ form.instance.id }}";
 
-                {% if form.instance.revised %}
+                var hidden_form_fields{{ form.instance.id }} = $("#" + "{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }},#" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
+
+
+                var revise_btn = $("#revise_btn_" + this_id).click(function () {
+                    hidden_form_fields{{ form.instance.id }}.parent().parent().slideDown('slow');
+                    $("#" + revise_id_{{ form.instance.id }}).val(true);
+                    $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', false);
+                });
+
+                var confirm_btn = $("#confirm_btn_" + this_id).click(function (e) {
+                    if ($(this).hasClass('active')) {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                        $(this).removeClass('active');
+                        $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', false);
+                    } else {
+                        hidden_form_fields{{ form.instance.id }}.parent().parent().slideUp('slow');
+                        $("#" + revise_id_{{ form.instance.id }}).val(false);
+                        $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', true);
+                    }
+                });
+
+                {% if form.instance.revise %}
                     hidden_form_fields{{ form.instance.id }}.parent().parent().show();
-
+                    revise_btn.addClass('active');
                 {% else %}
                     hidden_form_fields{{ form.instance.id }}.parent().parent().hide();
                 {% endif %}
-                var this_id = "{{ form.instance.id }}";
 
-                $("#revise_btn_" + this_id).click(function () {
-                    hidden_form_fields{{ form.instance.id }}.parent().parent().slideDown('slow');
-                    $("#" + revise_id).prop('checked', true);
-                });
+                {% if form.instance.validation_complete and not form.instance.revise %}
+                    confirm_btn.addClass('active');
+                    {% endif %}
 
-                $("#confirm_btn_" + this_id).click(function () {
-                    hidden_form_fields{{ form.instance.id }}.parent().parent().slideUp('slow');
-                    $("#" + revise_id).prop('checked', false);
 
-                });
 
             {% endif %}
         </script>
@@ -547,6 +563,7 @@
     {% else %}
         <div class="row">
             <div class="col-md-12">
+            <div class="well">
                 {% block no_records_message %}
                     {% if pending == 'pending' and n_pending == 0 %}
                         <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start
@@ -556,6 +573,7 @@
 
                     {% endif %}
                 {% endblock %}
+            </div>
             </div>
         </div>
     {% endif %}

@@ -195,6 +195,11 @@ def filter_reports(reports, sort=True):
     return reports_filtered
 
 
+def filter_reports_for_superexpert(reports):
+    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(filter(lambda y: y.is_expert and y.validation_complete, x.expert_report_annotations.all()))>=3, reports)
+    return reports_filtered
+
+
 @xframe_options_exempt
 def show_validated_photos(request, type='tiger'):
     title_dic = {'mosquito': 'Mosquito Validation Results', 'site': 'Breeding Site Validation Results', 'tiger': 'Tiger Mosquito Validation Results'}
@@ -435,7 +440,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             if this_user_is_expert and load_new_reports == 'T':
                 if current_pending < max_pending:
                     n_to_get = max_pending - current_pending
-                    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lte=max_given)
+                    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                     if new_reports_unfiltered and this_user_is_team_bcn:
                         new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                     if new_reports_unfiltered and this_user_is_team_not_bcn:
@@ -453,7 +458,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
                         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered:
-                    new_reports = filter_reports(new_reports_unfiltered, sort=False)
+                    new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
                     for this_report in new_reports:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         new_annotation.save()
