@@ -413,7 +413,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     page = '1'
                 return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else ''))
             else:
-                return HttpResponse('error')
+                return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             scroll_position = request.GET.get('scroll_position', scroll_position)
