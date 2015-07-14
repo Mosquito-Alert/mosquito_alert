@@ -196,7 +196,7 @@ def filter_reports(reports, sort=True):
 
 
 def filter_reports_for_superexpert(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(filter(lambda y: y.is_expert and y.validation_complete, x.expert_report_annotations.all()))>=3, reports)
+    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))>=3, reports)
     return reports_filtered
 
 
