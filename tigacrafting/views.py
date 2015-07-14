@@ -456,7 +456,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         new_annotation.save()
         elif this_user_is_superexpert:
-            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
             if new_reports_unfiltered and this_user_is_team_not_bcn:
@@ -578,3 +578,13 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+
+@login_required
+def expert_report_status(request, reports_per_page=100):
+    this_user = request.user
+    if this_user.groups.filter(name='superexpert').exists():
+        these_reports = filter_reports(Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True), sort=False)
+        return render(request, 'tigacrafting/expert_report_status.html', {'reports': these_reports})
+
+

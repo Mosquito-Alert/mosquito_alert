@@ -1,0 +1,467 @@
+{% load staticfiles %}
+{% load leaflet_tags %}
+{% load i18n %}
+{% load floppyforms %}
+
+
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+
+    {% block encoding %}
+        <meta charset="utf-8">{% endblock %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta name="description" content="Tigacrafting">
+    <meta name="author" content="Movement Ecology Laboratory">
+
+    <title>{% block page_title %}Tigacrafting Status{% endblock %}</title>
+
+    {% block bootstrap_css %}
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    {% endblock %}
+
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+
+    <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
+    <style>
+        #ex1Slider .slider-selection {
+            background: #BABABA;
+        }
+
+    </style>
+
+    {% block fa_css %}
+        <!-- FA CSS -->
+        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    {% endblock %}
+
+
+    {% block fallback_bs_js %}
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% endblock %}
+
+    {% leaflet_js %}
+    {% leaflet_css %}
+
+
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+
+
+</head>
+
+<body>
+
+{% block navbar %}
+    <!-- NAVBAR
+================================================== -->
+    <div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand"><span
+                                style="color:#ff9900; font-size: small">Tigatrapp
+                            Validation Status <i
+                                    id="gear"
+                                    class="fa fa-refresh fa-spin"></i></span>
+                        </div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+
+                        <ul class="nav navbar-nav navbar-left">
+
+
+                            <li>
+                                <span data-toggle="modal" data-target="#searchModal"><button type="button"
+                                                                                             class="btn btn-warning btn-sm navbar-btn"
+                                                                                             data-toggle="tooltip"
+                                                                                             data-placement="bottom"
+                                                                                             title="Search"
+                                                                                             style="margin-left:5px">
+                                    <span class="glyphicon glyphicon-search"
+                                          {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}style="color:black"{% endif %}></span>
+                                </button></span>
+                            </li>
+
+                        </ul>
+
+
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            </li>
+                        </ul>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block main_body %}
+
+
+    <div class="container">
+
+    <div class="starter-template">
+
+            <h1>Expert Report Validation Status</h1>
+
+        </div>
+    </div>
+
+
+
+    {% for report in reports %}
+        <div class="row row_for_{{ report.version_UUID }}">
+            <div class="col-md-12">
+                <h4><strong>{{ report.type|capfirst }}
+                    Report {{ report.version_UUID }}</strong>
+                    {{ report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+            </div>
+        </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <strong>Who has this report? </strong> {{ report.get_who_has_bootstrap | safe }}
+                </div>
+            </div>
+            <div class="row">
+        <div class="col-md-12">
+            <a role="button" data-toggle="collapse" href="#current_status_collapse{{ report.version_UUID }}"
+               aria-expanded="false" aria-controls="current_status_collapse{{ report.version_UUID }}"><i
+                    class="fa fa-plus-square-o"></i></a> <strong>Current
+            Status:</strong> {{ report.get_final_expert_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}
+
+
+            <div class="collapse" id="current_status_collapse{{ report.version_UUID }}">
+                <div class="well">
+                    <div class="table-responsive">
+                        <table class="table table-condensed">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Photo
+                                </th>
+                                <th>
+                                    Public Note
+                                </th>
+                                <th>
+                                    Note to User
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    {{ report.get_final_photo_html.popup_image | safe }}
+                                </td>
+                                <td>
+                                    {% if report.get_final_public_note %}
+                                    {{ report.get_final_public_note | safe }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ report.get_final_note_to_user_html | safe }}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+        <div class="row">
+            <div class="col-md-3">
+                <br>
+
+    <strong>Individual Expert Responses</strong><br>
+    <div class="table-responsive">
+        <table class="table table-condensed borderless" style="font-size: smaller;">
+            <thead>
+            <th></th>
+            <th></th>
+            </thead>
+            <tbody>
+            {% for ano in report.expert_report_annotations.all %}
+                {% if ano.validation_complete %}
+                    {% if ano.is_expert or ano.is_superexpert and ano.revise %}
+
+                        <tr>
+                            <td><a role="button" data-toggle="collapse"
+                                   href="#expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}"
+                                   aria-expanded="false"
+                                   aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i
+                                    class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
+                            </td>
+                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="12" class="hiddenRow">
+                                <div class="accordian-body collapse"
+                                     id="expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}"
+                                     style="border: 1px solid #333;padding:2px;">
+                                    {{ ano.last_modified|date:"d/m/y H:i" }} UTC<br>
+                                    {% if report.type == 'adult' %}
+                                        <strong>Internal cmts:</strong> {{ ano.tiger_certainty_notes }}<br>
+                                    {% elif report.type == 'site' %}
+                                        <strong>Internal cmts:</strong> {{ ano.site_certainty_notes }}
+                                        <br>
+                                    {% endif %}
+                                    <strong>Public Note:</strong> {{ ano.edited_user_notes }}<br>
+                                    <strong>Message To User:</strong> {{ ano.message_for_user }}<br>
+                                    <strong>Linked ID:</strong> {{ ano.linked_id }}<br>
+                                    <strong>Photo:</strong> {% if ano.best_photo %}
+                                    {{ ano.best_photo.popup_image | safe }}{% endif %}
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% endif %}
+
+                {% endif %}
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+
+            </div>
+
+            <div class="col-md-5">
+                <br>
+                <strong>Photos</strong>
+
+                    <div style="overflow: auto;">
+
+                        {{ report.get_photo_html_for_report_validation_completed | safe }}
+
+                    </div>
+
+            </div>
+
+            <div class="col-md-4">
+                <br>
+                <strong>Location</strong>
+
+                <div id="map{{ report.version_UUID }}" class="report_annotation_map-container">
+
+                    <div style="z-index:100; position:absolute; top:0; right:0;"
+                         id="qrcode{{ report.version_UUID }}"></div>
+
+                </div>
+
+
+                <br>
+                <strong>User Responses</strong><br>
+
+                <div style="overflow: auto;height: 120px;border:1px solid #333333;padding:2px;">
+                    {{ report.response_html  | safe }}
+                </div>
+                <br>
+                <strong>User Notes</strong><br>
+
+                <div style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">
+                    {{ report.note }}
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <br>
+        <div class="border-row">
+
+            <br>
+
+        </div>
+
+
+    {% endfor %}
+
+
+    {% block search_modal %}
+        <!-- Modal -->
+        <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form" class="form-inline">
+
+                            <div class="form-group">
+                                <label for="version_uuid_select">Report ID:</label>
+
+                                <select id="version_uuid_select" class="selectpicker show-tick form-control"
+                                        data-live-search="true">
+                                    <option value=""></option>
+                                    {% for version_uuid in my_version_uuids %}
+                                        <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button" id="search_version_uuid_submit_button" class="btn btn-default">
+                                Search
+                            </button>
+
+                        </form>
+
+                        <form role="form" class="form-inline">
+
+                            <div class="form-group">
+                                <label for="linked_id_select">Linked ID:</label>
+
+                                <select id="linked_id_select" class="selectpicker show-tick form-control"
+                                        data-live-search="true">
+                                    <option value=""></option>
+                                    {% for linked_id in my_linked_ids %}
+                                        <option value="{{ linked_id.values | first }}">{{ linked_id.values | first }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search
+                            </button>
+                        </form>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}
+                            <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}">Clear Search</a>
+                        {% endif %}
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    {% endblock %}
+
+
+{% endblock %}
+
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
+
+    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+
+    <script type="text/javascript">
+        (function () {
+            function loadmap() {
+
+                {% for form in formset %}
+
+                    var centerLat = {{ form.instance.report.lat }};
+                    var centerLng = {{ form.instance.report.lon }};
+                    var initialZoom = 6;
+                    var djoptions = {"layers": [
+                                ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                    "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
+                            ],
+                                "minimap": true, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                                "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                                    [-90,
+                                        -180],
+                                    [90,
+                                        180]
+                                ], "resetview": true, "srid": null, "fitextent": true},
+                            options = {djoptions: djoptions, initfunc: loadmap,
+                                globals: false, callback: window.map_init_basic};
+
+                    L.Map.djangoMap('map{{ form.instance.id }}', {djoptions: djoptions, initfunc: loadmap,
+                        globals: false, callback: eval("window.map_init_basic{{ form.instance.id }}")});
+                {% endfor %}
+
+            }
+
+            var loadevents = ["load"];
+            if (loadevents.length === 0) loadmap();
+            else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+            else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+        })();
+    </script>
+
+
+
+    <script>
+
+        var pending = "{{ pending }}";
+
+        var scroll_position = parseInt({{ scroll_position }});
+        if (scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)) {
+            $(window).scrollTop(scroll_position);
+        }
+
+        var grab_reports_button = $("#grab_reports_button");
+        var n_pending = {{ n_pending }};
+        function toggle_grab_reports_button() {
+            if (n_pending < 5) {
+                grab_reports_button.prop('disabled', false);
+            } else {
+                grab_reports_button.prop('disabled', true);
+            }
+        }
+
+
+        $('input[id~="value_changed"]').hide();
+        $('label[for~="value_changed"]').hide();
+
+        var gear = $("#gear").hide();
+
+        $(document).ready(function () {
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            $("select").selectpicker({
+                width: 'auto'
+            });
+
+        });
+
+
+    </script>
+
+
+</body>
+</html>
