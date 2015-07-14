@@ -580,8 +580,8 @@ class Report(models.Model):
 
     def get_mean_expert_adult_score(self):
         sum_scores = 0
-        mean_score = 0
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category=-3).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__gt=-3).count() == 0:
+        mean_score = -3
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=False).count() == 0:
             return -3
         super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(tiger_certainty_category=-3).values_list('tiger_certainty_category', flat=True)
         if super_scores:
@@ -590,6 +590,8 @@ class Report(models.Model):
                     sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
             return mean_score
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, tiger_certainty_category__isnull=False).count() == 0:
+            return -3
         expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(tiger_certainty_category=-3).values_list('tiger_certainty_category', flat=True)
         if expert_scores:
             for this_score in expert_scores:
@@ -600,8 +602,8 @@ class Report(models.Model):
 
     def get_mean_expert_site_score(self):
         sum_scores = 0
-        mean_score = 0
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, site_certainty_category=-3).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, site_certainty_category__gt=-3).count() == 0:
+        mean_score = -3
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, site_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, site_certainty_category__isnull=False).count() == 0:
             return -3
         super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(site_certainty_category=-3).values_list('site_certainty_category', flat=True)
         if super_scores:
@@ -610,6 +612,8 @@ class Report(models.Model):
                     sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
             return mean_score
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, site_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, site_certainty_category__isnull=False).count() == 0:
+            return -3
         expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(site_certainty_category=-3).values_list('site_certainty_category', flat=True)
         if expert_scores:
             for this_score in expert_scores:
@@ -619,16 +623,19 @@ class Report(models.Model):
         return mean_score
 
     def get_final_expert_score(self):
+        score = -3
         if self.type == 'site':
+            score = self.get_mean_expert_site_score()
             return int(round(self.get_mean_expert_site_score()))
         elif self.type == 'adult':
-            return int(round(self.get_mean_expert_adult_score()))
+            score = self.get_mean_expert_adult_score()
+        return int(round(score))
 
     def get_final_expert_category(self):
         if self.type == 'site':
-            return dict(SITE_CATEGORIES)[self.get_final_expert_score()]
+            return dict([(-3, 'Unclassified')] + SITE_CATEGORIES)[self.get_final_expert_score()]
         elif self.type == 'adult':
-            return dict(TIGER_CATEGORIES)[self.get_final_expert_score()]
+            return dict([(-3, 'Unclassified')] + TIGER_CATEGORIES)[self.get_final_expert_score()]
 
     def get_final_expert_status(self):
         result = 1
