@@ -497,7 +497,7 @@
 
                 {% if form.instance.validation_complete and not form.instance.revise %}
                     confirm_btn.addClass('active');
-                    {% endif %}
+                {% endif %}
 
 
 
@@ -508,12 +508,20 @@
     {% endfor %}
 
     <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
-    <input id="pending_hidden_btn" type="text" name="pending" style="display: none;" value="{{ pending }}">
-    <input type="text" name="orderby" style="display: none;" value="{{ orderby }}">
-    <input type="text" name="tiger_certainty" style="display: none;" value="{{ tiger_certainty }}">
-    <input type="text" name="site_certainty" style="display: none;" value="{{ site_certainty }}">
-    <input type="text" name="status" style="display: none;" value="{{ status }}">
-    <input type="text" name="final_status" style="display: none;" value="{{ final_status }}">
+    <input id="pending_input" type="text" name="pending" style="display: none;" value="{{ pending }}">
+    <input id="orderby_input" type="text" name="orderby" style="display: none;" value="{{ orderby }}">
+    <input id="tiger_certainty_input" type="text" name="tiger_certainty" style="display: none;"
+           value="{{ tiger_certainty }}">
+    <input id="site_certainty_input" type="text" name="site_certainty" style="display: none;"
+           value="{{ site_certainty }}">
+    <input id="status_input" type="text" name="status" style="display: none;" value="{{ status }}">
+    <input id="final_status_input" type="text" name="final_status" style="display: none;" value="{{ final_status }}">
+    <input id="version_uuid_input" type="text" name="final_status" style="display: none;" value="{{ version_uuid }}">
+    <input id="linked_id_input" type="text" name="final_status" style="display: none;" value="{{ linked_id }}">
+    <input id="load_new_reports_input" type="text" name="final_status" style="display: none;"
+           value="{{ load_new_reports }}">
+    <input id="next_page_input" type="text" name="final_status" style="display: none;"
+           value="">
 
 
 
@@ -563,17 +571,17 @@
     {% else %}
         <div class="row">
             <div class="col-md-12">
-            <div class="well">
-                {% block no_records_message %}
-                    {% if pending == 'pending' and n_pending == 0 %}
-                        <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start
-                            validating.</p>
-                    {% else %}
-                        <p>No reports match your search criteria.</p>
+                <div class="well">
+                    {% block no_records_message %}
+                        {% if pending == 'pending' and n_pending == 0 %}
+                            <p>You do not yet have any pending reports in your stack. Click "Get more reports" to start
+                                validating.</p>
+                        {% else %}
+                            <p>No reports match your search criteria.</p>
 
-                    {% endif %}
-                {% endblock %}
-            </div>
+                        {% endif %}
+                    {% endblock %}
+                </div>
             </div>
         </div>
     {% endif %}
@@ -838,9 +846,26 @@
 
         var gear = $("#gear").hide();
 
+        function background_save() {
+            $("[id*='validation_complete']:checked").prop("checked", false);
+            $("#formset_forms").submit();
+        }
+
+        function setup_and_launch_save_warning() {
+            $(".modal").modal("hide");
+            var reports_list = $("#reports_being_saved_list").empty();
+            reports_list.append('<ul>');
+            $("[id*='validation_complete']:checked").parent().parent().parent().each(function () {
+                reports_list.append('<li>' + $(this).attr('id') + '</li>');
+            });
+            reports_list.append('</ul>');
+            $("#save_warning_modal").modal('show');
+        }
+
+
         $(document).ready(function () {
 
-            $('[data-toggle="tooltip"]').tooltip()
+            $('[data-toggle="tooltip"]').tooltip();
 
             $("select").selectpicker({
                 width: 'auto'
@@ -854,15 +879,10 @@
 
             });
 
+
             var save_button = $("#save_button").click(function () {
                 if ($("[id*='validation_complete']").is(":checked")) {
-                    var reports_list = $("#reports_being_saved_list").empty();
-                    reports_list.append('<ul>');
-                    $("[id*='validation_complete']:checked").parent().parent().parent().each(function () {
-                        reports_list.append('<li>' + $(this).attr('id') + '</li>');
-                    });
-                    reports_list.append('</ul>');
-                    $("#save_warning_modal").modal('show');
+                    setup_and_launch_save_warning();
                 } else {
                     gear.show();
                     toggle_grab_reports_button();
@@ -903,26 +923,38 @@
 
 
             function query_selectors() {
-                var qp = "?orderby=" + $("#orderby_select").val();
-                qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
-                qp += "&site_certainty=" + $("#site_certainty_select").val();
-                qp += "&status=" + $("#status_select").val();
-                qp += "&pending=" + pending;
-                return(qp);
+                var this_orderby = $("#orderby_select").val();
+                var this_tiger_certainty = $("#tiger_certainty_select").val();
+                var this_site_certainty = $("#site_certainty_select").val();
+                var this_status = $("#status_select").val();
+                $("#orderby_input").val(this_orderby);
+                $("#tiger_certainty_input").val(this_tiger_certainty);
+                $("#site_certainty_input").val(this_site_certainty);
+                $("#status_input").val(this_status);
+                $("#pending_input").val(pending);
             }
+
+            function clear_selectors() {
+                $("#orderby_input").val('');
+                $("#tiger_certainty_input").val('');
+                $("#site_certainty_input").val('');
+                $("#status_input").val('');
+                $("#pending_input").val('');
+            }
+
 
             function submit_queries() {
                 gear.show();
-                var qp = query_selectors();
-                $('#myModal').modal('hide');
-                window.location.href = qp;
+                query_selectors();
+                background_save();
             }
 
 
             function submit_queries_plus(event) {
                 gear.show();
                 pending = event.data.extr;
-                window.location.href = query_selectors();
+                query_selectors();
+                background_save();
             }
 
             $("#orderby_select").val("{{ orderby }}");
@@ -946,14 +978,18 @@
 
         function submit_search_version_uuid() {
             gear.show();
-            $('#searchModal').modal('hide');
-            window.location.href = "?version_uuid=" + $("#version_uuid_select").val();
+            clear_selectors();
+            var this_version_uuid = $("#version_uuid_select").val();
+            $("#version_uuid_input").value(this_version_uuid);
+            background_save();
         }
 
         function submit_search_linked_id() {
             gear.show();
-            $('#searchModal').modal('hide');
-            window.location.href = "?linked_id=" + $("#linked_id_select").val();
+            clear_selectors();
+            var this_linked_id = $("#linked_id_select").val();
+            $("#linked_id_input").value(this_linked_id);
+            background_save();
         }
 
         $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
@@ -964,26 +1000,25 @@
 
         grab_reports_button.on('click', function () {
             gear.show();
-            var qp = query_selectors();
-            qp += "&load_new_reports=T";
-            window.location.href = qp;
-        })
+            $("#load_new_reports_input").value("T");
+            query_selectors();
+            background_save();
+        });
 
 
         $("#page_button").on('click', function () {
-            var qp = query_selectors();
-            qp += "&page=" + $("#page_input").val();
-            window.location.href = qp;
-
+            gear.show();
+            query_selectors();
+            background_save();
         });
 
         var nb = $("#next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
                 gear.show();
-                var qp = query_selectors();
-                qp += "&page={{ objects.next_page_number }}";
-                window.location.href = qp;
+                query_selectors();
+                $("#next_page_input").val("{{ objects.next_page_number }}");
+                background_save();
             });
         {% else %}
             nb.hide();
