@@ -4,11 +4,15 @@
 
 {% block title %}
     <h1>Superexpert Validation</h1>
-    <h2>{{ final_status | capfirst }} {% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}Confirmed
-        Reports{% elif checked == 'revised' %}Revised Reports{% endif %}</h2>
+    <h2>{% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}Search Result{% else %}{{ final_status | capfirst }} {% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}
+        Confirmed
+        Reports{% elif checked == 'revised' %}Revised Reports{% endif %}{% endif %}</h2>
 
+    {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
     <strong>Ordered by:</strong> {{ orderby }}<br>
-    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}
+    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status -
+    {{ status }}
+    {% endif %}
 {% endblock %}
 
 {% block instructions %}
@@ -84,7 +88,6 @@
             Status:</strong> {{ form.instance.report.get_final_expert_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}
 
 
-
             <div class="collapse" id="current_status_collapse{{ form.instance.id }}">
                 <div class="well">
                     <div class="table-responsive">
@@ -108,7 +111,9 @@
                                     {{ form.instance.report.get_final_photo_html.popup_image | safe }}
                                 </td>
                                 <td>
+                                    {% if form.instance.report.get_final_public_note %}
                                     {{ form.instance.report.get_final_public_note | safe }}
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {{ form.instance.report.get_final_note_to_user_html | safe }}
@@ -126,53 +131,55 @@
 
 {% block view_others_annotations %}
     <strong>Individual Expert Responses</strong><br>
-        <div class="table-responsive">
-            <table class="table table-condensed borderless" style="font-size: smaller;">
-                <thead>
-                    <th></th>
-                    <th></th>
-                </thead>
-                <tbody>
-                    {% for ano in form.instance.report.expert_report_annotations.all %}
-                        {% if ano.validation_complete %}
-                            {% if ano.is_expert or ano.is_superexpert and ano.revise %}
+    <div class="table-responsive">
+        <table class="table table-condensed borderless" style="font-size: smaller;">
+            <thead>
+            <th></th>
+            <th></th>
+            </thead>
+            <tbody>
+            {% for ano in form.instance.report.expert_report_annotations.all %}
+                {% if ano.validation_complete %}
+                    {% if ano.is_expert or ano.is_superexpert and ano.revise %}
 
-                <tr>
-                    <td><a role="button" data-toggle="collapse"
-                           href="#expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}" aria-expanded="false"
-                           aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i
-                            class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
-                    </td>
-                    <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
-                </tr>
-                <tr>
-                    <td colspan="12" class="hiddenRow">
-                        <div class="accordian-body collapse"
-                             id="expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}" style="border: 1px solid #333;padding:2px;">
-                            {{ ano.last_modified|date:"d/m/y H:i" }} UTC<br>
-                            {% if form.instance.report.type == 'adult' %}
-                                <strong>Internal cmts:</strong> {{ ano.tiger_certainty_notes }}<br>
-                            {% elif form.instance.report.type == 'site' %}
-                                <strong>Internal cmts:</strong> {{ ano.site_certainty_notes }}
-                                <br>
-                            {% endif %}
-                            <strong>Public Note:</strong> {{ ano.edited_user_notes }}<br>
-                            <strong>Message To User:</strong> {{ ano.message_for_user }}<br>
-                            <strong>Linked ID:</strong> {{ ano.linked_id }}<br>
-                            <strong>Photo:</strong> {% if ano.best_photo %}
-{{ ano.best_photo.popup_image | safe }}{% endif %}
-                        </div>
-                    </td>
-                </tr>
+                        <tr>
+                            <td><a role="button" data-toggle="collapse"
+                                   href="#expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}"
+                                   aria-expanded="false"
+                                   aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i
+                                    class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
+                            </td>
+                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="12" class="hiddenRow">
+                                <div class="accordian-body collapse"
+                                     id="expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}"
+                                     style="border: 1px solid #333;padding:2px;">
+                                    {{ ano.last_modified|date:"d/m/y H:i" }} UTC<br>
+                                    {% if form.instance.report.type == 'adult' %}
+                                        <strong>Internal cmts:</strong> {{ ano.tiger_certainty_notes }}<br>
+                                    {% elif form.instance.report.type == 'site' %}
+                                        <strong>Internal cmts:</strong> {{ ano.site_certainty_notes }}
+                                        <br>
+                                    {% endif %}
+                                    <strong>Public Note:</strong> {{ ano.edited_user_notes }}<br>
+                                    <strong>Message To User:</strong> {{ ano.message_for_user }}<br>
+                                    <strong>Linked ID:</strong> {{ ano.linked_id }}<br>
+                                    <strong>Photo:</strong> {% if ano.best_photo %}
+                                    {{ ano.best_photo.popup_image | safe }}{% endif %}
+                                </div>
+                            </td>
+                        </tr>
 
-                                {% endif %}
+                    {% endif %}
 
-                        {% endif %}
-    {% endfor %}
+                {% endif %}
+            {% endfor %}
 
-                </tbody>
-            </table>
-        </div>
+            </tbody>
+        </table>
+    </div>
 
 
 
@@ -219,25 +226,40 @@
 
 
         function query_selectors() {
-            var qp = "?orderby=" + $("#orderby_select").val();
-            qp += "&tiger_certainty=" + $("#tiger_certainty_select").val();
-            qp += "&site_certainty=" + $("#site_certainty_select").val();
-            qp += "&status=" + $("#status_select").val();
+            var this_orderby = $("#orderby_select").val();
+            var this_tiger_certainty = $("#tiger_certainty_select").val();
+            var this_site_certainty = $("#site_certainty_select").val();
+            var this_status = $("#status_select").val();
+            $("#orderby_input").val(this_orderby);
+            $("#tiger_certainty_input").val(this_tiger_certainty);
+            $("#site_certainty_input").val(this_site_certainty);
+            $("#status_input").val(this_status);
+            $("#pending_input").val(pending);
+            var qp = '?orderby=' + this_orderby;
+            qp += '&tiger_certainty=' + this_tiger_certainty;
+            qp += '&site_certainty=' + this_site_certainty;
+            qp += '&status=' + this_status;
+            qp += '&pending=' + pending;
             if (flagged_btn.hasClass("active")) {
-                qp += "&final_status=flagged";
+                $("#final_status_input").val("flagged");
+                qp += '&final_status=' + 'flagged';
             } else if (hidden_btn.hasClass("active")) {
-                qp += "&final_status=hidden";
+                $("#final_status_input").val("hidden");
+                qp += '&final_status=' + 'hidden';
             } else {
-                qp += "&final_status=public";
+                $("#final_status_input").val("public");
+                qp += '&final_status=' + 'public';
             }
             if (revised_btn.hasClass("active")) {
-                qp += "&checked=revised";
+                $("#checked_input").val("revised");
+                qp += '&checked=' + 'revised';
             } else if (confirmed_btn.hasClass("active")) {
-                qp += "&checked=confirmed";
+                $("#checked_input").val("confirmed");
+                qp += '&checked=' + 'confirmed';
             } else {
-                qp += "&checked=unchecked";
+                $("#checked_input").val("unchacked");
+                qp += '&checked=' + 'unchecked';
             }
-
             return(qp);
         }
 
@@ -245,22 +267,23 @@
         function submit_queries() {
             gear.show();
             var qp = query_selectors();
-            $('#myModal').modal('hide');
-            window.location.href = qp;
+            background_save(qp);
         }
 
         function submit_queries_final_status(event) {
             gear.show();
             final_status = event.data.extr;
             activate_btns();
-            window.location.href = query_selectors();
+            var qp = query_selectors();
+            background_save(qp);
         }
 
         function submit_queries_checked(event) {
             gear.show();
             checked = event.data.extr;
             activate_btns();
-            window.location.href = query_selectors();
+            var qp = query_selectors();
+            background_save(qp);
         }
 
         public_btn.on('click', {extr: 'public'}, submit_queries_final_status);

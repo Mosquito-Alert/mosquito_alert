@@ -405,20 +405,24 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             tiger_certainty = request.POST.get('tiger_certainty', tiger_certainty)
             site_certainty = request.POST.get('site_certainty', site_certainty)
             pending = request.POST.get('pending', pending)
-            status = request.POST.get('stats', status)
+            status = request.POST.get('status', status)
             final_status = request.POST.get('final_status', final_status)
             version_uuid = request.POST.get('version_uuid', version_uuid)
             linked_id = request.POST.get('linked_id', linked_id)
             checked = request.POST.get('checked', checked)
-            formset = AnnotationFormset(request.POST)
-            if formset.is_valid():
-                formset.save()
-                page = request.GET.get('page')
-                if not page:
-                    page = '1'
-                return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else ''))
-            else:
-                return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
+            tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+            load_new_reports = request.POST.get('load_new_reports', load_new_reports)
+            save_formset = request.POST.get('save_formset', "F")
+            if save_formset == "T":
+                formset = AnnotationFormset(request.POST)
+                if formset.is_valid():
+                    formset.save()
+                else:
+                    return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
+            page = request.POST.get('page')
+            if not page:
+                page = '1'
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             scroll_position = request.GET.get('scroll_position', scroll_position)
@@ -432,145 +436,145 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             linked_id = request.GET.get('linked_id', linked_id)
             checked = request.GET.get('checked', checked)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
-            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
-            my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-            flagged_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=0).values('report')
-            hidden_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=-1).values('report')
-            public_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=1).values('report')
-            if this_user_is_expert and load_new_reports == 'T':
-                if current_pending < max_pending:
-                    n_to_get = max_pending - current_pending
-                    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-                    if new_reports_unfiltered and this_user_is_team_bcn:
-                        new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-                    if new_reports_unfiltered and this_user_is_team_not_bcn:
-                        new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-                    if new_reports_unfiltered:
-                        new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
-                        reports_to_take = new_reports[0:n_to_get]
-                        for this_report in reports_to_take:
-                            new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                            new_annotation.save()
-            elif this_user_is_superexpert:
-                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
+        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
+        flagged_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=0).values('report')
+        hidden_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=-1).values('report')
+        public_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=1).values('report')
+        if this_user_is_expert and load_new_reports == 'T':
+            if current_pending < max_pending:
+                n_to_get = max_pending - current_pending
+                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 if new_reports_unfiltered and this_user_is_team_bcn:
-                        new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+                    new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
-                        new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+                    new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered:
-                    new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
-                    for this_report in new_reports:
+                    new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+                    reports_to_take = new_reports[0:n_to_get]
+                    for this_report in reports_to_take:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         new_annotation.save()
-            all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
-            my_version_uuids = all_annotations.values('report__version_UUID')
-            my_linked_ids = all_annotations.values('linked_id')
-            if this_user_is_expert:
-                if (version_uuid == 'na' and linked_id == 'na') and (not pending or pending == 'na'):
-                    pending = 'pending'
-            if this_user_is_superexpert:
-                if (version_uuid == 'na' and linked_id == 'na') and (not final_status or final_status == 'na'):
-                    final_status = 'public'
-                if (version_uuid == 'na' and linked_id == 'na') and (not checked or checked == 'na'):
-                    checked = 'unchecked'
-                n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
-                n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
-                n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
-                n_unchecked = all_annotations.filter(validation_complete=False).count()
-                n_confirmed = all_annotations.filter(validation_complete=True, revise=False).count()
-                n_revised = all_annotations.filter(validation_complete=True, revise=True).count()
-                args['n_flagged'] = n_flagged
-                args['n_hidden'] = n_hidden
-                args['n_public'] = n_public
-                args['n_unchecked'] = n_unchecked
-                args['n_confirmed'] = n_confirmed
-                args['n_revised'] = n_revised
-            if version_uuid and version_uuid != 'na':
-                all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
-            if linked_id and linked_id != 'na':
-                all_annotations = all_annotations.filter(linked_id=linked_id)
-            if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na'):
-                if year and year != 'all':
-                    try:
-                        this_year = int(year)
-                        all_annotations = all_annotations.filter(report__creation_time__year=this_year)
-                    except ValueError:
-                        pass
-                if tiger_certainty and tiger_certainty != 'all':
-                    try:
-                        this_certainty = int(tiger_certainty)
-                        all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
-                    except ValueError:
-                        pass
-                if site_certainty and site_certainty != 'all':
-                    try:
-                        this_certainty = int(site_certainty)
-                        all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
-                    except ValueError:
-                        pass
+        elif this_user_is_superexpert:
+            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            if new_reports_unfiltered and this_user_is_team_bcn:
+                    new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+            if new_reports_unfiltered and this_user_is_team_not_bcn:
+                    new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+            if new_reports_unfiltered:
+                new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
+                for this_report in new_reports:
+                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                    new_annotation.save()
+        all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
+        my_version_uuids = all_annotations.values('report__version_UUID')
+        my_linked_ids = all_annotations.values('linked_id')
+        if this_user_is_expert:
+            if (version_uuid == 'na' and linked_id == 'na') and (not pending or pending == 'na'):
+                pending = 'pending'
+        if this_user_is_superexpert:
+            if (version_uuid == 'na' and linked_id == 'na') and (not final_status or final_status == 'na'):
+                final_status = 'public'
+            if (version_uuid == 'na' and linked_id == 'na') and (not checked or checked == 'na'):
+                checked = 'unchecked'
+            n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
+            n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
+            n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
+            n_unchecked = all_annotations.filter(validation_complete=False).count()
+            n_confirmed = all_annotations.filter(validation_complete=True, revise=False).count()
+            n_revised = all_annotations.filter(validation_complete=True, revise=True).count()
+            args['n_flagged'] = n_flagged
+            args['n_hidden'] = n_hidden
+            args['n_public'] = n_public
+            args['n_unchecked'] = n_unchecked
+            args['n_confirmed'] = n_confirmed
+            args['n_revised'] = n_revised
+        if version_uuid and version_uuid != 'na':
+            all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
+        if linked_id and linked_id != 'na':
+            all_annotations = all_annotations.filter(linked_id=linked_id)
+        if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na'):
+            if year and year != 'all':
+                try:
+                    this_year = int(year)
+                    all_annotations = all_annotations.filter(report__creation_time__year=this_year)
+                except ValueError:
+                    pass
+            if tiger_certainty and tiger_certainty != 'all':
+                try:
+                    this_certainty = int(tiger_certainty)
+                    all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
+                except ValueError:
+                    pass
+            if site_certainty and site_certainty != 'all':
+                try:
+                    this_certainty = int(site_certainty)
+                    all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
+                except ValueError:
+                    pass
 
-                if pending == "complete":
-                    all_annotations = all_annotations.filter(validation_complete=True)
-                elif pending == 'pending':
+            if pending == "complete":
+                all_annotations = all_annotations.filter(validation_complete=True)
+            elif pending == 'pending':
+                all_annotations = all_annotations.filter(validation_complete=False)
+            if status == "flagged":
+                all_annotations = all_annotations.filter(status=0)
+            elif status == "hidden":
+                all_annotations = all_annotations.filter(status=-1)
+            elif status == "public":
+                all_annotations = all_annotations.filter(status=1)
+            if this_user_is_superexpert:
+                if checked == "unchecked":
                     all_annotations = all_annotations.filter(validation_complete=False)
-                if status == "flagged":
-                    all_annotations = all_annotations.filter(status=0)
-                elif status == "hidden":
-                    all_annotations = all_annotations.filter(status=-1)
-                elif status == "public":
-                    all_annotations = all_annotations.filter(status=1)
-                if this_user_is_superexpert:
-                    if checked == "unchecked":
-                        all_annotations = all_annotations.filter(validation_complete=False)
-                    elif checked == "confirmed":
-                        all_annotations = all_annotations.filter(validation_complete=True, revise=False)
-                    elif checked == "revised":
-                        all_annotations = all_annotations.filter(validation_complete=True, revise=True)
-                    if final_status == "flagged":
-                        all_annotations = all_annotations.filter(report__in=flagged_others_reports)
-                    elif final_status == "hidden":
-                        all_annotations = all_annotations.filter(report__in=hidden_others_reports)
-                    elif final_status == "public":
-                        all_annotations = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports)
-            if all_annotations:
-                all_annotations = all_annotations.order_by('report__creation_time')
-                if orderby == "site_score":
-                    all_annotations = all_annotations.order_by('site_certainty_category')
-                elif orderby == "tiger_score":
-                    all_annotations = all_annotations.order_by('tiger_certainty_category')
-            paginator = Paginator(all_annotations, int(tasks_per_page))
-            page = request.GET.get('page')
-            try:
-                objects = paginator.page(page)
-            except PageNotAnInteger:
-                objects = paginator.page(1)
-            except EmptyPage:
-                objects = paginator.page(paginator.num_pages)
-            page_query = all_annotations.filter(id__in=[object.id for object in objects])
-            this_formset = AnnotationFormset(queryset=page_query)
-            args['formset'] = this_formset
-            args['objects'] = objects
-            args['pages'] = range(1, objects.paginator.num_pages+1)
-            current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
-            args['n_pending'] = current_pending
-            n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
-            args['n_complete'] = n_complete
-            args['n_total'] = n_complete + current_pending
-            args['year'] = year
-            args['orderby'] = orderby
-            args['tiger_certainty'] = tiger_certainty
-            args['site_certainty'] = site_certainty
-            args['pending'] = pending
-            args['checked'] = checked
-            args['status'] = status
-            args['final_status'] = final_status
-            args['version_uuid'] = version_uuid
-            args['linked_id'] = linked_id
-            args['my_version_uuids'] = my_version_uuids
-            args['my_linked_ids'] = my_linked_ids
-            args['tasks_per_page'] = tasks_per_page
-            args['scroll_position'] = scroll_position
-            args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
+                elif checked == "confirmed":
+                    all_annotations = all_annotations.filter(validation_complete=True, revise=False)
+                elif checked == "revised":
+                    all_annotations = all_annotations.filter(validation_complete=True, revise=True)
+                if final_status == "flagged":
+                    all_annotations = all_annotations.filter(report__in=flagged_others_reports)
+                elif final_status == "hidden":
+                    all_annotations = all_annotations.filter(report__in=hidden_others_reports)
+                elif final_status == "public":
+                    all_annotations = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports)
+        if all_annotations:
+            all_annotations = all_annotations.order_by('report__creation_time')
+            if orderby == "site_score":
+                all_annotations = all_annotations.order_by('site_certainty_category')
+            elif orderby == "tiger_score":
+                all_annotations = all_annotations.order_by('tiger_certainty_category')
+        paginator = Paginator(all_annotations, int(tasks_per_page))
+        page = request.GET.get('page', 1)
+        try:
+            objects = paginator.page(page)
+        except PageNotAnInteger:
+            objects = paginator.page(1)
+        except EmptyPage:
+            objects = paginator.page(paginator.num_pages)
+        page_query = all_annotations.filter(id__in=[object.id for object in objects])
+        this_formset = AnnotationFormset(queryset=page_query)
+        args['formset'] = this_formset
+        args['objects'] = objects
+        args['pages'] = range(1, objects.paginator.num_pages+1)
+        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
+        args['n_pending'] = current_pending
+        n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
+        args['n_complete'] = n_complete
+        args['n_total'] = n_complete + current_pending
+        args['year'] = year
+        args['orderby'] = orderby
+        args['tiger_certainty'] = tiger_certainty
+        args['site_certainty'] = site_certainty
+        args['pending'] = pending
+        args['checked'] = checked
+        args['status'] = status
+        args['final_status'] = final_status
+        args['version_uuid'] = version_uuid
+        args['linked_id'] = linked_id
+        args['my_version_uuids'] = my_version_uuids
+        args['my_linked_ids'] = my_linked_ids
+        args['tasks_per_page'] = tasks_per_page
+        args['scroll_position'] = scroll_position
+        args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

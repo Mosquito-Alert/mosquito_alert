@@ -178,7 +178,7 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
-                            {% if task_perpage_choices %}
+                            {% if tasks_per_page_choices %}
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle"
                                        data-toggle="dropdown">Reports per page
@@ -218,20 +218,27 @@
 
         {% block title %}
             <h1>Expert Report Validation</h1>
-            <h2>{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed
-                Reports{% endif %}</h2>
+            <h2>{% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}Search
+                Result{% else %}{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed
+                    Reports{% endif %}{% endif %}</h2>
 
-            <strong>Ordered by:</strong> {{ orderby }}<br>
-            <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }},
-            Status - {{ status }}
-
+            {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
+                <strong>Ordered by:</strong> {{ orderby }}<br>
+                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty -
+                {{ site_certainty }},
+                Status - {{ status }}
+            {% endif %}
         {% endblock %}
 
 
         <div style="text-align: left">
+
             <h4> Instructions</h4>
 
             {% block instructions %}
+
+                        {% if pending == 'pending' %}
+
                 <p>For each report: (1) select a category for your degree of belief that the report contains at least
                     one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
                     report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal
@@ -249,6 +256,10 @@
                     "validation complete" box. You will not be able to modify your responses once you have saved a
                     report marked with "validation complete."</p>
 
+                {% else %}
+                <p>You are currently viewing your completed reports. To validate new reports, click the blue 'Pending' button at the top of the screen.</p>
+                {% endif %}
+
             {% endblock %}
         </div>
     </div>
@@ -258,7 +269,9 @@
         {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
             <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
         {% endif %}
+
     {{ formset.management_form }}
+
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
             <div class="col-md-12">
@@ -507,25 +520,33 @@
 
     {% endfor %}
 
+
+    <input id="save_formset" type="text" name="save_formset" style="display: none;" value="T">
     <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
     <input id="pending_input" type="text" name="pending" style="display: none;" value="{{ pending }}">
+    <input id="checked_input" type="text" name="checked" style="display: none;" value="{{ checked }}">
     <input id="orderby_input" type="text" name="orderby" style="display: none;" value="{{ orderby }}">
     <input id="tiger_certainty_input" type="text" name="tiger_certainty" style="display: none;"
            value="{{ tiger_certainty }}">
     <input id="site_certainty_input" type="text" name="site_certainty" style="display: none;"
            value="{{ site_certainty }}">
     <input id="status_input" type="text" name="status" style="display: none;" value="{{ status }}">
-    <input id="final_status_input" type="text" name="final_status" style="display: none;" value="{{ final_status }}">
-    <input id="version_uuid_input" type="text" name="final_status" style="display: none;" value="{{ version_uuid }}">
-    <input id="linked_id_input" type="text" name="final_status" style="display: none;" value="{{ linked_id }}">
-    <input id="load_new_reports_input" type="text" name="final_status" style="display: none;"
+    <input id="final_status_input" type="text" name="final_status" style="display: none;"
+           value="{{ final_status }}">
+    <input id="version_uuid_input" type="text" name="version_uuid" style="display: none;"
+           value="{{ version_uuid }}">
+    <input id="linked_id_input" type="text" name="linked_id" style="display: none;" value="{{ linked_id }}">
+    <input id="load_new_reports_input" type="text" name="load_new_reports" style="display: none;"
            value="{{ load_new_reports }}">
-    <input id="next_page_input" type="text" name="final_status" style="display: none;"
+    <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;"
+           value="{{ tasks_per_page }}">
+    <input id="next_page_input" type="text" name="next_page" style="display: none;"
            value="">
 
-
-
     </form>
+
+
+
 
         {% if objects.has_next or objects.has_previous %}
 
@@ -586,7 +607,10 @@
         </div>
     {% endif %}
 
+
     </div>
+
+
 
     <div class="modal fade" id="save_warning_modal" tabindex="-1" role="dialog"
          aria-labelledby="save_warning_modal_label"
@@ -846,20 +870,44 @@
 
         var gear = $("#gear").hide();
 
-        function background_save() {
-            $("[id*='validation_complete']:checked").prop("checked", false);
-            $("#formset_forms").submit();
+        function background_save(qp) {
+            if ($("#formset_forms").length > 0) {
+                $("[id*='validation_complete']:checked").prop("checked", false);
+                $("#formset_forms").submit();
+            } else {
+                window.location.href = qp;
+            }
         }
 
         function setup_and_launch_save_warning() {
             $(".modal").modal("hide");
-            var reports_list = $("#reports_being_saved_list").empty();
-            reports_list.append('<ul>');
-            $("[id*='validation_complete']:checked").parent().parent().parent().each(function () {
-                reports_list.append('<li>' + $(this).attr('id') + '</li>');
+            var reports_list_div = $("#reports_being_saved_list").empty();
+            reports_list_div.append('<ul></ul>');
+            var reports_list = $("#reports_being_saved_list ul");
+            $("[id*='validation_complete']:checked").each(function () {
+                if($(this).siblings(name*['photo']).val() == ""){
+                                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">No photo selected</span></li>');
+                }
+                else{
+                 reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + '</li>');
+                }
             });
-            reports_list.append('</ul>');
             $("#save_warning_modal").modal('show');
+        }
+
+
+        function clear_inputs() {
+            $("#scroll_position").val(0);
+            $("#pending_input").val('na');
+            $("#checked_input").val('na');
+            $("#orderby_input").val('date');
+            $("#tiger_certainty_input").val('all');
+            $("#site_certainty_input").val('all');
+            $("#status_input").val('all');
+            $("#final_status_input").val('na');
+            $("#version_uuid_input").val('na');
+            $("#linked_id_input").val('na');
+            $("#load_new_reports_input").val('F');
         }
 
 
@@ -932,29 +980,27 @@
                 $("#site_certainty_input").val(this_site_certainty);
                 $("#status_input").val(this_status);
                 $("#pending_input").val(pending);
+                var qp = '?orderby=' + this_orderby;
+                qp += '&tiger_certainty=' + this_tiger_certainty;
+                qp += '&site_certainty=' + this_site_certainty;
+                qp += '&status=' + this_status;
+                qp += '&pending=' + pending;
+                return(qp)
             }
-
-            function clear_selectors() {
-                $("#orderby_input").val('');
-                $("#tiger_certainty_input").val('');
-                $("#site_certainty_input").val('');
-                $("#status_input").val('');
-                $("#pending_input").val('');
-            }
-
 
             function submit_queries() {
                 gear.show();
-                query_selectors();
-                background_save();
+                var qp = query_selectors();
+                background_save(qp);
             }
 
 
             function submit_queries_plus(event) {
                 gear.show();
                 pending = event.data.extr;
-                query_selectors();
-                background_save();
+                var qp = query_selectors();
+                $("#pending_input").val(pending);
+                background_save(qp);
             }
 
             $("#orderby_select").val("{{ orderby }}");
@@ -978,18 +1024,20 @@
 
         function submit_search_version_uuid() {
             gear.show();
-            clear_selectors();
+            clear_inputs();
             var this_version_uuid = $("#version_uuid_select").val();
-            $("#version_uuid_input").value(this_version_uuid);
-            background_save();
+            $("#version_uuid_input").val(this_version_uuid);
+            var qp = '?version_uuid=' + this_version_uuid;
+            background_save(qp);
         }
 
         function submit_search_linked_id() {
             gear.show();
-            clear_selectors();
+            clear_inputs();
             var this_linked_id = $("#linked_id_select").val();
-            $("#linked_id_input").value(this_linked_id);
-            background_save();
+            $("#linked_id_input").val(this_linked_id);
+            var qp = '?linked_id=' + linked_id;
+            background_save(qp);
         }
 
         $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
@@ -1000,25 +1048,28 @@
 
         grab_reports_button.on('click', function () {
             gear.show();
-            $("#load_new_reports_input").value("T");
-            query_selectors();
-            background_save();
+            $("#load_new_reports_input").val("T");
+            var qp = query_selectors();
+            qp += '&load_new_reports=' + "T";
+            background_save(qp);
         });
 
 
         $("#page_button").on('click', function () {
             gear.show();
-            query_selectors();
-            background_save();
+            var qp = query_selectors();
+            background_save(qp);
         });
 
         var nb = $("#next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
                 gear.show();
-                query_selectors();
-                $("#next_page_input").val("{{ objects.next_page_number }}");
-                background_save();
+                var next_page = "{{ objects.next_page_number }}";
+                var qp = query_selectors();
+                qp += '&page=' + next_page;
+                $("#next_page_input").val(next_page);
+                background_save(qp);
             });
         {% else %}
             nb.hide();

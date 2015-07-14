@@ -756,7 +756,7 @@ class Report(models.Model):
         if notes:
             n = len(notes)
             if n == 1:
-                return '<strong>Message from Expert:</strong> ' + notes
+                return '<strong>Message from Expert:</strong> ' + notes[0]
             elif n > 1:
                 result = ''
                 i = 1
