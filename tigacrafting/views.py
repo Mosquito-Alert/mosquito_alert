@@ -23,6 +23,7 @@ from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
 from django.db.models import Q
+from django.contrib.auth.models import User, Group
 
 
 def photos_to_tasks():
@@ -444,7 +445,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         if this_user_is_expert and load_new_reports == 'T':
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
-                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
@@ -456,7 +457,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         new_annotation.save()
         elif this_user_is_superexpert:
-            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
             if new_reports_unfiltered and this_user_is_team_not_bcn:
@@ -581,10 +582,46 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
 
 
 @login_required
-def expert_report_status(request, reports_per_page=100):
+def expert_report_status(request, reports_per_page=500, version_uuid=None, linked_id=None):
     this_user = request.user
-    if this_user.groups.filter(name='superexpert').exists():
-        these_reports = filter_reports(Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True), sort=False)
-        return render(request, 'tigacrafting/expert_report_status.html', {'reports': these_reports})
+    if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
+        version_uuid = request.GET.get('version_uuid', version_uuid)
+        reports_per_page = request.GET.get('reports_per_page', reports_per_page)
+        all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
+        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
+        if version_uuid and version_uuid != 'na':
+            reports = Report.objects.filter(version_UUID=version_uuid)
+            n_reports = 1
+        elif linked_id and linked_id != 'na':
+            reports = Report.objects.filter(linked_id=linked_id)
+            n_reports = 1
+        else:
+            reports = filter_reports(these_reports, sort=False)
+            n_reports = len(reports)
+        paginator = Paginator(reports, int(reports_per_page))
+        page = request.GET.get('page', 1)
+        try:
+            objects = paginator.page(page)
+        except PageNotAnInteger:
+            objects = paginator.page(1)
+        except EmptyPage:
+            objects = paginator.page(paginator.num_pages)
+        paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects])
+        reports_per_page_choices = range(5, min(1000, n_reports)+1, 100)
+        context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
+        context['objects'] = objects
+        context['pages'] = range(1, objects.paginator.num_pages+1)
+
+        return render(request, 'tigacrafting/expert_report_status.html', context)
+    else:
+        return HttpResponseRedirect(reverse('login'))
 
 
+@login_required
+def expert_status(request):
+    this_user = request.user
+    if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
+        groups = Group.objects.filter(name__in=['expert', 'superexpert'])
+        return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
+    else:
+        return HttpResponseRedirect(reverse('login'))

@@ -466,6 +466,10 @@ class Report(models.Model):
             elif all_versions.reverse()[0].version_number == self.version_number:
                 return True
 
+    def get_which_is_latest(self):
+        all_versions = Report.objects.filter(report_id=self.report_id).order_by('version_number')
+        return all_versions.reverse()[0].version_UUID
+
     def get_crowdcrafting_score(self):
         if self.type not in ('site', 'adult'):
             return None

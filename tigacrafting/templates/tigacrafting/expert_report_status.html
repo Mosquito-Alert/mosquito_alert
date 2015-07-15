@@ -50,12 +50,45 @@
     <![endif]-->
     {% endblock %}
 
+
+{% block leaflet_stuff %}
     {% leaflet_js %}
     {% leaflet_css %}
+{% endblock %}
 
 
     <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
 
+{% block map_head_js %}
+
+    <script type="text/javascript">
+
+        var mosquito_icon_class = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+            }
+        });
+        var site_icon_class = L.Icon.Default.extend({
+            options: {
+                iconUrl: '{% static "tigamap/blue_icon.png" %}'
+            }
+        });
+
+        var mosquito_icon = new mosquito_icon_class;
+        var site_icon = new site_icon_class;
+
+        {% for report in reports %}
+            function map_init_basic{{ report.version_UUID }}(map, options) {
+
+                L.marker([{{ report.lat }}, {{ report.lon }}], {icon:
+                        {% if report.type == 'site' %}site_icon{% else %}
+                            mosquito_icon{% endif %}}).bindPopup('<p><strong>Lat:</strong> {{ report.lat }}</p><p><strong>Lon:</strong> {{ report.lon }}</p>').addTo(map);
+
+            }
+        {%  endfor %}
+
+    </script>
+{% endblock %}
 
 </head>
 
@@ -87,7 +120,7 @@
 
                         <ul class="nav navbar-nav navbar-left">
 
-
+{% block search_btn %}
                             <li>
                                 <span data-toggle="modal" data-target="#searchModal"><button type="button"
                                                                                              class="btn btn-warning btn-sm navbar-btn"
@@ -96,14 +129,46 @@
                                                                                              title="Search"
                                                                                              style="margin-left:5px">
                                     <span class="glyphicon glyphicon-search"
-                                          {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}style="color:black"{% endif %}></span>
+                                          {% if version_uuid and version_uuid != 'na' and version_uuid != '' %}style="color:black"{% endif %}></span>
                                 </button></span>
                             </li>
-
+{% endblock %}
                         </ul>
 
 
                         <ul class="nav navbar-nav navbar-right">
+                                                <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Validation <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+        <li><a href={% url 'expert_report_annotation' %}>Validate</a></li>
+    </ul>
+</li>
+
+                        <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Monitor <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+        <li><a href={% url 'expert_report_status' %}>Reports</a></li>
+                <li><a href={% url 'expert_status' %}>People</a></li>
+
+    </ul>
+</li>
+
+                               {% if reports_per_page_choices %}
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle"
+                                       data-toggle="dropdown">Reports per page
+                                        <span class="caret"></span></a>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                        {% for n in reports_per_page_choices %}
+                                            <li>
+                                                <a href="{% url 'expert_report_status' %}?reports_per_page={{ n }}">{{ n }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
+
+
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
                             <li><a href="{% url "auth_logout" %}">logout</a>
                             </li>
@@ -126,35 +191,47 @@
 
     <div class="starter-template">
 
-            <h1>Expert Report Validation Status</h1>
+            <h1>Expert Validation Status: Reports</h1>
+        {% if version_uuid %}
+        <h2>Search Result: Report {{ version_uuid }}</h2>
+        {% endif %}
 
         </div>
-    </div>
 
+    {% if objects %}
 
 
     {% for report in reports %}
-        <div class="row row_for_{{ report.version_UUID }}">
+        <div class="row row_for_{{ forloop.counter }}" style="background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
             <div class="col-md-12">
                 <h4><strong>{{ report.type|capfirst }}
                     Report {{ report.version_UUID }}</strong>
                     {{ report.creation_time|date:"d/m/y H:i" }} UTC</h4>
             </div>
         </div>
-            <div class="row">
+{% if report.deleted %}
+                    <div class="row">
                 <div class="col-md-12">
-                    <strong>Who has this report? </strong> {{ report.get_who_has_bootstrap | safe }}
-                </div>
+                    <strong>WARNING: THIS REPORT HAS BEEN DELETED BY THE USER. IT WILL NOT BE SENT FOR EXPERT VALIDATION OR DISPLAYED ON THE PUBLIC MAP.</strong></div>
             </div>
-            <div class="row">
+{% endif %}
+{% if not report.deleted and not report.latest_version %}
+                    <div class="row">
+                <div class="col-md-12">
+                    <strong>WARNING: THIS IS NOT THE LATEST VERSION OF THIS REPORT. IT WILL NOT BE SENT FOR EXPERT VALIDATION OR DISPLAYED ON THE PUBLIC MAP.</strong><br>The latest version of this report is <a href="{% url 'expert_report_status' %}?version_uuid={{ report.get_which_is_latest }}">{{ report.get_which_is_latest }}</a></div>
+            </div>
+{% endif %}
+
+            <div class="row" style="margin-bottom: 3px;">
         <div class="col-md-12">
-            <a role="button" data-toggle="collapse" href="#current_status_collapse{{ report.version_UUID }}"
-               aria-expanded="false" aria-controls="current_status_collapse{{ report.version_UUID }}"><i
+        {% if report.get_is_expert_validated %}
+            <a role="button" data-toggle="collapse" href="#current_status_collapse{{ forloop.counter }}"
+               aria-expanded="false" aria-controls="current_status_collapse{{ forloop.counter }}"><i
                     class="fa fa-plus-square-o"></i></a> <strong>Current
-            Status:</strong> {{ report.get_final_expert_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}
+            Status:</strong> {{ report.get_final_expert_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}{% else %}<strong>Status:</strong> Not yet validated by three experts.{% endif %}
 
 
-            <div class="collapse" id="current_status_collapse{{ report.version_UUID }}">
+            <div class="collapse" id="current_status_collapse{{ forloop.counter }}">
                 <div class="well">
                     <div class="table-responsive">
                         <table class="table table-condensed">
@@ -193,11 +270,16 @@
         </div>
     </div>
 
+            <div class="row">
+                <div class="col-md-12">
+                    <strong>Who has this report? </strong> {% if report.get_who_has_bootstrap %}{{ report.get_who_has_bootstrap | safe }}{% else %} Nobody - it has not yet been given to any experts.{% endif %}
+                </div><br>
+            </div>
 
         <div class="row">
             <div class="col-md-3">
-                <br>
-
+{% if report.get_is_expert_validated %}
+    <br>
     <strong>Individual Expert Responses</strong><br>
     <div class="table-responsive">
         <table class="table table-condensed borderless" style="font-size: smaller;">
@@ -212,9 +294,9 @@
 
                         <tr>
                             <td><a role="button" data-toggle="collapse"
-                                   href="#expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}"
+                                   href="#expert_collapse{{ forloop.counter }}{{ ano.id }}"
                                    aria-expanded="false"
-                                   aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i
+                                   aria-controls="expert_collapse' + forloop.counter + str(ano.id) + '"><i
                                     class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
                             </td>
                             <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
@@ -222,7 +304,7 @@
                         <tr>
                             <td colspan="12" class="hiddenRow">
                                 <div class="accordian-body collapse"
-                                     id="expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}"
+                                     id="expert_collapse{{ forloop.counter }}{{ ano.id }}"
                                      style="border: 1px solid #333;padding:2px;">
                                     {{ ano.last_modified|date:"d/m/y H:i" }} UTC<br>
                                     {% if report.type == 'adult' %}
@@ -251,7 +333,7 @@
 
 
 
-
+{% endif %}
 
             </div>
 
@@ -271,10 +353,10 @@
                 <br>
                 <strong>Location</strong>
 
-                <div id="map{{ report.version_UUID }}" class="report_annotation_map-container">
+                <div id="map{{ forloop.counter }}" class="report_annotation_map-container">
 
                     <div style="z-index:100; position:absolute; top:0; right:0;"
-                         id="qrcode{{ report.version_UUID }}"></div>
+                         id="qrcode{{ forloop.counter }}"></div>
 
                 </div>
 
@@ -307,6 +389,62 @@
 
     {% endfor %}
 
+            {% if objects.has_next or objects.has_previous %}
+
+            <div class="row">
+
+                <div class="col-md-12">
+
+                    <div class="pagination">
+        <span class="step-links">
+            {% if objects.has_previous %}
+                <a href="?page={{ objects.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+            </span>
+
+            {% if objects.has_next %}
+
+                <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
+            {% endif %}
+
+            <br>
+                <form role="form" class="form-inline">
+                    <div class="form-group">
+                        <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
+                               class="form-control input-sm" id="page_input" placeholder="Go to page"
+                               style="width:100px;">
+                        <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+                    </div>
+
+                </form>
+
+        </span>
+                    </div>
+
+
+                </div>
+            </div>
+
+        {% endif %}
+    {% else %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="well">
+                            <p>No reports match your search criteria.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+
+
+</div>
+
+
+{% endblock %}
 
     {% block search_modal %}
         <!-- Modal -->
@@ -328,7 +466,7 @@
                                 <select id="version_uuid_select" class="selectpicker show-tick form-control"
                                         data-live-search="true">
                                     <option value=""></option>
-                                    {% for version_uuid in my_version_uuids %}
+                                    {% for version_uuid in all_reports_version_uuids %}
                                         <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
                                     {% endfor %}
                                 </select>
@@ -339,28 +477,11 @@
 
                         </form>
 
-                        <form role="form" class="form-inline">
-
-                            <div class="form-group">
-                                <label for="linked_id_select">Linked ID:</label>
-
-                                <select id="linked_id_select" class="selectpicker show-tick form-control"
-                                        data-live-search="true">
-                                    <option value=""></option>
-                                    {% for linked_id in my_linked_ids %}
-                                        <option value="{{ linked_id.values | first }}">{{ linked_id.values | first }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search
-                            </button>
-                        </form>
-
 
                     </div>
                     <div class="modal-footer">
                         {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}
-                            <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}">Clear Search</a>
+                            <a class="btn btn-primary" href="{% url 'expert_report_status' %}">Clear Search</a>
                         {% endif %}
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     </div>
@@ -372,7 +493,6 @@
     {% endblock %}
 
 
-{% endblock %}
 
 
 
@@ -387,13 +507,16 @@
     <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
 
     <script type="text/javascript">
+
+        {% block map_js %}
+
         (function () {
             function loadmap() {
 
-                {% for form in formset %}
+                {% for report in reports %}
 
-                    var centerLat = {{ form.instance.report.lat }};
-                    var centerLng = {{ form.instance.report.lon }};
+                    var centerLat = {{ report.lat }};
+                    var centerLng = {{ report.lon }};
                     var initialZoom = 6;
                     var djoptions = {"layers": [
                                 ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -409,8 +532,8 @@
                             options = {djoptions: djoptions, initfunc: loadmap,
                                 globals: false, callback: window.map_init_basic};
 
-                    L.Map.djangoMap('map{{ form.instance.id }}', {djoptions: djoptions, initfunc: loadmap,
-                        globals: false, callback: eval("window.map_init_basic{{ form.instance.id }}")});
+                    L.Map.djangoMap('map{{ forloop.counter }}', {djoptions: djoptions, initfunc: loadmap,
+                        globals: false, callback: eval("window.map_init_basic{{ forloop.counter }}")});
                 {% endfor %}
 
             }
@@ -420,32 +543,8 @@
             else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
             else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
         })();
-    </script>
 
-
-
-    <script>
-
-        var pending = "{{ pending }}";
-
-        var scroll_position = parseInt({{ scroll_position }});
-        if (scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)) {
-            $(window).scrollTop(scroll_position);
-        }
-
-        var grab_reports_button = $("#grab_reports_button");
-        var n_pending = {{ n_pending }};
-        function toggle_grab_reports_button() {
-            if (n_pending < 5) {
-                grab_reports_button.prop('disabled', false);
-            } else {
-                grab_reports_button.prop('disabled', true);
-            }
-        }
-
-
-        $('input[id~="value_changed"]').hide();
-        $('label[for~="value_changed"]').hide();
+        {% endblock %}
 
         var gear = $("#gear").hide();
 
@@ -458,6 +557,17 @@
             });
 
         });
+
+
+            function submit_search_version_uuid() {
+            gear.show();
+            var this_version_uuid = $("#version_uuid_select").val();
+            window.location.href = '?version_uuid=' + this_version_uuid;
+        }
+
+        $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
+
+
 
 
     </script>

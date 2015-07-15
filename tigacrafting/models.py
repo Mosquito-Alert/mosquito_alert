@@ -230,4 +230,26 @@ class ExpertReportAnnotation(models.Model):
         return result
 
 
+class ExpertUser(models.Model):
+    user = models.OneToOneField(User, primary_key=True)
 
+    def is_expert(self):
+        return self.user.groups.filter(name="expert").exists()
+
+    def is_superexpert(self):
+        return self.user.groups.filter(name="superexpert").exists()
+
+    def is_team_bcn(self):
+        return self.user.groups.filter(name="team_bcn").exists()
+
+    def is_team_not_bcn(self):
+        return self.user.groups.filter(name="team_not_bcn").exists()
+
+    def is_team_everywhere(self):
+        return self.user.groups.exclude(name="team_not_bcn").exclude(name="team_bcn").exists()
+
+    def n_completed_annotations(self):
+        return self.user.expert_report_annotations.filter(validation_complete=True).count()
+
+    def n_pending_annotations(self):
+        return self.expert_report_annotations.filter(validation_complete=False).count()

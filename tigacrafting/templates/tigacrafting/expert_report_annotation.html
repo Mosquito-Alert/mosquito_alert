@@ -178,6 +178,8 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
+                        {% block navbar_right_items %}
+                            {% endblock %}
                             {% if tasks_per_page_choices %}
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle"
