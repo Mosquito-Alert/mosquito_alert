@@ -622,6 +622,11 @@ def expert_status(request):
     this_user = request.user
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         groups = Group.objects.filter(name__in=['expert', 'superexpert'])
-        return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
+        for group in groups:
+            for user in group.user_set.all():
+                if not UserStat.objects.filter(user=user).exist():
+                    us = UserStat(user=user)
+                    us.save()
+        return render(request, 'tigacrafting/expert_status.html', {'experts': groups.filter(name='expert'), 'superexperts': groups.filter(name='superexpert')})
     else:
         return HttpResponseRedirect(reverse('login'))

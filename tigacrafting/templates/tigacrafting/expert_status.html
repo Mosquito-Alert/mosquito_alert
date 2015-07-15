@@ -37,7 +37,7 @@
                 <h3>{{ user.username }}</h3>
              <p><a role="button" data-toggle="collapse" href="#current_status_collapse_pending{{ user.username }}"
                aria-expanded="false" aria-controls="current_status_collapse_pending{{ user.username }}"><i
-                    class="fa fa-plus-square-o"></i></a> <strong>Pending Reports</strong></p>
+                    class="fa fa-plus-square-o"></i></a> <strong>Pending Reports</strong> <span class="badge">{{ user.userstat.n_pending_annotations }}</span></p>
 
             <div class="collapse" id="current_status_collapse_pending{{ user.username }}">
                 <div class="well">
@@ -51,7 +51,7 @@
 
         <p><a role="button" data-toggle="collapse" href="#current_status_collapse_complete{{ user.username }}"
                aria-expanded="false" aria-controls="current_status_collapse_complete{{ user.username }}"><i
-                    class="fa fa-plus-square-o"></i></a> <strong>Complete Reports</strong></p>
+                    class="fa fa-plus-square-o"></i></a> <strong>Complete Reports</strong> <span class="badge">{{ user.userstat.n_completed_annotations }}</span></p>
 
             <div class="collapse" id="current_status_collapse_complete{{ user.username }}">
                 <div class="well">

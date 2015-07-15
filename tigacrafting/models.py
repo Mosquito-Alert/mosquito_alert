@@ -230,7 +230,7 @@ class ExpertReportAnnotation(models.Model):
         return result
 
 
-class ExpertUser(models.Model):
+class UserStat(models.Model):
     user = models.OneToOneField(User, primary_key=True)
 
     def is_expert(self):
@@ -252,4 +252,4 @@ class ExpertUser(models.Model):
         return self.user.expert_report_annotations.filter(validation_complete=True).count()
 
     def n_pending_annotations(self):
-        return self.expert_report_annotations.filter(validation_complete=False).count()
+        return self.user.expert_report_annotations.filter(validation_complete=False).count()
