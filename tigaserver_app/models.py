@@ -751,7 +751,7 @@ class Report(models.Model):
             winning_note = Counter(super_notes).most_common()[0][0]
             if winning_note:
                 return winning_note
-        expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
+        expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
         if expert_notes:
             winning_note = Counter(expert_notes).most_common()[0][0]
             if winning_note:
@@ -763,7 +763,7 @@ class Report(models.Model):
         if super_notes:
             notes = super_notes
         else:
-            expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
+            expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
             if expert_notes:
                 notes = expert_notes
         if notes:
