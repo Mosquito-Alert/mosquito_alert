@@ -553,13 +553,27 @@ class Report(models.Model):
             return None
         these_responses = self.responses.all()
         result = {}
-        if these_responses.filter(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).count() > 0:
-            q1r = these_responses.get(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).answer
-            result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-        if these_responses.filter(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?')).count() > 0:
-            q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?')).answer
-            result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-        return result
+        if self.package_name == 'ceab.movelab.tigatrapp' and self.package_version >= 10:
+            if these_responses.filter(Q(question=u'Is it in a public area?')|Q(question=u'\xbfSe encuentra en la v\xeda p\xfablica?')|Q(question=u'Es troba a la via p\xfablica?')).count() > 0:
+                q1r = these_responses.get(Q(question=u'Is it in a public area?')|Q(question=u'\xbfSe encuentra en la v\xeda p\xfablica?')|Q(question=u'Es troba a la via p\xfablica?')).answer
+                result['q1_response_new'] = 1 if q1r in [u'S\xed', u'Yes'] else -1
+
+            if these_responses.filter(Q(question=u'Does it contain stagnant water and/or mosquito larvae or pupae (any mosquito species)?')|Q(question=u'Contiene agua estancada y/o larvas o pupas de mosquito (cualquier especie)?')|Q(question=u'Cont\xe9 aigua estancada y/o larves o pupes de mosquit (qualsevol esp\xe8cie)?')).count() > 0:
+                q2r = these_responses.get(Q(question=u'Does it contain stagnant water and/or mosquito larvae or pupae (any mosquito species)?')|Q(question=u'Contiene agua estancada y/o larvas o pupas de mosquito (cualquier especie)?')|Q(question=u'Cont\xe9 aigua estancada y/o larves o pupes de mosquit (qualsevol esp\xe8cie)?')).answer
+                result['q2_response_new'] = 1 if (u'S\xed' in q2r or u'Yes' in q2r) else -1
+
+            if these_responses.filter(Q(question=u'Have you seen adult mosquitoes nearby (<10 meters)?')|Q(question=u'\xbfHas visto mosquitos cerca (a <10 metros)?')|Q(question=u'Has vist mosquits a prop (a <10metres)?')).count() > 0:
+                q3r = these_responses.get(Q(question=u'Have you seen adult mosquitoes nearby (<10 meters)?')|Q(question=u'\xbfHas visto mosquitos cerca (a <10 metros)?')|Q(question=u'Has vist mosquits a prop (a <10metres)?')).answer
+                result['q3_response_new'] = 1 if q3r in [u'S\xed', u'Yes'] else -1
+            return result
+        else:
+            if these_responses.filter(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).count() > 0:
+                q1r = these_responses.get(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).answer
+                result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
+            if these_responses.filter(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?')).count() > 0:
+                q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?')).answer
+                result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
+            return result
 
     def get_creation_year(self):
         return self.creation_time.year
@@ -749,16 +763,20 @@ class Report(models.Model):
             return None
 
     def get_final_public_note(self):
-        super_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
-        if super_notes:
-            winning_note = Counter(super_notes).most_common()[0][0]
-            if winning_note:
-                return winning_note
-        expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
-        if expert_notes:
-            winning_note = Counter(expert_notes).most_common()[0][0]
-            if winning_note:
-                return winning_note
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
+            super_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
+            if super_notes:
+                winning_note = Counter(super_notes).most_common()[0][0]
+                if winning_note:
+                    return winning_note
+            return None
+        else:
+            expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
+            if expert_notes:
+                winning_note = Counter(expert_notes).most_common()[0][0]
+                if winning_note:
+                    return winning_note
+            return None
 
     def get_final_note_to_user_html(self):
         notes = None
