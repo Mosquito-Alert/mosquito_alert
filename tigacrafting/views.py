@@ -627,6 +627,6 @@ def expert_status(request):
                 if not UserStat.objects.filter(user=user).exists():
                     us = UserStat(user=user)
                     us.save()
-        return render(request, 'tigacrafting/expert_status.html', {'experts': groups.filter(name='expert'), 'superexperts': groups.filter(name='superexpert')})
+        return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
     else:
         return HttpResponseRedirect(reverse('login'))

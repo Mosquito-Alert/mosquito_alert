@@ -41,11 +41,29 @@
 
             <div class="collapse" id="current_status_collapse_pending{{ user.username }}">
                 <div class="well">
+                    <div class="table-responsive">
+        <table class="table table-condensed borderless" style="font-size: smaller;">
+            <thead>
+            <tr>
+            <th>Report ID</th>
+            <th>Given to Expert</th>
+            <th>Last Modified by Expert</th>
+            <th>Draft Status</th>
+            </tr>
+            </thead>
+            <tbody>
                     {% for ano in user.expert_report_annotations.all %}
                         {% if not ano.validation_complete %}
-                    <p><a href="{% url 'expert_report_status' %}?version_uuid={{ ano.report.version_UUID }}">{{ ano.report_version_UUID }}</a></p>
+                            <tr>
+                    <td><a href="{% url 'expert_report_status' %}?version_uuid={{ ano.report.version_UUID }}">{{ ano.report.version_UUID }}</a></td>
+                            <td>{{ ano.created }}</td>
+                            <td>{{ ano.last_modified }}</td>
+                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td></tr>
                         {% endif %}
                     {% endfor %}
+        </tbody>
+        </table>
+                    </div>
                 </div>
             </div>
 
@@ -55,26 +73,39 @@
 
             <div class="collapse" id="current_status_collapse_complete{{ user.username }}">
                 <div class="well">
+        <table class="table table-condensed borderless" style="font-size: smaller;">
+            <thead>
+            <tr>
+            <th>Report ID</th>
+            <th>Given to Expert</th>
+            <th>Last Modified by Expert</th>
+            <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
                     {% for ano in user.expert_report_annotations.all %}
                         {% if ano.validation_complete %}
-
-                    <p>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %} <a href="{% url 'expert_report_status' %}?version_uuid={{ ano.report.version_UUID }}">View</a></p>
+                            <tr>
+                    <td><a href="{% url 'expert_report_status' %}?version_uuid={{ ano.report.version_UUID }}">{{ ano.report.version_UUID }}</a></td>
+                            <td>{{ ano.created }}</td>
+                            <td>{{ ano.last_modified }}</td>
+                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td></tr>
                         {% endif %}
                     {% endfor %}
+        </tbody>
+        </table>
+                    </div>
                 </div>
             </div>
 
 
         </div>
+
+    {% endfor %}
+
+    {% endfor %}
+
         </div>
-
-    {% endfor %}
-
-    {% endfor %}
-
-
-
-</div>
 
 
 {% endblock %}
