@@ -515,9 +515,8 @@ class Report(models.Model):
                 if max_movelab_annotation is not None:
                     return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
         else:
-            these_expert_annotations = self.expert_report_annotations.all()
-            if these_expert_annotations is not None and these_expert_annotations.count() > 0:
-                pass # more to come
+            if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True):
+                return {'tiger_certainty_category': self.get_final_expert_score(), 'crowdcrafting_score_cat': self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat, 'crowdcrafting_n_response': self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses, 'edited_user_notes': self.get_final_public_note(), 'photo_html': self.get_final_photo_html().popup_image()}
         return None
 
     def get_movelab_score(self):
