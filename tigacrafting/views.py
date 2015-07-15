@@ -624,7 +624,7 @@ def expert_status(request):
         groups = Group.objects.filter(name__in=['expert', 'superexpert'])
         for group in groups:
             for user in group.user_set.all():
-                if not UserStat.objects.filter(user=user).exist():
+                if not UserStat.objects.filter(user=user).exists():
                     us = UserStat(user=user)
                     us.save()
         return render(request, 'tigacrafting/expert_status.html', {'experts': groups.filter(name='expert'), 'superexperts': groups.filter(name='superexpert')})
