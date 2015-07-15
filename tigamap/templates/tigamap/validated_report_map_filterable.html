@@ -34,8 +34,15 @@
     {% if fullscreen == "on" %}
         <style>
 
+            @media (max-height: 620px) {
+                        #hand-left {
+                    display: none;
+                }
+            }
+
+
             @media (max-width: 700px), (max-height: 570px) {
-                .legend .coverage_legend {
+                .legend, .site_legend, .coverage_legend {
                     display: none;
                 }
 
