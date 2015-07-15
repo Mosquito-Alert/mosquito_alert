@@ -5,25 +5,8 @@
   text-align: center;
 }
 
-table {
-    border-collapse: collapse;
-    font-size: small;
-    max-width: 100%;
-}
-
-table, td, th {
-    border: 1px solid black;
-}
-
-td, th {
-    padding: 5px;
-    vertical-align: top;
-    text-align: right;
-    width: 25%;
-}
-
-th{
-    text-align: center;
+.borderless tbody tr td, .borderless tbody tr th, .borderless thead tr th {
+    border: none;
 }
 
 img{
@@ -46,7 +29,7 @@ img{
 
 .report_annotation_map-container {
     width: 100%;
-    height: 500px;
+    height: 300px;
     border: 1px solid #333333;
 }
 
@@ -64,6 +47,17 @@ img{
 
 textarea{
     width:100%;
+}
+
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(2); /* IE */
+  -moz-transform: scale(2); /* FF */
+  -webkit-transform: scale(2); /* Safari and Chrome */
+  -o-transform: scale(2); /* Opera */
+  padding: 10px;
+  margin-left: 10px;
 }
 
 .form-inline > * {

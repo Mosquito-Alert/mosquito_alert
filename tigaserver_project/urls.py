@@ -10,7 +10,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap import views
 from stats.views import show_usage, show_report_users, show_fix_users
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks, movelab_annotation, movelab_annotation_pending, expert_report_annotation
+from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks, movelab_annotation, movelab_annotation_pending, expert_report_annotation, expert_report_status, expert_status
 
 admin.autodiscover()
 
@@ -68,10 +68,10 @@ urlpatterns += i18n_patterns('',
     url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation_pending,name='movelab_annotation_pending_tasks_per_page'),
     url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
     url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
-    url(r'^experts/(?P<tasks_per_page>[0-9]+)/$', expert_report_annotation, name='expert_report_annotation_tasks_per_page'),
-    url(r'^experts/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', expert_report_annotation, name='expert_report_annotation_scroll_position'),
+    url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
+    url(r'^experts/status/people/$', expert_status, name='expert_status'),
     url(r'^coveragestats/$', show_fix_users),
-    url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
+    url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
     url(r'^processing/$', show_processing),
-    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='auth_logout'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/experts/'}, name='auth_logout'),
 )

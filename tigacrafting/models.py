@@ -157,22 +157,31 @@ TIGER_CATEGORIES = ((2, 'Definitely a tiger mosquito'), (1, 'Probably a tiger mo
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
+STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
+
 
 class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotations")
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations')
-    tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
+    tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     tiger_certainty_notes = models.TextField('Internal Tiger Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
-    site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
+    site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
     site_certainty_notes = models.TextField('Internal Site Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
-    flag = models.BooleanField(default=False, help_text='Flag report internally for yourself or other experts. Flagged reports will not be displayed on the public map until reviewed by super-experts.')
-    hide = models.BooleanField(default=False, help_text='Hide report from public view')
+    message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
+    status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
-    validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public. (You can_still change your annotation later at any time.')
+    validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
+    revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+
+    def is_superexpert(self):
+        return 'superexpert' in self.user.groups.values_list('name', flat=True)
+
+    def is_expert(self):
+        return 'expert' in self.user.groups.values_list('name', flat=True)
 
     def get_others_annotation_html(self):
         result = ''
@@ -180,13 +189,67 @@ class ExpertReportAnnotation(models.Model):
         this_report = self.report
         other_annotations = ExpertReportAnnotation.objects.filter(report=this_report).exclude(user=this_user)
         for ano in other_annotations.all():
-            result += '<p>User: ' + ano.user.username + ', Last Edited: ' + str(ano.last_modified) + '</p>'
-            result += '<p>Tiger Certainty: ' + TIGER_CATEGORIES[ano.tiger_certainty_category][1] if ano.tiger_certainty_category else '' + '</p>'
-            result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
-            result += '<p>Site Certainty: ' + SITE_CATEGORIES[ano.site_certainty_category][1] if ano.site_certainty_category else '' + '</p>'
-            result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
+            result += '<p>User: ' + ano.user.username + '</p>'
+            result += '<p>Last Edited: ' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC</p>'
+            if this_report.type == 'adult':
+                result += '<p>Tiger Certainty: ' + (ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "") + '</p>'
+                result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
+            elif this_report.type == 'site':
+                result += '<p>Site Certainty: ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '</p>'
+                result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
+            result += '<p>Selected photo: ' + (ano.best_photo.popup_image() if ano.best_photo else "") + '</p>'
             result += '<p>Edited User Notes: ' + ano.edited_user_notes + '</p>'
-            result += '<p>Flagged? ' + str(ano.flag) + '</p>'
-            result += '<p>Hidden? ' + str(ano.hide) + '</p>'
+            result += '<p>Message To User: ' + ano.message_for_user + '</p>'
+            result += '<p>Status: ' + ano.get_status_display() if ano.get_status_display() else "" + '</p>'
             result += '<p>Validation Complete? ' + str(ano.validation_complete) + '</p><hr>'
         return result
+
+    def get_score(self):
+        score = -3
+        if self.report.type == 'site':
+            score = self.site_certainty_category
+        elif self.report.type == 'adult':
+            score = self.tiger_certainty_category
+        if score:
+            return score
+        else:
+            return -3
+
+    def get_category(self):
+        if self.report.type == 'site':
+            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
+        elif self.report.type == 'adult':
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
+
+    def get_status_bootstrap(self):
+        result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
+        return result
+
+    def get_score_bootstrap(self):
+        result = '<span class="label label-default" style="background-color:' + ('red' if self.get_score() == 2 else ('orange' if self.get_score() == 1 else ('white' if self.get_score() == 0 else ('grey' if self.get_score() == -1 else 'black')))) + ';">' + self.get_category() + '</span>'
+        return result
+
+
+class UserStat(models.Model):
+    user = models.OneToOneField(User, primary_key=True)
+
+    def is_expert(self):
+        return self.user.groups.filter(name="expert").exists()
+
+    def is_superexpert(self):
+        return self.user.groups.filter(name="superexpert").exists()
+
+    def is_team_bcn(self):
+        return self.user.groups.filter(name="team_bcn").exists()
+
+    def is_team_not_bcn(self):
+        return self.user.groups.filter(name="team_not_bcn").exists()
+
+    def is_team_everywhere(self):
+        return self.user.groups.exclude(name="team_not_bcn").exclude(name="team_bcn").exists()
+
+    def n_completed_annotations(self):
+        return self.user.expert_report_annotations.filter(validation_complete=True).count()
+
+    def n_pending_annotations(self):
+        return self.user.expert_report_annotations.filter(validation_complete=False).count()
