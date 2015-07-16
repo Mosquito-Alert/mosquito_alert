@@ -425,13 +425,18 @@ function get_color_class(score) {
 }
 
 
-function get_cat_text(score) {
+function get_cat_text(score, type) {
+    if(type == 'adult'){
     return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
+    } else if (type == 'site'){
+    return score == 2 ? '{% trans 'expert_cat_site' %}' : (score == 1 ? '{% trans 'expert_cat_possible_site' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other_site' %}' : (score == -2 ? '{% trans 'expert_cat_other_site' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
+
+    }
 }
 
-function make_experts_row(score) {
+function make_experts_row(score, type) {
     if (score != null) {
-        return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: ' + get_cat_text(score) + '</div></td></tr>';
+        return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: ' + get_cat_text(score, type) + '</div></td></tr>';
     } else {
         return '';
     }
@@ -490,13 +495,13 @@ function make_user_note_row(notes) {
 function make_popup_text(value) {
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else {
             return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>';
         }
     } else {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else {
             return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>';
         }
@@ -526,7 +531,7 @@ function make_opacity(n_fixes) {
 function add_to_layer(data, this_layer, filter) {
     $.each(data, function (index, value) {
         if (value != null && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
-                ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || (value.movelab_annotation != null && value.movelab_annotation.tiger_certainty_category != null && value.movelab_annotation.tiger_certainty_category >= selected_validation))))) {
+                ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || (value.movelab_annotation != null && (value.type == 'adult' && value.movelab_annotation.tiger_certainty_category != null && value.movelab_annotation.tiger_certainty_category >= selected_validation) || (value.type == 'site' && value.movelab_annotation.site_certainty_category != null && value.movelab_annotation.site_certainty_category >= selected_validation)  ))))) {
             this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value)}).bindPopup(make_popup_text(value), popup_options));
         }
     });
