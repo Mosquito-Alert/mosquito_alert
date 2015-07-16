@@ -1245,11 +1245,11 @@ function map_init_basic(map, options) {
             if (par_zoom != null && !isNaN(par_zoom) && isFinite(par_zoom)) {
                 initialZoom = par_zoom;
             }
-            var par_center_lon = parseInt("{{ center_lon }}");
+            var par_center_lon = parseFloat("{{ center_lon }}");
             if (par_center_lon != null && !isNaN(par_center_lon) && isFinite(par_center_lon)) {
                 centerLng = par_center_lon;
             }
-            var par_center_lat = parseInt("{{ center_lat }}");
+            var par_center_lat = parseFloat("{{ center_lat }}");
             if (par_center_lat != null && !isNaN(par_center_lat) && isFinite(par_center_lat)) {
                 centerLat = par_center_lat;
             }
