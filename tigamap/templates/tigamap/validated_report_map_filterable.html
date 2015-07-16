@@ -490,7 +490,7 @@ function make_user_note_row(notes) {
 function make_popup_text(value) {
     var validation_link = '';
     {% if request.user and request.user.userstat and request.user.userstat.is_expert or request.user.userstat.request.user.is_superexpert %}
-    validation_link = '<br><a style="color:white; margin: 0 auto;" class="btn btn-primary btn-sm" href="{% url 'expert_report_status' %}?version_uuid=' + value.version_UUID + '">View in Expert System <span class="glyphicon glyphicon-open"></span></a>';
+    validation_link = '<br><a style="color:white;" class="btn btn-primary btn-sm" href="{% url 'expert_report_status' %}?version_uuid=' + value.version_UUID + '">View in Expert System <span class="glyphicon glyphicon-open"></span></a>';
     {% endif %}
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
