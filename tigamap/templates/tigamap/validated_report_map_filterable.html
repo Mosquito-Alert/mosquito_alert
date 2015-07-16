@@ -455,12 +455,12 @@ function make_user_response_row(responses) {
 }
 
 
-function make_user_response_row_sites(responses) {
+function make_user_response_row_sites(responses, site_cat) {
     if (responses != null) {
         if ('q1_response' in responses) {
-            return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_sites_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_sites_q2' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td></tr></table></td></tr>';
+            return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_q_sitetype' %}</td><td class="response-table question border-right">{% trans 'user_response_row_sites_q1' %}</td><td class="response-table question">{% trans 'user_response_row_sites_q2' %}</td><tr><td class="response-table response border-right">' + sc2s(site_cat) + '</td><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response">' + rc2s(responses.q2_response) + '</td></tr></table></td></tr>';
         } else if ('q1_response_new' in responses) {
-            return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_sites_q1_new' %}</td><td class="response-table question border-right">{% trans 'user_response_row_sites_q2_new' %}</td><td class="response-table question">{% trans 'user_response_row_sites_q3_new' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response_new) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response_new) + '</td><td class="response-table response">' + rc2s(responses.q2_response_new) + '</td></tr></table></td></tr>';
+            return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_q_sitetype' %}</td><td class="response-table question">{% trans 'user_response_row_sites_q1_new' %}</td></tr><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_sites_q2_new' %}</td><td class="response-table question">{% trans 'user_response_row_sites_q3_new' %}</td><tr><td class="response-table response">' + sc2s(site_cat) + '</td><td class="response-table response">' + rc2s(responses.q1_response_new) + '</td><tr><td class="response-table response border-right">' + rc2s(responses.q2_response_new) + '</td><td class="response-table response">' + rc2s(responses.q2_response_new) + '</td></tr></table></td></tr>';
         } else {
             return '';
         }
@@ -496,9 +496,9 @@ function make_popup_text(value) {
         }
     } else {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
         } else {
-            return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses) + '</table>';
+            return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>';
         }
     }
 }

@@ -332,8 +332,7 @@ class Report(models.Model):
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
-                result = this_response.answer == 'Embornals' or this_response.answer == 'Sumideros' or \
-                    'Storm' in this_response.answer
+                result = this_response.answer.startswith('Embornal') or this_response.answer.startswith('Sumidero') or this_response.answer.startswith('Storm')
         return result
 
     def get_site_fonts(self):
@@ -342,8 +341,7 @@ class Report(models.Model):
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
-                result = this_response.answer == 'Fonts' or this_response.answer == 'Fountain' or \
-                    this_response.answer == "Fuentes"
+                result = this_response.answer.startswith('Font') or this_response.answer.startswith('Fountain') or this_response.answer.startswith('Fuente')
         return result
 
     def get_site_basins(self):
@@ -352,8 +350,7 @@ class Report(models.Model):
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
-                result = this_response.answer == 'Basin' or this_response.answer == 'Basses' or \
-                    'balsas' in this_response.answer
+                result = this_response.answer.startswith('Basin') or this_response.answer.startswith('Basses') or this_response.answer.startswith('Balsa') or this_response.answer.startswith('Bassa') or this_response.answer.startswith('Small basin') or 'balsas' in this_response.answer
         return result
 
     def get_site_buckets(self):
@@ -362,8 +359,7 @@ class Report(models.Model):
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
-                result = this_response.answer == 'Bucket' or this_response.answer == 'Bidones' or \
-                    'Bidons' in this_response.answer
+                result = this_response.answer.startswith('Bucket') or this_response.answe.startwith('Small container') or this_response.answer.startswith('Bidones') or this_response.answer.startswith('Recipiente') or this_response.answer.startswith('Recipient') or this_response.answer.startswith('Bidons')
         return result
 
     def get_site_wells(self):
