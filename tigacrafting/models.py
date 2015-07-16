@@ -110,6 +110,7 @@ class CrowdcraftingTask(models.Model):
     mosquito_individual_responses_html = property(get_mosquito_individual_responses_html)
     crowdcrafting_n_responses = property(get_crowdcrafting_n_responses)
     tiger_validation_score_cat = property(get_tiger_validation_score_cat)
+    site_validation_score_cat = property(get_site_validation_score_cat)
 
 
 class CrowdcraftingUser(models.Model):
