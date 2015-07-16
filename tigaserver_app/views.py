@@ -473,7 +473,7 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
 
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), validated_only=True)
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10), validated_only=True)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 

@@ -300,13 +300,62 @@ var YellowBlackIcon = L.Icon.Default.extend({
     }
 });
 
+var YellowYellowIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/yellow_yellow_dot.png" %}'
+    }
+});
 
-var blue_icon = new L.Icon.Default;
+
+
+var BlueRedIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/blue_red_dot.png" %}'
+    }
+});
+var BlueOrangeIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/blue_orange_dot.png" %}'
+    }
+});
+var BlueWhiteIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/blue_white_dot.png" %}'
+    }
+});
+var BlueGreyIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/blue_grey_dot.png" %}'
+    }
+});
+var BlueBlackIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/blue_black_dot.png" %}'
+    }
+});
+
+var BlueBlueIcon = L.Icon.Default.extend({
+    options: {
+        iconUrl: '{% static "tigamap/blue_blue_dot.png" %}'
+    }
+});
+
+
 var yellow_red_icon = new YellowRedIcon();
 var yellow_orange_icon = new YellowOrangeIcon();
 var yellow_white_icon = new YellowWhiteIcon();
 var yellow_grey_icon = new YellowGreyIcon();
 var yellow_black_icon = new YellowBlackIcon();
+var yellow_yellow_icon = new YellowYellowIcon();
+
+var blue_red_icon = new BlueRedIcon();
+var blue_orange_icon = new BlueOrangeIcon();
+var blue_white_icon = new BlueWhiteIcon();
+var blue_grey_icon = new BlueGreyIcon();
+var blue_black_icon = new BlueBlackIcon();
+var blue_blue_icon = new BlueBlueIcon();
+
+
 var day_just_finished = 0;
 var popup_options = {
     'minWidth': 182,
@@ -350,16 +399,21 @@ function sc2s(site_cat) {
 }
 
 function get_icon(report) {
-
+        var score = -3;
     if (report.type == 'adult') {
         if (report.movelab_annotation != null) {
-            var score = report.movelab_annotation.tiger_certainty_category;
-            return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : yellow_white_icon)));
+            score = report.movelab_annotation.tiger_certainty_category;
+            return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (Score == 0 ? yellow_white_icon : yellow_yellow_icon))));
         } else {
-            return yellow_white_icon;
+            return yellow_yellow_icon;
         }
     } else {
-        return blue_icon;
+        if (report.movelab_annotation != null) {
+            score = report.movelab_annotation.site_certainty_category;
+            return score == 2 ? blue_red_icon : (score == 1 ? blue_orange_icon : (score == -1 ? blue_grey_icon : (score == -2 ? blue_black_icon : (Score == 0 ? blue_white_icon : blue_blue_icon))));
+        } else {
+            return blue_blue_icon;
+        }
     }
 
 }
@@ -370,7 +424,7 @@ function get_color_class(score) {
 
 
 function get_cat_text(score) {
-    return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : '{% trans 'expert_cat_unknown' %}')));
+    return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
 }
 
 function make_experts_row(score) {
@@ -399,7 +453,7 @@ function make_user_response_row(responses) {
 }
 
 
-function make_user_response_row_sites(responses, site_cat) {
+function make_user_response_row_sites(responses) {
     if (responses != null) {
         if('q1_response' in responses){
         return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_sites_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_sites_q2' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td></tr></table></td></tr>';
@@ -440,10 +494,12 @@ function make_popup_text(value) {
             return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>';
         }
     } else {
-        if (value.site_responses != null && value.site_cat != null) {
-             return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>';
-        }
+       if (value.movelab_annotation != null) {
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+       } else{
+             return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses) + '</table>';
     }
+}
 }
 
 
