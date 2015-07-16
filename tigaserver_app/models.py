@@ -506,7 +506,7 @@ class Report(models.Model):
         if self.creation_time.year == 2014:
             return True
         else:
-            return not self.photos.all() or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True)
+            return not self.photos.all() or (ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True) and self.get_final_status == 1)
 
     # note that I am making this really get movelab or expert annotation,
     # but keeping name for now to avoid refactoring templates
