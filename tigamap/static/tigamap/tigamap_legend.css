@@ -38,10 +38,19 @@ body {
 .response-table .question {
     font-size: .8em;
     font-style: italic;
-    font-align: left;
+    text-align: center;
     padding: 3px;
-    vertical-align: top;
+    vertical-align: middle;
 }
+
+.response-table .response {
+    font-size: .8em;
+    font-weight: bold;
+    text-align: center;
+    padding: 3px;
+    vertical-align: middle;
+}
+
 
 .color-box {
     width: 100%;
