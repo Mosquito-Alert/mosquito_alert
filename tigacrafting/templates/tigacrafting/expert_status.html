@@ -25,16 +25,34 @@
         </div>
 
 {% for group in groups %}
-        <div class="row">
-            <div class="col-md-12">
-                <h2>{{ group.name | capfirst }}</h2>
+        <div class="row" >
+            <div class="col-md-12" style="background-color: #99ff99">
+                <h2>{{ group.name | capfirst }}s</h2>
             </div>
         </div>
 
     {% for user in group.user_set.all %}
         <div class="row">
             <div class="col-md-12">
-                <h3>{{ user.username }}</h3>
+                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+            <table>
+            <tbody>
+            <tr>
+                <td style="padding-right:5px"><strong>Username:</strong></td><td>{{ user.username }}</td>
+            </tr>
+
+            <tr>
+            <td style="padding-right:5px"><strong>Team:</strong></td><td>{% if user.userstat.is_team_bcn %}Barcelona{% elif user.userstat.is_team_not_bcn %}Outside Barcelona{% elif user.userstat.is_team_everywhere %}Global{% endif %}</td>
+            </tr>
+
+            <tr>
+            <td style="padding-right:5px"><strong>Email:</strong></td><td><a href="mailto:{{ user.email }}" target="_top">{{ user.email }}</a></td>
+            </tr>
+            </tbody>
+            </table>
+
+            <br>
+
              <p><a role="button" data-toggle="collapse" href="#current_status_collapse_pending{{ user.username }}"
                aria-expanded="false" aria-controls="current_status_collapse_pending{{ user.username }}"><i
                     class="fa fa-plus-square-o"></i></a> <strong>Pending Reports</strong> <span class="badge">{{ user.userstat.n_pending_annotations }}</span></p>
@@ -101,7 +119,13 @@
 
         </div>
 
+<br>
+        <div class="border-row"></div>
+                    <br>
+
     {% endfor %}
+
+
 
     {% endfor %}
 
