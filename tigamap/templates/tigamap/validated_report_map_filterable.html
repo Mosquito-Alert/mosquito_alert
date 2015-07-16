@@ -34,11 +34,6 @@
     {% if fullscreen == "on" %}
         <style>
 
-            @media (max-height: 620px) {
-                #hand-left {
-                    display: none;
-                }
-            }
 
             @media (max-width: 700px), (max-height: 570px) {
                 .legend, .site_legend, .coverage_legend {
@@ -1029,6 +1024,9 @@ function map_init_basic(map, options) {
                 </tr>
 
             </table>
+
+        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
+
         </div>
 
         <div class="legend-popup-area">
@@ -1091,7 +1089,6 @@ function map_init_basic(map, options) {
         </div>
 
 
-        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
 
     </div>
 
@@ -1160,6 +1157,7 @@ function map_init_basic(map, options) {
                 </tr>
 
             </table>
+        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
         </div>
 
         <div class="legend-popup-area">
@@ -1203,27 +1201,18 @@ function map_init_basic(map, options) {
                     <div class="leaflet-popup-tip"></div>
                 </div>
             </div>
-
-
             <div id="more_info_div"><span
                     style="font-weight:bold; font-style:italic;font-size:.9em;color:#444444;">{% trans 'more_info' %}
 </span>
 
             </div>
-
             <div id="more_info_button">
                 <a href="{% trans 'map_help_url_new' %}" target="_blank">
                     <div class="info-button-background"><img width="30px" height="30px"
                                                              src="{% static "tigamap/info_button.png" %}"></div>
                 </a>
             </div>
-
-
         </div>
-
-
-        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
-
     </div>
 
 
