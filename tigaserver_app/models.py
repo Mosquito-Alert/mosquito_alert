@@ -506,7 +506,7 @@ class Report(models.Model):
         if self.creation_time.year == 2014:
             return True
         else:
-            return not self.photos.all() or (ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True) and self.get_final_status == 1)
+            return (not self.photos.all().exists()) or ((ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists() ) and self.get_final_expert_status() == 1)
 
     # note that I am making this really get movelab or expert annotation,
     # but keeping name for now to avoid refactoring templates
@@ -663,13 +663,18 @@ class Report(models.Model):
 
     def get_final_expert_status(self):
         result = 1
-        super_statuses = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).values_list('status', flat=True)
-        if super_statuses:
-            result = Counter(super_statuses).most_common()[0][0]
-            return result
-        expert_statuses = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).values_list('status', flat=True)
-        if expert_statuses:
-            result = Counter(expert_statuses).most_common()[0][0]
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, status=-1).exists():
+            result = -1
+        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, status=0).exists():
+            result = 0
+        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, status=1).exists():
+            result = 1
+        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, status=-1).exists():
+            result = -1
+        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, status=0).exists():
+            result = 0
+        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, status=1).exists():
+            result = 1
         return result
 
     def get_final_expert_status_text(self):

@@ -439,9 +439,13 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
         current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-        flagged_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=0).values('report')
-        hidden_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=-1).values('report')
-        public_others_reports = ExpertReportAnnotation.objects.exclude(user=this_user).filter(user__groups__name='expert').filter(validation_complete=True, status=1).values('report')
+        public_final_reports_superexpert = Report.objects.exclude(user__groups__name='superexpert', validation_complete=True, revise=True, status__lt=1).filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=1)
+        not_public_final_reports_superexpert = Report.objects.exclude(version_UUID__in=public_final_reports_superexpert)
+        public_final_reports = Report.objects.exclude(user__groups__name='superexpert', validation_complete=True, revise=True, status__lt=1).exclude(Q(version_UUID__in=not_public_final_reports_superexpert)&Q(user__groups__name='expert', validation_complete=True, status__lt=1))
+        flagged_final_reports_superexpert = Report.objects.exclude(version_UUID__in=public_final_reports).exclude(user__groups__name='superexpert', validation_complete=True, revise=True, status__lt=0).filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=0)
+        not_flagged_final_reports_superexpert = Report.objects.exclude(version_UUID__in=flagged_final_reports_superexpert)
+        flagged_final_reports = Report.objects.exclude(version_UUID__in=public_final_reports).exclude(user__groups__name='superexpert', validation_complete=True, revise=True, status__lt=0).exclude(Q(version_UUID__in=not_flagged_final_reports_superexpert)&Q(user__groups__name='expert', validation_complete=True, status__lt=0))
+        hidden_final_reports = Report.objects.exclude(version_UUID__in=public_final_reports).exclude(version_UUID__in=flagged_final_reports)
         if this_user_is_expert and load_new_reports == 'T':
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
@@ -478,9 +482,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 final_status = 'public'
             if (version_uuid == 'na' and linked_id == 'na') and (not checked or checked == 'na'):
                 checked = 'unchecked'
-            n_flagged = all_annotations.filter(report__in=flagged_others_reports).count()
-            n_hidden = all_annotations.filter(report__in=hidden_others_reports).count()
-            n_public = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports).count()
+            n_flagged = all_annotations.filter(report__in=flagged_final_reports).count()
+            n_hidden = all_annotations.filter(report__in=hidden_final_reports).count()
+            n_public = all_annotations.filter(report__in=public_final_reports).exclude(report__in=flagged_final_reports).exclude(report__in=hidden_final_reports).count()
             n_unchecked = all_annotations.filter(validation_complete=False).count()
             n_confirmed = all_annotations.filter(validation_complete=True, revise=False).count()
             n_revised = all_annotations.filter(validation_complete=True, revise=True).count()
@@ -532,11 +536,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 elif checked == "revised":
                     all_annotations = all_annotations.filter(validation_complete=True, revise=True)
                 if final_status == "flagged":
-                    all_annotations = all_annotations.filter(report__in=flagged_others_reports)
+                    all_annotations = all_annotations.filter(report__in=flagged_final_reports)
                 elif final_status == "hidden":
-                    all_annotations = all_annotations.filter(report__in=hidden_others_reports)
+                    all_annotations = all_annotations.filter(report__in=hidden_final_reports)
                 elif final_status == "public":
-                    all_annotations = all_annotations.filter(report__in=public_others_reports).exclude(report__in=flagged_others_reports).exclude(report__in=hidden_others_reports)
+                    all_annotations = all_annotations.filter(report__in=public_final_reports).exclude(report__in=flagged_final_reports).exclude(report__in=hidden_final_reports)
         if all_annotations:
             all_annotations = all_annotations.order_by('report__creation_time')
             if orderby == "site_score":
