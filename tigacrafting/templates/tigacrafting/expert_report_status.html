@@ -78,7 +78,7 @@
         var site_icon = new site_icon_class;
 
         {% for report in reports %}
-            function map_init_basic{{ report.version_UUID }}(map, options) {
+            function map_init_basic{{ forloop.counter }}(map, options) {
 
                 L.marker([{{ report.lat }}, {{ report.lon }}], {icon:
                         {% if report.type == 'site' %}site_icon{% else %}
