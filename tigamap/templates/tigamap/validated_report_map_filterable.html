@@ -405,11 +405,14 @@ function make_user_response_row_sites(responses, site_cat) {
         return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_sites_q1' %}</td><td class="response-table question border-right">{% trans 'user_response_row_sites_q2' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response) + '</td></tr></table></td></tr>';
     } else if('q1_response_new' in responses){
         return '<tr><td><table class="response-table"><tr class="response-table"><td class="response-table question border-right">{% trans 'user_response_row_sites_q1_new' %}</td><td class="response-table question border-right">{% trans 'user_response_row_sites_q2_new' %}</td><td class="response-table question">{% trans 'user_response_row_sites_q3_new' %}</td><tr><td class="response-table response border-right">' + rc2s(responses.q1_response_new) + '</td><td class="response-table response border-right">' + rc2s(responses.q2_response_new) + '</td><td class="response-table response">' + rc2s(responses.q2_response_new) + '</td></tr></table></td></tr>';
-        }
-        else {
+        } else {
         return '';
     }
+} else{
+    return ''}
 }
+
+
 
 
 function make_photo_row(photo_html) {
@@ -624,6 +627,7 @@ function update_coverage_data() {
         }
     });
 }
+
 
 function map_init_basic(map, options) {
 

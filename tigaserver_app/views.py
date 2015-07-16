@@ -393,7 +393,9 @@ class CoverageMonthMapFilter(django_filters.FilterSet):
         fields = ['id_range_start', 'id_range_end']
 
 
-def get_latest_reports_qs(reports, property_filter=None):
+def get_latest_reports_qs(reports, property_filter=None, validated_only=False):
+    if validated_only:
+        reports = filter(lambda x: x.show_on_map, reports.iterator())
     if property_filter == 'movelab_cat_ge1':
         unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] >= 1, reports.iterator()))
     elif property_filter == 'movelab_cat_ge2':
@@ -471,7 +473,7 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
 
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)), validated_only=True)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
