@@ -359,7 +359,7 @@ class Report(models.Model):
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
                     this_response.question.startswith('Type'):
-                result = this_response.answer.startswith('Bucket') or this_response.answer.startwith('Small container') or this_response.answer.startswith('Bidones') or this_response.answer.startswith('Recipiente') or this_response.answer.startswith('Recipient') or this_response.answer.startswith('Bidons')
+                result = this_response.answer.startswith('Bucket') or this_response.answer.startswith('Small container') or this_response.answer.startswith('Bidones') or this_response.answer.startswith('Recipiente') or this_response.answer.startswith('Recipient') or this_response.answer.startswith('Bidons')
         return result
 
     def get_site_wells(self):
