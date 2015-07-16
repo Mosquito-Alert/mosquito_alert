@@ -488,17 +488,21 @@ function make_user_note_row(notes) {
 }
 
 function make_popup_text(value) {
+    var validation_link = '';
+    {% if request.user and request.user.userstat and request.user.userstat.is_expert or request.user.userstat.request.user.is_superexpert %}
+    validation_link = '<br><a href="{% url 'expert_report_status' %}?version_uuid=' + value.version_UUID + '">"' + value.version_UUID + '</a>';
+    {% endif %}
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
         } else {
-            return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>';
+            return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>' + validation_link;
         }
     } else {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>';
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>'+validation_link;
         } else {
-            return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>';
+            return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>' + validation_link;
         }
     }
 }

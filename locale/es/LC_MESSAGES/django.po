@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-16 11:49+0200\n"
-"PO-Revision-Date: 2015-07-16 13:39+0100\n"
+"PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Spanish\n"
@@ -601,7 +601,7 @@ msgstr " ¿Con agua estancada?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:461
 msgid "user_response_row_sites_q2"
-msgstr " ¿Cont larvas o pupas?"
+msgstr " ¿Larvas o pupas?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q1_new"
