@@ -246,6 +246,9 @@ class UserStat(models.Model):
     def is_superexpert(self):
         return self.user.groups.filter(name="superexpert").exists()
 
+    def is_movelab(self):
+        return self.user.groups.filter(name="movelab").exists()
+
     def is_team_bcn(self):
         return self.user.groups.filter(name="team_bcn").exists()
 
