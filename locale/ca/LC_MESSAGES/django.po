@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-16 11:49+0200\n"
-"PO-Revision-Date: 2015-07-16 11:50+0100\n"
+"PO-Revision-Date: 2015-07-16 13:41+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Catalan (Spain)\n"
@@ -597,23 +597,23 @@ msgstr "Selecciona lloc de cria"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:461
 msgid "user_response_row_sites_q1"
-msgstr "Conté aigua estancada?"
+msgstr "Amb aigua estancada?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:461
 msgid "user_response_row_sites_q2"
-msgstr "Conté larves o pupes de mosquit (de qualsevol espècie)?"
+msgstr "Conté larves o pupes?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q1_new"
-msgstr "Es troba a la via pública?"
+msgstr "Via pública?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q2_new"
-msgstr "Conté aigua estancada y/o larves o pupes de mosquit (qualsevol espècie)?"
+msgstr "Conté aigua estancada y/o larves o pupes?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q3_new"
-msgstr ">Has vist mosquits a prop (a &lt;10metres)?"
+msgstr "Has vist mosquits a prop?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:767
 msgid "fmap_All_years"

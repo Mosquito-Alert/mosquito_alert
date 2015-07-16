@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-16 11:49+0200\n"
-"PO-Revision-Date: 2015-07-16 11:52+0100\n"
+"PO-Revision-Date: 2015-07-16 13:39+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: Spanish\n"
@@ -597,23 +597,23 @@ msgstr "Tipo de lugar de cría"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:461
 msgid "user_response_row_sites_q1"
-msgstr " ¿Contiene agua estancada?"
+msgstr " ¿Con agua estancada?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:461
 msgid "user_response_row_sites_q2"
-msgstr " ¿Contiene larvas o pupas de mosquito (de cualquier especie)?"
+msgstr " ¿Cont larvas o pupas?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q1_new"
-msgstr "¿Se encuentra en la vía pública?"
+msgstr "¿En la vía pública?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q2_new"
-msgstr " Contiene agua estancada y/o larvas o pupas de mosquito (cualquier especie)?"
+msgstr " ¿Con agua estancada y/o larvas o pupas?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q3_new"
-msgstr "¿Has visto mosquitos cerca (a &lt;10 metros)?"
+msgstr "¿Has visto mosquitos cerca?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:767
 msgid "fmap_All_years"

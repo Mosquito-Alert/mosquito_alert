@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-16 11:49+0200\n"
-"PO-Revision-Date: 2015-07-16 11:51+0100\n"
+"PO-Revision-Date: 2015-07-16 13:40+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
 "Language: English (USA)\n"
@@ -596,15 +596,15 @@ msgstr "Larvae or pupae?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q1_new"
-msgstr "Is it in a public area?"
+msgstr "Public area?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q2_new"
-msgstr "Does it contain stagnant water and/or mosquito larvae or pupae (any mosquito species)?"
+msgstr "Stagnant water and/or larvae or pupae?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:463
 msgid "user_response_row_sites_q3_new"
-msgstr "Have you seen adult mosquitoes nearby (&lt;10 meters)?"
+msgstr "Mosquitoes nearby?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:767
 msgid "fmap_All_years"
