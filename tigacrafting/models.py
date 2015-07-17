@@ -217,7 +217,7 @@ class ExpertReportAnnotation(models.Model):
             score = self.site_certainty_category
         elif self.report.type == 'adult':
             score = self.tiger_certainty_category
-        if score:
+        if score is not None:
             return score
         else:
             return -3

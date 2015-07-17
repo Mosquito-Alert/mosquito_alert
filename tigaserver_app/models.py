@@ -650,7 +650,7 @@ class Report(models.Model):
             score = self.get_mean_expert_site_score()
         elif self.type == 'adult':
             score = self.get_mean_expert_adult_score()
-        if score:
+        if score is not None:
             return int(round(score))
         else:
             return -3
