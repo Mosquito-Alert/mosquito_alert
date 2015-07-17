@@ -605,16 +605,16 @@ class Report(models.Model):
         mean_score = -3
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=False).count() == 0:
             return -3
-        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(tiger_certainty_category=-3).values_list('tiger_certainty_category', flat=True)
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
         if super_scores:
             for this_score in super_scores:
                 if this_score:
                     sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
             return mean_score
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, tiger_certainty_category__isnull=False).count() == 0:
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, tiger_certainty_category__isnull=False).count() == 0:
             return -3
-        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(tiger_certainty_category=-3).values_list('tiger_certainty_category', flat=True)
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
         if expert_scores:
             for this_score in expert_scores:
                 if this_score:
@@ -627,16 +627,16 @@ class Report(models.Model):
         mean_score = -3
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, site_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, site_certainty_category__isnull=False).count() == 0:
             return -3
-        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(site_certainty_category=-3).values_list('site_certainty_category', flat=True)
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(site_certainty_category__isnull=True).values_list('site_certainty_category', flat=True)
         if super_scores:
             for this_score in super_scores:
                 if this_score:
                     sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
             return mean_score
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, site_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, revise=True, site_certainty_category__isnull=False).count() == 0:
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, site_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, site_certainty_category__isnull=False).count() == 0:
             return -3
-        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(site_certainty_category=-3).values_list('site_certainty_category', flat=True)
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(site_certainty_category__isnull=True).values_list('site_certainty_category', flat=True)
         if expert_scores:
             for this_score in expert_scores:
                 if this_score:
