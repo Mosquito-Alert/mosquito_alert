@@ -899,12 +899,26 @@
             reports_list_div.append('<ul></ul>');
             var reports_list = $("#reports_being_saved_list ul");
             $("[id*='validation_complete']:checked").each(function () {
+
+                {% if request.user.userstat.is_superexpert %}
+                if($(this).siblings("[id*='revise']").val() == "false"){
+                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:green">Confirming Experts</span></li>');
+                }
+                else if($(this).siblings(name*['photo']).val() == ""){
+                                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Revising without photo</span></li>');
+                }
+                else{
+                                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:orange">Revising</span></li>');
+
+                }
+                {% else %}
                 if($(this).siblings(name*['photo']).val() == ""){
                                      reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">No photo selected</span></li>');
                 }
                 else{
                  reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + '</li>');
                 }
+                {% endif %}
             });
             $("#save_warning_modal").modal('show');
         }
