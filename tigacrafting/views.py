@@ -385,7 +385,7 @@ BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off'):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -437,6 +437,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             linked_id = request.GET.get('linked_id', linked_id)
             checked = request.GET.get('checked', checked)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
+            edit_mode = request.GET.get('edit_mode', edit_mode)
         current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
         hidden_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=-1).values_list('report', flat=True))
@@ -578,6 +579,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page
         args['scroll_position'] = scroll_position
+        args['edit_mode'] = edit_mode
         args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:

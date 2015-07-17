@@ -4,7 +4,7 @@
 
 {% block title %}
     <h1>Superexpert Validation</h1>
-    <h2>{% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}Search Result{% else %}{{ final_status | capfirst }} {% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}
+    <h2>{% if edit_mode == 'edit' %}<span style="color:red;">Edit Mode</span>{% elif version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}Search Result{% else %}{{ final_status | capfirst }} {% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}
         Confirmed
         Reports{% elif checked == 'revised' %}Revised Reports{% endif %}{% endif %}</h2>
 

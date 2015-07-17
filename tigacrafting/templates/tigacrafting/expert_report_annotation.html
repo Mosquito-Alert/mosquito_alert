@@ -268,7 +268,7 @@
 
     {% if objects %}
 
-        {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+        {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
             <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
         {% endif %}
 
@@ -299,11 +299,11 @@
 
 
 
-                {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+                {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
                     `
                     {% form form using "floppyforms/layouts/bootstrap.html" %}
 
-                    {% if checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+                    {% if checked == 'unchecked' or edit_mode == 'edit' %}
 
                         <div class="btn-group" id="status_grp" data-toggle="buttons">
                             <label class="btn btn-default btn-lg" data-toggle="tooltip" data-placement="bottom"
@@ -325,6 +325,7 @@
 
 
                 {% else %}
+            <h4><strong>My Responses</strong></h4>
 
                     {% if form.instance.report.type == 'adult' %}
                         <strong>Tiger Certainty:</strong><br>
@@ -361,6 +362,10 @@
                         {% if form.instance.linked_id %}{{ form.instance.linked_id }}{% else %}---{% endif %}</div>
 
 
+                    {% if request.user.userstat.is_superexpert %}
+                        <br>
+                        <a class="btn btn-danger" href="{% url 'expert_report_annotation' %}?version_uuid={{ form.instance.report.version_UUID }}&edit_mode=edit">Edit My Responses <span class="glyphicon glyphicon-edit"></span></a>
+                        {% endif %}
 
                 {% endif %}
 
@@ -369,7 +374,7 @@
             <div class="col-md-5">
                 <br>
                 <strong>Photos</strong>
-                {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+                {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
                     <button id="clear_button_{{ form.instance.id }}" type="button" class="btn btn-default btn-sm">
                         Reset
                     </button><br>
@@ -439,7 +444,7 @@
             {% endif %}
 
 
-            {% if pending == 'pending' or checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+            {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
 
                 {% if form.instance.report.type == 'adult' %}
 
@@ -473,7 +478,7 @@
 
             {% endif %}
 
-            {% if checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}
+            {% if checked == 'unchecked' or edit_mode == 'edit' %}
 
                 var validation_complete_id_{{ form.instance.id }} = "{{ form.validation_complete.auto_id }}";
 
@@ -481,7 +486,8 @@
 
                 var this_id = "{{ form.instance.id }}";
 
-                var hidden_form_fields{{ form.instance.id }} = $("{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
+                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
+
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
 
 
@@ -946,7 +952,7 @@
                 }
             });
 
-            {% if pending == 'complete' %}
+            {% if pending == 'complete' or checked != 'unchecked' and edit_mode != 'edit' %}
                 save_button.prop('disabled', true);
             {% endif %}
 

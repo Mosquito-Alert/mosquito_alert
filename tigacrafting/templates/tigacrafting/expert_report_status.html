@@ -335,6 +335,10 @@
 
 {% endif %}
 
+              {% if report.get_is_expert_validated and request.user.userstat.is_superexpert %}
+                <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}?version_uuid={{ report.version_UUID }}">View this Report in Validation Mode <span class="glyphicon glyphicon-share-alt"></span></a>
+                {% endif %}
+
             </div>
 
             <div class="col-md-5">
