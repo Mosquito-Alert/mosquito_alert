@@ -966,10 +966,11 @@
                 }
             });
 
-            {% if pending == 'complete' or checked != 'unchecked' and edit_mode != 'edit' %}
+            {% if pending == 'complete' %}
+                save_button.prop('disabled', true);
+            {% elif checked != 'unchecked' and edit_mode != 'edit' %}
                 save_button.prop('disabled', true);
             {% endif %}
-
 
             toggle_grab_reports_button();
 
