@@ -178,7 +178,7 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
-                        {% block navbar_right_items %}
+                            {% block navbar_right_items %}
                             {% endblock %}
                             {% if tasks_per_page_choices %}
                                 <li class="dropdown">
@@ -239,27 +239,33 @@
 
             {% block instructions %}
 
-                        {% if pending == 'pending' %}
+                {% if pending == 'pending' %}
 
-                <p>For each report: (1) select a category for your degree of belief that the report contains at least
-                    one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that the
-                    report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal
-                    notes for yourself or other experts regarding your reasons for each selection, (4) add any note you
-                    want
-                    to see displayed on the public map along with the report (e.g. an edited version of the user's
-                    original note), (5) add any notes that you want to be shown directly to the user (citizen scientist)
-                    who created the report, (6) flag the report if you want to bring it to the attention of other
-                    experts
-                    (because it is an especially interesting report or because you have doubts), (7) indicate if the
-                    report should be hidden from public view (this will automatically
-                    remove it from the public map), and (8) select which (if any) of the reports photos should be
-                    displayed on the public map (only one photo will be displayed). You can save your work as you go
-                    using the "save" button at the top of the screen. When you are done with a given report, check the
-                    "validation complete" box. You will not be able to modify your responses once you have saved a
-                    report marked with "validation complete."</p>
+                    <p>For each report: (1) select a category for your degree of belief that the report contains at
+                        least
+                        one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that
+                        the
+                        report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal
+                        notes for yourself or other experts regarding your reasons for each selection, (4) add any note
+                        you
+                        want
+                        to see displayed on the public map along with the report (e.g. an edited version of the user's
+                        original note), (5) add any notes that you want to be shown directly to the user (citizen
+                        scientist)
+                        who created the report, (6) flag the report if you want to bring it to the attention of other
+                        experts
+                        (because it is an especially interesting report or because you have doubts), (7) indicate if the
+                        report should be hidden from public view (this will automatically
+                        remove it from the public map), and (8) select which (if any) of the reports photos should be
+                        displayed on the public map (only one photo will be displayed). You can save your work as you go
+                        using the "save" button at the top of the screen. When you are done with a given report, check
+                        the
+                        "validation complete" box. You will not be able to modify your responses once you have saved a
+                        report marked with "validation complete."</p>
 
                 {% else %}
-                <p>You are currently viewing your completed reports. To validate new reports, click the blue 'Pending' button at the top of the screen.</p>
+                    <p>You are currently viewing your completed reports. To validate new reports, click the blue
+                        'Pending' button at the top of the screen.</p>
                 {% endif %}
 
             {% endblock %}
@@ -325,7 +331,7 @@
 
 
                 {% else %}
-            <h4><strong>My Responses</strong></h4>
+                    <h4><strong>My Responses</strong></h4>
 
                     {% if form.instance.report.type == 'adult' %}
                         <strong>Tiger Certainty:</strong><br>
@@ -364,8 +370,10 @@
 
                     {% if request.user.userstat.is_superexpert %}
                         <br>
-                        <a class="btn btn-danger" href="{% url 'expert_report_annotation' %}?version_uuid={{ form.instance.report.version_UUID }}&edit_mode=edit">Edit My Responses <span class="glyphicon glyphicon-edit"></span></a>
-                        {% endif %}
+                        <a class="btn btn-danger"
+                           href="{% url 'expert_report_annotation' %}?version_uuid={{ form.instance.report.version_UUID }}&edit_mode=edit">Edit
+                            My Responses <span class="glyphicon glyphicon-edit"></span></a>
+                    {% endif %}
 
                 {% endif %}
 
@@ -515,11 +523,11 @@
 
                 {% if form.instance.revise %}
                     hidden_form_fields{{ form.instance.id }}.parent().parent().show();
-                  hidden_photo_fields{{ form.instance.id }}.show();
+                    hidden_photo_fields{{ form.instance.id }}.show();
                     revise_btn.addClass('active');
                 {% else %}
                     hidden_form_fields{{ form.instance.id }}.parent().parent().hide();
-                  hidden_photo_fields{{ form.instance.id }}.hide();
+                    hidden_photo_fields{{ form.instance.id }}.hide();
                 {% endif %}
 
                 {% if form.instance.validation_complete and not form.instance.revise %}
@@ -885,7 +893,7 @@
         var gear = $("#gear").hide();
 
         function background_save(qp) {
-            if ($("#formset_forms").length > 0 && ("{{ pending }}" == 'pending'|| "{{ checked }}" == 'unchecked')) {
+            if ($("#formset_forms").length > 0 && ("{{ pending }}" == 'pending' || "{{ checked }}" == 'unchecked')) {
                 $("[id*='validation_complete']:checked").prop("checked", false);
                 $("#formset_forms").submit();
             } else {
@@ -901,23 +909,23 @@
             $("[id*='validation_complete']:checked").each(function () {
 
                 {% if request.user.userstat.is_superexpert %}
-                if($(this).siblings("[id*='revise']").val() == "false"){
-                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:green">Confirming Experts</span></li>');
-                }
-                else if($(this).siblings(name*['photo']).val() == ""){
-                                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Revising without photo</span></li>');
-                }
-                else{
-                                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:orange">Revising</span></li>');
+                    if ($(this).siblings("[id*='revise']").val() == "false") {
+                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:green">Confirming Experts</span></li>');
+                    }
+                    else if ($(this).siblings(name * ['photo']).val() == "") {
+                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Revising without photo</span></li>');
+                    }
+                    else {
+                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:orange">Revising</span></li>');
 
-                }
+                    }
                 {% else %}
-                if($(this).siblings(name*['photo']).val() == ""){
-                                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">No photo selected</span></li>');
-                }
-                else{
-                 reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + '</li>');
-                }
+                    if ($(this).siblings(name * ['photo']).val() == "") {
+                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">No photo selected</span></li>');
+                    }
+                    else {
+                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + '</li>');
+                    }
                 {% endif %}
             });
             $("#save_warning_modal").modal('show');
@@ -966,9 +974,14 @@
                 }
             });
 
-            {% if request.user.userstat.is_expert and pending == 'complete' %}
+            save_button.prop('disabled', true);
+            {% if request.user.userstat.is_expert and pending == 'pending' %}
+                save_button.prop('enabled', true);
+            {% endif %}
+            {% if request.user.userstat.is_superexpert and checked == 'unchecked' %}
                 save_button.prop('disabled', true);
-            {% elif request.user.userstat.is_superexpert and checked != 'unchecked' and edit_mode != 'edit' %}
+            {% endif %}
+            {% if request.user.userstat.is_superexpert and edit_mode == 'edit' %}
                 save_button.prop('disabled', true);
             {% endif %}
 
