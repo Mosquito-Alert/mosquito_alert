@@ -393,9 +393,7 @@ class CoverageMonthMapFilter(django_filters.FilterSet):
         fields = ['id_range_start', 'id_range_end']
 
 
-def get_latest_reports_qs(reports, property_filter=None, validated_only=False):
-    if validated_only:
-        reports = filter(lambda x: x.show_on_map(), reports.iterator())
+def get_latest_reports_qs(reports, property_filter=None):
     if property_filter == 'movelab_cat_ge1':
         unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] >= 1, reports.iterator()))
     elif property_filter == 'movelab_cat_ge2':
@@ -420,6 +418,18 @@ def get_latest_reports_qs(reports, property_filter=None, validated_only=False):
                 this_version_UUID = movelab_sorted_reports[-1].version_UUID
             else:
                 this_version_UUID = these_reports[-1].version_UUID
+            result_ids.append(this_version_UUID)
+    return Report.objects.filter(version_UUID__in=result_ids)
+
+
+def get_latest_validated_reports(reports):
+    reports = filter(lambda x: x.show_on_map(), reports.iterator())
+    unique_report_ids = set([r.report_id for r in reports])
+    result_ids = list()
+    for this_id in unique_report_ids:
+        these_reports = sorted([report for report in reports if report.report_id == this_id], key=attrgetter('version_number'))
+        if these_reports[0].version_number > -1:
+            this_version_UUID = these_reports[-1].version_UUID
             result_ids.append(this_version_UUID)
     return Report.objects.filter(version_UUID__in=result_ids)
 
@@ -473,7 +483,7 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
 
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    queryset = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10), validated_only=True)
+    queryset = get_latest_validated_reports(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10))
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
