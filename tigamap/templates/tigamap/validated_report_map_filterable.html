@@ -423,7 +423,7 @@ function get_color_class(score) {
 function get_cat_text(score, type) {
     if(type == 'adult'){
     return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
-    } else if (type == 'site'){
+    } else{
     return score == 2 ? '{% trans 'expert_cat_site' %}' : (score == 1 ? '{% trans 'expert_cat_possible_site' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other_site' %}' : (score == -2 ? '{% trans 'expert_cat_other_site' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
 
     }
