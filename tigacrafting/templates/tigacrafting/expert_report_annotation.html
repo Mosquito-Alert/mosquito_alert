@@ -974,14 +974,10 @@
                 }
             });
 
+
+            {% if request.user.userstat.is_expert and pending != 'pending' %}
             save_button.prop('disabled', true);
-            {% if request.user.userstat.is_expert and pending == 'pending' %}
-                save_button.prop('enabled', true);
-            {% endif %}
-            {% if request.user.userstat.is_superexpert and checked == 'unchecked' %}
-                save_button.prop('disabled', true);
-            {% endif %}
-            {% if request.user.userstat.is_superexpert and edit_mode == 'edit' %}
+            {% elif request.user.userstat.is_superexpert and checked != 'unchecked' and edit_mode != 'edit' %}
                 save_button.prop('disabled', true);
             {% endif %}
 
