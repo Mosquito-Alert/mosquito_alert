@@ -421,10 +421,10 @@ function get_color_class(score) {
 
 
 function get_cat_text(score, type) {
-    if(type == 'adult'){
-    return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
-    } else{
-    return score == 2 ? '{% trans 'expert_cat_site' %}' : (score == 1 ? '{% trans 'expert_cat_possible_site' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other_site' %}' : (score == -2 ? '{% trans 'expert_cat_other_site' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
+    if (type == 'adult') {
+        return score == 2 ? '{% trans 'expert_cat_tiger' %}' : (score == 1 ? '{% trans 'expert_cat_possible_tiger' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other' %}' : (score == -2 ? '{% trans 'expert_cat_other' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
+    } else {
+        return score == 2 ? '{% trans 'expert_cat_site' %}' : (score == 1 ? '{% trans 'expert_cat_possible_site' %}' : (score == -1 ? '{% trans 'expert_cat_possible_other_site' %}' : (score == -2 ? '{% trans 'expert_cat_other_site' %}' : (score == 0 ? '{% trans 'expert_cat_unknown' %}' : (score == -3 ? '{% trans 'expert_cat_unclassified' %}' : '' )))));
 
     }
 }
@@ -490,7 +490,7 @@ function make_user_note_row(notes) {
 function make_popup_text(value) {
     var validation_link = '';
     {% if request.user and request.user.userstat and request.user.userstat.is_expert or request.user.userstat.is_superexpert or request.user.userstat.is_movelab %}
-    validation_link = '<br><a style="color:white;" class="btn btn-primary btn-sm" href="{% url 'expert_report_status' %}?version_uuid=' + value.version_UUID + '">View in Expert System <span class="glyphicon glyphicon-open"></span></a>';
+        validation_link = '<br><a style="color:white;" class="btn btn-primary btn-sm" href="{% url 'expert_report_status' %}?version_uuid=' + value.version_UUID + '">View in Expert System <span class="glyphicon glyphicon-open"></span></a>';
     {% endif %}
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
@@ -500,7 +500,7 @@ function make_popup_text(value) {
         }
     } else {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>'+validation_link;
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
         } else {
             return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>' + validation_link;
         }
@@ -574,14 +574,18 @@ function make_validation_button_subtext() {
     $("#validation_select").selectpicker("refresh")
 }
 
+var legends_visible = $(".legend").is(":visible");
+
 function apply_filter() {
     markers_clustered.clearLayers();
     coverage_fg.clearLayers();
     if (selected_type == 'site') {
         add_to_layer(full_data, markers_clustered, true);
-        $(".coverage_legend").hide();
-        $(".legend").hide();
-        $(".site_legend").show();
+        if (legends_visible) {
+            $(".coverage_legend").hide();
+            $(".legend").hide();
+            $(".site_legend").show();
+        }
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
@@ -589,9 +593,11 @@ function apply_filter() {
         make_validation_button_subtext();
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
-        $(".coverage_legend").hide();
-        $(".site_legend").hide();
-        $(".legend").show();
+        if (legends_visible) {
+            $(".coverage_legend").hide();
+            $(".site_legend").hide();
+            $(".legend").show();
+        }
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
@@ -600,9 +606,11 @@ function apply_filter() {
     } else if (selected_type == 'coverage') {
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', true);
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
-        $(".legend").hide();
-        $(".site_legend").hide();
-        $(".coverage_legend").show();
+        if (legends_visible) {
+            $(".legend").hide();
+            $(".site_legend").hide();
+            $(".coverage_legend").show();
+        }
         add_to_coverage_fg(full_coverage_data, coverage_fg, true);
     }
 }
@@ -1030,7 +1038,7 @@ function map_init_basic(map, options) {
 
             </table>
 
-        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
+            <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
 
         </div>
 
@@ -1092,7 +1100,6 @@ function map_init_basic(map, options) {
 
 
         </div>
-
 
 
     </div>
@@ -1162,7 +1169,7 @@ function map_init_basic(map, options) {
                 </tr>
 
             </table>
-        <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
+            <i id="hand-left" style="padding-left:10px;" class="fa fa-hand-o-left fa-2x"></i>
         </div>
 
         <div class="legend-popup-area">
