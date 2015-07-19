@@ -333,6 +333,12 @@
                 {% else %}
                     <h4><strong>My Responses</strong></h4>
 
+                    {% if request.user.userstat.is_superexpert and checked == 'confirmed' %}
+
+                        <div class="well">Confirmed <span class="glyphicon glyphicon-thumbs-up"></span></div>
+
+                        {% else %}
+
                     {% if form.instance.report.type == 'adult' %}
                         <strong>Tiger Certainty:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
@@ -367,6 +373,8 @@
                     <div style="border:1px solid #333333;padding:2px;">
                         {% if form.instance.linked_id %}{{ form.instance.linked_id }}{% else %}---{% endif %}</div>
 
+                {% endif %}
+
 
                     {% if request.user.userstat.is_superexpert %}
                         <br>
@@ -375,8 +383,7 @@
                             My Responses <span class="glyphicon glyphicon-edit"></span></a>
                     {% endif %}
 
-                {% endif %}
-
+{% endif %}
             </div>
 
             <div class="col-md-5">
