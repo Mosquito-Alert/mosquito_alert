@@ -837,6 +837,7 @@ class Report(models.Model):
     deleted = property(get_is_deleted)
     other_versions = property(get_other_versions)
     latest_version = property(get_is_latest)
+    visible = property(show_on_map)
     movelab_annotation = property(get_movelab_annotation)
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)

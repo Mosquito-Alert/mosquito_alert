@@ -167,6 +167,8 @@ class MapDataSerializer(serializers.ModelSerializer):
     tiger_responses = serializers.Field()
     site_responses = serializers.Field()
     tigaprob_cat = serializers.Field()
+    visible = serializers.Field()
+    latest_version = serializers.Field()
 
     class Meta:
         model = Report
