@@ -545,13 +545,13 @@ class Report(models.Model):
             return None
         these_responses = self.responses.all()
         result = {}
-        if these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
+        if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
             q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
             result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-        if these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
+        if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
             q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
             result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-        if these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
+        if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
             q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
             result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
         return result
