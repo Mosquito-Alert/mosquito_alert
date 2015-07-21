@@ -77,7 +77,7 @@
 
                 L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon:
                         {% if form.instance.report.type == 'site' %}site_icon{% else %}
-                            mosquito_icon{% endif %}}).bindPopup('<table><tbody><tr><td><strong>Lat:</strong></td><td>{{ form.instance.report.lat }}</td></tr><tr><td><strong>Lon:</strong></td><td>{{ form.instance.report.lon }}</td></tr></tbody></table><br><a style="color:white;" class="btn btn-primary btn-sm" target="_blank" href="{% url 'webmap.show_map_defaults' %}?center_lon={{ form.instance.report.lon }}&center_lat={{ form.instance.report.lat }}&zoom=14&map_type={{ form.instance.report.type }}&year={{ form.instance.report.creation_time.year }}">View on Public Map</a>').addTo(map);
+                            mosquito_icon{% endif %}}).bindPopup('<table><tbody><tr><td><strong>Lat:</strong></td><td>{{ form.instance.report.lat }}</td></tr><tr><td><strong>Lon:</strong></td><td>{{ form.instance.report.lon }}</td></tr></tbody></table><br><a style="color:white;" class="btn btn-primary btn-sm" target="_blank" href="{% url 'webmap.show_map_defaults' %}?center_lon={{ form.instance.report.lon }}&center_lat={{ form.instance.report.lat }}&zoom=14&map_type={{ form.instance.report.type }}&year={{ form.instance.report.creation_time.year }}">View on Public Map</a>{% if request.user.is_staff %}<br><a style="color:white;" class="btn btn-primary btn-sm" target="_blank" href="{% url 'admin' %}tigaserver_app/report/{{ form.instance.report.version_UUID }}">View Admin</a>{% endif %}').addTo(map);
 
             }
         {%  endfor %}
