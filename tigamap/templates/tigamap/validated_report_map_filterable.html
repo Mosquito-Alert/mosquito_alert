@@ -576,13 +576,17 @@ function make_validation_button_subtext() {
 
 
 function apply_filter() {
+    var window_width = $(window).width();
+    var window_height = $(window).height();
     markers_clustered.clearLayers();
     coverage_fg.clearLayers();
     if (selected_type == 'site') {
         add_to_layer(full_data, markers_clustered, true);
-            $(".coverage_legend").hide();
-            $(".legend").hide();
+        $(".coverage_legend").hide();
+        $(".legend").hide();
+        if (window_width > 700 && window_height > 550) {
             $(".site_legend").show();
+        }
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
@@ -590,9 +594,11 @@ function apply_filter() {
         make_validation_button_subtext();
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
-            $(".coverage_legend").hide();
-            $(".site_legend").hide();
+        $(".coverage_legend").hide();
+        $(".site_legend").hide();
+        if (window_width > 700 && window_height > 550) {
             $(".legend").show();
+        }
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
@@ -601,9 +607,11 @@ function apply_filter() {
     } else if (selected_type == 'coverage') {
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', true);
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
-            $(".legend").hide();
-            $(".site_legend").hide();
+        $(".legend").hide();
+        $(".site_legend").hide();
+        if (window_width > 700 && window_height > 550) {
             $(".coverage_legend").show();
+        }
         add_to_coverage_fg(full_coverage_data, coverage_fg, true);
     }
 }
