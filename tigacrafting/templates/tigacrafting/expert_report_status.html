@@ -82,7 +82,7 @@
 
                 L.marker([{{ report.lat }}, {{ report.lon }}], {icon:
                         {% if report.type == 'site' %}site_icon{% else %}
-                            mosquito_icon{% endif %}}).bindPopup('<table><tbody><tr><td><strong>Lat:</strong></td><td>{{ report.lat }}</td></tr><tr><td><strong>Lon:</strong></td><td>{{ report.lon }}</td></tr></tbody></table><br><a style="color:white;" class="btn btn-primary btn-sm" target="_blank" href="{% url 'webmap.show_map_defaults' %}?center_lon={{ report.lon }}&center_lat={{ report.lat }}&zoom=14&map_type={{ report.type }}&year={{ report.creation_time.year }}">View on Public Map</a>{% if request.user.is_staff %}<br><br><a style="color:white;" class="btn btn-danger btn-sm" target="_blank" href="{% url 'admin:tigaserver_app_report_change' form.instance.report.version_UUID %}">View Admin</a>{% endif %}').addTo(map);
+                            mosquito_icon{% endif %}}).bindPopup('<table><tbody><tr><td><strong>Lat:</strong></td><td>{{ report.lat }}</td></tr><tr><td><strong>Lon:</strong></td><td>{{ report.lon }}</td></tr></tbody></table><br><a style="color:white;" class="btn btn-primary btn-sm" target="_blank" href="{% url 'webmap.show_map_defaults' %}?center_lon={{ report.lon }}&center_lat={{ report.lat }}&zoom=14&map_type={{ report.type }}&year={{ report.creation_time.year }}">View on Public Map</a>{% if request.user.is_staff %}<br><br><a style="color:white;" class="btn btn-danger btn-sm" target="_blank" href="{% url 'admin:tigaserver_app_report_change' report.version_UUID %}">View Admin</a>{% endif %}').addTo(map);
 
             }
         {%  endfor %}
