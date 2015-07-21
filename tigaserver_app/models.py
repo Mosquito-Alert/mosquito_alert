@@ -518,10 +518,17 @@ class Report(models.Model):
                     return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
         else:
             if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True):
+                result = {'edited_user_notes': self.get_final_public_note()}
+                if self.get_final_photo_html():
+                    result['photo_html'] = self.get_final_photo_html().popup_image()
+                    if hasattr(self.get_final_photo_html(), 'crowdcraftingtask'):
+                        result['crowdcrafting_score_cat'] = self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat
+                        result['crowdcrafting_n_response'] = self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
                 if self.type == 'adult':
-                    return {'tiger_certainty_category': self.get_final_expert_score(), 'crowdcrafting_score_cat': self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat if self.get_final_photo_html() and self.get_final_photo_html().crowdcraftingtask else None, 'crowdcrafting_n_response': self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses if self.get_final_photo_html() and self.get_final_photo_html().crowdcraftingtask else None, 'edited_user_notes': self.get_final_public_note(), 'photo_html': self.get_final_photo_html().popup_image() if self.get_final_photo_html() else None}
+                    result['tiger_certainty_category'] = self.get_final_expert_score()
                 elif self.type == 'site':
-                    return {'site_certainty_category': self.get_final_expert_score(), 'crowdcrafting_score_cat': self.get_final_photo_html().crowdcraftingtask.site_validation_score_cat if self.get_final_photo_html() and self.get_final_photo_html().crowdcraftingtask else None, 'crowdcrafting_n_response': self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses if self.get_final_photo_html() and self.get_final_photo_html().crowdcraftingtask else None, 'edited_user_notes': self.get_final_public_note(), 'photo_html': self.get_final_photo_html().popup_image() if self.get_final_photo_html() else None}
+                    result['site_certainty_category'] = self.get_final_expert_score()
+                return result
         return None
 
     def get_movelab_score(self):
