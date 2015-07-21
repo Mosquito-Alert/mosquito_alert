@@ -574,18 +574,15 @@ function make_validation_button_subtext() {
     $("#validation_select").selectpicker("refresh")
 }
 
-var legends_visible = $(".legend").is(":visible");
 
 function apply_filter() {
     markers_clustered.clearLayers();
     coverage_fg.clearLayers();
     if (selected_type == 'site') {
         add_to_layer(full_data, markers_clustered, true);
-        if (legends_visible) {
             $(".coverage_legend").hide();
             $(".legend").hide();
             $(".site_legend").show();
-        }
         //    $(".marker-cluster").addClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_blue.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
@@ -593,11 +590,9 @@ function apply_filter() {
         make_validation_button_subtext();
     } else if (selected_type == 'adult') {
         add_to_layer(full_data, markers_clustered, true);
-        if (legends_visible) {
             $(".coverage_legend").hide();
             $(".site_legend").hide();
             $(".legend").show();
-        }
         //    $(".marker-cluster").removeClass('blue');
         $("#cluster_color_css").attr({href: "/static/tigamap/MarkerCluster.tigamap_yellow_single.css"});
         $("#legend_css").attr({href: "/static/tigamap/tigamap_legend.css"});
@@ -606,11 +601,9 @@ function apply_filter() {
     } else if (selected_type == 'coverage') {
         $("#validation_select, .btn[data-id=validation_select]").prop('disabled', true);
         $("#legend_css").attr({href: "/static/tigamap/tigamap_coverage_legend.css"});
-        if (legends_visible) {
             $(".legend").hide();
             $(".site_legend").hide();
             $(".coverage_legend").show();
-        }
         add_to_coverage_fg(full_coverage_data, coverage_fg, true);
     }
 }
