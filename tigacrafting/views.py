@@ -580,7 +580,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args['tasks_per_page'] = tasks_per_page
         args['scroll_position'] = scroll_position
         args['edit_mode'] = edit_mode
-        args['tasks_per_page_choices'] = range(5, min(100, all_annotations.count())+1, 5)
+        n_query_records = all_annotations.count()
+        args['n_query_records'] = n_query_records
+        args['tasks_per_page_choices'] = range(5, min(100, n_query_records)+1, 5)
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
