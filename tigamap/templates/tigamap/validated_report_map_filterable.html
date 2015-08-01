@@ -718,9 +718,11 @@ function map_init_basic(map, options) {
 
     coverage_fg.addTo(map);
 
+    {% if fullscreen != 'off' or map_type == 'coverage' %}
     get_coverage_data(0, {{ last_coverage_id }}, map);
+    {% endif %}
 
-    for (var d = {{ end_day }}; d >= {% if fullscreen == 'off' and year == 2015 %}202{% else %}0{% endif %}; d--) {
+    for (var d = {{ end_day }}; d >= {% if fullscreen == 'off' and year == '2015' %}202{% else %}0{% endif %}; d--) {
         get_data(d, map);
     }
 
