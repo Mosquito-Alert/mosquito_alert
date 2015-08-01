@@ -637,7 +637,7 @@ function get_data(day, map) {
                 full_data = full_data.concat(data);
 
             }
-            percent_done = Math.floor(100 * day_just_finished++ /{% if fullscreen == 'off' and year == '2015' %}{{ end_day }}-202{% else %}{{ end_day }}{% endif %});
+            percent_done = Math.floor(100 * {% if fullscreen == 'off' and year == '2015' %}(day_just_finished++-202){% else %}day_just_finished++{% endif %}/{% if fullscreen == 'off' and year == '2015' %}({{ end_day }}-202){% else %}{{ end_day }}{% endif %});
             progress_bar.css("width", percent_done.toString() + "%");
             if (percent_done > 10) {
                 progress_bar.html(percent_done.toString() + "%");
