@@ -14,6 +14,8 @@ import math
 from django.core.context_processors import csrf
 from tigaserver_app.views import get_n_days, get_n_months
 from django.conf import settings
+import datetime
+import pytz
 
 
 def show_grid_05(request):
@@ -361,7 +363,8 @@ def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_
     min_zoom = request.GET.get('min_zoom', min_zoom)
     max_zoom = request.GET.get('max_zoomo', max_zoom)
     endpoint ='all_reports'
-    context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
+    end_day = (pytz.utc.localize(datetime.datetime.now()) - settings.START_TIME).days + 1
+    context = {'domain': current_domain, 'end_day': end_day, 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
     context.update(csrf(request))
     if zoom:
         context['zoom'] = zoom

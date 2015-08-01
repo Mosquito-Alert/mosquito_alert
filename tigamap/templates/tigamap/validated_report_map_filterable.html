@@ -620,7 +620,7 @@ function apply_filter() {
 function get_data(day, map) {
     var csrftoken = $.cookie('csrftoken');
     $.ajax({
-        url: 'http://{{ domain }}/api/{{ endpoint }}/?day=' + day,
+        url: 'http://{{ domain }}/api/{{ endpoint }}/?day=' + day{% if fullscreen == 'off' %}+'&year='+{{ year }}{% endif %},
         contentType: 'application/json',
         dataType: 'json',
         headers: {
@@ -720,7 +720,7 @@ function map_init_basic(map, options) {
 
     get_coverage_data(0, {{ last_coverage_id }}, map);
 
-    for (var d = {{ end_day }}; d >= 0; d--) {
+    for (var d = {{ end_day }}; d >= {% if fullscreen == 'off' and year == 2015 %}202{% else %}0{% endif %}; d--) {
         get_data(d, map);
     }
 
