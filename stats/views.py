@@ -5,10 +5,11 @@ from datetime import date, timedelta, datetime
 import time
 from collections import Counter
 from tzlocal import get_localzone
-from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt, login_required
 
 
 @xframe_options_exempt
+@login_required
 def show_usage(request):
     real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
     real_reports = Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
@@ -22,7 +23,7 @@ def show_usage(request):
         site_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': real_reports.filter(type='site', creation_time__lte=ref_date).count()})
         adult_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': real_reports.filter(type='adult', creation_time__lte=ref_date).count()})
         users.append({'date': (time.mktime(ref_date.timetuple())), 'n': real_tigausers.filter(registration_time__lte=ref_date).count()})
-        ref_date += timedelta(hours=8760)
+        ref_date += timedelta(hours=168)
     # now set final day as current time
     site_reports.append({'date': time.mktime(end_date.timetuple()), 'n': real_reports.filter(type='site', creation_time__lte=ref_date).count()})
     adult_reports.append({'date': time.mktime(end_date.timetuple()), 'n': real_reports.filter(type='adult', creation_time__lte=ref_date).count()})
