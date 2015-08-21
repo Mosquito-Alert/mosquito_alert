@@ -141,16 +141,9 @@ class MissionItem(models.Model):
     question_catalan = models.CharField(max_length=1000, help_text='Question displayed to user in Catalan.')
     question_spanish = models.CharField(max_length=1000, help_text='Question displayed to user in Spanish.')
     question_english = models.CharField(max_length=1000, help_text='Question displayed to user in English.')
-    answer_choices_catalan = models.CharField(max_length=1000, help_text='Response choices in Catalan, wrapped in '
-                                                                         'square '
-                                                                         'brackets '
-                                                                       '(e.g., [yes][no]).')
-    answer_choices_spanish = models.CharField(max_length=1000, help_text='Response choices in Spanish, wrapped in '
-                                                                         'square '
-                                                                         'brackets (e.g., [yes][no]).')
-    answer_choices_english = models.CharField(max_length=1000, help_text='Response choices in English, wrapped in '
-                                                                         'square '
-                                                                         'brackets (e.g., [yes][no]).')
+    answer_choices_catalan = models.CharField(max_length=1000, help_text='Response choices in Catalan, wrapped in quotes, comma separated and in square brackets (e.g., ["yes", "no"]).')
+    answer_choices_spanish = models.CharField(max_length=1000, help_text='Response choices in Catalan, wrapped in quotes, comma separated and in square brackets (e.g., ["yes", "no"]).')
+    answer_choices_english = models.CharField(max_length=1000, help_text='Response choices in Catalan, wrapped in quotes, comma separated and in square brackets (e.g., ["yes", "no"]).')
     help_text_catalan = models.TextField(blank=True, help_text='Catalan help text displayed to user for this item.')
     help_text_spanish = models.TextField(blank=True, help_text='Spanish help text displayed to user for this item.')
     help_text_english = models.TextField(blank=True, help_text='English help text displayed to user for this item.')
