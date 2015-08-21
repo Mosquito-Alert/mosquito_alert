@@ -11,9 +11,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 @xframe_options_exempt
 def show_usage(request):
     real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
-    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) |
-                                                                 Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)) if report.latest_version]
+    real_reports = Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
     tz = get_localzone()
     ref_date = datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
     end_date = tz.localize(datetime.now())
@@ -21,14 +19,14 @@ def show_usage(request):
     site_reports = []
     adult_reports = []
     while ref_date <= end_date:
-        site_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'site' and r.creation_time <= ref_date])})
-        adult_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'adult' and r.creation_time <= ref_date])})
-        users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len(real_tigausers.filter(registration_time__lte=ref_date))})
-        ref_date += timedelta(hours=168)
+        site_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': real_reports.filter(type='site', creation_time__lte=ref_date).count()})
+        adult_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': real_reports.filter(type='adult', creation_time__lte=ref_date).count()})
+        users.append({'date': (time.mktime(ref_date.timetuple())), 'n': real_tigausers.filter(registration_time__lte=ref_date).count()})
+        ref_date += timedelta(hours=8760)
     # now set final day as current time
-    site_reports.append({'date': time.mktime(end_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'site' and r.creation_time <= ref_date])})
-    adult_reports.append({'date': time.mktime(end_date.timetuple()), 'n': len([r for r in real_reports if r.type == 'adult' and r.creation_time <= ref_date])})
-    users.append({'date': time.mktime(end_date.timetuple()), 'n': len(real_tigausers.filter(registration_time__lte=ref_date))})
+    site_reports.append({'date': time.mktime(end_date.timetuple()), 'n': real_reports.filter(type='site', creation_time__lte=ref_date).count()})
+    adult_reports.append({'date': time.mktime(end_date.timetuple()), 'n': real_reports.filter(type='adult', creation_time__lte=ref_date).count()})
+    users.append({'date': time.mktime(end_date.timetuple()), 'n': real_tigausers.filter(registration_time__lte=ref_date).count()})
     context = {'users': users, 'site_reports': site_reports, 'adult_reports': adult_reports}
     return render(request, 'stats/chart.html', context)
 
