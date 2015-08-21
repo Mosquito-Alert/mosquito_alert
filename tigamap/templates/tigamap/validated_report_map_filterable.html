@@ -718,6 +718,11 @@ function map_init_basic(map, options) {
 
     coverage_fg.addTo(map);
 
+
+    for (var d = {{ end_day }}; d >= {% if fullscreen == 'off' and year == '2015' %}202{% else %}0{% endif %}; d--) {
+        get_data(d, map);
+    }
+
     {% if fullscreen != 'off' or map_type == 'coverage' %}
     var cov_step = 1000;
     for (var start_id = 0; start_id <= {{ last_coverage_id }}; start_id = start_id + cov_step) {
@@ -726,9 +731,6 @@ function map_init_basic(map, options) {
 
     {% endif %}
 
-    for (var d = {{ end_day }}; d >= {% if fullscreen == 'off' and year == '2015' %}202{% else %}0{% endif %}; d--) {
-        get_data(d, map);
-    }
 
 
 // TURNING OFF FOR NOW UNTIL WE WORK OUT THE LONG REQUEST ISSUE
