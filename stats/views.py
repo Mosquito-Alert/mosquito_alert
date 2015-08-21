@@ -5,7 +5,8 @@ from datetime import date, timedelta, datetime
 import time
 from collections import Counter
 from tzlocal import get_localzone
-from django.views.decorators.clickjacking import xframe_options_exempt, login_required
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.contrib.auth.decorators import login_required
 
 
 @xframe_options_exempt
