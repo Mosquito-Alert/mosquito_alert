@@ -10,7 +10,6 @@ from django.contrib.auth.decorators import login_required
 
 
 @xframe_options_exempt
-@login_required
 def show_usage(request):
     real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
     real_reports = Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
