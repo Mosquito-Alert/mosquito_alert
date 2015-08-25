@@ -588,7 +588,8 @@
                     <div class="pagination">
         <span class="step-links">
             {% if objects.has_previous %}
-                <a href="?page={{ objects.previous_page_number }}">Previous</a>
+                <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
+
             {% endif %}
 
             <span class="current">
@@ -1104,6 +1105,9 @@
         $("#page_button").on('click', function () {
             gear.show();
             var qp = query_selectors();
+            var selected_page = $("#page_input").val();
+            qp += selected_page;
+            $("#next_page_input").val(selected_page);
             background_save(qp);
         });
 
@@ -1120,6 +1124,21 @@
         {% else %}
             nb.hide();
         {% endif %}
+
+        var pb = $("#previous_page_button");
+        {% if objects.has_previous %}
+            pb.show().on('click', function () {
+                gear.show();
+                var previous_page = "{{ objects.previous_page_number }}";
+                var qp = query_selectors();
+                qp += '&page=' + previous_page;
+                $("#next_page_input").val(previous_page);
+                background_save(qp);
+            });
+        {% else %}
+            pb.hide();
+        {% endif %}
+
 
 
     </script>

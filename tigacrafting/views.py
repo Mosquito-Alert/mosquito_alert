@@ -589,7 +589,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
 
 
 @login_required
-def expert_report_status(request, reports_per_page=500, version_uuid=None, linked_id=None):
+def expert_report_status(request, reports_per_page=10, version_uuid=None, linked_id=None):
     this_user = request.user
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         version_uuid = request.GET.get('version_uuid', version_uuid)
@@ -614,7 +614,7 @@ def expert_report_status(request, reports_per_page=500, version_uuid=None, linke
         except EmptyPage:
             objects = paginator.page(paginator.num_pages)
         paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects])
-        reports_per_page_choices = range(5, min(1000, n_reports)+1, 100)
+        reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
         context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
         context['objects'] = objects
         context['pages'] = range(1, objects.paginator.num_pages+1)
