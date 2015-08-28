@@ -1,4 +1,4 @@
 -r common.pip
 
-gunicorn==18.0
+gunicorn==19.3
 
