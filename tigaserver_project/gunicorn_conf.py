@@ -3,5 +3,5 @@ threads = 16
 bind = '127.0.0.1:49153'
 max_requests = 5000
 max_requests_jitter = 100
-timeout = 600
+timeout = 120
 backlog = 64
