@@ -6,12 +6,10 @@ from tigaserver_app import views
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'reports', views.ReportViewSet)
-## TEMP OUT
-# router.register(r'missions', views.MissionViewSet)
+router.register(r'missions', views.MissionViewSet)
 router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
-## TEMP OUT
-#router.register(r'configuration', views.ConfigurationViewSet)
+router.register(r'configuration', views.ConfigurationViewSet)
 #router.register(r'all_adults', views.AdultMapViewSetAll, base_name='adult')
 #router.register(r'cat2_adults', views.AdultMapViewSetCatGE2, base_name='cat2_adult')
 #router.register(r'cat1_adults', views.AdultMapViewSetCatGE1, base_name='cat1_adult')
@@ -28,13 +26,10 @@ router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_repor
 
 urlpatterns = patterns('tigaserver_app.views',
     url(r'^time_info/$', 'get_data_time_info'),
-## TEMP OUT
 #    url(r'^update_coverage/$', 'update_coverage_model'),
 #    url(r'^update_coverage_month/$', 'update_coverage_area_month_model'),
     url(r'^photos/$', 'post_photo'),
-
-## TEMP OUT
-#    url(r'^configuration/$', 'get_current_configuration'),
-#    url(r'^missions/$', 'get_new_missions'),
+    url(r'^configuration/$', 'get_current_configuration'),
+    url(r'^missions/$', 'get_new_missions'),
     url(r'^', include(router.urls)),
 )
