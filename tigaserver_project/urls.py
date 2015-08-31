@@ -1,16 +1,15 @@
 from django.conf.urls import *
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic.base import RedirectView
-from django.core.urlresolvers import reverse
 from django.contrib.gis import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, \
     show_credit_image
-from tigamap import views
-from stats.views import show_usage, show_report_users, show_fix_users
+from tigamap.views import show_filterable_report_map, show_single_report_map
+from stats.views import show_usage
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import show_validated_photos, show_processing, annotate_tasks, movelab_annotation, movelab_annotation_pending, expert_report_annotation, expert_report_status, expert_status
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status
 
 admin.autodiscover()
 
@@ -49,16 +48,16 @@ urlpatterns += i18n_patterns('',
     url(r'^policies/$', show_policies, name='help.show_policies'),
     url(r'^terms/$', show_terms, name='help.show_terms'),
     url(r'^privacy/$', show_privacy, name='help.show_privacy'),
-    url(r'^webmap/embedded/$', views.show_filterable_report_map, {'fullscreen': 'off', 'legend': 'on'}),
-    url(r'^webmap/adults/$', views.show_filterable_report_map, {'map_type': 'adult'}, name='adult_map'),
-    url(r'^webmap/adults/(?P<selected_validation>\w+)/$', views.show_filterable_report_map, {'map_type': 'adult'}, name='adult_map_type'),
-    url(r'^webmap/sites/$', views.show_filterable_report_map, {'map_type': 'site'},  name='site_map'),
-    url(r'^webmap/sites/(?P<selected_validation>\w+)/$', views.show_filterable_report_map,  {'map_type': 'site'}, name='site_map_type'),
-    url(r'^webmap/coverage/$', views.show_filterable_report_map, {'map_type': 'coverage'}, name='coverage_map'),
-    url(r'^webmap/$', views.show_filterable_report_map, name='webmap.show_map_defaults'),
-    url(r'^$', views.show_filterable_report_map, name='tigaserver_base_url'),
-    url(r'^bcn/$', views.show_filterable_report_map, {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon':2.225610, 'min_zoom': 12, 'max_zoom': 18}),
-    url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', views.show_single_report_map, name='webmap.single_report'),
+    url(r'^webmap/embedded/$', show_filterable_report_map, {'fullscreen': 'off', 'legend': 'on'}),
+    url(r'^webmap/adults/$', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map'),
+    url(r'^webmap/adults/(?P<selected_validation>\w+)/$', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map_type'),
+    url(r'^webmap/sites/$', show_filterable_report_map, {'map_type': 'site'},  name='site_map'),
+    url(r'^webmap/sites/(?P<selected_validation>\w+)/$', show_filterable_report_map,  {'map_type': 'site'}, name='site_map_type'),
+    url(r'^webmap/coverage/$', show_filterable_report_map, {'map_type': 'coverage'}, name='coverage_map'),
+    url(r'^webmap/$', show_filterable_report_map, name='webmap.show_map_defaults'),
+    url(r'^$', show_filterable_report_map, name='tigaserver_base_url'),
+    url(r'^bcn/$', show_filterable_report_map, {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon':2.225610, 'min_zoom': 12, 'max_zoom': 18}),
+    url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', show_single_report_map, name='webmap.single_report'),
     url(r'^stats/$', show_usage),
 #   url(r'^reportstats/$', show_report_users),
 #    url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
@@ -76,6 +75,6 @@ urlpatterns += i18n_patterns('',
 #    url(r'^coveragestats/$', show_fix_users),
 
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
-    url(r'^processing/$', show_processing),
+#    url(r'^processing/$', show_processing),
     url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/experts/'}, name='auth_logout'),
 )
