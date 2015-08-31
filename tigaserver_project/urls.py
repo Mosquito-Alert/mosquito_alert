@@ -19,9 +19,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-
-## TEMP  OUT
-#    url(r'^api/', include('tigaserver_app.urls')),
+    url(r'^api/', include('tigaserver_app.urls')),
     url(r'^webapp/', include('webapp.urls')),
     url(r'^help/(?P<platform>\w+)/(?P<language>\w+)/$', show_help),
     url(r'^about/(?P<platform>\w+)/(?P<language>\w+)/$', show_about),
@@ -70,10 +68,9 @@ urlpatterns += i18n_patterns('',
 #    url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation_pending,name='movelab_annotation_pending_tasks_per_page'),
 #    url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
 
-## TEMP OUT
-#    url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
-#    url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
-#    url(r'^experts/status/people/$', expert_status, name='expert_status'),
+    url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
+    url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
+    url(r'^experts/status/people/$', expert_status, name='expert_status'),
 
 ## should stay out
 #    url(r'^coveragestats/$', show_fix_users),
