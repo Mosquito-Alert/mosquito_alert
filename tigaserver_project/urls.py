@@ -19,7 +19,9 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api/', include('tigaserver_app.urls')),
+
+## TEMP  OUT
+#    url(r'^api/', include('tigaserver_app.urls')),
     url(r'^webapp/', include('webapp.urls')),
     url(r'^help/(?P<platform>\w+)/(?P<language>\w+)/$', show_help),
     url(r'^about/(?P<platform>\w+)/(?P<language>\w+)/$', show_about),
