@@ -1,5 +1,4 @@
-workers = 8
-threads = 2
+workers = 4
 bind = '127.0.0.1:49153'
 max_requests = 5000
-timeout = 30
+timeout = 600
