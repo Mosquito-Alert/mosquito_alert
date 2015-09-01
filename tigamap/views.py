@@ -16,6 +16,7 @@ from tigaserver_app.views import get_n_days, get_n_months
 from django.conf import settings
 import datetime
 import pytz
+from django.views.decorators.cache import cache_page
 
 
 def show_grid_05(request):
@@ -337,6 +338,7 @@ def show_new_coverage_map(request):
 
 
 @xframe_options_exempt
+@cache_page(60 * 60)
 def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_type='adult', scroll_zoom='on', year='2015', month='0', selected_validation='-2', center_lon=None, center_lat=None, legend='on', fullscreen='on', min_lat = -90, min_lon = -180, max_lat = 90, max_lon=180):
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'

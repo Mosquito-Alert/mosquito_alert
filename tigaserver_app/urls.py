@@ -25,8 +25,8 @@ router.register(r'fixes', views.FixViewSet)
 #router.register(r'buckets', views.SiteMapViewSetBucketsWells, base_name='bucket')
 #router.register(r'other_sites', views.SiteMapViewSetOther, base_name='other_site')
 #router.register(r'coverage', views.CoverageMapViewSet, base_name='coverage')
-router.register(r'coverage_month', views.CoverageMonthMapViewSet, base_name='coverage_month')
-router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_reports')
+#router.register(r'coverage_month', views.CoverageMonthMapViewSet, base_name='coverage_month')
+#router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_reports')
 
 
 
@@ -35,10 +35,7 @@ urlpatterns = patterns('tigaserver_app.views',
 #    url(r'^update_coverage/$', 'update_coverage_model'),
 #    url(r'^update_coverage_month/$', 'update_coverage_area_month_model'),
     url(r'^photos/$', 'post_photo'),
-
-## TEMP OUT
-#    url(r'^configuration/$', 'get_current_configuration'),
-#    url(r'^missions/$', 'get_new_missions'),
-
+    url(r'^configuration/$', 'get_current_configuration'),
+    url(r'^missions/$', 'get_new_missions'),
     url(r'^', include(router.urls)),
 )

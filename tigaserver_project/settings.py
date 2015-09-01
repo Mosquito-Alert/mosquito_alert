@@ -150,6 +150,10 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
+REST_FRAMEWORK_EXTENSIONS = {
+    'DEFAULT_CACHE_ERRORS': False
+}
+
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.0, -4.0),
     'DEFAULT_ZOOM': 6,

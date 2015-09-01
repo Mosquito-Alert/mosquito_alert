@@ -15,9 +15,21 @@ from operator import attrgetter
 from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
 from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
+from rest_framework_extensions.cache.mixins import CacheResponseMixin
+from rest_framework_extensions.cache.decorators import cache_response
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    A viewset that provides `retrieve`, and 'list` actions.
+
+    To use it, override the class and set the `.queryset` and
+    `.serializer_class` attributes.
+    """
+    pass
+
+
+class CachedReadOnlyModelViewSet(CacheResponseMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     A viewset that provides `retrieve`, and 'list` actions.
 
@@ -48,6 +60,7 @@ class ReadWriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet
 
 
 @api_view(['GET'])
+@cache_response(60*60*24)
 def get_current_configuration(request):
     """
 API endpoint for getting most recent app configuration created by Movelab.
@@ -66,6 +79,7 @@ record is saved.
 
 
 @api_view(['GET'])
+@cache_response(60*60*24)
 def get_new_missions(request):
     """
 API endpoint for getting most missions that have not yet been downloaded.
