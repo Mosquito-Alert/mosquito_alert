@@ -12,7 +12,7 @@ router.register(r'reports', views.ReportViewSet)
 router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
 
-# router.register(r'configuration', views.ConfigurationViewSet)
+router.register(r'configuration', views.ConfigurationViewSet)
 
 #router.register(r'all_adults', views.AdultMapViewSetAll, base_name='adult')
 #router.register(r'cat2_adults', views.AdultMapViewSetCatGE2, base_name='cat2_adult')

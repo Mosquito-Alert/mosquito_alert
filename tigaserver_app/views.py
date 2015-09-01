@@ -287,7 +287,7 @@ API endpoint for getting and posting masked location fixes.
     filter_fields = ('user_coverage_uuid', )
 
 
-class ConfigurationViewSet(CachedReadOnlyModelViewSet):
+class ConfigurationViewSet(ReadOnlyModelViewSet):
     """
 API endpoint for downloading app configurations created by Movelab. Only the most recent configuration is downloaded.
 
