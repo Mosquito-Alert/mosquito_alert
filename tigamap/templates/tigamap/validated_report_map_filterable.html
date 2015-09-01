@@ -626,7 +626,7 @@ function get_data(map) {
             if (data != null && data.length > 0) {
                 add_to_layer(data, markers_clustered, true);
                 full_data = full_data.concat(data);
-                progress_bar.css("width", percent_done.toString() + "%");
+                progress_bar.css("width", "100%");
                 progress_bar_container.fadeOut(2000);
             }
         }
