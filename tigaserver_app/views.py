@@ -15,6 +15,7 @@ from operator import attrgetter
 from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
 from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
+from rest_framework_extensions.cache.decorators import cache_response
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -482,6 +483,7 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 
+@cache_response(60 * 15)
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
     queryset = Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
