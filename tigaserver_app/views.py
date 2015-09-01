@@ -243,11 +243,11 @@ the server map (although it will still be retained internally).
 class MissionFilter(django_filters.FilterSet):
     id_gt = django_filters.NumberFilter(name='id', lookup_type='gt')
     version_lte = django_filters.NumberFilter(name='mission_version', lookup_type='lte')
-    platform = django_filters.CharFilter(name='platform')
+#    platform = django_filters.CharFilter(name='platform')
 
     class Meta:
         model = Mission
-        fields = ['id_gt', 'version_lte', 'platform']
+        fields = ['id_gt', 'version_lte']
 
 
 class MissionViewSet(CachedReadOnlyModelViewSet):
