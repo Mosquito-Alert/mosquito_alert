@@ -15,20 +15,9 @@ from operator import attrgetter
 from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
 from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
-from rest_framework_extensions.cache.mixins import CacheResponseMixin
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    A viewset that provides `retrieve`, and 'list` actions.
-
-    To use it, override the class and set the `.queryset` and
-    `.serializer_class` attributes.
-    """
-    pass
-
-
-class CachedReadOnlyModelViewSet(CacheResponseMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     A viewset that provides `retrieve`, and 'list` actions.
 
@@ -239,22 +228,6 @@ the server map (although it will still be retained internally).
     filter_fields = ('user', 'version_number', 'report_id', 'type')
 
 
-class MissionFilter(django_filters.FilterSet):
-    id_gt = django_filters.NumberFilter(name='id', lookup_type='gt')
-    version_lte = django_filters.NumberFilter(name='mission_version', lookup_type='lte')
-#    platform = django_filters.CharFilter(name='platform')
-
-    class Meta:
-        model = Mission
-        fields = ['id_gt', 'version_lte']
-
-
-class MissionViewSet(CachedReadOnlyModelViewSet):
-    queryset = Mission.objects.all()
-    serializer_class = MissionSerializer
-    filter_class = MissionFilter
-
-
 # For production version, substitute WriteOnlyModelViewSet
 class PhotoViewSet(ReadWriteOnlyModelViewSet):
     queryset = Photo.objects.all()
@@ -284,21 +257,6 @@ API endpoint for getting and posting masked location fixes.
     queryset = Fix.objects.all()
     serializer_class = FixSerializer
     filter_fields = ('user_coverage_uuid', )
-
-
-class ConfigurationViewSet(ReadOnlyModelViewSet):
-    """
-API endpoint for downloading app configurations created by Movelab. Only the most recent configuration is downloaded.
-
-**Fields**
-
-* id: Auto-incremented primary key record ID.
-* samples_per_day: Number of randomly-timed location samples to take per day.
-* creation_time: Date and time when this configuration was created by MoveLab. Automatically generated when
-record is saved.
-    """
-    queryset = Configuration.objects.order_by('creation_time').last()
-    serializer_class = ConfigurationSerializer
 
 
 def lookup_photo(request, token, photo_uuid, size):
