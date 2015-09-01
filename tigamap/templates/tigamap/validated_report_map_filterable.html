@@ -620,8 +620,7 @@ function apply_filter() {
 function get_data(day, map) {
     var csrftoken = $.cookie('csrftoken');
     $.ajax({
-        url: 'http://{{ domain }}/api/{{ endpoint }}/?day=' + day{% if fullscreen == 'off' %}+'&year='+{{ year }}{% endif %},
-        contentType: 'application/json',
+        url: 'http://{{ domain }}/static/all_reports' + day + '.json',
         dataType: 'json',
         headers: {
             'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
@@ -719,9 +718,7 @@ function map_init_basic(map, options) {
     coverage_fg.addTo(map);
 
 
-    for (var d = {{ end_day }}; d >= {% if fullscreen == 'off' and year == '2015' %}202{% else %}0{% endif %}; d--) {
-        get_data(d, map);
-    }
+        get_data(1, map);
 
     {% if fullscreen != 'off' or map_type == 'coverage' %}
     var cov_step = 1000;

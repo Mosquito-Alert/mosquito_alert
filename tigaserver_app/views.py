@@ -15,20 +15,9 @@ from operator import attrgetter
 from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
 from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
-from rest_framework_extensions.cache.mixins import CacheResponseMixin
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    A viewset that provides `retrieve`, and 'list` actions.
-
-    To use it, override the class and set the `.queryset` and
-    `.serializer_class` attributes.
-    """
-    pass
-
-
-class CachedReadOnlyModelViewSet(CacheResponseMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     A viewset that provides `retrieve`, and 'list` actions.
 
@@ -493,7 +482,7 @@ class SiteMapViewSetOther(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 
-class AllReportsMapViewSet(CachedReadOnlyModelViewSet):
+class AllReportsMapViewSet(ReadOnlyModelViewSet):
     queryset = Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
