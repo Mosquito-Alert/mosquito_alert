@@ -60,7 +60,6 @@ class ReadWriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet
 
 
 @api_view(['GET'])
-@cache_response(60*60*24)
 def get_current_configuration(request):
     """
 API endpoint for getting most recent app configuration created by Movelab.
@@ -79,7 +78,6 @@ record is saved.
 
 
 @api_view(['GET'])
-@cache_response(60*60*24)
 def get_new_missions(request):
     """
 API endpoint for getting most missions that have not yet been downloaded.
@@ -242,9 +240,20 @@ the server map (although it will still be retained internally).
     filter_fields = ('user', 'version_number', 'report_id', 'type')
 
 
-class MissionViewSet(ReadOnlyModelViewSet):
+class MissionFilter(django_filters.FilterSet):
+    id_gt = django_filters.NumberFilter(name='id', lookup_type='gt')
+    version_lte = django_filters.NumberFilter(name='mission_version', lookup_type='lte')
+    platform = django_filters.CharFilter(name='platform')
+
+    class Meta:
+        model = Mission
+        fields = ['id_gt', 'version_lte', 'platform']
+
+
+class MissionViewSet(CachedReadOnlyModelViewSet):
     queryset = Mission.objects.all()
     serializer_class = MissionSerializer
+    filter_class = MissionFilter
 
 
 # For production version, substitute WriteOnlyModelViewSet
@@ -278,7 +287,7 @@ API endpoint for getting and posting masked location fixes.
     filter_fields = ('user_coverage_uuid', )
 
 
-class ConfigurationViewSet(ReadOnlyModelViewSet):
+class ConfigurationViewSet(CachedReadOnlyModelViewSet):
     """
 API endpoint for downloading app configurations created by Movelab. Only the most recent configuration is downloaded.
 
@@ -289,7 +298,7 @@ API endpoint for downloading app configurations created by Movelab. Only the mos
 * creation_time: Date and time when this configuration was created by MoveLab. Automatically generated when
 record is saved.
     """
-    queryset = Configuration.objects.all()
+    queryset = Configuration.objects.order_by('creation_time').last()
     serializer_class = ConfigurationSerializer
 
 
