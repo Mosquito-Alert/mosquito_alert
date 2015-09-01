@@ -614,4 +614,3 @@ class CoverageMonthMapViewSet(ReadOnlyModelViewSet):
     queryset = CoverageAreaMonth.objects.all()
     serializer_class = CoverageMonthMapSerializer
     filter_class = CoverageMonthMapFilter
-
