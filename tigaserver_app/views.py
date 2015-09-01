@@ -60,7 +60,6 @@ class ReadWriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet
 
 
 @api_view(['GET'])
-@cache_response()
 def get_current_configuration(request):
     """
 API endpoint for getting most recent app configuration created by Movelab.
