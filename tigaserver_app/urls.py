@@ -7,7 +7,7 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'reports', views.ReportViewSet)
 
-# router.register(r'missions', views.MissionViewSet)
+router.register(r'missions', views.MissionViewSet)
 
 router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
@@ -34,6 +34,6 @@ urlpatterns = patterns('tigaserver_app.views',
 #    url(r'^update_coverage_month/$', 'update_coverage_area_month_model'),
     url(r'^photos/$', 'post_photo'),
     url(r'^configuration/$', 'get_current_configuration'),
-    url(r'^missions/$', 'get_new_missions'),
+#    url(r'^missions/$', 'get_new_missions'),
     url(r'^', include(router.urls)),
 )

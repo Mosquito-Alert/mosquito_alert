@@ -16,7 +16,6 @@ from tigaserver_app.serializers import UserSerializer, ReportSerializer, Mission
 from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
-from rest_framework_extensions.cache.decorators import cache_response
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
