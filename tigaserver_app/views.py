@@ -127,7 +127,7 @@ mission_version null. Defaults to 100.
                                                     platform__isnull=True) | Q(platform__exact='all'),
                                                 Q(mission_version__lte=request.QUERY_PARAMS.get(
                                                     'version_lte',
-                                                                                               100)) | Q(mission_version__isnull=True))
+                                                                                               100)) | Q(mission_version__isnull=True)).order_by('id')
         serializer = MissionSerializer(these_missions)
         return Response(serializer.data)
 
@@ -604,7 +604,7 @@ def update_coverage_area_month_model(request):
     return HttpResponse(json.dumps(json_response))
 
 
-def update_coverage_area_month_model():
+def update_coverage_area_month_model_manual():
     json_response = {'updated': False}
     # turning off for now
     if True:
