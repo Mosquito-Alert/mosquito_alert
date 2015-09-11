@@ -32,4 +32,4 @@ class Command(BaseCommand):
             [lat_function_m0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats_m0]
             [lat_function_y0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats_y0]
             updated = True
-        self.stdout.write('Successfully updated coverage area month model' if updated else 'No updates needed.')
+        self.stdout.write('Successfully updated coverage area month model' if updated == True else 'No updates needed.')
