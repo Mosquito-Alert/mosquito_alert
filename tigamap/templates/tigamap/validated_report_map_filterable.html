@@ -617,17 +617,19 @@ function apply_filter() {
 }
 
 
-function get_data(map) {
+function get_data(map, year, prog_percent) {
     $.ajax({
-        url: 'http://{{ domain }}/static/all_reports{% if fullscreen == 'off' %}{{ year }}{% endif %}.json',
+        url: 'http://{{ domain }}/static/all_reports' + year  + '.json',
         dataType: 'json',
         success: function (data) {
 
             if (data != null && data.length > 0) {
                 add_to_layer(data, markers_clustered, true);
                 full_data = full_data.concat(data);
-                progress_bar.css("width", "100%");
-                progress_bar_container.fadeOut(2000);
+                progress_bar.css('width', prog_percent.toString() + '%');
+                if(prog_percent == 100){
+                    progress_bar_container.fadeOut(2000);
+                }
             }
         }
     });
@@ -670,7 +672,15 @@ function map_init_basic(map, options) {
     coverage_fg.addTo(map);
 
 
-    get_data(map);
+    {% if fullscreen == 'off' %}
+        get_data(map, {{ year }}, 100);
+    {% else %}
+    var all_years = ["2014", "2015"]
+    for(var i = 0; i < all_years.length; i++){
+        get_data(map, all_years[1], 100*(i+1)/all_years.length);
+    }
+    {% endif %}
+
 
     {% if fullscreen != 'off' or map_type == 'coverage' %}
     get_coverage_data(map);
