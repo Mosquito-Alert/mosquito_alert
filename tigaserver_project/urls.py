@@ -4,8 +4,7 @@ from django.views.generic.base import RedirectView
 from django.contrib.gis import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, \
-    show_credit_image
+from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage
 from tigaserver_app.views import lookup_photo
