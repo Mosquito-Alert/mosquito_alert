@@ -124,7 +124,7 @@ class CrowdcraftingResponse(models.Model):
     response_id = models.IntegerField()
     task = models.ForeignKey(CrowdcraftingTask, related_name="responses")
     user = models.ForeignKey(CrowdcraftingUser, related_name="responses", blank=True, null=True)
-    user_lang = models.CharField(max_length=2, blank=True)
+    user_lang = models.CharField(max_length=10, blank=True)
     mosquito_question_response = models.CharField(max_length=100)
     tiger_question_response = models.CharField(max_length=100)
     site_question_response = models.CharField(max_length=100)

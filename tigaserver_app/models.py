@@ -230,12 +230,12 @@ class Report(models.Model):
     os_version = models.CharField(max_length=200, blank=True, help_text='Operating system version of device from '
                                                                         'which this '
                                                                           'report was submitted.')
-    os_language = models.CharField(max_length=2, blank=True, help_text='Language setting of operating system on '
+    os_language = models.CharField(max_length=10, blank=True, help_text='Language setting of operating system on '
                                                                          'device from '
                                                                         'which this '
                                                                           'report was submitted. 2-digit '
                                                                         'ISO-639-1 language code.')
-    app_language = models.CharField(max_length=2, blank=True, help_text='Language setting, within tigatrapp, '
+    app_language = models.CharField(max_length=10, blank=True, help_text='Language setting, within tigatrapp, '
                                                                         'of device '
                                                                           'from '
                                                                         'which this '
