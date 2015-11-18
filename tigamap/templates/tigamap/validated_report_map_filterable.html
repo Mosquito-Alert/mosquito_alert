@@ -437,9 +437,9 @@ function make_experts_row(score, type) {
     }
 }
 
-function make_crowd_row(score, n_responses) {
+function make_crowd_row(score, n_responses, type) {
     if (score != null) {
-        return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'crowd_row_title' %}: ' + get_cat_text(score) + (n_responses < 30 ? '<br><a href="http://crowdcrafting.org/app/Tigafotos/" target="_blank"><span style="x-small">{% trans 'crowd_row_more_responses_needed' %}</span></a>' : '') + '</div></td></tr>';
+        return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'crowd_row_title' %}: ' + get_cat_text(score, type) + (n_responses < 30 ? '<br><a href="http://crowdcrafting.org/app/Tigafotos/" target="_blank"><span style="x-small">{% trans 'crowd_row_more_responses_needed' %}</span></a>' : '') + '</div></td></tr>';
     } else {
         return '';
     }
@@ -494,13 +494,13 @@ function make_popup_text(value) {
     {% endif %}
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
         } else {
             return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>' + validation_link;
         }
     } else {
         if (value.movelab_annotation != null) {
-            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+            return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.site_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row_sites(value.site_responses, value.site_cat) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
         } else {
             return '<table class="popup-table">' + make_user_response_row_sites(value.site_responses, value.site_cat) + '</table>' + validation_link;
         }
