@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import Annotation, MoveLabAnnotation, ExpertReportAnnotation, UserStat, CrowdcraftingUser, CrowdcraftingResponse, CrowdcraftingTask
+from models import MoveLabAnnotation, ExpertReportAnnotation
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
@@ -41,9 +41,6 @@ def export_full_csv_sc(modeladmin, request, queryset):
         writer.writerow(this_row)
     return response
 export_full_csv_sc.short_description = u"Export Full Semi-Colon Separated Values"
-
-
-admin.site.disable_action('delete_selected')
 
 
 class MoveLabAnnotationAdmin(admin.ModelAdmin):
