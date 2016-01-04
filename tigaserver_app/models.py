@@ -905,23 +905,29 @@ class Photo(models.Model):
     def get_small_url(self):
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_small_path()):
-                im = Image.open(self.photo.path)
                 try:
-                    im.thumbnail((120, 120), Image.ANTIALIAS)
+                    im = Image.open(self.photo.path)
+                    try:
+                        im.thumbnail((120, 120), Image.ANTIALIAS)
+                    except IOError:
+                        im.thumbnail((120, 120), Image.NEAREST)
+                    im.save(self.get_small_path())
                 except IOError:
-                    im.thumbnail((120, 120), Image.NEAREST)
-                im.save(self.get_small_path())
+                    return ""
             return self.photo.url.replace('tigapics/', 'tigapics_small/')
 
     def get_popup_url(self):
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_popup_path()):
-                im = Image.open(self.photo.path)
                 try:
-                    im.thumbnail((180, 180), Image.ANTIALIAS)
+                    im = Image.open(self.photo.path)
+                    try:
+                        im.thumbnail((180, 180), Image.ANTIALIAS)
+                    except IOError:
+                        im.thumbnail((180, 180), Image.NEAREST)
+                    im.save(self.get_popup_path())
                 except IOError:
-                    im.thumbnail((180, 180), Image.NEAREST)
-                im.save(self.get_popup_path())
+                    return ""
             return self.photo.url.replace('tigapics/', 'tigapics_popups/')
 
     def small_image_(self):
@@ -940,12 +946,15 @@ class Photo(models.Model):
     def get_medium_url(self):
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_medium_path()):
-                im = Image.open(self.photo.path)
                 try:
-                    im.thumbnail((460, 460), Image.ANTIALIAS)
+                    im = Image.open(self.photo.path)
+                    try:
+                        im.thumbnail((460, 460), Image.ANTIALIAS)
+                    except IOError:
+                        im.thumbnail((460, 460), Image.NEAREST)
+                    im.save(self.get_medium_path())
                 except IOError:
-                    im.thumbnail((460, 460), Image.NEAREST)
-                im.save(self.get_medium_path())
+                    return ""
             return self.photo.url.replace('tigapics/', 'tigapics_medium/')
 
     def medium_image_(self):
