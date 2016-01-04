@@ -44,6 +44,10 @@ export_full_csv_sc.short_description = u"Export Full Semi-Colon Separated Values
 
 
 class MoveLabAnnotationAdmin(admin.ModelAdmin):
+    list_display = ('task', 'tiger_certainty_category', 'created', 'last_modified')
+    ordering = ('last_modified',)
+    readonly_fields = ('task', 'tiger_certainty_category', 'created', 'last_modified', 'certainty_notes', 'hide', 'edited_user_notes')
+    fields = ('task', 'tiger_certainty_category', 'created', 'last_modified', 'certainty_notes', 'hide', 'edited_user_notes')
     actions = [export_full_csv, export_full_csv_sc]
 
     def has_add_permission(self, request):
@@ -54,6 +58,10 @@ class MoveLabAnnotationAdmin(admin.ModelAdmin):
 
 
 class ExpertReportAnnotationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'report', 'tiger_certainty_category', 'created', 'last_modified')
+    ordering = ('last_modified',)
+    readonly_fields = ('user', 'report', 'tiger_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'message_for_user', 'status', 'last_modified', 'validation_complete', 'revise', 'best_photo', 'linked_id', 'created')
+    fields = ('user', 'report', 'tiger_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'message_for_user', 'status', 'last_modified', 'validation_complete', 'revise', 'best_photo', 'linked_id', 'created')
     actions = [export_full_csv, export_full_csv_sc]
 
     def has_add_permission(self, request):
