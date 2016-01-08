@@ -675,7 +675,7 @@ function map_init_basic(map, options) {
     {% if fullscreen == 'off' %}
         get_data(map, {{ year }}, 100);
     {% else %}
-    var all_years = ["2014", "2015"];
+    var all_years = ["2014", "2015", "2016"];
     for(var i = 0; i < all_years.length; i++){
         get_data(map, all_years[i], 100*(i+1)/all_years.length);
     }
