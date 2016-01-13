@@ -616,6 +616,7 @@ function apply_filter() {
     }
 }
 
+$.ajaxSetup({ cache: false });
 
 function get_data(map, year, prog_percent) {
     $.ajax({
