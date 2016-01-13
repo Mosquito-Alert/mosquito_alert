@@ -676,7 +676,7 @@ function map_init_basic(map, options) {
     {% if fullscreen == 'off' %}
         get_data(map, {{ year }}, 100);
     {% else %}
-    var all_years = ["2014", "2015"];
+    var all_years = ["2014", "2015", "2016"];
     for(var i = 0; i < all_years.length; i++){
         get_data(map, all_years[i], 100*(i+1)/all_years.length);
     }
@@ -738,6 +738,7 @@ function map_init_basic(map, options) {
                                 <div class="form-group">
                                     <select id="year_select" class="selectpicker show-tick form-control"
                                             data-style="btn-primary" onchange="update_filters()">
+                                        <option value="2016">2016</option>
                                         <option value="2015">2015</option>
                                         <option value="2014">2014</option>
                                         <option value="0">{% trans 'fmap_All_years' %}</option>
