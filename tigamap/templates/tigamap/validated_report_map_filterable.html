@@ -114,11 +114,13 @@
 {% endblock %}
 
 <script>
-
+    var selected_year = 0;
+<!--
     var selected_year = parseInt("{{ year }}");
     if (selected_year == null || isNaN(selected_year) || !isFinite(selected_year)) {
-        selected_year = 2015;
+        selected_year = 0;
     }
+    -->
     var selected_month = 0;
     var selected_type = "{{ map_type }}";
     var selected_validation = parseInt("{{ validation_score }}");
