@@ -669,7 +669,7 @@ msgstr "noviembre"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:795
 msgid "December"
-msgstr "deciembre"
+msgstr "diciembre"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:807
 msgid "fmap_Adult_tiger_mosquitoes"
