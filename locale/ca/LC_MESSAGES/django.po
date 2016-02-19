@@ -431,14 +431,14 @@ msgstr "no"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:429
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:978
 msgid "expert_cat_tiger"
-msgstr "Mosquit tigre"
+msgstr "Confirmat"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:552
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:429
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:986
 msgid "expert_cat_possible_tiger"
-msgstr "Possible mosquit tigre"
+msgstr "Possible"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:570
@@ -501,7 +501,7 @@ msgstr "Ratlles blanques a abdomen i potes?"
 #: tigamap/templates/tigamap/validated_report_map.html:535
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:969
 msgid "adult_report_legend_main_title"
-msgstr "Marcadors"
+msgstr "Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:588
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1032
@@ -519,7 +519,7 @@ msgstr "Classificació feta per científics amb les fotos disponibles"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1044
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1175
 msgid "crowd_row_help"
-msgstr "Classificació feta per voluntaris a  <a href=\"http://crowdcrafting.org/app/Tigafotos/\" target=\"_blank\">Tigafotos</a> (si hi ha fotos)"
+msgstr "Classificació feta per voluntaris a  <a href=\"http://crowdcrafting.org/app/Tigafotos/\" target=\"_blank\">Crowdcrafting</a> (si hi ha fotos)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
@@ -560,12 +560,12 @@ msgstr "Escrites per experts o participants (optatiu)"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:152
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:822
 msgid "validation_button_subtext_adults_high"
-msgstr "Mosquits tigre confirmats"
+msgstr "Ae. albopictus/aegypti confirmats"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:153
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:825
 msgid "validation_button_subtext_adults_medium"
-msgstr "Mosquits tigre possibles i confirmats"
+msgstr "Ae. albopictus/aegypti possibles i confirmats"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:154
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:828
@@ -673,15 +673,15 @@ msgstr "desembre"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:807
 msgid "fmap_Adult_tiger_mosquitoes"
-msgstr "Adults"
+msgstr "Adults Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:807
 msgid "fmap_Adults"
-msgstr "Mosquits tigre"
+msgstr "Adults"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:809
 msgid "fmap_Tiger_mosquito_breeding_sites"
-msgstr "Llocs de cria de mosquit tigre"
+msgstr "Llocs de cria de Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:809
 msgid "fmap_Breeding_sites"

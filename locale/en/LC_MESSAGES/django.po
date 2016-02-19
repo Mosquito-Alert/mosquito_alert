@@ -422,14 +422,14 @@ msgstr "no"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:429
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:978
 msgid "expert_cat_tiger"
-msgstr "Confirmed tiger mosquito"
+msgstr "Confirmed"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:552
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:429
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:986
 msgid "expert_cat_possible_tiger"
-msgstr "Possible tiger mosquito"
+msgstr "Possible"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:570
@@ -492,7 +492,7 @@ msgstr "Stripes on abdomen and legs?"
 #: tigamap/templates/tigamap/validated_report_map.html:535
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:969
 msgid "adult_report_legend_main_title"
-msgstr "Markers"
+msgstr "Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:588
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1032
@@ -510,7 +510,7 @@ msgstr "Classification by scientists using available photos"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1044
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1175
 msgid "crowd_row_help"
-msgstr "Classification by volunteers at <a href='http://crowdcrafting.org/app/Tigafotos/' target='_blank'>Tigafotos</a>  (if photo available)"
+msgstr "Classification by volunteers at <a href='http://crowdcrafting.org/app/Tigafotos/' target='_blank'>Crowdcrafting</a>  (if photo available)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
@@ -551,12 +551,12 @@ msgstr "From experts or observers (optional)"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:152
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:822
 msgid "validation_button_subtext_adults_high"
-msgstr "Confirmed tiger mosquitoes"
+msgstr "Confirmed Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:153
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:825
 msgid "validation_button_subtext_adults_medium"
-msgstr "Possible and confirmed tiger mosquitoes"
+msgstr "Possible and confirmed Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:154
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:828
@@ -664,7 +664,7 @@ msgstr "December"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:807
 msgid "fmap_Adult_tiger_mosquitoes"
-msgstr "Adult tiger mosquitoes"
+msgstr "Adult Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:807
 msgid "fmap_Adults"
@@ -672,7 +672,7 @@ msgstr "Adults"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:809
 msgid "fmap_Tiger_mosquito_breeding_sites"
-msgstr "Tiger mosquito breeding sites"
+msgstr "Ae. albopictus/aegypti breeding sites"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:809
 msgid "fmap_Breeding_sites"
