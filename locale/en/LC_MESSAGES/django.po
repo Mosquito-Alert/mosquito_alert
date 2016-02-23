@@ -516,7 +516,7 @@ msgstr "Classification by volunteers at <a href='http://crowdcrafting.org/app/Ti
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1180
 msgid "report_row_title"
-msgstr "Taxonomic <a href=\"http://atrapaeltigre.com/web/en/asian-tiger-mosquito/\" target=\"_blank\">description</a>"
+msgstr "Taxonomic<a href=\"http://atrapaeltigre.com/web/en/asian-tiger-mosquito/\" target=\"_blank\"> description</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
@@ -680,7 +680,7 @@ msgstr "Breeding sites"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:812
 msgid "fmap_Tigatrapp_coverage"
-msgstr "Sampling effort"
+msgstr " Sampling effort"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:812
 msgid "fmap_Coverage"

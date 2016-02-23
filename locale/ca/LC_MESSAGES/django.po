@@ -525,7 +525,7 @@ msgstr "Classificació feta per voluntaris a  <a href=\"http://crowdcrafting.org
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1180
 msgid "report_row_title"
-msgstr "<a href=\"http://atrapaeltigre.com/participa/tigatrapp/\" target=\"_blank\">Descripció</a> taxonòmica"
+msgstr "<a href=\"http://atrapaeltigre.com/participa/tigatrapp/\" target=\"_blank\">Descripció </a>taxonòmica"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
@@ -689,7 +689,7 @@ msgstr "Llocs de cria"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:812
 msgid "fmap_Tigatrapp_coverage"
-msgstr "Esforç de mostreig"
+msgstr " Esforç de mostreig"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:812
 msgid "fmap_Coverage"
