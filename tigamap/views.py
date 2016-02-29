@@ -390,7 +390,7 @@ def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_
 @xframe_options_exempt
 def show_embedded_adult_map(request, legend=''):
     if settings.DEBUG:
-        current_domain = 'localhost:8000'
+        current_domain = 'humboldt.ceab.csic.es'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     if CoverageAreaMonth.objects.all().count() > 0:

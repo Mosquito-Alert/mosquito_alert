@@ -519,10 +519,19 @@ class Report(models.Model):
                         result['crowdcrafting_n_response'] = self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
                 if self.type == 'adult':
                     result['tiger_certainty_category'] = self.get_final_expert_score()
+                    result['aegypti_certainty_category'] = self.get_final_superexpert_aegypti_score()
                 elif self.type == 'site':
                     result['site_certainty_category'] = self.get_final_expert_score()
                 return result
         return None
+
+    # return the aegypti category; if there are several superexperts (shouldn't happen, I think) with certainty values return smallest
+    def get_final_superexpert_aegypti_score(self):
+        annot = ExpertReportAnnotation.objects.filter(report=self,user__groups__name='superexpert',validation_complete=True).exclude(aegypti_certainty_category__isnull=True).order_by('aegypti_certainty_category').first()
+        if annot is not None:
+            return annot.aegypti_certainty_category
+        return None
+
 
     def get_movelab_score(self):
         if self.type != 'adult':
