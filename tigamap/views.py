@@ -250,7 +250,6 @@ def get_current_domain(request):
         return request.META['HTTP_HOST']
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
-        #current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     return current_domain
