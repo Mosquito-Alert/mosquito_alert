@@ -247,8 +247,8 @@ def show_validated_photo_map(request):
 
 def get_current_domain():
     if settings.DEBUG:
-        #current_domain = 'humboldt.ceab.csic.es'
-        current_domain = 'localhost:8000'
+        current_domain = 'humboldt.ceab.csic.es'
+        #current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     return current_domain
