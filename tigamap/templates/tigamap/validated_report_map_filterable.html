@@ -394,12 +394,14 @@ function get_icon(report) {
     var score = -3;
     if (report.type == 'adult') {
         if (report.movelab_annotation != null) {
-            if (report.movelab_annotation.aegypti_certainty_category && report.movelab_annotation.aegypti_certainty_category != null && report.movelab_annotation.aegypti_certainty_category > 0){
+            if (report.movelab_annotation.aegypti_certainty_category && report.movelab_annotation.aegypti_certainty_category != null){
                 score = report.movelab_annotation.aegypti_certainty_category;
                 if(score == 2){
                     return blue_red_icon;
-                }else{
+                }else if (score == 1){
                     return blue_orange_icon;
+                }else{
+                    return score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (score == 0 ? yellow_white_icon : yellow_yellow_icon));
                 }
             }
             if (report.movelab_annotation.tiger_certainty_category != null) {
@@ -444,12 +446,14 @@ function make_experts_row(score, type) {
     }
 }
 
-function make_experts_row_aegypti(score){
+function make_experts_row_aegypti(score, type){
     if (score !=null) {
         if(score == 2) {
             return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: {% trans 'expert_cat_aegypti' %}</div></td></tr>';
-        } else {
+        } else if (score == 1){
             return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: {% trans 'expert_cat_possible_aegypti' %}</div></td></tr>';
+        } else {
+            return '<tr><td><div class="color-box ' + get_color_class(score) + '">' + '{% trans 'expert_row_title' %}: ' + get_cat_text(score, type) + '</div></td></tr>';
         }
     } else {
         return '';
@@ -513,8 +517,8 @@ function make_popup_text(value) {
     {% endif %}
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
-            if(value.movelab_annotation.aegypti_certainty_category && value.movelab_annotation.aegypti_certainty_category!=null && value.movelab_annotation.aegypti_certainty_category > 0){
-                return '<table class="popup-table">' + make_experts_row_aegypti(value.movelab_annotation.aegypti_certainty_category) + make_photo_row(value.movelab_annotation.photo_html) + '</table>' + validation_link;
+            if(value.movelab_annotation.aegypti_certainty_category && value.movelab_annotation.aegypti_certainty_category!=null){
+                return '<table class="popup-table">' + make_experts_row_aegypti(value.movelab_annotation.aegypti_certainty_category, value.type) + make_photo_row(value.movelab_annotation.photo_html) + '</table>' + validation_link;
             }else{
                 return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
             }
