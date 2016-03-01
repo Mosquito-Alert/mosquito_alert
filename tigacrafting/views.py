@@ -441,7 +441,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
         current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
         #my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report')
+        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
         hidden_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=-1).values_list('report', flat=True))
         flagged_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=0).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True))
         public_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=1).exclude(report__version_UUID__in=hidden_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True))
@@ -477,8 +477,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     new_annotation.save()
         #all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
-        my_version_uuids = all_annotations.values('report__version_UUID')
-        my_linked_ids = all_annotations.values('linked_id')
+        my_version_uuids = all_annotations.values('report__version_UUID').distinct()
+        my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:
             if (version_uuid == 'na' and linked_id == 'na') and (not pending or pending == 'na'):
                 pending = 'pending'

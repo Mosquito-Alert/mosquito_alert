@@ -245,7 +245,9 @@ def show_validated_photo_map(request):
     context = {'annotation_list': these_annotations, 'redirect_to': redirect_path}
     return render(request, 'tigamap/validated_photo_map.html', context)
 
-def get_current_domain():
+def get_current_domain(request):
+    if request.META['HTTP_HOST'] != '':
+        return request.META['HTTP_HOST']
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
         #current_domain = 'localhost:8000'
@@ -254,7 +256,7 @@ def get_current_domain():
     return current_domain
 
 def show_adult_map(request, type='all'):
-    current_domain = get_current_domain()
+    current_domain = get_current_domain(request)
     if type == 'possible' or type == 'medium':
         this_title = _('adult-tiger-mosquitoes') + ': ' + _('menu_adults_prob')
     elif type == 'confirmed' or type == 'high':
@@ -283,7 +285,7 @@ def show_adult_map(request, type='all'):
 
 
 def show_site_map(request, type='all'):
-    current_domain = get_current_domain()
+    current_domain = get_current_domain(request)
     title_dic = {'embornals_fonts': _('breeding-sites-storm-drains-and-fountains'), 'all': _('breeding-sites-all-reports'), 'other': _('breeding-sites-other'), 'buckets_wells':  _('breeding-sites-buckets-and-wells'), 'basins':  _('breeding-sites-basins')}
     try:
         this_title = title_dic[type]
@@ -311,7 +313,7 @@ def show_site_map(request, type='all'):
 
 
 def show_new_coverage_map(request):
-    current_domain = get_current_domain()
+    current_domain = get_current_domain(request)
     this_title = _('coverage-map')
     href_url_name = 'coverage_map'
     hrefs = {'coverage': reverse('coverage_map'),
@@ -335,7 +337,7 @@ def show_new_coverage_map(request):
 
 @xframe_options_exempt
 def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_type='adult', scroll_zoom='on', year='0', month='0', selected_validation='-2', center_lon=None, center_lat=None, legend='on', fullscreen='on', min_lat = -90, min_lon = -180, max_lat = 90, max_lon=180):
-    current_domain = get_current_domain()
+    current_domain = get_current_domain(request)
     if CoverageAreaMonth.objects.all().count() > 0:
         last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
     else:
@@ -384,7 +386,7 @@ def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_
 
 @xframe_options_exempt
 def show_embedded_adult_map(request, legend=''):
-    current_domain = get_current_domain()
+    current_domain = get_current_domain(request)
     if CoverageAreaMonth.objects.all().count() > 0:
         last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
     else:
