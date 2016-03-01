@@ -245,12 +245,16 @@ def show_validated_photo_map(request):
     context = {'annotation_list': these_annotations, 'redirect_to': redirect_path}
     return render(request, 'tigamap/validated_photo_map.html', context)
 
-
-def show_adult_map(request, type='all'):
+def get_current_domain():
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
+        #current_domain = 'localhost:8000'
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
+    return current_domain
+
+def show_adult_map(request, type='all'):
+    current_domain = get_current_domain()
     if type == 'possible' or type == 'medium':
         this_title = _('adult-tiger-mosquitoes') + ': ' + _('menu_adults_prob')
     elif type == 'confirmed' or type == 'high':
@@ -279,10 +283,7 @@ def show_adult_map(request, type='all'):
 
 
 def show_site_map(request, type='all'):
-    if settings.DEBUG:
-        current_domain = 'humboldt.ceab.csic.es'
-    else:
-        current_domain = 'tigaserver.atrapaeltigre.com'
+    current_domain = get_current_domain()
     title_dic = {'embornals_fonts': _('breeding-sites-storm-drains-and-fountains'), 'all': _('breeding-sites-all-reports'), 'other': _('breeding-sites-other'), 'buckets_wells':  _('breeding-sites-buckets-and-wells'), 'basins':  _('breeding-sites-basins')}
     try:
         this_title = title_dic[type]
@@ -310,10 +311,7 @@ def show_site_map(request, type='all'):
 
 
 def show_new_coverage_map(request):
-    if settings.DEBUG:
-        current_domain = 'humboldt.ceab.csic.es'
-    else:
-        current_domain = 'tigaserver.atrapaeltigre.com'
+    current_domain = get_current_domain()
     this_title = _('coverage-map')
     href_url_name = 'coverage_map'
     hrefs = {'coverage': reverse('coverage_map'),
@@ -337,10 +335,7 @@ def show_new_coverage_map(request):
 
 @xframe_options_exempt
 def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_type='adult', scroll_zoom='on', year='0', month='0', selected_validation='-2', center_lon=None, center_lat=None, legend='on', fullscreen='on', min_lat = -90, min_lon = -180, max_lat = 90, max_lon=180):
-    if settings.DEBUG:
-        current_domain = 'humboldt.ceab.csic.es'
-    else:
-        current_domain = 'tigaserver.atrapaeltigre.com'
+    current_domain = get_current_domain()
     if CoverageAreaMonth.objects.all().count() > 0:
         last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
     else:
@@ -389,10 +384,7 @@ def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_
 
 @xframe_options_exempt
 def show_embedded_adult_map(request, legend=''):
-    if settings.DEBUG:
-        current_domain = 'humboldt.ceab.csic.es'
-    else:
-        current_domain = 'tigaserver.atrapaeltigre.com'
+    current_domain = get_current_domain()
     if CoverageAreaMonth.objects.all().count() > 0:
         last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
     else:
