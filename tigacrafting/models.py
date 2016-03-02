@@ -160,9 +160,9 @@ class MoveLabAnnotation(models.Model):
     last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
 
-TIGER_CATEGORIES = ((2, 'Definitely a tiger mosquito'), (1, 'Probably a tiger mosquito'),  (0, 'Not sure'), (-1, 'Probably neither a tiger mosquito nor aegypti'), (-2, 'Definitely not a tiger mosquito or aegypti'))
+TIGER_CATEGORIES = ((2, 'Definitely Aedes albopictus'), (1, 'Probably Aedes albopictus'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
 
-AEGYPTI_CATEGORIES = ((2, 'Definitely Aedes aegypti'), (1, 'Probably Aedes aegypti'),  (0, 'Not sure'), (-1, 'Probably neither a tiger mosquito nor aegypti'), (-2, 'Definitely not a tiger mosquito or aegypti'))
+AEGYPTI_CATEGORIES = ((2, 'Definitely Aedes aegypti'), (1, 'Probably Aedes aegypti'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
