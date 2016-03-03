@@ -438,8 +438,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             checked = request.GET.get('checked', checked)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             edit_mode = request.GET.get('edit_mode', edit_mode)
-        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
-        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
+        #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
+        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
+        #my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
+        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
         hidden_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=-1).values_list('report', flat=True))
         flagged_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=0).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True))
         public_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=1).exclude(report__version_UUID__in=hidden_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True))
@@ -449,7 +451,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         if this_user_is_expert and load_new_reports == 'T':
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
-                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+                #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
@@ -461,7 +464,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         new_annotation.save()
         elif this_user_is_superexpert:
-            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
             if new_reports_unfiltered and this_user_is_team_not_bcn:
@@ -471,9 +475,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 for this_report in new_reports:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                     new_annotation.save()
-        all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
-        my_version_uuids = all_annotations.values('report__version_UUID')
-        my_linked_ids = all_annotations.values('linked_id')
+        #all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
+        all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
+        my_version_uuids = all_annotations.values('report__version_UUID').distinct()
+        my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:
             if (version_uuid == 'na' and linked_id == 'na') and (not pending or pending == 'na'):
                 pending = 'pending'
@@ -560,9 +565,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args['formset'] = this_formset
         args['objects'] = objects
         args['pages'] = range(1, objects.paginator.num_pages+1)
-        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
+        #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
+        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
         args['n_pending'] = current_pending
-        n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
+        #n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
+        n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).filter(report__type='adult').count()
         args['n_complete'] = n_complete
         args['n_total'] = n_complete + current_pending
         args['year'] = year
@@ -594,8 +601,10 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         version_uuid = request.GET.get('version_uuid', version_uuid)
         reports_per_page = request.GET.get('reports_per_page', reports_per_page)
-        all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
-        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
+        #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
+        all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
+        #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
+        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult')
         if version_uuid and version_uuid != 'na':
             reports = Report.objects.filter(version_UUID=version_uuid)
             n_reports = 1

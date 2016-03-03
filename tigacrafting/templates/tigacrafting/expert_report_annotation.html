@@ -341,6 +341,13 @@
                         {% else %}
 
                     {% if form.instance.report.type == 'adult' %}
+                        {% if request.user.userstat.is_superexpert %}
+                            <strong>Aegypti Certainty:</strong><br>
+                            <div style="border:1px solid #333333;padding:2px;">
+                            {% if form.instance.get_aegypti_certainty_category_display %}
+                                {{ form.instance.get_aegypti_certainty_category_display }}{% else %}---{% endif %}</div>
+                            <br>
+                        {% endif %}
                         <strong>Tiger Certainty:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
                             {% if form.instance.get_tiger_certainty_category_display %}
@@ -375,7 +382,6 @@
                         {% if form.instance.linked_id %}{{ form.instance.linked_id }}{% else %}---{% endif %}</div>
 
                 {% endif %}
-
 
                     {% if request.user.userstat.is_superexpert %}
                         <br>
@@ -471,6 +477,7 @@
                 {% else %}
 
                     $("#" + "{{ form.tiger_certainty_category.auto_id }}").parent().parent().empty().remove();
+                    $("#" + "{{ form.aegypti_certainty_category.auto_id }}").parent().parent().empty().remove();
                     $("#" + "{{ form.tiger_certainty_notes.auto_id }}").parent().parent().empty().remove();
                 {% endif %}
 
@@ -502,7 +509,7 @@
 
                 var this_id = "{{ form.instance.id }}";
 
-                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
+                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + "{{ form.aegypti_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
 
