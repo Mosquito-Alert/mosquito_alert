@@ -409,8 +409,7 @@ msgstr "Unknown"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
 msgid "expert_row_title"
 msgstr ""
-"Expert validation <a href=\"http://atrapaeltigre.com/web/en/citizen-"
-"scientist-map/\" target=\"_blank\">results</a>"
+"Expert validation <a href=\"http://www.mosquitoalert.com/en/map-results/tiger-mosquito-map/\" target=\"_blank\">results</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map.html:600
@@ -470,8 +469,7 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1169
 msgid "report_row_title"
 msgstr ""
-"Taxonomic<a href=\"http://atrapaeltigre.com/web/en/asian-tiger-mosquito/\" "
-"target=\"_blank\"> description</a>"
+"Taxonomic description <a href=\"http://www.mosquitoalert.com/en/mosquitoes/tiger-mosquito-ae-albopictus/\" target=\"_blank\">Ae. albopictus</a> and <a href=\"http://www.mosquitoalert.com/en/mosquitoes/yellow-fever-mosquito-ae-aegypti/\" target=\"_blank\">Ae. aegypti</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1039

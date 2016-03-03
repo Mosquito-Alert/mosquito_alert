@@ -418,7 +418,7 @@ msgstr "No se sabe"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
 msgid "expert_row_title"
 msgstr ""
-"<a href=\"http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/\" "
+"<a href=\"http://www.mosquitoalert.com/mapa-y-resultados/mapa/\" "
 "target=\"_blank\">Resultado</a> validación experta "
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
@@ -479,8 +479,7 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1169
 msgid "report_row_title"
 msgstr ""
-"<a href=\"http://atrapaeltigre.com/participa/tigatrapp/\" target=\"_blank"
-"\">Descripción </a>taxonómica"
+"Descripción taxonómica <a href=\"http://www.mosquitoalert.com/mosquitos/mosquito-tigre-ae-albopictus/\" target=\"_blank\">Ae. albopictus</a> y <a href=\"http://www.mosquitoalert.com/mosquitos/mosquito-de-la-fiebre-amarilla-2/\" target=\"_blank\">Ae. aegypti</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1039
