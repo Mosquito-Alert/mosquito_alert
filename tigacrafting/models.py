@@ -162,7 +162,13 @@ class MoveLabAnnotation(models.Model):
 
 TIGER_CATEGORIES = ((2, 'Definitely Aedes albopictus'), (1, 'Probably Aedes albopictus'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
 
+#WARNING!! THIS IS USED FOR VISUALIZATION ONLY, NEVER SHOULD BE USED FOR DATA INPUT!!!
+TIGER_CATEGORIES_SEPARATED = ((2, 'Definitely Aedes albopictus'), (1, 'Probably Aedes albopictus'),  (0, 'Not sure'), (-1, 'Probably not albopictus'), (-2, 'Definitely not albopictus'))
+
 AEGYPTI_CATEGORIES = ((2, 'Definitely Aedes aegypti'), (1, 'Probably Aedes aegypti'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
+
+#WARNING!! THIS IS USED FOR VISUALIZATION ONLY, NEVER SHOULD BE USED FOR DATA INPUT!!!
+AEGYPTI_CATEGORIES_SEPARATED = ((2, 'Definitely Aedes aegypti'), (1, 'Probably Aedes aegypti'),  (0, 'Not sure'), (-1, 'Probably not aegypti'), (-2, 'Definitely not aegypti'))
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
@@ -219,7 +225,12 @@ class ExpertReportAnnotation(models.Model):
         if self.report.type == 'site':
             score = self.site_certainty_category
         elif self.report.type == 'adult':
-            score = self.tiger_certainty_category
+            if self.aegypti_certainty_category == 2:
+                score = 4
+            elif self.aegypti_certainty_category == 1:
+                score = 3
+            else:
+                score = self.tiger_certainty_category
         if score is not None:
             return score
         else:
@@ -229,7 +240,10 @@ class ExpertReportAnnotation(models.Model):
         if self.report.type == 'site':
             return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
         elif self.report.type == 'adult':
-            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
+            if self.get_score() > 2:
+                return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES))[self.get_score()-2]
+            else:
+                return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
 
     def get_status_bootstrap(self):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'

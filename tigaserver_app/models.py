@@ -13,7 +13,7 @@ from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES, STATUS_CATEGORIES
+from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES
 from collections import Counter
 
 
@@ -612,6 +612,28 @@ class Report(models.Model):
         n = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).count()
         return n
 
+    def get_mean_expert_adult_score_aegypti(self):
+        sum_scores = 0
+        mean_score = -3
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, aegypti_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, aegypti_certainty_category__isnull=False).count() == 0:
+            return -3
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
+        if super_scores:
+            for this_score in super_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+            return mean_score
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, aegypti_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, aegypti_certainty_category__isnull=False).count() == 0:
+            return -3
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
+        if expert_scores:
+            for this_score in expert_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores/float(expert_scores.count())
+        return mean_score
+
     def get_mean_expert_adult_score(self):
         sum_scores = 0
         mean_score = -3
@@ -667,11 +689,28 @@ class Report(models.Model):
         else:
             return -3
 
+    def get_final_expert_score_aegypti(self):
+        score = -3
+        if self.type == 'site':
+            score = self.get_mean_expert_site_score()
+        elif self.type == 'adult':
+            score = self.get_mean_expert_adult_score_aegypti()
+        if score is not None:
+            return int(round(score))
+        else:
+            return -3
+
     def get_final_expert_category(self):
         if self.type == 'site':
             return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
         elif self.type == 'adult':
-            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_final_expert_score()]
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[self.get_final_expert_score()]
+
+    def get_final_expert_category_aegypti(self):
+        if self.type == 'site':
+            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
+        elif self.type == 'adult':
+            return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES_SEPARATED))[self.get_final_expert_score_aegypti()]
 
     def get_final_expert_status(self):
         result = 1
