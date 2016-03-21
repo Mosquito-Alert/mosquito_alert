@@ -47,6 +47,8 @@ class SuperExpertReportAnnotationForm(forms.ModelForm):
         model = ExpertReportAnnotation
         fields = ('tiger_certainty_category', 'aegypti_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'status', 'linked_id', 'edited_user_notes', 'message_for_user', 'best_photo', 'revise', 'validation_complete')
         widgets = {
+            'tiger_certainty_category': forms.HiddenInput,
+            'aegypti_certainty_category': forms.HiddenInput,
             'best_photo': forms.HiddenInput,
             'revise': forms.HiddenInput,
             'tiger_certainty_notes': forms.Textarea(attrs={'rows': 4}),
