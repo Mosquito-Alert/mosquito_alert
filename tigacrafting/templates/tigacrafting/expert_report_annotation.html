@@ -355,7 +355,7 @@
 
                         {% else %}
 
-                    {% if form.instance.report.type == 'adult' %}                 
+                    {% if form.instance.report.type == 'adult' %}
                         <strong>Aedes Certainty:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
                             {% if form.instance.tiger_certainty_category == -2 and form.instance.aegypti_certainty_category == 2 %}
@@ -372,6 +372,8 @@
                                 {{ form.instance.get_tiger_certainty_category_display }}
                             {% elif form.instance.tiger_certainty_category == -2 and form.instance.aegypti_certainty_category == -2 %}
                                 {{ form.instance.get_tiger_certainty_category_display }}
+                            {% else %}
+                                --------
                             {% endif %}
                         </div>
                         <strong>Internal Tiger Certainty Comments:</strong><br>
