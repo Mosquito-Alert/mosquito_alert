@@ -227,9 +227,13 @@
         {% if report.get_is_expert_validated %}
             <a role="button" data-toggle="collapse" href="#current_status_collapse{{ forloop.counter }}"
                aria-expanded="false" aria-controls="current_status_collapse{{ forloop.counter }}"><i
-                    class="fa fa-plus-square-o"></i></a> <strong>Current
-            Status:</strong> {{ report.get_final_expert_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}{% else %}<strong>Status:</strong> Not yet validated by three experts.{% endif %}
-
+                    class="fa fa-plus-square-o"></i></a>
+            {{ report.get_final_expert_status_bootstrap | safe }}
+            <strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}
+            <strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score_aegypti text=report.get_final_expert_category_aegypti %}
+        {% else %}
+            <strong>Status:</strong> Not yet validated by three experts.
+        {% endif %}
 
             <div class="collapse" id="current_status_collapse{{ forloop.counter }}">
                 <div class="well">
