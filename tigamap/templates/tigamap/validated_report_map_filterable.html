@@ -394,17 +394,33 @@ function get_icon(report) {
     var score = -3;
     if (report.type == 'adult') {
         if (report.movelab_annotation != null) {
-            /*if (report.movelab_annotation.tiger_certainty_category != null && report.movelab_annotation.tiger_certainty_category != null){
-                tiger_score = report.movelab_annotation.tiger_certainty_category;
-                aegypti_score = report.movelab_annotation.aegypti_certainty_category;
+            /*
+            if (report.movelab_annotation.tiger_certainty_category != null && report.movelab_annotation.aegypti_certainty_category != null){
+                var tiger_score = report.movelab_annotation.tiger_certainty_category;
+                var aegypti_score = report.movelab_annotation.aegypti_certainty_category;
                 if(tiger_score <= 0 && aegypti_score <= 0){
-                    return score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (score == 0 ? yellow_white_icon : yellow_yellow_icon));
+                    return tiger_score == -1 ? yellow_grey_icon : (tiger_score == -2 ? yellow_black_icon : (tiger_score == 0 ? yellow_white_icon : yellow_yellow_icon));
                 }else if( tiger_score > 0 ){
-                    return tiger_score == 2 ? yellow_red_icon : ( tiger_score == 1 ? yellow_orange_icon );
+                    if (tiger_score == 2){
+                        return yellow_red_icon;
+                    }else if(tiger_score == 1){
+                        return yellow_orange_icon;
+                    }else{
+                        return yellow_yellow_icon;
+                    }
                 }else if( aegypti_score > 0 ){
-                    return aegypti_score == 2 ? blue_red_icon : ( aegypti_score == 1 ? blue_orange_icon );
+                    if (aegypti_score == 2){
+                        return blue_red_icon;
+                    }else if(aegypti_score == 1){
+                        return blue_orange_icon;
+                    }else{
+                        return yellow_yellow_icon;
+                    }
+                }else{
+                    return yellow_yellow_icon;
                 }
-            }*/
+            }
+            */
             if (report.movelab_annotation.aegypti_certainty_category && report.movelab_annotation.aegypti_certainty_category != null){
                 score = report.movelab_annotation.aegypti_certainty_category;
                 if(score == 2){
@@ -528,6 +544,16 @@ function make_popup_text(value) {
     {% endif %}
     if (value.type == 'adult') {
         if (value.movelab_annotation != null) {
+            /*var tiger_score = value.movelab_annotation.tiger_certainty_category;
+            var aegypti_score = value.movelab_annotation.aegypti_certainty_category;
+            if(tiger_score <= 0 && aegypti_score <= 0){
+                return '<table class="popup-table">' + make_experts_row(tiger_score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+            }else if( tiger_score > 0 ){
+                return '<table class="popup-table">' + make_experts_row(tiger_score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+            }else if( aegypti_score > 0 ){
+                return '<table class="popup-table">' + make_experts_row(aegypti_score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+            }*/
+
             if(value.movelab_annotation.aegypti_certainty_category && value.movelab_annotation.aegypti_certainty_category!=null){
                 return '<table class="popup-table">' + make_experts_row_aegypti(value.movelab_annotation.aegypti_certainty_category, value.type) + make_photo_row(value.movelab_annotation.photo_html) + '</table>' + validation_link;
             }else{
@@ -569,7 +595,11 @@ function add_to_layer(data, this_layer, filter) {
     $.each(data, function (index, value) {
         if (value != null && value.latest_version && value.visible && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
                 ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || (value.movelab_annotation != null && ((value.type == 'adult' && value.movelab_annotation.tiger_certainty_category != null && value.movelab_annotation.tiger_certainty_category >= selected_validation) || (value.type == 'site' && value.movelab_annotation.site_certainty_category != null && value.movelab_annotation.site_certainty_category >= selected_validation) ) ))))) {
-            this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value)}).bindPopup(make_popup_text(value), popup_options));
+            if(index == 23){
+                console.log('stop');
+            }
+            var some_icon = get_icon(value);
+            this_layer.addLayer(L.marker([value.lat, value.lon], {icon: some_icon}).bindPopup(make_popup_text(value), popup_options));
         }
     });
 }
