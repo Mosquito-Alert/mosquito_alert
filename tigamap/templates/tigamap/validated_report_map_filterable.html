@@ -645,6 +645,24 @@ function apply_filter() {
 
 $.ajaxSetup({ cache: false });
 
+function get_data_month(map, year, month, prog_percent) {
+    $.ajax({
+        url: 'http://{{ domain }}/static/all_reports_' + month + '_' + year  + '.json',
+        dataType: 'json',
+        success: function (data) {
+
+            if (data != null && data.length > 0) {
+                add_to_layer(data, markers_clustered, true);
+                full_data = full_data.concat(data);
+            }
+            progress_bar.css('width', prog_percent.toString() + '%');
+            if(prog_percent == 100){
+                progress_bar_container.fadeOut(2000);
+            }
+        }
+    });
+}
+
 function get_data(map, year, prog_percent) {
     $.ajax({
         url: 'http://{{ domain }}/static/all_reports' + year  + '.json',
@@ -701,8 +719,14 @@ function map_init_basic(map, options) {
 
 
     var all_years = ["2014", "2015", "2016"];
+    var all_months = ["1","2","3","4","5","6","7","8","9","10","11","12"]
+    var k = 1;
     for(var i = 0; i < all_years.length; i++){
-        get_data(map, all_years[i], 100*(i+1)/all_years.length);
+        for(var j=0; j < all_months.length; j++){
+            //get_data(map, all_years[i], 100*(i+1)/all_years.length);
+            get_data_month(map, all_years[i], all_months[j], 100*(k/(all_years.length*all_months.length)));
+            k++;
+        }
     }
 
 
