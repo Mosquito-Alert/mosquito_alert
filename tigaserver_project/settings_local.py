@@ -21,7 +21,7 @@ ALLOWED_HOSTS = []
 #        }
 #    }
 #else:
-    DATABASES = {
+DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'tigadata',
