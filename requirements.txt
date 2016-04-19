@@ -1,6 +1,6 @@
-awsebcli==3.7.5
+awsebcli==3.7.6
 blessed==1.9.5
-botocore==1.4.10
+botocore==1.4.11
 cement==2.8.2
 colorama==0.3.7
 Django==1.6.5
@@ -19,7 +19,7 @@ Markdown==2.4.1
 pathspec==0.3.4
 Pillow==2.4.0
 psycopg2==2.5.3
-python-dateutil==2.2
+python-dateutil==2.5.2
 python-memcached==1.57
 pytz==2014.4
 PyYAML==3.11
@@ -31,4 +31,4 @@ sqlparse==0.1.19
 texttable==0.8.4
 tzlocal==1.1.1
 wcwidth==0.1.6
-websocket-client==0.35.0
+websocket-client==0.37.0
