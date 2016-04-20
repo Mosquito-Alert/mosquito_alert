@@ -34,8 +34,8 @@ else:
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '/home/webuser/webapps/tigaserver/static/'
-MEDIA_ROOT = '/home/webuser/webapps/tigaserver/media/'
+STATIC_ROOT = '/opt/python/current/app/static'
+MEDIA_ROOT = '/opt/python/current/app/media/'
 
 PHOTO_SECRET_KEY = 'bbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
