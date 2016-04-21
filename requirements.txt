@@ -1,5 +1,6 @@
 awsebcli==3.7.6
 blessed==1.9.5
+boto==2.39.0
 botocore==1.4.11
 cement==2.8.2
 colorama==0.3.7
@@ -8,6 +9,7 @@ django-debug-toolbar==1.4
 django-filter==0.7
 django-floppyforms==1.2.0
 django-leaflet==0.13.2
+django-storages==1.4.1
 djangorestframework==2.3.13
 docker-py==1.7.2
 dockerpty==0.4.1

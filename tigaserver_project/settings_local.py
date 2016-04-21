@@ -34,8 +34,9 @@ else:
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '/opt/python/current/app/static'
-MEDIA_ROOT = '/opt/python/current/app/media/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 PHOTO_SECRET_KEY = 'bbbbbbbbbbbbbbbbbbbbbbbbbbb'
 

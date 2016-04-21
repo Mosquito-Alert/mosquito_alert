@@ -3,6 +3,7 @@ import tigaserver_project as project_module
 import django.conf.global_settings as DEFAULT_SETTINGS
 import pytz
 from datetime import datetime
+#from custom_storages import StaticStorage
 
 """
 Django settings for tigaserver_project project.
@@ -59,6 +60,7 @@ INSTALLED_APPS = (
     'south',
     'stats',
     'floppyforms',
+    'storages',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -187,5 +189,38 @@ START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
 
 IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
 
+#S3 storage cache headers
+AWS_HEADERS = {  # see http://developer.yahoo.com/performance/rules.html#expires
+  'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
+  'Cache-Control': 'max-age=94608000',
+}
+
+AWS_STORAGE_BUCKET_NAME = 'tigaserver-static-container'
+AWS_ACCESS_KEY_ID = 'AKIAJGNAG3WIYJETWPUA'
+AWS_SECRET_ACCESS_KEY = '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'
+
+# Tell django-storages that when coming up with the URL for an item in S3 storage, keep
+# it simple - just use this domain plus the path. (If this isn't set, things get complicated).
+# This controls how the `static` template tag from `staticfiles` gets expanded, if you're using it.
+# We also use it in the next setting.
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
+# This is used by the `static` template tag from `static`, if you're using that. Or if anything else
+# refers directly to STATIC_URL. So it's safest to always set it.
+STATIC_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
+
+# Tell the staticfiles app to use S3Boto storage when writing the collected static files (when
+# you run `collectstatic`).
+STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+#SEE BELOW
+
+
+STATICFILES_LOCATION = 'static'
+STATICFILES_STORAGE = 'tigaserver_project.custom_storages.StaticStorage'
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+
+MEDIAFILES_LOCATION = 'media'
+DEFAULT_FILE_STORAGE = 'tigaserver_project.custom_storages.MediaStorage'
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 
 from settings_local import *
