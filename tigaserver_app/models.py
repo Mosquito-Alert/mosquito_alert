@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User, Group
 from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES, STATUS_CATEGORIES
 from collections import Counter
+import httplib
 
 
 class TigaUser(models.Model):
@@ -912,20 +913,29 @@ class Photo(models.Model):
         return self.photo.path.replace('tigapics/', 'tigapics_popups/')
 
     def get_small_url(self):
-        if os.path.isfile(self.photo.path):
-            if not os.path.isfile(self.get_small_path()):
-                try:
-                    im = Image.open(self.photo.path)
-                    try:
-                        im.thumbnail((120, 120), Image.ANTIALIAS)
-                    except IOError:
-                        im.thumbnail((120, 120), Image.NEAREST)
-                    im.save(self.get_small_path())
-                except IOError:
-                    return ""
+        if settings.AWS_STORAGE_BUCKET_NAME:
+            # @TODO - This might not exist, the medium sized thumbnail should be created and added to S3 Storage
+            # See http://blog.hardlycode.com/resizing-django-imagefield-with-remote-storage-2011-02/
             return self.photo.url.replace('tigapics/', 'tigapics_small/')
+        else:
+            if os.path.isfile(self.photo.path):
+                if not os.path.isfile(self.get_small_path()):
+                    try:
+                        im = Image.open(self.photo.path)
+                        try:
+                            im.thumbnail((120, 120), Image.ANTIALIAS)
+                        except IOError:
+                            im.thumbnail((120, 120), Image.NEAREST)
+                        im.save(self.get_small_path())
+                    except IOError:
+                        return ""
+                return self.photo.url.replace('tigapics/', 'tigapics_small/')
 
     def get_popup_url(self):
+        if settings.AWS_STORAGE_BUCKET_NAME:
+            # @TODO - This might not exist, the medium sized thumbnail should be created and added to S3 Storage
+            # See http://blog.hardlycode.com/resizing-django-imagefield-with-remote-storage-2011-02/
+            return self.photo.url.replace('tigapics/', 'tigapics_popups/')
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_popup_path()):
                 try:
@@ -949,22 +959,24 @@ class Photo(models.Model):
 
     popup_image.allow_tags = True
 
-    def get_medium_path(self):
-        return self.photo.path.replace('tigapics/', 'tigapics_medium/')
-
     def get_medium_url(self):
-        if os.path.isfile(self.photo.path):
-            if not os.path.isfile(self.get_medium_path()):
-                try:
-                    im = Image.open(self.photo.path)
-                    try:
-                        im.thumbnail((460, 460), Image.ANTIALIAS)
-                    except IOError:
-                        im.thumbnail((460, 460), Image.NEAREST)
-                    im.save(self.get_medium_path())
-                except IOError:
-                    return ""
+        if settings.AWS_STORAGE_BUCKET_NAME:
+            #@TODO - This might not exist, the medium sized thumbnail should be created and added to S3 Storage
+            #See http://blog.hardlycode.com/resizing-django-imagefield-with-remote-storage-2011-02/
             return self.photo.url.replace('tigapics/', 'tigapics_medium/')
+        else:
+            if os.path.isfile(self.photo.path):
+                if not os.path.isfile(self.get_medium_path()):
+                    try:
+                        im = Image.open(self.photo.path)
+                        try:
+                            im.thumbnail((460, 460), Image.ANTIALIAS)
+                        except IOError:
+                            im.thumbnail((460, 460), Image.NEAREST)
+                        im.save(self.get_medium_path())
+                    except IOError:
+                        return ""
+                return self.photo.url.replace('tigapics/', 'tigapics_medium/')
 
     def medium_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
