@@ -151,35 +151,6 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
-LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (40.0, -4.0),
-    'DEFAULT_ZOOM': 6,
-    'MINIMAP': True,
-    'PLUGINS': {
-        'marker_cluster_yellow': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'marker_cluster_yellow_single': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow_single.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'marker_cluster_blue': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_blue.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'marker_cluster_blue_yellow': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_blue_yellow.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'oms': {
-            'css': [],
-            'js': 'tigamap/oms.min.js',
-            'auto-include': True,
-        }
-    }
-}
-
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 # This is the cuttoff score above which a photo will be considered "crowd-validated"
@@ -222,5 +193,36 @@ STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
 MEDIAFILES_LOCATION = 'media'
 DEFAULT_FILE_STORAGE = 'tigaserver_project.custom_storages.MediaStorage'
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (40.0, -4.0),
+    'DEFAULT_ZOOM': 6,
+    'MINIMAP': True,
+    'PLUGINS': {
+        'marker_cluster_yellow': {
+            'css': ["%stigamap/MarkerCluster.css" % STATIC_URL, "%stigamap/MarkerCluster.tigamap_yellow.css" % STATIC_URL],
+            'js': "%stigamap/leaflet.markercluster.js" % STATIC_URL,
+        },
+        'marker_cluster_yellow_single': {
+            'css': ["%stigamap/MarkerCluster.css" % STATIC_URL, "%stigamap/MarkerCluster.tigamap_yellow_single.css" % STATIC_URL],
+            'js': "%stigamap/leaflet.markercluster.js" % STATIC_URL,
+        },
+        'marker_cluster_blue': {
+            'css': ["%stigamap/MarkerCluster.css" % STATIC_URL, "%stigamap/MarkerCluster.tigamap_blue.css" % STATIC_URL],
+            'js': "%stigamap/leaflet.markercluster.js" % STATIC_URL,
+        },
+        'marker_cluster_blue_yellow': {
+            'css': ["%stigamap/MarkerCluster.css" % STATIC_URL, "%stigamap/MarkerCluster.tigamap_blue_yellow.css" % STATIC_URL],
+            'js': "%stigamap/leaflet.markercluster.js" % STATIC_URL,
+        },
+        'oms': {
+            'css': [],
+            'js': "%stigamap/oms.min.js" % STATIC_URL,
+            'auto-include': True,
+        }
+    }
+}
+
 
 from settings_local import *
