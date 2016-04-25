@@ -220,7 +220,7 @@ LEAFLET_CONFIG = {
             'css': [],
             'js': "%stigamap/oms.min.js" % STATIC_URL,
             'auto-include': True,
-        }
+        },
     }
 }
 
