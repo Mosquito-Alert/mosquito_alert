@@ -198,8 +198,8 @@ MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.0, -4.0),
     'DEFAULT_ZOOM': 6,
-    'MINIMAP': False,
-    'PLUGINS': {
+    'MINIMAP': False, #This is set the false so we can include minimap as a plugin, that way we can load correctly the static resource
+    'PLUGINS': {      #Otherwise, loads minimap from wrong address when resource is served from Amazon s3
         'marker_cluster_yellow': {
             'css': ["%stigamap/MarkerCluster.css" % STATIC_URL, "%stigamap/MarkerCluster.tigamap_yellow.css" % STATIC_URL],
             'js': "%stigamap/leaflet.markercluster.js" % STATIC_URL,
