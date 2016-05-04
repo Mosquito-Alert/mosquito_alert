@@ -1143,15 +1143,24 @@
 
 
             var save_button = $("#save_button").click(function () {
+                //There's at least one of the forms which is marked as validated
+                var validated_without_aedes_input = false;
                 if ($("[id*='validation_complete']").is(":checked")) {
-                    var validated_without_aedes_input = false;
-                    $("[id*='aedes_certainty_value']").each(function(index,element){
-                        var button_title = $('button[data-id="' + element.id + '"]').attr('title');
-                        console.log(button_title);
-                        if( button_title=='--------------' ){
-                            validated_without_aedes_input = true;
+                    var buttons = $('button[data-id*="aedes_certainty_value"]');
+                    for(var index = 0; index < buttons.size(); index++){
+                        var button_title = buttons[index].attributes["title"].value;
+                        var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
+                        if(button_title == '--------------' && checked){
+                            var validated_without_aedes_input = true;
                         }
-                    });
+                    }
+                    /*$('button[data-id*="aedes_certainty_value"]').each(function(index,element){
+                        var button_title = $(this).attr('title');
+                        var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
+                        if(button_title == '--------------' && checked){
+                            var validated_without_aedes_input = true;
+                        }
+                    });*/
                     {% if request.user.userstat.is_expert %}
                         if(validated_without_aedes_input){
                             //launch ok dialog and not save
