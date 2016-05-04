@@ -672,6 +672,31 @@
 
     </div>
 
+    <div class="modal fade" id="save_block_modal" tabindex="-1" role="dialog"
+         aria-labelledby="save_block_modal_label"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="save_block_modal_label">Submit validation</h4>
+                </div>
+                <div id="save_block_modal_body" class="modal-body">
+                    <p>
+                        The following reports have been marked as validated, but you haven't chosen
+                        any value from the 'Aedes certainty' dropbox. Please select a valid value in each
+                        of them and hit 'save' again.
+                    </p>
+
+                    <div id="reports_validated_without_input_list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <div class="modal fade" id="save_warning_modal" tabindex="-1" role="dialog"
@@ -912,17 +937,17 @@
 
         function aedesValueToInput(value, input_id){
             if(value == '4'){
-                setTigerCertainty("-2", input_id);
+                //setTigerCertainty("-2", input_id);
                 setAegyptiCertainty("2", input_id);
             }else if(value == '3'){
-                setTigerCertainty("-1", input_id);
+                //setTigerCertainty("-1", input_id);
                 setAegyptiCertainty("1", input_id);
             }else if(value == '2'){
                 setTigerCertainty("2", input_id);
-                setAegyptiCertainty("-2", input_id);
+                //setAegyptiCertainty("-2", input_id);
             }else if(value == '1'){
                 setTigerCertainty("1", input_id);
-                setAegyptiCertainty("-1", input_id);
+                //setAegyptiCertainty("-1", input_id);
             }else if(value == '0'){
                 setTigerCertainty("0", input_id);
                 setAegyptiCertainty("0", input_id);
@@ -1068,6 +1093,22 @@
             $("#save_warning_modal").modal('show');
         }
 
+        function setup_and_launch_mustfix_dialog() {
+            $(".modal").modal("hide");
+            var reports_list_div = $("#reports_validated_without_input_list").empty();
+            reports_list_div.append('<ul></ul>');
+            var reports_list = $("#reports_validated_without_input_list ul");
+            $("[id*='validation_complete']:checked").each(function () {
+                var form_id = $(this).siblings("[id*='-id']").val();
+                var title = $('button[data-id="aedes_certainty_value_' + form_id + '"]').attr('title');
+                if ( title == '--------------' ){
+                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Validated without selecting Aegypt certainty</span></li>');
+                }
+            });
+            $("#save_block_modal").modal('show');
+        }
+
+
 
         function clear_inputs() {
             $("#scroll_position").val(0);
@@ -1103,7 +1144,24 @@
 
             var save_button = $("#save_button").click(function () {
                 if ($("[id*='validation_complete']").is(":checked")) {
-                    setup_and_launch_save_warning();
+                    var validated_without_aedes_input = false;
+                    $("[id*='aedes_certainty_value']").each(function(index,element){
+                        var button_title = $('button[data-id="' + element.id + '"]').attr('title');
+                        console.log(button_title);
+                        if( button_title=='--------------' ){
+                            validated_without_aedes_input = true;
+                        }
+                    });
+                    {% if request.user.userstat.is_expert %}
+                        if(validated_without_aedes_input){
+                            //launch ok dialog and not save
+                            setup_and_launch_mustfix_dialog();
+                        }else{
+                            setup_and_launch_save_warning();
+                        }
+                    {% else %}
+                        setup_and_launch_save_warning();
+                    {% endif %}
                 } else {
                     gear.show();
                     toggle_grab_reports_button();

@@ -8,12 +8,12 @@ from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
-from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation
+from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES
+from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES
 from collections import Counter
 
 
@@ -520,6 +520,17 @@ class Report(models.Model):
                 if self.type == 'adult':
                     result['tiger_certainty_category'] = self.get_final_expert_score()
                     result['aegypti_certainty_category'] = self.get_final_superexpert_aegypti_score()
+                    classification = self.get_mean_combined_expert_adult_score()
+                    result['score'] = int(round(classification['score']))
+                    if classification['is_aegypti'] == True:
+                        result['classification'] = 'aegypti'
+                    elif classification['is_albopictus'] == True:
+                        result['classification'] = 'albopictus'
+                    elif classification['is_none'] == True:
+                        result['classification'] = 'none'
+                    else:
+                        #This should NEVER happen. however...
+                        result['classification'] = 'conflict'
                 elif self.type == 'site':
                     result['site_certainty_category'] = self.get_final_expert_score()
                 return result
@@ -637,24 +648,246 @@ class Report(models.Model):
     def get_mean_expert_adult_score(self):
         sum_scores = 0
         mean_score = -3
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=False).count() == 0:
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True,tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True,tiger_certainty_category__isnull=False).count() == 0:
             return -3
-        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
         if super_scores:
             for this_score in super_scores:
                 if this_score:
                     sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
             return mean_score
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, tiger_certainty_category__isnull=False).count() == 0:
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=False).count() == 0:
             return -3
-        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
         if expert_scores:
             for this_score in expert_scores:
                 if this_score:
                     sum_scores += this_score
-            mean_score = sum_scores/float(expert_scores.count())
+            mean_score = sum_scores / float(expert_scores.count())
         return mean_score
+
+    def get_mean_expert_adult_classification_data(self):
+
+        status = {}
+
+        status['unclassified_by_superexpert'] = False
+        status['unclassified_by_all_experts'] = False
+
+        status['albopictus_classified_by_superexpert'] = False
+        status['albopictus_classified_by_expert'] = False
+        status['albopictus_superexpert_classification_count'] = -5
+        status['albopictus_superexpert_classification_score'] = -5
+        status['albopictus_expert_classification_count'] = -5
+        status['albopictus_expert_classification_score'] = -5
+        status['albopictus_final_score'] = -5
+
+        status['aegypti_classified_by_superexpert'] = False
+        status['aegypti_classified_by_expert'] = False
+        status['aegypti_superexpert_classification_count'] = -5
+        status['aegypti_superexpert_classification_score'] = -5
+        status['aegypti_expert_classification_count'] = -5
+        status['aegypti_expert_classification_score'] = -5
+        status['aegypti_final_score'] = -5
+
+        #Both unclassified - superexpert
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True,tiger_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True,tiger_certainty_category__isnull=False).count() == 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True,aegypti_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True,aegypti_certainty_category__isnull=False).count() == 0:
+            status['unclassified_by_superexpert'] = True
+            status['albopictus_final_score'] = -3
+            status['aegypti_final_score'] = -3
+
+        # Both unclassified - expert
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=False).count() == 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,aegypti_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,aegypti_certainty_category__isnull=False).count() == 0:
+            status['unclassified_by_all_experts'] = True
+            status['albopictus_final_score'] = -3
+            status['aegypti_final_score'] = -3
+
+        #Classified Albopictus - superexpert
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        superexpert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if super_scores:
+            for this_score in super_scores:
+                if this_score:
+                    status['albopictus_classified_by_superexpert'] = True
+                    superexpert_score_num = superexpert_score_num + 1
+                    sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+        status['albopictus_superexpert_classification_count'] = superexpert_score_num
+        status['albopictus_superexpert_classification_score'] = mean_score
+        status['albopictus_final_score'] = mean_score
+
+        #Classified Aegypti - superexpert
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
+        superexpert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if super_scores:
+            for this_score in super_scores:
+                if this_score:
+                    status['aegypti_classified_by_superexpert'] = True
+                    superexpert_score_num = superexpert_score_num + 1
+                    sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+        status['aegypti_superexpert_classification_count'] = superexpert_score_num
+        status['aegypti_superexpert_classification_score'] = mean_score
+        status['aegypti_final_score'] = mean_score
+
+        #Classified Albopictus - expert
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        expert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if expert_scores:
+            for this_score in expert_scores:
+                if this_score:
+                    status['albopictus_classified_by_expert'] = True
+                    expert_score_num = expert_score_num + 1
+                    sum_scores += this_score
+            mean_score = sum_scores / float(expert_scores.count())
+        status['albopictus_expert_classification_count'] = expert_score_num
+        status['albopictus_expert_classification_score'] = mean_score
+        status['albopictus_final_score'] = mean_score
+
+        #Classified Aegypti - expert
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
+        expert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if expert_scores:
+            for this_score in expert_scores:
+                if this_score:
+                    status['aegypti_classified_by_expert'] = True
+                    expert_score_num += 1
+                    sum_scores += this_score
+            mean_score = sum_scores / float(expert_scores.count())
+        status['aegypti_expert_classification_count'] = expert_score_num
+        status['aegypti_expert_classification_score'] = mean_score
+        status['aegypti_final_score'] = mean_score
+
+        return status
+
+    def get_final_combined_expert_category(self):
+        # if self.type == 'site':
+        #      return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
+        # elif self.type == 'adult':
+        #      return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[self.get_final_expert_score()]
+        classification = self.get_mean_combined_expert_adult_score()
+        score = int(round(classification['score']))
+        if score == -4:
+            return "Conflict"
+        if score <= 0:
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[score]
+        else:
+            if classification['is_aegypti']:
+                return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES_SEPARATED))[score]
+            elif classification['is_albopictus'] or classification['is_none']:
+                return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[score]
+            else:
+                return "Conflict"
+
+
+    def get_mean_combined_expert_adult_score(self):
+        status = self.get_mean_expert_adult_classification_data()
+        albopictus_score = status['albopictus_final_score']
+        aegypti_score = status['aegypti_final_score']
+
+        classification = {}
+
+        classification['is_aegypti'] = False
+        classification['is_albopictus'] = False
+        classification['is_none'] = False
+        classification['conflict'] = False
+        classification['score'] = -4
+
+        if status['unclassified_by_superexpert'] == True:
+            classification['is_none'] = True
+            classification['score'] = -3
+            #return -3
+        else:
+            if status['unclassified_by_all_experts'] == True:
+                classification['is_none'] = True
+                classification['score'] = -3
+                #return -3
+            else: #Not left null by experts or superexperts
+                #Classified either way by superexpert
+                if status['aegypti_classified_by_superexpert'] == True and status['albopictus_classified_by_superexpert'] == False:
+                    classification['is_aegypti'] = True
+                    classification['score'] = status['aegypti_superexpert_classification_score']
+                    #return status['aegypti_superexpert_classification_score']
+                elif status['aegypti_classified_by_superexpert'] == False and status['albopictus_classified_by_superexpert'] == True:
+                    classification['is_albopictus'] = True
+                    classification['score'] = status['albopictus_superexpert_classification_score']
+                    #return status['albopictus_superexpert_classification_score']
+                elif status['aegypti_classified_by_superexpert'] == True and status['albopictus_classified_by_superexpert'] == True:
+                    # Only possible if more than one superexpert and they say opposite things -> BAD
+                    classification['conflict'] = True
+                    classification['score'] = -4
+                    #return -4
+                else:  # Neither species classified by superexpert
+                    # if albopictus_score > -3 and aegypti_score == -3:
+                    #     return albopictus_score
+                    # elif albopictus_score == -3 and aegypti_score > -3:
+                    #     return aegypti_score
+                    # elif albopictus_score == -3 and aegypti_score == -3:
+                    #     return -3
+                    # elif albopictus_score > -3 and aegypti_score > -3:
+                    if albopictus_score > 0 and aegypti_score > 0: #conflict -> experts reasonably sure they are different species - i.e
+                        if status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                            classification['is_albopictus'] = True
+                            classification['score'] = status['albopictus_expert_classification_score']
+                            #return status['albopictus_expert_classification_score']
+                        elif status['albopictus_expert_classification_count'] < status['aegypti_expert_classification_count']:
+                            classification['is_aegypti'] = True
+                            classification['score'] = status['aegypti_expert_classification_score']
+                            #return status['aegypti_expert_classification_score']
+                        else:#conflict
+                            classification['conflict'] = True
+                            classification['score'] = -4
+                            #return -4
+                    elif albopictus_score > 0 and aegypti_score <= 0:
+                        if aegypti_score == -3:
+                            classification['is_albopictus'] = True
+                            classification['score'] = status['albopictus_expert_classification_score']
+                            #return status['albopictus_expert_classification_score']
+                        else:
+                            if status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                                classification['is_albopictus'] = True
+                                classification['score'] = status['albopictus_expert_classification_score']
+                                #return status['albopictus_expert_classification_score']
+                            else:
+                                classification['is_aegypti'] = True
+                                classification['score'] = status['aegypti_expert_classification_score']
+                                #return status['aegypti_expert_classification_score']
+
+                    elif albopictus_score <= 0 and aegypti_score > 0: #conflict -> Some experts reasonably sure is aegypti, some think is neither or none
+                        if albopictus_score == -3:
+                            classification['is_aegypti'] = True
+                            classification['score'] = status['aegypti_expert_classification_score']
+                            #return status['aegypti_expert_classification_score']
+                        else:
+                            if status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                                classification['is_albopictus'] = True
+                                classification['score'] = status['albopictus_expert_classification_score']
+                                #return status['albopictus_expert_classification_score']
+                            else:
+                                classification['is_aegypti'] = True
+                                classification['score'] = status['aegypti_expert_classification_score']
+                                #return status['aegypti_expert_classification_score']
+                    elif albopictus_score <= 0 and aegypti_score <= 0:
+                        classification['is_none'] = True
+                        classification['score'] = albopictus_score
+                        #return albopictus_score
+        #unreachable, in theory - left here for security purposes
+        return classification
+
 
     def get_mean_expert_site_score(self):
         sum_scores = 0
@@ -677,6 +910,19 @@ class Report(models.Model):
                     sum_scores += this_score
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
+
+    def get_final_combined_expert_score(self):
+        score = -3
+        if self.type == 'site':
+            score = self.get_mean_expert_site_score()
+        elif self.type == 'adult':
+            classification = self.get_mean_combined_expert_adult_score()
+            score = classification['score']
+            #score = self.get_mean_combined_expert_adult_score()
+        if score is not None:
+            return int(round(score))
+        else:
+            return -3
 
     def get_final_expert_score(self):
         score = -3

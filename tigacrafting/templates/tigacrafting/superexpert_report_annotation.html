@@ -96,8 +96,10 @@
                aria-expanded="false" aria-controls="current_status_collapse{{ form.instance.id }}"><i
                     class="fa fa-plus-square-o"></i></a>
             {{ form.instance.report.get_final_expert_status_bootstrap | safe }}
-            <strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}
-            <strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score_aegypti text=form.instance.report.get_final_expert_category_aegypti %}
+            <!--<strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}
+            <strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score_aegypti text=form.instance.report.get_final_expert_category_aegypti %}-->
+            <strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_combined_expert_score text=form.instance.report.get_final_combined_expert_category %}
+            <!--<strong>Current Status:</strong>  {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}-->
 
             <div class="collapse" id="current_status_collapse{{ form.instance.id }}">
                 <div class="well">

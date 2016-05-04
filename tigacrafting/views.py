@@ -383,6 +383,37 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
 
+def must_be_autoflagged(id_annotation_report, is_current_validated):
+    this_annotation = ExpertReportAnnotation.objects.get(id=id_annotation_report)
+    if this_annotation is not None:
+        the_report = this_annotation.report
+        if the_report is not None:
+            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID)
+            anno_count = 0
+            one_positive_albopictus = False
+            one_positive_aegypti = False
+            one_unclassified = False
+            for anno in annotations:
+                validated = False
+                if anno.id == id_annotation_report:
+                    validated = is_current_validated
+                else:
+                    validated = anno.validation_complete
+                if anno.tiger_certainty_category is not None and anno.tiger_certainty_category > 0 and validated == True:
+                    one_positive_albopictus = True
+                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category >0 and validated == True:
+                    one_positive_aegypti = True
+                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category == 0 \
+                        and anno.tiger_certainty_category is not None and anno.tiger_certainty_category == 0 \
+                        and validated == True:
+                    one_unclassified = True
+                if anno.aegypti_certainty_category is None and anno.tiger_certainty_category is None and validated == True:
+                    one_unclassified = True
+                anno_count += 1
+            if one_positive_albopictus and one_positive_aegypti and one_unclassified and anno_count == 3:
+                return True
+    return False
+
 
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off'):
@@ -417,7 +448,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             if save_formset == "T":
                 formset = AnnotationFormset(request.POST)
                 if formset.is_valid():
-                    formset.save()
+                    for f in formset:
+                        one_form = f.save(commit=False)
+                        if must_be_autoflagged(one_form.id,one_form.validation_complete):
+                            one_form.status = 0
+                        one_form.save()
+                    #formset.save()
                 else:
                     return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
             page = request.POST.get('page')
