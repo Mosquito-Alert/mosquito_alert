@@ -754,7 +754,8 @@ class Report(models.Model):
             mean_score = sum_scores / float(expert_scores.count())
         status['albopictus_expert_classification_count'] = expert_score_num
         status['albopictus_expert_classification_score'] = mean_score
-        status['albopictus_final_score'] = mean_score
+        if status['albopictus_classified_by_superexpert'] == False:
+            status['albopictus_final_score'] = mean_score
 
         #Classified Aegypti - expert
         expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
@@ -770,7 +771,8 @@ class Report(models.Model):
             mean_score = sum_scores / float(expert_scores.count())
         status['aegypti_expert_classification_count'] = expert_score_num
         status['aegypti_expert_classification_score'] = mean_score
-        status['aegypti_final_score'] = mean_score
+        if status['aegypti_classified_by_superexpert'] == False:
+            status['aegypti_final_score'] = mean_score
 
         return status
 
