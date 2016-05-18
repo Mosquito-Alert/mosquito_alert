@@ -323,6 +323,21 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label>Public Note:</label>
+                        <div>
+                            <button type="button" id="btn_gp_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Good picture!"><span class="glyphicon glyphicon-camera"></span><span class="glyphicon glyphicon-thumbs-up"></span></button>
+                            <button type="button" id="btn_bp_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Bad picture!"><span class="glyphicon glyphicon-camera"></span><span class="glyphicon glyphicon-thumbs-down"></span></button>
+                            <button type="button" id="btn_int_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Interesting"><span class="glyphicon glyphicon-star"></span></button>
+                            <button type="button" id="btn_other_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Other species"><span class="glyphicon glyphicon-remove"></span></button>
+                            <button type="button" id="btn_discovery_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-exclamation-sign"></span></button>
+                        </div>
+                        <div class="controls field-public_note" data-placement="top" title="" data-toggle="tooltip" data-original-title="">
+                            <textarea id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
+                        </div>
+                    </div>
+
+
                     {% form form using "floppyforms/layouts/bootstrap.html" %}
 
                     {% if checked == 'unchecked' or edit_mode == 'edit' %}
@@ -960,6 +975,11 @@
             }
         }
 
+        function inputToPublicNoteValue(input_id){
+            var note = getPublicNote(input_id);
+            $("#public_note_" + input_id).val(note);
+        }
+
         function inputToAedesValue(input_id){
             var i = 0;
             var tiger_val = getTigerCertainty(input_id);
@@ -999,6 +1019,12 @@
             $('#'+control_name).val(value);
         }
 
+        function getPublicNote(input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-edited_user_notes";
+            var retVal = $('#'+control_name).val();
+            return retVal;
+        }
+
         function getTigerCertainty(input_id){
             var control_name = "id_form-" + id_to_index[input_id] + "-tiger_certainty_category";
             var retVal = $('#'+control_name).val();
@@ -1012,7 +1038,6 @@
         }
 
         $( document ).ready(function() {
-            //$("#aedes_certainty_value_{{ form.instance.id }}").val('{{form.instance.tiger_certainty_category}}');
             var total_forms = $("#id_form-TOTAL_FORMS").val();
             index_to_id = {};
             id_to_index = {};
@@ -1024,6 +1049,36 @@
                 inputToAedesValue('{{ form.instance.id }}');
                 $("#aedes_certainty_value_{{ form.instance.id }}").change(function(){
                     aedesValueToInput($(this).val(),'{{ form.instance.id }}');
+                });
+                inputToPublicNoteValue('{{ form.instance.id }}');
+                $("#btn_gp_{{ form.instance.id }}").click(function() {
+                    var message = "Muy buena foto. Gracias por participar.";
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_bp_{{ form.instance.id }}").click(function() {
+                    var message = "La foto/s adjunta no nos permite identificar la especie con total seguridad. En la web del proyecto encontrará trucos para mejorar sus fotos. Gracias por participar.";
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_int_{{ form.instance.id }}").click(function() {
+                    var message = "Interesante informe. Hay pocos registros de la especie en esta zona. Gracias por participar.";
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_other_{{ form.instance.id }}").click(function() {
+                    var message = "La foto/s adjuntas parecen ser de una especie diferente al mosquito tigre o el mosquito de la fiebre amarilla. En la web del proyecto encontrará trucos para reconocer mejor estas especies. Gracias por participar.";
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_discovery_{{ form.instance.id }}").click(function() {
+                    var message = "Esta información puede ser de gran interés. Enviadnos más imágenes por favor!";
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#public_note_{{ form.instance.id }}").unbind();
+                $("#public_note_{{ form.instance.id }}").on('input', function (e) {
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val($(this).val());
                 });
             {% endfor %}
         });

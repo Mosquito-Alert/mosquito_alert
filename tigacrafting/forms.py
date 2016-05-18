@@ -36,7 +36,9 @@ class ExpertReportAnnotationForm(forms.ModelForm):
             'best_photo': forms.HiddenInput,
             'tiger_certainty_notes': forms.Textarea(attrs={'rows': 4}),
             'site_certainty_notes': forms.Textarea(attrs={'rows': 4}),
-            'edited_user_notes': forms.Textarea(attrs={'rows': 4}),
+            #'edited_user_notes': forms.Textarea(attrs={'rows': 4}),
+            # Public Note
+            'edited_user_notes': forms.HiddenInput,
             'message_for_user': forms.Textarea(attrs={'rows': 4}),
         }
 
