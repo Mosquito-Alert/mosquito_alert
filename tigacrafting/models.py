@@ -192,6 +192,7 @@ class ExpertReportAnnotation(models.Model):
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
 
     def is_superexpert(self):
         return 'superexpert' in self.user.groups.values_list('name', flat=True)
@@ -256,6 +257,7 @@ class ExpertReportAnnotation(models.Model):
 
 class UserStat(models.Model):
     user = models.OneToOneField(User, primary_key=True)
+    grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
 
     def is_expert(self):
         return self.user.groups.filter(name="expert").exists()

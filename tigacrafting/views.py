@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
 from tigacrafting.models import *
@@ -496,9 +497,23 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 if new_reports_unfiltered:
                     new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
                     reports_to_take = new_reports[0:n_to_get]
+                    user_stats = None
+                    try:
+                        user_stats = UserStat.objects.get(user_id=this_user.id)
+                    except ObjectDoesNotExist:
+                        pass
+                    grabbed_reports = -1
+                    if user_stats:
+                        grabbed_reports = user_stats.grabbed_reports
                     for this_report in reports_to_take:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                        if grabbed_reports != -1 and grabbed_reports % 3 == 0:
+                            new_annotation.simplified_annotation = True
+                        grabbed_reports += 1
                         new_annotation.save()
+                    if grabbed_reports != -1:
+                        user_stats.grabbed_reports = grabbed_reports
+                        user_stats.save()
         elif this_user_is_superexpert:
             new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
