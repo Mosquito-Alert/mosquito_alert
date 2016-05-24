@@ -19,7 +19,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
-from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm
+from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -697,3 +697,43 @@ def expert_status(request):
         return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
     else:
         return HttpResponseRedirect(reverse('login'))
+
+@login_required
+def picture_validation(request,tasks_per_page='10'):
+    args = {}
+    args.update(csrf(request))
+    this_user = request.user
+    PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
+    if request.method == 'POST':
+        save_formset = request.POST.get('save_formset', "F")
+        tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+        if save_formset == "T":
+            formset = PictureValidationFormSet(request.POST)
+            if formset.is_valid():
+                formset.save()
+        page = request.POST.get('page')
+        if not page:
+            page = '1'
+        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page)
+    else:
+        tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+    my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
+    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
+    page = request.GET.get('page', 1)
+    try:
+        objects = paginator.page(page)
+    except PageNotAnInteger:
+        objects = paginator.page(1)
+    except EmptyPage:
+        objects = paginator.page(paginator.num_pages)
+    page_query = new_reports_unfiltered.filter(version_UUID__in=[object.version_UUID for object in objects])
+    this_formset = PictureValidationFormSet(queryset=page_query)
+    args['formset'] = this_formset
+    args['objects'] = objects
+    args['pages'] = range(1, objects.paginator.num_pages + 1)
+    args['new_reports_unfiltered'] = page_query
+    args['tasks_per_page'] = tasks_per_page
+    args['tasks_per_page_choices'] = range(5, min(100, new_reports_unfiltered.count()) + 1, 5)
+    #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
+    return render(request, 'tigacrafting/photo_grid.html', args)

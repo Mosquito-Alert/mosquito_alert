@@ -8,7 +8,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation
 
 admin.autodiscover()
 
@@ -68,6 +68,7 @@ urlpatterns += i18n_patterns('',
     url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
     url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
     url(r'^experts/status/people/$', expert_status, name='expert_status'),
+    url(r'^photo_grid/$', picture_validation, name='picture_validation'),
 
 ## should stay out
 #    url(r'^coveragestats/$', show_fix_users),

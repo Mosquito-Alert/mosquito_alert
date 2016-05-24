@@ -1,5 +1,6 @@
 import floppyforms.__future__ as forms
 from models import Annotation, MoveLabAnnotation, ExpertReportAnnotation
+from tigaserver_app.models import Report
 
 
 class Slider(forms.RangeInput):
@@ -60,3 +61,8 @@ class SuperExpertReportAnnotationForm(forms.ModelForm):
             'edited_user_notes': forms.HiddenInput,
             'message_for_user': forms.Textarea(attrs={'rows': 4}),
         }
+
+class PhotoGrid(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ('hide',)
