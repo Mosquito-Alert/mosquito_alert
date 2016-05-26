@@ -507,7 +507,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         grabbed_reports = user_stats.grabbed_reports
                     for this_report in reports_to_take:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                        if grabbed_reports != -1 and grabbed_reports % 3 == 0:
+                        who_has = this_report.get_who_has()
+                        if who_has == '':
+                            #No one has the report, is simplified
                             new_annotation.simplified_annotation = True
                         grabbed_reports += 1
                         new_annotation.save()

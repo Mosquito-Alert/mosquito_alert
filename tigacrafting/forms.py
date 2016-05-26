@@ -40,7 +40,8 @@ class ExpertReportAnnotationForm(forms.ModelForm):
             #'edited_user_notes': forms.Textarea(attrs={'rows': 4}),
             # Public Note
             'edited_user_notes': forms.HiddenInput,
-            'message_for_user': forms.Textarea(attrs={'rows': 4}),
+            #'message_for_user': forms.Textarea(attrs={'rows': 4}),
+            'message_for_user': forms.HiddenInput,
         }
 
 
