@@ -12,9 +12,11 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer
+from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer
 from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
+from taggit.models import Tag
+
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -522,3 +524,20 @@ class CoverageMonthMapViewSet(ReadOnlyModelViewSet):
     queryset = CoverageAreaMonth.objects.all()
     serializer_class = CoverageMonthMapSerializer
     filter_class = CoverageMonthMapFilter
+
+def filter_partial_name(queryset, name):
+    if not name:
+        return queryset
+    return queryset.filter(name__icontains=name)
+
+class TagFilter(django_filters.FilterSet):
+    name = django_filters.Filter(action=filter_partial_name)
+
+    class Meta:
+        model = Tag
+        fields = ['name']
+
+class TagViewSet(ReadOnlyModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    filter_class = TagFilter

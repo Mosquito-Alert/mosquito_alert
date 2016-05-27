@@ -1,0 +1,224 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <style>
+        .grid-item { background-color: grey; height: 120px; width: 120px; float: left; margin-top: 5px;margin-bottom: 5px;}
+        .grid-item-large { background-color: grey; height: 120px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px;}
+        .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px; margin-bottom: 10px;}
+        .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
+    </style>
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="https://npmcdn.com/isotope-layout@3.0/dist/isotope.pkgd.min.js"></script>
+</head>
+<body>
+
+<div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand"><span
+                                style="color:#ff9900; font-size: small">Tigatrapp Picture Validation</span>
+                        </div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+
+                        <ul class="nav navbar-nav navbar-left">
+                                <li>
+                                    <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span></button></span>
+                                </li>
+                                <li>
+                                    <span data-toggle="modal" data-target="#searchModal"><button type="button"
+                                                                                             class="btn btn-warning btn-sm navbar-btn"
+                                                                                             data-toggle="tooltip"
+                                                                                             data-placement="bottom"
+                                                                                             title="Search"
+                                                                                             style="margin-left:5px"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+                            </li>
+
+                            <li>
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px" data-toggle="tooltip" data-placement="bottom"
+                                        title="Save"><span
+                                        class="glyphicon glyphicon-floppy-disk"></span>
+                                </button>
+                            </li>
+                        </ul>
+
+
+                        <ul class="nav navbar-nav navbar-right">
+                                {% if tasks_per_page_choices %}
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle"
+                                       data-toggle="dropdown">Reports per page
+                                        <span class="caret"></span></a>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                        {% for n in tasks_per_page_choices %}
+                                            <li>
+                                                <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}">{{ n }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            </li>
+                        </ul>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="container">
+    <div class="starter-template">
+        <h1>Picture filter</h1>
+    </div>
+
+    <form id="formset_forms" class="form-vertical" method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {% for form in formset %}
+        <div class="grid">
+            {% for photo in form.instance.photos.all %}
+                {% if forloop.first %}
+                    <div class="grid-item-large valid">
+                        <p><span class="label label-success">Report id - {{ form.instance.version_UUID }}</span></p>
+                        <p><span class="label label-success">Date - {{ form.instance.server_upload_time }}</span></p>
+                        <p><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="grid-item valid">
+                    <a href="/media/{{ photo.photo }}" target="_blank">
+                        <img class="frame" src="{{ photo.get_small_url }}">
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+        <input id="save_formset" type="text" name="save_formset" style="display: none;" value="F">
+        <input id="next_page_input" type="text" name="page" style="display: none;" value="">
+        <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;" value="{{ tasks_per_page }}">
+    </form>
+
+    {% if objects.has_next or objects.has_previous %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if objects.has_previous %}
+                            <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
+                        {% endif %}
+                        <span class="current">
+                            Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                        </span>
+                        {% if objects.has_next %}
+                            <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
+                        {% endif %}
+                        <br>
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
+                               class="form-control input-sm" id="page_input" placeholder="Go to page"
+                               style="width:100px;">
+                                <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+                            </div>
+                        </form>
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+<script>
+        $(window).load(function(){
+            var grid = $('.grid').isotope({
+              masonry: {
+                columnWidth: 130
+              }
+            });
+
+            var save_button = $("#save_button").click(function () {
+                $("#save_formset").val('T');
+                $("#formset_forms").submit();
+            });
+
+            $("#page_button").on('click', function () {
+                var qp = query_selectors();
+                var selected_page = $("#page_input").val();
+                qp += selected_page;
+                $("#next_page_input").val(selected_page);
+                $("#formset_forms").submit();
+            });
+
+            var nb = $("#next_page_button");
+            {% if objects.has_next %}
+                nb.show().on('click', function () {
+                    var next_page = "{{ objects.next_page_number }}";
+                    var qp = query_selectors();
+                    qp += 'page=' + next_page;
+                    $("#next_page_input").val(next_page);
+                    $("#formset_forms").submit();
+                });
+            {% else %}
+                nb.hide();
+            {% endif %}
+            });
+
+            var pb = $("#previous_page_button");
+            {% if objects.has_previous %}
+                pb.show().on('click', function () {
+                    var previous_page = "{{ objects.previous_page_number }}";
+                    var qp = query_selectors();
+                    qp += '&page=' + previous_page;
+                    $("#next_page_input").val(previous_page);
+                    $("#formset_forms").submit();
+                });
+            {% else %}
+                pb.hide();
+            {% endif %}
+
+            function query_selectors() {
+                /*var this_orderby = $("#orderby_select").val();
+                var this_tiger_certainty = $("#tiger_certainty_select").val();
+                var this_site_certainty = $("#site_certainty_select").val();
+                var this_status = $("#status_select").val();
+                $("#orderby_input").val(this_orderby);
+                $("#tiger_certainty_input").val(this_tiger_certainty);
+                $("#site_certainty_input").val(this_site_certainty);
+                $("#status_input").val(this_status);
+                $("#pending_input").val(pending);
+                var qp = '?orderby=' + this_orderby;
+                qp += '&tiger_certainty=' + this_tiger_certainty;
+                qp += '&site_certainty=' + this_site_certainty;
+                qp += '&status=' + this_status;
+                qp += '&pending=' + pending;*/
+                var qp = '?';
+                return(qp)
+            }
+</script>
+</html>

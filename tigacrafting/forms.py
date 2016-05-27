@@ -30,7 +30,7 @@ class ExpertReportAnnotationForm(forms.ModelForm):
 
     class Meta:
         model = ExpertReportAnnotation
-        fields = ('tiger_certainty_category', 'aegypti_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'message_for_user', 'best_photo', 'status', 'linked_id', 'validation_complete')
+        fields = ('tiger_certainty_category', 'aegypti_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'message_for_user', 'best_photo', 'status', 'linked_id', 'validation_complete', 'tags')
         widgets = {
             'tiger_certainty_category': forms.HiddenInput,
             'aegypti_certainty_category': forms.HiddenInput,
@@ -42,6 +42,8 @@ class ExpertReportAnnotationForm(forms.ModelForm):
             'edited_user_notes': forms.HiddenInput,
             #'message_for_user': forms.Textarea(attrs={'rows': 4}),
             'message_for_user': forms.HiddenInput,
+            #'tags': forms.HiddenInput,
+            'tags': forms.HiddenInput,
         }
 
 

@@ -454,6 +454,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         if must_be_autoflagged(one_form.id,one_form.validation_complete):
                             one_form.status = 0
                         one_form.save()
+                        f.save_m2m()
                     #formset.save()
                 else:
                     return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})

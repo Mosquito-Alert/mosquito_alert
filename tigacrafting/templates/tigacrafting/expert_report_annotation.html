@@ -23,9 +23,14 @@
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
     {% endblock %}
 
-    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
-    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
-    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+    <!--script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script-->
+    <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
+    <!--script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script-->
+    <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/tag-it/tag-it.min.js" %}></script>
+    <!--link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}-->
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tag-it/jquery.tagit.css" %}>
 
     <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
     <style>
@@ -337,15 +342,20 @@
                             <button type="button" id="btn_other_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Other species"><span class="glyphicon glyphicon-remove"></span></button>
                             <button type="button" id="btn_discovery_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-exclamation-sign"></span></button>
                         </div>
-                        <div class="controls field-public_note" data-placement="top" title="" data-toggle="tooltip" data-original-title="">
+                        <div class="controls field-public_note" data-placement="top" title="" data-toggle="tooltip" data-original-title="Notes to display on public map">
                             <textarea id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Message to User:</label>
-                        <div class="controls field-message_to_user" data-placement="top" title="" data-toggle="tooltip" data-original-title="">
+                        <div class="controls field-message_to_user" data-placement="top" title="" data-toggle="tooltip" data-original-title="Message that user will receive when viewing report on phone">
                             <textarea id="message_to_user_{{ form.instance.id }}" cols="40" rows="4"></textarea>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tags:</label>
+                        <ul id="tags_{{ form.instance.id }}">
+                        </ul>
                     </div>
                     {% endif %}
 
@@ -1055,10 +1065,32 @@
             return retVal;
         }
 
+        function getTags(input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-tags";
+            var retVal = $('#'+control_name).val();
+            return retVal;
+        }
+
         function getAegyptiCertainty(input_id){
             var control_name = "id_form-" + id_to_index[input_id] + "-aegypti_certainty_category";
             var retVal = $('#'+control_name).val();
             return retVal;
+        }
+
+        function cleanUpHiddenInputTags(value){
+            if (value == "[]") return "";
+            var res = value.replace(/<TaggedItem: ExpertReportAnnotation object tagged with /g,"").replace(/>/g,"").replace(/ /g,"").replace("[","").replace("]","");
+            return res;
+        }
+
+        function inputToTags(input_id){
+            var tag_string = getTags(input_id);
+            var clean_tags = cleanUpHiddenInputTags(tag_string);
+            if(clean_tags!=''){
+                var tags = tag_string.split(",");
+                for(var i = 0; i < tags.length; i++){
+                }
+            }
         }
 
         $( document ).ready(function() {
@@ -1082,6 +1114,7 @@
                 });
                 inputToPublicNoteValue('{{ form.instance.id }}');
                 inputToUserMessageValue('{{ form.instance.id }}');
+                inputToTags('{{ form.instance.id }}');
                 $("#btn_gp_{{ form.instance.id }}").click(function() {
                     var message = "Muy buena foto. Gracias por participar.";
                     $("#public_note_{{ form.instance.id }}").val(message);
@@ -1113,6 +1146,31 @@
                 });
                 $("#message_to_user_{{ form.instance.id }}").on('input', function (e) {
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val($(this).val());
+                });
+
+                $("#tags_{{ form.instance.id }}").tagit({
+                    autocomplete: { source: function( request, response ) {
+                        $.ajax({
+                            url: "/api/tags/",
+                            dataType: "json",
+                            data: {
+                                featureClass: "P",
+                                style: "full",
+                                maxRows: 12,
+                                name: request.term
+                            },
+                            success: function( data ) {
+                                 response( $.map( data, function( item ) {
+                                    return {
+                                        label: item.name,
+                                        value: item.name
+                                    }
+                                 }));
+                            }
+                        });
+                    },
+                    minLength: 2
+                    }
                 });
             {% endfor %}
         });

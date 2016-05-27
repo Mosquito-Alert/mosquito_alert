@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from taggit.models import Tag
 from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth
 
@@ -201,3 +202,8 @@ class CoverageMonthMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverageAreaMonth
         fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('id','name')

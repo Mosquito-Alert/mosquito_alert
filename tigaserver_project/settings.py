@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     'south',
     'stats',
     'floppyforms',
+    'taggit',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -186,6 +187,10 @@ CROWD_VALIDATION_CUTOFF = 0
 START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
 
 IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
+
+SOUTH_MIGRATION_MODULES = {
+    'taggit': 'taggit.south_migrations',
+}
 
 
 from settings_local import *

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
+from taggit.managers import TaggableManager
 
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
@@ -193,6 +194,7 @@ class ExpertReportAnnotation(models.Model):
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
     simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
+    tags = TaggableManager(blank=True)
 
     def is_superexpert(self):
         return 'superexpert' in self.user.groups.values_list('name', flat=True)
