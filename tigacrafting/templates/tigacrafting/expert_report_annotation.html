@@ -1037,6 +1037,21 @@
             }
         }
 
+        function updateHiddenTagFieldsFromUI(){
+            var total_forms = $("#id_form-TOTAL_FORMS").val();
+            for( var i = 0; i < total_forms; i++){
+                var ui_value = getTagsFromUI(index_to_id[i]);
+                var clean_ui_value = cleanUpHiddenInputTagsArray(ui_value);
+                var clean_ui_string = clean_ui_value.join(",");
+                setTags(clean_ui_string, index_to_id[i]);
+            }
+        }
+
+        function setTags(value,input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-tags";
+            $('#'+control_name).val(value);
+        }
+
         function setTigerCertainty(value,input_id){
             var control_name = "id_form-" + id_to_index[input_id] + "-tiger_certainty_category";
             $('#'+control_name).val(value);
@@ -1071,25 +1086,44 @@
             return retVal;
         }
 
+        function getTagsFromUI(input_id){
+            return $("#tags_" + input_id).tagit("assignedTags");
+        }
+
         function getAegyptiCertainty(input_id){
             var control_name = "id_form-" + id_to_index[input_id] + "-aegypti_certainty_category";
             var retVal = $('#'+control_name).val();
             return retVal;
         }
 
-        function cleanUpHiddenInputTags(value){
-            if (value == "[]") return "";
-            var res = value.replace(/<TaggedItem: ExpertReportAnnotation object tagged with /g,"").replace(/>/g,"").replace(/ /g,"").replace("[","").replace("]","");
-            return res;
+        function cleanUpHiddenInputTagsString(value){
+            if (value == "[]") return [];
+            var tags = value.split(",");
+            var retVal = []
+            for(var i = 0; i < tags.length; i++){
+                var tag_i = tags[i];
+                var res_i = tag_i.replace(/>/g,"").replace("[","").replace("]","");
+                retVal.push(res_i.substring(res_i.lastIndexOf(" ")+1));
+            }
+            return retVal;
+        }
+
+        function cleanUpHiddenInputTagsArray(value){
+            var tags = value;
+            var retVal = []
+            for(var i = 0; i < tags.length; i++){
+                var tag_i = tags[i];
+                var res_i = tag_i.replace(/>/g,"").replace("[","").replace("]","");
+                retVal.push(res_i.substring(res_i.lastIndexOf(" ")+1));
+            }
+            return retVal;
         }
 
         function inputToTags(input_id){
             var tag_string = getTags(input_id);
-            var clean_tags = cleanUpHiddenInputTags(tag_string);
-            if(clean_tags!=''){
-                var tags = tag_string.split(",");
-                for(var i = 0; i < tags.length; i++){
-                }
+            var clean_tags = cleanUpHiddenInputTagsString(tag_string);
+            for(var i = 0; i < clean_tags.length; i++){
+                $("#tags_" + input_id).tagit("createTag", clean_tags[i]);
             }
         }
 
@@ -1114,7 +1148,7 @@
                 });
                 inputToPublicNoteValue('{{ form.instance.id }}');
                 inputToUserMessageValue('{{ form.instance.id }}');
-                inputToTags('{{ form.instance.id }}');
+
                 $("#btn_gp_{{ form.instance.id }}").click(function() {
                     var message = "Muy buena foto. Gracias por participar.";
                     $("#public_note_{{ form.instance.id }}").val(message);
@@ -1172,6 +1206,8 @@
                     minLength: 2
                     }
                 });
+
+                inputToTags('{{ form.instance.id }}');
             {% endfor %}
         });
     </script>
@@ -1301,13 +1337,6 @@
                             var validated_without_aedes_input = true;
                         }
                     }
-                    /*$('button[data-id*="aedes_certainty_value"]').each(function(index,element){
-                        var button_title = $(this).attr('title');
-                        var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
-                        if(button_title == '--------------' && checked){
-                            var validated_without_aedes_input = true;
-                        }
-                    });*/
                     {% if request.user.userstat.is_expert %}
                         if(validated_without_aedes_input){
                             //launch ok dialog and not save
@@ -1321,6 +1350,7 @@
                 } else {
                     gear.show();
                     toggle_grab_reports_button();
+                    updateHiddenTagFieldsFromUI();
                     $("#formset_forms").submit();
                 }
             });
