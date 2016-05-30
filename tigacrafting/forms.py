@@ -50,7 +50,7 @@ class SuperExpertReportAnnotationForm(forms.ModelForm):
 
     class Meta:
         model = ExpertReportAnnotation
-        fields = ('tiger_certainty_category', 'aegypti_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'status', 'linked_id', 'edited_user_notes', 'message_for_user', 'best_photo', 'revise', 'validation_complete')
+        fields = ('tiger_certainty_category', 'aegypti_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'status', 'linked_id', 'edited_user_notes', 'message_for_user', 'best_photo', 'revise', 'validation_complete','tags')
         widgets = {
             'tiger_certainty_category': forms.HiddenInput,
             'aegypti_certainty_category': forms.HiddenInput,
@@ -62,6 +62,7 @@ class SuperExpertReportAnnotationForm(forms.ModelForm):
             # Public Note
             'edited_user_notes': forms.HiddenInput,
             'message_for_user': forms.Textarea(attrs={'rows': 4}),
+            'tags': forms.HiddenInput,
         }
 
 class PhotoGrid(forms.ModelForm):

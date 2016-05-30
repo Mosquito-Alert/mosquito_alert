@@ -91,7 +91,7 @@
 
 {% block report_title_status_row %}
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <a role="button" data-toggle="collapse" href="#current_status_collapse{{ form.instance.id }}"
                aria-expanded="false" aria-controls="current_status_collapse{{ form.instance.id }}"><i
                     class="fa fa-plus-square-o"></i></a>
@@ -137,6 +137,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="col-md-6">
+            <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}
         </div>
     </div>
 {% endblock %}

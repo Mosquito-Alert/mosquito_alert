@@ -296,13 +296,16 @@
         </div>
         {% block report_title_status_row %}
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-6">
                     {% if form.instance.simplified_annotation == True %}
                     <strong>This is a simplified report - </strong>
                     {% else %}
                     <strong>This is a full report - </strong>
                     {% endif %}
                     <strong>Who has this report? </strong> {{ form.instance.report.get_who_has_bootstrap | safe }}
+                </div>
+                <div class="col-md-6">
+                    <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}
                 </div>
             </div>
         {% endblock %}
@@ -354,8 +357,10 @@
                     </div>
                     <div class="form-group">
                         <label>Tags:</label>
-                        <ul id="tags_{{ form.instance.id }}">
-                        </ul>
+                        <div>
+                            <ul id="tags_{{ form.instance.id }}">
+                            </ul>
+                        </div>
                     </div>
                     {% endif %}
 
@@ -571,7 +576,8 @@
                 var this_id = "{{ form.instance.id }}";
 
                 //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + "{{ form.aegypti_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
-                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
+                //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
+                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + "tags_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
 
@@ -1121,6 +1127,7 @@
 
         function inputToTags(input_id){
             var tag_string = getTags(input_id);
+            if(!tag_string) tag_string = '';
             var clean_tags = cleanUpHiddenInputTagsString(tag_string);
             for(var i = 0; i < clean_tags.length; i++){
                 $("#tags_" + input_id).tagit("createTag", clean_tags[i]);
@@ -1240,6 +1247,7 @@
         function background_save(qp) {
             if ($("#formset_forms").length > 0 && ("{{ pending }}" == 'pending' || "{{ checked }}" == 'unchecked')) {
                 $("[id*='validation_complete']:checked").prop("checked", false);
+                updateHiddenTagFieldsFromUI();
                 $("#formset_forms").submit();
             } else {
                 window.location.href = qp;
@@ -1320,6 +1328,7 @@
                 gear.show();
                 $("#scroll_position").val(0);
                 toggle_grab_reports_button();
+                updateHiddenTagFieldsFromUI();
                 $("#formset_forms").submit();
 
             });

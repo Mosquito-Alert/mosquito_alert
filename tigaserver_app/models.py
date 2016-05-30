@@ -994,6 +994,41 @@ class Report(models.Model):
         result = '<span class="label label-default" style="background-color:' + ('red' if self.get_final_expert_score() == 2 else ('orange' if self.get_final_expert_score() == 1 else ('white' if self.get_final_expert_score() == 0 else ('grey' if self.get_final_expert_score() == -1 else 'black')))) + ';">' + self.get_final_expert_category() + '</span>'
         return result
 
+    def get_tags(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        s = set()
+        for ano in these_annotations:
+            tags = ano.tags.all()
+            for tag in tags:
+                s.add(tag)
+        return s
+
+    def get_tags_string(self):
+        result = ''
+        s = self.get_tags()
+        if s:
+            i = 0
+            for tag in s:
+                result += tag.name
+                if i != len(s) - 1:
+                    result += ','
+                i += 1
+        return result
+
+    def get_tags_bootstrap(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        result = ''
+        s = set()
+        for ano in these_annotations:
+            tags = ano.tags.all()
+            for tag in tags:
+                if not tag in s:
+                    s.add(tag)
+                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by ' + ano.user.username + '" data-placement="bottom">' + (tag.name) + '</span>'
+        if(len(s)==0):
+            return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
+        return result
+
     def get_who_has(self):
         result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
