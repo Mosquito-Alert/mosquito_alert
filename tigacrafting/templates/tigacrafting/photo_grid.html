@@ -32,26 +32,20 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <div class="navbar-brand"><span
-                                style="color:#ff9900; font-size: small">Tigatrapp Picture Validation</span>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">
+                                Tigatrapp Picture Validation
+                                <i id="gear" class="fa fa-refresh fa-spin"></i>
+                            </span>
+
                         </div>
                     </div>
                     <div class="navbar-collapse collapse">
 
                         <ul class="nav navbar-nav navbar-left">
-                                <li>
-                                    <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span></button></span>
-                                </li>
-                                <li>
-                                    <span data-toggle="modal" data-target="#searchModal"><button type="button"
-                                                                                             class="btn btn-warning btn-sm navbar-btn"
-                                                                                             data-toggle="tooltip"
-                                                                                             data-placement="bottom"
-                                                                                             title="Search"
-                                                                                             style="margin-left:5px"><span class="glyphicon glyphicon-search"></span></button>
-                                    </span>
+                            <li>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span></button></span>
                             </li>
-
                             <li>
                                 <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
                                         style="margin-left:5px" data-toggle="tooltip" data-placement="bottom"
@@ -89,9 +83,58 @@
         </div>
     </div>
 
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Filters</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="status_select" class="col-sm-4 control-label">Visibility:</label>
+
+                            <div class="col-sm-8">
+                                <select id="visibility_select" class="selectpicker show-tick form-control">
+                                    <option value="visible">Show visible</option>
+                                    <option value="hidden">Show hidden</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-primary" href="{% url 'picture_validation' %}">Clear Filters</a>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <div class="container">
     <div class="starter-template">
-        <h1>Picture filter</h1>
+        <h1>Picture Filter</h1>
+        <strong>Filters:</strong> Showing - {{ visibility }}
+        <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
+        <div style="text-align: left">
+            <h4>Instructions</h4>
+            <p>This page is meant to be used as a tool to hide images that are obviously not mosquitos or breeding sites. You are looking at the currently unassigned reports; these
+                reports will be passed on to the experts, unless you say otherwise.</p>
+            <p>Take a look, and if you see anything that is very clearly not mosquito related, check the hide checkbox and save.
+                The usual workflow should be as follows:
+                <ul>
+                    <li>Go to page 1</li>
+                    <li>Take a look at the pictures. If you see clearly inappropiate/unrelated pics, check the "Hide" box</li>
+                    <li>Hit the save button (the green disk button in the navigation bar) the reports that you checked will disappear from the list and won't be assigned to experts
+                    for validation</li>
+                    <li>Proceed to page 2</li>
+                    <li>etc.</li>
+                </ul>
+            </p>
+        </div>
     </div>
 
     <form id="formset_forms" class="form-vertical" method="post">
@@ -121,6 +164,7 @@
         <input id="save_formset" type="text" name="save_formset" style="display: none;" value="F">
         <input id="next_page_input" type="text" name="page" style="display: none;" value="">
         <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;" value="{{ tasks_per_page }}">
+        <input id="visibility_input" type="text" name="visibility" style="display: none;" value="{{ visibility }}">
     </form>
 
     {% if objects.has_next or objects.has_previous %}
@@ -155,12 +199,23 @@
 
 </body>
 <script>
+        function background_save(qp) {
+            if ($("#formset_forms").length > 0) {
+                $("#formset_forms").submit();
+            } else {
+                window.location.href = qp;
+            }
+        }
+</script>
+<script>
         $(window).load(function(){
             var grid = $('.grid').isotope({
               masonry: {
                 columnWidth: 130
               }
             });
+
+            $("#gear").hide();
 
             var save_button = $("#save_button").click(function () {
                 $("#save_formset").val('T');
@@ -203,6 +258,8 @@
             {% endif %}
 
             function query_selectors() {
+                var this_visibility = $("#visibility_select").val();
+                $("#visibility_input").val(this_visibility);
                 /*var this_orderby = $("#orderby_select").val();
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
@@ -217,8 +274,18 @@
                 qp += '&site_certainty=' + this_site_certainty;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;*/
-                var qp = '?';
+                var qp = '?visibility=' + this_visibility;
                 return(qp)
             }
+
+            function submit_queries() {
+                $("#gear").show();
+                var qp = query_selectors();
+                background_save(qp);
+            }
+
+            $("#filters_submit_button").on('click', submit_queries);
+
+            $("#visibility_select").val("{{ visibility }}");
 </script>
 </html>

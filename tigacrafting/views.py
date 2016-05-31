@@ -1,3 +1,5 @@
+from pydoc import visiblename
+
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 import requests
@@ -702,7 +704,7 @@ def expert_status(request):
         return HttpResponseRedirect(reverse('login'))
 
 @login_required
-def picture_validation(request,tasks_per_page='10'):
+def picture_validation(request,tasks_per_page='10',visibility='visible'):
     args = {}
     args.update(csrf(request))
     this_user = request.user
@@ -715,13 +717,19 @@ def picture_validation(request,tasks_per_page='10'):
             if formset.is_valid():
                 formset.save()
         page = request.POST.get('page')
+        visibility = request.POST.get('visibility')
         if not page:
             page = '1'
-        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page)
+        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility)
     else:
         tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+        visibility = request.GET.get('visibility', visibility)
     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
-    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    if visibility == 'visible':
+        new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+    elif visibility == 'hidden':
+        new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
     paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
     page = request.GET.get('page', 1)
     try:
@@ -737,6 +745,9 @@ def picture_validation(request,tasks_per_page='10'):
     args['pages'] = range(1, objects.paginator.num_pages + 1)
     args['new_reports_unfiltered'] = page_query
     args['tasks_per_page'] = tasks_per_page
-    args['tasks_per_page_choices'] = range(5, min(100, new_reports_unfiltered.count()) + 1, 5)
+    args['visibility'] = visibility
+    n_query_records = new_reports_unfiltered.count()
+    args['n_query_records'] = n_query_records
+    args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
     #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
     return render(request, 'tigacrafting/photo_grid.html', args)
