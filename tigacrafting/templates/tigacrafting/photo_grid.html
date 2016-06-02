@@ -8,9 +8,10 @@
     <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
     <style>
         .grid-item { background-color: grey; height: 120px; width: 120px; float: left; margin-top: 5px;margin-bottom: 5px;}
-        .grid-item-large { background-color: grey; height: 120px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px;}
+        .grid-item-large { background-color: grey; height: 180px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px; overflow:auto}
         .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px; margin-bottom: 10px;}
         .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
+        .p-small { font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 12px; color: #fff;}
     </style>
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
@@ -93,14 +94,19 @@
                 <div class="modal-body">
                     <form role="form" class="form-horizontal">
                         <div class="form-group">
-                            <label for="status_select" class="col-sm-4 control-label">Visibility:</label>
-
+                            <label for="visibility_select" class="col-sm-4 control-label">Visibility:</label>
                             <div class="col-sm-8">
                                 <select id="visibility_select" class="selectpicker show-tick form-control">
                                     <option value="visible">Show visible</option>
                                     <option value="hidden">Show hidden</option>
                                     <option value="all">Show All</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="usernote_filter" class="col-sm-4 control-label">User note contains text:</label>
+                            <div class="col-sm-8">
+                                <input id="usernote_filter" type="text" maxlength="10" name="usernote_filter">
                             </div>
                         </div>
                     </form>
@@ -117,7 +123,7 @@
 <div class="container">
     <div class="starter-template">
         <h1>Picture Filter</h1>
-        <strong>Filters:</strong> Showing - {{ visibility }}
+        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}'
         <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
         <div style="text-align: left">
             <h4>Instructions</h4>
@@ -145,9 +151,10 @@
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
                     <div class="grid-item-large valid">
-                        <p><span class="label label-success">Report id - {{ form.instance.version_UUID }}</span></p>
-                        <p><span class="label label-success">Date - {{ form.instance.server_upload_time }}</span></p>
-                        <p><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                        <p class="p-small"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                        <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
+                        <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.server_upload_time }}</p>
+                        <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
                         {% for hidden in form.hidden_fields %}
                             {{ hidden }}
                         {% endfor %}
@@ -165,6 +172,7 @@
         <input id="next_page_input" type="text" name="page" style="display: none;" value="">
         <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;" value="{{ tasks_per_page }}">
         <input id="visibility_input" type="text" name="visibility" style="display: none;" value="{{ visibility }}">
+        <input id="usr_note_input" type="text" name="usr_note" style="display: none;" value="{{ usr_note }}">
     </form>
 
     {% if objects.has_next or objects.has_previous %}
@@ -222,12 +230,27 @@
                 $("#formset_forms").submit();
             });
 
-            $("#page_button").on('click', function () {
+            function go_to_page(){
                 var qp = query_selectors();
                 var selected_page = $("#page_input").val();
                 qp += selected_page;
                 $("#next_page_input").val(selected_page);
                 $("#formset_forms").submit();
+            }
+
+            $("#page_button").on('click', function () {
+                go_to_page();
+            });
+
+            $('#page_input').bind("enterKey",function(e){
+                go_to_page();
+            });
+
+            $('#page_input').keyup(function(e){
+                if(e.keyCode == 13)
+                {
+                    $(this).trigger("enterKey");
+                }
             });
 
             var nb = $("#next_page_button");
@@ -259,7 +282,9 @@
 
             function query_selectors() {
                 var this_visibility = $("#visibility_select").val();
+                var this_usr_note = $("#usernote_filter").val();
                 $("#visibility_input").val(this_visibility);
+                $("#usr_note_input").val(this_usr_note);
                 /*var this_orderby = $("#orderby_select").val();
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
@@ -274,7 +299,7 @@
                 qp += '&site_certainty=' + this_site_certainty;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;*/
-                var qp = '?visibility=' + this_visibility;
+                var qp = '?visibility=' + this_visibility + '&usr_note=' + this_usr_note;
                 return(qp)
             }
 
@@ -287,5 +312,6 @@
             $("#filters_submit_button").on('click', submit_queries);
 
             $("#visibility_select").val("{{ visibility }}");
+            $("#usernote_filter").val("{{ usr_note }}");
 </script>
 </html>
