@@ -728,9 +728,12 @@
                 </div>
                 <div id="save_block_modal_body" class="modal-body">
                     <p>
-                        The following reports have been marked as validated, but you haven't chosen
-                        any value from the 'Aedes certainty' dropbox. Please select a valid value in each
-                        of them and hit 'save' again.
+                        The following reports have been marked as validated, but either:</p>
+                        <p>- you haven't chosen any value from the 'Aedes certainty' dropbox.</p>
+                        <p>or</p>
+                        <p>- you have flagged the report without internal comment (unexplained flag)</p>
+
+                        <p>Please select a valid value in each of them and hit 'save' again.
                     </p>
 
                     <div id="reports_validated_without_input_list"></div>
@@ -1291,9 +1294,18 @@
             var reports_list = $("#reports_validated_without_input_list ul");
             $("[id*='validation_complete']:checked").each(function () {
                 var form_id = $(this).siblings("[id*='-id']").val();
+                var id_string = $(this).siblings("[id*='-id']").attr('id');
+                id_string = id_string.replace("id_form-","").replace("-id","");
                 var title = $('button[data-id="aedes_certainty_value_' + form_id + '"]').attr('title');
+                var flag_title = $('button[data-id="id_form-' + id_string + '-status"]').attr('title');
+                //var flag_title = $('button[data-id="id_form-' + form_id + '-status"]').attr('title');
                 if ( title == '--------------' ){
                     reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Validated without selecting Aegypt certainty</span></li>');
+                }
+                if ( flag_title == 'flagged' ){
+                    if( $("#id_form-" + id_string + "-tiger_certainty_notes").val() == "" ) {
+                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Flagged without internal Aedes certainty comments</span></li>');
+                    }
                 }
             });
             $("#save_block_modal").modal('show');
@@ -1336,6 +1348,7 @@
 
             var save_button = $("#save_button").click(function () {
                 //There's at least one of the forms which is marked as validated
+                var flagged_without_comment = false;
                 var validated_without_aedes_input = false;
                 if ($("[id*='validation_complete']").is(":checked")) {
                     var buttons = $('button[data-id*="aedes_certainty_value"]');
@@ -1346,8 +1359,18 @@
                             var validated_without_aedes_input = true;
                         }
                     }
+                    var statusbuttons = $('button[data-id*="-status"]');
+                    for(var index = 0; index < statusbuttons.size(); index++){
+                        var button_title = statusbuttons[index].attributes["title"].value;
+                        var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
+                        if(button_title == 'flagged' && checked){
+                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
+                                var flagged_without_comment = true;
+                            }
+                        }
+                    }
                     {% if request.user.userstat.is_expert %}
-                        if(validated_without_aedes_input){
+                        if(validated_without_aedes_input || flagged_without_comment){
                             //launch ok dialog and not save
                             setup_and_launch_mustfix_dialog();
                         }else{
