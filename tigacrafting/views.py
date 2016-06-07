@@ -421,7 +421,7 @@ def must_be_autoflagged(id_annotation_report, is_current_validated):
 
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
     this_user = request.user
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
@@ -446,6 +446,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             final_status = request.POST.get('final_status', final_status)
             version_uuid = request.POST.get('version_uuid', version_uuid)
             linked_id = request.POST.get('linked_id', linked_id)
+            tags_filter = request.POST.get('tags_filter', tags_filter)
             checked = request.POST.get('checked', checked)
             tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
             load_new_reports = request.POST.get('load_new_reports', load_new_reports)
@@ -465,7 +466,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             page = request.POST.get('page')
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else ''))
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + tags_filter) if tags_filter else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             scroll_position = request.GET.get('scroll_position', scroll_position)
@@ -477,6 +478,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             final_status = request.GET.get('final_status', final_status)
             version_uuid = request.GET.get('version_uuid', version_uuid)
             linked_id = request.GET.get('linked_id', linked_id)
+            tags_filter = request.GET.get('tags_filter', tags_filter)
             checked = request.GET.get('checked', checked)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             edit_mode = request.GET.get('edit_mode', edit_mode)
@@ -563,6 +565,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
         if linked_id and linked_id != 'na':
             all_annotations = all_annotations.filter(linked_id=linked_id)
+        if tags_filter:
+            tags_array = tags_filter.split(",")
+            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
+            all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
         if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na'):
             if year and year != 'all':
                 try:
@@ -642,6 +648,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args['final_status'] = final_status
         args['version_uuid'] = version_uuid
         args['linked_id'] = linked_id
+        args['tags_filter'] = tags_filter
         args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page

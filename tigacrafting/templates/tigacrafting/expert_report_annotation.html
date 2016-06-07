@@ -231,9 +231,7 @@
 
             {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
                 <strong>Ordered by:</strong> {{ orderby }}<br>
-                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty -
-                {{ site_certainty }},
-                Status - {{ status }}
+                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}, Tags - {% if tags_filter == '' %} None{% else %}{{ tags_filter }}{% endif %}
             {% endif %}
         {% endblock %}
             <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
@@ -648,6 +646,7 @@
     <input id="next_page_input" type="text" name="page" style="display: none;"
            value="">
 
+    <input id="tags_filter_input" type="text" name="tags_filter" style="display: none;" value="{{ tags_filter }}">
     </form>
 
 
@@ -841,6 +840,13 @@
                                         <option value="flagged">Flagged</option>
                                         <option value="hidden">Hidden</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="status_select" class="col-sm-4 control-label">Tags:</label>
+                                <div class="col-sm-8">
+                                    <ul id="tags_filter">
+                                    </ul>
                                 </div>
                             </div>
                         </form>
@@ -1137,6 +1143,18 @@
             }
         }
 
+        function buildFilterTagsUI(){
+            var tag_string = $("#tags_filter_input").val();
+            var tag_array = [];
+            if(tag_string){
+                tag_array = tag_string.split(",");
+                $("#tags_filter").tagit("removeAll");
+                for(var i = 0; i < tag_array.length; i++){
+                    $("#tags_filter").tagit("createTag", tag_array[i]);
+                }
+            }
+        }
+
         $( document ).ready(function() {
             var total_forms = $("#id_form-TOTAL_FORMS").val();
             index_to_id = {};
@@ -1219,6 +1237,34 @@
 
                 inputToTags('{{ form.instance.id }}');
             {% endfor %}
+
+            $("#tags_filter").tagit({
+                autocomplete: { source: function( request, response ) {
+                    $.ajax({
+                        url: "/api/tags/",
+                        dataType: "json",
+                        data: {
+                            featureClass: "P",
+                            style: "full",
+                            maxRows: 12,
+                            name: request.term
+                        },
+                        success: function( data ) {
+                             response( $.map( data, function( item ) {
+                                return {
+                                    label: item.name,
+                                    value: item.name
+                                }
+                             }));
+                        }
+                    });
+                },
+                minLength: 2
+                }
+            });
+
+            buildFilterTagsUI();
+
         });
     </script>
 
@@ -1324,6 +1370,7 @@
             $("#final_status_input").val('na');
             $("#version_uuid_input").val('na');
             $("#linked_id_input").val('na');
+            $("#tags_filter_input").val('');
             $("#load_new_reports_input").val('F');
         }
 
@@ -1426,16 +1473,23 @@
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
                 var this_status = $("#status_select").val();
+                var filter_tags = $("#tags_filter").tagit("assignedTags");
+                var str_tags = '';
+                if(filter_tags){
+                    str_tags = filter_tags.join(",");
+                }
                 $("#orderby_input").val(this_orderby);
                 $("#tiger_certainty_input").val(this_tiger_certainty);
                 $("#site_certainty_input").val(this_site_certainty);
                 $("#status_input").val(this_status);
                 $("#pending_input").val(pending);
+                $("#tags_filter_input").val(str_tags);
                 var qp = '?orderby=' + this_orderby;
                 qp += '&tiger_certainty=' + this_tiger_certainty;
                 qp += '&site_certainty=' + this_site_certainty;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;
+                qp += '&tags_filter=' + str_tags;
                 return(qp)
             }
 

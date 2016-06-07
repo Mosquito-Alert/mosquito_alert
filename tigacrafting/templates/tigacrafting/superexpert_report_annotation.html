@@ -246,14 +246,21 @@
             var this_tiger_certainty = $("#tiger_certainty_select").val();
             var this_site_certainty = $("#site_certainty_select").val();
             var this_status = $("#status_select").val();
+            var filter_tags = $("#tags_filter").tagit("assignedTags");
+            var str_tags = '';
+            if(filter_tags){
+                str_tags = filter_tags.join(",");
+            }
             $("#orderby_input").val(this_orderby);
             $("#tiger_certainty_input").val(this_tiger_certainty);
             $("#site_certainty_input").val(this_site_certainty);
             $("#status_input").val(this_status);
             $("#pending_input").val(pending);
+            $("#tags_filter_input").val(str_tags);
             var qp = '?orderby=' + this_orderby;
             qp += '&tiger_certainty=' + this_tiger_certainty;
             qp += '&site_certainty=' + this_site_certainty;
+            qp += '&tags_filter=' + str_tags;
             qp += '&status=' + this_status;
             qp += '&pending=' + pending;
             if (flagged_btn.hasClass("active")) {
