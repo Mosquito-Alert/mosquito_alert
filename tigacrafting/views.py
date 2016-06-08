@@ -567,7 +567,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             all_annotations = all_annotations.filter(linked_id=linked_id)
         if tags_filter:
             tags_array = tags_filter.split(",")
+            # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
+            # any expert has put on the report
+            # these are all (not only yours, but also) the reports that contain the filtered tag
             everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
+            # we want the annotations of the reports which contain the tag(s)
             all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
         if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na'):
             if year and year != 'all':
@@ -718,7 +722,7 @@ def expert_status(request):
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note=''):
     args = {}
     args.update(csrf(request))
-    this_user = request.user
+    #this_user = request.user
     PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
     if request.method == 'POST':
         save_formset = request.POST.get('save_formset', "F")

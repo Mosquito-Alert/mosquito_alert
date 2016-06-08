@@ -10,8 +10,7 @@
 
     {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
     <strong>Ordered by:</strong> {{ orderby }}<br>
-    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status -
-    {{ status }}
+    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}, Tags - {% if tags_filter == '' %} None{% else %}{{ tags_filter }}{% endif %}
     {% endif %}
 {% endblock %}
 
