@@ -515,8 +515,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         grabbed_reports = user_stats.grabbed_reports
                     for this_report in reports_to_take:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                        who_has = this_report.get_who_has()
-                        if who_has == '':
+                        who_has_count = this_report.get_who_has_count()
+                        if who_has_count == 0 or who_has_count == 1:
                             #No one has the report, is simplified
                             new_annotation.simplified_annotation = True
                         grabbed_reports += 1
@@ -719,10 +719,9 @@ def expert_status(request):
         return HttpResponseRedirect(reverse('login'))
 
 @login_required
-def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note=''):
+def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
     args = {}
     args.update(csrf(request))
-    #this_user = request.user
     PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
     if request.method == 'POST':
         save_formset = request.POST.get('save_formset', "F")
@@ -730,25 +729,36 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         if save_formset == "T":
             formset = PictureValidationFormSet(request.POST)
             if formset.is_valid():
-                formset.save()
+                for f in formset:
+                    report = f.save(commit=False)
+                    #check that the report hasn't been assigned to anyone before saving, as a precaution to not hide assigned reports
+                    who_has = report.get_who_has()
+                    if who_has == '':
+                        report.save()
         page = request.POST.get('page')
         visibility = request.POST.get('visibility')
         usr_note = request.POST.get('usr_note')
+        type = request.POST.get('type', type)
         if not page:
             page = '1'
-        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note))
+        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
     else:
         tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+        type = request.GET.get('type', type)
         visibility = request.GET.get('visibility', visibility)
         usr_note = request.GET.get('usr_note', usr_note)
     # #345 is a special tag to exclude reports
-    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
     if visibility == 'visible':
         new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
     elif visibility == 'hidden':
         new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
     if usr_note and usr_note != '':
         new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
+    if type == 'adult':
+        new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
+    elif type == 'site':
+        new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
     paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
     page = request.GET.get('page', 1)
     try:
@@ -766,6 +776,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     args['tasks_per_page'] = tasks_per_page
     args['visibility'] = visibility
     args['usr_note'] = usr_note
+    args['type'] = type
     n_query_records = new_reports_unfiltered.count()
     args['n_query_records'] = n_query_records
     args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)

@@ -286,10 +286,15 @@
 
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
-            <div class="col-md-12">
+            <div class="col-md-11">
                 <h4><strong>{{ form.instance.report.type|capfirst }}
                     Report {{ form.instance.report.version_UUID }}</strong>
                     {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+            </div>
+            <div class="col-md-1">
+                <h4>
+                    <a href="mailto:?subject=Report with id {{form.instance.report}}&body=http://{{ request.META.HTTP_HOST }}{% url 'expert_report_annotation' %}?version_uuid={{form.instance.report}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>
+                </h4>
             </div>
         </div>
         {% block report_title_status_row %}
@@ -323,6 +328,7 @@
                             <strong>Aedes certainty:</strong><br>
                             <select id="aedes_certainty_value_{{ form.instance.id }}">
                                 <option value="">--------------</option>
+                                <option value="-3">Unclassified</option>
                                 <option class="red" value="4">Definitely Aedes aegypti</option>
                                 <option class="red" value="3">Probably Aedes aegypti</option>
                                 <option value="2">Definitely Aedes albopictus</option>
@@ -399,23 +405,7 @@
                     {% if form.instance.report.type == 'adult' %}
                         <strong>Aedes Certainty:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
-                            {% if form.instance.tiger_certainty_category == 2 %}
-                                {{ form.instance.get_tiger_certainty_category_display }}
-                            {% elif form.instance.tiger_certainty_category == 1 %}
-                                {{ form.instance.get_tiger_certainty_category_display }}
-                            {% elif form.instance.aegypti_certainty_category == 2 %}
-                                {{ form.instance.get_aegypti_certainty_category_display }}
-                            {% elif form.instance.aegypti_certainty_category == 1 %}
-                                {{ form.instance.get_aegypti_certainty_category_display }}
-                            {% elif form.instance.tiger_certainty_category == 0 and form.instance.aegypti_certainty_category == 0 %}
-                                {{ form.instance.get_tiger_certainty_category_display }}
-                            {% elif form.instance.tiger_certainty_category == -1 and form.instance.aegypti_certainty_category == -1 %}
-                                {{ form.instance.get_tiger_certainty_category_display }}
-                            {% elif form.instance.tiger_certainty_category == -2 and form.instance.aegypti_certainty_category == -2 %}
-                                {{ form.instance.get_tiger_certainty_category_display }}
-                            {% else %}
-                                --------
-                            {% endif %}
+                            {{ form.instance.report.get_final_combined_expert_category }}
                         </div>
                         <strong>Internal Aedes Certainty Comments:</strong><br>
                         <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
@@ -502,7 +492,8 @@
                 <br>
                 <strong>User Notes</strong><br>
 
-                <div style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">
+                <button type="button" id="btn_copynote_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Copy user note to public note"><span class="glyphicon glyphicon-file" aria-hidden="true"></span></button>
+                <div id="user_note_{{ form.instance.id }}" style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">
                     {{ form.instance.report.note }}
                 </div>
 
@@ -575,10 +566,9 @@
 
                 //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + "{{ form.aegypti_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
                 //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
-                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + "tags_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
+                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + "message_to_user_{{ form.instance.id }}, #" + "tags_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
-
 
 
                 var revise_btn = $("#revise_btn_" + this_id).click(function () {
@@ -586,6 +576,8 @@
                     hidden_photo_fields{{ form.instance.id }}.show();
                     $("#" + revise_id_{{ form.instance.id }}).val(true);
                     $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', false);
+                    //Select by default current status in dropdown, photo, public note and note to user
+                    copy_revise_form_fields({{ form.instance.id }});
                 });
 
                 var confirm_btn = $("#confirm_btn_" + this_id).click(function (e) {
@@ -599,6 +591,7 @@
                         hidden_photo_fields{{ form.instance.id }}.hide();
                         $("#" + revise_id_{{ form.instance.id }}).val(false);
                         $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', true);
+                        clear_form('{{ form.instance.id }}');
                     }
                 });
 
@@ -987,6 +980,74 @@
 
         var index_to_id = {};
         var id_to_index = {};
+        var final_status_table = {};
+
+        function clear_form(form_id){
+            //Clear UI
+            $("#aedes_certainty_value_" + form_id).selectpicker('val','');
+            //Clear associated hidden input
+            $("#id_form-" + id_to_index[form_id] + "-tiger_certainty_category").val('');
+
+            //Clear UI
+            $("#public_note_" + form_id).val('');
+            //Clear associated hidden input
+            $("#id_form-" + id_to_index[form_id] + "-edited_user_notes").val('');
+
+            $("#message_to_user_" + form_id).val('');
+
+            //Clear UI
+            $("#tags_" + form_id).tagit("removeAll");
+            //Clear associated hidden input
+            $("#id_form-" + id_to_index[form_id] + "-tags").val('');
+
+            $("#id_form-" + id_to_index[form_id] + "-tiger_certainty_notes").val('');
+            $("#id_form-" + id_to_index[form_id] + "-status").selectpicker('val','');
+            $("#id_form-" + id_to_index[form_id] + "-linked_id").val('');
+            $("#id_form-" + id_to_index[form_id] + "-message_for_user").val('');
+        }
+
+        function clean_text(strInputCode){
+            return strInputCode.replace(/<\/?[^>]+(>|$)/g, "");
+        }
+
+        function copy_revise_form_fields(form_id){
+            var data = final_status_table[form_id];
+            if( data.score <= 0){
+                $("#aedes_certainty_value_" + form_id).selectpicker('val',data.score);
+                setTigerCertainty(data.score, form_id);
+                setAegyptiCertainty(data.score, form_id);
+            }else{
+                if( data.category && data.category.indexOf("albopictus") > -1){
+                    if(data.score == 2){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','2');
+                        setTigerCertainty("2",form_id);
+                    }else if(data.score == 1){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','1');
+                        setTigerCertainty("1",form_id);
+                    }
+                }else if( data.category && data.category.indexOf("aegypti") > -1){
+                    if(data.score == 2){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','4');
+                        setAegyptiCertainty("2", form_id);
+                    }else if(data.score == 1){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','3');
+                        setAegyptiCertainty("1", form_id);
+                    }
+                }
+            }
+
+            var user_note_clean_text = clean_text(data.user_note);
+            $("#user_note_" + form_id).val(user_note_clean_text);
+            $("#id_form-" + id_to_index[form_id] + "-message_for_user").val(user_note_clean_text);
+
+            var public_note_clean_text = clean_text(data.public_note);
+            $("#public_note_" + form_id).val(public_note_clean_text);
+            $("#id_form-" + id_to_index[form_id] + "-edited_user_notes").val(public_note_clean_text);
+
+            if(data.photo){
+                $('#' + data.photo).attr('checked', true);
+            }
+        }
 
         function aedesValueToInput(value, input_id){
             if(value == '4'){
@@ -1163,7 +1224,19 @@
                 index_to_id[i] = $("#id_form-" + i + "-id").val();
                 id_to_index[$("#id_form-" + i + "-id").val()] = i;
             }
+            var final_status;
             {% for form in formset %}
+
+                final_status = {
+                    score: {{form.instance.report.get_final_combined_expert_score}},
+                    category: '{{form.instance.report.get_final_combined_expert_category}}',
+                    status: {{form.instance.report.get_final_expert_status }},
+                    photo: '{{form.instance.report.get_final_photo_html.id}}',
+                    public_note: '{{form.instance.report.get_final_public_note | linebreaks }}',
+                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaks }}'
+                };
+
+                final_status_table[{{ form.instance.id }}] = final_status;
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
                 {% if form.instance.simplified_annotation == True %}
@@ -1176,6 +1249,11 @@
                 });
                 inputToPublicNoteValue('{{ form.instance.id }}');
                 inputToUserMessageValue('{{ form.instance.id }}');
+
+                $("#btn_copynote_{{ form.instance.id }}").click(function() {
+                    var txt = $("#user_note_{{ form.instance.id }}").text();
+                    $("#public_note_{{ form.instance.id }}").val(txt);
+                });
 
                 $("#btn_gp_{{ form.instance.id }}").click(function() {
                     var message = "Muy buena foto. Gracias por participar.";

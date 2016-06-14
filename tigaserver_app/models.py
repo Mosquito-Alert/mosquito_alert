@@ -1040,6 +1040,11 @@ class Report(models.Model):
                 result += ', '
         return result
 
+    def get_who_has_count(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        i = these_annotations.count()
+        return i
+
     def get_who_has_bootstrap(self):
         result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)

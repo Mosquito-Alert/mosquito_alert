@@ -12,6 +12,7 @@
         .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px; margin-bottom: 10px;}
         .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
         .p-small { font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 12px; color: #fff;}
+        .site { background-color: #4169E1; }
     </style>
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
@@ -104,6 +105,16 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label for="type_select" class="col-sm-4 control-label">Report type:</label>
+                            <div class="col-sm-8">
+                                <select id="type_select" class="selectpicker show-tick form-control">
+                                    <option value="adult">Adults</option>
+                                    <option value="site">Breeding sites</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label for="usernote_filter" class="col-sm-4 control-label">User note contains text:</label>
                             <div class="col-sm-8">
                                 <input id="usernote_filter" type="text" maxlength="20" name="usernote_filter">
@@ -123,7 +134,7 @@
 <div class="container">
     <div class="starter-template">
         <h1>Picture Filter</h1>
-        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}'
+        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type }}
         <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
         <div style="text-align: left">
             <h4>Instructions</h4>
@@ -150,11 +161,12 @@
         <div class="grid">
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
-                    <div class="grid-item-large valid">
+                    <div class="grid-item-large valid {{form.instance.type}}">
                         <p class="p-small"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.server_upload_time }}</p>
                         <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
+                        {% if form.instance.type == 'site' %}<p class="p-medium"><span class="label label-warning">This is a breeding site</span></p>{% endif %}
                         {% for hidden in form.hidden_fields %}
                             {{ hidden }}
                         {% endfor %}
@@ -173,6 +185,7 @@
         <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;" value="{{ tasks_per_page }}">
         <input id="visibility_input" type="text" name="visibility" style="display: none;" value="{{ visibility }}">
         <input id="usr_note_input" type="text" name="usr_note" style="display: none;" value="{{ usr_note }}">
+        <input id="type_input" type="text" name="type" style="display: none;" value="{{ type }}">
     </form>
 
     {% if objects.has_next or objects.has_previous %}
@@ -283,23 +296,11 @@
             function query_selectors() {
                 var this_visibility = $("#visibility_select").val();
                 var this_usr_note = $("#usernote_filter").val();
+                var this_type = $("#type_select").val();
                 $("#visibility_input").val(this_visibility);
                 $("#usr_note_input").val(this_usr_note);
-                /*var this_orderby = $("#orderby_select").val();
-                var this_tiger_certainty = $("#tiger_certainty_select").val();
-                var this_site_certainty = $("#site_certainty_select").val();
-                var this_status = $("#status_select").val();
-                $("#orderby_input").val(this_orderby);
-                $("#tiger_certainty_input").val(this_tiger_certainty);
-                $("#site_certainty_input").val(this_site_certainty);
-                $("#status_input").val(this_status);
-                $("#pending_input").val(pending);
-                var qp = '?orderby=' + this_orderby;
-                qp += '&tiger_certainty=' + this_tiger_certainty;
-                qp += '&site_certainty=' + this_site_certainty;
-                qp += '&status=' + this_status;
-                qp += '&pending=' + pending;*/
-                var qp = '?visibility=' + this_visibility + '&usr_note=' + this_usr_note;
+                $("#type_input").val(this_type);
+                var qp = '?visibility=' + this_visibility + '&usr_note=' + this_usr_note + '&type=' + this_type;
                 return(qp)
             }
 
@@ -313,5 +314,6 @@
 
             $("#visibility_select").val("{{ visibility }}");
             $("#usernote_filter").val("{{ usr_note }}");
+            $("#type_select").val("{{ type }}");
 </script>
 </html>
