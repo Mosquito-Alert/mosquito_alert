@@ -134,6 +134,16 @@ mission_version null. Defaults to 100.
         return Response(serializer.data)
 
 
+@api_view(['GET'])
+def get_photo(request):
+    if request.method == 'GET':
+        user_id = request.QUERY_PARAMS.get('user_id', -1)
+        #get user reports by user id
+        these_reports = Report.objects.filter(user_id=user_id).values('version_UUID').distinct()
+        these_photos = Photo.objects.filter(report_id__in=these_reports)
+        serializer = PhotoSerializer(these_photos)
+        return Response(serializer.data)
+
 
 @api_view(['POST'])
 def post_photo(request):
