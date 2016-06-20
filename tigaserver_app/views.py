@@ -571,7 +571,7 @@ def user_notifications(request):
         id = request.QUERY_PARAMS.get('id', -1)
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
-        ack = request.QUERY_PARAMS.get('acknowledged', False)
+        ack = request.QUERY_PARAMS.get('acknowledged', True)
         this_notification.acknowledged = ack
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
