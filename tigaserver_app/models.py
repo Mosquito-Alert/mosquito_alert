@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User, Group
 from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES
 from collections import Counter
+from datetime import datetime
 
 
 class TigaUser(models.Model):
@@ -1390,3 +1391,13 @@ class CoverageAreaMonth(models.Model):
 
     class Meta:
         unique_together = ("lat", "lon", "year", "month")
+
+class Notification(models.Model):
+    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
+    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
+    expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
+    date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
+    expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
+    photo_url = models.TextField('Url to picture that originated the comment', blank=True, help_text='Relative url to the public report photo')
+    acknowledged = models.BooleanField(default=False,help_text='This is set to True through the public API, when the user signals that the message has been received')

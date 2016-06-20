@@ -1,5 +1,5 @@
 from django.contrib import admin
-from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea
 from rest_framework.authtoken.models import Token
 import csv
@@ -253,6 +253,8 @@ class CoverageAreaAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('report', 'user', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url', 'acknowledged')
 
 admin.site.register(TigaUser, UserAdmin)
 admin.site.register(Report, ReportAdmin)
@@ -262,3 +264,4 @@ admin.site.register(Mission, MissionAdmin)
 admin.site.register(Photo, PhotoAdmin)
 admin.site.register(ReportResponse, ReportResponseAdmin)
 admin.site.register(CoverageArea, CoverageAreaAdmin)
+admin.site.register(Notification, NotificationAdmin)

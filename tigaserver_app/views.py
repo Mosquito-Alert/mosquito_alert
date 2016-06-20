@@ -12,10 +12,11 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer
-from tigaserver_app.models import TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
+from tigaserver_app.serializers import NotificationSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer
+from tigaserver_app.models import Notification, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 from taggit.models import Tag
+from django.shortcuts import get_object_or_404
 
 
 
@@ -551,3 +552,27 @@ class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     filter_class = TagFilter
+
+@api_view(['GET','POST'])
+def user_notifications(request):
+    if request.method == 'GET':
+        user_id = request.QUERY_PARAMS.get('user_id', -1)
+        acknowledged = 'ignore'
+        if request.QUERY_PARAMS.get('acknowledged') != None:
+            acknowledged = request.QUERY_PARAMS.get('acknowledged', False)
+        all_notifications = Notification.objects.all()
+        if user_id != -1:
+            all_notifications = all_notifications.filter(user_id=user_id)
+        if acknowledged != 'ignore':
+            all_notifications = all_notifications.filter(acknowledged=acknowledged)
+        serializer = NotificationSerializer(all_notifications)
+        return Response(serializer.data)
+    if request.method == 'POST':
+        id = request.QUERY_PARAMS.get('id', -1)
+        queryset = Notification.objects.all()
+        this_notification = get_object_or_404(queryset,pk=id)
+        ack = request.QUERY_PARAMS.get('acknowledged', False)
+        this_notification.acknowledged = ack
+        this_notification.save()
+        serializer = NotificationSerializer(this_notification)
+        return Response(serializer.data)

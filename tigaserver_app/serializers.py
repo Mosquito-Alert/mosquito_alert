@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from taggit.models import Tag
-from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth
 
 
@@ -207,3 +207,18 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id','name')
+
+class NotificationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    report_id = serializers.CharField()
+    user_id = serializers.CharField()
+    expert_id = serializers.IntegerField()
+    date_comment = serializers.Field()
+    expert_comment = serializers.CharField()
+    expert_html = serializers.CharField()
+    photo_url = serializers.CharField()
+    acknowledged = serializers.BooleanField()
+
+    class Meta:
+        model = Notification
+        fields = ('id','report_id','user_id','expert_id','date_comment','expert_comment','expert_html','photo_url','acknowledged')
