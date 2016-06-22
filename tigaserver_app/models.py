@@ -716,10 +716,10 @@ class Report(models.Model):
         mean_score = -3
         if super_scores:
             for this_score in super_scores:
-                if this_score:
-                    status['albopictus_classified_by_superexpert'] = True
-                    superexpert_score_num = superexpert_score_num + 1
-                    sum_scores += this_score
+                #if this_score:
+                status['albopictus_classified_by_superexpert'] = True
+                superexpert_score_num = superexpert_score_num + 1
+                sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
         status['albopictus_superexpert_classification_count'] = superexpert_score_num
         status['albopictus_superexpert_classification_score'] = mean_score
@@ -732,10 +732,10 @@ class Report(models.Model):
         mean_score = -3
         if super_scores:
             for this_score in super_scores:
-                if this_score:
-                    status['aegypti_classified_by_superexpert'] = True
-                    superexpert_score_num = superexpert_score_num + 1
-                    sum_scores += this_score
+                #if this_score:
+                status['aegypti_classified_by_superexpert'] = True
+                superexpert_score_num = superexpert_score_num + 1
+                sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
         status['aegypti_superexpert_classification_count'] = superexpert_score_num
         status['aegypti_superexpert_classification_score'] = mean_score
@@ -748,10 +748,10 @@ class Report(models.Model):
         mean_score = -3
         if expert_scores:
             for this_score in expert_scores:
-                if this_score:
-                    status['albopictus_classified_by_expert'] = True
-                    expert_score_num = expert_score_num + 1
-                    sum_scores += this_score
+                #if this_score:
+                status['albopictus_classified_by_expert'] = True
+                expert_score_num = expert_score_num + 1
+                sum_scores += this_score
             mean_score = sum_scores / float(expert_scores.count())
         status['albopictus_expert_classification_count'] = expert_score_num
         status['albopictus_expert_classification_score'] = mean_score
@@ -765,10 +765,10 @@ class Report(models.Model):
         mean_score = -3
         if expert_scores:
             for this_score in expert_scores:
-                if this_score:
-                    status['aegypti_classified_by_expert'] = True
-                    expert_score_num += 1
-                    sum_scores += this_score
+                #if this_score:
+                status['aegypti_classified_by_expert'] = True
+                expert_score_num += 1
+                sum_scores += this_score
             mean_score = sum_scores / float(expert_scores.count())
         status['aegypti_expert_classification_count'] = expert_score_num
         status['aegypti_expert_classification_score'] = mean_score

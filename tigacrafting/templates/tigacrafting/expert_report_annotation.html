@@ -491,8 +491,9 @@
                 </div>
                 <br>
                 <strong>User Notes</strong><br>
-
+                {% if form.instance.simplified_annotation == False %}
                 <button type="button" id="btn_copynote_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Copy user note to public note"><span class="glyphicon glyphicon-file" aria-hidden="true"></span></button>
+                {% endif %}
                 <div id="user_note_{{ form.instance.id }}" style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">
                     {{ form.instance.report.note }}
                 </div>
@@ -1007,7 +1008,11 @@
         }
 
         function clean_text(strInputCode){
-            return strInputCode.replace(/<\/?[^>]+(>|$)/g, "");
+            var retVal = strInputCode.replace(/<\/?[^>]+(>|$)/g, "");
+            if(retVal=='None'){
+                return "";
+            }
+            return retVal;
         }
 
         function copy_revise_form_fields(form_id){
@@ -1046,22 +1051,23 @@
 
             if(data.photo){
                 $('#' + data.photo).attr('checked', true);
+                $("#id_form-" + id_to_index[form_id] + "-best_photo").val(data.photo);
             }
         }
 
         function aedesValueToInput(value, input_id){
             if(value == '4'){
-                //setTigerCertainty("-2", input_id);
+                setTigerCertainty("", input_id);
                 setAegyptiCertainty("2", input_id);
             }else if(value == '3'){
-                //setTigerCertainty("-1", input_id);
+                setTigerCertainty("", input_id);
                 setAegyptiCertainty("1", input_id);
             }else if(value == '2'){
                 setTigerCertainty("2", input_id);
-                //setAegyptiCertainty("-2", input_id);
+                setAegyptiCertainty("", input_id);
             }else if(value == '1'){
                 setTigerCertainty("1", input_id);
-                //setAegyptiCertainty("-1", input_id);
+                setAegyptiCertainty("", input_id);
             }else if(value == '0'){
                 setTigerCertainty("0", input_id);
                 setAegyptiCertainty("0", input_id);
@@ -1071,6 +1077,9 @@
             }else if(value == '-2'){
                 setTigerCertainty("-2", input_id);
                 setAegyptiCertainty("-2", input_id);
+            }else if(value == '-3'){
+                setTigerCertainty("", input_id);
+                setAegyptiCertainty("", input_id);
             }
         }
 
@@ -1088,7 +1097,27 @@
             var i = 0;
             var tiger_val = getTigerCertainty(input_id);
             var aegypti_val = getAegyptiCertainty(input_id);
-            if( tiger_val == '-2' && aegypti_val == '2' ){
+
+            if ( tiger_val == '' && aegypti_val != '' ){
+                //aegypti
+                if(aegypti_val == '2'){
+                    $("#aedes_certainty_value_" + input_id).val('4');
+                }else if(aegypti_val == '1'){
+                    $("#aedes_certainty_value_" + input_id).val('3');
+                }
+            }else if ( tiger_val != '' && aegypti_val == '' ){
+                //albopictus
+                if(tiger_val == '2'){
+                    $("#aedes_certainty_value_" + input_id).val('2');
+                }else if(tiger_val == '1'){
+                    $("#aedes_certainty_value_" + input_id).val('1');
+                }
+            }else{
+                //any
+                $("#aedes_certainty_value_" + input_id).val(tiger_val);
+            }
+
+            /*if( tiger_val == '-2' && aegypti_val == '2' ){
                 //setDropDown "4"
                 $("#aedes_certainty_value_" + input_id).val('4');
             }else if( tiger_val == '-1' && aegypti_val == '1'){
@@ -1110,7 +1139,7 @@
                 $("#aedes_certainty_value_" + input_id).val('-2');
             }else{
                 $("#aedes_certainty_value_" + input_id).val('');
-            }
+            }*/
         }
 
         function updateHiddenTagFieldsFromUI(){
@@ -1392,7 +1421,7 @@
                     if ($(this).siblings("[id*='revise']").val() == "false") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:green">Confirming Experts</span></li>');
                     }
-                    else if ($(this).siblings(name * ['photo']).val() == "") {
+                    else if ($(this).siblings("[name*='photo']").val() == "") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Revising without photo</span></li>');
                     }
                     else {
@@ -1400,7 +1429,7 @@
 
                     }
                 {% else %}
-                    if ($(this).siblings(name * ['photo']).val() == "") {
+                    if ($(this).siblings("[name*='photo']").val() == "") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">No photo selected</span></li>');
                     }
                     else {
@@ -1424,7 +1453,7 @@
                 var flag_title = $('button[data-id="id_form-' + id_string + '-status"]').attr('title');
                 //var flag_title = $('button[data-id="id_form-' + form_id + '-status"]').attr('title');
                 if ( title == '--------------' ){
-                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Validated without selecting Aegypt certainty</span></li>');
+                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Validated without selecting Aedes certainty</span></li>');
                 }
                 if ( flag_title == 'flagged' ){
                     if( $("#id_form-" + id_string + "-tiger_certainty_notes").val() == "" ) {

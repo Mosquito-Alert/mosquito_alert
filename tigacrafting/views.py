@@ -1,5 +1,4 @@
 from pydoc import visiblename
-
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 import requests
@@ -22,6 +21,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
+from tigaserver_app.models import Notification
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -420,6 +420,17 @@ def must_be_autoflagged(id_annotation_report, is_current_validated):
     return False
 
 
+def issue_notification(report_annotation):
+    notification = Notification(report=report_annotation.report,user=report_annotation.report.user,expert=report_annotation.user)
+    notification.expert_comment = "!Uno de sus informes ha sido validado por un experto!"
+    notification.expert_html = report_annotation.report.get_photo_html()
+    if report_annotation.message_for_user:
+        notification.expert_html = notification.expert_html + "</br> " + report_annotation.message_for_user
+    photo = report_annotation.report.get_final_photo_html()
+    if photo:
+        notification.photo_url = photo.get_medium_url()
+    notification.save()
+
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
     this_user = request.user
@@ -458,6 +469,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         one_form = f.save(commit=False)
                         if must_be_autoflagged(one_form.id,one_form.validation_complete):
                             one_form.status = 0
+                        if(one_form.validation_complete == True):
+                            issue_notification(one_form)
                         one_form.save()
                         f.save_m2m()
                     #formset.save()
