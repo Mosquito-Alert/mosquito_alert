@@ -1,10 +1,11 @@
+# coding=utf-8
 from pydoc import visiblename
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
 from tigacrafting.models import *
-from tigaserver_app.models import Photo, Report
+from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
 from django.db.models import Count
 import pytz
@@ -28,7 +29,7 @@ from operator import attrgetter
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
 import urllib
-
+from itertools import chain
 
 
 def photos_to_tasks():
@@ -760,18 +761,27 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         type = request.GET.get('type', type)
         visibility = request.GET.get('visibility', visibility)
         usr_note = request.GET.get('usr_note', usr_note)
+
     # #345 is a special tag to exclude reports
-    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    reports_imbornal = ReportResponse.objects.filter( Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Type of breeding site', answer='Storm drain')).exclude(report__creation_time__year=2014).values('report').distinct()
+
+    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered_sites = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+
+    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+    #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    if type == 'adult':
+        #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
+        new_reports_unfiltered = new_reports_unfiltered_adults
+    elif type == 'site':
+        #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
+        new_reports_unfiltered = new_reports_unfiltered_sites
     if visibility == 'visible':
         new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
     elif visibility == 'hidden':
         new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
     if usr_note and usr_note != '':
         new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
-    if type == 'adult':
-        new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
-    elif type == 'site':
-        new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
     paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
     page = request.GET.get('page', 1)
     try:
