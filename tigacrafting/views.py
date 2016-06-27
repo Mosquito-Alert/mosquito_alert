@@ -439,6 +439,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
+    this_user_is_reritja = (this_user.id == 25)
 
     if this_user_is_expert or this_user_is_superexpert:
         args = {}
@@ -470,11 +471,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         one_form = f.save(commit=False)
                         if must_be_autoflagged(one_form.id,one_form.validation_complete):
                             one_form.status = 0
-                        if(one_form.validation_complete == True):
+                        if(this_user_is_reritja and one_form.validation_complete == True):
                             issue_notification(one_form)
                         one_form.save()
                         f.save_m2m()
-                    #formset.save()
                 else:
                     return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
             page = request.POST.get('page')

@@ -163,6 +163,7 @@
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
                     <div class="grid-item-large valid {{form.instance.type}}">
+                        <a href="/single_report_map/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"></span></a>
                         <p class="p-small"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.server_upload_time }}</p>
