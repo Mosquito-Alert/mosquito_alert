@@ -769,6 +769,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     new_reports_unfiltered_sites = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
 
     new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+    #new_reports_unfiltered = filter(lambda x: not x.deleted and x.latest_version, new_reports_unfiltered)
+
     #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
     if type == 'adult':
         #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
@@ -782,6 +784,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
     if usr_note and usr_note != '':
         new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
+
     paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
     page = request.GET.get('page', 1)
     try:
