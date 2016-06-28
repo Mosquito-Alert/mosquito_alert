@@ -31,6 +31,15 @@ from django.contrib.auth.models import User, Group
 import urllib
 from itertools import chain
 
+def get_current_domain(request):
+    if request.META['HTTP_HOST'] != '':
+        return request.META['HTTP_HOST']
+    if settings.DEBUG:
+        current_domain = 'humboldt.ceab.csic.es'
+    else:
+        current_domain = 'tigaserver.atrapaeltigre.com'
+    return current_domain
+
 
 def photos_to_tasks():
     these_photos = Photo.objects.filter(crowdcraftingtask=None).exclude(report__hide=True).exclude(hide=True)
@@ -420,21 +429,25 @@ def must_be_autoflagged(id_annotation_report, is_current_validated):
                 return True
     return False
 
-
-def issue_notification(report_annotation):
+# This can be called from outside the server, so we need current_domain for absolute urls
+def issue_notification(report_annotation,current_domain):
     notification = Notification(report=report_annotation.report,user=report_annotation.report.user,expert=report_annotation.user)
-    notification.expert_comment = "!Uno de sus informes ha sido validado por un experto!"
-    notification.expert_html = report_annotation.report.get_photo_html()
+    notification.expert_comment = "¡Uno de sus informes ha sido validado por un experto!"
+    if report_annotation.report.get_final_photo_url_for_notification():
+        notification.expert_html = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
     if report_annotation.message_for_user:
         notification.expert_html = notification.expert_html + "</br> " + report_annotation.message_for_user
-    photo = report_annotation.report.get_final_photo_html()
+    photo = None
+    if report_annotation.report.get_final_photo_url_for_notification():
+        photo = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
     if photo:
-        notification.photo_url = photo.get_medium_url()
+        notification.photo_url = photo
     notification.save()
 
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
     this_user = request.user
+    current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
@@ -472,7 +485,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                         if must_be_autoflagged(one_form.id,one_form.validation_complete):
                             one_form.status = 0
                         if(this_user_is_reritja and one_form.validation_complete == True):
-                            issue_notification(one_form)
+                            issue_notification(one_form,current_domain)
                         one_form.save()
                         f.save_m2m()
                 else:

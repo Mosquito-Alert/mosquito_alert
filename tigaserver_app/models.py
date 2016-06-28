@@ -1096,6 +1096,26 @@ class Report(models.Model):
             result += '<p>Status: ' + str(ano.statu) + '</p>'
         return result
 
+    def get_final_photo_url_for_notification(self):
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
+            super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
+            if super_photos:
+                winning_photo_id = Counter(super_photos).most_common()[0][0]
+                if winning_photo_id:
+                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
+                    if winning_photo and winning_photo.count() > 0:
+                        return Photo.objects.get(pk=winning_photo_id).get_medium_url()
+            return None
+        else:
+            expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, best_photo__isnull=False).values_list('best_photo', flat=True)
+            if expert_photos:
+                winning_photo_id = Counter(expert_photos).most_common()[0][0]
+                if winning_photo_id:
+                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
+                    if winning_photo and winning_photo.count() > 0:
+                        return Photo.objects.get(pk=winning_photo_id).get_medium_url()
+            return None
+
     def get_final_photo_html(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
             super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
