@@ -126,11 +126,8 @@ mission_version null. Defaults to 100.
     """
     if request.method == 'GET':
         these_missions = Mission.objects.filter(Q(id__gt=request.QUERY_PARAMS.get('id_gt', 0)),
-                                                Q(platform__exact=request.QUERY_PARAMS.get('platform', 'all')) | Q(
-                                                    platform__isnull=True) | Q(platform__exact='all'),
-                                                Q(mission_version__lte=request.QUERY_PARAMS.get(
-                                                    'version_lte',
-                                                                                               100)) | Q(mission_version__isnull=True)).order_by('id')
+                                                Q(platform__exact=request.QUERY_PARAMS.get('platform', 'all')) | Q(platform__isnull=True) | Q(platform__exact='all'),
+                                                Q(mission_version__lte=request.QUERY_PARAMS.get('version_lte',100)) | Q(mission_version__isnull=True)).order_by('id')
         serializer = MissionSerializer(these_missions)
         return Response(serializer.data)
 

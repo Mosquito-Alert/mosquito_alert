@@ -548,7 +548,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                             new_annotation.simplified_annotation = True
                         grabbed_reports += 1
                         new_annotation.save()
-                    if grabbed_reports != -1:
+                    if grabbed_reports != -1 and user_stats:
                         user_stats.grabbed_reports = grabbed_reports
                         user_stats.save()
         elif this_user_is_superexpert:

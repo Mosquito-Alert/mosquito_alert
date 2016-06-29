@@ -343,11 +343,11 @@
                     <div class="form-group">
                         <label>Public Note:</label>
                         <div>
-                            <button type="button" id="btn_gp_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Good picture!"><span class="glyphicon glyphicon-camera"></span><span class="glyphicon glyphicon-thumbs-up"></span></button>
-                            <button type="button" id="btn_bp_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Bad picture!"><span class="glyphicon glyphicon-camera"></span><span class="glyphicon glyphicon-thumbs-down"></span></button>
-                            <button type="button" id="btn_int_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Interesting"><span class="glyphicon glyphicon-star"></span></button>
+                            <button type="button" id="btn_gp_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Nice picture"><span class="glyphicon glyphicon-star-empty"></span></button>
+                            <button type="button" id="btn_yes_thorax_pattern_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Yes thorax pattern"><span class="glyphicon glyphicon-thumbs-up"></span></button>
+                            <button type="button" id="btn_no_thorax_pattern_{{ form.instance.id }}" class="btn btn-success btn-sm" title="No thorax pattern"><span class="glyphicon glyphicon-thumbs-down"></span></button>
+                            <button type="button" id="btn_not_sure_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Not sure photo"><span class="glyphicon glyphicon-camera"></span></button>
                             <button type="button" id="btn_other_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Other species"><span class="glyphicon glyphicon-remove"></span></button>
-                            <button type="button" id="btn_discovery_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-exclamation-sign"></span></button>
                         </div>
                         <div class="controls field-public_note" data-placement="top" title="" data-toggle="tooltip" data-original-title="Notes to display on public map">
                             <textarea id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
@@ -355,6 +355,10 @@
                     </div>
                     <div class="form-group">
                         <label>Message to User:</label>
+                        <div>
+                            <button type="button" id="btn_pm_discovery_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-map-marker"></span></button>
+                            <button type="button" id="btn_pm_contact_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Contact"><span class="glyphicon glyphicon-envelope"></span></button>
+                        </div>
                         <div class="controls field-message_to_user" data-placement="top" title="" data-toggle="tooltip" data-original-title="Message that user will receive when viewing report on phone">
                             <textarea id="message_to_user_{{ form.instance.id }}" cols="40" rows="4"></textarea>
                         </div>
@@ -1285,29 +1289,39 @@
                 });
 
                 $("#btn_gp_{{ form.instance.id }}").click(function() {
-                    var message = "Muy buena foto. Gracias por participar.";
+                    var message = "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!";
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
-                $("#btn_bp_{{ form.instance.id }}").click(function() {
-                    var message = "La foto/s adjunta no nos permite identificar la especie con total seguridad. En la web del proyecto encontrará trucos para mejorar sus fotos. Gracias por participar.";
+                $("#btn_yes_thorax_pattern_{{ form.instance.id }}").click(function() {
+                    var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica raya blanca en el tórax, además de otras características. ¡Gracias por participar!";
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
-                $("#btn_int_{{ form.instance.id }}").click(function() {
-                    var message = "Interesante informe. Hay pocos registros de la especie en esta zona. Gracias por participar.";
+                $("#btn_no_thorax_pattern_{{ form.instance.id }}").click(function() {
+                    var message = "Con esta foto no podemos asegurar que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aún así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_not_sure_{{ form.instance.id }}").click(function() {
+                    var message = "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_other_{{ form.instance.id }}").click(function() {
-                    var message = "La foto/s adjuntas parecen ser de una especie diferente al mosquito tigre o el mosquito de la fiebre amarilla. En la web del proyecto encontrará trucos para reconocer mejor estas especies. Gracias por participar.";
+                    var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envían más fotos!";
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
-                $("#btn_discovery_{{ form.instance.id }}").click(function() {
-                    var message = "Esta información puede ser de gran interés. Enviadnos más imágenes por favor!";
-                    $("#public_note_{{ form.instance.id }}").val(message);
-                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                $("#btn_pm_discovery_{{ form.instance.id }}").click(function() {
+                    var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de este insecto. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
+                    $("#message_to_user_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
+                });
+                $("#btn_pm_contact_{{ form.instance.id }}").click(function() {
+                    var message = "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!";
+                    $("#message_to_user_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
                 });
                 $("#public_note_{{ form.instance.id }}").unbind();
                 $("#public_note_{{ form.instance.id }}").on('input', function (e) {
