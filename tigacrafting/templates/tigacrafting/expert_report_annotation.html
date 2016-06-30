@@ -1023,8 +1023,13 @@
             var data = final_status_table[form_id];
             if( data.score <= 0){
                 $("#aedes_certainty_value_" + form_id).selectpicker('val',data.score);
-                setTigerCertainty(data.score, form_id);
-                setAegyptiCertainty(data.score, form_id);
+                if( data.score == -3) {
+                    setTigerCertainty('', form_id);
+                    setAegyptiCertainty('', form_id);
+                } else {
+                    setTigerCertainty(data.score, form_id);
+                    setAegyptiCertainty(data.score, form_id);
+                }
             }else{
                 if( data.category && data.category.indexOf("albopictus") > -1){
                     if(data.score == 2){
