@@ -1045,6 +1045,8 @@
                 }
             }
 
+            $("#id_form-" + id_to_index[form_id] + "-status").selectpicker('val',data.status);
+
             var user_note_clean_text = clean_text(data.user_note);
             $("#user_note_" + form_id).val(user_note_clean_text);
             $("#id_form-" + id_to_index[form_id] + "-message_for_user").val(user_note_clean_text);
@@ -1685,7 +1687,7 @@
             gear.show();
             var qp = query_selectors();
             var selected_page = $("#page_input").val();
-            qp += selected_page;
+            qp += '&page=' + selected_page;
             $("#next_page_input").val(selected_page);
             background_save(qp);
         });

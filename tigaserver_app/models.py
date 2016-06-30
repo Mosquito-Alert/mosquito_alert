@@ -815,7 +815,8 @@ class Report(models.Model):
             classification['score'] = -3
             #return -3
         else:
-            if status['unclassified_by_all_experts'] == True:
+            #unclassified by everyone
+            if status['unclassified_by_all_experts'] == True and status['unclassified_by_superexpert'] == True:
                 classification['is_none'] = True
                 classification['score'] = -3
                 #return -3
