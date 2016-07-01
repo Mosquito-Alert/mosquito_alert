@@ -353,7 +353,7 @@
                             <textarea id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" {% if request.user.userstat.is_expert %}style="display:none;"{% endif %}>
                         <label>Message to User:</label>
                         <div>
                             <button type="button" id="btn_pm_discovery_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-map-marker"></span></button>
@@ -1025,7 +1025,7 @@
             var data = final_status_table[form_id];
             if( data.score <= 0){
                 $("#aedes_certainty_value_" + form_id).selectpicker('val',data.score);
-                if( data.score == -3) {
+                if( data.score == -3 || data.score == -4) {
                     setTigerCertainty('', form_id);
                     setAegyptiCertainty('', form_id);
                 } else {
