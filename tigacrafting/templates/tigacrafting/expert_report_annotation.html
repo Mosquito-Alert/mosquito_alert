@@ -641,8 +641,7 @@
            value="{{ load_new_reports }}">
     <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;"
            value="{{ tasks_per_page }}">
-    <input id="next_page_input" type="text" name="page" style="display: none;"
-           value="">
+    <input id="next_page_input" type="text" name="page" style="display: none;" value="">
 
     <input id="tags_filter_input" type="text" name="tags_filter" style="display: none;" value="{{ tags_filter }}">
     </form>
@@ -726,9 +725,12 @@
                 <div id="save_block_modal_body" class="modal-body">
                     <p>
                         The following reports have been marked as validated, but either:</p>
-                        <p>- you haven't chosen any value from the 'Aedes certainty' dropbox.</p>
-                        <p>or</p>
-                        <p>- you have flagged the report without internal comment (unexplained flag)</p>
+                        <ul>
+                        <li>you haven't chosen any value from the 'Aedes certainty' dropbox.</li>
+                        <li>you have chosen 'Unclassified' from the 'Aedes certainty' dropbox and made the report status 'public'.</li>
+                        <li>you have flagged the report without internal comment (unexplained flag)</li>
+                        <li>you have hidden the report without internal comment (unexplained hidden)</li>
+                        </ul>
 
                         <p>Please select a valid value in each of them and hit 'save' again.
                     </p>
@@ -1447,16 +1449,15 @@
                     }
                     else {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:orange">Revising</span></li>');
-
                     }
                 {% else %}
-                    if ($(this).siblings("[name*='photo']").val() == "") {
+                    if ($(this).siblings("[name*='photo']").val() == "" && $(this).siblings("[name*='simplified_annotation']").val() == "False") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">No photo selected</span></li>');
-                    }
-                    else {
+                    } else {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + '</li>');
                     }
                 {% endif %}
+
             });
             $("#save_warning_modal").modal('show');
         }
@@ -1467,7 +1468,9 @@
             reports_list_div.append('<ul></ul>');
             var reports_list = $("#reports_validated_without_input_list ul");
             $("[id*='validation_complete']:checked").each(function () {
+
                 var form_id = $(this).siblings("[id*='-id']").val();
+                var index = id_to_index[form_id];
                 var id_string = $(this).siblings("[id*='-id']").attr('id');
                 id_string = id_string.replace("id_form-","").replace("-id","");
                 var title = $('button[data-id="aedes_certainty_value_' + form_id + '"]').attr('title');
@@ -1481,6 +1484,13 @@
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Flagged without internal Aedes certainty comments</span></li>');
                     }
                 }
+                if($("#id_form-" + index + "-status").val() == "-1" && $("#id_form-" + index + "-tiger_certainty_notes").val() == ''){
+                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Hidden without internal Aedes certainty comments</span></li>');
+                }
+                if($("#id_form-" + index + "-status").val() == "1" && $("#aedes_certainty_value_" + form_id).val() == '-3'){
+                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Status public and unclassified</span></li>');
+                }
+
             });
             $("#save_block_modal").modal('show');
         }
@@ -1524,7 +1534,10 @@
             var save_button = $("#save_button").click(function () {
                 //There's at least one of the forms which is marked as validated
                 var flagged_without_comment = false;
+                var hidden_without_comment = false;
                 var validated_without_aedes_input = false;
+                var unclassified = false;
+                var public_unclassified = false;
                 if ($("[id*='validation_complete']").is(":checked")) {
                     var buttons = $('button[data-id*="aedes_certainty_value"]');
                     for(var index = 0; index < buttons.size(); index++){
@@ -1533,6 +1546,9 @@
                         if(button_title == '--------------' && checked){
                             var validated_without_aedes_input = true;
                         }
+                        if(button_title == 'Unclassified' && checked){
+                            unclassified = true;
+                        }
                     }
                     var statusbuttons = $('button[data-id*="-status"]');
                     for(var index = 0; index < statusbuttons.size(); index++){
@@ -1540,12 +1556,20 @@
                         var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
                         if(button_title == 'flagged' && checked){
                             if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
-                                var flagged_without_comment = true;
+                                flagged_without_comment = true;
                             }
+                        }
+                        if(button_title == 'hidden' && checked){
+                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
+                                hidden_without_comment = true;
+                            }
+                        }
+                        if(button_title == 'public' && unclassified){
+                            public_unclassified = true;
                         }
                     }
                     {% if request.user.userstat.is_expert %}
-                        if(validated_without_aedes_input || flagged_without_comment){
+                        if(validated_without_aedes_input || flagged_without_comment || hidden_without_comment || public_unclassified){
                             //launch ok dialog and not save
                             setup_and_launch_mustfix_dialog();
                         }else{
