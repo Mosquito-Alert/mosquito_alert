@@ -1294,7 +1294,11 @@
 
                 $("#btn_copynote_{{ form.instance.id }}").click(function() {
                     var txt = $("#user_note_{{ form.instance.id }}").text();
+                    if(txt){
+                        txt = txt.trim();
+                    }
                     $("#public_note_{{ form.instance.id }}").val(txt);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(txt);
                 });
 
                 $("#btn_gp_{{ form.instance.id }}").click(function() {
