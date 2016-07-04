@@ -890,8 +890,13 @@ class Report(models.Model):
                                 classification['score'] = status['aegypti_expert_classification_score']
                                 #return status['aegypti_expert_classification_score']
                     elif albopictus_score <= 0 and aegypti_score <= 0:
-                        classification['is_none'] = True
-                        classification['score'] = albopictus_score
+                        #Case 1A, 1B, -2 -> Counts as albo -0.5, aegy -0.5
+                        if status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count']:
+                            classification['conflict'] = True
+                            classification['score'] = -4
+                        else:
+                            classification['is_none'] = True
+                            classification['score'] = albopictus_score
                         #return albopictus_score
         #unreachable, in theory - left here for security purposes
         return classification
