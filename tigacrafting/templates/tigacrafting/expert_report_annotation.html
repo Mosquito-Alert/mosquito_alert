@@ -1571,24 +1571,6 @@
                             public_unclassified = true;
                         }
                     }
-                    /*var statusbuttons = $('button[data-id*="-status"]');
-                    for(var index = 0; index < statusbuttons.size(); index++){
-                        var button_title = statusbuttons[index].attributes["title"].value;
-                        var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
-                        if(button_title == 'flagged' && checked){
-                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
-                                flagged_without_comment = true;
-                            }
-                        }
-                        if(button_title == 'hidden' && checked){
-                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
-                                hidden_without_comment = true;
-                            }
-                        }
-                        if(button_title == 'public' && unclassified){
-                            public_unclassified = true;
-                        }
-                    }*/
                     {% if request.user.userstat.is_expert %}
                         if(validated_without_aedes_input || flagged_without_comment || hidden_without_comment || public_unclassified){
                             //launch ok dialog and not save
