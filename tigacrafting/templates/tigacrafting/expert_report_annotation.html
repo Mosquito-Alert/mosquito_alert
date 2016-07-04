@@ -1307,12 +1307,12 @@
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_yes_thorax_pattern_{{ form.instance.id }}").click(function() {
-                    var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica raya blanca en el tórax, además de otras características. ¡Gracias por participar!";
+                    var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!";
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_no_thorax_pattern_{{ form.instance.id }}").click(function() {
-                    var message = "Con esta foto no podemos asegurar que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aún así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var message = "Con esta foto no podemos asegurar que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
@@ -1322,12 +1322,12 @@
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_other_{{ form.instance.id }}").click(function() {
-                    var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envían más fotos!";
+                    var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_pm_discovery_{{ form.instance.id }}").click(function() {
-                    var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de este insecto. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
+                    var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
                     $("#message_to_user_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
                 });
