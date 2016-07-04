@@ -1546,6 +1546,7 @@
                     var buttons = $('button[data-id*="aedes_certainty_value"]');
                     for(var index = 0; index < buttons.size(); index++){
                         var button_title = buttons[index].attributes["title"].value;
+                        var status = $('#id_form-' + index + '-status').val();
                         var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
                         if(button_title == '--------------' && checked){
                             var validated_without_aedes_input = true;
@@ -1553,8 +1554,24 @@
                         if(button_title == 'Unclassified' && checked){
                             unclassified = true;
                         }
+                        //flagged
+                        if(status == '0' && checked){
+                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
+                                flagged_without_comment = true;
+                            }
+                        }
+                        //hidden
+                        if(status == '-1' && checked){
+                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
+                                hidden_without_comment = true;
+                            }
+                        }
+                        //public
+                        if(status == '1' && checked && button_title == 'Unclassified'){
+                            public_unclassified = true;
+                        }
                     }
-                    var statusbuttons = $('button[data-id*="-status"]');
+                    /*var statusbuttons = $('button[data-id*="-status"]');
                     for(var index = 0; index < statusbuttons.size(); index++){
                         var button_title = statusbuttons[index].attributes["title"].value;
                         var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
@@ -1571,7 +1588,7 @@
                         if(button_title == 'public' && unclassified){
                             public_unclassified = true;
                         }
-                    }
+                    }*/
                     {% if request.user.userstat.is_expert %}
                         if(validated_without_aedes_input || flagged_without_comment || hidden_without_comment || public_unclassified){
                             //launch ok dialog and not save
