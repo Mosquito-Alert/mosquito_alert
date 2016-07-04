@@ -819,6 +819,9 @@ class Report(models.Model):
             if status['unclassified_by_all_experts'] == True and status['unclassified_by_superexpert'] == True:
                 classification['is_none'] = True
                 classification['score'] = -3
+            elif status['unclassified_by_all_experts'] == True and status['unclassified_by_superexpert'] == False:
+                classification['is_none'] = True
+                classification['score'] = -3
                 #return -3
             else: #Not left null by experts or superexperts
                 #Classified either way by superexpert
@@ -838,7 +841,6 @@ class Report(models.Model):
                         # Only possible if more than one superexpert and they say opposite things -> BAD
                         classification['conflict'] = True
                         classification['score'] = -4
-                    #return -4
                 else:  # Neither species classified by superexpert
                     # if albopictus_score > -3 and aegypti_score == -3:
                     #     return albopictus_score
@@ -891,7 +893,7 @@ class Report(models.Model):
                                 #return status['aegypti_expert_classification_score']
                     elif albopictus_score <= 0 and aegypti_score <= 0:
                         #Case 1A, 1B, -2 -> Counts as albo -0.5, aegy -0.5
-                        if status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count'] and status['albopictus_expert_classification_count'] != 0 and status['aegypti_expert_classification_count'] != 0:
+                        if status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count'] and status['albopictus_expert_classification_count'] != 3 and status['aegypti_expert_classification_count'] != 3:
                             classification['conflict'] = True
                             classification['score'] = -4
                         else:
