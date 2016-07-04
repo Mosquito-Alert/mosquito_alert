@@ -891,7 +891,7 @@ class Report(models.Model):
                                 #return status['aegypti_expert_classification_score']
                     elif albopictus_score <= 0 and aegypti_score <= 0:
                         #Case 1A, 1B, -2 -> Counts as albo -0.5, aegy -0.5
-                        if status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count']:
+                        if status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count'] and status['albopictus_expert_classification_count'] != 0 and status['aegypti_expert_classification_count'] != 0:
                             classification['conflict'] = True
                             classification['score'] = -4
                         else:
