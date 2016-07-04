@@ -1715,14 +1715,28 @@
             background_save(qp);
         });
 
-
-        $("#page_button").on('click', function () {
+        function go_to_page(){
             gear.show();
             var qp = query_selectors();
             var selected_page = $("#page_input").val();
             qp += '&page=' + selected_page;
             $("#next_page_input").val(selected_page);
             background_save(qp);
+        }
+
+        $("#page_button").on('click', function () {
+            go_to_page();
+        });
+
+        $('#page_input').bind("enterKey",function(e){
+                go_to_page();
+            });
+
+        $('#page_input').keyup(function(e){
+            if(e.keyCode == 13)
+            {
+                $(this).trigger("enterKey");
+            }
         });
 
         var nb = $("#next_page_button");
