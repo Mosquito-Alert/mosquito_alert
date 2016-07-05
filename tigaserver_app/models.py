@@ -855,13 +855,6 @@ class Report(models.Model):
                         classification['conflict'] = True
                         classification['score'] = -4
                 else:  # Neither species classified by superexpert
-                    # if albopictus_score > -3 and aegypti_score == -3:
-                    #     return albopictus_score
-                    # elif albopictus_score == -3 and aegypti_score > -3:
-                    #     return aegypti_score
-                    # elif albopictus_score == -3 and aegypti_score == -3:
-                    #     return -3
-                    # elif albopictus_score > -3 and aegypti_score > -3:
                     if albopictus_score >= 0 and aegypti_score >= 0: #conflict -> experts reasonably sure they are different species - i.e
                         if status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
                             classification['is_albopictus'] = True
@@ -872,8 +865,12 @@ class Report(models.Model):
                             classification['score'] = status['aegypti_expert_classification_score']
                             #return status['aegypti_expert_classification_score']
                         elif status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count'] and albopictus_score == aegypti_score:
-                            classification['is_none'] = True
-                            classification['score'] = albopictus_score
+                            if albopictus_score > 0:
+                                classification['conflict'] = True
+                                classification['score'] = -4
+                            else:
+                                classification['is_none'] = True
+                                classification['score'] = albopictus_score
                         else:#conflict
                             classification['conflict'] = True
                             classification['score'] = -4
@@ -916,6 +913,12 @@ class Report(models.Model):
                             else:
                                 classification['conflict'] = True
                                 classification['score'] = -4
+                        elif status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                            classification['is_albopictus'] = True
+                            classification['score'] = status['albopictus_expert_classification_score']
+                        elif status['albopictus_expert_classification_count'] < status['aegypti_expert_classification_count']:
+                            classification['is_aegypti'] = True
+                            classification['score'] = status['aegypti_expert_classification_score']
                         else:
                             classification['is_none'] = True
                             classification['score'] = albopictus_score

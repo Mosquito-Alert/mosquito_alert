@@ -578,7 +578,7 @@
         });
 
 
-            function submit_search_version_uuid() {
+        function submit_search_version_uuid() {
             gear.show();
             var this_version_uuid = $("#version_uuid_select").val();
             window.location.href = '?version_uuid=' + this_version_uuid;
@@ -586,11 +586,29 @@
 
         $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
 
-
         $("#page_button").on('click', function () {
+            go_to_page();
+        });
+
+        $('#page_input').bind("enterKey",function(e){
+                go_to_page();
+        });
+
+        $('#page_input').keyup(function(e){
+            if(e.keyCode == 13)
+            {
+                $(this).trigger("enterKey");
+            }
+        });
+
+        function go_to_page(){
             gear.show();
             window.location.href = '?page=' + $("#page_input").val();
-        });
+        }
+
+        /*$("#page_button").on('click', function () {
+
+        });*/
 
 
     </script>

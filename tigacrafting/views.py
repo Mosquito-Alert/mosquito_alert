@@ -408,22 +408,17 @@ def autoflag_others(id_annotation_report):
             anno.save()
 
 
-def must_be_autoflagged(id_annotation_report, is_current_validated):
-    this_annotation = ExpertReportAnnotation.objects.get(id=id_annotation_report)
+def must_be_autoflagged(this_annotation, is_current_validated):
     if this_annotation is not None:
         the_report = this_annotation.report
         if the_report is not None:
-            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID)
+            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID, user__groups__name='expert').exclude(id=this_annotation.id)
             anno_count = 0
             one_positive_albopictus = False
             one_positive_aegypti = False
             one_unclassified_or_inconclusive = False
             for anno in annotations:
-                validated = False
-                if anno.id == id_annotation_report:
-                    validated = is_current_validated
-                else:
-                    validated = anno.validation_complete
+                validated = anno.validation_complete
                 if anno.tiger_certainty_category is not None and anno.tiger_certainty_category > 0 and validated == True:
                     one_positive_albopictus = True
                 if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category > 0 and validated == True:
@@ -435,7 +430,19 @@ def must_be_autoflagged(id_annotation_report, is_current_validated):
                 if anno.aegypti_certainty_category is None and anno.tiger_certainty_category is None and validated == True:
                     one_unclassified_or_inconclusive = True
                 anno_count += 1
-            if one_positive_albopictus and one_positive_aegypti and one_unclassified_or_inconclusive and anno_count == 3:
+            validated = is_current_validated
+            if this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category > 0 and validated == True:
+                one_positive_albopictus = True
+            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category > 0 and validated == True:
+                one_positive_aegypti = True
+            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category <= 0 \
+                    and this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category <= 0 \
+                    and validated == True:
+                one_unclassified_or_inconclusive = True
+            if this_annotation.aegypti_certainty_category is None and this_annotation.tiger_certainty_category is None and validated == True:
+                one_unclassified_or_inconclusive = True
+
+            if one_positive_albopictus and one_positive_aegypti and one_unclassified_or_inconclusive and (anno_count + 1) == 3:
                 return True
     return False
 
@@ -492,13 +499,15 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 if formset.is_valid():
                     for f in formset:
                         one_form = f.save(commit=False)
-                        if must_be_autoflagged(one_form.id,one_form.validation_complete):
-                            autoflag_others(one_form.id)
+                        auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
+                        if auto_flag:
                             one_form.status = 0
                         if(this_user_is_reritja and one_form.validation_complete == True):
                             issue_notification(one_form,current_domain)
                         one_form.save()
                         f.save_m2m()
+                        if auto_flag:
+                            autoflag_others(one_form.id)
                 else:
                     return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
             page = request.POST.get('page')
