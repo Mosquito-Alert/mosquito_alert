@@ -858,6 +858,9 @@ class Report(models.Model):
                             classification['is_aegypti'] = True
                             classification['score'] = status['aegypti_expert_classification_score']
                             #return status['aegypti_expert_classification_score']
+                        elif status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count'] and albopictus_score == aegypti_score:
+                            classification['is_none'] = True
+                            classification['score'] = albopictus_score
                         else:#conflict
                             classification['conflict'] = True
                             classification['score'] = -4
