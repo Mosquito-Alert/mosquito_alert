@@ -1057,9 +1057,9 @@
             $("#user_note_" + form_id).val(user_note_clean_text);
             $("#id_form-" + id_to_index[form_id] + "-message_for_user").val(user_note_clean_text);
 
-            var public_note_clean_text = clean_text(data.public_note);
+            /*var public_note_clean_text = clean_text(data.public_note);
             $("#public_note_" + form_id).val(public_note_clean_text);
-            $("#id_form-" + id_to_index[form_id] + "-edited_user_notes").val(public_note_clean_text);
+            $("#id_form-" + id_to_index[form_id] + "-edited_user_notes").val(public_note_clean_text);*/
 
             if(data.photo){
                 $('#' + data.photo).attr('checked', true);

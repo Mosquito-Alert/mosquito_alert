@@ -398,6 +398,16 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
 
+def autoflag_others(id_annotation_report):
+    this_annotation = ExpertReportAnnotation.objects.get(id=id_annotation_report)
+    the_report = this_annotation.report
+    annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID).filter(user__groups__name='expert')
+    for anno in annotations:
+        if anno.id != id_annotation_report:
+            anno.status = 0
+            anno.save()
+
+
 def must_be_autoflagged(id_annotation_report, is_current_validated):
     this_annotation = ExpertReportAnnotation.objects.get(id=id_annotation_report)
     if this_annotation is not None:
@@ -407,7 +417,7 @@ def must_be_autoflagged(id_annotation_report, is_current_validated):
             anno_count = 0
             one_positive_albopictus = False
             one_positive_aegypti = False
-            one_unclassified = False
+            one_unclassified_or_inconclusive = False
             for anno in annotations:
                 validated = False
                 if anno.id == id_annotation_report:
@@ -416,16 +426,16 @@ def must_be_autoflagged(id_annotation_report, is_current_validated):
                     validated = anno.validation_complete
                 if anno.tiger_certainty_category is not None and anno.tiger_certainty_category > 0 and validated == True:
                     one_positive_albopictus = True
-                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category >0 and validated == True:
+                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category > 0 and validated == True:
                     one_positive_aegypti = True
-                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category == 0 \
-                        and anno.tiger_certainty_category is not None and anno.tiger_certainty_category == 0 \
+                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category <= 0 \
+                        and anno.tiger_certainty_category is not None and anno.tiger_certainty_category <= 0 \
                         and validated == True:
-                    one_unclassified = True
+                    one_unclassified_or_inconclusive = True
                 if anno.aegypti_certainty_category is None and anno.tiger_certainty_category is None and validated == True:
-                    one_unclassified = True
+                    one_unclassified_or_inconclusive = True
                 anno_count += 1
-            if one_positive_albopictus and one_positive_aegypti and one_unclassified and anno_count == 3:
+            if one_positive_albopictus and one_positive_aegypti and one_unclassified_or_inconclusive and anno_count == 3:
                 return True
     return False
 
@@ -483,6 +493,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                     for f in formset:
                         one_form = f.save(commit=False)
                         if must_be_autoflagged(one_form.id,one_form.validation_complete):
+                            autoflag_others(one_form.id)
                             one_form.status = 0
                         if(this_user_is_reritja and one_form.validation_complete == True):
                             issue_notification(one_form,current_domain)
