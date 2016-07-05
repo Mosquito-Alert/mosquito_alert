@@ -1273,8 +1273,8 @@
                     category: '{{form.instance.report.get_final_combined_expert_category}}',
                     status: {{form.instance.report.get_final_expert_status }},
                     photo: '{{form.instance.report.get_final_photo_html.id}}',
-                    public_note: '{{form.instance.report.get_final_public_note | linebreaks }}',
-                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaks }}'
+                    public_note: '{{form.instance.report.get_final_public_note | linebreaksbr }}',
+                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
                 };
 
                 final_status_table[{{ form.instance.id }}] = final_status;

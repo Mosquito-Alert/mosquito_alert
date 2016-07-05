@@ -820,8 +820,15 @@ class Report(models.Model):
                 classification['is_none'] = True
                 classification['score'] = -3
             elif status['unclassified_by_all_experts'] == True and status['unclassified_by_superexpert'] == False:
-                classification['is_none'] = True
-                classification['score'] = -3
+                if status['albopictus_classified_by_superexpert'] == True:
+                    classification['is_albopictus'] = True
+                    classification['score'] = status['albopictus_superexpert_classification_score']
+                elif status['aegypti_classified_by_superexpert'] == True:
+                    classification['is_aegypti'] = True
+                    classification['score'] = status['aegypti_superexpert_classification_score']
+                else:
+                    classification['is_none'] = True
+                    classification['score'] = -3
                 #return -3
             else: #Not left null by experts or superexperts
                 #Classified either way by superexpert
@@ -836,6 +843,12 @@ class Report(models.Model):
                 elif status['aegypti_classified_by_superexpert'] == True and status['albopictus_classified_by_superexpert'] == True:
                     if status['aegypti_superexpert_classification_score'] <= 0 and status['albopictus_superexpert_classification_score'] <= 0:
                         classification['is_none'] = True
+                        classification['score'] = status['albopictus_superexpert_classification_score']
+                    elif status['aegypti_superexpert_classification_score'] > 0 and status['albopictus_superexpert_classification_score'] <= 0:
+                        classification['is_aegypti'] = True
+                        classification['score'] = status['aegypti_superexpert_classification_score']
+                    elif status['aegypti_superexpert_classification_score'] <= 0 and status['albopictus_superexpert_classification_score'] > 0:
+                        classification['is_albopictus'] = True
                         classification['score'] = status['albopictus_superexpert_classification_score']
                     else:
                         # Only possible if more than one superexpert and they say opposite things -> BAD
