@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     url(r'^photos_user/$', views.get_photo),
     url(r'^configuration/$', views.get_current_configuration),
     url(r'^user_notifications/$', views.user_notifications),
+    url(r'^nearby_reports/$', views.nearby_reports),
     url(r'^missions/$', views.get_new_missions),
     url(r'^', include(router.urls)),
 )

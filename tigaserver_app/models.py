@@ -537,6 +537,25 @@ class Report(models.Model):
                 return result
         return None
 
+    # Convenience method, used only in the nearby_reports API call
+    def get_simplified_adult_movelab_annotation(self):
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True):
+            result = {}
+            if self.type == 'adult':
+                classification = self.get_mean_combined_expert_adult_score()
+                result['score'] = int(round(classification['score']))
+                if classification['is_aegypti'] == True:
+                    result['classification'] = 'aegypti'
+                elif classification['is_albopictus'] == True:
+                    result['classification'] = 'albopictus'
+                elif classification['is_none'] == True:
+                    result['classification'] = 'none'
+                else:
+                    # This should NEVER happen. however...
+                    result['classification'] = 'conflict'
+            return result
+        return None
+
     # return the aegypti category; if there are several superexperts (shouldn't happen, I think) with certainty values return smallest
     def get_final_superexpert_aegypti_score(self):
         annot = ExpertReportAnnotation.objects.filter(report=self,user__groups__name='superexpert',validation_complete=True).exclude(aegypti_certainty_category__isnull=True).order_by('aegypti_certainty_category').first()
@@ -1234,6 +1253,7 @@ class Report(models.Model):
     latest_version = property(get_is_latest)
     visible = property(show_on_map)
     movelab_annotation = property(get_movelab_annotation)
+    simplified_annotation = property(get_simplified_adult_movelab_annotation)
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)
     tiger_responses = property(get_tiger_responses)
