@@ -523,15 +523,18 @@ class Report(models.Model):
                     result['aegypti_certainty_category'] = self.get_final_superexpert_aegypti_score()
                     classification = self.get_mean_combined_expert_adult_score()
                     result['score'] = int(round(classification['score']))
-                    if classification['is_aegypti'] == True:
-                        result['classification'] = 'aegypti'
-                    elif classification['is_albopictus'] == True:
-                        result['classification'] = 'albopictus'
-                    elif classification['is_none'] == True:
+                    if result['score'] <= 0:
                         result['classification'] = 'none'
                     else:
-                        #This should NEVER happen. however...
-                        result['classification'] = 'conflict'
+                        if classification['is_aegypti'] == True:
+                            result['classification'] = 'aegypti'
+                        elif classification['is_albopictus'] == True:
+                            result['classification'] = 'albopictus'
+                        elif classification['is_none'] == True:
+                            result['classification'] = 'none'
+                        else:
+                            #This should NEVER happen. however...
+                            result['classification'] = 'conflict'
                 elif self.type == 'site':
                     result['site_certainty_category'] = self.get_final_expert_score()
                 return result
