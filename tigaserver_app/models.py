@@ -42,6 +42,7 @@ class TigaUser(models.Model):
     class Meta:
         verbose_name = "user"
         verbose_name_plural = "users"
+        ordering = ('user_UUID',)
 
 
 class Mission(models.Model):
