@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from rest_framework.exceptions import ParseError
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
@@ -568,6 +569,10 @@ def user_notifications(request):
         return Response(serializer.data)
     if request.method == 'POST':
         id = request.QUERY_PARAMS.get('id', -1)
+        try:
+            int(id)
+        except ValueError:
+            raise ParseError(detail='Invalid id integer value')
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
         ack = request.QUERY_PARAMS.get('acknowledged', True)
