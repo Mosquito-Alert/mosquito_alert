@@ -168,7 +168,7 @@
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.server_upload_time }}</p>
                         <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
-                        {% if form.instance.type == 'site' %}<p class="p-medium"><span class="label label-warning">This is a breeding site</span></p>{% endif %}
+                        {% if form.instance.type == 'site' %}<p class="p-medium"><span class="label label-warning">This is a storm drain</span></p>{% endif %}
                         {% for hidden in form.hidden_fields %}
                             {{ hidden }}
                         {% endfor %}

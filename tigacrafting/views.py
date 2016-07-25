@@ -796,10 +796,10 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         usr_note = request.GET.get('usr_note', usr_note)
 
     # #345 is a special tag to exclude reports
-    reports_imbornal = ReportResponse.objects.filter( Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Type of breeding site', answer='Storm drain')).exclude(report__creation_time__year=2014).values('report').distinct()
+    reports_imbornal_or_other = ReportResponse.objects.filter( Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Type of breeding site', answer='Storm drain') | Q(question='Selecciona lloc de cria',answer='Altres') | Q(question='Tipo de lugar de cría', answer='Otros') | Q(question='Type of breeding site', answer='Other')).exclude(report__creation_time__year=2014).values('report').distinct()
 
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    new_reports_unfiltered_sites = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered_sites = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal_or_other).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
 
     new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
     #new_reports_unfiltered = filter(lambda x: not x.deleted and x.latest_version, new_reports_unfiltered)
