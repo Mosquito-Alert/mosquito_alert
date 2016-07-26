@@ -796,11 +796,15 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         usr_note = request.GET.get('usr_note', usr_note)
 
     # #345 is a special tag to exclude reports
-    reports_imbornal_or_other = ReportResponse.objects.filter( Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Type of breeding site', answer='Storm drain') | Q(question='Selecciona lloc de cria',answer='Altres') | Q(question='Tipo de lugar de cría', answer='Otros') | Q(question='Type of breeding site', answer='Other')).exclude(report__creation_time__year=2014).values('report').distinct()
+    reports_imbornal = ReportResponse.objects.filter( Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Selecciona lloc de cria',answer='Embornal o similar') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site', answer='Storm drain') |  Q(question='Type of breeding site', answer='Storm drain or similar receptacle')).exclude(report__creation_time__year=2014).values('report').distinct()
 
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    new_reports_unfiltered_sites = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal_or_other).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered_sites_embornal = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered_sites_other = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').exclude(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
 
+    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+
+    #new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites_embornal
     new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
     #new_reports_unfiltered = filter(lambda x: not x.deleted and x.latest_version, new_reports_unfiltered)
 
@@ -810,7 +814,9 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         new_reports_unfiltered = new_reports_unfiltered_adults
     elif type == 'site':
         #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
-        new_reports_unfiltered = new_reports_unfiltered_sites
+        new_reports_unfiltered = new_reports_unfiltered_sites_embornal
+    elif type == 'site-o':
+        new_reports_unfiltered = new_reports_unfiltered_sites_other
     if visibility == 'visible':
         new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
     elif visibility == 'hidden':
@@ -836,6 +842,16 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     args['visibility'] = visibility
     args['usr_note'] = usr_note
     args['type'] = type
+    type_readable = ''
+    if type == 'site':
+        type_readable = "Breeding sites - Storm drains"
+    elif type == 'site-o':
+        type_readable = "Breeding sites - Other"
+    elif type == 'adult':
+        type_readable = "Adults"
+    elif type == 'all':
+        type_readable = "All"
+    args['type_readable'] = type_readable
     n_query_records = new_reports_unfiltered.count()
     args['n_query_records'] = n_query_records
     args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)

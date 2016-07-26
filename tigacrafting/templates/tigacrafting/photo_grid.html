@@ -13,6 +13,8 @@
         .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
         .p-small { font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 12px; color: #fff;}
         .site { background-color: #4169E1; }
+        .site.storm_drain { background-color: #4169E1; }
+        .site.other { background-color: #a7b9f1; }
         .adult { background-color: orange; }
     </style>
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
@@ -110,7 +112,8 @@
                             <div class="col-sm-8">
                                 <select id="type_select" class="selectpicker show-tick form-control">
                                     <option value="adult">Adults</option>
-                                    <option value="site">Breeding sites</option>
+                                    <option value="site">Breeding sites - storm drains</option>
+                                    <option value="site-o">Breeding sites - other</option>
                                     <option value="all">Show All</option>
                                 </select>
                             </div>
@@ -135,7 +138,7 @@
 <div class="container">
     <div class="starter-template">
         <h1>Picture Filter</h1>
-        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type }}
+        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type_readable }}
         <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
         <div style="text-align: left">
             <h4>Instructions</h4>
@@ -159,16 +162,22 @@
     {% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}
-        <div class="grid {{form.instance.type}}">
+        <div class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
-                    <div class="grid-item-large valid {{form.instance.type}}">
+                    <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
                         <a href="/single_report_map/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"></span></a>
                         <p class="p-small"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.server_upload_time }}</p>
                         <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
-                        {% if form.instance.type == 'site' %}<p class="p-medium"><span class="label label-warning">This is a storm drain</span></p>{% endif %}
+                        {% if form.instance.type == 'site' %}
+                            {% if form.instance.get_site_cat == 0 %}
+                                <p class="p-medium"><span class="label label-warning">This is a storm drain</span></p>
+                            {% else %}
+                                <p class="p-medium"><span class="label label-warning">This is an 'others' site</span></p>
+                            {% endif %}
+                        {% endif %}
                         {% for hidden in form.hidden_fields %}
                             {{ hidden }}
                         {% endfor %}
