@@ -824,6 +824,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     if usr_note and usr_note != '':
         new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
 
+    new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
+
     paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
     page = request.GET.get('page', 1)
     try:
@@ -832,7 +834,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         objects = paginator.page(1)
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
-    page_query = new_reports_unfiltered.filter(version_UUID__in=[object.version_UUID for object in objects])
+    page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects])
+    #page_query = new_reports_unfiltered.filter(version_UUID__in=[object.version_UUID for object in objects])
     this_formset = PictureValidationFormSet(queryset=page_query)
     args['formset'] = this_formset
     args['objects'] = objects
@@ -852,7 +855,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     elif type == 'all':
         type_readable = "All"
     args['type_readable'] = type_readable
-    n_query_records = new_reports_unfiltered.count()
+    #n_query_records = new_reports_unfiltered.count()
+    n_query_records = len(new_reports_unfiltered)
     args['n_query_records'] = n_query_records
     args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
     #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
