@@ -5,20 +5,21 @@ from django.shortcuts import render
 
 def show_about(request, platform, language):
     context = {}
-    if platform == 'ios':
-        if language == 'ca':
-            return render(request, 'tigahelp/about_ios_ca.html', context)
-        if language == 'es':
-            return render(request, 'tigahelp/about_ios_es.html', context)
-        if language == 'en':
-            return render(request, 'tigahelp/about_ios_en.html', context)
-    else:
-        if language == 'ca':
-            return render(request, 'tigahelp/about_ca.html', context)
-        if language == 'es':
-            return render(request, 'tigahelp/about_es.html', context)
-        if language == 'en':
-            return render(request, 'tigahelp/about_en.html', context)
+    # We ignore platform for now
+    # if platform == 'ios':
+    #     if language == 'ca':
+    #         return render(request, 'tigahelp/about_ios_ca.html', context)
+    #     if language == 'es':
+    #         return render(request, 'tigahelp/about_ios_es.html', context)
+    #     if language == 'en':
+    #         return render(request, 'tigahelp/about_ios_en.html', context)
+    # else:
+    if language == 'ca':
+        return render(request, 'tigahelp/about_ca.html', context)
+    if language == 'es':
+        return render(request, 'tigahelp/about_es.html', context)
+    if language == 'en':
+        return render(request, 'tigahelp/about_en.html', context)
 
 
 def show_credit_image(request):
