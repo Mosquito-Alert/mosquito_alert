@@ -834,8 +834,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         objects = paginator.page(1)
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
-    page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects])
-    #page_query = new_reports_unfiltered.filter(version_UUID__in=[object.version_UUID for object in objects])
+    page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-server_upload_time')
     this_formset = PictureValidationFormSet(queryset=page_query)
     args['formset'] = this_formset
     args['objects'] = objects
