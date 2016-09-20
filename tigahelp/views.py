@@ -20,6 +20,8 @@ def show_about(request, platform, language):
         return render(request, 'tigahelp/about_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/about_en.html', context)
+    if language == 'zh':
+        return render(request, 'tigahelp/about_zh.html', context)
 
 
 def show_credit_image(request):
@@ -35,6 +37,8 @@ def show_help(request, platform, language):
         return render(request, 'tigahelp/help_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/help_en.html', context)
+    if language == 'zh':
+        return render(request, 'tigahelp/help_zh.html', context)
 
 
 def show_license(request, platform, language):
@@ -45,6 +49,8 @@ def show_license(request, platform, language):
         return render(request, 'tigahelp/license_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/license_en.html', context)
+    if language == 'zh':
+        return render(request, 'tigahelp/license_zh.html', context)
 
 
 def show_policies(request):
@@ -61,6 +67,8 @@ def show_privacy(request):
         return render(request, 'tigahelp/privacy_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/privacy_en.html', context)
+    if language == 'zh':
+        return render(request, 'tigahelp/privacy_zh.html', context)
 
 
 def show_terms(request):
@@ -72,3 +80,5 @@ def show_terms(request):
         return render(request, 'tigahelp/terms_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/terms_en.html', context)
+    if language == 'zh':
+        return render(request, 'tigahelp/terms_zh.html', context)
