@@ -553,6 +553,13 @@ class TagViewSet(ReadOnlyModelViewSet):
     serializer_class = TagSerializer
     filter_class = TagFilter
 
+def string_par_to_bool(string_par):
+    if string_par:
+        string_lower = string_par.lower()
+        if string_lower == 'true':
+            return True
+    return False
+
 @api_view(['GET','POST'])
 def user_notifications(request):
     if request.method == 'GET':
@@ -576,7 +583,8 @@ def user_notifications(request):
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
         ack = request.QUERY_PARAMS.get('acknowledged', True)
-        this_notification.acknowledged = ack
+        ack_bool = string_par_to_bool(ack)
+        this_notification.acknowledged = ack_bool
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
