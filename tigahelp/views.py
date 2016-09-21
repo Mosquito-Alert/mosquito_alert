@@ -67,7 +67,7 @@ def show_privacy(request):
         return render(request, 'tigahelp/privacy_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/privacy_en.html', context)
-    if language == 'zh':
+    if language == 'zh-cn':
         return render(request, 'tigahelp/privacy_zh.html', context)
 
 
@@ -80,5 +80,5 @@ def show_terms(request):
         return render(request, 'tigahelp/terms_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/terms_en.html', context)
-    if language == 'zh':
+    if language == 'zh-cn':
         return render(request, 'tigahelp/terms_zh.html', context)
