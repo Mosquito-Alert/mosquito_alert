@@ -255,6 +255,12 @@ class CoverageAreaAdmin(admin.ModelAdmin):
 
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('report', 'user', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url', 'acknowledged')
+    search_fields = ['report__version_UUID','user__user_UUID']
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name=='report':
+            kwargs["queryset"] = Report.objects.order_by("version_UUID")
+        return super(NotificationAdmin,self).formfield_for_foreignkey(db_field,request,**kwargs)
 
 admin.site.register(TigaUser, UserAdmin)
 admin.site.register(Report, ReportAdmin)
