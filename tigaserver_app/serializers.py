@@ -179,6 +179,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     tigaprob_cat = serializers.Field()
     visible = serializers.Field()
     latest_version = serializers.Field()
+    n_photos = serializers.Field()
 
     class Meta:
         model = Report

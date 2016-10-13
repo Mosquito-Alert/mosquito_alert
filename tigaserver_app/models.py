@@ -1271,6 +1271,7 @@ class Report(models.Model):
     creation_day_since_launch = property(get_creation_day_since_launch)
     creation_year = property(get_creation_year)
     creation_month = property(get_creation_month)
+    n_photos = property(get_n_photos)
 
     class Meta:
         unique_together = ("user", "version_UUID")
