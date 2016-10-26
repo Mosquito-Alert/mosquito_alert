@@ -182,17 +182,6 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
-                            <!--<li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Public note language<span class="caret"></span></a>
-                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                    <li>
-                                        <a href="#">English</a>
-                                    </li>
-                                    <li>
-                                        <a href="#">Spanish</a>
-                                    </li>
-                                </ul>
-                            </li>-->
                             <li>
                                 <select id="note_language_select" class="selectpicker show-tick form-control">
                                         <option id="note_language_select_es" value="es">Public note language - spanish</option>
@@ -1321,6 +1310,14 @@
                     other_species:{
                         es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
                         en: "This picture seems to be of another mosquito species, because it doesn't look like a tiger mosquito or a yellow fever mosquito. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+                    },
+                    discovery:{
+                        es: "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!",
+                        en: "Congratulations! Your picture is very important, because you have probably found a tiger mosquito in a zone with little information about this species distribution. If you find more, please send more observations and pictures. Thanks for participating!"
+                    },
+                    contact:{
+                        es: "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!",
+                        en: "We are very interested in your observation, because it could be an exceptional discovery. If you can, please send us more pictures. To supply more detailed information, please contact us via e-mail info@mosquitoalert.com. Thanks for participating, great work!"
                     }
                 };
 
@@ -1380,12 +1377,14 @@
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_pm_discovery_{{ form.instance.id }}").click(function() {
-                    var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
+                    //var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
+                    var message = macro_messages["discovery"][$('#note_language').val()];
                     $("#message_to_user_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
                 });
                 $("#btn_pm_contact_{{ form.instance.id }}").click(function() {
-                    var message = "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!";
+                    //var message = "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!";
+                    var message = macro_messages["contact"][$('#note_language').val()];
                     $("#message_to_user_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
                 });
