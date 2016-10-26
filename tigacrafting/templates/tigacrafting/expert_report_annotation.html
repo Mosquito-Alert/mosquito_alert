@@ -182,6 +182,23 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
+                            <!--<li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Public note language<span class="caret"></span></a>
+                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                    <li>
+                                        <a href="#">English</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Spanish</a>
+                                    </li>
+                                </ul>
+                            </li>-->
+                            <li>
+                                <select id="note_language_select" class="selectpicker show-tick form-control">
+                                        <option id="note_language_select_es" value="es">Public note language - spanish</option>
+                                        <option id="note_language_select_en" value="en">Public note language - english</option>
+                                </select>
+                            </li>
                             {% block navbar_right_items %}
                             {% endblock %}
                             {% if tasks_per_page_choices %}
@@ -237,6 +254,11 @@
 
 
         <div style="text-align: left">
+            <!--<p>Public note message language:</p>
+            <select id="note_language_select">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+            </select>-->
 
             <h4> Instructions</h4>
 
@@ -640,6 +662,8 @@
            value="{{ load_new_reports }}">
     <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;"
            value="{{ tasks_per_page }}">
+    <input id="note_language" type="text" name="note_language" style="display: none;"
+           value="{{ note_language }}">
     <input id="next_page_input" type="text" name="page" style="display: none;" value="">
 
     <input id="tags_filter_input" type="text" name="tags_filter" style="display: none;" value="{{ tags_filter }}">
@@ -1277,6 +1301,31 @@
                     user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
                 };
 
+                macro_messages = {
+                    nice_picture: {
+                        es: "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!",
+                        en: "The picture is spectacular and you can see a lot of details of the mosquito's body. Thanks for participating. Great job!"
+                    },
+                    yes_thorax_pattern:{
+                        es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!",
+                        en: "Very good picture! You have managed to make the tiger mosquito easily to identify because you can spot clearly the characteristic white stripe in the thorax, apart from other traits. Thanks for participating!"
+                    },
+                    no_thorax_pattern:{
+                        es: "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+                        en: "With this picture, we can't be completely sure that it's a tiger mosquito. You can't see the typical white stripe in the thorax, but you can see other typical traits of the mosquito tiger.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+                    },
+                    not_sure_photo:{
+                        es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+                        en: "With this picture we can't identify any species, because it's blurry and you can't recognize the typical traits of the tiger mosquito. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+                    },
+                    other_species:{
+                        es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+                        en: "This picture seems to be of another mosquito species, because it doesn't look like a tiger mosquito or a yellow fever mosquito. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+                    }
+                };
+
+                $('#note_language_select').val($('#note_language').val());
+
                 final_status_table[{{ form.instance.id }}] = final_status;
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
@@ -1301,27 +1350,32 @@
                 });
 
                 $("#btn_gp_{{ form.instance.id }}").click(function() {
-                    var message = "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!";
+                    //var message = "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!";
+                    var message = macro_messages["nice_picture"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_yes_thorax_pattern_{{ form.instance.id }}").click(function() {
-                    var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!";
+                    //var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!";
+                    var message = macro_messages["yes_thorax_pattern"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_no_thorax_pattern_{{ form.instance.id }}").click(function() {
-                    var message = "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    //var message = "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var message = macro_messages["no_thorax_pattern"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_not_sure_{{ form.instance.id }}").click(function() {
-                    var message = "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    //var message = "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var message = macro_messages["not_sure_photo"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_other_{{ form.instance.id }}").click(function() {
-                    var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var message = macro_messages["other_species"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
@@ -1519,6 +1573,11 @@
         $(document).ready(function () {
 
             $('[data-toggle="tooltip"]').tooltip();
+
+            $('#note_language_select').change(function(){
+                //alert($('#note_language_select').val());
+                $('#note_language').val($('#note_language_select').val());
+            });
 
             $("select").selectpicker({
                 width: 'auto'

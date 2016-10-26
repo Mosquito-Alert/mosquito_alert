@@ -462,7 +462,7 @@ def issue_notification(report_annotation,current_domain):
     notification.save()
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
     this_user = request.user
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
@@ -492,6 +492,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             tags_filter = request.POST.get('tags_filter', tags_filter)
             checked = request.POST.get('checked', checked)
             tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+            note_language = request.GET.get('note_language', "es")
             load_new_reports = request.POST.get('load_new_reports', load_new_reports)
             save_formset = request.POST.get('save_formset', "F")
             if save_formset == "T":
@@ -513,9 +514,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             page = request.POST.get('page')
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + tags_filter) if tags_filter else ''))
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + tags_filter) if tags_filter else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+            note_language = request.GET.get('note_language', note_language)
             scroll_position = request.GET.get('scroll_position', scroll_position)
             orderby = request.GET.get('orderby', orderby)
             tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
@@ -703,6 +705,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page
+        args['note_language'] = note_language
         args['scroll_position'] = scroll_position
         args['edit_mode'] = edit_mode
         n_query_records = all_annotations.count()
