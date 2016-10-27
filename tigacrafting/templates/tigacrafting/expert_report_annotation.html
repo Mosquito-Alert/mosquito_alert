@@ -182,12 +182,12 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
-                            <li>
-                                <select id="note_language_select" class="selectpicker show-tick form-control">
-                                        <option id="note_language_select_es" value="es">Public note language - spanish</option>
-                                        <option id="note_language_select_en" value="en">Public note language - english</option>
-                                </select>
-                            </li>
+                                <li>
+                                    <select class="selectpicker show-tick form-control" id="note_language_select" class="selectpicker show-tick form-control">
+                                            <option id="note_language_select_es" value="es">Public note language - spanish</option>
+                                            <option id="note_language_select_en" value="en">Public note language - english</option>
+                                    </select>
+                                </li>
                             {% block navbar_right_items %}
                             {% endblock %}
                             {% if tasks_per_page_choices %}
