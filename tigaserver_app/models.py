@@ -326,8 +326,11 @@ class Report(models.Model):
         result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer.startswith('Embornal') or this_response.answer.startswith('Sumidero') or this_response.answer.startswith('Storm')
+                    this_response.question.startswith('Type') or \
+                    this_response.question.startswith('Is this a storm drain') or \
+                    this_response.question.startswith(u'\xc9s un embornal') or \
+                    this_response.question.startswith(u'\xbfEs un imbornal'):
+                result = this_response.answer.startswith('Embornal') or this_response.answer.startswith('Sumidero') or this_response.answer.startswith('Storm') or this_response.answer.startswith('Yes') or this_response.answer.startswith(u'S\xed')
         return result
 
     def get_site_fonts(self):
@@ -584,21 +587,63 @@ class Report(models.Model):
             return None
         return max_movelab_annotation.task.tiger_validation_score_cat
 
+    def get_tiger_responses_json_friendly(self):
+        if self.type != 'adult':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        i = 1
+        for response in these_responses:
+            item = {}
+            item["q"] = response.question
+            item["a"] = response.answer
+            result["q_" + str(i)] = item
+            i = i + 1
+        return result
+
     def get_tiger_responses(self):
         if self.type != 'adult':
             return None
         these_responses = self.responses.all()
         result = {}
-        if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
-            q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
+        if these_responses.filter(Q(question=u'Is it small and black with white stripes?') | Q(question=u'\xc9s petit i negre amb ratlles blanques?') | Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
+            q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?') | Q(question=u'\xc9s petit i negre amb ratlles blanques?') | Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
             result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-        if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
-            q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
+        if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?') | Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?') | Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
+            q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?') | Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?') | Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
             result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-        if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
-            q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
+        if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
+            q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
             result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
         return result
+
+    # def get_tiger_responses(self):
+    #     if self.type != 'adult':
+    #         return None
+    #     these_responses = self.responses.all()
+    #     result = {}
+    #
+    #     if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
+    #         q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
+    #         result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
+    #     elif these_responses.filter(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
+    #         q1r = these_responses.get(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
+    #         result['q1_response'] = -2 if q1r in [u'Like Ae. albopictus', u'Com Ae. albopictus',u'Como Ae. albopictus'] else -3 if q1r in [u'Like Ae. aegypti', u'Com Ae. aegypti', u'Como Ae. aegypti'] else -4 if q1r in [u'Neither', u'Cap dels dos', u'None of them'] else -5
+    #
+    #     if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
+    #         q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
+    #         result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
+    #     elif these_responses.filter(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
+    #         q2r = these_responses.get(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
+    #         result['q2_response'] = -2 if q2r in [u'Thorax like Ae. albopictus', u'T\xf3rax com Ae. albopictus', u'T\xf3rax like Ae. albopictus'] else -3 if q2r in [u'Thorax like Ae. aegypti', u'T\xf3rax com Ae. aegypti', u'T\xf3rax como Ae. aegypti'] else -4 if q2r in [u'Neither', u'Cap dels dos', u'Ninguno de los dos'] else -5
+    #
+    #     if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
+    #         q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
+    #         result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
+    #     elif these_responses.filter(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
+    #         q3r = these_responses.get(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
+    #         result['q3_response'] = -2 if q3r in [u'Abdomen like a Ae. albopictus',u'Abdomen com Ae. albopictus',u'Abdomen como Ae. albopictus'] else -3 if q3r in [u'Abdomen like Ae. aegypti', u'Abdomen com Ae. aegypti',u'Abdomen como Ae. aegypti'] else -4 if q3r in [u'Neither', u'Cap dels dos',u'Ninguno de los dos'] else -5
+    #     return result
 
     def get_site_responses(self):
         if self.type != 'site':
@@ -1272,6 +1317,7 @@ class Report(models.Model):
     creation_year = property(get_creation_year)
     creation_month = property(get_creation_month)
     n_photos = property(get_n_photos)
+    final_expert_status_text = property(get_final_expert_status)
 
     class Meta:
         unique_together = ("user", "version_UUID")

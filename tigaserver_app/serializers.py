@@ -180,6 +180,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     visible = serializers.Field()
     latest_version = serializers.Field()
     n_photos = serializers.Field()
+    final_expert_status_text = serializers.Field()
 
     class Meta:
         model = Report

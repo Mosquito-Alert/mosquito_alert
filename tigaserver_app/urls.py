@@ -9,6 +9,7 @@ router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
 router.register(r'coverage_month', views.CoverageMonthMapViewSet, base_name='coverage_month')
 router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_reports')
+router.register(r'hidden_reports', views.NonVisibleReportsMapViewSet, base_name='hidden_reports')
 router.register(r'tags', views.TagViewSet, base_name='tags')
 
 urlpatterns = patterns('',
