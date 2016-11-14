@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
+from taggit.managers import TaggableManager
 
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
@@ -162,7 +163,13 @@ class MoveLabAnnotation(models.Model):
 
 TIGER_CATEGORIES = ((2, 'Definitely Aedes albopictus'), (1, 'Probably Aedes albopictus'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
 
+#WARNING!! THIS IS USED FOR VISUALIZATION ONLY, NEVER SHOULD BE USED FOR DATA INPUT!!!
+TIGER_CATEGORIES_SEPARATED = ((2, 'Definitely Aedes albopictus'), (1, 'Probably Aedes albopictus'),  (0, 'Not sure'), (-1, 'Probably not albopictus'), (-2, 'Definitely not albopictus'))
+
 AEGYPTI_CATEGORIES = ((2, 'Definitely Aedes aegypti'), (1, 'Probably Aedes aegypti'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
+
+#WARNING!! THIS IS USED FOR VISUALIZATION ONLY, NEVER SHOULD BE USED FOR DATA INPUT!!!
+AEGYPTI_CATEGORIES_SEPARATED = ((2, 'Definitely Aedes aegypti'), (1, 'Probably Aedes aegypti'),  (0, 'Not sure'), (-1, 'Probably not aegypti'), (-2, 'Definitely not aegypti'))
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
@@ -174,7 +181,7 @@ class ExpertReportAnnotation(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations')
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
-    tiger_certainty_notes = models.TextField('Internal Tiger Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
+    tiger_certainty_notes = models.TextField('Internal Aedes Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
     site_certainty_notes = models.TextField('Internal Site Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
@@ -186,6 +193,8 @@ class ExpertReportAnnotation(models.Model):
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
+    tags = TaggableManager(blank=True)
 
     def is_superexpert(self):
         return 'superexpert' in self.user.groups.values_list('name', flat=True)
@@ -219,7 +228,12 @@ class ExpertReportAnnotation(models.Model):
         if self.report.type == 'site':
             score = self.site_certainty_category
         elif self.report.type == 'adult':
-            score = self.tiger_certainty_category
+            if self.aegypti_certainty_category == 2:
+                score = 4
+            elif self.aegypti_certainty_category == 1:
+                score = 3
+            else:
+                score = self.tiger_certainty_category
         if score is not None:
             return score
         else:
@@ -229,7 +243,10 @@ class ExpertReportAnnotation(models.Model):
         if self.report.type == 'site':
             return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
         elif self.report.type == 'adult':
-            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
+            if self.get_score() > 2:
+                return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES))[self.get_score()-2]
+            else:
+                return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
 
     def get_status_bootstrap(self):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
@@ -242,6 +259,7 @@ class ExpertReportAnnotation(models.Model):
 
 class UserStat(models.Model):
     user = models.OneToOneField(User, primary_key=True)
+    grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
 
     def is_expert(self):
         return self.user.groups.filter(name="expert").exists()

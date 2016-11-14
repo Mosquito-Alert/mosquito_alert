@@ -61,6 +61,7 @@ INSTALLED_APPS = (
     'stats',
     'floppyforms',
     'storages',
+    'taggit',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -116,6 +117,7 @@ LANGUAGES = (
     ('es', _('Spanish')),
     ('ca', _('Catalan')),
     ('en', _('English')),
+    ('zh-cn', _('Chinese')),
 )
 
 LOCALE_PATHS = (
@@ -229,5 +231,17 @@ LEAFLET_CONFIG = {
     }
 }
 
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+
+# This is the cuttoff score above which a photo will be considered "crowd-validated"
+CROWD_VALIDATION_CUTOFF = 0
+
+START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
+
+IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
+
+SOUTH_MIGRATION_MODULES = {
+    'taggit': 'taggit.south_migrations',
+}
 
 from settings_local import *

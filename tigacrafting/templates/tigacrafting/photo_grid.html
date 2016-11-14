@@ -1,0 +1,332 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <style>
+        .grid-item { background-color: grey; height: 120px; width: 120px; float: left; margin-top: 5px;margin-bottom: 5px;}
+        .grid-item-large { background-color: grey; height: 180px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px; overflow:auto; padding: 10px 10px 10px 10px;}
+        .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px; margin-bottom: 10px;}
+        .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
+        .p-small { font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 12px; color: #fff;}
+        .site { background-color: #4169E1; }
+        .site.storm_drain { background-color: #4169E1; }
+        .site.other { background-color: #a7b9f1; }
+        .adult { background-color: orange; }
+    </style>
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="https://npmcdn.com/isotope-layout@3.0/dist/isotope.pkgd.min.js"></script>
+</head>
+<body>
+
+<div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">
+                                MosquitoAlert Picture Validation
+                                <i id="gear" class="fa fa-refresh fa-spin"></i>
+                            </span>
+
+                        </div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+
+                        <ul class="nav navbar-nav navbar-left">
+                            <li>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span></button></span>
+                            </li>
+                            <li>
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px" data-toggle="tooltip" data-placement="bottom"
+                                        title="Save"><span
+                                        class="glyphicon glyphicon-floppy-disk"></span>
+                                </button>
+                            </li>
+                        </ul>
+
+
+                        <ul class="nav navbar-nav navbar-right">
+                                {% if tasks_per_page_choices %}
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle"
+                                       data-toggle="dropdown">Reports per page
+                                        <span class="caret"></span></a>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                        {% for n in tasks_per_page_choices %}
+                                            <li>
+                                                <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}">{{ n }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            </li>
+                        </ul>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Filters</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="visibility_select" class="col-sm-4 control-label">Visibility:</label>
+                            <div class="col-sm-8">
+                                <select id="visibility_select" class="selectpicker show-tick form-control">
+                                    <option value="visible">Show visible</option>
+                                    <option value="hidden">Show hidden</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="type_select" class="col-sm-4 control-label">Report type:</label>
+                            <div class="col-sm-8">
+                                <select id="type_select" class="selectpicker show-tick form-control">
+                                    <option value="adult">Adults</option>
+                                    <option value="site">Breeding sites - storm drains</option>
+                                    <option value="site-o">Breeding sites - other</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="usernote_filter" class="col-sm-4 control-label">User note contains text:</label>
+                            <div class="col-sm-8">
+                                <input id="usernote_filter" type="text" maxlength="20" name="usernote_filter">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-primary" href="{% url 'picture_validation' %}">Clear Filters</a>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="container">
+    <div class="starter-template">
+        <h1>Picture Filter</h1>
+        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type_readable }}
+        <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
+        <div style="text-align: left">
+            <h4>Instructions</h4>
+            <p>This page is meant to be used as a tool to hide images that are obviously not mosquitos or breeding sites. You are looking at the currently unassigned reports; these
+                reports will be passed on to the experts, unless you say otherwise.</p>
+            <p>Take a look, and if you see anything that is very clearly not mosquito related, check the hide checkbox and save.
+                The usual workflow should be as follows:
+                <ul>
+                    <li>Go to page 1</li>
+                    <li>Take a look at the pictures. If you see clearly inappropiate/unrelated pics, check the "Hide" box</li>
+                    <li>Hit the save button (the green disk button in the navigation bar) the reports that you checked will disappear from the list and won't be assigned to experts
+                    for validation</li>
+                    <li>Proceed to page 2</li>
+                    <li>etc.</li>
+                </ul>
+            </p>
+        </div>
+    </div>
+
+    <form id="formset_forms" class="form-vertical" method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {% for form in formset %}
+        <div class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+            {% for photo in form.instance.photos.all %}
+                {% if forloop.first %}
+                    <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+                        <a href="/single_report_map/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"></span></a>
+                        <p class="p-small"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                        <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
+                        <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.server_upload_time }}</p>
+                        <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
+                        {% if form.instance.type == 'site' %}
+                            {% if form.instance.get_site_cat == 0 %}
+                                <p class="p-medium"><span class="label label-warning">This is a storm drain</span></p>
+                            {% else %}
+                                <p class="p-medium"><span class="label label-warning">This is an 'others' site</span></p>
+                            {% endif %}
+                        {% endif %}
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if photo.hide == False %}
+                <div class="grid-item valid">
+                    <a href="/media/{{ photo.photo }}" target="_blank">
+                        <img class="frame" src="{{ photo.get_small_url }}">
+                    </a>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+        <input id="save_formset" type="text" name="save_formset" style="display: none;" value="F">
+        <input id="next_page_input" type="text" name="page" style="display: none;" value="">
+        <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;" value="{{ tasks_per_page }}">
+        <input id="visibility_input" type="text" name="visibility" style="display: none;" value="{{ visibility }}">
+        <input id="usr_note_input" type="text" name="usr_note" style="display: none;" value="{{ usr_note }}">
+        <input id="type_input" type="text" name="type" style="display: none;" value="{{ type }}">
+    </form>
+
+    {% if objects.has_next or objects.has_previous %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if objects.has_previous %}
+                            <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
+                        {% endif %}
+                        <span class="current">
+                            Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                        </span>
+                        {% if objects.has_next %}
+                            <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
+                        {% endif %}
+                        <br>
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
+                               class="form-control input-sm" id="page_input" placeholder="Go to page"
+                               style="width:100px;">
+                                <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+                            </div>
+                        </form>
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+<script>
+        function background_save(qp) {
+            if ($("#formset_forms").length > 0) {
+                $("#formset_forms").submit();
+            } else {
+                window.location.href = qp;
+            }
+        }
+</script>
+<script>
+        $(window).load(function(){
+            var grid = $('.grid').isotope({
+              masonry: {
+                columnWidth: 130
+              }
+            });
+
+            $("#gear").hide();
+
+            var save_button = $("#save_button").click(function () {
+                $("#save_formset").val('T');
+                $("#formset_forms").submit();
+            });
+
+            function go_to_page(){
+                var qp = query_selectors();
+                var selected_page = $("#page_input").val();
+                qp += selected_page;
+                $("#next_page_input").val(selected_page);
+                $("#formset_forms").submit();
+            }
+
+            $("#page_button").on('click', function () {
+                go_to_page();
+            });
+
+            $('#page_input').bind("enterKey",function(e){
+                go_to_page();
+            });
+
+            $('#page_input').keyup(function(e){
+                if(e.keyCode == 13)
+                {
+                    $(this).trigger("enterKey");
+                }
+            });
+
+            var nb = $("#next_page_button");
+            {% if objects.has_next %}
+                nb.show().on('click', function () {
+                    var next_page = "{{ objects.next_page_number }}";
+                    var qp = query_selectors();
+                    qp += 'page=' + next_page;
+                    $("#next_page_input").val(next_page);
+                    $("#formset_forms").submit();
+                });
+            {% else %}
+                nb.hide();
+            {% endif %}
+            });
+
+            var pb = $("#previous_page_button");
+            {% if objects.has_previous %}
+                pb.show().on('click', function () {
+                    var previous_page = "{{ objects.previous_page_number }}";
+                    var qp = query_selectors();
+                    qp += '&page=' + previous_page;
+                    $("#next_page_input").val(previous_page);
+                    $("#formset_forms").submit();
+                });
+            {% else %}
+                pb.hide();
+            {% endif %}
+
+            function query_selectors() {
+                var this_visibility = $("#visibility_select").val();
+                var this_usr_note = $("#usernote_filter").val();
+                var this_type = $("#type_select").val();
+                $("#visibility_input").val(this_visibility);
+                $("#usr_note_input").val(this_usr_note);
+                $("#type_input").val(this_type);
+                var qp = '?visibility=' + this_visibility + '&usr_note=' + this_usr_note + '&type=' + this_type;
+                return(qp)
+            }
+
+            function submit_queries() {
+                $("#gear").show();
+                var qp = query_selectors();
+                background_save(qp);
+            }
+
+            $("#filters_submit_button").on('click', submit_queries);
+
+            $("#visibility_select").val("{{ visibility }}");
+            $("#usernote_filter").val("{{ usr_note }}");
+            $("#type_select").val("{{ type }}");
+</script>
+</html>

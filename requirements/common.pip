@@ -16,3 +16,4 @@ python-dateutil==2.2
 django-debug-toolbar
 django-floppyforms==1.2.0
 python-memcached==1.57
+django-taggit==0.19.1

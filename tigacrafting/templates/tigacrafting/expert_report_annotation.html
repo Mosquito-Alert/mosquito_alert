@@ -12,7 +12,7 @@
         <meta charset="utf-8">{% endblock %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
-    <meta name="description" content="Tigacrafting">
+    <meta name="description" content="MosquitoAlert">
     <meta name="author" content="Movement Ecology Laboratory">
 
     <title>{% block page_title %}Tigacrafting{% endblock %}</title>
@@ -23,9 +23,14 @@
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
     {% endblock %}
 
-    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
-    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
-    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+    <!--script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script-->
+    <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
+    <!--script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script-->
+    <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/tag-it/tag-it.min.js" %}></script>
+    <!--link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}-->
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tag-it/jquery.tagit.css" %}>
 
     <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
     <style>
@@ -103,8 +108,7 @@
                             <span class="icon-bar"></span>
                         </button>
                         <div class="navbar-brand"><span
-                                style="color:#ff9900; font-size: small">Tigatrapp
-                            Validation <i
+                                style="color:#ff9900; font-size: small">MosquitoAlert Validation <i
                                     id="gear"
                                     class="fa fa-refresh fa-spin"></i></span>
                         </div>
@@ -177,6 +181,12 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
+                                <li>
+                                    <select class="selectpicker show-tick form-control" id="note_language_select" class="selectpicker show-tick form-control">
+                                            <option id="note_language_select_es" value="es">Public note lang. - es</option>
+                                            <option id="note_language_select_en" value="en">Public note lang. - en</option>
+                                    </select>
+                                </li>
                             {% block navbar_right_items %}
                             {% endblock %}
                             {% if tasks_per_page_choices %}
@@ -225,15 +235,18 @@
 
             {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
                 <strong>Ordered by:</strong> {{ orderby }}<br>
-                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty -
-                {{ site_certainty }},
-                Status - {{ status }}
+                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}, Tags - {% if tags_filter == '' %} None{% else %}{{ tags_filter }}{% endif %}
             {% endif %}
         {% endblock %}
             <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
 
 
         <div style="text-align: left">
+            <!--<p>Public note message language:</p>
+            <select id="note_language_select">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+            </select>-->
 
             <h4> Instructions</h4>
 
@@ -282,16 +295,29 @@
 
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
-            <div class="col-md-12">
+            <div class="col-md-11">
                 <h4><strong>{{ form.instance.report.type|capfirst }}
                     Report {{ form.instance.report.version_UUID }}</strong>
                     {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
             </div>
+            <div class="col-md-1">
+                <h4>
+                    <a href="mailto:?subject=Report with id {{form.instance.report}}&body=http://{{ request.META.HTTP_HOST }}{% url 'expert_report_annotation' %}?version_uuid={{form.instance.report}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>
+                </h4>
+            </div>
         </div>
         {% block report_title_status_row %}
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-6">
+                    {% if form.instance.simplified_annotation == True %}
+                    <strong>This is a simplified report - </strong>
+                    {% else %}
+                    <strong>This is a full report - </strong>
+                    {% endif %}
                     <strong>Who has this report? </strong> {{ form.instance.report.get_who_has_bootstrap | safe }}
+                </div>
+                <div class="col-md-6">
+                    <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}
                 </div>
             </div>
         {% endblock %}
@@ -306,7 +332,57 @@
 
 
                 {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
-                    `
+                    <div class="form-group">
+                        <div>
+                            <strong>Aedes certainty:</strong><br>
+                            <select id="aedes_certainty_value_{{ form.instance.id }}">
+                                <option value="">--------------</option>
+                                <option value="-3">Unclassified</option>
+                                <option class="red" value="4">Definitely Aedes aegypti</option>
+                                <option class="red" value="3">Probably Aedes aegypti</option>
+                                <option value="2">Definitely Aedes albopictus</option>
+                                <option value="1">Probably Aedes albopictus</option>
+                                <option value="0">Not sure</option>
+                                <option value="-1">Probably neither albopictus nor aegypti</option>
+                                <option value="-2">Definitely not albopictus or aegypti</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% if form.instance.simplified_annotation == False %}
+                    <div class="form-group">
+                        <label>Public Note:</label>
+                        <div>
+                            <button type="button" id="btn_gp_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Nice picture"><span class="glyphicon glyphicon-star-empty"></span></button>
+                            <button type="button" id="btn_yes_thorax_pattern_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Yes thorax pattern"><span class="glyphicon glyphicon-thumbs-up"></span></button>
+                            <button type="button" id="btn_no_thorax_pattern_{{ form.instance.id }}" class="btn btn-success btn-sm" title="No thorax pattern"><span class="glyphicon glyphicon-thumbs-down"></span></button>
+                            <button type="button" id="btn_not_sure_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Not sure photo"><span class="glyphicon glyphicon-camera"></span></button>
+                            <button type="button" id="btn_other_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Other species"><span class="glyphicon glyphicon-remove"></span></button>
+                        </div>
+                        <div class="controls field-public_note" data-placement="top" title="" data-toggle="tooltip" data-original-title="Notes to display on public map">
+                            <textarea id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group" {% if request.user.userstat.is_expert %}style="display:none;"{% endif %}>
+                        <label>Message to User:</label>
+                        <div>
+                            <button type="button" id="btn_pm_discovery_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-map-marker"></span></button>
+                            <button type="button" id="btn_pm_contact_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Contact"><span class="glyphicon glyphicon-envelope"></span></button>
+                        </div>
+                        <div class="controls field-message_to_user" data-placement="top" title="" data-toggle="tooltip" data-original-title="Message that user will receive when viewing report on phone">
+                            <textarea id="message_to_user_{{ form.instance.id }}" cols="40" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Internal Tags:</label>
+                        <div>
+                            <ul id="tags_{{ form.instance.id }}">
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+
+
                     {% form form using "floppyforms/layouts/bootstrap.html" %}
 
                     {% if checked == 'unchecked' or edit_mode == 'edit' %}
@@ -340,19 +416,11 @@
                         {% else %}
 
                     {% if form.instance.report.type == 'adult' %}
-                        {% if request.user.userstat.is_superexpert %}
-                            <strong>Aegypti Certainty:</strong><br>
-                            <div style="border:1px solid #333333;padding:2px;">
-                            {% if form.instance.get_aegypti_certainty_category_display %}
-                                {{ form.instance.get_aegypti_certainty_category_display }}{% else %}---{% endif %}</div>
-                            <br>
-                        {% endif %}
-                        <strong>Tiger Certainty:</strong><br>
+                        <strong>Aedes Certainty:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
-                            {% if form.instance.get_tiger_certainty_category_display %}
-                                {{ form.instance.get_tiger_certainty_category_display }}{% else %}---{% endif %}</div>
-                        <br>
-                        <strong>Internal Tiger Certainty Comments:</strong><br>
+                            {{ form.instance.report.get_final_combined_expert_category }}
+                        </div>
+                        <strong>Internal Aedes Certainty Comments:</strong><br>
                         <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
                             {{ form.instance.tiger_certainty_notes }}</div><br>
                     {% else %}
@@ -363,7 +431,7 @@
                         <br>
                         <strong>Internal Site Certainty Notes:</strong><br>
                         <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
-                            {{ form.instance.site_certainty_notees }}</div><br>
+                            {{ form.instance.site_certainty_notes }}</div><br>
                     {% endif %}
 
                     <strong>Public Note:</strong><br>
@@ -436,8 +504,10 @@
                 </div>
                 <br>
                 <strong>User Notes</strong><br>
-
-                <div style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">
+                {% if form.instance.simplified_annotation == False %}
+                <button type="button" id="btn_copynote_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Copy user note to public note"><span class="glyphicon glyphicon-file" aria-hidden="true"></span></button>
+                {% endif %}
+                <div id="user_note_{{ form.instance.id }}" style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">
                     {{ form.instance.report.note }}
                 </div>
 
@@ -508,10 +578,11 @@
 
                 var this_id = "{{ form.instance.id }}";
 
-                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + "{{ form.aegypti_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
+                //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + "{{ form.aegypti_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
+                //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
+                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + "message_to_user_{{ form.instance.id }}, #" + "tags_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
-
 
 
                 var revise_btn = $("#revise_btn_" + this_id).click(function () {
@@ -519,6 +590,8 @@
                     hidden_photo_fields{{ form.instance.id }}.show();
                     $("#" + revise_id_{{ form.instance.id }}).val(true);
                     $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', false);
+                    //Select by default current status in dropdown, photo, public note and note to user
+                    copy_revise_form_fields({{ form.instance.id }});
                 });
 
                 var confirm_btn = $("#confirm_btn_" + this_id).click(function (e) {
@@ -532,6 +605,7 @@
                         hidden_photo_fields{{ form.instance.id }}.hide();
                         $("#" + revise_id_{{ form.instance.id }}).val(false);
                         $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', true);
+                        clear_form('{{ form.instance.id }}');
                     }
                 });
 
@@ -576,9 +650,11 @@
            value="{{ load_new_reports }}">
     <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;"
            value="{{ tasks_per_page }}">
-    <input id="next_page_input" type="text" name="page" style="display: none;"
-           value="">
+    <input id="note_language" type="text" name="note_language" style="display: none;"
+           value="{{ note_language }}">
+    <input id="next_page_input" type="text" name="page" style="display: none;" value="">
 
+    <input id="tags_filter_input" type="text" name="tags_filter" style="display: none;" value="{{ tags_filter }}">
     </form>
 
 
@@ -647,6 +723,37 @@
 
     </div>
 
+    <div class="modal fade" id="save_block_modal" tabindex="-1" role="dialog"
+         aria-labelledby="save_block_modal_label"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="save_block_modal_label">Submit validation</h4>
+                </div>
+                <div id="save_block_modal_body" class="modal-body">
+                    <p>
+                        The following reports have been marked as validated, but either:</p>
+                        <ul>
+                        <li>you haven't chosen any value from the 'Aedes certainty' dropbox.</li>
+                        <li>you have chosen 'Unclassified' from the 'Aedes certainty' dropbox and made the report status 'public'.</li>
+                        <li>you have flagged the report without internal comment (unexplained flag)</li>
+                        <li>you have hidden the report without internal comment (unexplained hidden)</li>
+                        </ul>
+
+                        <p>Please select a valid value in each of them and hit 'save' again.
+                    </p>
+
+                    <div id="reports_validated_without_input_list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <div class="modal fade" id="save_warning_modal" tabindex="-1" role="dialog"
@@ -744,6 +851,13 @@
                                         <option value="flagged">Flagged</option>
                                         <option value="hidden">Hidden</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="status_select" class="col-sm-4 control-label">Tags:</label>
+                                <div class="col-sm-8">
+                                    <ul id="tags_filter">
+                                    </ul>
                                 </div>
                             </div>
                         </form>
@@ -880,7 +994,464 @@
         })();
     </script>
 
+    <script>
 
+        var index_to_id = {};
+        var id_to_index = {};
+        var final_status_table = {};
+
+        function clear_form(form_id){
+            //Clear UI
+            $("#aedes_certainty_value_" + form_id).selectpicker('val','');
+            //Clear associated hidden input
+            $("#id_form-" + id_to_index[form_id] + "-tiger_certainty_category").val('');
+
+            //Clear UI
+            $("#public_note_" + form_id).val('');
+            //Clear associated hidden input
+            $("#id_form-" + id_to_index[form_id] + "-edited_user_notes").val('');
+
+            $("#message_to_user_" + form_id).val('');
+
+            //Clear UI
+            $("#tags_" + form_id).tagit("removeAll");
+            //Clear associated hidden input
+            $("#id_form-" + id_to_index[form_id] + "-tags").val('');
+
+            $("#id_form-" + id_to_index[form_id] + "-tiger_certainty_notes").val('');
+            $("#id_form-" + id_to_index[form_id] + "-status").selectpicker('val','');
+            $("#id_form-" + id_to_index[form_id] + "-linked_id").val('');
+            $("#id_form-" + id_to_index[form_id] + "-message_for_user").val('');
+        }
+
+        function clean_text(strInputCode){
+            var retVal = strInputCode.replace(/<\/?[^>]+(>|$)/g, "");
+            if(retVal=='None'){
+                return "";
+            }
+            return retVal;
+        }
+
+        function copy_revise_form_fields(form_id){
+            var data = final_status_table[form_id];
+            if( data.score <= 0){
+                $("#aedes_certainty_value_" + form_id).selectpicker('val',data.score);
+                if( data.score == -3 || data.score == -4) {
+                    setTigerCertainty('', form_id);
+                    setAegyptiCertainty('', form_id);
+                } else {
+                    setTigerCertainty(data.score, form_id);
+                    setAegyptiCertainty(data.score, form_id);
+                }
+            }else{
+                if( data.category && data.category.indexOf("albopictus") > -1){
+                    if(data.score == 2){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','2');
+                        setTigerCertainty("2",form_id);
+                    }else if(data.score == 1){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','1');
+                        setTigerCertainty("1",form_id);
+                    }
+                }else if( data.category && data.category.indexOf("aegypti") > -1){
+                    if(data.score == 2){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','4');
+                        setAegyptiCertainty("2", form_id);
+                    }else if(data.score == 1){
+                        $("#aedes_certainty_value_" + form_id).selectpicker('val','3');
+                        setAegyptiCertainty("1", form_id);
+                    }
+                }
+            }
+
+            $("#id_form-" + id_to_index[form_id] + "-status").selectpicker('val',data.status);
+
+            var user_note_clean_text = clean_text(data.user_note);
+            $("#user_note_" + form_id).val(user_note_clean_text);
+            $("#id_form-" + id_to_index[form_id] + "-message_for_user").val(user_note_clean_text);
+
+            var public_note_clean_text = clean_text(data.public_note);
+            $("#public_note_" + form_id).val(public_note_clean_text);
+            $("#id_form-" + id_to_index[form_id] + "-edited_user_notes").val(public_note_clean_text);
+
+            if(data.photo){
+                $('#' + data.photo).attr('checked', true);
+                $("#id_form-" + id_to_index[form_id] + "-best_photo").val(data.photo);
+            }
+        }
+
+        function aedesValueToInput(value, input_id){
+            if(value == '4'){
+                setTigerCertainty("", input_id);
+                setAegyptiCertainty("2", input_id);
+            }else if(value == '3'){
+                setTigerCertainty("", input_id);
+                setAegyptiCertainty("1", input_id);
+            }else if(value == '2'){
+                setTigerCertainty("2", input_id);
+                setAegyptiCertainty("", input_id);
+            }else if(value == '1'){
+                setTigerCertainty("1", input_id);
+                setAegyptiCertainty("", input_id);
+            }else if(value == '0'){
+                setTigerCertainty("0", input_id);
+                setAegyptiCertainty("0", input_id);
+            }else if(value == '-1'){
+                setTigerCertainty("-1", input_id);
+                setAegyptiCertainty("-1", input_id);
+            }else if(value == '-2'){
+                setTigerCertainty("-2", input_id);
+                setAegyptiCertainty("-2", input_id);
+            }else if(value == '-3'){
+                setTigerCertainty("", input_id);
+                setAegyptiCertainty("", input_id);
+            }
+        }
+
+        function inputToPublicNoteValue(input_id){
+            var note = getPublicNote(input_id);
+            $("#public_note_" + input_id).val(note);
+        }
+
+        function inputToUserMessageValue(input_id){
+            var message = getUserMessage(input_id);
+            $("#message_to_user_" + input_id).val(message);
+        }
+
+        function inputToAedesValue(input_id){
+            var i = 0;
+            var tiger_val = getTigerCertainty(input_id);
+            var aegypti_val = getAegyptiCertainty(input_id);
+
+            if ( tiger_val == '' && aegypti_val != '' ){
+                //aegypti
+                if(aegypti_val == '2'){
+                    $("#aedes_certainty_value_" + input_id).val('4');
+                }else if(aegypti_val == '1'){
+                    $("#aedes_certainty_value_" + input_id).val('3');
+                }
+            }else if ( tiger_val != '' && aegypti_val == '' ){
+                //albopictus
+                if(tiger_val == '2'){
+                    $("#aedes_certainty_value_" + input_id).val('2');
+                }else if(tiger_val == '1'){
+                    $("#aedes_certainty_value_" + input_id).val('1');
+                }
+            }else{
+                //any
+                $("#aedes_certainty_value_" + input_id).val(tiger_val);
+            }
+
+            /*if( tiger_val == '-2' && aegypti_val == '2' ){
+                //setDropDown "4"
+                $("#aedes_certainty_value_" + input_id).val('4');
+            }else if( tiger_val == '-1' && aegypti_val == '1'){
+                //setDropDown "3"
+                $("#aedes_certainty_value_" + input_id).val('3');
+            }else if( tiger_val == '2' && aegypti_val == '-2'){
+                //setDropDown "2"
+                $("#aedes_certainty_value_" + input_id).val('2');
+            }else if( tiger_val == '1' && aegypti_val == '-1' ){
+                //setDropDown "1"
+                $("#aedes_certainty_value_" + input_id).val('1');
+            }else if( tiger_val == '0' && aegypti_val == '0'){
+                //setDropDown "0"
+                $("#aedes_certainty_value_" + input_id).val('0');
+            }else if( tiger_val == '-1' && aegypti_val == '-1'){
+                //setDropDown "-1"
+                $("#aedes_certainty_value_" + input_id).val('-1');
+            }else if( tiger_val == '-2' && aegypti_val == '-2'){
+                $("#aedes_certainty_value_" + input_id).val('-2');
+            }else{
+                $("#aedes_certainty_value_" + input_id).val('');
+            }*/
+        }
+
+        function updateHiddenTagFieldsFromUI(){
+            var total_forms = $("#id_form-TOTAL_FORMS").val();
+            for( var i = 0; i < total_forms; i++){
+                var ui_value = getTagsFromUI(index_to_id[i]);
+                var clean_ui_value = cleanUpHiddenInputTagsArray(ui_value);
+                var clean_ui_string = clean_ui_value.join(",");
+                setTags(clean_ui_string, index_to_id[i]);
+            }
+        }
+
+        function setTags(value,input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-tags";
+            $('#'+control_name).val(value);
+        }
+
+        function setTigerCertainty(value,input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-tiger_certainty_category";
+            $('#'+control_name).val(value);
+        }
+
+        function setAegyptiCertainty(value,input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-aegypti_certainty_category";
+            $('#'+control_name).val(value);
+        }
+
+        function getPublicNote(input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-edited_user_notes";
+            var retVal = $('#'+control_name).val();
+            return retVal;
+        }
+
+        function getUserMessage(input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-message_for_user";
+            var retVal = $('#'+control_name).val();
+            return retVal;
+        }
+
+        function getTigerCertainty(input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-tiger_certainty_category";
+            var retVal = $('#'+control_name).val();
+            return retVal;
+        }
+
+        function getTags(input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-tags";
+            var retVal = $('#'+control_name).val();
+            return retVal;
+        }
+
+        function getTagsFromUI(input_id){
+            return $("#tags_" + input_id).tagit("assignedTags");
+        }
+
+        function getAegyptiCertainty(input_id){
+            var control_name = "id_form-" + id_to_index[input_id] + "-aegypti_certainty_category";
+            var retVal = $('#'+control_name).val();
+            return retVal;
+        }
+
+        function cleanUpHiddenInputTagsString(value){
+            if (value == "[]") return [];
+            var tags = value.split(",");
+            var retVal = []
+            for(var i = 0; i < tags.length; i++){
+                var tag_i = tags[i];
+                var res_i = tag_i.replace(/>/g,"").replace("[","").replace("]","");
+                retVal.push(res_i.substring(res_i.lastIndexOf(" ")+1));
+            }
+            return retVal;
+        }
+
+        function cleanUpHiddenInputTagsArray(value){
+            var tags = value;
+            var retVal = []
+            for(var i = 0; i < tags.length; i++){
+                var tag_i = tags[i];
+                var res_i = tag_i.replace(/>/g,"").replace("[","").replace("]","");
+                retVal.push(res_i.substring(res_i.lastIndexOf(" ")+1));
+            }
+            return retVal;
+        }
+
+        function inputToTags(input_id){
+            var tag_string = getTags(input_id);
+            if(!tag_string) tag_string = '';
+            var clean_tags = cleanUpHiddenInputTagsString(tag_string);
+            for(var i = 0; i < clean_tags.length; i++){
+                $("#tags_" + input_id).tagit("createTag", clean_tags[i]);
+            }
+        }
+
+        function buildFilterTagsUI(){
+            var tag_string = $("#tags_filter_input").val();
+            var tag_array = [];
+            if(tag_string){
+                tag_array = tag_string.split(",");
+                $("#tags_filter").tagit("removeAll");
+                for(var i = 0; i < tag_array.length; i++){
+                    $("#tags_filter").tagit("createTag", tag_array[i]);
+                }
+            }
+        }
+
+        $( document ).ready(function() {
+            var total_forms = $("#id_form-TOTAL_FORMS").val();
+            index_to_id = {};
+            id_to_index = {};
+            for( var i = 0; i < total_forms; i++){
+                index_to_id[i] = $("#id_form-" + i + "-id").val();
+                id_to_index[$("#id_form-" + i + "-id").val()] = i;
+            }
+            var final_status;
+            {% for form in formset %}
+
+                final_status = {
+                    score: {{form.instance.report.get_final_combined_expert_score}},
+                    category: '{{form.instance.report.get_final_combined_expert_category}}',
+                    status: {{form.instance.report.get_final_expert_status }},
+                    photo: '{{form.instance.report.get_final_photo_html.id}}',
+                    public_note: '{{form.instance.report.get_final_public_note | linebreaksbr }}',
+                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
+                };
+
+                macro_messages = {
+                    nice_picture: {
+                        es: "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!",
+                        en: "The picture is spectacular and you can see a lot of details of the mosquito's body. Thanks for participating. Great job!"
+                    },
+                    yes_thorax_pattern:{
+                        es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!",
+                        en: "Very good picture! You have managed to make the tiger mosquito easily to identify because you can spot clearly the characteristic white stripe in the thorax, apart from other traits. Thanks for participating!"
+                    },
+                    no_thorax_pattern:{
+                        es: "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+                        en: "With this picture, we can't be completely sure that it's a tiger mosquito. You can't see the typical white stripe in the thorax, but you can see other typical traits of the mosquito tiger.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+                    },
+                    not_sure_photo:{
+                        es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+                        en: "With this picture we can't identify any species, because it's blurry and you can't recognize the typical traits of the tiger mosquito. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+                    },
+                    other_species:{
+                        es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+                        en: "This picture seems to be of another mosquito species, because it doesn't look like a tiger mosquito or a yellow fever mosquito. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+                    },
+                    discovery:{
+                        es: "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!",
+                        en: "Congratulations! Your picture is very important, because you have probably found a tiger mosquito in a zone with little information about this species distribution. If you find more, please send more observations and pictures. Thanks for participating!"
+                    },
+                    contact:{
+                        es: "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!",
+                        en: "We are very interested in your observation, because it could be an exceptional discovery. If you can, please send us more pictures. To supply more detailed information, please contact us via e-mail info@mosquitoalert.com. Thanks for participating, great work!"
+                    }
+                };
+
+                $('#note_language_select').val($('#note_language').val());
+
+                final_status_table[{{ form.instance.id }}] = final_status;
+
+                var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
+                {% if form.instance.simplified_annotation == True %}
+                    hidden_photo_fields{{ form.instance.id }}.hide();
+                {% endif %}
+
+                inputToAedesValue('{{ form.instance.id }}');
+                $("#aedes_certainty_value_{{ form.instance.id }}").change(function(){
+                    aedesValueToInput($(this).val(),'{{ form.instance.id }}');
+                });
+                inputToPublicNoteValue('{{ form.instance.id }}');
+                inputToUserMessageValue('{{ form.instance.id }}');
+
+                $("#btn_copynote_{{ form.instance.id }}").click(function() {
+                    var txt = $("#user_note_{{ form.instance.id }}").text();
+                    if(txt){
+                        txt = txt.trim();
+                    }
+                    $("#public_note_{{ form.instance.id }}").val(txt);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(txt);
+                });
+
+                $("#btn_gp_{{ form.instance.id }}").click(function() {
+                    //var message = "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!";
+                    var message = macro_messages["nice_picture"][$('#note_language').val()];
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_yes_thorax_pattern_{{ form.instance.id }}").click(function() {
+                    //var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!";
+                    var message = macro_messages["yes_thorax_pattern"][$('#note_language').val()];
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_no_thorax_pattern_{{ form.instance.id }}").click(function() {
+                    //var message = "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var message = macro_messages["no_thorax_pattern"][$('#note_language').val()];
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_not_sure_{{ form.instance.id }}").click(function() {
+                    //var message = "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var message = macro_messages["not_sure_photo"][$('#note_language').val()];
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_other_{{ form.instance.id }}").click(function() {
+                    //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var message = macro_messages["other_species"][$('#note_language').val()];
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_pm_discovery_{{ form.instance.id }}").click(function() {
+                    //var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
+                    var message = macro_messages["discovery"][$('#note_language').val()];
+                    $("#message_to_user_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
+                });
+                $("#btn_pm_contact_{{ form.instance.id }}").click(function() {
+                    //var message = "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!";
+                    var message = macro_messages["contact"][$('#note_language').val()];
+                    $("#message_to_user_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
+                });
+                $("#public_note_{{ form.instance.id }}").unbind();
+                $("#public_note_{{ form.instance.id }}").on('input', function (e) {
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val($(this).val());
+                });
+                $("#message_to_user_{{ form.instance.id }}").on('input', function (e) {
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val($(this).val());
+                });
+
+                $("#tags_{{ form.instance.id }}").tagit({
+                    autocomplete: { source: function( request, response ) {
+                        $.ajax({
+                            url: "/api/tags/",
+                            dataType: "json",
+                            data: {
+                                featureClass: "P",
+                                style: "full",
+                                maxRows: 12,
+                                name: request.term
+                            },
+                            success: function( data ) {
+                                 response( $.map( data, function( item ) {
+                                    return {
+                                        label: item.name,
+                                        value: item.name
+                                    }
+                                 }));
+                            }
+                        });
+                    },
+                    minLength: 2
+                    }
+                });
+
+                inputToTags('{{ form.instance.id }}');
+            {% endfor %}
+
+            $("#tags_filter").tagit({
+                autocomplete: { source: function( request, response ) {
+                    $.ajax({
+                        url: "/api/tags/",
+                        dataType: "json",
+                        data: {
+                            featureClass: "P",
+                            style: "full",
+                            maxRows: 12,
+                            name: request.term
+                        },
+                        success: function( data ) {
+                             response( $.map( data, function( item ) {
+                                return {
+                                    label: item.name,
+                                    value: item.name
+                                }
+                             }));
+                        }
+                    });
+                },
+                minLength: 2
+                }
+            });
+
+            buildFilterTagsUI();
+
+        });
+    </script>
 
     <script>
 
@@ -910,6 +1481,7 @@
         function background_save(qp) {
             if ($("#formset_forms").length > 0 && ("{{ pending }}" == 'pending' || "{{ checked }}" == 'unchecked')) {
                 $("[id*='validation_complete']:checked").prop("checked", false);
+                updateHiddenTagFieldsFromUI();
                 $("#formset_forms").submit();
             } else {
                 window.location.href = qp;
@@ -927,24 +1499,57 @@
                     if ($(this).siblings("[id*='revise']").val() == "false") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:green">Confirming Experts</span></li>');
                     }
-                    else if ($(this).siblings(name * ['photo']).val() == "") {
+                    else if ($(this).siblings("[name*='photo']").val() == "") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Revising without photo</span></li>');
                     }
                     else {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:orange">Revising</span></li>');
-
                     }
                 {% else %}
-                    if ($(this).siblings(name * ['photo']).val() == "") {
+                    if ($(this).siblings("[name*='photo']").val() == "" && $(this).siblings("[name*='simplified_annotation']").val() == "False") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">No photo selected</span></li>');
-                    }
-                    else {
+                    } else {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + '</li>');
                     }
                 {% endif %}
+
             });
             $("#save_warning_modal").modal('show');
         }
+
+        function setup_and_launch_mustfix_dialog() {
+            $(".modal").modal("hide");
+            var reports_list_div = $("#reports_validated_without_input_list").empty();
+            reports_list_div.append('<ul></ul>');
+            var reports_list = $("#reports_validated_without_input_list ul");
+            $("[id*='validation_complete']:checked").each(function () {
+
+                var form_id = $(this).siblings("[id*='-id']").val();
+                var index = id_to_index[form_id];
+                var id_string = $(this).siblings("[id*='-id']").attr('id');
+                id_string = id_string.replace("id_form-","").replace("-id","");
+                var title = $('button[data-id="aedes_certainty_value_' + form_id + '"]').attr('title');
+                var flag_title = $('button[data-id="id_form-' + id_string + '-status"]').attr('title');
+                //var flag_title = $('button[data-id="id_form-' + form_id + '-status"]').attr('title');
+                if ( title == '--------------' ){
+                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Validated without selecting Aedes certainty</span></li>');
+                }
+                if ( flag_title == 'flagged' ){
+                    if( $("#id_form-" + id_string + "-tiger_certainty_notes").val() == "" ) {
+                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Flagged without internal Aedes certainty comments</span></li>');
+                    }
+                }
+                if($("#id_form-" + index + "-status").val() == "-1" && $("#id_form-" + index + "-tiger_certainty_notes").val() == ''){
+                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Hidden without internal Aedes certainty comments</span></li>');
+                }
+                if($("#id_form-" + index + "-status").val() == "1" && $("#aedes_certainty_value_" + form_id).val() == '-3'){
+                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Status public and unclassified</span></li>');
+                }
+
+            });
+            $("#save_block_modal").modal('show');
+        }
+
 
 
         function clear_inputs() {
@@ -958,6 +1563,7 @@
             $("#final_status_input").val('na');
             $("#version_uuid_input").val('na');
             $("#linked_id_input").val('na');
+            $("#tags_filter_input").val('');
             $("#load_new_reports_input").val('F');
         }
 
@@ -965,6 +1571,11 @@
         $(document).ready(function () {
 
             $('[data-toggle="tooltip"]').tooltip();
+
+            $('#note_language_select').change(function(){
+                //alert($('#note_language_select').val());
+                $('#note_language').val($('#note_language_select').val());
+            });
 
             $("select").selectpicker({
                 width: 'auto'
@@ -974,17 +1585,62 @@
                 gear.show();
                 $("#scroll_position").val(0);
                 toggle_grab_reports_button();
+                updateHiddenTagFieldsFromUI();
                 $("#formset_forms").submit();
 
             });
 
 
             var save_button = $("#save_button").click(function () {
+                //There's at least one of the forms which is marked as validated
+                var flagged_without_comment = false;
+                var hidden_without_comment = false;
+                var validated_without_aedes_input = false;
+                var unclassified = false;
+                var public_unclassified = false;
                 if ($("[id*='validation_complete']").is(":checked")) {
-                    setup_and_launch_save_warning();
+                    var buttons = $('button[data-id*="aedes_certainty_value"]');
+                    for(var index = 0; index < buttons.size(); index++){
+                        var button_title = buttons[index].attributes["title"].value;
+                        var status = $('#id_form-' + index + '-status').val();
+                        var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
+                        if(button_title == '--------------' && checked){
+                            var validated_without_aedes_input = true;
+                        }
+                        if(button_title == 'Unclassified' && checked){
+                            unclassified = true;
+                        }
+                        //flagged
+                        if(status == '0' && checked){
+                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
+                                flagged_without_comment = true;
+                            }
+                        }
+                        //hidden
+                        if(status == '-1' && checked){
+                            if ( $("#id_form-" + index + "-tiger_certainty_notes").val() == "" ){
+                                hidden_without_comment = true;
+                            }
+                        }
+                        //public
+                        if(status == '1' && checked && button_title == 'Unclassified'){
+                            public_unclassified = true;
+                        }
+                    }
+                    {% if request.user.userstat.is_expert %}
+                        if(validated_without_aedes_input || flagged_without_comment || hidden_without_comment || public_unclassified){
+                            //launch ok dialog and not save
+                            setup_and_launch_mustfix_dialog();
+                        }else{
+                            setup_and_launch_save_warning();
+                        }
+                    {% else %}
+                        setup_and_launch_save_warning();
+                    {% endif %}
                 } else {
                     gear.show();
                     toggle_grab_reports_button();
+                    updateHiddenTagFieldsFromUI();
                     $("#formset_forms").submit();
                 }
             });
@@ -1028,16 +1684,23 @@
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
                 var this_status = $("#status_select").val();
+                var filter_tags = $("#tags_filter").tagit("assignedTags");
+                var str_tags = '';
+                if(filter_tags){
+                    str_tags = filter_tags.join(",");
+                }
                 $("#orderby_input").val(this_orderby);
                 $("#tiger_certainty_input").val(this_tiger_certainty);
                 $("#site_certainty_input").val(this_site_certainty);
                 $("#status_input").val(this_status);
                 $("#pending_input").val(pending);
+                $("#tags_filter_input").val(str_tags);
                 var qp = '?orderby=' + this_orderby;
                 qp += '&tiger_certainty=' + this_tiger_certainty;
                 qp += '&site_certainty=' + this_site_certainty;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;
+                qp += '&tags_filter=' + str_tags;
                 return(qp)
             }
 
@@ -1089,7 +1752,7 @@
             clear_inputs();
             var this_linked_id = $("#linked_id_select").val();
             $("#linked_id_input").val(this_linked_id);
-            var qp = '?linked_id=' + linked_id;
+            var qp = '?linked_id=' + this_linked_id;
             background_save(qp);
         }
 
@@ -1107,14 +1770,28 @@
             background_save(qp);
         });
 
-
-        $("#page_button").on('click', function () {
+        function go_to_page(){
             gear.show();
             var qp = query_selectors();
             var selected_page = $("#page_input").val();
-            qp += selected_page;
+            qp += '&page=' + selected_page;
             $("#next_page_input").val(selected_page);
             background_save(qp);
+        }
+
+        $("#page_button").on('click', function () {
+            go_to_page();
+        });
+
+        $('#page_input').bind("enterKey",function(e){
+                go_to_page();
+            });
+
+        $('#page_input').keyup(function(e){
+            if(e.keyCode == 13)
+            {
+                $(this).trigger("enterKey");
+            }
         });
 
         var nb = $("#next_page_button");

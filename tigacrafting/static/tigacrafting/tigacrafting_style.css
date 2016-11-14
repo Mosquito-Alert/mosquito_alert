@@ -88,3 +88,7 @@ input[type=checkbox]
 .navbar-wrapper .navbar .container {
   width: auto;
 }
+
+.form-group .red {
+    color: red;
+}

@@ -8,14 +8,15 @@ from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
-from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation
+from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES, STATUS_CATEGORIES
+from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES
 from collections import Counter
 import httplib
+from datetime import datetime
 
 
 class TigaUser(models.Model):
@@ -42,6 +43,7 @@ class TigaUser(models.Model):
     class Meta:
         verbose_name = "user"
         verbose_name_plural = "users"
+        ordering = ('user_UUID',)
 
 
 class Mission(models.Model):
@@ -325,8 +327,11 @@ class Report(models.Model):
         result = False
         for this_response in these_responses:
             if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer.startswith('Embornal') or this_response.answer.startswith('Sumidero') or this_response.answer.startswith('Storm')
+                    this_response.question.startswith('Type') or \
+                    this_response.question.startswith('Is this a storm drain') or \
+                    this_response.question.startswith(u'\xc9s un embornal') or \
+                    this_response.question.startswith(u'\xbfEs un imbornal'):
+                result = this_response.answer.startswith('Embornal') or this_response.answer.startswith('Sumidero') or this_response.answer.startswith('Storm') or this_response.answer.startswith('Yes') or this_response.answer.startswith(u'S\xed')
         return result
 
     def get_site_fonts(self):
@@ -521,9 +526,42 @@ class Report(models.Model):
                 if self.type == 'adult':
                     result['tiger_certainty_category'] = self.get_final_expert_score()
                     result['aegypti_certainty_category'] = self.get_final_superexpert_aegypti_score()
+                    classification = self.get_mean_combined_expert_adult_score()
+                    result['score'] = int(round(classification['score']))
+                    if result['score'] <= 0:
+                        result['classification'] = 'none'
+                    else:
+                        if classification['is_aegypti'] == True:
+                            result['classification'] = 'aegypti'
+                        elif classification['is_albopictus'] == True:
+                            result['classification'] = 'albopictus'
+                        elif classification['is_none'] == True:
+                            result['classification'] = 'none'
+                        else:
+                            #This should NEVER happen. however...
+                            result['classification'] = 'conflict'
                 elif self.type == 'site':
                     result['site_certainty_category'] = self.get_final_expert_score()
                 return result
+        return None
+
+    # Convenience method, used only in the nearby_reports API call
+    def get_simplified_adult_movelab_annotation(self):
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True):
+            result = {}
+            if self.type == 'adult':
+                classification = self.get_mean_combined_expert_adult_score()
+                result['score'] = int(round(classification['score']))
+                if classification['is_aegypti'] == True:
+                    result['classification'] = 'aegypti'
+                elif classification['is_albopictus'] == True:
+                    result['classification'] = 'albopictus'
+                elif classification['is_none'] == True:
+                    result['classification'] = 'none'
+                else:
+                    # This should NEVER happen. however...
+                    result['classification'] = 'conflict'
+            return result
         return None
 
     # return the aegypti category; if there are several superexperts (shouldn't happen, I think) with certainty values return smallest
@@ -550,20 +588,80 @@ class Report(models.Model):
             return None
         return max_movelab_annotation.task.tiger_validation_score_cat
 
+    def get_tiger_responses_text(self):
+        if self.type != 'adult':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        for response in these_responses:
+            result[response.question] = response.answer
+        return result
+
+    def get_tiger_responses_json_friendly(self):
+        if self.type != 'adult':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        i = 1
+        for response in these_responses:
+            item = {}
+            item["q"] = response.question
+            item["a"] = response.answer
+            result["q_" + str(i)] = item
+            i = i + 1
+        return result
+
     def get_tiger_responses(self):
         if self.type != 'adult':
             return None
         these_responses = self.responses.all()
         result = {}
-        if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
-            q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
+        if these_responses.filter(Q(question=u'Is it small and black with white stripes?') | Q(question=u'\xc9s petit i negre amb ratlles blanques?') | Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
+            q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?') | Q(question=u'\xc9s petit i negre amb ratlles blanques?') | Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
             result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-        if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
-            q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
+        if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?') | Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?') | Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
+            q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?') | Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?') | Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
             result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-        if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
-            q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
+        if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
+            q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
             result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
+        return result
+
+    # def get_tiger_responses(self):
+    #     if self.type != 'adult':
+    #         return None
+    #     these_responses = self.responses.all()
+    #     result = {}
+    #
+    #     if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
+    #         q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
+    #         result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
+    #     elif these_responses.filter(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
+    #         q1r = these_responses.get(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
+    #         result['q1_response'] = -2 if q1r in [u'Like Ae. albopictus', u'Com Ae. albopictus',u'Como Ae. albopictus'] else -3 if q1r in [u'Like Ae. aegypti', u'Com Ae. aegypti', u'Como Ae. aegypti'] else -4 if q1r in [u'Neither', u'Cap dels dos', u'None of them'] else -5
+    #
+    #     if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
+    #         q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
+    #         result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
+    #     elif these_responses.filter(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
+    #         q2r = these_responses.get(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
+    #         result['q2_response'] = -2 if q2r in [u'Thorax like Ae. albopictus', u'T\xf3rax com Ae. albopictus', u'T\xf3rax like Ae. albopictus'] else -3 if q2r in [u'Thorax like Ae. aegypti', u'T\xf3rax com Ae. aegypti', u'T\xf3rax como Ae. aegypti'] else -4 if q2r in [u'Neither', u'Cap dels dos', u'Ninguno de los dos'] else -5
+    #
+    #     if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
+    #         q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
+    #         result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
+    #     elif these_responses.filter(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
+    #         q3r = these_responses.get(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
+    #         result['q3_response'] = -2 if q3r in [u'Abdomen like a Ae. albopictus',u'Abdomen com Ae. albopictus',u'Abdomen como Ae. albopictus'] else -3 if q3r in [u'Abdomen like Ae. aegypti', u'Abdomen com Ae. aegypti',u'Abdomen como Ae. aegypti'] else -4 if q3r in [u'Neither', u'Cap dels dos',u'Ninguno de los dos'] else -5
+    #     return result
+
+    def get_site_responses_text(self):
+        if self.type != 'site':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        for response in these_responses:
+            result[response.question] = response.answer
         return result
 
     def get_site_responses(self):
@@ -613,27 +711,308 @@ class Report(models.Model):
         n = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).count()
         return n
 
-    def get_mean_expert_adult_score(self):
+    def get_mean_expert_adult_score_aegypti(self):
         sum_scores = 0
         mean_score = -3
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, tiger_certainty_category__isnull=False).count() == 0:
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, aegypti_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, aegypti_certainty_category__isnull=False).count() == 0:
             return -3
-        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
         if super_scores:
             for this_score in super_scores:
                 if this_score:
                     sum_scores += this_score
             mean_score = sum_scores / float(super_scores.count())
             return mean_score
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, tiger_certainty_category__isnull=False).count() == 0:
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, aegypti_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, aegypti_certainty_category__isnull=False).count() == 0:
             return -3
-        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
         if expert_scores:
             for this_score in expert_scores:
                 if this_score:
                     sum_scores += this_score
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
+
+    def get_mean_expert_adult_score(self):
+        sum_scores = 0
+        mean_score = -3
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True,tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True,tiger_certainty_category__isnull=False).count() == 0:
+            return -3
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        if super_scores:
+            for this_score in super_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+            return mean_score
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=True).count() > 0 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=False).count() == 0:
+            return -3
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        if expert_scores:
+            for this_score in expert_scores:
+                if this_score:
+                    sum_scores += this_score
+            mean_score = sum_scores / float(expert_scores.count())
+        return mean_score
+
+    def get_mean_expert_adult_classification_data(self):
+
+        status = {}
+
+        status['unclassified_by_superexpert'] = False
+        status['unclassified_by_all_experts'] = False
+
+        status['albopictus_classified_by_superexpert'] = False
+        status['albopictus_classified_by_expert'] = False
+        status['albopictus_superexpert_classification_count'] = -5
+        status['albopictus_superexpert_classification_score'] = -5
+        status['albopictus_expert_classification_count'] = -5
+        status['albopictus_expert_classification_score'] = -5
+        status['albopictus_final_score'] = -5
+
+        status['aegypti_classified_by_superexpert'] = False
+        status['aegypti_classified_by_expert'] = False
+        status['aegypti_superexpert_classification_count'] = -5
+        status['aegypti_superexpert_classification_score'] = -5
+        status['aegypti_expert_classification_count'] = -5
+        status['aegypti_expert_classification_score'] = -5
+        status['aegypti_final_score'] = -5
+
+        #Both unclassified - superexpert
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True,tiger_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True,tiger_certainty_category__isnull=False).count() == 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True,aegypti_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True,aegypti_certainty_category__isnull=False).count() == 0:
+            status['unclassified_by_superexpert'] = True
+            status['albopictus_final_score'] = -3
+            status['aegypti_final_score'] = -3
+
+        # Both unclassified - expert
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,tiger_certainty_category__isnull=False).count() == 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,aegypti_certainty_category__isnull=True).count() > 0 and \
+                        ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,aegypti_certainty_category__isnull=False).count() == 0:
+            status['unclassified_by_all_experts'] = True
+            status['albopictus_final_score'] = -3
+            status['aegypti_final_score'] = -3
+
+        #Classified Albopictus - superexpert
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        superexpert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if super_scores:
+            for this_score in super_scores:
+                #if this_score:
+                status['albopictus_classified_by_superexpert'] = True
+                superexpert_score_num = superexpert_score_num + 1
+                sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+        status['albopictus_superexpert_classification_count'] = superexpert_score_num
+        status['albopictus_superexpert_classification_score'] = mean_score
+        status['albopictus_final_score'] = mean_score
+
+        #Classified Aegypti - superexpert
+        super_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
+        superexpert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if super_scores:
+            for this_score in super_scores:
+                #if this_score:
+                status['aegypti_classified_by_superexpert'] = True
+                superexpert_score_num = superexpert_score_num + 1
+                sum_scores += this_score
+            mean_score = sum_scores / float(super_scores.count())
+        status['aegypti_superexpert_classification_count'] = superexpert_score_num
+        status['aegypti_superexpert_classification_score'] = mean_score
+        status['aegypti_final_score'] = mean_score
+
+        #Classified Albopictus - expert
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).exclude(tiger_certainty_category__isnull=True).values_list('tiger_certainty_category', flat=True)
+        expert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if expert_scores:
+            for this_score in expert_scores:
+                #if this_score:
+                status['albopictus_classified_by_expert'] = True
+                expert_score_num = expert_score_num + 1
+                sum_scores += this_score
+            mean_score = sum_scores / float(expert_scores.count())
+        status['albopictus_expert_classification_count'] = expert_score_num
+        status['albopictus_expert_classification_score'] = mean_score
+        if status['albopictus_classified_by_superexpert'] == False:
+            status['albopictus_final_score'] = mean_score
+
+        #Classified Aegypti - expert
+        expert_scores = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).exclude(aegypti_certainty_category__isnull=True).values_list('aegypti_certainty_category', flat=True)
+        expert_score_num = 0
+        sum_scores = 0
+        mean_score = -3
+        if expert_scores:
+            for this_score in expert_scores:
+                #if this_score:
+                status['aegypti_classified_by_expert'] = True
+                expert_score_num += 1
+                sum_scores += this_score
+            mean_score = sum_scores / float(expert_scores.count())
+        status['aegypti_expert_classification_count'] = expert_score_num
+        status['aegypti_expert_classification_score'] = mean_score
+        if status['aegypti_classified_by_superexpert'] == False:
+            status['aegypti_final_score'] = mean_score
+
+        return status
+
+    def get_final_combined_expert_category(self):
+        # if self.type == 'site':
+        #      return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
+        # elif self.type == 'adult':
+        #      return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[self.get_final_expert_score()]
+        classification = self.get_mean_combined_expert_adult_score()
+        score = int(round(classification['score']))
+        if score == -4:
+            return "Conflict"
+        if score <= 0:
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[score]
+        else:
+            if classification['is_aegypti']:
+                return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES_SEPARATED))[score]
+            elif classification['is_albopictus'] or classification['is_none']:
+                return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[score]
+            else:
+                return "Conflict"
+
+
+    def get_mean_combined_expert_adult_score(self):
+        status = self.get_mean_expert_adult_classification_data()
+        albopictus_score = status['albopictus_final_score']
+        aegypti_score = status['aegypti_final_score']
+
+        classification = {}
+
+        classification['is_aegypti'] = False
+        classification['is_albopictus'] = False
+        classification['is_none'] = False
+        classification['conflict'] = False
+        classification['score'] = -4
+
+        if status['unclassified_by_superexpert'] == True:
+            classification['is_none'] = True
+            classification['score'] = -3
+            #return -3
+        else:
+            #unclassified by everyone
+            if status['unclassified_by_all_experts'] == True and status['unclassified_by_superexpert'] == True:
+                classification['is_none'] = True
+                classification['score'] = -3
+            elif status['unclassified_by_all_experts'] == True and status['unclassified_by_superexpert'] == False:
+                if status['albopictus_classified_by_superexpert'] == True:
+                    classification['is_albopictus'] = True
+                    classification['score'] = status['albopictus_superexpert_classification_score']
+                elif status['aegypti_classified_by_superexpert'] == True:
+                    classification['is_aegypti'] = True
+                    classification['score'] = status['aegypti_superexpert_classification_score']
+                else:
+                    classification['is_none'] = True
+                    classification['score'] = -3
+                #return -3
+            else: #Not left null by experts or superexperts
+                #Classified either way by superexpert
+                if status['aegypti_classified_by_superexpert'] == True and status['albopictus_classified_by_superexpert'] == False:
+                    classification['is_aegypti'] = True
+                    classification['score'] = status['aegypti_superexpert_classification_score']
+                    #return status['aegypti_superexpert_classification_score']
+                elif status['aegypti_classified_by_superexpert'] == False and status['albopictus_classified_by_superexpert'] == True:
+                    classification['is_albopictus'] = True
+                    classification['score'] = status['albopictus_superexpert_classification_score']
+                    #return status['albopictus_superexpert_classification_score']
+                elif status['aegypti_classified_by_superexpert'] == True and status['albopictus_classified_by_superexpert'] == True:
+                    if status['aegypti_superexpert_classification_score'] <= 0 and status['albopictus_superexpert_classification_score'] <= 0:
+                        classification['is_none'] = True
+                        classification['score'] = status['albopictus_superexpert_classification_score']
+                    elif status['aegypti_superexpert_classification_score'] > 0 and status['albopictus_superexpert_classification_score'] <= 0:
+                        classification['is_aegypti'] = True
+                        classification['score'] = status['aegypti_superexpert_classification_score']
+                    elif status['aegypti_superexpert_classification_score'] <= 0 and status['albopictus_superexpert_classification_score'] > 0:
+                        classification['is_albopictus'] = True
+                        classification['score'] = status['albopictus_superexpert_classification_score']
+                    else:
+                        # Only possible if more than one superexpert and they say opposite things -> BAD
+                        classification['conflict'] = True
+                        classification['score'] = -4
+                else:  # Neither species classified by superexpert
+                    if albopictus_score >= 0 and aegypti_score >= 0: #conflict -> experts reasonably sure they are different species - i.e
+                        if status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                            classification['is_albopictus'] = True
+                            classification['score'] = status['albopictus_expert_classification_score']
+                            #return status['albopictus_expert_classification_score']
+                        elif status['albopictus_expert_classification_count'] < status['aegypti_expert_classification_count']:
+                            classification['is_aegypti'] = True
+                            classification['score'] = status['aegypti_expert_classification_score']
+                            #return status['aegypti_expert_classification_score']
+                        elif status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count'] and albopictus_score == aegypti_score:
+                            if albopictus_score > 0:
+                                classification['conflict'] = True
+                                classification['score'] = -4
+                            else:
+                                classification['is_none'] = True
+                                classification['score'] = albopictus_score
+                        else:#conflict
+                            classification['conflict'] = True
+                            classification['score'] = -4
+                            #return -4
+                    elif albopictus_score > 0 and aegypti_score <= 0:
+                        if aegypti_score == -3:
+                            classification['is_albopictus'] = True
+                            classification['score'] = status['albopictus_expert_classification_score']
+                            #return status['albopictus_expert_classification_score']
+                        else:
+                            if status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                                classification['is_albopictus'] = True
+                                classification['score'] = status['albopictus_expert_classification_score']
+                                #return status['albopictus_expert_classification_score']
+                            else:
+                                classification['is_aegypti'] = True
+                                classification['score'] = status['aegypti_expert_classification_score']
+                                #return status['aegypti_expert_classification_score']
+
+                    elif albopictus_score <= 0 and aegypti_score > 0: #conflict -> Some experts reasonably sure is aegypti, some think is neither or none
+                        if albopictus_score == -3:
+                            classification['is_aegypti'] = True
+                            classification['score'] = status['aegypti_expert_classification_score']
+                            #return status['aegypti_expert_classification_score']
+                        else:
+                            if status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                                classification['is_albopictus'] = True
+                                classification['score'] = status['albopictus_expert_classification_score']
+                                #return status['albopictus_expert_classification_score']
+                            else:
+                                classification['is_aegypti'] = True
+                                classification['score'] = status['aegypti_expert_classification_score']
+                                #return status['aegypti_expert_classification_score']
+                    elif albopictus_score <= 0 and aegypti_score <= 0:
+                        #Case 1A, 1B, -2 -> Counts as albo -0.5, aegy -0.5
+                        if status['albopictus_expert_classification_count'] == status['aegypti_expert_classification_count'] and status['albopictus_expert_classification_count'] != 3 and status['aegypti_expert_classification_count'] != 3:
+                            if status['aegypti_expert_classification_score'] == status['albopictus_expert_classification_score']:
+                                classification['is_none'] = True
+                                classification['score'] = albopictus_score
+                            else:
+                                classification['conflict'] = True
+                                classification['score'] = -4
+                        elif status['albopictus_expert_classification_count'] > status['aegypti_expert_classification_count']:
+                            classification['is_albopictus'] = True
+                            classification['score'] = status['albopictus_expert_classification_score']
+                        elif status['albopictus_expert_classification_count'] < status['aegypti_expert_classification_count']:
+                            classification['is_aegypti'] = True
+                            classification['score'] = status['aegypti_expert_classification_score']
+                        else:
+                            classification['is_none'] = True
+                            classification['score'] = albopictus_score
+                        #return albopictus_score
+        #unreachable, in theory - left here for security purposes
+        return classification
+
 
     def get_mean_expert_site_score(self):
         sum_scores = 0
@@ -657,6 +1036,19 @@ class Report(models.Model):
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
 
+    def get_final_combined_expert_score(self):
+        score = -3
+        if self.type == 'site':
+            score = self.get_mean_expert_site_score()
+        elif self.type == 'adult':
+            classification = self.get_mean_combined_expert_adult_score()
+            score = classification['score']
+            #score = self.get_mean_combined_expert_adult_score()
+        if score is not None:
+            return int(round(score))
+        else:
+            return -3
+
     def get_final_expert_score(self):
         score = -3
         if self.type == 'site':
@@ -668,11 +1060,28 @@ class Report(models.Model):
         else:
             return -3
 
+    def get_final_expert_score_aegypti(self):
+        score = -3
+        if self.type == 'site':
+            score = self.get_mean_expert_site_score()
+        elif self.type == 'adult':
+            score = self.get_mean_expert_adult_score_aegypti()
+        if score is not None:
+            return int(round(score))
+        else:
+            return -3
+
     def get_final_expert_category(self):
         if self.type == 'site':
             return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
         elif self.type == 'adult':
-            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_final_expert_score()]
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[self.get_final_expert_score()]
+
+    def get_final_expert_category_aegypti(self):
+        if self.type == 'site':
+            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
+        elif self.type == 'adult':
+            return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES_SEPARATED))[self.get_final_expert_score_aegypti()]
 
     def get_final_expert_status(self):
         result = 1
@@ -704,6 +1113,41 @@ class Report(models.Model):
         result = '<span class="label label-default" style="background-color:' + ('red' if self.get_final_expert_score() == 2 else ('orange' if self.get_final_expert_score() == 1 else ('white' if self.get_final_expert_score() == 0 else ('grey' if self.get_final_expert_score() == -1 else 'black')))) + ';">' + self.get_final_expert_category() + '</span>'
         return result
 
+    def get_tags(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        s = set()
+        for ano in these_annotations:
+            tags = ano.tags.all()
+            for tag in tags:
+                s.add(tag)
+        return s
+
+    def get_tags_string(self):
+        result = ''
+        s = self.get_tags()
+        if s:
+            i = 0
+            for tag in s:
+                result += tag.name
+                if i != len(s) - 1:
+                    result += ','
+                i += 1
+        return result
+
+    def get_tags_bootstrap(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        result = ''
+        s = set()
+        for ano in these_annotations:
+            tags = ano.tags.all()
+            for tag in tags:
+                if not tag in s:
+                    s.add(tag)
+                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by ' + ano.user.username + '" data-placement="bottom">' + (tag.name) + '</span>'
+        if(len(s)==0):
+            return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
+        return result
+
     def get_who_has(self):
         result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
@@ -714,6 +1158,11 @@ class Report(models.Model):
             if i > 0:
                 result += ', '
         return result
+
+    def get_who_has_count(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        i = these_annotations.count()
+        return i
 
     def get_who_has_bootstrap(self):
         result = ''
@@ -765,6 +1214,26 @@ class Report(models.Model):
             result += '<p>Status: ' + str(ano.statu) + '</p>'
         return result
 
+    def get_final_photo_url_for_notification(self):
+        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
+            super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
+            if super_photos:
+                winning_photo_id = Counter(super_photos).most_common()[0][0]
+                if winning_photo_id:
+                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
+                    if winning_photo and winning_photo.count() > 0:
+                        return Photo.objects.get(pk=winning_photo_id).get_medium_url()
+            return None
+        else:
+            expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, best_photo__isnull=False).values_list('best_photo', flat=True)
+            if expert_photos:
+                winning_photo_id = Counter(expert_photos).most_common()[0][0]
+                if winning_photo_id:
+                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
+                    if winning_photo and winning_photo.count() > 0:
+                        return Photo.objects.get(pk=winning_photo_id).get_medium_url()
+            return None
+
     def get_final_photo_html(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
             super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
@@ -783,6 +1252,11 @@ class Report(models.Model):
                     winning_photo = Photo.objects.filter(pk=winning_photo_id)
                     if winning_photo and winning_photo.count() > 0:
                         return Photo.objects.get(pk=winning_photo_id)
+            else:
+                photos = Photo.objects.filter(report=self)
+                if photos and len(photos) == 1:
+                    if photos[0] and not photos[0].hide:
+                        return photos[0]
             return None
 
     def get_final_public_note(self):
@@ -852,14 +1326,19 @@ class Report(models.Model):
     latest_version = property(get_is_latest)
     visible = property(show_on_map)
     movelab_annotation = property(get_movelab_annotation)
+    simplified_annotation = property(get_simplified_adult_movelab_annotation)
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)
     tiger_responses = property(get_tiger_responses)
+    tiger_responses_text = property(get_tiger_responses_text)
     site_responses = property(get_site_responses)
+    site_responses_text = property(get_site_responses_text)
     creation_date = property(get_creation_date)
     creation_day_since_launch = property(get_creation_day_since_launch)
     creation_year = property(get_creation_year)
     creation_month = property(get_creation_month)
+    n_photos = property(get_n_photos)
+    final_expert_status_text = property(get_final_expert_status)
 
     class Meta:
         unique_together = ("user", "version_UUID")
@@ -1071,3 +1550,13 @@ class CoverageAreaMonth(models.Model):
 
     class Meta:
         unique_together = ("lat", "lon", "year", "month")
+
+class Notification(models.Model):
+    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
+    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
+    expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
+    date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
+    expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
+    photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
+    acknowledged = models.BooleanField(default=False,help_text='This is set to True through the public API, when the user signals that the message has been received')

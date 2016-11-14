@@ -10,8 +10,7 @@
 
     {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
     <strong>Ordered by:</strong> {{ orderby }}<br>
-    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status -
-    {{ status }}
+    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}, Tags - {% if tags_filter == '' %} None{% else %}{{ tags_filter }}{% endif %}
     {% endif %}
 {% endblock %}
 
@@ -91,12 +90,14 @@
 
 {% block report_title_status_row %}
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <a role="button" data-toggle="collapse" href="#current_status_collapse{{ form.instance.id }}"
-               aria-expanded="false" aria-controls="current_status_collapse{{ form.instance.id }}"><i
-                    class="fa fa-plus-square-o"></i></a> <strong>Current
-            Status:</strong> {{ form.instance.report.get_final_expert_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}
-
+               aria-expanded="false" aria-controls="current_status_collapse{{ form.instance.id }}"><i class="fa fa-plus-square-o"></i></a>
+            {{ form.instance.report.get_final_expert_status_bootstrap | safe }}
+            <!--<strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}
+            <strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score_aegypti text=form.instance.report.get_final_expert_category_aegypti %}-->
+            <strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_combined_expert_score text=form.instance.report.get_final_combined_expert_category %}
+            <!--<strong>Current Status:</strong>  {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}-->
 
             <div class="collapse" id="current_status_collapse{{ form.instance.id }}">
                 <div class="well">
@@ -134,6 +135,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="col-md-6">
+            <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}
         </div>
     </div>
 {% endblock %}
@@ -240,14 +244,21 @@
             var this_tiger_certainty = $("#tiger_certainty_select").val();
             var this_site_certainty = $("#site_certainty_select").val();
             var this_status = $("#status_select").val();
+            var filter_tags = $("#tags_filter").tagit("assignedTags");
+            var str_tags = '';
+            if(filter_tags){
+                str_tags = filter_tags.join(",");
+            }
             $("#orderby_input").val(this_orderby);
             $("#tiger_certainty_input").val(this_tiger_certainty);
             $("#site_certainty_input").val(this_site_certainty);
             $("#status_input").val(this_status);
             $("#pending_input").val(pending);
+            $("#tags_filter_input").val(str_tags);
             var qp = '?orderby=' + this_orderby;
             qp += '&tiger_certainty=' + this_tiger_certainty;
             qp += '&site_certainty=' + this_site_certainty;
+            qp += '&tags_filter=' + str_tags;
             qp += '&status=' + this_status;
             qp += '&pending=' + pending;
             if (flagged_btn.hasClass("active")) {

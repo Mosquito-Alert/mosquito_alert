@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from tigaserver_app.models import TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+from taggit.models import Tag
+from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth
 
 
@@ -77,7 +78,6 @@ class ReportResponseSerializer(serializers.ModelSerializer):
         model = ReportResponse
         fields = ['question', 'answer']
 
-
 class ReportSerializer(serializers.ModelSerializer):
 
     user = UserListingField
@@ -151,7 +151,17 @@ class ConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Configuration
 
-
+class NearbyReportSerializer(serializers.ModelSerializer):
+    version_UUID = serializers.CharField()
+    lon = serializers.Field()
+    lat = serializers.Field()
+    simplified_annotation = serializers.Field()
+    class Meta:
+        model = Report
+        exclude = ('version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time',
+                   'location_choice', 'current_location_lon', 'current_location_lat', 'mission',
+                   'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
+                   'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide', 'type')
 class MapDataSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
     creation_time = serializers.DateTimeField()
@@ -165,10 +175,14 @@ class MapDataSerializer(serializers.ModelSerializer):
     lat = serializers.Field()
     movelab_annotation = serializers.Field()
     tiger_responses = serializers.Field()
+    tiger_responses_text = serializers.Field()
     site_responses = serializers.Field()
+    site_responses_text = serializers.Field()
     tigaprob_cat = serializers.Field()
     visible = serializers.Field()
     latest_version = serializers.Field()
+    n_photos = serializers.Field()
+    final_expert_status_text = serializers.Field()
 
     class Meta:
         model = Report
@@ -201,3 +215,23 @@ class CoverageMonthMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverageAreaMonth
         fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('id','name')
+
+class NotificationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    report_id = serializers.CharField()
+    user_id = serializers.CharField()
+    expert_id = serializers.IntegerField()
+    date_comment = serializers.Field()
+    expert_comment = serializers.CharField()
+    expert_html = serializers.CharField()
+    photo_url = serializers.CharField()
+    acknowledged = serializers.BooleanField()
+
+    class Meta:
+        model = Notification
+        fields = ('id','report_id','user_id','expert_id','date_comment','expert_comment','expert_html','photo_url','acknowledged')

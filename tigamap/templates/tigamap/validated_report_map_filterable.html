@@ -394,6 +394,51 @@ function get_icon(report) {
     var score = -3;
     if (report.type == 'adult') {
         if (report.movelab_annotation != null) {
+            if (report.movelab_annotation.classification){
+                classif = report.movelab_annotation.classification;
+                score = report.movelab_annotation.score;
+                if(classif=='aegypti'){
+                    return score == 2 ? blue_red_icon : (score == 1 ? blue_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (score == 0 ? yellow_white_icon : yellow_yellow_icon))));
+                }else if(classif=='albopictus'){
+                    return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (score == 0 ? yellow_white_icon : yellow_yellow_icon))));
+                }else if(classif='none'){
+                    return score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (score == 0 ? yellow_white_icon : yellow_yellow_icon));
+                }
+            }
+            if (report.movelab_annotation.tiger_certainty_category != null ){
+                if(report.movelab_annotation.aegypti_certainty_category != null){
+                    var tiger_score = report.movelab_annotation.tiger_certainty_category;
+                    var aegypti_score = report.movelab_annotation.aegypti_certainty_category;
+                    if(tiger_score <= 0 && aegypti_score <= 0){
+                        return tiger_score == -1 ? yellow_grey_icon : (tiger_score == -2 ? yellow_black_icon : (tiger_score == 0 ? yellow_white_icon : yellow_yellow_icon));
+                    }else if( tiger_score > 0 ){
+                        if (tiger_score == 2){
+                            return yellow_red_icon;
+                        }else if(tiger_score == 1){
+                            return yellow_orange_icon;
+                        }else{
+                            return yellow_yellow_icon;
+                        }
+                    }else if( aegypti_score > 0 ){
+                        if (aegypti_score == 2){
+                            return blue_red_icon;
+                        }else if(aegypti_score == 1){
+                            return blue_orange_icon;
+                        }else{
+                            return yellow_yellow_icon;
+                        }
+                    }else{
+                        return yellow_yellow_icon;
+                    }
+                }else{
+                    score = report.movelab_annotation.tiger_certainty_category;
+                    return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (score == 0 ? yellow_white_icon : yellow_yellow_icon))));
+                }
+            } else {
+                return yellow_yellow_icon;
+            }
+
+            /*
             if (report.movelab_annotation.aegypti_certainty_category && report.movelab_annotation.aegypti_certainty_category != null){
                 score = report.movelab_annotation.aegypti_certainty_category;
                 if(score == 2){
@@ -408,6 +453,7 @@ function get_icon(report) {
                 score = report.movelab_annotation.tiger_certainty_category;
             }
             return score == 2 ? yellow_red_icon : (score == 1 ? yellow_orange_icon : (score == -1 ? yellow_grey_icon : (score == -2 ? yellow_black_icon : (score == 0 ? yellow_white_icon : yellow_yellow_icon))));
+            */
         } else {
             return yellow_yellow_icon;
         }
@@ -516,14 +562,34 @@ function make_popup_text(value) {
         validation_link = '<br><a style="color:white;" class="btn btn-primary btn-sm" href="{% url 'expert_report_status' %}?version_uuid=' + value.version_UUID + '">View in Expert System <span class="glyphicon glyphicon-open"></span></a>';
     {% endif %}
     if (value.type == 'adult') {
-        if (value.movelab_annotation != null) {
-            if(value.movelab_annotation.aegypti_certainty_category && value.movelab_annotation.aegypti_certainty_category!=null){
-                return '<table class="popup-table">' + make_experts_row_aegypti(value.movelab_annotation.aegypti_certainty_category, value.type) + make_photo_row(value.movelab_annotation.photo_html) + '</table>' + validation_link;
-            }else{
-                return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+        if (value.movelab_annotation && value.movelab_annotation.score){
+            var score = value.movelab_annotation.score
+            var classif = value.movelab_annotation.classification
+            if(classif=='albopictus'){
+                return '<table class="popup-table">' + make_experts_row(score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+            }else if(classif=='aegypti'){
+                return '<table class="popup-table">' + make_experts_row_aegypti(score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+            }else if(classif=='none'){
+                return '<table class="popup-table">' + make_experts_row(score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
             }
-        } else {
-            return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>' + validation_link;
+        }else{
+            if (value.movelab_annotation != null) {
+                var tiger_score = value.movelab_annotation.tiger_certainty_category;
+                var aegypti_score = value.movelab_annotation.aegypti_certainty_category;
+                if( aegypti_score != null){
+                    if(tiger_score <= 0 && aegypti_score <= 0){
+                        return '<table class="popup-table">' + make_experts_row(tiger_score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+                    }else if( tiger_score > 0 ){
+                        return '<table class="popup-table">' + make_experts_row(tiger_score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+                    }else if( aegypti_score > 0 ){
+                        return '<table class="popup-table">' + make_experts_row(aegypti_score, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+                    }
+                }else{
+                    return '<table class="popup-table">' + make_experts_row(value.movelab_annotation.tiger_certainty_category, value.type) + make_crowd_row(value.movelab_annotation.crowdcrafting_score_cat, value.movelab_annotation.crowdcrafting_n_response, value.type) + make_user_response_row(value.tiger_responses) + make_photo_row(value.movelab_annotation.photo_html) + make_user_note_row(value.movelab_annotation.edited_user_notes) + '</table>' + validation_link;
+                }
+            } else {
+                return '<table class="popup-table">' + make_user_response_row(value.tiger_responses) + '</table>' + validation_link;
+            }
         }
     } else {
         if (value.movelab_annotation != null) {
@@ -556,8 +622,8 @@ function make_opacity(n_fixes) {
 
 function add_to_layer(data, this_layer, filter) {
     $.each(data, function (index, value) {
-        if (value != null && value.latest_version && value.visible && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter ||
-                ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || (value.movelab_annotation != null && ((value.type == 'adult' && value.movelab_annotation.tiger_certainty_category != null && value.movelab_annotation.tiger_certainty_category >= selected_validation) || (value.type == 'site' && value.movelab_annotation.site_certainty_category != null && value.movelab_annotation.site_certainty_category >= selected_validation) ) ))))) {
+        //if (value != null && value.latest_version && value.visible && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter || ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || (value.movelab_annotation != null && ((value.type == 'adult' && value.movelab_annotation.tiger_certainty_category != null && value.movelab_annotation.tiger_certainty_category >= selected_validation) || (value.type == 'site' && value.movelab_annotation.site_certainty_category != null && value.movelab_annotation.site_certainty_category >= selected_validation) ) ))))) {
+        if (value != null && value.latest_version && value.visible && value.lat != null && value.lon != null && value.type != null && value.type == selected_type && (!filter || ( (selected_year == 0 || value.creation_year == selected_year) && (selected_month == 0 || value.creation_month == selected_month) && (selected_validation == -2 || (value.movelab_annotation != null && ((value.type == 'adult' && value.movelab_annotation.tiger_certainty_category != null && value.movelab_annotation.tiger_certainty_category >= selected_validation) || (value.type == 'adult' && value.movelab_annotation.aegypti_certainty_category != null && value.movelab_annotation.aegypti_certainty_category >= selected_validation) || (value.type == 'site' && value.movelab_annotation.site_certainty_category != null && value.movelab_annotation.site_certainty_category >= selected_validation) ) ))))) {
             this_layer.addLayer(L.marker([value.lat, value.lon], {icon: get_icon(value)}).bindPopup(make_popup_text(value), popup_options));
         }
     });
@@ -862,10 +928,12 @@ function map_init_basic(map, options) {
                                             onchange="this.form.submit()" data-style="btn-inverse">
                                         {% get_language_info_list for LANGUAGES as languages %}
                                         {% for language in languages %}
-                                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
-                                                    selected="selected"{% endif %}>
-                                                {{ language.name_local|title }}
-                                            </option>
+                                            {% if language.code != 'zh-cn' %}
+                                                <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                                        selected="selected"{% endif %}>
+                                                    {{ language.name_local|title }}
+                                                </option>
+                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                 </div>

@@ -8,7 +8,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation
 
 admin.autodiscover()
 
@@ -18,10 +18,10 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/', include('tigaserver_app.urls')),
-    url(r'^help/(?P<platform>\w+)/(?P<language>\w+)/$', show_help),
-    url(r'^about/(?P<platform>\w+)/(?P<language>\w+)/$', show_about),
+    url(r'^help/(?P<platform>\w+)/(?P<language>[-\w]+)/$', show_help),
+    url(r'^about/(?P<platform>\w+)/(?P<language>[-\w]+)/$', show_about),
     url(r'^credits/$', show_credit_image, name='show_credit_image'),
-    url(r'^license/(?P<platform>\w+)/(?P<language>\w+)/$', show_license),
+    url(r'^license/(?P<platform>\w+)/(?P<language>[-\w]+)/$', show_license),
     (r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^webmap/embedded/ca/$', RedirectView.as_view(url='/ca/webmap/embedded/', permanent=False)),
     url(r'^webmap/embedded/es/$', RedirectView.as_view(url='/es/webmap/embedded/', permanent=False)),
@@ -32,12 +32,15 @@ urlpatterns = patterns('',
     url(r'^policies/es/$', RedirectView.as_view(url='/es/policies/', permanent=False)),
     url(r'^policies/ca/$', RedirectView.as_view(url='/ca/policies/', permanent=False)),
     url(r'^policies/en/$', RedirectView.as_view(url='/en/policies/', permanent=False)),
+    url(r'^policies/zh-cn/$', RedirectView.as_view(url='/zh-cn/policies/', permanent=False)),
     url(r'^terms/es/$', RedirectView.as_view(url='/es/terms/', permanent=False)),
     url(r'^terms/ca/$', RedirectView.as_view(url='/ca/terms/', permanent=False)),
     url(r'^terms/en/$', RedirectView.as_view(url='/en/terms/', permanent=False)),
+    url(r'^terms/zh-cn/$', RedirectView.as_view(url='/zh-cn/terms/', permanent=False)),
     url(r'^privacy/es/$', RedirectView.as_view(url='/es/privacy/', permanent=False)),
     url(r'^privacy/ca/$', RedirectView.as_view(url='/ca/privacy/', permanent=False)),
     url(r'^privacy/en/$', RedirectView.as_view(url='/en/privacy/', permanent=False)),
+    url(r'^privacy/zh-cn/$', RedirectView.as_view(url='/zh-cn/privacy/', permanent=False)),
     url(r'^get_photo/(?P<token>\w+)/(?P<photo_uuid>[\w{}.-]{36})/(?P<size>\w+)$', lookup_photo),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
                                                                              document_root=settings.MEDIA_ROOT)
@@ -68,6 +71,7 @@ urlpatterns += i18n_patterns('',
     url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
     url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
     url(r'^experts/status/people/$', expert_status, name='expert_status'),
+    url(r'^photo_grid/$', picture_validation, name='picture_validation'),
 
 ## should stay out
 #    url(r'^coveragestats/$', show_fix_users),

@@ -1,8 +1,11 @@
+# coding=utf-8
+from pydoc import visiblename
 from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
 from tigacrafting.models import *
-from tigaserver_app.models import Photo, Report
+from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
 from django.db.models import Count
 import pytz
@@ -18,12 +21,24 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
-from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm
+from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
+from tigaserver_app.models import Notification
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
+import urllib
+from itertools import chain
+
+def get_current_domain(request):
+    if request.META['HTTP_HOST'] != '':
+        return request.META['HTTP_HOST']
+    if settings.DEBUG:
+        current_domain = 'humboldt.ceab.csic.es'
+    else:
+        current_domain = 'tigaserver.atrapaeltigre.com'
+    return current_domain
 
 
 def photos_to_tasks():
@@ -383,14 +398,78 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
 
+def autoflag_others(id_annotation_report):
+    this_annotation = ExpertReportAnnotation.objects.get(id=id_annotation_report)
+    the_report = this_annotation.report
+    annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID).filter(user__groups__name='expert')
+    for anno in annotations:
+        if anno.id != id_annotation_report:
+            anno.status = 0
+            anno.save()
+
+
+def must_be_autoflagged(this_annotation, is_current_validated):
+    if this_annotation is not None:
+        the_report = this_annotation.report
+        if the_report is not None:
+            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID, user__groups__name='expert').exclude(id=this_annotation.id)
+            anno_count = 0
+            one_positive_albopictus = False
+            one_positive_aegypti = False
+            one_unclassified_or_inconclusive = False
+            for anno in annotations:
+                validated = anno.validation_complete
+                if anno.tiger_certainty_category is not None and anno.tiger_certainty_category > 0 and validated == True:
+                    one_positive_albopictus = True
+                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category > 0 and validated == True:
+                    one_positive_aegypti = True
+                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category <= 0 \
+                        and anno.tiger_certainty_category is not None and anno.tiger_certainty_category <= 0 \
+                        and validated == True:
+                    one_unclassified_or_inconclusive = True
+                if anno.aegypti_certainty_category is None and anno.tiger_certainty_category is None and validated == True:
+                    one_unclassified_or_inconclusive = True
+                anno_count += 1
+            validated = is_current_validated
+            if this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category > 0 and validated == True:
+                one_positive_albopictus = True
+            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category > 0 and validated == True:
+                one_positive_aegypti = True
+            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category <= 0 \
+                    and this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category <= 0 \
+                    and validated == True:
+                one_unclassified_or_inconclusive = True
+            if this_annotation.aegypti_certainty_category is None and this_annotation.tiger_certainty_category is None and validated == True:
+                one_unclassified_or_inconclusive = True
+
+            if one_positive_albopictus and one_positive_aegypti and one_unclassified_or_inconclusive and (anno_count + 1) == 3:
+                return True
+    return False
+
+# This can be called from outside the server, so we need current_domain for absolute urls
+def issue_notification(report_annotation,current_domain):
+    notification = Notification(report=report_annotation.report,user=report_annotation.report.user,expert=report_annotation.user)
+    notification.expert_comment = "¡Uno de sus informes ha sido validado por un experto!"
+    if report_annotation.report.get_final_photo_url_for_notification():
+        notification.expert_html = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+    if report_annotation.message_for_user:
+        notification.expert_html = notification.expert_html + "</br> " + report_annotation.message_for_user
+    photo = None
+    if report_annotation.report.get_final_photo_url_for_notification():
+        photo = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+    if photo:
+        notification.photo_url = photo
+    notification.save()
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
     this_user = request.user
+    current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
+    this_user_is_reritja = (this_user.id == 25)
 
     if this_user_is_expert or this_user_is_superexpert:
         args = {}
@@ -410,22 +489,35 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             final_status = request.POST.get('final_status', final_status)
             version_uuid = request.POST.get('version_uuid', version_uuid)
             linked_id = request.POST.get('linked_id', linked_id)
+            tags_filter = request.POST.get('tags_filter', tags_filter)
             checked = request.POST.get('checked', checked)
             tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+            note_language = request.GET.get('note_language', "es")
             load_new_reports = request.POST.get('load_new_reports', load_new_reports)
             save_formset = request.POST.get('save_formset', "F")
             if save_formset == "T":
                 formset = AnnotationFormset(request.POST)
                 if formset.is_valid():
-                    formset.save()
+                    for f in formset:
+                        one_form = f.save(commit=False)
+                        auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
+                        if auto_flag:
+                            one_form.status = 0
+                        if(this_user_is_reritja and one_form.validation_complete == True):
+                            issue_notification(one_form,current_domain)
+                        one_form.save()
+                        f.save_m2m()
+                        if auto_flag:
+                            autoflag_others(one_form.id)
                 else:
                     return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
             page = request.POST.get('page')
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else ''))
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + tags_filter) if tags_filter else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+            note_language = request.GET.get('note_language', note_language)
             scroll_position = request.GET.get('scroll_position', scroll_position)
             orderby = request.GET.get('orderby', orderby)
             tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
@@ -435,6 +527,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             final_status = request.GET.get('final_status', final_status)
             version_uuid = request.GET.get('version_uuid', version_uuid)
             linked_id = request.GET.get('linked_id', linked_id)
+            tags_filter = request.GET.get('tags_filter', tags_filter)
             checked = request.GET.get('checked', checked)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             edit_mode = request.GET.get('edit_mode', edit_mode)
@@ -451,7 +544,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         if this_user_is_expert and load_new_reports == 'T':
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
-                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+                #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
@@ -460,11 +554,28 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
                 if new_reports_unfiltered:
                     new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
                     reports_to_take = new_reports[0:n_to_get]
+                    user_stats = None
+                    try:
+                        user_stats = UserStat.objects.get(user_id=this_user.id)
+                    except ObjectDoesNotExist:
+                        pass
+                    grabbed_reports = -1
+                    if user_stats:
+                        grabbed_reports = user_stats.grabbed_reports
                     for this_report in reports_to_take:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                        who_has_count = this_report.get_who_has_count()
+                        if who_has_count == 0 or who_has_count == 1:
+                            #No one has the report, is simplified
+                            new_annotation.simplified_annotation = True
+                        grabbed_reports += 1
                         new_annotation.save()
+                    if grabbed_reports != -1 and user_stats:
+                        user_stats.grabbed_reports = grabbed_reports
+                        user_stats.save()
         elif this_user_is_superexpert:
-            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
@@ -503,6 +614,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
         if linked_id and linked_id != 'na':
             all_annotations = all_annotations.filter(linked_id=linked_id)
+        if tags_filter:
+            tags_array = tags_filter.split(",")
+            # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
+            # any expert has put on the report
+            # these are all (not only yours, but also) the reports that contain the filtered tag
+            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
+            # we want the annotations of the reports which contain the tag(s)
+            all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
         if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na'):
             if year and year != 'all':
                 try:
@@ -582,9 +701,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args['final_status'] = final_status
         args['version_uuid'] = version_uuid
         args['linked_id'] = linked_id
+        args['tags_filter'] = tags_filter
         args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page
+        args['note_language'] = note_language
         args['scroll_position'] = scroll_position
         args['edit_mode'] = edit_mode
         n_query_records = all_annotations.count()
@@ -646,3 +767,99 @@ def expert_status(request):
         return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
     else:
         return HttpResponseRedirect(reverse('login'))
+
+@login_required
+def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
+    args = {}
+    args.update(csrf(request))
+    PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
+    if request.method == 'POST':
+        save_formset = request.POST.get('save_formset', "F")
+        tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+        if save_formset == "T":
+            formset = PictureValidationFormSet(request.POST)
+            if formset.is_valid():
+                for f in formset:
+                    report = f.save(commit=False)
+                    #check that the report hasn't been assigned to anyone before saving, as a precaution to not hide assigned reports
+                    who_has = report.get_who_has()
+                    if who_has == '':
+                        report.save()
+        page = request.POST.get('page')
+        visibility = request.POST.get('visibility')
+        usr_note = request.POST.get('usr_note')
+        type = request.POST.get('type', type)
+        if not page:
+            page = '1'
+        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
+    else:
+        tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+        type = request.GET.get('type', type)
+        visibility = request.GET.get('visibility', visibility)
+        usr_note = request.GET.get('usr_note', usr_note)
+
+    # #345 is a special tag to exclude reports
+    reports_imbornal = ReportResponse.objects.filter( Q(question='Is this a storm drain or sewer?',answer='Yes') | Q(question=u'\xc9s un embornal o claveguera?',answer=u'S\xed') | Q(question=u'\xbfEs un imbornal o alcantarilla?',answer=u'S\xed') | Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Selecciona lloc de cria',answer='Embornal o similar') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site', answer='Storm drain') |  Q(question='Type of breeding site', answer='Storm drain or similar receptacle')).exclude(report__creation_time__year=2014).values('report').distinct()
+
+    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered_sites_embornal = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered_sites_other = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').exclude(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+
+    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+
+    #new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites_embornal
+    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+    #new_reports_unfiltered = filter(lambda x: not x.deleted and x.latest_version, new_reports_unfiltered)
+
+    #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+    if type == 'adult':
+        #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
+        new_reports_unfiltered = new_reports_unfiltered_adults
+    elif type == 'site':
+        #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
+        new_reports_unfiltered = new_reports_unfiltered_sites_embornal
+    elif type == 'site-o':
+        new_reports_unfiltered = new_reports_unfiltered_sites_other
+    if visibility == 'visible':
+        new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+    elif visibility == 'hidden':
+        new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+    if usr_note and usr_note != '':
+        new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
+
+    new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
+
+    paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
+    page = request.GET.get('page', 1)
+    try:
+        objects = paginator.page(page)
+    except PageNotAnInteger:
+        objects = paginator.page(1)
+    except EmptyPage:
+        objects = paginator.page(paginator.num_pages)
+    page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-server_upload_time')
+    this_formset = PictureValidationFormSet(queryset=page_query)
+    args['formset'] = this_formset
+    args['objects'] = objects
+    args['pages'] = range(1, objects.paginator.num_pages + 1)
+    args['new_reports_unfiltered'] = page_query
+    args['tasks_per_page'] = tasks_per_page
+    args['visibility'] = visibility
+    args['usr_note'] = usr_note
+    args['type'] = type
+    type_readable = ''
+    if type == 'site':
+        type_readable = "Breeding sites - Storm drains"
+    elif type == 'site-o':
+        type_readable = "Breeding sites - Other"
+    elif type == 'adult':
+        type_readable = "Adults"
+    elif type == 'all':
+        type_readable = "All"
+    args['type_readable'] = type_readable
+    #n_query_records = new_reports_unfiltered.count()
+    n_query_records = len(new_reports_unfiltered)
+    args['n_query_records'] = n_query_records
+    args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
+    #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
+    return render(request, 'tigacrafting/photo_grid.html', args)
