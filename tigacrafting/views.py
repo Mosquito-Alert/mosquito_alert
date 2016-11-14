@@ -29,6 +29,7 @@ from operator import attrgetter
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
 import urllib
+import django.utils.html
 from itertools import chain
 
 def get_current_domain(request):
@@ -451,9 +452,12 @@ def issue_notification(report_annotation,current_domain):
     notification = Notification(report=report_annotation.report,user=report_annotation.report.user,expert=report_annotation.user)
     notification.expert_comment = "¡Uno de sus informes ha sido validado por un experto!"
     if report_annotation.report.get_final_photo_url_for_notification():
-        notification.expert_html = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+        notification.expert_html = '<a href="http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification() + '" target="_blank">Enlace a tu foto</a>'
     if report_annotation.message_for_user:
-        notification.expert_html = notification.expert_html + "</br> " + report_annotation.message_for_user
+        clean_annotation = ''
+        clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        notification.expert_html = notification.expert_html + "</br> Mensaje de los expertos: </br>" + clean_annotation
     photo = None
     if report_annotation.report.get_final_photo_url_for_notification():
         photo = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
