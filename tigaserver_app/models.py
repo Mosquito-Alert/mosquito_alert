@@ -587,6 +587,15 @@ class Report(models.Model):
             return None
         return max_movelab_annotation.task.tiger_validation_score_cat
 
+    def get_tiger_responses_text(self):
+        if self.type != 'adult':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        for response in these_responses:
+            result[response.question] = response.answer
+        return result
+
     def get_tiger_responses_json_friendly(self):
         if self.type != 'adult':
             return None
@@ -644,6 +653,15 @@ class Report(models.Model):
     #         q3r = these_responses.get(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
     #         result['q3_response'] = -2 if q3r in [u'Abdomen like a Ae. albopictus',u'Abdomen com Ae. albopictus',u'Abdomen como Ae. albopictus'] else -3 if q3r in [u'Abdomen like Ae. aegypti', u'Abdomen com Ae. aegypti',u'Abdomen como Ae. aegypti'] else -4 if q3r in [u'Neither', u'Cap dels dos',u'Ninguno de los dos'] else -5
     #     return result
+
+    def get_site_responses_text(self):
+        if self.type != 'site':
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        for response in these_responses:
+            result[response.question] = response.answer
+        return result
 
     def get_site_responses(self):
         if self.type != 'site':
@@ -1311,7 +1329,9 @@ class Report(models.Model):
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)
     tiger_responses = property(get_tiger_responses)
+    tiger_responses_text = property(get_tiger_responses_text)
     site_responses = property(get_site_responses)
+    site_responses_text = property(get_site_responses_text)
     creation_date = property(get_creation_date)
     creation_day_since_launch = property(get_creation_day_since_launch)
     creation_year = property(get_creation_year)
