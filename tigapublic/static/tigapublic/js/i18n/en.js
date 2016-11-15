@@ -1,0 +1,92 @@
+var trans = trans || {};
+trans.en = {
+    'header.login': 'Login',
+    'header.username': 'Username',
+    'header.password': 'Password',
+    'header.submit': 'Send',
+
+    'layer.tiger': 'Tiger mosquito',
+    'layer.albopictus': 'Tiger mosquito',
+    'layer.albopictus_posible': 'Possible Tiger mosquito',
+    'layer.albopictus_confirmado': 'Confirmed Tiger mosquito',
+    'layer.zika': 'Yellow fever mosquito',
+    'layer.aegypti': 'Yellow fever mosquito',
+    'layer.aegypti_posible': 'Possible Mosquito fiebre amarilla',
+    'layer.aegypti_confirmado': 'Confirmed Mosquito fiebre amarilla',
+
+    'layer.noparece': 'Other species',
+    'layer.nosabe': 'Unidentifiable',
+    'layer.site': 'Breeding sites',
+
+    'map.control_layers': 'Layers',
+    'map.control_moreinfo': 'More information about Layers',
+    'map.control_share': 'Share',
+
+    'map.controlshare_share': 'Share',
+    'map.controlshare_share_description': 'Share the link to this map',
+    'map.controlshare_home': 'Home',
+    'map.controlshare_view': 'Map',
+
+    'All years': 'All years',
+    'All months': 'All months',
+    'January': 'January',
+    'February': 'February',
+    'March': 'March',
+    'April': 'April',
+    'May': 'May',
+    'June': 'June',
+    'July': 'July',
+    'August': 'August',
+    'September': 'September',
+    'October': 'October',
+    'November': 'November',
+    'December': 'December',
+
+    'map.controlmoreinfo_title': 'Descripción',
+    'map.controlmoreinfo_desc': '<ul class="info_list"><li><b>Mosquito tigre</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquito fiebre amarilla</b>: Según los expertos, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>)</li><li><b>Otras especies</b>: Según los expertos, las fotos de esta observación podrían  ser de otras especies de mosquito.</li><li><b>No identificable</b>: Según los expertos, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito</li><li><b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.</li></ul>',
+    'map.report_title': 'Report:',
+
+    'map.versio_informe': 'Clave del informe',
+    'map.observation_date': 'Date',
+    'map.longitud': 'Longitud',
+    'map.latitud': 'Latitud',
+    'map.coordenadas': 'Coordinates (latitude,longitude)',
+    'map.breeding_site_answers': 'Lugar de cria',
+    'map.expert_validated': 'Expert validation: ',
+
+    'map.breeding_site_answers_1_3': 'És en un lloc públic?',
+    'map.breeding_site_answers_2_3': 'Conté aigua estancada o pupes de mosquit?',
+    'map.breeding_site_answers_3_3': 'Has vist mosquits adults a prop?',
+
+    'map.breeding_site_answers_1_2': 'Conté aigua estancada?',
+    'map.breeding_site_answers_2_2': 'Conté larves o pupes de mosquit?',
+
+    'map.mosquito_answers_1_3': 'És petit amb ratlles blanques?',
+    'map.mosquito_answers_2_3': 'Té una ratlla blanca al cap i al tórax?',
+    'map.mosquito_answers_3_3': 'Té ratlles blanques a l\'abdomen i les potes?',
+
+    'map.showed_reports': 'Displayed elements:',
+    'map.si': 'Yes',
+    'map.nosabe': 'Unidentifiable',
+    'map.no': 'No',
+
+    'map.no_clasificado':'Unclassified',
+    'map.no_probable':'No',
+    'map.no_posible':'Unlikely',
+    'map.no_sabe':'Unidentifiable',
+    'map.si_posible':'Possible',
+    'map.si_probable':'Likely',
+
+    'map.multi_report_title': 'Mosquito Alert: Multi report list',
+    'map.no_answers': '-',
+    'map.sites_water': 'With water',
+    'map.sites_dry': ' Without water',
+    'map.sites_other': 'Others',
+    'map.anonim':'Anonymous',
+    'map.share_social_text':'Have a look at this map from @MosquitoAlert #citizenscience',
+    'map.control_download':'Download data',
+    'map.download_btn':'Download data',
+    'map.text_description_download': '<p>Click the button to download reports placed within the actual map view.</p><p>Downloaded data includes adult, breeding sites and not validated reports</p>',
+    'map.title_download': 'Download',
+
+};

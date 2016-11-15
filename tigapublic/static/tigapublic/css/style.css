@@ -1,0 +1,238 @@
+
+html, body {
+    padding: 0px;
+    margin: 0px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+body{
+    background-color: white;
+}
+
+.page{
+    display: none;
+}
+
+#page-map{
+ overflow: hidden;
+}
+
+#page-reports{
+    overflow: auto !important;
+    background-color: red;
+}
+
+
+#header-view{
+    position: absolute;
+    height: 52px;
+    top: 0px;
+    color: #cccccc;
+    left: 0px;
+    right: 0px;
+    background-color: red;
+}
+
+#header-view nav.navbar{
+    margin: 0px;
+    padding: 0px;
+    border-radius: 0px;
+}
+
+#header-view div.logo{
+    width: 195px;
+    height: 50px;
+    background-image: url('img/tigatrapp_logo.png');
+    background-size:  cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+#header-view nav.menu {
+    position: absolute;
+    right: 0;
+    background-color: blue;
+}
+
+
+#header-view a{
+    text-decoration: none;
+    color: #cccccc;
+}
+
+#map-view{
+    overflow: hidden;
+    position: absolute;
+    top: 52px;
+    bottom: 0;
+    width: 100%;
+}
+
+#map {
+    height: 100%;
+    overflow: hidden;
+}
+
+
+.form-login{
+    z-index: 10000;
+    padding: 1em;
+    min-width: 280px; /* change width as per your requirement */
+}
+
+.map-sidebar {
+    display: none;
+    position: relative;
+    float: right;
+    width: 250px;
+    height: 100%;
+    background: white;
+    overflow: auto;
+}
+/*
+#map-ui {
+    width: 250px;
+}
+*/
+
+.section{
+	margin-top:10px;
+}
+
+#map-ui .section.filters{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#map-ui li.list-group-item{
+    margin: 4px;
+    border-radius: 4px !important;
+}
+
+#map-ui li.list-group-item:hover{
+    cursor: pointer;
+}
+
+#map-ui li.list-group-item.active{
+    background-color: #e6e6e6 !important;
+    border-color: #e6e6e6 !important;
+    color: #333333;
+}
+
+#map-ui .list-group-item img.icon{
+    height: 25px;
+    margin-right: 5px;
+}
+
+#map-ui li.list-group-item label:hover{
+    cursor: pointer;
+}
+
+.map-sidebar[data-sidebar-panel="sidebar-control-share"]{
+    width: 500px !important;
+}
+
+#map-ui select{
+    display: none;
+}
+
+
+#ajax_loader{
+    border-radius: 2px;
+    background-color: white;
+    position: absolute;
+    z-index: 100000;
+}
+
+
+a[data-lang].active{
+    color: red !important
+}
+
+
+
+/* Zoom Control */
+.leaflet-control-zoom .leaflet-control-zoom-in,
+.leaflet-control-zoom .leaflet-control-zoom-out,
+
+.leaflet-control-zoom .leaflet-control-zoom-in.active,
+.leaflet-control-zoom .leaflet-control-zoom-out.active
+{
+	font: bold 26px 'Lucida Console', Monaco, monospace;
+	width: 40px;
+    height: 40px;
+    line-height: 40px;
+    color: white;
+    background-color:rgba(0, 0, 0, 0.5);
+    border: 0px;
+}
+
+.leaflet-control-zoom .leaflet-control-zoom-in:hover,
+.leaflet-control-zoom .leaflet-control-zoom-out:hover {
+	font: bold 26px 'Lucida Console', Monaco, monospace;
+	width: 40px;
+    height: 40px;
+    line-height: 40px;
+    color: white;
+    background-color:rgba(0, 0, 0, 1);
+}
+
+.leaflet-control-zoom .leaflet-control-zoom-in:active,
+.leaflet-control-zoom .leaflet-control-zoom-out:active {
+	background-color: #4444ff;
+}
+
+.leaflet-side-button a{
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 0 none;
+    color: white;
+    height: 40px;
+    width: 40px;
+}
+
+.leaflet-side-button a:hover{
+	height: 40px;
+    width: 40px;
+}
+
+
+/*OVERWRITE BOOTSTRAP BUTTON*/
+.bootstrap-select:not([class*="col-"]):not([class*="form-control"]):not(.input-group-btn){
+	width:100% !important;
+}
+
+button.close{
+	padding-right:5px;
+}
+
+.btn-block{
+	background-color:rgba(255,222, 24, 0.8);
+	color:black;
+}
+
+.btn-block:hover{
+	background-color:#449d44;
+}
+
+.btn-success{
+	background-color:rgba(255,222, 24, 0.8);
+	border:1px solid #ffde18;
+	color:black;
+}
+
+.glyphicon.glyphicon-align-justify,
+.glyphicon.glyphicon-align-justify:hover{
+	font-size:2em;
+	padding-top:5px;
+}
+
+/*
+.logout-button, .login-button{
+    display: none;
+}
+*/

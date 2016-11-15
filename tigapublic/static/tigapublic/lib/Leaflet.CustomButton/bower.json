@@ -1,0 +1,22 @@
+{
+  "name": "L.CustomButton",
+  "version": "0.0.1",
+  "homepage": "https://github.com/abusquets/L.CustomButton",
+  "authors": [
+    "Alexandre Busquets Triola <abusquets@gmail.com>"
+  ],
+  "description": "",
+  "main": "L.Control.CustomButton.js",
+  "keywords": [
+    "Leaflet",
+    "button"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

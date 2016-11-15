@@ -1,0 +1,454 @@
+/****************************************************/
+/* CLUSTER 60
+border #fee6ce
+background #fdae6b
+/****************************************************/
+/*overwrite default css*/
+
+.marker-cluster-medium{
+	background:none !important;
+}
+
+.leaflet-div-icon{
+	border:0px;
+	background:none;
+}
+
+.marker-cluster-radius60 div,
+.marker-cluster-radius50 div,
+.marker-cluster-radius40 div,
+.marker-cluster-radius30 div,
+.marker-cluster-radius20 div
+{
+	/*border:3px solid #addd8e;
+	background-color:rgba(49,163,84,0.7);*/
+	border:3px solid rgba(191,181,181,0.7);
+	background-color:rgba(126,110,110,0.7);
+	border-radius: 30px;
+	font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	background-clip: padding-box;
+	text-align:center;
+    z-index: 233;
+}
+
+.marker-cluster-radius60 div span,
+.marker-cluster-radius50 div span,
+.marker-cluster-radius40 div span,
+.marker-cluster-radius30 div span,
+.marker-cluster-radius20 div span{
+	text-align:center;
+	position:relative;
+    width:100%;
+	font-weight:bold;
+}
+
+
+.marker-cluster-radius60 {   border-radius: 30px;   }
+
+.marker-cluster-radius60 div {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    margin-left: -30px;
+    margin-top: -22px;
+}
+
+.marker-cluster-radius60 div span{
+    margin-top:25px;
+    top:20px;
+    font-weight:bold;
+    color:white;
+}
+/****************************************************/
+/* CLUSTER 50
+/****************************************************/
+.marker-cluster-radius50 {    border-radius: 25px;    }
+
+.marker-cluster-radius50 div {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    margin-left: -20px;
+    margin-top: -18px;
+}
+
+.marker-cluster-radius50 div span{
+    margin-top:20px;
+    top:15px;
+    font-weight:bold;
+}
+/****************************************************/
+
+/****************************************************/
+/* CLUSTER 40
+/****************************************************/
+.marker-cluster-radius40 {
+    border-radius: 20px;
+    }
+
+.marker-cluster-radius40 div {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    margin-left: -16px;
+    margin-top: -18px;
+}
+
+.marker-cluster-radius40 div span{
+    margin-top:0px;
+    top:10px;
+    left:-1px;
+}
+/****************************************************/
+/****************************************************/
+/* CLUSTER 30
+/****************************************************/
+.marker-cluster-radius30 {
+    border-radius: 15px;
+    }
+
+.marker-cluster-radius30 div {
+
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    margin-left: -11px;
+    margin-top: -12px;
+}
+
+.marker-cluster-radius30 div span{
+    margin-top:0px;
+    top:4px;
+    font-size:0.9em;
+}
+/****************************************************/
+
+
+/****************************************************/
+/* CLUSTER 20
+/****************************************************/
+a.control-button {
+	outline:0px;
+}
+.marker-cluster-radius20 {
+    border-radius: 15px;
+    }
+
+.marker-cluster-radius20 div {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    margin-left: -11px;
+    margin-top: -10px;
+}
+
+.marker-cluster-radius20 div span{
+    margin-top:0px;
+    top:4px;
+    font-size:0.9em;
+}
+
+.control-button.selector-capes,
+.control-button.selector-capes:hover{
+		outline: none;
+	    width:40px;
+		height:40px;
+		border-radius:4px;
+		background-image:url('img/menu-icon.png');
+		background-color: rgba(0, 0, 0, 0.5);
+}
+
+/*Controls afegits al mapa*/
+.leaflet-bar a.control-button,
+.leaflet-control-sidebar-btnleaflet-control-download-btn,
+.leaflet-control-sidebar-btnleaflet-control-layers-btn,
+.leaflet-control-sidebar-btnleaflet-control-share-btn,
+.leaflet-control-sidebar-btnleaflet-control-moreinfo-btn{
+	padding:0px;
+	width:40px;
+	height:40px;
+}
+
+.leaflet-bar a.reports-button{
+	display:none;
+}
+.leaflet-bar a.share-control,
+.leaflet-bar a.control-button,
+.leaflet-control-sidebar-btnleaflet-control-download-btn a,
+.leaflet-control-sidebar-btnleaflet-control-moreinfo-btn a,
+.leaflet-control-sidebar-btnleaflet-control-share-btn a,
+.leaflet-control-sidebar-btnleaflet-control-layers-btn a{
+	width:40px;
+	height:40px;
+	font-size:16px;
+	padding-top:7px;
+	background-color: rgba(0, 0, 0, 0.5);
+	color:white;
+}
+
+.leaflet-control .total_elements{
+	padding:5px;
+	background: white;
+	border-radius: 5px;
+}
+
+.leaflet-bar a.control-button:hover,
+.leaflet-bar a.control-button:active,
+.leaflet-bar a.reports-button:hover,
+.leaflet-bar a.reports-button:active,
+.leaflet-bar a.share-control:hover,
+.leaflet-bar a.share-control:active,
+.leaflet-control-sidebar-btnleaflet-control-download-btn a:hover,
+.leaflet-control-sidebar-btnleaflet-control-download-btn a:active,
+.leaflet-control-sidebar-btnleaflet-control-moreinfo-btn a:hover,
+.leaflet-control-sidebar-btnleaflet-control-moreinfo-btn a.active,
+.leaflet-control-sidebar-btnleaflet-control-share-btn a:hover,
+.leaflet-control-sidebar-btnleaflet-control-share-btn a.active,
+.leaflet-control-sidebar-btnleaflet-control-layers-btn a:hover,
+.leaflet-control-sidebar-btnleaflet-control-layers-btn a.active{
+	width:40px;
+	height:40px;
+	font-size:16px;
+	padding-top:7px;
+	background-color: black;
+	color:white;
+}
+
+/*MAP PANEL*/
+.sidebar-report,
+.sidebar-control-share,
+.sidebar-control-moreinfo{
+	padding:10px;
+}
+
+.map-sidebar[data-sidebar-panel="sidebar-report"] {
+    width: 500px !important;
+}
+
+.map-sidebar[data-sidebar-panel="sidebar-control-moreinfo"] {
+    width: 400px !important;
+}
+
+.share_input{
+	width:100%;
+	padding-right:10px;
+}
+
+.jssocials-shares{
+	text-align:center;
+}
+
+div.section.layers ul{
+	padding-left:0px;
+}
+
+.sidebar-control-moreinfo ul{
+	padding-left:10px;
+}
+
+.sidebar-control-moreinfo ul li{
+	padding:3px;
+}
+
+/*popup*/
+.validation-minus-tree,
+.validation-minus-two,
+.validation-minus-one,
+.validation-zero,
+.validation-plus-one,
+.validation-plus-two{
+	display:block;
+	font-weight: bold;
+	text-align: center;
+	/*border: 1px solid;*/
+}
+/*
+.validation-plus-one{
+	background: orange;
+}
+
+.validation-plus-two{
+	background: red;
+}
+
+.validation-zero{
+	background: white;
+}
+
+.validation-minus-one{
+	background: yellow;
+}
+
+.validation-minus-two{
+	background: brown;
+}
+
+.validation-minus-tree{
+	background: pink;
+}
+*/
+#popup_mosquito_answers{
+	padding: 10px;
+	display: table;
+}
+
+#nota_experto{
+	margin-top:30px;
+	font-size: 12px;
+	font-style: italic;
+}
+
+.one_answer{
+	display:table-cell;
+	padding:5px;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+}
+
+.one_answer span{
+	display:block;
+}
+
+.one_answer span.response{
+	font-weight: bold;
+}
+
+.title_validacion_experta{
+	display: inline;
+}
+
+.experts_specie{
+	font-weight: bold;
+	display:inline;
+}
+
+#popup_photo{
+	text-align: center;
+	width: 100%;
+}
+
+#popup_photo img{
+
+	padding-bottom:0px;
+	max-height: 300px;
+	max-width: 100%;
+}
+
+.map-report{
+	width: 250px;
+	height: 250px;
+}
+
+.map-report{
+
+}
+
+/*REPORTS-PAGE*/
+
+ #page-reports{
+ 	background: white;
+ }
+
+.one-report{
+	display: :table;
+	padding:15px;
+
+}
+
+.one-report-info{
+	display: table-cell;
+	vertical-align: top;
+	padding-left:20px;
+}
+
+.one-report-map{
+	display:table-cell;
+}
+
+#validated_specie{
+	display: inline-block;
+	padding-top:30px;
+}
+
+#popup_id,
+#popup_observation_date,
+#popup_coordenadas{
+	padding:2px;
+	font-style: normal;
+}
+
+#popup_id{
+	padding-top:30px;
+}
+
+#popup_id span,
+#popup_observation_date span,
+#popup_coordenadas span{
+	font-weight: bold;
+}
+
+#popup_expert_validated{
+	padding:30px;
+}
+
+.titol_capa{
+	font-size:16px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.sidebar-control-moreinfo{
+	padding: 30px;
+}
+
+ul.info_list{
+	list-style: none;
+	padding:0px;
+}
+
+ul.info_list li{
+	padding-bottom:20px;
+}
+
+ul.sub-sites{
+	padding-left:30px !important;
+	list-style:none;
+}
+
+ul.sub-sites li img{
+	padding-right: 10px;
+}
+
+div#map-ui{
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+}
+
+.photo_license{
+	text-align: center;
+	font-size:12px;
+}
+
+#download_text{
+	padding:30px;
+}
+
+.download_button{
+	text-align: center;
+}
+
+#title_download{
+	padding-top: 30px;
+	padding-left: 30px;
+}
+
+.leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
+    border: 0px;
+    background-clip: content-box;
+}
+
+.leaflet-touch .leaflet-bar a {
+    width: 40px;
+    height: 40px;
+}
