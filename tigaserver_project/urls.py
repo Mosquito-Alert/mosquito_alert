@@ -38,6 +38,7 @@ urlpatterns = patterns('',
     url(r'^privacy/es/$', RedirectView.as_view(url='/es/privacy/', permanent=False)),
     url(r'^privacy/ca/$', RedirectView.as_view(url='/ca/privacy/', permanent=False)),
     url(r'^privacy/en/$', RedirectView.as_view(url='/en/privacy/', permanent=False)),
+    url(r'^tigapublic/', include('tigapublic.urls')),
     url(r'^get_photo/(?P<token>\w+)/(?P<photo_uuid>[\w{}.-]{36})/(?P<size>\w+)$', lookup_photo),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
                                                                              document_root=settings.MEDIA_ROOT)
