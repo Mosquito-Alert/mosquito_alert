@@ -20,17 +20,17 @@ if 'RDS_DB_NAME' in os.environ:
             'PORT': os.environ['RDS_PORT'],
         }
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'tigadata',
-            'USER': 'tigadata_user',
-            'PASSWORD': 'tigadata_user',
-            'HOST': 'localhost',
-            'PORT': '',
-        }
-    }
+#else:
+#    DATABASES = {
+#        'default': {
+#            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#            'NAME': 'tigadata',
+#            'USER': 'tigadata_user',
+#            'PASSWORD': 'tigadata_user',
+#            'HOST': 'localhost',
+#            'PORT': '',
+#        }
+#    }
 
 STATIC_URL = '/static/'
 
