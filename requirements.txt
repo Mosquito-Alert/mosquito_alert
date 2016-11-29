@@ -34,3 +34,4 @@ texttable==0.8.4
 tzlocal==1.1.1
 wcwidth==0.1.6
 websocket-client==0.37.0
+django-taggit==0.19.1
