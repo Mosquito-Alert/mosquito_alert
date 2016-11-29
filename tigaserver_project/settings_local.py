@@ -14,7 +14,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ['RDS_MY_DBNAME'],
-        'USER': os.environ['RDS_USERNAME'],
+        'USER': os.environ['RDS_MY_USERNAME'],
         'PASSWORD': os.environ['RDS_MY_PASSWORD'],
         'HOST': os.environ['RDS_HOSTNAME'],
         'PORT': os.environ['RDS_PORT'],
