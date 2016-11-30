@@ -1,6 +1,8 @@
 # tigaserver_project/settings_local.py
 # tigaserver_project/settings_local*
 # tigaserver_project/settings/local.pyc
+tigaserver_project/secrets.py
+tigaserver_project/secrets.pyc
 *pyc
 *.egg-info
 .idea/*

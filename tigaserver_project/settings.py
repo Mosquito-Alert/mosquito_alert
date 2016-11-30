@@ -3,7 +3,13 @@ import tigaserver_project as project_module
 import django.conf.global_settings as DEFAULT_SETTINGS
 import pytz
 from datetime import datetime
-#from custom_storages import StaticStorage
+
+local = False
+try:
+    import secrets
+    local = True
+except ImportError:
+    local = False
 
 """
 Django settings for tigaserver_project project.
@@ -26,7 +32,12 @@ PROJECT_DIR = os.path.dirname(os.path.realpath(project_module.__file__))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
-SECRET_KEY = 'h0v(25z3u9yquh+01+#%tj@7iyk*raq!-6)jwz+0ac^h2grd0@'
+if local:
+    SECRET_KEY = secrets.params['SECRET_KEY']
+    PHOTO_SECRET_KEY = secrets.params['PHOTO_SECRET_KEY']
+else:
+    SECRET_KEY = os.environ['SECRET_KEY']
+    PHOTO_SECRET_KEY = os.environ['PHOTO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -81,16 +92,28 @@ WSGI_APPLICATION = 'tigaserver_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '',
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_MY_DBNAME'],
+            'USER': os.environ['RDS_MY_USERNAME'],
+            'PASSWORD': os.environ['RDS_MY_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': secrets.params['ENGINE'],
+            'NAME': secrets.params['NAME'],
+            'USER': secrets.params['USER'],
+            'PASSWORD': secrets.params['PASSWORD'],
+            'HOST': secrets.params['HOST'],
+            'PORT': secrets.params['PORT'],
+        }
+    }
 
 
 CACHES = {
@@ -129,13 +152,13 @@ LOCALE_PATHS = (
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = ''
-
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = ''
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -168,9 +191,14 @@ AWS_HEADERS = {  # see http://developer.yahoo.com/performance/rules.html#expires
   'Cache-Control': 'max-age=94608000',
 }
 
-AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+if local:
+    AWS_STORAGE_BUCKET_NAME = secrets.params['AWS_STORAGE_BUCKET_NAME']
+    AWS_ACCESS_KEY_ID = secrets.params['AWS_ACCESS_KEY_ID']
+    AWS_SECRET_ACCESS_KEY = secrets.params['AWS_SECRET_ACCESS_KEY']
+else:
+    AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
+    AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+    AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 
 # Tell django-storages that when coming up with the URL for an item in S3 storage, keep
 # it simple - just use this domain plus the path. (If this isn't set, things get complicated).
@@ -243,5 +271,3 @@ IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
 SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',
 }
-
-from settings_local import *
