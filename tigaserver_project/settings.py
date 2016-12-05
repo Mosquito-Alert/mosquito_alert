@@ -99,7 +99,7 @@ DATABASES = {
         'NAME': os.environ['RDS_MY_DBNAME'],
         'USER': os.environ['RDS_MY_USERNAME'],
         'PASSWORD': os.environ['RDS_MY_PASSWORD'],
-        'HOST': os.environ['RDS_HOSTNAME'],
+        'HOST': os.environ['RDS_MYHOSTNAME'],
         'PORT': os.environ['RDS_PORT'],
     }
 }
