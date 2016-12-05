@@ -12,8 +12,9 @@ var MOSQUITO = (function (m) {
             var _this = this;
             var container = $('<div>')
               .attr('class', 'sidebar-control-download');
-            container.html($('#content-control-download-tpl').html());
-            container.find('button').click(function(){
+            var closeButton = this.getCloseButton().appendTo(container);
+            container.append($('#content-control-download-tpl').html());
+            container.find('.download_button button').click(function(){
                 _this.fire('download_btn_click');
             });
             return container;

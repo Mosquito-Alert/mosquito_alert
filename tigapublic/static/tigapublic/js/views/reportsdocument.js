@@ -1,30 +1,106 @@
-var ReportsdocumentView = BaseView.extend({
+var ReportsdocumentView = MapView.extend({
     el: '#page-reports',
+
     initialize: function(options) {
+        var _this = this;
         options = options || {};
         this.scope = {};
         this.templates = {};
 
         this.options = _.extend({}, this.defaults, options);
         this.tpl = _.template($('#content-reportsdocument-tpl').text());
-        this.render();
 
+        this.is_logged(function(is_logged) {
+          _this.render();
+        })
+    },
+
+    is_logged: function(callback) {
+        var _this = this;
+        $.ajax({
+            type: 'GET',
+            'async': true,
+            url:  MOSQUITO.config.URL_PUBLIC + 'ajax_is_logged/',
+            success: function(response){
+                if (response.success) {
+                    _this.LAYERS_CONF = MOSQUITO.config.logged.layers;
+                }
+                callback(response.success);
+            }
+        });
     },
 
     render: function() {
         var _this = this;
-        this.fetch_data(this.options, function(data){
 
-            //Toni manipular el rows
+        this.fetch_data(this.options, function(data) {
+            var iframe_src = opener.MOSQUITO.app.mapView.controls.share_btn.build_url();
+            var logged = opener.MOSQUITO.app.headerView.logged;
+            if (logged){
+                data.license = true
+            }
+            else{
+                data.license = false;
+            }
+
+            setTimeout("$('#reports_map_embed').attr('src', '"+iframe_src+"')",1);
+
+            /*$(document).ready(function() {
+              $('#reports_map_embed').attr('src', iframe_src);
+            });*/
+
             for(var i = 0; i < data.rows.length; i++){
                 row = data.rows[i];
-
+                // hide some fields
+                if (opener.MOSQUITO.app.headerView.logged){
+                    if(row.t_q_1 != ''){
+                        row.t_answers = [];
+                        row.questions = [];
+                        row.t_answers[0] = row.t_a_1;
+                        row.questions[0] = row.t_q_1;
+                        if (row.t_q_2 != ''){
+                            row.t_answers[1] = row.t_a_2;
+                            row.questions[1] = row.t_q_2;
+                        }
+                        if (row.t_q_3 != ''){
+                            row.t_answers[2] = row.t_a_3;
+                            row.questions[2] = row.t_q_3;
+                        }
+                    }
+                    if(row.s_q_1 != ''){
+                        row.s_answers = [];
+                        row.questions = [];
+                        row.s_answers[0] = row.s_a_1;
+                        row.questions[0] = row.s_q_1;
+                        if (row.s_q_2 != ''){
+                            row.s_answers[1] = row.s_a_2;
+                            row.questions[1] = row.s_q_2;
+                        }
+                        if (row.s_q_3 != ''){
+                            row.s_answers[2] = row.s_a_3;
+                            row.questions[2] = row.s_q_3;
+                        }
+                        if (row.s_q_4 != ''){
+                            row.s_answers[3] = row.s_a_4;
+                            row.questions[3] = row.s_q_4;
+                        }
+                    }
+                } //not logged
+                else {
+                    row.note=null;
+                }
                 if (row.observation_date !== null &&
                     row.observation_date !== '' ){
-                        var theDate = new Date(row.observation_date * 1000);
-                        row.observation_date = theDate.getDay() + '-' + (theDate.getMonth() + 1) + '-' + theDate.getFullYear();
+                        var theDate = new Date(row.observation_date);
+                        row.observation_date = theDate.getUTCDate() + '-' + (theDate.getMonth() + 1) + '-' + theDate.getFullYear();
                 }
 
+                if(row.expert_validation_result !== null &&
+                    row.expert_validation_result.indexOf('#') !== -1){
+                    row.expert_validation_result = row.expert_validation_result.split('#');
+                }
+
+                /*
                 if(row.expert_validation_result !== null &&
                     row.expert_validation_result.indexOf('#') !== -1){
                     row.expert_validation_result = row.expert_validation_result.split('#');
@@ -32,21 +108,57 @@ var ReportsdocumentView = BaseView.extend({
                     if ( row.expert_validation_result_specie == 'site'){
                         row.titol_capa = 'site';
                     } else if ( row.expert_validation_result[1] == 1 ) {
-                        row.titol_capa = row.expert_validation_result_specie +'_probable';
+                        row.titol_capa = row.expert_validation_result_specie +'_posible';
                     } else if (row.expert_validation_result[1] == 2){
-                        row.titol_capa = row.expert_validation_result_specie +'_seguro';
+                        row.titol_capa = row.expert_validation_result_specie +'_confirmado';
                     } else if (row.expert_validation_result[1] == 0){
                         row.titol_capa = 'unidentified';
                     } else{
                         row.titol_capa = 'other_species';
                     }
+                    if (row.category=='trash_layer'){
+                        row.titol_capa = 'layer.trash_layer';
+                    }
                 }
+                */
             }
 
             _this.$el.html(_this.tpl(data));
             window.t().translate(MOSQUITO.lng, _this.$el);
+            //Clone TOC from window opener
+            var stuff = window.opener.$("#map_filters").clone();
+            $('#map_filters').html(stuff);
+            //add active layers from opener
+            stuff = window.opener.$('#map_layers_list li.active').clone();
+            stuff.removeClass('active');
 
+            $('#map_layers').html(stuff);
+            //remove some unnecessary sublist elements
+            $('#map_layers > li.sublist-group-item').remove();
+
+
+            $('#legend_reports_map button').addClass('disabled');
+
+            // Create header map
+            var z = opener.MOSQUITO.app.mapView.map.getZoom() - 1; // the map is smaller so we need to zoom out
+            var c = opener.MOSQUITO.app.mapView.map.getCenter();
+            var b = opener.MOSQUITO.app.mapView.map.getBounds();
+
+            var theMap = L.map('reports_header_map', { zoomControl:false})
+                .setView(c,z);
+
+            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                    minZoom: z, // prevent from zooming
+                    maxZoom: z,
+                    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(theMap);
+
+            theMap.dragging.disable()
+
+            var layers=[];
             var row, center, map;
+            // Create all maps
+
             for(i = 0; i < data.rows.length; i++){
                 row = data.rows[i];
 
@@ -58,9 +170,37 @@ var ReportsdocumentView = BaseView.extend({
                         maxZoom: 18,
                         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     }).addTo(map);
-                L.marker(center).addTo(map);
+                L.marker(center, {icon: _this.getIconType(row.category)}).addTo(map);
+                layers.push(L.marker(center, {icon: _this.getIconType(row.category)}));
             }
 
+            // Create Marker cluster group and add its makers
+            var mcg = new L.MarkerClusterGroup({
+              "maxClusterRadius": function (zoom) {
+                  return (zoom <= MOSQUITO.config.maxzoom_cluster) ? 180 : 30; // radius in pixels
+              },
+                "chunkedLoading": true,
+                "spiderfyOnMaxZoom": true,
+                "showCoverageOnHover": MOSQUITO.config.showCoverageOnHover,
+              //disableClusteringAtZoom: MOSQUITO.config.maxzoom_cluster,
+              "iconCreateFunction": function(cluster) {
+                  var markerCount = cluster._childCount;
+                  var r = markerCount.toString().length;
+                  var className = '';
+                  switch (r) {
+                    case 1: className = 'marker-cluster-radius20'; break;
+                    case 2: className = 'marker-cluster-radius30'; break;
+                    case 3: className = 'marker-cluster-radius40'; break;
+                    case 4: className = 'marker-cluster-radius50'; break;
+                    case 5: className = 'marker-cluster-radius60'; break;
+                  }
+                  return new L.DivIcon({html: '<div class=" leaflet-marker-icon '+className+' marker-cluster-medium leaflet-zoom-animated leaflet-clickable" tabindex="0"><div><span>'+markerCount+'</span></div></div>'});
+              }
+            });
+
+            mcg.addLayer(L.layerGroup(layers));
+            mcg.addTo(theMap);
+            theMap.fitBounds(mcg.getBounds());
         });
         return this;
 
@@ -70,7 +210,7 @@ var ReportsdocumentView = BaseView.extend({
 
         $.ajax({
             method: 'GET',
-            url: MOSQUITO.config.URL_API + 'reports/' + options.bbox //+ '/' + options.year + '/' + options.months + '/-' + options.excluded_types
+            url: MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/' + options.year + '/' + options.months + '/' + options.categories
         })
         .done(function(resp) {
             callback(resp);

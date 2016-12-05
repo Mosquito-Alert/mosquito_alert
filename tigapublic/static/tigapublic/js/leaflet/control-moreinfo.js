@@ -10,9 +10,13 @@ var MOSQUITO = (function (m) {
         },
 
         getContent: function(){
-            var container = $('<div>')
-              .attr('class', 'sidebar-control-moreinfo');
-            container.html( $('#content-control-moreinfo-tpl').html());
+          var _this = this;
+            var container = $('<div>');
+
+            var closeButton = this.getCloseButton().appendTo(container);
+
+            container.attr('class', 'sidebar-control-moreinfo');
+            container.append( $('#content-control-moreinfo-tpl').html());
 
             return container;
         }

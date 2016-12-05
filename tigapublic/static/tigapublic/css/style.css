@@ -2,12 +2,12 @@
 html, body {
     padding: 0px;
     margin: 0px;
-    -webkit-touch-callout: none;
+    /*-webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+    user-select: none;*/
 }
 
 body{
@@ -26,31 +26,118 @@ body{
     overflow: auto !important;
     background-color: red;
 }
+.report-counter {
+  float:left;
+  position:absolute;
+  left:-15px;
+  top:-16px;
+  border:1px solid black;
+  padding:5px 8px 5px 8px;
+  font-weight:bold;
+  font-size:.8em;
+}
 
+.one-report-info {
+  position:relative;
+}
 
 #header-view{
     position: absolute;
-    height: 52px;
+    height: 90px;
     top: 0px;
     color: #cccccc;
     left: 0px;
     right: 0px;
-    background-color: red;
+    background: #f8f8f8;
+}
+
+#header-view nav.navbar .container-fluid {
+  padding-left:35px;
+  position:absolute;
+  bottom:15px;
+  width:100%;
 }
 
 #header-view nav.navbar{
     margin: 0px;
     padding: 0px;
     border-radius: 0px;
+    height:90px;
+    position:relative;
+}
+
+#header-view nav.navbar ul.navbar-right {
+    position:absolute;
+    right:30px;
+    bottom:-15px;
 }
 
 #header-view div.logo{
-    width: 195px;
-    height: 50px;
+    width: 240px;
+    height: 60px;
     background-image: url('img/tigatrapp_logo.png');
     background-size:  cover;
     background-repeat: no-repeat;
     background-position: center center;
+    float:left;
+    cursor:pointer;
+}
+
+.logos-portada{
+    top: 20px;
+}
+
+.logo-img{
+    float:left;
+    cursor:pointer;
+    height: 80px;
+    margin-left: 20px;
+}
+.logo-img img{
+    height:60px;
+}
+
+#header-view div.header-separator {
+    margin-left:29px;
+    margin-right:22px;
+    height:45px;
+    margin-top:14px;
+    width:1px;
+    background:black;
+    float:left;
+}
+
+#header-view div.motto {
+    font-weight:normal;
+    position:absolute;
+    text-align:right;
+    width:257px;
+    height:auto;
+    right:280px;
+    bottom:-2px;
+    color:black;
+    font-size:1.2em;
+}
+
+.right-elements{
+    margin-top:27px;
+    top:15px;
+}
+
+#header-view div.experts-stamp {
+    float:left;
+    margin-top:0px;
+    color:black;
+    font-size:18px;
+    background-image: url('img/mosquito_experts_stamp.png');
+    background-size:  cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    position:relative;
+    right:auto;
+    bottom:auto;
+    width:60px;
+    height:60px;
 }
 
 #header-view nav.menu {
@@ -68,7 +155,7 @@ body{
 #map-view{
     overflow: hidden;
     position: absolute;
-    top: 52px;
+    top: 90px;
     bottom: 0;
     width: 100%;
 }
@@ -94,6 +181,9 @@ body{
     background: white;
     overflow: auto;
 }
+.map-sidebar h3 {
+  margin-top:0px;
+}
 /*
 #map-ui {
     width: 250px;
@@ -112,6 +202,9 @@ body{
 #map-ui li.list-group-item{
     margin: 4px;
     border-radius: 4px !important;
+    display:table;
+    width:97%;
+    padding:10px 0 10px 15px;
 }
 
 #map-ui li.list-group-item:hover{
@@ -124,9 +217,23 @@ body{
     color: #333333;
 }
 
+#map-ui li.list-group-item > img {
+  float:left;
+}
+
+#map-ui li.list-group-item > label {
+  float:left;
+  width:180px;
+}
+#map-ui li.list-group-item > label.multiclass {
+  float:none;
+  width:200px;
+}
+
 #map-ui .list-group-item img.icon{
     height: 25px;
     margin-right: 5px;
+    float:left;
 }
 
 #map-ui li.list-group-item label:hover{
@@ -135,6 +242,26 @@ body{
 
 .map-sidebar[data-sidebar-panel="sidebar-control-share"]{
     width: 500px !important;
+}
+
+#control-share .warning {
+  font-size:.9em;
+  font-style:italic;
+  background:#ECECEC;
+  background:rgba(241, 211, 87, 1);
+  margin:auto;
+  display:table;
+  border-radius:4px;
+}
+#control-share .warning > div {
+  padding:5px 20px;
+}
+#control-share .warning ul {
+  margin-top:10px;
+  list-style: none;
+}
+#control-share .warning ul li img{
+    margin-right:5px;
 }
 
 #map-ui select{
@@ -196,8 +323,7 @@ a[data-lang].active{
 }
 
 .leaflet-side-button a:hover{
-	height: 40px;
-    width: 40px;
+	height: 40px;    <link href="css/style2.css" rel="stylesheet">
 }
 
 
@@ -236,3 +362,207 @@ button.close{
     display: none;
 }
 */
+
+h3.reports{
+    padding:20px;
+}
+
+.one-report-info .titol_capa_reports h3{
+    font-size:20px
+}
+
+@media print {
+  a[href]:after {
+    content: none;
+  }
+}
+
+.share-site-buttons {
+  position:absolute;
+  top:-15px;
+  right:10px;
+  /* height:60px; */
+}
+
+.share-site-buttons a {
+  color:white !important;
+}
+
+/*overwrite bootstrap row */
+.row{
+    marging-left:0px;
+    margin-right: 0px
+}
+
+.tolower{
+    text-transform: lowercase;
+}
+.cookie_consent {
+	background:rgba(255,221,24,0.7);
+  border-bottom:3px solid rgba(255,255,0,0.7);
+	position:absolute;
+	padding:10px;
+  text-align:center;
+  font-size:14px;
+  z-index:1001;
+}
+
+.btn-group-lg>.btn, .btn-lg {
+  padding:5px;
+  font-size:12px;
+  float:right;
+  margin:0 5px 5px 0;
+}
+
+.close_button {
+  border:1px solid black !important;
+  padding:2px 5px !important;
+  border-radius:25px;
+  margin-right:5px;
+  margin:-2px 5px 2px 0px;
+  background:#CCCCCC !important;
+}
+.close_button:hover {
+  background:#CECECE;
+}
+
+#map-ui .btn {
+  margin-right:10px;
+}
+#map-ui .btn-block {
+  width:auto;
+  display:inline;
+}
+#sys_message.btn-block {
+  background:rgba(255,0,0,0.7);
+  cursor:default;
+  /*border:1px solid #ff3918;
+  border-radius:10px;
+  color:black;
+  margin-right:10px;
+  /* position:absolute; */
+}
+/**********/
+/* TABLET */
+/**********/
+@media (min-width:767px) and (max-width: 1020px) {
+  #header-view div.motto {
+    width:auto !important;
+    right:auto !important;
+    bottom:-10px !important;
+  }
+}
+
+/**********/
+/* MOBILE */
+/**********/
+@media  (max-width: 767px) {
+  /************************/
+  /* Portrait orientation */
+  /************************/
+  .navbar-header {
+    height:88px;
+  }
+  #header-view nav.navbar .container-fluid {
+    bottom:auto;
+    padding-left:5px;
+  }
+  /* Menu desplegable */
+  .navbar-header .navbar-toggle {
+    position:absolute !important;
+    top:20px;
+    right:0px;
+  }
+  .collapse.in {
+    height:60px;
+  }
+  .container-fluid>.navbar-collapse {
+    top:0px;
+    z-index: 9999;
+    position: relative;
+    background: #ECECEC;
+    margin-right:-16px;
+  }
+  #header-view nav.navbar ul.navbar-right {
+    bottom:auto;
+    top:0px;
+  }
+  .navbar-right li {
+    float:left;
+  }
+  .navbar-right li.dropdown.open {
+    position:absolute;
+    top:0px;
+    left:0px;
+  }
+  .navbar-nav .open .dropdown-menu {
+    position:absolute;
+    left:-155px;
+    top:0px;
+    background-color: white;
+    box-shadow:0 6px 12px rgba(0,0,0,.175);
+
+  }
+  .logo {
+    top:10px;
+    left:15px;
+    position:absolute;
+  }
+  .experts-stamp {
+    display:none;
+    position:absolute !important;
+    top:5px;
+    left:255px;
+    width:46px !important;
+    height:46px !important;
+    /*background-image: url(img/mosquito_experts_stamp_small.png);*/
+  }
+  .header-separator {
+    display:none;
+  }
+  .motto {
+    display:none;
+  }
+  .navbar-header .share-site-buttons {
+    display:none;
+    top:0px !important;
+  }
+  .navbar-collapse .share-site-buttons {
+    top:5px !important;
+    left:20px !important;
+    right:auto !important;
+  }
+  .navbar-collapse .separator {
+    border-bottom:1px dashed #ACACAC;
+    height:50px;
+  }
+  /* SIDEBAR */
+
+  .map-sidebar {
+    width:80% !important;
+  }
+  .cookie_consent {
+    position:fixed;
+  }
+  #map-ui div[class^="sidebar-"] {
+  }
+  /*************************/
+  /* Landscape orientation */
+  /*************************/
+  @media  (max-height: 321px) {
+    .leaflet-control {
+      clear:none;
+    }
+    .map-sidebar {
+      width:45% !important;
+    }
+  }
+  @media  (min-height:321px) and (max-height: 467px) {
+    .leaflet-control {
+      clear:none;
+    }
+    .map-sidebar {
+      width:50% !important;
+    }
+  }
+}

@@ -8,6 +8,11 @@ window.t = function(){
                     var translated,
                         to_translate = $(el).attr('i18n'),
                         type = el.nodeName;
+                    if ($(el).attr('i18n').indexOf('layer.')>-1) {
+                      //console.log($(el));
+                      //console.log($(el).attr('i18n')+' '+$(el).parent().attr('class'));
+                      //console.log($(el).attr('i18n')+' '+$(el).parent().parent().attr('class'));
+                    }
                     if(type === 'IMAGE'){
                         //Alt
                     }else{
@@ -29,13 +34,28 @@ window.t = function(){
                 $('html').attr('lang', lng);
                 trans.trigger('i18n_lang_changed', lng);
                 this.translate(lng, 'body');
+
+                // do social buttons
+                var social_butons = $('html').find('.share-site-buttons');
+                social_butons.jsSocials('shareOption', 'twitter', 'text', t('share.look_at')+' @MosquitoAlert #cienciaciudadana');
+                social_butons.jsSocials('shareOption', 'facebook', 'title', t('share.look_at')+' @MosquitoAlert #cienciaciudadana');
+            },
+            // load a new language file
+            getLangFile: function(lng) {
+              $.ajax({
+                "url": "js/i18n/"+lng+"_logged.js",
+                "complete": function(result, status) {
+                  if (status=='success') {
+                    eval (result.responseText);
+                  }
+                  window.t().translate(lng,'body');
+                }
+              });
             }
         };
     }else{
         var lng = $('html').attr('lang');
-        //var userLang = navigator.language || navigator.userLanguage;
         var translated = window.trans[lng][arguments[0]] || arguments[0];
-        //console.debug(translated);
         return translated;
     }
 };

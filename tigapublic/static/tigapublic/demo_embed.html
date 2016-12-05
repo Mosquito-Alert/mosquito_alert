@@ -1,0 +1,65 @@
+<html >
+<meta charset="UTF-8">
+<style>
+body {
+  width:956px;
+  margin-left:50%;
+  position:relative;
+  left:-478px;
+}
+iframe {
+  border:1px solid black;
+  margin:10px 0;
+}
+p.code {
+  font-family:Courier;
+  font-size:.8em;
+  background:#ECECEC;
+  border: 1px solid #ACACAC;
+  padding:4px 15px;
+  border-radius:5px;
+  margin-bottom:10px;
+  clear:both;
+  width:926px !important;
+}
+</style>
+<head>
+  <title>Demo Embed MosquitoAlert</title>
+</head>
+<body>
+  <p>Aquesta pàgina demostra l'ús de la funció EMBED (incrustar el mapa dins un altre website). El mapa incrustat té les mateixes funcionalitats que el mapa a pantalla completa. Les diferències del mapa incrustat respecte al mapa a pantalla completa són:
+    <ul>
+      <li>No permet fer zoom amb la rodeta del ratolí, per que l'scroll de la pàgina principal no es vegi afectat.</li>
+      <li>No té capçalera. Perquè:
+        <ul>
+          <li>Ens sembla redundant que hi hagi una capçalera a la pàgina principal i que el mapa en tingui una d'igual o molt similar.</li>
+          <li>La capçalera es menja un espai que a pantalla completa pot ser prescindible però que quan les dimensions són més reduïdes es pot trobar a faltar.</li>
+          <li>El canvi d'idioma es presuposa gestionat per la pàgina principal. Segons l'idioma de la pàgina principal podem incrustar el mapa amb l'idioma que toqui.</li>
+          <li>Ometem la funcionalitat d'autenticació, assumint que l'usuari administrador/gestor treballarà millor en un mapa a pantalla completa que en un mapa petit dins un altre website.</li>
+        </ul>
+      </li>
+      <li>No té missatge de confirmació de l'ús de cookies. Perquè aquest missatge ja es troba a la pàgina principal, però cal avaluar si això s'adapta bé a la normativa.
+    </ul>
+  </p>
+  <p>Per a incrustar un mapa en un altre website hem de posar, en el punt de la pàgina on volem que surti, una etiqueta <em>&lt;iframe&gt;</em> amb un atribut <em>src</em> apuntant al mapa.</p>
+  <p>Exemple:</p>
+  <p class="code">&lt;iframe src="http://sigserver3.udg.edu/mosquito/spain.html" width="956" height="600"&gt;&lt;/iframe&gt;</p>
+  <iframe src="spain.html" width="956" height="600" data-cookiescript="accepted" alt="Please accept cookie policy first"></iframe>
+  <div>També podem personalitzar l'extensió visible del mapa incrustat. A l'embed anterior, per exemple, podem fer zoom i pan fins tenir l'extensió desitjada. Un cop la tenim, fem clic al botó de compartir vista i copiem la URL. La posem dins l'atribut src de l'iframe. Exemple:</div>
+  <p class="code">&lt;iframe src="http://sigserver3.udg.edu/mosquito/spain.html#/es/6/40.78054143186033/0.24169921874999997/A/all/all" width="956" height="600"&gt;&lt;/iframe&gt;</p>
+  <iframe src="spain.html#/es/6/40.78054143186033/0.24169921874999997/A/all/all" width="956" height="600"></iframe>
+  <div>Amb el mateix procediment (preparar vista, copiar enllaç de compartir i enganxar al <em>src</em> de l'<em>iframe</em>) podem incrustar un mapa que mostri ja l'informe d'un determinat punt.</div>
+  <p class="code">&lt;iframe src="spain.html#/es/14/40.43153030189336/-3.670034408569336/A/all/all/1562" width="956" height="600">&lt;/iframe></p>
+  <iframe src="spain.html#/es/14/40.43153030189336/-3.670034408569336/A/all/all/1562" width="956" height="600"></iframe>
+  <p>O bé preaparar una vista amb unes capes determinades i uns filtres determiants:</p>
+  <p class="code">&lt;iframe src="spain.html#/es/8/41.87774145109676/2.6751708984375/A,B,C,D,E,F/2015/4" width="956" height="600">&lt;/iframe></p>
+  <iframe src="spain.html#/es/8/41.87774145109676/2.6751708984375/A,B,C,D,E,F/2015/4" width="956" height="600"></iframe>
+  <p>Les dimensions de l'iframe també poden ser modificades. Amb això podem mostrar una interfície com la que es veu en els dispositius mòbils (tablet, smartphone).</p>
+  <p class="code">iPad vertical: 768x1024</p>
+  <iframe src="spain.html#/es/6/40.56389453066509/0/A/all/all" width="768" height="1024"></iframe>
+  <p class="code">Samsung Galaxy S5 vertical: 360x640</p>
+  <iframe src="spain.html#/es/6/40.56389453066509/0/A/all/all" width="360" height="640"></iframe>
+  <p class="code">Samsung Galaxy S5 horitzontal: 640x360</p>
+  <iframe src="spain.html#/es/5/41.672911819602085/3.8671874999999996/A/all/all" width="640" height="360"></iframe>
+</body>
+</Html>

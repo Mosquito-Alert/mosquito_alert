@@ -1,15 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-]>
-<svg version="1.1"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
-	 x="0px" y="0px" width="23px" height="23px" viewBox="-1.1 -0.503 23 23"
-	 overflow="visible" enable-background="new -1.1 -0.503 23 23" xml:space="preserve">
-<defs>
-</defs>
-<path fill="#FFFF33" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" d="M10.749,21.25
-	c-5.788,0-10.499-4.71-10.499-10.5c0-5.79,4.711-10.5,10.499-10.5c5.789,0,10.501,4.71,10.501,10.5
-	C21.25,16.539,16.54,21.25,10.749,21.25z"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="23px"
+   version="1.1"
+   viewBox="0 0 18 23"
+   width="18px"
+   id="svg4187"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="marker_site_water_selected.svg"
+   inkscape:export-filename="/home/marc/sigte/projectes_marc/mosquito/test.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <metadata
+     id="metadata4201">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1680"
+     inkscape:window-height="988"
+     id="namedview4199"
+     showgrid="false"
+     inkscape:zoom="17.341851"
+     inkscape:cx="-18.199221"
+     inkscape:cy="10.161842"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4187" />
+  <desc
+     id="desc4191" />
+  <defs
+     id="defs4193" />
+  <path
+     style="fill:#ffff00;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 8.8466359,21.74371 C 8.6799279,21.586362 8.2121369,21.087866 7.8071004,20.635941 5.257106,17.790747 3.2677372,15.127524 1.9172476,12.751035 0.95464151,11.057114 0.70565341,10.231885 0.70217621,8.72389 0.69905771,7.3703257 0.90680211,6.5225437 1.528995,5.3497954 2.0503457,4.367119 2.7221108,3.5832753 3.6582248,2.8653199 4.8998059,1.9130853 6.3293546,1.3232303 7.9441071,1.0968949 8.8192329,0.97423093 10.244949,1.0245369 11.112628,1.2086952 c 3.247072,0.6891664 5.730026,2.9808975 6.461853,5.9641998 0.182482,0.7438915 0.198248,2.2029724 0.03191,2.953415 -0.299613,1.351747 -1.097464,2.875027 -2.742953,5.236927 -1.827028,2.622478 -5.2356781,6.666558 -5.6190671,6.666558 -0.05205,0 -0.231031,-0.128738 -0.397735,-0.286085 z"
+     id="path4149"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="sssssssssssss" />
 </svg>

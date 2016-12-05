@@ -49,6 +49,7 @@ var MOSQUITO = (function (m) {
 
             this._map.on(
                 'zoomend movestart move moveend layerchange', this.set_url, this);
+                
             trans.on('i18n_lang_changed', this.set_url, this);
             //set_url.call(this);
             this.set_url();
@@ -74,7 +75,7 @@ var MOSQUITO = (function (m) {
                             url: share_input_val
                         }
                     ],
-                text: '(MULTIDIOMA??) Mira este mapa de @MosquitoAlert #cienciaciudadana',
+                text: t('share.look_at')+' @MosquitoAlert #cienciaciudadana',
                 showCount: false
             });
 
@@ -94,6 +95,7 @@ var MOSQUITO = (function (m) {
         _click: function (e) {
             L.DomEvent.stopPropagation(e);
             L.DomEvent.preventDefault(e);
+            this.build_url();
             //this.fire('click', e);
             $('#control-share').modal('show');
             //router.navigate('home', {trigger: true});

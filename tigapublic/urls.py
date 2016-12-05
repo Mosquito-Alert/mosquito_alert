@@ -18,5 +18,6 @@ urlpatterns = patterns('',
     url(r'^ajax_login/$', views.ajax_login),
     url(r'^ajax_is_logged/$', views.ajax_is_logged),
     url(r'^ajax_logout/$', views.ajax_logout),
-
+    url(r'^userfixes/(.*)/(.*)$', views.userfixes),
+    url(r'^reports/(.*)/(.*)/(.*)/(.*)$', views.reports)
 )

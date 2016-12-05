@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="author" content="@sigte_udg" />
-    <title>MOSQUITO Alert</title>
+    <title>Mosquito Alert</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<link href="http://www.mosquitoalert.com/wp-content/themes/enfold-child/images/favicons/favicon.ico" rel="shortcut icon">
 
@@ -22,7 +22,6 @@
     <link href="css/style.css" rel="stylesheet">
     <link href="css/map.css" rel="stylesheet">
     <!-- endbuild -->
-
 	<!--Font awesome-->
 	<link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 
@@ -30,15 +29,24 @@
 <body>
 <div id="page-map" class="page">
     <div id="header-view">
-        <nav class="navbar navbar-default">
-          <div class="container-fluid">
-            <div class="navbar-header">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
               <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
             </button>
-            <div class="logo"></div>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <div class="logo" i18n="header.logo_url|onclick"></div>
+            <div class="header-separator"></div>
+            <div class="motto" i18n="header.motto"></div>
+            <div class="share-site-buttons"></div>
+            <div class="experts-stamp"></div>
+          </div>
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <!--<div class="separator" style="clear:both;">-->
+              <div class="share-site-buttons"></div>
               <ul class="nav navbar-nav navbar-right">
                   <li>
                     <a data-lang="es" href="#/es/">ES</a>
@@ -58,7 +66,7 @@
                       <i class="glyphicon glyphicon-user"></i><span i18n="header.login">Login</span>
                   </a>
 
-                  <div id="form-login_" class="dropdown-menu form-login" role="menu">
+                  <!--<div id="form-login_" class="dropdown-menu form-login" role="menu">
                     <div class="form-group">
                         <input i18n="header.username|placeholder" type="username" class="form-control" id="login_username" placeholder="Enter email" />
                     </div>
@@ -66,20 +74,42 @@
                         <input i18n="header.password|placeholder" type="password" class="form-control" id="login_password" placeholder="Password" />
                     </div>
                     <button class="btn btn-success btn-block"><i class="glyphicon glyphicon-ok"></i> <span i18n="header.submit">Submit</span></button>
-                  </div>
+                  </div>-->
                 </li>
 
               </ul>
+            <!--</div>-->
+          </div>
+        </div>
+      </nav>
+      <div id="control-login" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title" i18n="header.login"></h4>
+            </div>
+            <div class="modal-body content">
+              <div id="form-login_" class="form-login" role="menu">
+                <div class="form-group">
+                    <input i18n="header.username|placeholder" type="username" class="form-control" id="login_username" placeholder="Enter email" />
+                </div>
+                <div class="form-group">
+                    <input i18n="header.password|placeholder" type="password" class="form-control" id="login_password" placeholder="Password" />
+                </div>
+                <button class="btn btn-success btn-block login-submit"><i class="glyphicon glyphicon-ok"></i> <span i18n="header.submit">Submit</span></button>
+              </div>
             </div>
           </div>
-        </nav>
-    </div>
 
+        </div>
+      </div>
+    </div>
     <div id="map-view" class="container-fullwidth">
         <div id="map-ui" class="map-sidebar"></div>
         <div id="map" class="map"></div>
     </div>
-
     <!-- Modal -->
     <div id="control-share" class="modal fade" role="dialog">
       <div class="modal-dialog">
@@ -103,362 +133,332 @@
     <script type = "text/template" id="content-control-moreinfo-tpl">
         <div>
         <h3 i18n="map.controlmoreinfo_title"></h3>
-        <span i18n="map.controlmoreinfo_desc"></span>
+        <span i18n="map.controlmoreinfo_desc_es"></span>
         </div>
     </script>
     <script type = "text/template" id="content-control-share-tpl">
         <div>
-        <p i18n="map.controlshare_share_description"></p>
+        <p i18n="map.controlshare_view_description"></p>
         </div>
         <div>
             <input class="share_input">
         </div>
+        <div class="warning"></div>
         <div class="social-butons"></div>
     </script>
 
     <script type = "text/template" id="content-control-download-tpl">
-        <div id="title_download">
+        <div>
             <h3>
                 <span i18n="map.title_download"></span>
             </h3>
-        </div>
-        <div id="download_text">
-            <span i18n="map.text_description_download"></span>
-        </div>
-        <div class="download_button">
-            <button><span i18n="map.download_btn"><span></button>
-        </div>
 
+            <div id="download_text">
+                <span i18n="map.text_description_download"></span>
+            </div>
+            <div class="download_button">
+                <button class="btn btn-success btn-block"><span i18n="map.download_btn"><span></button>
+            </div>
+        </div>
+    </script>
+
+    <script type = "text/template" id="content-control-reportsdocument-tpl">
+        <div>
+        <h3 i18n="map.controldocumentsreport_title"></h3>
+        <span i18n="map.controldocumentsreport_desc"></span>
+        <div class="viewreports_button">
+            <button id="button-reportsdocument-tpl" class="btn btn-success btn-block" disabled><span i18n="map.viewreports_btn"><span></button>
+        </div>
+        </div>
     </script>
 
     <script type = "text/template" id="content-report-tpl">
         <!--<h3 i18n="map.report_title"></h3>-->
         <div id="popup_expert_validated">
-        <!-- nom de la capa -->
-        <div class="titol_capa">
-            <h3>
-                <% if ( ( titol_capa == 'albopictus_posible') ||
-                    ( titol_capa == 'albopictus_confirmado') ){ %>
-                        <span i18n="layer.albopictus"></span>
-                <% } else if ( ( titol_capa == 'aegypti_posible') ||
-                    ( titol_capa == 'aegypti_probable') ) { %>
-                        <span i18n="layer.aegypti"></span>
-                <% } if (titol_capa == 'unidentified') { %> <span i18n="layer.nosabe"></span>
-                <% } else if (titol_capa == 'other_species') { %> <span i18n="layer.noparece"></span>
-                <% } else if (titol_capa == 'site') { %> <span i18n="layer.site"></span> <% } %>
-            </h3>
-        </div>
-         <% if( ( photo_url != null) && (photo_url != "") ) { %>
-             <div id="popup_photo">
-                 <a href ="http://tigaserver.atrapaeltigre.com/<%= photo_url %>" target="_blank">
-                 <img src="http://tigaserver.atrapaeltigre.com/<%= photo_url %>" onerror="this.style.display = 'none'" />
-             </a>
-             </div>
-             <div class="photo_license">
-                 <i><span i18n="map.anonim"></span>, CC by Mosquito Alert</i>
-             </div>
+            <div class="titol_capa">
+                <h3>
+                    <div id="validated_specie">
+                            <span class="title_validacion_experta" i18n="map.expert_validated"></span>
+                            <!-- SI LA VALIDACIÓ TE LA PARAULA NONE ES CONSIDERA NO CLASSIFICAT-->
+                            <!-- ENCARA QUE TINGUI 0, -1  -2 -->
 
-         <% } %>
-
-
-        <% if( ( breeding_site_answers != null) && (breeding_site_answers != "") ) { %>
-            <% if ( expert_validation_result[1] == -3 ) { %>
-                <div class="validation-minus-tree">
-            <% } %>
-            <% if ( expert_validation_result[1] == -2 ) { %>
-                <div class="validation-minus-two">
-            <% } %>
-            <% if ( expert_validation_result[1] == -1 ) { %>
-                <div class="validation-minus-one">
-            <% } %>
-            <% if ( expert_validation_result[1] == 0 ) { %>
-                <div class="validation-zero">
-            <% } %>
-            <% if ( expert_validation_result[1] == 1 ) { %>
-                <div class="validation-plus-one">
-            <% } %>
-            <% if ( expert_validation_result[1] == 2 ) { %>
-                <div class="validation-plus-two">
-            <% } %>
-
-            <div id="validated_specie">
-                    <span class="title_validacion_experta" i18n="map.expert_validated"></span>
-
-                    <% if ( expert_validation_result[1] == -3 )  { %>
-                        <span i18n="map.no_clasificado"></span>
-                    <% } %>
-                    <% if ( expert_validation_result[1] == -2 ) { %>
-                        <div class="experts_specie">
-                            <span i18n="map.no_confirmado"></span>
-                            <%= expert_validation_result_specie %>
-                        </div>
-                    <% } %>
-                    <% if ( expert_validation_result[1] == -1 )  { %>
-                        <div class="experts_specie">
-                            <span i18n="map.no_posible"></span>
-                            <%= expert_validation_result_specie %>
-                        </div>
-                    <% } %>
-                    <% if ( expert_validation_result[1] == 0 )  { %>
-                        <div class="experts_specie">
-                            <span i18n="map.no_sabe"></span>
-                        </div>
-                    <% } %>
-                    <% if ( expert_validation_result[1] == 1 )  { %>
-                        <div class="experts_specie">
-                            <span i18n="map.si_posible"></span>
-                            <%= expert_validation_result_specie %>
-                        </div>
-                    <% } %>
-                    <% if ( expert_validation_result[1] == 2 ) { %>
-                        <div class="experts_specie">
-                            <span i18n="map.si_confirmado"></span>
-                            <%= expert_validation_result_specie %>
-                        </div>
-                    <% } %>
+                            <%if ( expert_validation_result[0]=='none' && expert_validation_result[1]=='-3') { %>
+                            <% } else if ( expert_validation_result[0]=='site' && expert_validation_result[1]=='-4') {%>
+                                <span class="tolower" i18n="layer.filtered"></span>
+                            <% } else { %>
+                                <span class="tolower" i18n="layer.<%=category%>"></span>
+                            <% } %>
+                    </div>
+                  </h3>
             </div>
-        </div>
-        <!-- amagem questionari breeding site-->
-        <!--
-            <% if ( breeding_site_answers.length == 2 ) { %>
-                <div id="popup_breeding_site_answers">
+
+          <% if( ( photo_url != null) && (photo_url != "") ) { %>
+              <div id="popup_photo">
+                  <a href ="http://tigaserver.atrapaeltigre.com/<%= photo_url %>" target="_blank">
+                  <img src="http://tigaserver.atrapaeltigre.com/<%= photo_url %>" onerror="this.style.display = 'none'" />
+              </a>
+              </div>
+              <div class="photo_license">
+                  <i>
+                    <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.
+                    <!-- cal afegir layer trash -->
+                    <% if (category != 'not_yet_validated' && category != 'trash_layer' && category != 'breeding_site_not_yet_filtered') { %>
+                        <span i18n="report.license"></span><a href="http://www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
+                    <% } %>
+                  </i>
+              </div>
+          <% } %>
+
+          <!-- User Mosquito Answers -->
+            <% if (t_answers != null)  { %>
+                <div id="popup_mosquito_answers">
                     <div class="one_answer">
-                        <span i18n="map.breeding_site_answers_1_2"></span>
-                        <% if ( breeding_site_answers[0] == 1) { %>
-                            <span class="response" i18n="map.si"></span>
-                        <% } else { %>
-                            <span class="response" i18n="map.no"></span>
+                        <!--primera pregunta-->
+                        <span class="query"><%=questions[0]%></span>
+                        <span class="response"><%=t_answers[0]%></span>
+                    </div>
+                    <!--Segona pregunta-->
+                    <div class="one_answer">
+                        <% if ( t_answers.length > 1 ) { %>
+                            <span class="query"><%=questions[1]%></span>
+                            <span class="response"><%=t_answers[1]%></span>
                         <% } %>
                     </div>
+                    <!--tercera pregunta-->
                     <div class="one_answer">
-                        <span i18n="map.breeding_site_answers_2_2"></span>
-                        <% if ( breeding_site_answers[1] == 1) { %>
-                            <span class="response" i18n="map.si"></span>
-                        <% } else { %>
-                            <span class="response" i18n="map.no"></span>
+                        <% if ( t_answers.length > 2 ) { %>
+                            <span class="query"><%=questions[2]%></span>
+                            <span class="response"><%=t_answers[2]%></span>
+                        <% } %>
+                    </div>
+
+                </div>
+
+            <% } %>
+            <!- end mosquito answers-->
+
+            <!-- User breeding site Answers -->
+            <% if ( s_answers != null) { %>
+                <div id="popup_breeding_site_answers">
+                    <div class="one_answer">
+                        <span class="query"><%=questions[0]%></span>
+                        <span class="response"><%=s_answers[0]%></span>
+                    </div>
+                    <!--Segona pregunta-->
+                    <div class="one_answer">
+                        <% if ( s_answers.length > 1 ) { %>
+                            <span class="query"><%=questions[1]%></span>
+                            <span class="response"><%=s_answers[1]%></span>
+                        <% } %>
+                    </div>
+                    <!--tercera pregunta-->
+                    <div class="one_answer">
+                        <% if ( s_answers.length > 2 ) { %>
+                            <span class="query"><%=questions[2]%></span>
+                            <span class="response"><%=s_answers[2]%></span>
+                        <% } %>
+                    </div>
+                    <!--quarta pregunta-->
+                    <div class="one_answer">
+                        <% if ( s_answers.length > 3 ) { %>
+                            <span class="query"><%=questions[2]%></span>
+                            <span class="response"><%=s_answers[2]%></span>
                         <% } %>
                     </div>
                 </div>
-            <% }
-             else { %>
-                <div id="popup_breeding_site_answers">
-                    <div class="one_answer">
-                        <span i18n="map.breeding_site_answers_1_3"></span>
-                        <% if ( breeding_site_answers[0] == 1) { %>
-                            <span class="response" i18n="map.si"></span>
-                        <% } else { %>
-                            <span class="response" i18n="map.no"></span>
-                        <% } %>
-                    </div>
-                    <div class="one_answer">
-                        <span i18n="map.breeding_site_answers_2_3"></span>
-                        <% if ( breeding_site_answers[1] == 1) { %>
-                            <span class="response"  i18n="map.si"></span>
-                        <% } else { %>
-                            <span class="response" i18n="map.no"></span>
-                        <% } %>
-                    </div>
-                    <div class="one_answer">
-                        <span i18n="map.breeding_site_answers_3_3"></span>
-                        <% if ( breeding_site_answers[2] == 1) { %>
-                            <span class="response" i18n="map.si"></span>
-                        <% } else { %>
-                            <span class="response" i18n="map.no"></span>
-                        <% } %>
-                    </div>
-                </div>
-                <% }
-        } %>
+            <% } %> <!-- end user breeding site answers-->
 
-        <!-- fi questionari breeding sites-->
 
-        <% if( ( mosquito_answers != null) && (mosquito_answers != "") ) { %>
+          <% if( (note != null) && (note != '') ) { %>
+              <div id="user_note">
+                  <span i18n="map.user_note"></span><%= note %>
+              </div>
+           <% } %>
+          <% if( ( edited_user_notes != null) && (edited_user_notes != "") ) { %>
+              <div id="nota_experto_reports">
+                  <span i18n="map.expert_note"></span><%= edited_user_notes %>
+              </div>
+           <% } %>
+           <% if( ( version_uuid != null) && (version_uuid != "") ) { %>
+               <div id="popup_id">
+                   <span i18n="map.versio_informe"></span>: <%= version_uuid %>
+               </div>
 
-            <% if ( expert_validation_result[1] == -3 ) { %>
-                <div class="validation-minus-tree">
             <% } %>
-            <% if ( expert_validation_result[1] == -2 ) { %>
-                <div class="validation-minus-two">
+
+            <% if( ( observation_date != null) && (observation_date != "") ) { %>
+               <div id="popup_observation_date">
+                   <span i18n="map.observation_date"></span>: <%= observation_date %>
+               </div>
             <% } %>
-            <% if ( expert_validation_result[1] == -1 ) { %>
-                <div class="validation-minus-one">
+
+            <% if( ( lon != null) && (lon != "") && ( lat != null) && (lat != "") ) { %>
+               <div id="popup_coordenadas">
+                   <span i18n="map.coordenadas"></span>: <%= lat %>, <%= lon %>
+               </div>
             <% } %>
-            <% if ( expert_validation_result[1] == 0 ) { %>
-                <div class="validation-zero">
-            <% } %>
-            <% if ( expert_validation_result[1] == 1 ) { %>
-                <div class="validation-plus-one">
-            <% } %>
-            <% if ( expert_validation_result[1] == 2 ) { %>
-                <div class="validation-plus-two">
-            <% } %>
-                        <div id="validated_specie">
-                                <span class="title_validacion_experta" i18n="map.expert_validated"></span>
-                                <!-- SI LA VALIDACIÓ TE LA PARAULA NONE ES CONSIDERA NO CLASSIFICAT-->
-                                <!-- ENCARA QUE TINGUI 0, -1  -2 -->
-                                <% if ( expert_validation_result[1] == -3 )  { %>
-                                    <span i18n="layer.noparece"></span>
-                                <% } %>
-                                <% if ( expert_validation_result[1] == -2 ) { %>
-                                    <div class="experts_specie">
-                                        <span i18n="layer.noparece"></span>
-                                    </div>
-                                <% } %>
-                                <% if ( expert_validation_result[1] == -1 )  { %>
-                                    <div class="experts_specie">
-                                        <span i18n="layer.noparece"></span>
-                                    </div>
-                                <% } %>
-                                <% if ( expert_validation_result[1] == 0 )  { %>
-                                    <span i18n="map.no_sabe"></span>
-                                <% } %>
-                                <% if ( ( expert_validation_result[1] == 1 ) && ( expert_validation_result_specie =='albopictus') ){ %>
-                                    <div class="experts_specie">
-                                        <span i18n="layer.albopictus_posible"></span>
-                                    </div>
-                                <% } %>
-                                <% if ( ( expert_validation_result[1] == 2 ) && ( expert_validation_result_specie =='albopictus') ){ %>
-                                    <div class="experts_specie">
-                                        <span i18n="layer.albopictus_confirmado"></span>
-                                    </div>
-                                <% } %>
-                                <% if ( ( expert_validation_result[1] == 1 ) && ( expert_validation_result_specie=='aegypti' ) ){ %>
-                                    <div class="experts_specie">
-                                        <span i18n="layer.aegypti_posible"></span>
-                                    </div>
-                                <% } %>
-                                <% if ( ( expert_validation_result[1] == 2 ) && (expert_validation_result_specie=='aegypti') ) { %>
-                                    <div class="experts_specie">
-                                        <span i18n="layer.aegypti_confirmado"></span>
-                                    </div>
-                                <% } %>
 
-                        </div>
-				</div>
-
-                <!-- Fora respostes
-                <% if( ( mosquito_answers != null) && (mosquito_answers != "") ) { %>
-
-                    <div id="popup_mosquito_answers">
-                        <div class="one_answer">
-                            <span i18n="map.mosquito_answers_1_3"></span>
-                                <% if ( mosquito_answers[0] == 1) {%>
-                                    <span class="response" i18n="map.si"></span>
-                                <% } %>
-                                <% if ( mosquito_answers[0] == 0) {%>
-                                    <span class="response" i18n="map.nosabe"></span>
-                                <% } %>
-                                <% if ( mosquito_answers[0] == -1) {%>
-                                    <span class="response" i18n="map.no"></span>
-                                <% } %>
-                        </div>
-                        <div class="one_answer">
-                            <span i18n="map.mosquito_answers_2_3"></span>
-                                <% if ( mosquito_answers[1] == 1) {%>
-                                    <span class="response" i18n="map.si"></span>
-                                <% } %>
-                                <% if ( mosquito_answers[1] == 0) {%>
-                                    <span class="response" i18n="map.nosabe"></span>
-                                <% } %>
-                                <% if ( mosquito_answers[1] == -1) {%>
-                                    <span class="response"  i18n="map.no"></span>
-                                <% } %>
-                        </div>
-
-                        <div class="one_answer">
-                            <span i18n="map.mosquito_answers_3_3"></span>
-                            <% if ( mosquito_answers[2] == 1) {%>
-                                <span class="response" i18n="map.si"></span>
-                            <% } %>
-                            <% if ( mosquito_answers[2] == 0) {%>
-                                <span class="response" i18n="map.nosabe"></span>
-                            <% } %>
-                            <% if ( mosquito_answers[2] == -1) {%>
-                                <span class="response" i18n="map.no"></span>
-                            <% } %>
-                        </div>
-                    </div>
-
-                <% } %>
-            -->
-            <!--Fi questionari-->
-        <% } %>
-        <% if( ( edited_user_notes != null) && (edited_user_notes != "") ) { %>
-            <div id="nota_experto">
-			    <%= edited_user_notes %>
-            </div>
-		 <% } %>
-
-        <% if( ( version_uuid != null) && (version_uuid != "") ) { %>
-
-			<div id="popup_id">
-			<span i18n="map.versio_informe"></span>: <%= version_uuid %>
-			</div>
-		 <% } %>
-
-		 <% if( ( observation_date != null) && (observation_date != "") ) { %>
-			<div id="popup_observation_date">
-			<span i18n="map.observation_date"></span>: <%= observation_date %>
-			</div>
-		 <% } %>
-
-		 <% if( ( lon != null) && (lon != "") && ( lat != null) && (lat != "") ) { %>
-			<div id="popup_coordenadas">
-			<span i18n="map.coordenadas"></span>: <%= lat %>, <%= lon %>
-			</div>
-		 <% } %>
-        <!--
-
-		dataset_license: <%= dataset_license %><br />
-        -->
-    </div>
+      </div>
 
 
     </script>
-    <script type="text/template" id="content-reportsdocument-tpl">
-        <h3 i18n="map.multi_report_title"></h3>
-    <hr />
 
-    <% _.each(rows, function(row) { %>
+    <script type="text/template" id="content-reportsdocument-tpl">
+    <div class="reports_page_title">
+        <h2 class="reports" i18n="map.multi_report_title"></h2>
+    <div>
+        <div class="report_header">
+            <div id="reports_header_map">
+            </div>
+            <div id="legend_reports_map">
+                <ul id ="map_layers"></ul>
+                <div id="map_filters"></div>
+            </div>
+        </div>
+        <div id="reports_license_text">
+            <% if (license === true) {%>
+                <div i18n="report.license_text"></div>
+            <% } %>
+        </div>
+    <%
+    counter = 1;
+    _.each(rows, function(row) { %>
         <div class="one-report">
 
-            <div class="one-report-map">
-                <div id="map_report_<%= row.id %>" class="map-report" style="display: cell">
-                    <!--#mapa#-->
-                </div>
-            </div>
             <div  class="one-report-info">
-                <%= row.version_uuid %><br/>
-                <% if ( row.expert_validation_result[1] == -3 ) { %> <div class="validation-minus-tree"> <% } %>
-                <% if ( row.expert_validation_result[1] == -2 ) { %> <div class="validation-minus-two"> <% } %>
-                <% if ( row.expert_validation_result[1] == -1 ) { %> <div class="validation-minus-one"> <% } %>
-                <% if ( row.expert_validation_result[1] == 0 ) { %> <div class="validation-zero"> <% } %>
-                <% if ( row.expert_validation_result[1] == 1 ) { %> <div class="validation-plus-one"> <% } %>
-                <% if ( row.expert_validation_result[1] == 2 ) { %> <div class="validation-plus-two"><% } %>
-                    <% if ( row.titol_capa == 'albopictus_probable') { %> <span i18n="layer.albopictus_probable"></span>
-                    <% } else if ( row.titol_capa == 'albopictus_seguro') { %> <span i18n="layer.albopictus_seguro"></span>
-                    <% } else if ( row.titol_capa == 'aegypti') { %> <span i18n="layer.aegypti"></span>
-                    <% } else if ( row.titol_capa == 'aegypti_probable') { %> <span i18n="layer.aegypti_probable"></span>
-                    <% } else if ( row.titol_capa == 'aegypti_seguro') { %> <span i18n="layer.aegypti_seguro"></span>
-                    <% } if (row.titol_capa == 'unidentified') { %> <span i18n="layer.unidentified"></span>
-                    <% } else if (row.titol_capa == 'other_species') { %> <span i18n="layer.other_species"></span>
-                    <% } else if (row.titol_capa == 'site') { %> <span i18n="layer.site"></span> <% } %>
-                </div> <!-- validation xx-->
-                <% if( ( row.observation_date != null) && (row.observation_date != "") ) { %>
-                   <div id="popup_observation_date">
-                   <span i18n="map.observation_date"></span>: <%= row.observation_date %>
-                   </div>
-                <% } %>
+                <div class="report-counter" style=""><%= counter %></div>
+                <% ++counter; %>
+                <!-- PHOTO & MAP -->
+                <div id="photo_and_map">
+                    <div class="titol_capa_reports">
+                        <h3>
+                          <span class="title_validacion_experta" i18n="map.expert_validated"></span>
+                          <%if ( row.expert_validation_result[0]=='none' && row.expert_validation_result[1]=='-3') { %>
+                          <% } else if ( row.expert_validation_result[0]=='site' && row.expert_validation_result[1]=='-4') {%>
+                              <span class="tolower" i18n="layer.filtered"></span>
+                          <% } else { %>
+                              <span class="tolower" i18n="layer.<%=row.category%>"></span>
+                          <% } %>
+                        </h3>
+                    </div>
+                    <div class="one-report-map">
+                        <div id="map_report_<%= row.id %>" class="map-report" >
+                            <!--#mapa#-->
+                        </div>
+                    </div>
+                    <% if( ( row.photo_url != null) && (row.photo_url != "") ) { %>
+                        <div id="photo_reports">
+                            <div class="popup_photo_reports">
+                                <a href ="http://tigaserver.atrapaeltigre.com/<%= row.photo_url %>" target="_blank">
+                                    <img src="http://tigaserver.atrapaeltigre.com/<%= row.photo_url %>" onerror="this.style.display = 'none'" />
+                                </a>
+                            </div>
+                            <div class="photo_license_reports">
+                                <i>
+                                  <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.<br/>
+                                  <% if (row.category != 'not_yet_validated' && row.category != 'trash_layer' && row.category != 'breeding_site_not_yet_filtered') { %>
+                                    <span i18n="report.license"></span><a href="http://www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
+                                  <% } %>
+                                </i>
+                            </div>
+                        </div>
+                    <% } %>
+                </div><!-- photo_and_map-->
 
-                <% if( ( row.lon != null) && (row.lon != "") && ( row.lat != null) && (row.lat != "") ) { %>
-                   <div id="popup_coordenadas">
-                   <span i18n="map.coordenadas"></span>: <%= row.lat %>, <%= row.lon %>
-                   </div>
-                <% } %>
+                <!-- User Mosquito Answers -->
+                  <% if (row.t_answers != null)  { %>
+                      <div id="popup_mosquito_answers_reports">
+                          <div class="one_answer">
+                              <!--primera pregunta-->
+                              <span class="query"><%=row.questions[0]%></span>
+                              <span class="response"><%=row.t_answers[0]%></span>
+                          </div>
+                          <!--Segona pregunta-->
+                          <div class="one_answer">
+                              <% if ( row.t_answers.length > 1 ) { %>
+                                  <span class="query"><%=row.questions[1]%></span>
+                                  <span class="response"><%=row.t_answers[1]%></span>
+                              <% } %>
+                          </div>
+                          <!--tercera pregunta-->
+                          <div class="one_answer">
+                              <% if ( row.t_answers.length > 2 ) { %>
+                                  <span class="query"><%=row.questions[2]%></span>
+                                  <span class="response"><%=row.t_answers[2]%></span>
+                              <% } %>
+                          </div>
+
+                      </div>
+
+                  <% } %>
+                  <!- end mosquito answers-->
+
+                  <!-- User breeding site Answers -->
+                  <% if ( row.s_answers != null) { %>
+                      <div id="popup_breeding_site_answers_reports">
+                          <div class="one_answer">
+                              <span class="query"><%=row.questions[0]%></span>
+                              <span class="response"><%=row.s_answers[0]%></span>
+                          </div>
+                          <!--Segona pregunta-->
+                          <div class="one_answer">
+                              <% if ( row.s_answers.length > 1 ) { %>
+                                  <span class="query"><%=row.questions[1]%></span>
+                                  <span class="response"><%=row.s_answers[1]%></span>
+                              <% } %>
+                          </div>
+                          <!--tercera pregunta-->
+                          <div class="one_answer">
+                              <% if ( row.s_answers.length > 2 ) { %>
+                                  <span class="query"><%=row.questions[2]%></span>
+                                  <span class="response"><%=row.s_answers[2]%></span>
+                              <% } %>
+                          </div>
+                          <!--quarta pregunta-->
+                          <div class="one_answer">
+                              <% if ( row.s_answers.length > 3 ) { %>
+                                  <span class="query"><%=row.questions[2]%></span>
+                                  <span class="response"><%=row.s_answers[2]%></span>
+                              <% } %>
+                          </div>
+                      </div>
+                  <% } %> <!-- end user breeding site answers-->
+
+
+                <% if( ( row.note != null) && (row.note != "") ) { %>
+                    <div id="user_note">
+                        <span i18n="map.user_note"></span><%= row.note %>
+                    </div>
+                 <% } %>
+
+                <% if( ( row.edited_user_notes != null) && (row.edited_user_notes != "") ) { %>
+                    <div id="nota_experto_reports">
+                        <span i18n="map.expert_note"></span><%= row.edited_user_notes %>
+                    </div>
+                 <% } %>
+
+                <% if( ( row.version_uuid != null) && (row.version_uuid != "") ) { %>
+                    <div id="popup_id_reports">
+                    <span i18n="map.versio_informe"></span>: <%= row.version_uuid %>
+                    </div>
+                 <% } %>
+
+                 <% if( ( row.observation_date != null) && (row.observation_date != "") ) { %>
+                    <div id="popup_observation_date_reports">
+                    <span i18n="map.observation_date"></span>: <%= row.observation_date %>
+                    </div>
+                 <% } %>
+
+                 <% if( ( row.lon != null) && (row.lon != "") && ( row.lat != null) && (row.lat != "") ) { %>
+                    <div id="popup_coordenadas_reports">
+                    <span i18n="map.coordenadas"></span>: <%= row.lat %>, <%= row.lon %>
+                    </div>
+                 <% } %>
             </div>
         </div><!--one report-->
 
     <% }); %>
+
     </script>
 
 
@@ -469,6 +469,9 @@
 
     <script src="lib/bootstrap-3.3.6/js/bootstrap.min.js"></script>
     <script src="lib/bootstrap-select-1.10.0/dist/js/bootstrap-select.min.js"></script>
+
+    <script src="js/latlon-geohash.js"></script>
+
     <script src="lib/leaflet/dist/leaflet.js"></script>
     <script src="lib/leaflet.sidebar.js"></script>
     <script src="lib/Leaflet.markercluster-leaflet-0.7/dist/leaflet.markercluster-src.js"></script>
@@ -477,8 +480,6 @@
     <script src="lib/jssocials-1.2.1/jssocials.min.js"></script>
 
     <!-- endbuild -->
-
-
 
     <!-- build:js js/app.min.js -->
      <!-- inject:js -->
@@ -503,6 +504,7 @@
      <script src="js/views/map.layers.js"></script>
      <script src="js/views/reportsdocument.js"></script>
      <script src="js/app.js"></script>
+
      <!-- endinject -->
     <!-- endbuild -->
 
