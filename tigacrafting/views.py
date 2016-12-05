@@ -29,6 +29,7 @@ from operator import attrgetter
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
 import urllib
+import django.utils.html
 from itertools import chain
 
 def get_current_domain(request):
@@ -451,9 +452,12 @@ def issue_notification(report_annotation,current_domain):
     notification = Notification(report=report_annotation.report,user=report_annotation.report.user,expert=report_annotation.user)
     notification.expert_comment = "¡Uno de sus informes ha sido validado por un experto!"
     if report_annotation.report.get_final_photo_url_for_notification():
-        notification.expert_html = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+        notification.expert_html = '<a href="http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification() + '" target="_blank">Enlace a tu foto</a>'
     if report_annotation.message_for_user:
-        notification.expert_html = notification.expert_html + "</br> " + report_annotation.message_for_user
+        clean_annotation = ''
+        clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        notification.expert_html = notification.expert_html + "</br> Mensaje de los expertos: </br>" + clean_annotation
     photo = None
     if report_annotation.report.get_final_photo_url_for_notification():
         photo = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
@@ -462,7 +466,7 @@ def issue_notification(report_annotation,current_domain):
     notification.save()
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
     this_user = request.user
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
@@ -492,6 +496,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             tags_filter = request.POST.get('tags_filter', tags_filter)
             checked = request.POST.get('checked', checked)
             tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+            note_language = request.GET.get('note_language', "es")
             load_new_reports = request.POST.get('load_new_reports', load_new_reports)
             save_formset = request.POST.get('save_formset', "F")
             if save_formset == "T":
@@ -513,9 +518,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
             page = request.POST.get('page')
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + tags_filter) if tags_filter else ''))
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + tags_filter) if tags_filter else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+            note_language = request.GET.get('note_language', note_language)
             scroll_position = request.GET.get('scroll_position', scroll_position)
             orderby = request.GET.get('orderby', orderby)
             tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
@@ -703,6 +709,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', l
         args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page
+        args['note_language'] = note_language
         args['scroll_position'] = scroll_position
         args['edit_mode'] = edit_mode
         n_query_records = all_annotations.count()
@@ -796,7 +803,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         usr_note = request.GET.get('usr_note', usr_note)
 
     # #345 is a special tag to exclude reports
-    reports_imbornal = ReportResponse.objects.filter( Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Selecciona lloc de cria',answer='Embornal o similar') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site', answer='Storm drain') |  Q(question='Type of breeding site', answer='Storm drain or similar receptacle')).exclude(report__creation_time__year=2014).values('report').distinct()
+    reports_imbornal = ReportResponse.objects.filter( Q(question='Is this a storm drain or sewer?',answer='Yes') | Q(question=u'\xc9s un embornal o claveguera?',answer=u'S\xed') | Q(question=u'\xbfEs un imbornal o alcantarilla?',answer=u'S\xed') | Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Selecciona lloc de cria',answer='Embornal o similar') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site', answer='Storm drain') |  Q(question='Type of breeding site', answer='Storm drain or similar receptacle')).exclude(report__creation_time__year=2014).values('report').distinct()
 
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
     new_reports_unfiltered_sites_embornal = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')

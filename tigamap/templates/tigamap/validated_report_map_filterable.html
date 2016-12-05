@@ -928,10 +928,12 @@ function map_init_basic(map, options) {
                                             onchange="this.form.submit()" data-style="btn-inverse">
                                         {% get_language_info_list for LANGUAGES as languages %}
                                         {% for language in languages %}
-                                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
-                                                    selected="selected"{% endif %}>
-                                                {{ language.name_local|title }}
-                                            </option>
+                                            {% if language.code != 'zh-cn' %}
+                                                <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                                        selected="selected"{% endif %}>
+                                                    {{ language.name_local|title }}
+                                                </option>
+                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                 </div>

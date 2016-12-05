@@ -175,10 +175,14 @@ class MapDataSerializer(serializers.ModelSerializer):
     lat = serializers.Field()
     movelab_annotation = serializers.Field()
     tiger_responses = serializers.Field()
+    tiger_responses_text = serializers.Field()
     site_responses = serializers.Field()
+    site_responses_text = serializers.Field()
     tigaprob_cat = serializers.Field()
     visible = serializers.Field()
     latest_version = serializers.Field()
+    n_photos = serializers.Field()
+    final_expert_status_text = serializers.Field()
 
     class Meta:
         model = Report

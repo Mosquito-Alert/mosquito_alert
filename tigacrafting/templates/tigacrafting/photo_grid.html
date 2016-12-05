@@ -70,7 +70,7 @@
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                         {% for n in tasks_per_page_choices %}
                                             <li>
-                                                <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}">{{ n }}</a>
+                                                <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}">{{ n }}</a>
                                             </li>
                                         {% endfor %}
                                     </ul>

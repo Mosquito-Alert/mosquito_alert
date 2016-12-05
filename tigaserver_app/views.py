@@ -427,8 +427,15 @@ def get_latest_validated_reports(reports):
     return Report.objects.filter(version_UUID__in=result_ids)
 
 
+class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
+    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    serializer_class = MapDataSerializer
+    filter_class = MapDataFilter
+
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    queryset = Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
@@ -553,6 +560,13 @@ class TagViewSet(ReadOnlyModelViewSet):
     serializer_class = TagSerializer
     filter_class = TagFilter
 
+def string_par_to_bool(string_par):
+    if string_par:
+        string_lower = string_par.lower()
+        if string_lower == 'true':
+            return True
+    return False
+
 @api_view(['GET','POST'])
 def user_notifications(request):
     if request.method == 'GET':
@@ -576,7 +590,8 @@ def user_notifications(request):
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
         ack = request.QUERY_PARAMS.get('acknowledged', True)
-        this_notification.acknowledged = ack
+        ack_bool = string_par_to_bool(ack)
+        this_notification.acknowledged = ack_bool
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
@@ -584,6 +599,16 @@ def user_notifications(request):
 @api_view(['GET'])
 def nearby_reports(request):
     if request.method == 'GET':
+        dwindow = request.QUERY_PARAMS.get('dwindow', 30)
+        try:
+            int(dwindow)
+        except ValueError:
+            raise ParseError(detail='Invalid dwindow integer value')
+        if int(dwindow) > 365:
+            raise ParseError(detail='Values above 365 not allowed for dwindow')
+
+        date_N_days_ago = datetime.now() - timedelta(days=int(dwindow))
+
         center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
         radius = request.QUERY_PARAMS.get('radius', '2500')
@@ -609,7 +634,7 @@ def nearby_reports(request):
         max_lon = necorner_4326.x
         max_lat = necorner_4326.y
 
-        all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3)
+        all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
         #Broad square filter
         all_reports = all_reports.filter(Q(location_choice='selected', selected_location_lon__range=(min_lon,max_lon),selected_location_lat__range=(min_lat, max_lat)) | Q(location_choice='current', current_location_lon__range=(min_lon,max_lon), current_location_lat__range=(min_lat, max_lat)))
         classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,all_reports)
