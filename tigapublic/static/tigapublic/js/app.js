@@ -153,16 +153,7 @@
                         }
                     );
                 }
-                else{ // if not found check inside markers, not clusters
-                    /*
-                    var found = _.find(_this.mapView.scope.markers, function(layer){
-                        if ( layer._data.id === parseInt(report_id) ) {
-                            return layer;
-                        }
-                    })
-                    if(found !== undefined){
-                    */
-
+                else{ 
                     //search inside clusters
                     var cluster = _.find(_this.mapView.layers.layers.mcg._featureGroup._layers, function(layer){
                         if ( '_group' in layer){
@@ -215,7 +206,9 @@
             maintext = $('<p></p>').attr('i18n', 'map.cookie_consent');
             container.append(maintext);
             accepttext = $('<button></button>').attr('i18n', 'map.cookie_accept');
-            accepttext.on('click', function() {
+            accepttext.on('click', function(e) {
+              e.stopPropagation();
+              e.preventDefault();
               $('#cookie_consent').slideUp();
               document.cookie = "cookie_consent_accepted=TRUE";
             })
@@ -268,8 +261,8 @@
           }
           else{
               var user_layers = MOSQUITO.config.layers;
-              for (var l=0 ; l < user_layers.length ; l++ ){
-                  for (var j=0; j < layersArray.length; j++){
+              for (var j=0; j < layersArray.length; j++){
+                  for (var l=0 ; l < user_layers.length ; l++ ){
                       //From detailed to general
                       if (layersArray[j].indexOf(user_layers[l].key)!==-1) {
                           if (ar.indexOf(user_layers[l].key) === -1){ //avoid duplicate values
@@ -279,9 +272,9 @@
                       else{ //check inside categories
                         for (var k in user_layers[l].categories) {
                           for (var h=0; h < user_layers[l].categories[k].length; h++) {
-                            if (user_layers[l].categories[k][h].indexOf(layersArray[j])!==-1)
+                            if (user_layers[l].categories[k][h].indexOf(layersArray[j])!==-1){
                               ar.push(user_layers[l].key);
-                              console.log(user_layers[l].key);
+                            }
                           }
                         }
                       }

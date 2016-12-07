@@ -100,27 +100,6 @@ var ReportsdocumentView = MapView.extend({
                     row.expert_validation_result = row.expert_validation_result.split('#');
                 }
 
-                /*
-                if(row.expert_validation_result !== null &&
-                    row.expert_validation_result.indexOf('#') !== -1){
-                    row.expert_validation_result = row.expert_validation_result.split('#');
-                    row.expert_validation_result_specie = row.expert_validation_result[0];
-                    if ( row.expert_validation_result_specie == 'site'){
-                        row.titol_capa = 'site';
-                    } else if ( row.expert_validation_result[1] == 1 ) {
-                        row.titol_capa = row.expert_validation_result_specie +'_posible';
-                    } else if (row.expert_validation_result[1] == 2){
-                        row.titol_capa = row.expert_validation_result_specie +'_confirmado';
-                    } else if (row.expert_validation_result[1] == 0){
-                        row.titol_capa = 'unidentified';
-                    } else{
-                        row.titol_capa = 'other_species';
-                    }
-                    if (row.category=='trash_layer'){
-                        row.titol_capa = 'layer.trash_layer';
-                    }
-                }
-                */
             }
 
             _this.$el.html(_this.tpl(data));
@@ -130,19 +109,22 @@ var ReportsdocumentView = MapView.extend({
             $('#map_filters').html(stuff);
             //add active layers from opener
             stuff = window.opener.$('#map_layers_list li.active').clone();
+
             stuff.removeClass('active');
 
             $('#map_layers').html(stuff);
             //remove some unnecessary sublist elements
             $('#map_layers > li.sublist-group-item').remove();
-
+            // remove userfixes layer
+            $('#map_layers > li.list-group-item > label[i18n="layer.userfixes"]').parent().remove();
 
             $('#legend_reports_map button').addClass('disabled');
 
             // Create header map
-            var z = opener.MOSQUITO.app.mapView.map.getZoom() - 1; // the map is smaller so we need to zoom out
-            var c = opener.MOSQUITO.app.mapView.map.getCenter();
-            var b = opener.MOSQUITO.app.mapView.map.getBounds();
+            var mapView = opener.MOSQUITO.app.mapView;
+            var z = mapView.map.getZoom() - 1; // the map is smaller so we need to zoom out
+            var c = mapView.map.getCenter();
+            var b = mapView.map.getBounds();
 
             var theMap = L.map('reports_header_map', { zoomControl:false})
                 .setView(c,z);
@@ -200,6 +182,13 @@ var ReportsdocumentView = MapView.extend({
 
             mcg.addLayer(L.layerGroup(layers));
             mcg.addTo(theMap);
+
+            userfixeslayer = mapView.getLayerPositionFromKey('F');
+            if (userfixeslayer) {
+                console.log('add userfixes');
+                mapView.addCoverageLayer();
+            }
+
             theMap.fitBounds(mcg.getBounds());
         });
         return this;
