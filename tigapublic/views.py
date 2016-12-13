@@ -32,7 +32,8 @@ def ajax_login(request):
         password = request.POST.get('password', '')
         user = authenticate(username=username, password=password)
         if user is not None:
-            if user.is_active:
+            user_has_access = user.groups.filter(name='private_webmap').exists()
+            if user.is_active and user_has_access:
                 request.session.set_expiry(86400)
                 login(request, user)
                 request.session['user_id'] = user.id
