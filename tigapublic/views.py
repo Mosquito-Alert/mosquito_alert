@@ -150,12 +150,12 @@ class MapAuxReportsExportView(View):
             BASE_DIR = settings.BASE_DIR    
             
             license_file = open(BASE_DIR + "/tigapublic/files/license.txt")
-            metadata_file = open(BASE_DIR + "/tigapublic/files/metadata.xlsx")
+            metadata_file = open(BASE_DIR + "/tigapublic/files/metadata.txt")
             
             in_memory = StringIO()
             zip = ZipFile(in_memory, "a")
             zip.writestr("license.txt", license_file.read())
-            zip.writestr("metadata.xlsx", metadata_file.read())
+            zip.writestr("metadata.txt", metadata_file.read())
             zip.writestr("data.xls", _dataset_methods[export_type])
             
             # fix for Linux zip files read in Windows
