@@ -525,13 +525,19 @@ ul.info_list li{
 	padding-bottom:20px;
 }
 
+ul.info_list li img{
+	margin-right:5px;
+}
+
 ul.sub-sites{
 	padding-left:10px !important;
 	list-style:none;
+	white-space: nowrap;
+	font-size:90%;
 }
 
 ul.sub-sites li img{
-	padding-right: 10px;
+	/*padding-right: 10px;*/
 }
 
 div#map-ui{

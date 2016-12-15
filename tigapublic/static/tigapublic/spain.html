@@ -133,7 +133,45 @@
     <script type = "text/template" id="content-control-moreinfo-tpl">
         <div>
         <h3 i18n="map.controlmoreinfo_title"></h3>
-        <span i18n="map.controlmoreinfo_desc_es"></span>
+        <!--<span i18n="map.controlmoreinfo_desc_es"></span>-->
+        <ul class="info_list">
+            <li class="tiger_mosquito">
+                <img src="./img/marker_albopictus_1.svg" class="private">
+                <span i18n="layer.tiger" class="bold"></span>:
+                <span i18n="expertinfo.tiger_mosquito"></span>
+            </li>
+            <li class="yellow_fever_mosquito">
+                <img src="./img/marker_aegypti_1.svg" class="private">
+                <span i18n="layer.zika" class="bold"></span>:
+                <span i18n="expertinfo.yellow_fever_mosquito"></span>
+            </li>
+            <li class="other_species">
+                <span i18n="layer.other_species" class="bold"></span>:
+                <span i18n="expertinfo.other_species"></span>
+            </li>
+            <li class="unidentified">
+                <span i18n="layer.unidentified" class="bold"></span>:
+                <span i18n="expertinfo.unidentify"></span>
+            </li>
+            <li class="unclassified private">
+                <span i18n="layer.unclassified" class="bold"></span>:
+                <span i18n="expertinfo.unclassified"></span>
+            </li>
+            <li class="site">
+                <span i18n="layer.site" class="bold"></span>:
+                <span i18n="expertinfo.site"></span>
+            </li>
+            <li class="userfixes">
+                <span i18n="layer.userfixes" class="bold"></span>:
+                <span i18n="expertinfo.userfixes"></span>
+            </li>
+            <li class="trash_layer private">
+                <span i18n="layer.trash_layer" class="bold"></span>:
+                <span i18n="expertinfo.trash_layer"></span>
+            </li>
+        </ul>
+        <p i18n="map.to_know_more"></p>
+        <p i18n="map.more_info"></p>
         </div>
     </script>
     <script type = "text/template" id="content-control-share-tpl">
@@ -200,9 +238,9 @@
               </div>
               <div class="photo_license">
                   <i>
-                    <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.
                     <!-- cal afegir layer trash -->
                     <% if (category != 'not_yet_validated' && category != 'trash_layer' && category != 'breeding_site_not_yet_filtered') { %>
+                        <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.
                         <span i18n="report.license"></span><a href="http://www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
                     <% } %>
                   </i>
@@ -355,8 +393,8 @@
                             </div>
                             <div class="photo_license_reports">
                                 <i>
-                                  <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.<br/>
                                   <% if (row.category != 'not_yet_validated' && row.category != 'trash_layer' && row.category != 'breeding_site_not_yet_filtered') { %>
+                                    <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.<br/>
                                     <span i18n="report.license"></span><a href="http://www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
                                   <% } %>
                                 </i>

@@ -183,12 +183,6 @@ var ReportsdocumentView = MapView.extend({
             mcg.addLayer(L.layerGroup(layers));
             mcg.addTo(theMap);
 
-            userfixeslayer = mapView.getLayerPositionFromKey('F');
-            if (userfixeslayer) {
-                console.log('add userfixes');
-                mapView.addCoverageLayer();
-            }
-
             theMap.fitBounds(mcg.getBounds());
         });
         return this;

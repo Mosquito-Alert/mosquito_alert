@@ -89,9 +89,31 @@
     <script type = "text/template" id="content-control-moreinfo-tpl">
         <div>
         <h3 i18n="map.mundial_controlmoreinfo_title"></h3>
-        <span i18n="map.mundial_controlmoreinfo_desc"></span>
+        <!--<span i18n="map.mundial_controlmoreinfo_desc"></span>-->
+
+        <ul class="info_list">
+            <li class="tiger_mosquito">
+                <span i18n="layer.tiger" class="bold"></span>:
+                <span i18n="citizeninfo.tiger_mosquito"></span>
+            </li>
+            <li class="yellow_fever_mosquito">
+                <span i18n="layer.zika" class="bold"></span>:<span i18n="citizeninfo.yellow_fever_mosquito"></span>
+            </li>
+            <li class="other_species">
+                <span i18n="layer.other_species" class="bold"></span>:<span i18n="citizeninfo.other_species"></span>
+            </li>
+            <li class="unidentified">
+                <span i18n="layer.unidentified" class="bold"></span>: <span i18n="citizeninfo.unidentify"></span>
+            </li>
+            <li class="site">
+                <span i18n="layer.site" class="bold"></span>: <span i18n="citizeninfo.site"></span>
+            </li>
+        </ul>
+        <p i18n="map.to_know_more"></p>
+        <p i18n="map.more_info"></p>
         </div>
     </script>
+
     <script type = "text/template" id="content-control-share-tpl">
         <div>
         <p i18n="map.controlshare_view_description"></p>

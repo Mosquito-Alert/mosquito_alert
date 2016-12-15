@@ -233,7 +233,7 @@ body{
 #map-ui .list-group-item img.icon{
     height: 25px;
     margin-right: 5px;
-    float:left;
+    /*float:left;*/
 }
 
 #map-ui li.list-group-item label:hover{
@@ -565,4 +565,54 @@ h3.reports{
       width:50% !important;
     }
   }
+}
+
+li.tiger_mosquito {
+   background:url('../img/marker_albopictus_2.svg') 0 0 no-repeat no-repeat;
+}
+
+li.yellow_fever_mosquito {
+   background:url('../img/marker_aegypti_2.svg') 0 0 no-repeat no-repeat;
+}
+
+li.other_species {
+   background:url('../img/marker_noseparece.svg') 0 0 no-repeat no-repeat;
+}
+
+li.unidentified {
+   background:url('../img/marker_nosesabe.svg') 0 0 no-repeat no-repeat;
+}
+
+li.site {
+   background:url('../img/marker_site_water.svg') 0 0 no-repeat no-repeat;
+}
+
+li.trash_layer {
+   background:url('../img/marker_trash.svg') 0 0 no-repeat no-repeat;
+}
+
+li.unclassified{
+    background:url('../img/marker_unclassified.svg') 0 0 no-repeat no-repeat;
+}
+li.userfixes{
+    background:url('../img/userfixes_info_icon.png') 0 0 no-repeat no-repeat;
+}
+
+li.tiger_mosquito, li.mosquito_tiger_probable, li.mosquito_tiger_confirmed,
+li.yellow_fever_confirmed, li.yellow_fever_probable, li.unidentified,
+li.unclassified, li.not_yet_validated, li.trash_layer, li.site,
+li.other_species, li.userfixes, li.filtered, li.yellow_fever_mosquito,
+li.userfixes{
+    text-indent: 20px;
+}
+body ul.info_list .private{
+    display:none;
+}
+body.logged ul.info_list .private{
+    display:block;
+}
+
+body.logged ul.info_list img.private{
+    display:inline;
+    margin-top:-7px;
 }

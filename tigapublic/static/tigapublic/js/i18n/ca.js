@@ -13,9 +13,7 @@ trans.ca = {
     'layer.yellow_fever_confirmed': 'Confirmat mosquit febre groga',
     'layer.yellow_fever_probable': 'Possible mosquit febre groga',
     'layer.unidentified': 'No identificable',
-    'layer.unclassified': 'Per validar',
-    'layer.not_yet_validated': 'Per validar',
-    'layer.trash_layer':'Altres observacions',
+
     'layer.site': 'Llocs de cria',
     'layer.breeding_site_other': 'Llocs de cria',
     'layer.breeding_site_not_yet_filtered': 'Llocs de cria',
@@ -29,21 +27,7 @@ trans.ca = {
     'layer.zika': 'Mosquit febre groga',
     'layer.site': 'Llocs de cria',
 
-    /*
-    'layer.albopictus': 'Mosquit tigre',
-    'layer.albopictus_posible': 'Possible mosquit tigre',
-    'layer.albopictus_confirmado': 'Mosquit tigre confirmat',
 
-    'layer.aegypti': 'Mosquit febre groga',
-    'layer.aegypti_posible': 'Possible mosquit febre groga',
-    'layer.aegypti_confirmado': 'Confirmat mosquit febre groga',
-
-
-    layer.trash':'Altres observacions',
-    'layer.other_species_validated': 'altres espècies',
-    'layer.nosabe': 'No identificable',
-    'layer.nosabe_validated': 'no identificable',
-    */
 
     'map.numfixes': 'Observacions',
     'map.control_layers': 'Llegenda',
@@ -78,11 +62,23 @@ trans.ca = {
 
     'map.controlmoreinfo_title': 'Descripció',
     'map.mundial_controlmoreinfo_title': 'Descripció',
-    'map.controlmoreinfo_desc': '<ul class="info_list"><li><b>Mosquito tigre</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquito fiebre amarilla</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).</li><li><b>Otras especies</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de otras especies de mosquito.</li><li><b>No identificable</b>: Según los ciudadanos y ciudadanas, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li><li><b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.</li></ul><p>Más información en <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
 
-    'map.controlmoreinfo_desc_es': '<ul class="info_list"><li><b>Mosquit tigre</b>:Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquit febre groga</b>: Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit de la febre groga (<i>Aedes aegypti</i>).</li><li><b>Altres espècies</b>: Segons els experts, les fotos d\'aquesta observació podrien ser d\'altres espècies de mosquit.</li><li><b>No identificable</b>: Segons els experts, aquestes observacions i les seves fotos no permeten identificar cap espècie de mosquit.</li><li><b>Llocs de cria</b>: Observacions ciutadanes de possibles llocs de cria (embornals) de mosquit tigre o de la febre groga.</li><li><b>Distribució dels participant</b>: Els quadres més foscos indiquen que hi ha més persones amb l\'app instal·lada o bé que hi ha usuaris que han estat molt de temps amb l\'app al seu mòbil.</li></ul><p>Per saber-ne més sobre els mètodes de classificació consultar <a href="http://www.mosquitoalert.com/mapa-y-resultados/mapa" target="blank">www.mosquitoalert.com/mapa-y-resultados/mapa</a></p><p>Més informació del projecte a <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
+    'expertinfo.tiger_mosquito': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit tigre (<i>Aedes albopictus</i>).',
+    'expertinfo.yellow_fever_mosquito':' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit de la febre groga (<i>Aedes aegypti</i>).',
+    'expertinfo.other_species':' Segons els experts, les fotos d\'aquesta observació podrien ser d\'altres espècies de mosquit.',
+    'expertinfo.unidentify': ' Segons els experts, aquestes observacions i les seves fotos no permeten identificar cap espècie de mosquit.',
+    'expertinfo.site': 'Observacions ciutadanes de possibles llocs de cria (embornals) de mosquit tigre o de la febre groga.',
+    'expertinfo.userfixes':'Els quadres més foscos indiquen que hi ha més persones amb l\'app instal·lada o bé que hi ha usuaris que han estat molt de temps amb l\'app al seu mòbil.',
 
-    'map.mundial_controlmoreinfo_desc': '<ul class="info_list"><li><b>Mosquito tigre</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquito fiebre amarilla</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).</li><li><b>Otras especies</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de otras especies de mosquito.</li><li><b>No identificable</b>: Según los ciudadanos y ciudadanas, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li><li><b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.</li></ul><p>Más información en <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
+    'citizeninfo.tiger_mosquito': ' Segons els ciutadans, les fotos d\'aquesta observació podrien ser de mosquit tigre (<i>Aedes albopictus</i>).',
+    'citizeninfo.yellow_fever_mosquito':' Segons els ciutadans, les fotos d\'aquesta observació podrien ser de mosquit de la febre groga (<i>Aedes aegypti</i>).',
+    'citizeninfo.other_species':' Segons els ciutadans, les fotos d\'aquesta observació podrien ser d\'altres espècies de mosquit.',
+    'citizeninfo.unidentify': ' Segons els ciutadans, aquestes observacions i les seves fotos no permeten identificar cap espècie de mosquit.',
+    'citizeninfo.site': 'Observacions ciutadanes de possibles llocs de cria (embornals) de mosquit tigre o de la febre groga.',
+
+    'map.to_know_more':'Per saber-ne més sobre els mètodes de classificació consultar <a href="http://www.mosquitoalert.com/mapa-y-resultados/mapa" target="blank">www.mosquitoalert.com/mapa-y-resultados/mapa</a>',
+    'map.more_info':'Més informació del projecte a <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a>',
+
 
     'map.controldocumentsreport_title': 'Llista d\'observacions',
     'map.controldocumentsreport_desc': '<p>Informe de les observacions que es visualizen a la vista actual del mapa (màxim 300).</p><p>Verifica el número d\'observacions amb el comptador de punts al marge inferior esquerra de la vista del mapa.</p>',
@@ -99,19 +95,6 @@ trans.ca = {
     'map.breeding_site_answers': 'Lloc de cria',
     'map.expert_validated': 'Validació experta: ',
     'map.citizen_validated': 'Validació ciutadana: ',
-
-    /*
-    'map.breeding_site_answers_1_3': 'És en un lloc públic?',
-    'map.breeding_site_answers_2_3': 'Conté aigua estancada o pupes de mosquit?',
-    'map.breeding_site_answers_3_3': 'Has vist mosquits adults a prop?',
-
-    'map.breeding_site_answers_1_2': 'Conté aigua estancada?',
-    'map.breeding_site_answers_2_2': 'Conté larves o pupes de mosquit?',
-
-    'map.mosquito_answers_1_3': 'És petit amb ratlles blanques?',
-    'map.mosquito_answers_2_3': 'Té una ratlla blanca al cap i al tórax?',
-    'map.mosquito_answers_3_3': 'Té ratlles blanques a l\'abdomen i les potes?',
-    */
 
     'map.showed_reports': 'Punts mostrats:',
     'map.si': 'Sí',

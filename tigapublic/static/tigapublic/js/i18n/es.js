@@ -13,9 +13,7 @@ trans.es = {
     'layer.yellow_fever_confirmed': 'Mosquito fiebre amarilla confirmado',
     'layer.yellow_fever_probable': 'Posible mosquito fiebre amarilla',
     'layer.unidentified': 'No identificable',
-    'layer.unclassified': 'Por validar',
-    'layer.not_yet_validated': 'Por validar',
-    'layer.trash_layer':'Otras observaciones',
+
     'layer.breeding_site_other': 'Lugares de cría',
     'layer.breeding_site_not_yet_filtered': 'Lugares de cría',
     'layer.storm_drain_dry': 'Lugares de cría',
@@ -61,11 +59,21 @@ trans.es = {
 
     'map.controlmoreinfo_title': 'Descripción',
     'map.mundial_controlmoreinfo_title': 'Descripción',
-    'map.mundial_controlmoreinfo_desc': '<ul class="info_list"><li><b>Mosquito tigre</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquito fiebre amarilla</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).</li><li><b>Otras especies</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de otras especies de mosquito.</li><li><b>No identificable</b>: Según los ciudadanos y ciudadanas, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li><li><b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.</li></ul><p>Más información del proyecto en <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
 
-    'map.controlmoreinfo_desc': '<ul class="info_list"><li><b>Mosquito tigre</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquito fiebre amarilla</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).</li><li><b>Otras especies</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de otras especies de mosquito.</li><li><b>No identificable</b>: Según los ciudadanos y ciudadanas, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li><li><b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.</li></ul><p>Más información del proyecto en <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
+    'citizeninfo.tiger_mosquito': ' Según los ciudadanos y ciudadanas, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).',
+    'citizeninfo.yellow_fever_mosquito':' Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).',
+    'citizeninfo.other_species':' Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de otras especies de mosquito.',
+    'citizeninfo.unidentify': ' Según los ciudadanos y ciudadanas, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.',
+    'citizeninfo.site': 'Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.',
+    'map.to_know_more':'Para saber más sobre los métodos de clasificación consultar <a href="http://www.mosquitoalert.com/mapa-y-resultados/mapa" target="blank">www.mosquitoalert.com/mapa-y-resultados/mapa</a>',
+    'map.more_info':'Más información del proyecto en <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a>',
 
-    'map.controlmoreinfo_desc_es': '<ul class="info_list"><li><b>Mosquito tigre</b>:Según los expertos, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquito fiebre amarilla</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).</li><li><b>Otras especies</b>: Según los expertos, las fotos de esta observación podrían ser de otras especies de mosquito.</li><li><b>No identificable</b>: Según los expertos, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li><li><b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.</li><li><b>Distribución de los participantes</b>: Los cuadros más oscuros indican que hay más personas con la app instalada o bien que hay usuarios que han estado mucho tiempo con la app en su móvil.</li></ul><p>Para saber más sobre los métodos de clasificación consultar <a href="http://www.mosquitoalert.com/mapa-y-resultados/mapa" target="blank">www.mosquitoalert.com/mapa-y-resultados/mapa</a></p><p>Más información del proyecto en <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
+    'expertinfo.tiger_mosquito': ' Según los expertos, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).',
+    'expertinfo.yellow_fever_mosquito':' Según los expertos, las fotos de esta observación podrían ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).',
+    'expertinfo.other_species':' Según los expertos, las fotos de esta observación podrían ser de otras especies de mosquito.',
+    'expertinfo.unidentify': ' Según los expertos, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.',
+    'expertinfo.site': 'Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.',
+    'expertinfo.userfixes':'Los cuadros más oscuros indican que hay más personas con la app instalada o bien que hay usuarios que han estado mucho tiempo con la app en su móvil.',
 
     'map.controldocumentsreport_title': 'Listado de observaciones',
     'map.controldocumentsreport_desc': '<p>Informe de las observaciones que se visualizan en la vista actual del mapa (máximo 300).</p><p>Verifica el número de observaciones con el contador de puntos mostrados en el margen inferior izquierdo de la vista del mapa.</p>',
@@ -89,7 +97,7 @@ trans.es = {
     //'map.nosabe': 'No identificable',
     'map.no': 'No',
 
-    'map.no_clasificado': 'Por validar',
+    //'map.no_clasificado': 'Por validar',
     'map.no_confirmado': 'Seguro que no',
     'map.no_posible': 'No lo parece',
     //'map.no_sabe': 'No identificable',

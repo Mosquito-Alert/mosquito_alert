@@ -13,9 +13,7 @@ trans.en = {
     'layer.yellow_fever_confirmed': 'Confirmed yellow fever mosquito',
     'layer.yellow_fever_probable': 'Possible yellow fever mosquito',
     'layer.unidentified': 'Unidentifiable',
-    'layer.unclassified': 'To validate',
-    'layer.not_yet_validated': 'To validate',
-    'layer.trash_layer':'Other observations',
+
     'layer.breeding_site_other': 'Breeding sites',
     'layer.breeding_site_not_yet_filtered': 'Breeding sites',
     'layer.storm_drain_dry': 'Breeding sites',
@@ -62,11 +60,20 @@ trans.en = {
     'map.controlmoreinfo_title': 'Description',
     'map.mundial_controlmoreinfo_title': 'Description',
 
-    'map.mundial_controlmoreinfo_desc': '<ul class="info_list"><li><b>Tiger mosquito</b>: According to citizens, the pictures of this observation could be tiger mosquito (<i>Aedes albopictus</i>).</li><li><b>Yellow fever mosquito</b>:According to citizens, the pictures of this observation could be yellow fever mosquito (<i>Aedes aegypti</i>).</li><li><b>Other species</b>:According to citizens, the pictures of this observation may be of other species of mosquito.</li><li><b>Unidentifiable</b>:According to citizens,  these observations and their photos do not identify any species of mosquito.</li><li><b>Tiger mosquito</b>:According to citizens, these observations and their photos do not identify any species of mosquito.</li><li><b>Tiger mosquito</b>:Citizens’ observations of possible breeding sites (storm drain or sewer) of tiger or yellow fever mosquitoes.</li></ul><p>To learn more about the methods of data classification check <a href="http://www.mosquitoalert.com/mapa-y-resultados/mapa" target="blank">www.mosquitoalert.com/mapa-y-resultados/mapa</a></p><p>More project information in <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
+    'citizeninfo.tiger_mosquito': ' According to citizens, the pictures of this observation could be tiger mosquito (<i>Aedes albopictus</i>).',
+    'citizeninfo.yellow_fever_mosquito':' According to citizens, the pictures of this observation could be yellow fever mosquito (<i>Aedes aegypti</i>).',
+    'citizeninfo.other_species':' According to citizens, the pictures of this observation may be of other species of mosquito.',
+    'citizeninfo.unidentify': ' According to citizens,  these observations and their photos do not identify any species of mosquito.',
+    'citizeninfo.site': 'Citizens’ observations of possible breeding sites (storm drain or sewer) of tiger or yellow fever mosquitoes.',
+    'map.to_know_more':'To learn more about the methods of data classification check <a href="http://www.mosquitoalert.com/mapa-y-resultados/mapa" target="blank">www.mosquitoalert.com/mapa-y-resultados/mapa</a>',
+    'map.more_info':'More project information in <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a>',
 
-    'map.controlmoreinfo_desc': '<ul class="info_list"><li><b>Mosquito tigre</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).</li><li><b>Mosquito fiebre amarilla</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).</li><li><b>Otras especies</b>: Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de otras especies de mosquito.</li><li><b>No identificable</b>: Según los ciudadanos y ciudadanas, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li><li><b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.</li></ul><p>Más información del proyecto en <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
-
-    'map.controlmoreinfo_desc_es': '<ul class="info_list"><li><b>Tiger mosquito</b>:According to experts, the pictures of this observation could be tiger mosquito (<i>Aedes albopictus</i>).</li><li><b>Yellow fever mosquito</b>: According to experts, the pictures of this observation could be yellow fever mosquito (<i>Aedes aegypti</i>).</li><li><b>Other species</b>: According to experts, the pictures of this observation may be of other species of mosquito.</li><li><b>Unidentifiable</b>: According to experts, these observations and their photos do not identify any species of mosquito.</li><li><b>Breeding sites</b>: Citizen’ observations of possible breeding sites (storm drainers and sewers) of tiger or yellow fever mosquitoes.</li><li><b>Distribution of participants</b>: Darker squares indicate places where there are more people with the app installed or that there are users who have had for long the app installed on their phones.</li></ul><p>To learn more about the methods of data classification check <a href="http://www.mosquitoalert.com/mapa-y-resultados/mapa" target="blank">www.mosquitoalert.com/mapa-y-resultados/mapa</a></p><p>More project information in <a href="http://www.mosquitoalert.com" target="blank">www.mosquitoalert.com</a></p>',
+    'expertinfo.tiger_mosquito': ' According to experts, the pictures of this observation could be tiger mosquito (<i>Aedes albopictus</i>).',
+    'expertinfo.yellow_fever_mosquito':' According to experts, the pictures of this observation could be yellow fever mosquito (<i>Aedes aegypti</i>).',
+    'expertinfo.other_species':' According to experts, the pictures of this observation may be of other species of mosquito.',
+    'expertinfo.unidentify': ' According to experts, these observations and their photos do not identify any species of mosquito.',
+    'expertinfo.site': 'Citizen’ observations of possible breeding sites (storm drainers and sewers) of tiger or yellow fever mosquitoes.',
+    'expertinfo.userfixes':'Darker squares indicate places where there are more people with the app installed or that there are users who have had for long the app installed on their phones.',
 
     'map.controldocumentsreport_title': 'List of observations',
     'map.controldocumentsreport_desc': '<p>Report with the observations displayed in the current map view (maximum: 300 observations).</p><p>Verify this by looking at the map point counter (on the down left map corner).</p>',
@@ -89,7 +96,7 @@ trans.en = {
     'map.nosabe': 'Unidentifiable',
     'map.no': 'No',
 
-    'map.no_clasificado': 'To validate',
+    //'map.no_clasificado': 'To validate',
     'map.no_confirmado': 'Seguro que no',
     'map.no_posible': 'No lo parece',
     'map.no_sabe': 'Unidentifiable',

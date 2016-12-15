@@ -284,7 +284,8 @@ var MapView = MapView.extend({
             {
                 position: 'topright',
                 sidebar: this.sideBar(),
-                text: '<i class="fa fa-share" aria-hidden="true"></i>'
+                //text: '<i class="fa fa-share" aria-hidden="true"></i>'
+                text: '<i class="fa fa-file-text-o" aria-hidden="true"></i>'
             }
         );
         //button reportsdocument on/off
@@ -350,38 +351,16 @@ var MapView = MapView.extend({
                         if($(el).hasClass('active')){
                             if (!MOSQUITO.app.headerView.logged) {
                                 layers.push(MOSQUITO.config.layers[i].key);
+                                $('#control-share .warning').html('');
                             }
                             else{
                                 layers.push(MOSQUITO.config.logged.layers[i].key);
+                                txt = t('share.private_layer_warn');
+                                $('#control-share .warning').html('<div>'+txt+'</div>');
                             }
                             // layers.push(i+'');
                         }
                     });
-                    // find out any layer missing on the public layer list
-                    var l = 0; var missing = [];
-                    while (l < layers.length) {
-                      var i = 0; var found = false;
-                      while (i < MOSQUITO.config.layers.length && !found) {
-                        if (MOSQUITO.config.layers[i].key.indexOf(layers[l].substring(0,1)) == -1) ++i;
-                        else found = true;
-                      }
-                      if (!found) missing[missing.length] = layers[l];
-                      ++l;
-                    }
-                    if (missing.length > 0) {
-                      missingLayers = [];
-                      for (i = 0; i < missing.length; ++i) {
-                        pos = _this.getLayerPositionFromKey(missing[i]);
-                        lay = $('.sidebar-control-layers ul > li.list-group-item:nth-child('+(pos+1)+')');
-                        missingLayers.push(lay.html());
-                      }
-
-                      txt = t('share.private_layer_warn');
-                      txt = txt.replace('()', '<ul><li>'+missingLayers.join('</li><li>')+'</li></ul>');
-                      $('#control-share .warning').html('<div>'+txt+'</div>');
-                    } else {
-                      $('#control-share .warning').html('');
-                    }
 
                     //$lng/$zoom/$lat/$lon/$layers/$year/$months
                     var url  = document.URL.replace(/#.*$/, '');

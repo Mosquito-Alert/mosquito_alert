@@ -25,6 +25,7 @@ var HeaderView = Backbone.View.extend({
             MOSQUITO.app.on('app_logged', function(e){
                 if(e === true && !MOSQUITO.config.embeded){
                     _this.logged = true;
+                    $('body').addClass('logged');
                     _this.$el.find('.login-button').hide();
                     _this.$el.find('.logout-button').show();
                 }else{
