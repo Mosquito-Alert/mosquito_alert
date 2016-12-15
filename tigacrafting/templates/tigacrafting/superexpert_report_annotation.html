@@ -4,13 +4,13 @@
 
 {% block title %}
     <h1>Superexpert Validation</h1>
-    <h2>{% if edit_mode == 'edit' %}<span style="color:red;">Edit Mode</span>{% elif version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}Search Result{% else %}{{ final_status | capfirst }} {% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}
+    <h2>{% if edit_mode == 'edit' %}<span style="color:red;">Edit Mode</span>{% elif version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}Search Result{% else %}{{ final_status | capfirst }} {% if checked == 'unchecked' %}Unchecked Reports{% elif checked == 'confirmed' %}
         Confirmed
         Reports{% elif checked == 'revised' %}Revised Reports{% endif %}{% endif %}</h2>
 
-    {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
+    {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
     <strong>Ordered by:</strong> {{ orderby }}<br>
-    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}, Tags - {% if tags_filter == '' %} None{% else %}{{ tags_filter }}{% endif %}
+    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}
     {% endif %}
 {% endblock %}
 

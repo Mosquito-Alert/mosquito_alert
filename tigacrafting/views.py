@@ -466,7 +466,7 @@ def issue_notification(report_annotation,current_domain):
     notification.save()
 
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter=''):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na'):
     this_user = request.user
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
@@ -595,12 +595,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         my_version_uuids = all_annotations.values('report__version_UUID').distinct()
         my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:
-            if (version_uuid == 'na' and linked_id == 'na') and (not pending or pending == 'na'):
+            if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not pending or pending == 'na'):
                 pending = 'pending'
         if this_user_is_superexpert:
-            if (version_uuid == 'na' and linked_id == 'na') and (not final_status or final_status == 'na'):
+            if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not final_status or final_status == 'na'):
                 final_status = 'public'
-            if (version_uuid == 'na' and linked_id == 'na') and (not checked or checked == 'na'):
+            if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
                 checked = 'unchecked'
             n_flagged = all_annotations.filter(report__in=flagged_final_reports).count()
             n_hidden = all_annotations.filter(report__in=hidden_final_reports).count()
@@ -618,7 +618,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
         if linked_id and linked_id != 'na':
             all_annotations = all_annotations.filter(linked_id=linked_id)
-        if tags_filter:
+        if tags_filter and tags_filter != 'na':
             tags_array = tags_filter.split(",")
             # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
             # any expert has put on the report
@@ -626,7 +626,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
             # we want the annotations of the reports which contain the tag(s)
             all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
-        if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na'):
+        if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter and tags_filter == 'na'):
             if year and year != 'all':
                 try:
                     this_year = int(year)
