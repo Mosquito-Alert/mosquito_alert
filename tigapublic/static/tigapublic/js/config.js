@@ -3,8 +3,10 @@ var MOSQUITO = (function (m, _) {
     m.config = _.extend(m.config || {}, {
         lngs: ['en', 'es'],
         default_lng: 'en',
-        URL_API: 'http://127.0.0.1:8000/tigapublic/',
-        URL_PUBLIC: 'http://127.0.0.1:8000/tigapublic/',
+        //URL_API: 'http://127.0.0.1:8000/tigapublic/',
+        URL_API: '/tigapublic/',
+        //URL_PUBLIC: 'http://127.0.0.1:8000/tigapublic/',
+        URL_PUBLIC: '/tigapublic/',
         //URL_API: '/apps/mosquito/tigapublic/',
         //URL_PUBLIC: 'http://0.0.0.0:8000/tigapublic/',
         //URL_PUBLIC: '/apps/mosquito/tigapublic/',
