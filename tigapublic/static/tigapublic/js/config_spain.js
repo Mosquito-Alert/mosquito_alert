@@ -11,7 +11,7 @@ var MOSQUITO = (function (m, _) {
         zoom: 5,
         login_allowed: true,
         embeded: window !== parent,
-        minZoom: 5,
+        minZoom: 3,
         //lock_bounds: true,
         /*lock_bounds: {
           "ymin": 10.94304553343818,
