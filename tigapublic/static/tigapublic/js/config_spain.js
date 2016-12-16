@@ -13,12 +13,12 @@ var MOSQUITO = (function (m, _) {
         embeded: window !== parent,
         minZoom: 5,
         //lock_bounds: true,
-        lock_bounds: {
+        /*lock_bounds: {
           "ymin": 10.94304553343818,
           "ymax": 61.42951794712287,
           "xmin": -46.77148437499999,
           "xmax": 49.056640625
-        },
+        },*/
         default_layers: 'A',
         printreports:true,
         maxPrintReports: 300,
