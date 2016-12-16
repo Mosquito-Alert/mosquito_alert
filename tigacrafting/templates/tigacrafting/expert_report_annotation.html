@@ -1456,7 +1456,13 @@
                         }
                     });
                 },
-                minLength: 2
+                minLength: 2,
+                preprocessTag: function (val) {
+                        if (!val) {
+                            return '';
+                        }
+                        return val.toLowerCase();
+                    }
                 }
             });
 
@@ -1778,7 +1784,7 @@
             }
             $("#tags_filter_input").val(str_tags);
 
-            var qp = '?tags_filter=' + str_tags;
+            var qp = '?tags_filter=' + encodeURIComponent(str_tags);
             background_save(qp);
         }
 
