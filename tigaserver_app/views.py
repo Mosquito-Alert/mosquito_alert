@@ -426,6 +426,14 @@ def get_latest_validated_reports(reports):
             result_ids.append(this_version_UUID)
     return Report.objects.filter(version_UUID__in=result_ids)
 
+# non_visible_report_id is veeeeery slow - try to replace with query (this is a work in progress)
+# select "version_UUID" from tigaserver_app_report where "version_UUID" in (select "version_UUID" from tigaserver_app_report where to_char(creation_time,'YYYY') = '2014')
+# UNION
+# select tigaserver_app_report."version_UUID" from tigaserver_app_report left join tigaserver_app_photo on tigaserver_app_report."version_UUID" = tigaserver_app_photo.report_id where tigaserver_app_photo.id is null
+# UNION
+# select expert_validated."version_UUID" from (select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='expert' AND an.validation_complete = True GROUP BY r."version_UUID" HAVING count(r."version_UUID") >= 3 AND min(an.status) = 1) expert_validated
+# UNION
+# select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
     non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]

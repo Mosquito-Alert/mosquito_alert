@@ -353,11 +353,11 @@
                 <div id="map_filters"></div>
             </div>
         </div>
-        <div id="reports_license_text">
-            <% if (license === true) {%>
+        <% if (license === true) {%>
+            <div id="reports_license_text">
                 <div i18n="report.license_text"></div>
-            <% } %>
         </div>
+        <% } %>        
     <%
     counter = 1;
     _.each(rows, function(row) { %>
@@ -548,3 +548,4 @@
 
 </body>
 </html>
+
