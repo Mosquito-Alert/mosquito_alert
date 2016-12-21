@@ -428,15 +428,13 @@ def get_latest_validated_reports(reports):
 
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    non_visible_report_id = []
+    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    non_visible_report_id = []
+    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
