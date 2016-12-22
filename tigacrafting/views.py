@@ -618,7 +618,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
         if linked_id and linked_id != 'na':
             all_annotations = all_annotations.filter(linked_id=linked_id)
-        if tags_filter and tags_filter != 'na':
+        if tags_filter and tags_filter != 'na' and tags_filter!='':
             tags_array = tags_filter.split(",")
             # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
             # any expert has put on the report
@@ -626,7 +626,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
             # we want the annotations of the reports which contain the tag(s)
             all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
-        if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter and tags_filter == 'na'):
+        if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter or tags_filter == 'na' or tags_filter==''):
             if year and year != 'all':
                 try:
                     this_year = int(year)
