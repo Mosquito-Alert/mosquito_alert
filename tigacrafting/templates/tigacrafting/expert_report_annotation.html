@@ -1408,6 +1408,10 @@
                 });
 
                 $("#tags_{{ form.instance.id }}").tagit({
+                    //beforeTagAdded: function(event, ui) {
+                        // do something special
+                        //console.log(ui.tag);
+                    //},
                     autocomplete: { source: function( request, response ) {
                         $.ajax({
                             url: "/api/tags/",
