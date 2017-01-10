@@ -2,6 +2,7 @@
 {% load leaflet_tags %}
 {% load i18n %}
 {% load floppyforms %}
+{% load inbox %}
 
 
 <!DOCTYPE html>
@@ -108,10 +109,8 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <div class="navbar-brand"><span
-                                style="color:#ff9900; font-size: small">MosquitoAlert Validation <i
-                                    id="gear"
-                                    class="fa fa-refresh fa-spin"></i></span>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">MosquitoAlert Validation <i id="gear" class="fa fa-refresh fa-spin"></i></span>
                         </div>
                     </div>
                     <div class="navbar-collapse collapse">
@@ -192,9 +191,7 @@
                             {% endblock %}
                             {% if tasks_per_page_choices %}
                                 <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle"
-                                       data-toggle="dropdown">Reports per page
-                                        <span class="caret"></span></a>
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports per page<span class="caret"></span></a>
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                         {% for n in tasks_per_page_choices %}
                                             <li>
@@ -204,6 +201,10 @@
                                     </ul>
                                 </li>
                             {% endif %}
+                            {% inbox_count as my_var %}
+                            <li>
+                                <a href="{% url 'messages_inbox' %}">Messages({{ my_var }})</a>
+                            </li>
 
 
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>

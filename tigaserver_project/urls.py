@@ -81,4 +81,5 @@ urlpatterns += i18n_patterns('',
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
 #    url(r'^processing/$', show_processing),
     url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/experts/'}, name='auth_logout'),
+    url(r'^messages/', include('django_messages.urls')),
 )
