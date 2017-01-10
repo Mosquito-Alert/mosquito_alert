@@ -157,7 +157,7 @@
                                                                                              title="Search"
                                                                                              style="margin-left:5px">
                                     <span class="glyphicon glyphicon-search"
-                                          {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}style="color:black"{% endif %}></span>
+                                          {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}style="color:black"{% endif %}></span>
                                 </button></span>
                             </li>
 
@@ -230,13 +230,13 @@
 
         {% block title %}
             <h1>Expert Report Validation</h1>
-            <h2>{% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}Search
+            <h2>{% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}Search
                 Result{% else %}{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed
                     Reports{% endif %}{% endif %}</h2>
 
-            {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}{% else %}
+            {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
                 <strong>Ordered by:</strong> {{ orderby }}<br>
-                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}, Tags - {% if tags_filter == '' %} None{% else %}{{ tags_filter }}{% endif %}
+                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}
             {% endif %}
         {% endblock %}
             <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
@@ -854,13 +854,13 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <!--<div class="form-group">
                                 <label for="status_select" class="col-sm-4 control-label">Tags:</label>
                                 <div class="col-sm-8">
                                     <ul id="tags_filter">
                                     </ul>
                                 </div>
-                            </div>
+                            </div>-->
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -928,10 +928,21 @@
                             </button>
                         </form>
 
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <label for="tags_filter" class="col-sm-2 control-label">Tags:</label>
+                                <div class="col-sm-10">
+                                    <ul class="tagit ui-widget ui-widget-content ui-corner-all" style="max-width: 300px; min-width: 300px;" id="tags_filter">
+                                    </ul>
+                                </div>
+                            </div>
+                            <button type="button" id="search_tag_submit_button" class="btn btn-default">Search
+                            </button>
+                        </form>
 
                     </div>
                     <div class="modal-footer">
-                        {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}
+                        {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}
                             <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}">Clear Search</a>
                         {% endif %}
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -1261,13 +1272,28 @@
         function buildFilterTagsUI(){
             var tag_string = $("#tags_filter_input").val();
             var tag_array = [];
-            if(tag_string){
+            if(tag_string && tag_string != 'na' && tag_string != ''){
                 tag_array = tag_string.split(",");
                 $("#tags_filter").tagit("removeAll");
                 for(var i = 0; i < tag_array.length; i++){
                     $("#tags_filter").tagit("createTag", tag_array[i]);
                 }
             }
+        }
+
+        function clearString(string){
+            var specialChars = "!@#$^&%*()+=-[]\/{}|:<>?,.";
+            for (var i = 0; i < specialChars.length; i++) {
+                string = string.replace(new RegExp("\\" + specialChars[i], 'gi'), '');
+            }
+            string = string.toLowerCase();
+            //string = string.replace(/á/gi,"a");
+            //string = string.replace(/é/gi,"e");
+            //string = string.replace(/í/gi,"i");
+            //string = string.replace(/ó/gi,"o");
+            //string = string.replace(/ú/gi,"u");
+            //string = string.replace(/ñ/gi,"n");
+            return string;
         }
 
         $( document ).ready(function() {
@@ -1397,6 +1423,17 @@
                 });
 
                 $("#tags_{{ form.instance.id }}").tagit({
+                    //beforeTagAdded: function(event, ui) {
+                        // do something special
+                        //var normalizedTag = ui.tagLabel;
+                        //normalizedTag = normalizedTag.toLowerCase();
+                        //ui.tagLabel = normalizedTag;
+                        //console.log(ui.tagLabel);
+                    //},
+                    preprocessTag: function(val){
+                        if (!val) { return ''; }
+                        return clearString(val);
+                    },
                     autocomplete: { source: function( request, response ) {
                         $.ajax({
                             url: "/api/tags/",
@@ -1417,7 +1454,8 @@
                             }
                         });
                     },
-                    minLength: 2
+                    minLength: 2,
+                    caseSensitive: false
                     }
                 });
 
@@ -1445,7 +1483,13 @@
                         }
                     });
                 },
-                minLength: 2
+                minLength: 2,
+                preprocessTag: function (val) {
+                        if (!val) {
+                            return '';
+                        }
+                        return val.toLowerCase();
+                    }
                 }
             });
 
@@ -1685,23 +1729,23 @@
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
                 var this_status = $("#status_select").val();
-                var filter_tags = $("#tags_filter").tagit("assignedTags");
-                var str_tags = '';
-                if(filter_tags){
-                    str_tags = filter_tags.join(",");
-                }
+                //var filter_tags = $("#tags_filter").tagit("assignedTags");
+                //var str_tags = '';
+                //if(filter_tags){
+                    //str_tags = filter_tags.join(",");
+                //}
                 $("#orderby_input").val(this_orderby);
                 $("#tiger_certainty_input").val(this_tiger_certainty);
                 $("#site_certainty_input").val(this_site_certainty);
                 $("#status_input").val(this_status);
                 $("#pending_input").val(pending);
-                $("#tags_filter_input").val(str_tags);
+                //$("#tags_filter_input").val(str_tags);
                 var qp = '?orderby=' + this_orderby;
                 qp += '&tiger_certainty=' + this_tiger_certainty;
                 qp += '&site_certainty=' + this_site_certainty;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;
-                qp += '&tags_filter=' + str_tags;
+                //qp += '&tags_filter=' + str_tags;
                 return(qp)
             }
 
@@ -1757,11 +1801,25 @@
             background_save(qp);
         }
 
-        $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
+        function submit_search_tag() {
+            gear.show();
+            clear_inputs();
+            var filter_tags = $("#tags_filter").tagit("assignedTags");
+            var str_tags = '';
+            if(filter_tags){
+                str_tags = filter_tags.join(",");
+            }
+            $("#tags_filter_input").val(str_tags);
 
+            var qp = '?tags_filter=' + encodeURIComponent(str_tags);
+            background_save(qp);
+        }
+
+        $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
 
         $("#search_linked_id_submit_button").on('click', submit_search_linked_id);
 
+        $("#search_tag_submit_button").on('click', submit_search_tag);
 
         grab_reports_button.on('click', function () {
             gear.show();
