@@ -1281,6 +1281,21 @@
             }
         }
 
+        function clearString(string){
+            var specialChars = "!@#$^&%*()+=-[]\/{}|:<>?,.";
+            for (var i = 0; i < specialChars.length; i++) {
+                string = string.replace(new RegExp("\\" + specialChars[i], 'gi'), '');
+            }
+            string = string.toLowerCase();
+            //string = string.replace(/á/gi,"a");
+            //string = string.replace(/é/gi,"e");
+            //string = string.replace(/í/gi,"i");
+            //string = string.replace(/ó/gi,"o");
+            //string = string.replace(/ú/gi,"u");
+            //string = string.replace(/ñ/gi,"n");
+            return string;
+        }
+
         $( document ).ready(function() {
             var total_forms = $("#id_form-TOTAL_FORMS").val();
             index_to_id = {};
@@ -1410,8 +1425,15 @@
                 $("#tags_{{ form.instance.id }}").tagit({
                     //beforeTagAdded: function(event, ui) {
                         // do something special
-                        //console.log(ui.tag);
+                        //var normalizedTag = ui.tagLabel;
+                        //normalizedTag = normalizedTag.toLowerCase();
+                        //ui.tagLabel = normalizedTag;
+                        //console.log(ui.tagLabel);
                     //},
+                    preprocessTag: function(val){
+                        if (!val) { return ''; }
+                        return clearString(val);
+                    },
                     autocomplete: { source: function( request, response ) {
                         $.ajax({
                             url: "/api/tags/",
@@ -1432,7 +1454,8 @@
                             }
                         });
                     },
-                    minLength: 2
+                    minLength: 2,
+                    caseSensitive: false
                     }
                 });
 
