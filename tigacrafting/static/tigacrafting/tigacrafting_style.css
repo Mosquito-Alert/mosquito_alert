@@ -92,3 +92,26 @@ input[type=checkbox]
 .form-group .red {
     color: red;
 }
+
+.messages {
+    width: 100%;
+    text-align: left;
+}
+
+.messages th,td {
+    border-bottom: 1px solid #ddd;
+    padding: 5px;
+}
+
+.message_body {
+    text-align: left;
+    padding: 5px;
+}
+
+.pending {
+    background-color: red;
+}
+
+.clear {
+    background-color: #777;
+}

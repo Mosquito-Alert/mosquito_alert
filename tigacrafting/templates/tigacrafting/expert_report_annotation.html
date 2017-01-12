@@ -203,7 +203,7 @@
                             {% endif %}
                             {% inbox_count as my_var %}
                             <li>
-                                <a href="{% url 'messages_inbox' %}">Messages({{ my_var }})</a>
+                                <a href="{% url 'messages_inbox' %}">Messages <span class="badge {%if my_var > 0%}pending{% else %}clear{% endif %}">{{ my_var }}</span></a>
                             </li>
 
 

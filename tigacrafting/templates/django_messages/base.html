@@ -25,17 +25,6 @@
         <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
         <link rel="stylesheet" href="{% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}">
         <link rel="stylesheet" href="{% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}">
-        <style>
-            .messages {
-                width: 100%;
-                text-align: left;
-            }
-
-            .messages th,td {
-                border-bottom: 1px solid #ddd;
-                padding: 5px;
-            }
-        </style>
     </head>
     <div class="navbar-wrapper">
         <div class="container">
@@ -47,7 +36,7 @@
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav navbar-right">
                             <li><a href="{% url 'expert_report_annotation' %} ">Back to Entolab</a></li>
-                            <li><a href="{% url 'messages_inbox' %} ">{% trans "Inbox" %}({{my_var}})</a></li>
+                            <li><a href="{% url 'messages_inbox' %} ">{% trans "Inbox" %}<span class="badge {%if my_var > 0%}pending{% else %}clear{% endif %}">{{my_var}}</span></a></li>
                             <li><a href="{% url 'messages_outbox' %} ">{% trans "Sent Messages" %}</a></li>
                             <li><a href="{% url 'messages_compose' %} ">{% trans "New Message" %}</a></li>
                             <li><a href="{% url 'messages_trash' %} ">{% trans "Trash" %}</a></li>
