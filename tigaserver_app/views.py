@@ -20,6 +20,7 @@ from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import Point, GEOSGeometry
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
@@ -575,7 +576,7 @@ def string_par_to_bool(string_par):
             return True
     return False
 
-@api_view(['GET','POST'])
+@api_view(['GET','POST','DELETE'])
 def user_notifications(request):
     if request.method == 'GET':
         user_id = request.QUERY_PARAMS.get('user_id', -1)
@@ -584,9 +585,9 @@ def user_notifications(request):
             acknowledged = request.QUERY_PARAMS.get('acknowledged', False)
         all_notifications = Notification.objects.all()
         if user_id != -1:
-            all_notifications = all_notifications.filter(user_id=user_id)
+            all_notifications = all_notifications.filter(user_id=user_id).order_by('-date_comment')
         if acknowledged != 'ignore':
-            all_notifications = all_notifications.filter(acknowledged=acknowledged)
+            all_notifications = all_notifications.filter(acknowledged=acknowledged).order_by('-date_comment')
         serializer = NotificationSerializer(all_notifications)
         return Response(serializer.data)
     if request.method == 'POST':
@@ -598,11 +599,28 @@ def user_notifications(request):
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
         ack = request.QUERY_PARAMS.get('acknowledged', True)
+        expert_comment = request.QUERY_PARAMS.get('expert_comment', '-1')
+        expert_html = request.QUERY_PARAMS.get('expert_html', '-1')
+        if expert_comment != '-1':
+            this_notification.expert_comment = expert_comment
+        if expert_html != '-1':
+            this_notification.expert_html = expert_html
         ack_bool = string_par_to_bool(ack)
         this_notification.acknowledged = ack_bool
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
+    if request.method == 'DELETE':
+        id = request.QUERY_PARAMS.get('id', -1)
+        try:
+            int(id)
+        except ValueError:
+            raise ParseError(detail='Invalid id integer value')
+        queryset = Notification.objects.all()
+        this_notification = get_object_or_404(queryset, pk=id)
+        this_notification.delete()
+        return HttpResponse(status=204)
+
 
 @api_view(['GET'])
 def nearby_reports(request):
