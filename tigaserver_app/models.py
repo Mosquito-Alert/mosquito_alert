@@ -509,13 +509,14 @@ class Report(models.Model):
     # note that I am making this really get movelab or expert annotation,
     # but keeping name for now to avoid refactoring templates
     def get_movelab_annotation(self):
-        if self.creation_time.year == 2014:
+        expert_validated = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True)
+        if self.creation_time.year == 2014 and not expert_validated:
             if self.type == 'adult':
                 max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
                 if max_movelab_annotation is not None:
                     return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
         else:
-            if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True):
+            if expert_validated:
                 result = {'edited_user_notes': self.get_final_public_note()}
                 if self.get_final_photo_html():
                     result['photo_html'] = self.get_final_photo_html().popup_image()
