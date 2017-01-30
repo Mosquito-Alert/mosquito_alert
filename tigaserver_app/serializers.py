@@ -234,4 +234,5 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('id','report_id','user_id','expert_id','date_comment','expert_comment','expert_html','photo_url','acknowledged')
+        #fields = ('id','report_id','user_id','expert_id','date_comment','expert_comment','expert_html','photo_url','acknowledged')
+        fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged')
