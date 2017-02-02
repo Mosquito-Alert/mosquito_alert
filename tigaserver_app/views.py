@@ -597,7 +597,9 @@ def user_notifications(request):
         if request.QUERY_PARAMS.get('acknowledged') != None:
             acknowledged = request.QUERY_PARAMS.get('acknowledged', False)
         all_notifications = Notification.objects.all()
-        if user_id != -1:
+        if user_id == -1:
+            raise ParseError(detail='user_id is mandatory')
+        else:
             all_notifications = all_notifications.filter(user_id=user_id).order_by('-date_comment')
         if acknowledged != 'ignore':
             all_notifications = all_notifications.filter(acknowledged=acknowledged).order_by('-date_comment')
