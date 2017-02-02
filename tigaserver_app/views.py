@@ -438,13 +438,15 @@ def get_latest_validated_reports(reports):
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
@@ -614,20 +616,23 @@ def user_notifications(request):
             raise ParseError(detail='Invalid id integer value')
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
-        ack = request.QUERY_PARAMS.get('acknowledged', True)
+        ack = 'ignore'
+        if request.QUERY_PARAMS.get('acknowledged') is not None:
+            ack = request.QUERY_PARAMS.get('acknowledged', True)
         expert_comment = request.QUERY_PARAMS.get('expert_comment', '-1')
         expert_html = request.QUERY_PARAMS.get('expert_html', '-1')
         if expert_comment != '-1':
             this_notification.expert_comment = expert_comment
         if expert_html != '-1':
             this_notification.expert_html = expert_html
-        ack_bool = string_par_to_bool(ack)
-        this_notification.acknowledged = ack_bool
+        if ack != 'ignore':
+            ack_bool = string_par_to_bool(ack)
+            this_notification.acknowledged = ack_bool
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
     if request.method == 'PUT':
-        this_notification = Notification
+        this_notification = Notification()
         serializer = NotificationSerializer(this_notification,data=request.DATA)
         if serializer.is_valid():
             serializer.save()
