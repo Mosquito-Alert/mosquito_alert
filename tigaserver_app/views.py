@@ -602,7 +602,8 @@ def user_notifications(request):
         else:
             all_notifications = all_notifications.filter(user_id=user_id).order_by('-date_comment')
         if acknowledged != 'ignore':
-            all_notifications = all_notifications.filter(acknowledged=acknowledged).order_by('-date_comment')
+            ack_bool = string_par_to_bool(acknowledged)
+            all_notifications = all_notifications.filter(acknowledged=ack_bool).order_by('-date_comment')
         serializer = NotificationSerializer(all_notifications)
         return Response(serializer.data)
     if request.method == 'POST':
