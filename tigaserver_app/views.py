@@ -582,7 +582,12 @@ def string_par_to_bool(string_par):
 @api_view(['GET'])
 @cache_page(60 * 5)
 def report_stats(request):
-    r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    if user_id == -1:
+        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
+    else:
+        user_reports = Report.objects.filter(user__user_UUID=user_id).filter(type='adult')
+        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(version_UUID__in=user_reports).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
     content = {'report_count' : r_count}
     return Response(content)
 
