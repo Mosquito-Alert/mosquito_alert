@@ -552,10 +552,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 new_reports_unfiltered = Report.objects.exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+
                 if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+
                 if new_reports_unfiltered:
                     new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
                     reports_to_take = new_reports[0:n_to_get]
@@ -583,10 +585,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             new_reports_unfiltered = Report.objects.exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+
             if new_reports_unfiltered and this_user_is_team_bcn:
-                    new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+                new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
             if new_reports_unfiltered and this_user_is_team_not_bcn:
-                    new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+                new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+
             if new_reports_unfiltered:
                 new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
                 for this_report in new_reports:
