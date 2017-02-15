@@ -719,6 +719,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
+@login_required
+def single_report_view(request,version_uuid=None):
+    this_user = request.user
+    version_uuid = request.GET.get('version_uuid', version_uuid)
+    report = Report.objects.filter(version_UUID=version_uuid)
+    context = {'report': report}
+    return render(request, 'tigacrafting/single_report_view.html', context)
+
 
 @login_required
 def expert_report_status(request, reports_per_page=10, version_uuid=None, linked_id=None):
