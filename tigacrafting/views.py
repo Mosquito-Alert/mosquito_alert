@@ -1,4 +1,5 @@
 # coding=utf-8
+from ihooks import _Verbose
 from pydoc import visiblename
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
@@ -723,8 +724,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 def single_report_view(request,version_uuid=None):
     this_user = request.user
     version_uuid = request.GET.get('version_uuid', version_uuid)
-    report = Report.objects.filter(version_UUID=version_uuid)
-    context = {'report': report}
+    reports = Report.objects.filter(version_UUID=version_uuid)
+    context = {'reports': reports, 'version_uuid' : version_uuid}
     return render(request, 'tigacrafting/single_report_view.html', context)
 
 
