@@ -20,6 +20,7 @@ from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import Point, GEOSGeometry
+from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 
 
 
@@ -436,8 +437,24 @@ def get_latest_validated_reports(reports):
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+
+    reports_imbornal = get_reports_imbornal()
+    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+
+    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+
+    unfiltered_clean_reports = filter_reports(new_reports_unfiltered,False)
+    unfiltered_clean_reports_id = [ report.version_UUID for report in unfiltered_clean_reports ]
+    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
+
+    #new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
+    non_visible_report_id = [ report.version_UUID for report in Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if not report.visible]
+
+    hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    queryset = hidden_reports | unfiltered_clean_reports_query
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 

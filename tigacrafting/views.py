@@ -1071,6 +1071,37 @@ def expert_status(request):
     else:
         return HttpResponseRedirect(reverse('login'))
 
+def get_reports_unfiltered_sites_embornal(reports_imbornal):
+    new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(
+        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
+        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time')
+    return new_reports_unfiltered_sites_embornal
+
+def get_reports_unfiltered_sites_other(reports_imbornal):
+    new_reports_unfiltered_sites_other = Report.objects.exclude(type='adult').exclude(
+        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
+        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time')
+    return new_reports_unfiltered_sites_other
+
+def get_reports_imbornal():
+    reports_imbornal = ReportResponse.objects.filter(
+        Q(question='Is this a storm drain or sewer?', answer='Yes') | Q(question=u'\xc9s un embornal o claveguera?',
+                                                                        answer=u'S\xed') | Q(
+            question=u'\xbfEs un imbornal o alcantarilla?', answer=u'S\xed') | Q(question='Selecciona lloc de cria',
+                                                                                 answer='Embornals') | Q(
+            question='Selecciona lloc de cria', answer='Embornal o similar') | Q(question='Tipo de lugar de cría',
+                                                                                 answer='Sumidero o imbornal') | Q(
+            question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site',
+                                                                      answer='Storm drain') | Q(
+            question='Type of breeding site', answer='Storm drain or similar receptacle')).values('report').distinct()
+    return  reports_imbornal
+
+def get_reports_unfiltered_adults():
+    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(
+        note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(
+        n_annotations=0).order_by('-server_upload_time')
+    return new_reports_unfiltered_adults
+
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
     args = {}
@@ -1101,30 +1132,14 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         visibility = request.GET.get('visibility', visibility)
         usr_note = request.GET.get('usr_note', usr_note)
 
-    # #345 is a special tag to exclude reports
-    #reports_imbornal = ReportResponse.objects.filter( Q(question='Is this a storm drain or sewer?',answer='Yes') | Q(question=u'\xc9s un embornal o claveguera?',answer=u'S\xed') | Q(question=u'\xbfEs un imbornal o alcantarilla?',answer=u'S\xed') | Q(question='Selecciona lloc de cria',answer='Embornals') | Q(question='Selecciona lloc de cria',answer='Embornal o similar') | Q(question='Tipo de lugar de cría', answer='Sumidero o imbornal') | Q(question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site', answer='Storm drain') |  Q(question='Type of breeding site', answer='Storm drain or similar receptacle')).exclude(report__creation_time__year=2014).values('report').distinct()
-    reports_imbornal = ReportResponse.objects.filter(
-        Q(question='Is this a storm drain or sewer?', answer='Yes') | Q(question=u'\xc9s un embornal o claveguera?',
-                                                                        answer=u'S\xed') | Q(
-            question=u'\xbfEs un imbornal o alcantarilla?', answer=u'S\xed') | Q(question='Selecciona lloc de cria',
-                                                                                 answer='Embornals') | Q(
-            question='Selecciona lloc de cria', answer='Embornal o similar') | Q(question='Tipo de lugar de cría',
-                                                                                 answer='Sumidero o imbornal') | Q(
-            question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site',
-                                                                      answer='Storm drain') | Q(
-            question='Type of breeding site', answer='Storm drain or similar receptacle')).values('report').distinct()
+    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
 
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    #new_reports_unfiltered_sites_embornal = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time')
-    #new_reports_unfiltered_sites_other = Report.objects.exclude(creation_time__year=2014).exclude(type='adult').exclude(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    new_reports_unfiltered_sites_other = Report.objects.exclude(type='adult').exclude(version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time')
-
+    reports_imbornal = get_reports_imbornal()
+    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
     new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
 
-    #new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites_embornal
     new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-    #new_reports_unfiltered = filter(lambda x: not x.deleted and x.latest_version, new_reports_unfiltered)
 
     #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
     if type == 'adult':
