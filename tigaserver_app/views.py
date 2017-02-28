@@ -13,7 +13,7 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer
 from tigaserver_app.models import Notification, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 from taggit.models import Tag
@@ -435,6 +435,25 @@ def get_latest_validated_reports(reports):
 # select expert_validated."version_UUID" from (select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='expert' AND an.validation_complete = True GROUP BY r."version_UUID" HAVING count(r."version_UUID") >= 3 AND min(an.status) = 1) expert_validated
 # UNION
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
+
+class CoarseFilterAdultReports(ReadOnlyModelViewSet):
+    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
+    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
+    queryset = unfiltered_clean_reports_query
+    serializer_class = ReportIdSerializer
+
+class CoarseFilterSiteReports(ReadOnlyModelViewSet):
+    reports_imbornal = get_reports_imbornal()
+    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
+    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
+    queryset = unfiltered_clean_reports_query
+    serializer_class = ReportIdSerializer
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
 
