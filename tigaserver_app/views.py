@@ -582,12 +582,18 @@ def string_par_to_bool(string_par):
 
 @api_view(['POST'])
 def msg_ios(request):
-    _token = request.QUERY_PARAMS.get('token', -1)
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
     alert_message = request.QUERY_PARAMS.get('alert_message', -1)
     link_url = request.QUERY_PARAMS.get('link_url', -1)
-    if _token != -1 and alert_message != -1 and link_url != -1:
-        send_message_ios(_token, alert_message, link_url)
-        return Response({'token':_token,'alert_message': alert_message,'link_url':link_url})
+    if user_id != -1 and alert_message != -1 and link_url != -1:
+        queryset = TigaUser.objects.all()
+        this_user = get_object_or_404(queryset, pk=user_id)
+        if this_user.device_token is not None and this_user.device_token != '':
+            _token = this_user.device_token
+            send_message_ios(_token, alert_message, link_url)
+            return Response({'token':_token,'alert_message': alert_message,'link_url':link_url})
+        else:
+            raise ParseError(detail='Token not set for user')
     else:
         raise ParseError(detail='Invalid parameters')
 
