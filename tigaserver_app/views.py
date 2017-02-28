@@ -22,6 +22,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import Point, GEOSGeometry
 from django.views.decorators.cache import cache_page
+from tigacrafting.messaging import send_message_ios
 
 
 
@@ -438,13 +439,15 @@ def get_latest_validated_reports(reports):
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
@@ -576,6 +579,30 @@ def string_par_to_bool(string_par):
         if string_lower == 'true':
             return True
     return False
+
+@api_view(['POST'])
+def msg_ios(request):
+    _token = request.QUERY_PARAMS.get('token', -1)
+    alert_message = request.QUERY_PARAMS.get('alert_message', -1)
+    link_url = request.QUERY_PARAMS.get('link_url', -1)
+    if _token != -1 and alert_message != -1 and link_url != -1:
+        send_message_ios(_token, alert_message, link_url)
+        return Response({'token':_token,'alert_message': alert_message,'link_url':link_url})
+    else:
+        raise ParseError(detail='Invalid parameters')
+
+@api_view(['POST'])
+def token(request):
+    token = request.QUERY_PARAMS.get('token', -1)
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    if( user_id != -1 and token != -1 ):
+        queryset = TigaUser.objects.all()
+        this_user = get_object_or_404(queryset, pk=user_id)
+        this_user.device_token = token
+        this_user.save()
+        return Response({'token' : token})
+    else:
+        raise ParseError(detail='Invalid parameters')
 
 @api_view(['GET'])
 @cache_page(60 * 5)

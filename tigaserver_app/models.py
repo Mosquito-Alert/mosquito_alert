@@ -26,6 +26,7 @@ class TigaUser(models.Model):
                                                                       'registered and consented to sharing '
                                                                  'data. Automatically set by '
                                                                  'server when user uploads registration.')
+    device_token = models.TextField('Url to picture that originated the comment', null=True, blank=True,help_text='Device token, used in messaging. Must be supplied by the client')
 
     def __unicode__(self):
         return self.user_UUID
