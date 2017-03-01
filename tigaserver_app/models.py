@@ -1149,8 +1149,16 @@ class Report(models.Model):
             return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
         return result
 
-    def get_body_template(self):
-        result = 'Acerca del informe ' + self.version_UUID + ' enlace '
+    def get_single_report_view_link(self):
+        result = reverse('single_report_view', kwargs={"version_uuid": self.version_UUID})
+        return result
+
+    def get_who_has_list(self):
+        result = []
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        i = these_annotations.count()
+        for ano in these_annotations:
+            result.append(ano.user.username)
         return result
 
     def get_who_has_message_recipients(self):

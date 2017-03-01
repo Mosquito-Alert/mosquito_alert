@@ -115,3 +115,7 @@ input[type=checkbox]
 .clear {
     background-color: #777;
 }
+
+.messages tbody tr td input[type="text"]{
+    width: 100%;
+}

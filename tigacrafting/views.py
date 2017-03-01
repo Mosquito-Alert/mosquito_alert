@@ -725,7 +725,16 @@ def single_report_view(request,version_uuid=None):
     this_user = request.user
     version_uuid = request.GET.get('version_uuid', version_uuid)
     reports = Report.objects.filter(version_UUID=version_uuid)
-    context = {'reports': reports, 'version_uuid' : version_uuid}
+    report = reports.first()
+    who_has_list = []
+    if report:
+        these_annotations = ExpertReportAnnotation.objects.filter(report=report)
+        for ano in these_annotations:
+            if ano.user.username != this_user.username:
+                who_has_list.append( '<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by someone') if ano.validation_complete else ('pending with someone')) + '">someone <span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>' )
+            else:
+                who_has_list.append('<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by ' + ano.user.username) if ano.validation_complete else ('pending with ' + ano.user.username)) + '">' + ano.user.username + '<span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>')
+    context = {'reports': reports, 'version_uuid' : version_uuid, 'this_user': this_user.username, 'who_has_list': who_has_list}
     return render(request, 'tigacrafting/single_report_view.html', context)
 
 

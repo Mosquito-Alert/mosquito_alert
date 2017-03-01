@@ -227,7 +227,18 @@
             </div> <!-- row -->
             <div class="row">
                 <div class="col-md-12">
-                    <strong>Who has this report? </strong> {% if report.get_who_has_bootstrap %}{{ report.get_who_has_bootstrap | safe }}{% else %} Nobody - it has not yet been given to any experts.{% endif %}
+                    <strong>Who has this report? </strong>
+                        {% if report.get_who_has_bootstrap %}
+                            {% if request.user.userstat.is_superexpert %}
+                                {{ report.get_who_has_bootstrap | safe }}
+                            {% else %}
+                                {% for who_has in who_has_list %}
+                                    {{ who_has | safe }}
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            Nobody - it has not yet been given to any experts.
+                        {% endif %}
                 </div><br>
             </div>
                 {% if report.get_is_expert_validated %}<br>
@@ -245,7 +256,11 @@
                                                 <tbody style="border: 1px solid #333;padding:2px;">
                                                     <tr>
                                                         <td>
-                                                            <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by {{ ano.user.username }}">{{ ano.user.username }}<span class="glyphicon glyphicon-check"></span>
+                                                            {% if ano.user.username == this_user %}
+                                                                <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by {{ ano.user.username }}">{{ ano.user.username }}<span class="glyphicon glyphicon-check"></span>
+                                                            {% else %}
+                                                                <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by someone">someone<span class="glyphicon glyphicon-check"></span>
+                                                            {% endif %}
                                                         </td>
                                                         <td>
                                                             {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}
