@@ -304,7 +304,8 @@
             </div>
             <div class="col-md-1">
                 <h4>
-                    <a href="mailto:?subject=Report with id {{form.instance.report}}&body=http://{{ request.META.HTTP_HOST }}{% url 'expert_report_annotation' %}?version_uuid={{form.instance.report}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>
+                    <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_who_has_message_recipients}}&body={{form.instance.report.get_body_template}}&subject='hello'" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>
+                    <!--<a href="mailto:?subject=Report with id {{form.instance.report}}&body=http://{{ request.META.HTTP_HOST }}{% url 'expert_report_annotation' %}?version_uuid={{form.instance.report}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>-->
                 </h4>
             </div>
         </div>

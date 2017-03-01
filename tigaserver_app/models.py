@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 import os
 import os.path
+import urllib
 from PIL import Image
 import datetime
 from math import floor
@@ -9,6 +10,7 @@ from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
 from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
+from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
@@ -1145,6 +1147,21 @@ class Report(models.Model):
                     result += '<span class="label label-success" data-toggle="tooltip" title="tagged by ' + ano.user.username + '" data-placement="bottom">' + (tag.name) + '</span>'
         if(len(s)==0):
             return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
+        return result
+
+    def get_body_template(self):
+        result = 'Acerca del informe ' + self.version_UUID + ' enlace '
+        return result
+
+    def get_who_has_message_recipients(self):
+        result = ''
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        i = these_annotations.count()
+        for ano in these_annotations:
+            result += ano.user.username
+            i -= 1
+            if i > 0:
+                result += '+'
         return result
 
     def get_who_has(self):

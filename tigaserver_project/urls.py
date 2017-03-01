@@ -9,6 +9,7 @@ from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage
 from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, single_report_view
+from tigaserver_messages.views import compose_w_data
 
 admin.autodiscover()
 
@@ -83,4 +84,6 @@ urlpatterns += i18n_patterns('',
 #    url(r'^processing/$', show_processing),
     url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/experts/'}, name='auth_logout'),
     url(r'^messages/', include('django_messages.urls')),
+    #url(r'^messages/compose_w_data/(?P<recipient>[\w.@+-]+)/(?P<body>[\w .@+-]+)/(?P<subject>[\w.@+-]+)$', compose_w_data, name='compose_w_data'),
+    url(r'^messages/compose_w_data/$', compose_w_data, name='compose_w_data'),
 )
