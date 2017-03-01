@@ -62,6 +62,7 @@ INSTALLED_APPS = (
     'floppyforms',
     'taggit',
     'django_messages',
+    'tigaserver_messages',
 )
 
 MIDDLEWARE_CLASSES = (
