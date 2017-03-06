@@ -19,7 +19,9 @@ from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from django.contrib.gis import geos
 from django.contrib.gis.geos import Point, GEOSGeometry
+from django.contrib.gis.measure import Distance
 from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 
 
@@ -640,6 +642,56 @@ def user_notifications(request):
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
 
+
+# This is the old method which used a Window. It is now deprecated
+
+# @api_view(['GET'])
+# def nearby_reports(request):
+#     if request.method == 'GET':
+#         dwindow = request.QUERY_PARAMS.get('dwindow', 30)
+#         try:
+#             int(dwindow)
+#         except ValueError:
+#             raise ParseError(detail='Invalid dwindow integer value')
+#         if int(dwindow) > 365:
+#             raise ParseError(detail='Values above 365 not allowed for dwindow')
+#
+#         date_N_days_ago = datetime.now() - timedelta(days=int(dwindow))
+#
+#         center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
+#         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
+#         radius = request.QUERY_PARAMS.get('radius', '2500')
+#         if center_buffer_lat is None or center_buffer_lon is None:
+#             return Response(status=400,data='invalid parameters')
+#
+#         center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
+#         center_point_3857 = center_point_4326.transform(3857,clone=True)
+#
+#         swcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
+#         nwcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
+#         secorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
+#         necorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
+#
+#         swcorner_4326 = swcorner_3857.transform(4326,clone=True)
+#         nwcorner_4326 = nwcorner_3857.transform(4326, clone=True)
+#         secorner_4326 = secorner_3857.transform(4326, clone=True)
+#         necorner_4326 = necorner_3857.transform(4326, clone=True)
+#
+#         min_lon = swcorner_4326.x
+#         min_lat = swcorner_4326.y
+#
+#         max_lon = necorner_4326.x
+#         max_lat = necorner_4326.y
+#
+#         all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
+#         #all_reports = Report.objects.exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
+#         #Broad square filter
+#         all_reports = all_reports.filter(Q(location_choice='selected', selected_location_lon__range=(min_lon,max_lon),selected_location_lat__range=(min_lat, max_lat)) | Q(location_choice='current', current_location_lon__range=(min_lon,max_lon), current_location_lat__range=(min_lat, max_lat)))
+#         classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,all_reports)
+#         serializer = NearbyReportSerializer(classified_reports)
+#         return Response(serializer.data)
+
+
 @api_view(['GET'])
 def nearby_reports(request):
     if request.method == 'GET':
@@ -660,28 +712,9 @@ def nearby_reports(request):
             return Response(status=400,data='invalid parameters')
 
         center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
-        center_point_3857 = center_point_4326.transform(3857,clone=True)
-
-        swcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
-        nwcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
-        secorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
-        necorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
-
-        swcorner_4326 = swcorner_3857.transform(4326,clone=True)
-        nwcorner_4326 = nwcorner_3857.transform(4326, clone=True)
-        secorner_4326 = secorner_3857.transform(4326, clone=True)
-        necorner_4326 = necorner_3857.transform(4326, clone=True)
-
-        min_lon = swcorner_4326.x
-        min_lat = swcorner_4326.y
-
-        max_lon = necorner_4326.x
-        max_lat = necorner_4326.y
 
         all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
-        #all_reports = Report.objects.exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
-        #Broad square filter
-        all_reports = all_reports.filter(Q(location_choice='selected', selected_location_lon__range=(min_lon,max_lon),selected_location_lat__range=(min_lat, max_lat)) | Q(location_choice='current', current_location_lon__range=(min_lon,max_lon), current_location_lat__range=(min_lat, max_lat)))
+        all_reports = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=radius)))
         classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,all_reports)
         serializer = NearbyReportSerializer(classified_reports)
         return Response(serializer.data)

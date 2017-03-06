@@ -16,6 +16,8 @@ from django.contrib.auth.models import User, Group
 from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES
 from collections import Counter
 from datetime import datetime
+from django.contrib.gis.db import models
+from django.contrib.gis.geos import GEOSGeometry
 
 
 class TigaUser(models.Model):
@@ -246,8 +248,22 @@ class Report(models.Model):
 
     hide = models.BooleanField(default=False, help_text='Hide this report from public views?')
 
+    point = models.PointField(blank=True,null=True,srid=4326)
+
+    objects = models.GeoManager()
+
     def __unicode__(self):
         return self.version_UUID
+
+    #this is called previous to saving the object and initializes the spatial field
+    #it supplies
+    def get_point(self):
+        if (self.get_lon() == -1 and self.get_lat() == -1) or self.get_lon() is None or self.get_lat() is None:
+            return None
+        # longitude, latitude
+        wkt_point = 'POINT( {0} {1} )'
+        p = GEOSGeometry(wkt_point.format(self.get_lon(), self.get_lat()), srid=4326)
+        return p
 
     def get_lat(self):
         if self.location_choice == 'selected' and self.selected_location_lat is not None:
@@ -1298,6 +1314,13 @@ class Report(models.Model):
                 return result
         else:
             return ''
+
+    # save is overriden to initialize the point spatial field with the coordinates supplied
+    # to the Report object. See method get_point
+    def save(self, *args, **kwargs):
+        if not self.point:
+            self.point = self.get_point()
+        super(Report, self).save(*args, **kwargs)
 
     lon = property(get_lon)
     lat = property(get_lat)
