@@ -439,13 +439,15 @@ def get_latest_validated_reports(reports):
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
@@ -620,9 +622,31 @@ def report_stats(request):
     content = {'report_count' : r_count}
     return Response(content)
 
+def custom_render_notification(notification,locale):
+    expert_comment = notification.notification_content.get_body_locale_safe(locale)
+    expert_html = notification.notification_content.get_title_locale_safe(locale)
+    content = {
+        'id':notification.id,
+        'report_id':notification.report.version_UUID,
+        'user_id':notification.user.user_UUID,
+        'expert_id':notification.expert.id,
+        'date_comment':notification.date_comment,
+        'expert_comment':expert_comment,
+        'expert_html':expert_html,
+        'acknowledged':notification.acknowledged
+    }
+    return content
+
+def custom_render_notification_queryset(queryset,locale):
+    content = []
+    for notification in queryset:
+        content.append(custom_render_notification(notification,locale))
+    return content
+
 @api_view(['GET','POST','DELETE','PUT'])
 def user_notifications(request):
     if request.method == 'GET':
+        locale = request.QUERY_PARAMS.get('locale', 'es')
         user_id = request.QUERY_PARAMS.get('user_id', -1)
         acknowledged = 'ignore'
         if request.QUERY_PARAMS.get('acknowledged') != None:
@@ -635,8 +659,10 @@ def user_notifications(request):
         if acknowledged != 'ignore':
             ack_bool = string_par_to_bool(acknowledged)
             all_notifications = all_notifications.filter(acknowledged=ack_bool).order_by('-date_comment')
-        serializer = NotificationSerializer(all_notifications)
-        return Response(serializer.data)
+        #serializer = NotificationSerializer(all_notifications)
+        content = custom_render_notification_queryset(all_notifications,locale)
+        #return Response(serializer.data)
+        return Response(content)
     if request.method == 'POST':
         id = request.QUERY_PARAMS.get('id', -1)
         try:
@@ -645,18 +671,32 @@ def user_notifications(request):
             raise ParseError(detail='Invalid id integer value')
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
+        notification_content = this_notification.notification_content
         ack = 'ignore'
         if request.QUERY_PARAMS.get('acknowledged') is not None:
             ack = request.QUERY_PARAMS.get('acknowledged', True)
-        expert_comment = request.QUERY_PARAMS.get('expert_comment', '-1')
-        expert_html = request.QUERY_PARAMS.get('expert_html', '-1')
-        if expert_comment != '-1':
-            this_notification.expert_comment = expert_comment
-        if expert_html != '-1':
-            this_notification.expert_html = expert_html
+        body_html_es = request.QUERY_PARAMS.get('body_html_es', '-1')
+        title_es = request.QUERY_PARAMS.get('title_es', '-1')
+        body_html_ca = request.QUERY_PARAMS.get('body_html_ca', '-1')
+        title_ca = request.QUERY_PARAMS.get('title_ca', '-1')
+        body_html_en = request.QUERY_PARAMS.get('body_html_en', '-1')
+        title_en = request.QUERY_PARAMS.get('title_en', '-1')
+        if body_html_ca != '-1':
+            notification_content.body_html_ca = body_html_ca
+        if title_ca != '-1':
+            notification_content.title_ca = title_ca
+        if body_html_en != '-1':
+            notification_content.body_html_en = body_html_en
+        if title_en != '-1':
+            notification_content.title_en = title_en
+        if body_html_es != '-1':
+            notification_content.body_html_es = body_html_es
+        if title_es != '-1':
+            notification_content.title_es = title_es
         if ack != 'ignore':
             ack_bool = string_par_to_bool(ack)
             this_notification.acknowledged = ack_bool
+        notification_content.save()
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
@@ -675,7 +715,9 @@ def user_notifications(request):
             raise ParseError(detail='Invalid id integer value')
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset, pk=id)
+        notification_content = this_notification.notification_content
         this_notification.delete()
+        notification_content.delete()
         return HttpResponse(status=204)
 
 

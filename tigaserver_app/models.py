@@ -1540,11 +1540,54 @@ class CoverageAreaMonth(models.Model):
     class Meta:
         unique_together = ("lat", "lon", "year", "month")
 
+class NotificationContent(models.Model):
+    body_html_es = models.TextField(help_text='Expert comment, expanded and allows html, in spanish')
+    body_html_ca = models.TextField(default=None,blank=True,null=True,help_text='Expert comment, expanded and allows html, in catalan')
+    body_html_en = models.TextField(default=None,blank=True,null=True,help_text='Expert comment, expanded and allows html, in english')
+    title_es = models.TextField(help_text='Title of the comment, shown in non-detail view, in spanish')
+    title_ca = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in catalan')
+    title_en = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in english')
+
+    def get_title_locale_safe(self, locale):
+        if locale == 'es':
+            return self.title_es
+        elif locale == 'ca':
+            if self.title_ca is None:
+                return self.title_es
+            else:
+                return self.title_ca
+        elif locale == 'en':
+            if self.title_en is None:
+                return self.title_es
+            else:
+                return self.title_en
+        else:
+            return self.title_es
+
+    def get_body_locale_safe(self,locale):
+        if locale == 'es':
+            return self.body_html_es
+        elif locale == 'ca':
+            if self.body_html_ca is None:
+                return self.body_html_es
+            else:
+                return self.body_html_ca
+        elif locale == 'en':
+            if self.body_html_en is None:
+                return self.body_html_es
+            else:
+                return self.body_html_en
+        else:
+            return self.body_html_es
+
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
     user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
     expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
     date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    #blank is True to avoid problems in the migration, this should be removed!!
+    notification_content = models.ForeignKey(NotificationContent,blank=True, null=True,related_name="notification_content",help_text='Multi language content of the notification')
+    #All this becomes obsolete, now all notification text is outside. This allows for re-use in massive notifications
     expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')

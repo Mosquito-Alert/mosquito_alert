@@ -22,7 +22,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification
+from tigaserver_app.models import Notification, NotificationContent
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -449,20 +449,17 @@ def must_be_autoflagged(this_annotation, is_current_validated):
 
 # This can be called from outside the server, so we need current_domain for absolute urls
 def issue_notification(report_annotation,current_domain):
-    notification = Notification(report=report_annotation.report,user=report_annotation.report.user,expert=report_annotation.user)
-    notification.expert_comment = "¡Uno de sus informes ha sido validado por un experto!"
+    notification_content = NotificationContent()
+    notification_content.title_es = "¡Uno de sus informes ha sido validado por un experto!"
     if report_annotation.report.get_final_photo_url_for_notification():
-        notification.expert_html = '<a href="http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification() + '" target="_blank">Enlace a tu foto</a>'
+        notification_content.body_html_es = '<a href="http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification() + '" target="_blank">Enlace a tu foto</a>'
     if report_annotation.message_for_user:
         clean_annotation = ''
         clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
-        notification.expert_html = notification.expert_html + "</br> Mensaje de los expertos: </br>" + clean_annotation
-    photo = None
-    if report_annotation.report.get_final_photo_url_for_notification():
-        photo = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
-    if photo:
-        notification.photo_url = photo
+        notification_content.body_html_es = notification_content.body_html_es + "</br><strong>Mensaje de los expertos:</strong></br>" + clean_annotation
+    notification_content.save()
+    notification = Notification(report=report_annotation.report, user=report_annotation.report.user,expert=report_annotation.user, notification_content=notification_content)
     notification.save()
 
 @login_required
