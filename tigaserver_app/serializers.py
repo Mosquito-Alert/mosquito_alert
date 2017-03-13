@@ -224,15 +224,16 @@ class TagSerializer(serializers.ModelSerializer):
 class NotificationContentSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     body_html_es = serializers.CharField()
-    body_html_ca = serializers.CharField()
-    body_html_en = serializers.CharField()
+    body_html_ca = serializers.CharField(required=False)
+    body_html_en = serializers.CharField(required=False)
     title_es = serializers.CharField()
-    title_ca = serializers.CharField()
-    title_en = serializers.CharField()
+    title_ca = serializers.CharField(required=False)
+    title_en = serializers.CharField(required=False)
 
     class Meta:
         model = NotificationContent
         fields = ('id', 'body_html_es', 'body_html_ca', 'body_html_en', 'title_es', 'title_ca', 'title_en')
+        #fields = ('id', 'body_html_es', 'title_es')
 
 class NotificationSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
