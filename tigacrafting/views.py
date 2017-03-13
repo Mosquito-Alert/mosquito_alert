@@ -883,7 +883,13 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
             if new_reports_unfiltered and this_user_is_team_not_bcn:
                 new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-
+            if this_user.id == 25: #it's roger, don't assign reports from barcelona prior to 03/10/2017
+                new_reports_unfiltered = new_reports_unfiltered.exclude(Q(
+                    Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),
+                      selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(
+                        location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),
+                        current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(
+                    creation_time__lte=datetime.date(2017, 3, 10)))
             if new_reports_unfiltered:
                 new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
                 for this_report in new_reports:
