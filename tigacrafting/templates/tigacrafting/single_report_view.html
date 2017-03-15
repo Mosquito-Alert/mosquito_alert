@@ -246,58 +246,56 @@
                         <strong>Individual Expert Responses</strong><br>
                             {% for ano in report.expert_report_annotations.all %}
                                 {% if ano.validation_complete %}
-                                    {% if ano.is_expert or ano.is_superexpert and ano.revise %}
-                                        <div class="col-md-6">
-                                            <table class="table table-condensed borderless" style="font-size: smaller;">
-                                                <thead>
-                                                    <th></th>
-                                                    <th></th>
-                                                </thead>
-                                                <tbody style="border: 1px solid #333;padding:2px;">
-                                                    <tr>
-                                                        <td>
-                                                            {% if ano.user.username == this_user %}
-                                                                <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by {{ ano.user.username }}">{{ ano.user.username }}<span class="glyphicon glyphicon-check"></span>
-                                                            {% else %}
-                                                                <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by someone">someone<span class="glyphicon glyphicon-check"></span>
-                                                            {% endif %}
-                                                        </td>
-                                                        <td>
-                                                            {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <strong>Internal cmts:</strong>
-                                                        </td>
-                                                        <td>
-                                                            {% if report.type == 'adult' %}
-                                                                    {{ ano.tiger_certainty_notes }}<br>
-                                                            {% elif report.type == 'site' %}
-                                                                {{ ano.site_certainty_notes }}<br>
-                                                            {% endif %}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Public Note:</strong></td>
-                                                        <td> {{ ano.edited_user_notes }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Message To User:</strong></td>
-                                                        <td> {{ ano.message_for_user }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Linked ID:</strong></td>
-                                                        <td> {{ ano.linked_id }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Photo:</strong></td>
-                                                        <td>{% if ano.best_photo %}{{ ano.best_photo.popup_image | safe }}{% endif %}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div> <!-- col-md-6 -->
-                                    {% endif %}
+                                    <div class="col-md-6">
+                                        <table class="table table-condensed borderless" style="font-size: smaller;">
+                                            <thead>
+                                                <th></th>
+                                                <th></th>
+                                            </thead>
+                                            <tbody style="border: 1px solid #333;padding:2px;{% if ano.user.userstat.is_superexpert %}background: #F5DA81;{% endif %}">
+                                                <tr>
+                                                    <td>
+                                                        {% if ano.user.username == this_user or request.user.userstat.is_superexpert or ano.user.userstat.is_superexpert %}
+                                                            <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by {{ ano.user.username }}">{{ ano.user.username }}<span class="glyphicon glyphicon-check"></span>
+                                                        {% else %}
+                                                            <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by someone">someone<span class="glyphicon glyphicon-check"></span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <strong>Internal cmts:</strong>
+                                                    </td>
+                                                    <td>
+                                                        {% if report.type == 'adult' %}
+                                                                {{ ano.tiger_certainty_notes }}<br>
+                                                        {% elif report.type == 'site' %}
+                                                            {{ ano.site_certainty_notes }}<br>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Public Note:</strong></td>
+                                                    <td> {{ ano.edited_user_notes }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Message To User:</strong></td>
+                                                    <td> {{ ano.message_for_user }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Linked ID:</strong></td>
+                                                    <td> {{ ano.linked_id }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Photo:</strong></td>
+                                                    <td>{% if ano.best_photo %}{{ ano.best_photo.popup_image | safe }}{% endif %}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- col-md-6 -->
                                 {% endif %}
                         {% endfor %} <!-- for ano in report.expert_report_annotations.all -->
                         </div>

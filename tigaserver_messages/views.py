@@ -43,11 +43,16 @@ def compose_w_data(request, recipient=None, body=None, subject=None, form_class=
             sender_username = sender.username
         form = form_class()
         recipient = request.GET.get('recipient',None)
+        if recipient is not None:
+            if ' ' in recipient:
+                splitted = recipient.split(' ')
+            else:
+                splitted = recipient.split('+')
         body = request.GET.get('body', None)
         subject = request.GET.get('subject', None)
         if recipient is not None:
             userlist = []
-            for r in recipient.split('+'):
+            for r in splitted:
                 if r.strip() != sender_username:
                     u = User.objects.filter(**{'%s' % get_username_field(): r.strip()})
                     user = u.first()
