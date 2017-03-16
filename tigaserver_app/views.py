@@ -14,8 +14,8 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer
-from tigaserver_app.models import Notification, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -167,6 +167,16 @@ version_UUID linking this photo to a specific report version.
         instance.save()
         return Response('uploaded')
 
+def filter_partial_uuid(queryset, user_UUID):
+    if not user_UUID:
+        return queryset
+    return queryset.filter(user_UUID__startswith=user_UUID)
+
+class UserFilter(django_filters.FilterSet):
+    user_UUID = django_filters.Filter(action=filter_partial_uuid)
+    class Meta:
+        model = TigaUser
+        fields = ['user_UUID']
 
 # For production version, substitute WriteOnlyModelViewSet
 class UserViewSet(ReadWriteOnlyModelViewSet):
@@ -182,6 +192,7 @@ through the API.)
     """
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
+    filter_class = UserFilter
 
 
 class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
@@ -719,6 +730,16 @@ def user_notifications(request):
         this_notification.delete()
         notification_content.delete()
         return HttpResponse(status=204)
+
+@api_view(['PUT'])
+def notification_content(request):
+    if request.method == 'PUT':
+        this_notification_content = NotificationContent()
+        serializer = NotificationContentSerializer(this_notification_content,data=request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])

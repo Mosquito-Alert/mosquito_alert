@@ -876,3 +876,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
     #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
     return render(request, 'tigacrafting/photo_grid.html', args)
+
+@login_required
+def notifications(request):
+    return render(request, 'tigacrafting/notifications.html')

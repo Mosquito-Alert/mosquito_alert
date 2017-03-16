@@ -312,8 +312,7 @@
                 <div class="col-md-6">
                     {% if form.instance.simplified_annotation == True %}
                     <strong>This is a simplified report - </strong>
-                    {% else %}
-                    <strong>This is a full report - </strong>
+                    {% else %}<strong>This is a full report - </strong>
                     {% endif %}
                     <strong>Who has this report? </strong> {{ form.instance.report.get_who_has_bootstrap | safe }}
                 </div>

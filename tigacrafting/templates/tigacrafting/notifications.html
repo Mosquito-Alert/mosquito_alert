@@ -1,0 +1,203 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}></script>
+    <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
+    <script src={% static "tigacrafting/tinymce/js/tinymce/tinymce.min.js" %}></script>
+    <script>
+        $( document ).ready(function() {
+            tinymce.init({
+                selector: '#body_es',
+                plugins: "image"
+            });
+            tinymce.init({
+                selector: '#body_ca',
+                plugins: "image"
+            });
+            tinymce.init({
+                selector: '#body_en',
+                plugins: "image"
+            });
+            $('.tokenize-demo').tokenize2({
+                dropdownMaxItems: 15,
+                searchMinLength: 3,
+                dataSource: function(term, object){
+                    $.ajax('/api/users/', {
+                        data: { user_UUID: term, start: 0 },
+                        dataType: 'json',
+                        success: function(data){
+                            var $items = [];
+                            $.each(data, function(k, v){
+                                //$items.push(v.user_UUID);
+                                $items.push({"text":v.user_UUID,"value":v.user_UUID});
+                            });
+                            object.trigger('tokenize:dropdown:fill', [$items]);
+                        }
+                    });
+                }
+            });
+            ajax_post_notification_content = function(){
+                $.ajax({
+                    type: "PUT",
+                    url: '/api/notification_content/',
+                    dataType: 'json',
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                    data: { "body_html_es" : "<html><body>Hello!</body></html>", "title_es":"Hello world!" },
+                    success: function(data){
+                        alert(data);
+                    }
+                });
+            };
+            validate_data = function(){
+                var title_es = $("#title_es").val();
+                if(title_es == null || title_es == ''){
+                    return false;
+                }
+                var body_html_es_editor_content = tinyMCE.get('body_es').getContent();
+                if(body_html_es_editor_content == ''){
+                    return false;
+                }
+                return true;
+            };
+            $( "#save_button" ).click(function() {
+                if(!validate_data()){
+                    $("#save_block_modal").modal('show');
+                }else{
+                    ajax_post_notification_content();
+                }
+            });
+            $('#gear').hide();
+        });
+    </script>
+</head>
+<body>
+
+<div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">
+                                <i id="gear" class="fa fa-refresh fa-spin"></i>
+                                MosquitoAlert Notifications
+                            </span>
+
+                        </div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-left">
+                            <li>
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px" data-toggle="tooltip" data-placement="bottom"
+                                        title="Save"><span
+                                        class="glyphicon glyphicon-floppy-disk"></span>
+                                </button>
+                            </li>
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="modal fade" id="save_block_modal" tabindex="-1" role="dialog" aria-labelledby="save_block_modal_label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="save_block_modal_label">There are a few problems...</h4>
+            </div>
+            <div id="save_block_modal_body" class="modal-body">
+                <p>You can't send the notification(s) yet because:</p>
+                <ul>
+                    <li>Either you have selected no ids in the user id box</li>
+                    <li>... or the 'Message title(es)' is blank</li>
+                    <li>... or the 'Message body(es)' is blank</li>
+                </ul>
+                <p>Fill these fields and try again please.</p>
+                <div id="reports_validated_without_input_list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="starter-template">
+        <h1>Notifications</h1>
+        <label>Select one or more user ids to which the notification will be sent (start typing the first 3 symbols of the user id and select from the dropdown):</label>
+        <div class="row">
+            <select class="tokenize-demo" multiple></select>
+        </div>
+        <div style="background:#ffcc66;padding:20px;margin:15px;">
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message title(ES):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="title_es" cols="40" rows="2"></textarea></div>
+            </div>
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message body(ES):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="body_es" cols="40" rows="10"></textarea></div>
+            </div>
+        </div>
+        <div style="background:#ffcc66;padding:20px;margin:15px;">
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message title(CA):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="title_ca" cols="40" rows="2"></textarea></div>
+            </div>
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message body(CA):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="body_ca" cols="40" rows="10"></textarea></div>
+            </div>
+        </div>
+        <div style="background:#ffcc66;padding:20px;margin:15px;">
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message title(EN):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="title_en" cols="40" rows="2"></textarea></div>
+            </div>
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message body(EN):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="body_en" cols="40" rows="10"></textarea></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
