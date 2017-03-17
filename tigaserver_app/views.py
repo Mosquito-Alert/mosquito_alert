@@ -742,6 +742,26 @@ def notification_content(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['PUT'])
+def send_notifications(request):
+    if request.method == 'PUT':
+        data = request.DATA
+        id = data['notification_content_id']
+        sender = data['sender']
+        push = data['push']
+        queryset = NotificationContent.objects.all()
+        notification_content = get_object_or_404(queryset, pk=id)
+        recipients = data['recipients']
+        #report with oldest creation date
+        r = "f24ff558-fc1c-4b0c-aedb-00c427f60f94"
+        reports_issued = 0
+        push_issued = 0
+        for recipient in recipients:
+            n = Notification(report=r,user_id=recipient,expert_id=sender,notification_content=notification_content)
+            n.save()
+            reports_issued = reports_issued + 1
+
+
 @api_view(['GET'])
 def nearby_reports(request):
     if request.method == 'GET':

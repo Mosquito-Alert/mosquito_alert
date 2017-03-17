@@ -6,10 +6,11 @@
     <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.min.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
-    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
     <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
     <script src={% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}></script>
     <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
     <script src={% static "tigacrafting/tinymce/js/tinymce/tinymce.min.js" %}></script>
@@ -17,15 +18,15 @@
         $( document ).ready(function() {
             tinymce.init({
                 selector: '#body_es',
-                plugins: "image"
+                plugins: ["image","code"]
             });
             tinymce.init({
                 selector: '#body_ca',
-                plugins: "image"
+                plugins: ["image","code"]
             });
             tinymce.init({
                 selector: '#body_en',
-                plugins: "image"
+                plugins: ["image","code"]
             });
             $('.tokenize-demo').tokenize2({
                 dropdownMaxItems: 15,
@@ -37,7 +38,6 @@
                         success: function(data){
                             var $items = [];
                             $.each(data, function(k, v){
-                                //$items.push(v.user_UUID);
                                 $items.push({"text":v.user_UUID,"value":v.user_UUID});
                             });
                             object.trigger('tokenize:dropdown:fill', [$items]);
@@ -45,15 +45,23 @@
                     });
                 }
             });
+            ajax_post_send_notifications = function(){
+
+            }
             ajax_post_notification_content = function(){
+                this_data = jsonify_notification_content();
                 $.ajax({
                     type: "PUT",
                     url: '/api/notification_content/',
                     dataType: 'json',
                     headers: { "X-CSRFToken": "{{ csrf_token }}" },
-                    data: { "body_html_es" : "<html><body>Hello!</body></html>", "title_es":"Hello world!" },
+                    data: this_data,
                     success: function(data){
-                        alert(data);
+                        var notification_id = data.id;
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                        $("#dialog-message-error-text").html(jqXHR.responseText);
+                        $("#dialog-message-error").dialog("open");
                     }
                 });
             };
@@ -66,16 +74,83 @@
                 if(body_html_es_editor_content == ''){
                     return false;
                 }
+                if(get_selected_tokens().length == 0 && $("#accordion").accordion( "option", "active" ) == 0){
+                    return false;
+                }
                 return true;
             };
             $( "#save_button" ).click(function() {
                 if(!validate_data()){
-                    $("#save_block_modal").modal('show');
+                    $('#dialog-message-validation').dialog('open');
                 }else{
                     ajax_post_notification_content();
                 }
             });
             $('#gear').hide();
+            $( "#accordion" ).accordion({
+                heightStyle: "content",
+                activate: function( event, ui ) {
+                    var selected = $(this).accordion( "option", "active" );
+                    if(selected == 1){
+                        clear_tokens();
+                    }
+                }
+            });
+            get_selected_tokens = function(){
+                data = [];
+                $('.token').each(function(index,value){
+                    data.push($(value).attr('data-value'));
+                });
+                return data;
+            };
+            clear_tokens = function(){
+                $('.token').each(function(index,value){
+                    $(value).remove();
+                });
+            };
+            jsonify_notification_content = function(){
+                data = {}
+                var body_html_es = tinyMCE.get('body_es').getContent();
+                var body_html_ca = tinyMCE.get('body_ca').getContent();
+                var body_html_en = tinyMCE.get('body_en').getContent();
+                var title_es = $('#title_es').val();
+                var title_ca = $('#title_ca').val();
+                var title_en = $('#title_en').val();
+                data.body_html_es = body_html_es;
+                if(body_html_ca != ''){
+                    data.body_html_ca = body_html_ca;
+                }
+                if(body_html_en != ''){
+                    data.body_html_en = body_html_en;
+                }
+                data.title_es = title_es;
+                if(title_ca != ''){
+                    data.title_ca = title_ca;
+                }
+                if(title_en != ''){
+                    data.title_en = title_en;
+                }
+                return data;
+            };
+            $( "#dialog-message-error" ).dialog({
+                modal: true,
+                autoOpen: false,
+                buttons: {
+                    Ok: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#dialog-message-validation" ).dialog({
+                modal: true,
+                autoOpen: false,
+                width: 400,
+                buttons: {
+                    Ok: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
         });
     </script>
 </head>
@@ -122,38 +197,45 @@
         </div>
     </div>
 
-<div class="modal fade" id="save_block_modal" tabindex="-1" role="dialog" aria-labelledby="save_block_modal_label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="save_block_modal_label">There are a few problems...</h4>
-            </div>
-            <div id="save_block_modal_body" class="modal-body">
-                <p>You can't send the notification(s) yet because:</p>
-                <ul>
-                    <li>Either you have selected no ids in the user id box</li>
-                    <li>... or the 'Message title(es)' is blank</li>
-                    <li>... or the 'Message body(es)' is blank</li>
-                </ul>
-                <p>Fill these fields and try again please.</p>
-                <div id="reports_validated_without_input_list"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
-            </div>
-        </div>
-    </div>
+<div id="dialog-message-error" title="Error saving data">
+    <h2>Error message:</h2>
+    <p id="dialog-message-error-text"></p>
+</div>
+
+<div id="dialog-message-validation" title="There are some problems with your request...">
+    <p>You can't send the notification(s) yet because:</p>
+    <ul>
+        <li>Either you have chosen to send the message to a few users and selected no ids in the user id box</li>
+        <li>... or the 'Message title(es)' is blank</li>
+        <li>... or the 'Message body(es)' is blank</li>
+    </ul>
+    <p>Fill these fields and try again please.</p>
 </div>
 
 
 <div class="container">
     <div class="starter-template">
         <h1>Notifications</h1>
-        <label>Select one or more user ids to which the notification will be sent (start typing the first 3 symbols of the user id and select from the dropdown):</label>
-        <div class="row">
-            <select class="tokenize-demo" multiple></select>
+        <h3>1 - To whom do you want to send the message?:</h3>
+        <div id="accordion">
+            <h3>Send message to some people</h3>
+            <div>
+                <p>Select one or more user ids to which the notification will be sent (start typing the first 3 symbols of the user id and select from the dropdown):</p>
+                <select class="tokenize-demo" multiple></select>
+            </div>
+            <h3>Send message to everyone</h3>
+            <div><p>Sending x messages</p></div>
         </div>
+        <h3>2 - Do you want to send also push notifications where available?:</h3>
+        <div class="row">
+              <fieldset>
+                <label for="radio-1">Yes</label>
+                <input type="radio" name="radio-1" id="radio-1" checked="checked">
+                <label for="radio-2">No</label>
+                <input type="radio" name="radio-1" id="radio-2">
+              </fieldset>
+        </div>
+        <h3>3 - Compose the message you want to send below. Only (es) section are mandatory:</h3>
         <div style="background:#ffcc66;padding:20px;margin:15px;">
             <div class="row">
                 <div class="text-left col-md-4"><label>Message title(ES):</label></div>
