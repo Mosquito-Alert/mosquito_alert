@@ -770,7 +770,8 @@ def send_notifications(request):
             try:
                 n.save()
                 notifications_issued = notifications_issued + 1
-            except:
+            except Exception as e:
+                print e
                 notifications_failed = notifications_failed + 1
             if push and recipient.device_token is not None and recipient.device_token != '':
                 #send push
