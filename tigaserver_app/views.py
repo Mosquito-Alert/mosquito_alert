@@ -773,8 +773,8 @@ def send_notifications(request):
                 n.save()
                 notifications_issued = notifications_issued + 1
             except Exception as e:
-                print >> sys.stderr, e
                 notifications_failed = notifications_failed + 1
+                raise ParseError(detail=e.message)
             if push and recipient.device_token is not None and recipient.device_token != '':
                 #send push
                 if(recipient.user_UUID.islower()):
