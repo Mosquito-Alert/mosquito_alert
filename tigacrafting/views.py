@@ -22,7 +22,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent
+from tigaserver_app.models import Notification, NotificationContent, TigaUser
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -879,4 +879,6 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 
 @login_required
 def notifications(request):
-    return render(request, 'tigacrafting/notifications.html')
+    this_user = request.user
+    total_users = TigaUser.objects.all().count()
+    return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users})

@@ -747,20 +747,39 @@ def send_notifications(request):
     if request.method == 'PUT':
         data = request.DATA
         id = data['notification_content_id']
-        sender = data['sender']
-        push = data['push']
+        sender = data['user_id']
+        push = data['ppush']
+        # report with oldest creation date
+        r = data['report_id']
         queryset = NotificationContent.objects.all()
         notification_content = get_object_or_404(queryset, pk=id)
         recipients = data['recipients']
-        #report with oldest creation date
-        r = "f24ff558-fc1c-4b0c-aedb-00c427f60f94"
-        reports_issued = 0
-        push_issued = 0
-        for recipient in recipients:
-            n = Notification(report=r,user_id=recipient,expert_id=sender,notification_content=notification_content)
-            n.save()
-            reports_issued = reports_issued + 1
-
+        if recipients == 'all':
+            send_to = TigaUser.objects.all()
+        else:
+            ids_list = recipients.split('$')
+            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
+        notifications_issued = 0
+        notifications_failed = 0
+        push_issued_android = 0
+        push_failed_android = 0
+        push_issued_ios = 0
+        push_failed_ios = 0
+        for recipient in send_to:
+            n = Notification(report_id=r,user=recipient,expert_id=sender,notification_content=notification_content)
+            try:
+                n.save()
+                notifications_issued = notifications_issued + 1
+            except:
+                notifications_failed = notifications_failed + 1
+            if push and recipient.device_token is not None and recipient.device_token != '':
+                #send push
+                if(recipient.user_UUID.islower()):
+                    push_issued_android = push_issued_android + 1
+                else:
+                    push_issued_ios = push_issued_ios + 1
+        results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
+        return Response(results)
 
 @api_view(['GET'])
 def nearby_reports(request):
