@@ -23,6 +23,8 @@ from django.db.models import Count
 from django.contrib.gis.geos import Point, GEOSGeometry
 from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios
+import sys
+
 
 
 
@@ -771,7 +773,7 @@ def send_notifications(request):
                 n.save()
                 notifications_issued = notifications_issued + 1
             except Exception as e:
-                print e
+                print >> sys.stderr, e
                 notifications_failed = notifications_failed + 1
             if push and recipient.device_token is not None and recipient.device_token != '':
                 #send push
