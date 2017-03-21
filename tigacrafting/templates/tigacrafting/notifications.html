@@ -16,7 +16,7 @@
     <script src={% static "tigacrafting/tinymce/js/tinymce/tinymce.min.js" %}></script>
     <script>
         //This is needed in jsonify_notification
-        var csrf_token = {{ csrf_token }};
+        var csrf_token = '{{ csrf_token }}';
         var user_id = {{ user_id }};
     </script>
     <script src={% static "tigacrafting/notifications/notifications.js" %}></script>
