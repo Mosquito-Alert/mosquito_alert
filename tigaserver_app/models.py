@@ -1549,34 +1549,38 @@ class NotificationContent(models.Model):
     title_en = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in english')
 
     def get_title_locale_safe(self, locale):
-        if locale == 'es':
+        if locale.lower() == 'es':
             return self.title_es
-        elif locale == 'ca':
+        elif locale.lower() == 'ca':
             if self.title_ca is None:
                 return self.title_es
             else:
                 return self.title_ca
-        elif locale == 'en':
+        elif locale.lower() == 'en':
             if self.title_en is None:
                 return self.title_es
             else:
                 return self.title_en
+        elif locale.lower() == 'zh_cn':
+            return self.title_en
         else:
             return self.title_es
 
     def get_body_locale_safe(self,locale):
-        if locale == 'es':
+        if locale.lower() == 'es':
             return self.body_html_es
-        elif locale == 'ca':
+        elif locale.lower() == 'ca':
             if self.body_html_ca is None:
                 return self.body_html_es
             else:
                 return self.body_html_ca
-        elif locale == 'en':
+        elif locale.lower() == 'en':
             if self.body_html_en is None:
                 return self.body_html_es
             else:
                 return self.body_html_en
+        elif locale.lower() == 'zh_cn':
+            return self.body_html_en
         else:
             return self.body_html_es
 
