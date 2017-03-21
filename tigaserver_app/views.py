@@ -22,7 +22,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import Point, GEOSGeometry
 from django.views.decorators.cache import cache_page
-from tigacrafting.messaging import send_message_ios
+from tigacrafting.messaging import send_message_ios, send_message_android
 import sys
 
 
@@ -603,8 +603,31 @@ def msg_ios(request):
         this_user = get_object_or_404(queryset, pk=user_id)
         if this_user.device_token is not None and this_user.device_token != '':
             _token = this_user.device_token
-            send_message_ios(_token, alert_message, link_url)
-            return Response({'token':_token,'alert_message': alert_message,'link_url':link_url})
+            try:
+                resp = send_message_ios(_token, alert_message, link_url)
+                return Response({'token':_token, 'alert_message': alert_message, 'link_url':link_url, 'push_status_msg':resp})
+            except Exception as e:
+                raise ParseError(detail=e.message)
+        else:
+            raise ParseError(detail='Token not set for user')
+    else:
+        raise ParseError(detail='Invalid parameters')
+
+@api_view(['POST'])
+def msg_android(request):
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    message = request.QUERY_PARAMS.get('message', -1)
+    title = request.QUERY_PARAMS.get('title', -1)
+    if user_id != -1 and message != -1 and title != -1:
+        queryset = TigaUser.objects.all()
+        this_user = get_object_or_404(queryset, pk=user_id)
+        if this_user.device_token is not None and this_user.device_token != '':
+            _token = this_user.device_token
+            try:
+                resp = send_message_android(_token, title, message)
+                return Response({'token': _token, 'message': message, 'title': title, 'push_status_msg':resp})
+            except Exception as e:
+                raise ParseError(detail=e.message)
         else:
             raise ParseError(detail='Token not set for user')
     else:
@@ -778,8 +801,10 @@ def send_notifications(request):
             if push and recipient.device_token is not None and recipient.device_token != '':
                 #send push
                 if(recipient.user_UUID.islower()):
+                    send_message_android(recipient.device_token, notification_content.title_es, '')
                     push_issued_android = push_issued_android + 1
                 else:
+                    send_message_ios(recipient.device_token,notification_content.title_es,'')
                     push_issued_ios = push_issued_ios + 1
         results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
         return Response(results)
