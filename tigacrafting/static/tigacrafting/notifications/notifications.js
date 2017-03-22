@@ -150,9 +150,15 @@ $( document ).ready(function() {
         $("#title_es").val("");
         $("#title_ca").val("");
         $("#title_en").val("");
-        tinymce.get('body_es').setContent('');
-        tinymce.get('body_ca').setContent('');
-        tinymce.get('body_en').setContent('');
+        if(tinymce.get('body_es')){
+            tinymce.get('body_es').setContent('');
+        }
+        if(tinymce.get('body_ca')){
+            tinymce.get('body_ca').setContent('');
+        }
+        if(tinymce.get('body_en')){
+            tinymce.get('body_en').setContent('');
+        }
     };
 
     $( "#clear_form" ).click(function() {
