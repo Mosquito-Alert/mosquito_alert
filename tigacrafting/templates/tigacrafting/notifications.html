@@ -96,10 +96,17 @@
         <h1>Notifications</h1>
         <h3>1 - To whom do you want to send the message?:</h3>
         <div id="accordion">
-            <h3>Send message to some people</h3>
+            <h3>Send message to some people (manual selection)</h3>
             <div>
                 <p>Select one or more user ids to which the notification will be sent (start typing the first 3 symbols of the user id and select from the dropdown):</p>
                 <select class="tokenize-user-uuid" multiple></select>
+            </div>
+            <h3>Send message to some people (choose criteria filter)</h3>
+            <div>
+                <p>Select a group of users according to filter criteria</p>
+                <input class="radioop" type="radio" name="criteriarb" id="uploaded_pictures">Users that have uploaded non-spam pictures
+                <input class="radioop" type="radio" name="criteriarb" id="uploaded_pictures_sd">Users that have uploaded non-spam storm drain pictures
+                <div id="number_estimate" style="display:none;"><p id="number_estimate_text" style="background-color:red;color:white;">Estimating number of messages...</p></div>
             </div>
             <h3>Send message to everyone</h3>
             <div>

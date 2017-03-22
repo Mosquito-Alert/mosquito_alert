@@ -23,6 +23,7 @@ from django.db.models import Count
 from django.contrib.gis.geos import Point, GEOSGeometry
 from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios, send_message_android
+from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures
 import sys
 
 
@@ -452,15 +453,15 @@ def get_latest_validated_reports(reports):
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    #non_visible_report_id = []
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    #non_visible_report_id = []
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
@@ -658,6 +659,21 @@ def report_stats(request):
     content = {'report_count' : r_count}
     return Response(content)
 
+@api_view(['GET'])
+@cache_page(60)
+def user_count(request):
+    filter_criteria = request.QUERY_PARAMS.get('filter_criteria', -1)
+    if filter_criteria == -1:
+        raise ParseError(detail="Invalid filter criteria")
+    if filter_criteria == 'uploaded_pictures':
+        results = users_with_pictures()
+    elif filter_criteria == 'uploaded_pictures_sd':
+        results = users_with_storm_drain_pictures()
+    else:
+        raise ParseError(detail="Invalid filter criteria")
+    content = { "user_count" : len(results) }
+    return Response(content)
+
 def custom_render_notification(notification,locale):
     expert_comment = notification.notification_content.get_body_locale_safe(locale)
     expert_html = notification.notification_content.get_title_locale_safe(locale)
@@ -781,6 +797,11 @@ def send_notifications(request):
         recipients = data['recipients']
         if recipients == 'all':
             send_to = TigaUser.objects.all()
+        elif recipients.startswith("uploaded"):
+            if(recipients=='uploaded_pictures'):
+                send_to = users_with_pictures()
+            elif(recipients=='uploaded_pictures_sd'):
+                send_to = users_with_storm_drain_pictures()
         else:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)

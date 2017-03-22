@@ -1,4 +1,8 @@
 $( document ).ready(function() {
+    var SELECTED_SOME_MANUALLY = 0;
+    var SELECTED_SOME_FILTER = 1;
+    var SELECTED_ALL = 2;
+
     tinymce.init({
         selector: '#body_es',
         plugins: ["image","code"]
@@ -122,7 +126,10 @@ $( document ).ready(function() {
         if(get_selected_tokens() == '' && $("#accordion").accordion( "option", "active" ) == 0){
             return false;
         }
-        if($("#accordion").accordion( "option", "active" ) == 1 && some_field_in_tinymce_is_missing){
+        if($("#accordion").accordion( "option", "active" ) == SELECTED_ALL && some_field_in_tinymce_is_missing){
+            return false;
+        }
+        if($("#accordion").accordion( "option", "active" ) == SELECTED_SOME_FILTER && criteria_is_unchecked()){
             return false;
         }
         return true;
@@ -136,6 +143,7 @@ $( document ).ready(function() {
     });
 
     var clear_everything = function(){
+        clear_criteria();
         clear_tokens();
         $("#accordion").accordion("option","active",0);
         $("#radio-1").prop("checked", true);
@@ -176,7 +184,12 @@ $( document ).ready(function() {
         heightStyle: "content",
         activate: function( event, ui ) {
             var selected = $(this).accordion( "option", "active" );
-            if(selected == 1){
+            if(selected == SELECTED_ALL){
+                clear_tokens();
+                clear_criteria();
+            }else if(selected == SELECTED_SOME_MANUALLY){
+                clear_criteria();
+            }else if(selected == SELECTED_SOME_FILTER){
                 clear_tokens();
             }
         }
@@ -199,10 +212,12 @@ $( document ).ready(function() {
     jsonify_notification = function(content_id){
         var some_data = {};
         var selected = $( "#accordion" ).accordion( "option", "active" );
-        if(selected==1){
+        if(selected==SELECTED_ALL){
             recipients = "all";
-        }else{
+        }else if(selected==SELECTED_SOME_MANUALLY){
             recipients = get_selected_tokens();
+        }else{
+            recipients = get_selected_radio_op();
         }
         report_id = "42e2521d-9e08-4ad6-82da-7d8e0b68e960";
         ppush = get_push();
@@ -267,5 +282,49 @@ $( document ).ready(function() {
             }
         }
     });
+    ajax_number_users = function(select_op){
+        $('#number_estimate').show();
+        $('#number_estimate_text').addClass("progress");
+        set_message_user_count("Estimating number of messages...");
+        $.ajax({
+            type: "GET",
+            url: '/api/user_count/?filter_criteria=' + select_op,
+            dataType: 'json',
+            headers: { "X-CSRFToken": csrf_token },
+            success: function(data){
+                set_message_user_count("Message will be sent to " + data.user_count + " users");
+                $('#number_estimate_text').removeClass("progress");
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                set_message_user_count("Error estimating number of users: " + jqXHR.responseText);
+                $('#number_estimate_text').removeClass("progress");
+            }
+        });
+    }
+    set_message_user_count = function(message){
+        $('#number_estimate_text').html(message);
+    };
+    get_selected_radio_op = function(){
+        var selected = $('input[type=radio][name=criteriarb]:checked').attr('id');
+        return selected;
+    };
+    $('input[type=radio][name=criteriarb]').change(function() {
+        var selected = $(this).attr('id');
+        ajax_number_users(selected);
+    });
+    clear_criteria = function(){
+        $('#number_estimate').hide();
+        $('.radioop').prop('checked', false);
+    };
+    criteria_is_unchecked = function(){
+        var retVal = true;
+        $('.radioop').each(function(){
+            if($(this).prop('checked')==true){
+                retVal = false;
+            }
+        });
+        return retVal;
+    };
     $("#radio-1").prop("checked", true);
+    clear_everything();
 });
