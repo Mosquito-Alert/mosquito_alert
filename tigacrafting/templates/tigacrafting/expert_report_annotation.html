@@ -304,7 +304,9 @@
             </div>
             <div class="col-md-1">
                 <h4>
-                    <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_who_has_message_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>
+                    {% if form.instance.report.get_superexpert_completed_recipients %}
+                        <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_superexpert_completed_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to superexperts about this report..."></span></a>
+                    {% endif %}
                     <!--<a href="mailto:?subject=Report with id {{form.instance.report}}&body=http://{{ request.META.HTTP_HOST }}{% url 'expert_report_annotation' %}?version_uuid={{form.instance.report}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>-->
                 </h4>
             </div>
@@ -317,7 +319,7 @@
                     {% else %}
                     <strong>This is a full report - </strong>
                     {% endif %}
-                    <strong>Who has this report? </strong> {{ form.instance.report.get_who_has_bootstrap | safe }}
+                    <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}super {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
                 </div>
                 <div class="col-md-6">
                     <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}

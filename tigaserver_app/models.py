@@ -1188,6 +1188,18 @@ class Report(models.Model):
         i = these_annotations.count()
         return i
 
+    def get_annotations(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        return these_annotations
+
+    def get_superexpert_completed_recipients(self):
+        result = []
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        for ano in these_annotations:
+            if ano.validation_complete and ano.user.userstat.is_superexpert():
+                result.append(ano.user.username)
+        return '+'.join(result)
+
     def get_who_has_bootstrap(self):
         result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)

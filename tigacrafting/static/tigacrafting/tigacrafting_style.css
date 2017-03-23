@@ -119,3 +119,7 @@ input[type=checkbox]
 .messages tbody tr td input[type="text"]{
     width: 100%;
 }
+
+.label-margin{
+    margin-right: 5px;
+}
