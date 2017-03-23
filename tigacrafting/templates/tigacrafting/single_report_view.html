@@ -258,7 +258,7 @@
                                                         {% if ano.user.username == this_user or request.user.userstat.is_superexpert or ano.user.userstat.is_superexpert %}
                                                             <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by {{ ano.user.username }}">{{ ano.user.username }}<span class="glyphicon glyphicon-check"></span>
                                                         {% else %}
-                                                            <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by someone">someone<span class="glyphicon glyphicon-check"></span>
+                                                            <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by an expert">expert<span class="glyphicon glyphicon-check"></span>
                                                         {% endif %}
                                                     </td>
                                                     <td>

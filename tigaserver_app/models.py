@@ -1192,6 +1192,14 @@ class Report(models.Model):
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         return these_annotations
 
+    def get_expert_recipients(self):
+        result = []
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        for ano in these_annotations:
+            if not ano.user.userstat.is_superexpert():
+                result.append(ano.user.username)
+        return '+'.join(result)
+
     def get_superexpert_completed_recipients(self):
         result = []
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)

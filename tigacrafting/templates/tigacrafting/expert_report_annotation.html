@@ -297,17 +297,27 @@
 
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
-            <div class="col-md-11">
+            <div class="col-md-10">
                 <h4><strong>{{ form.instance.report.type|capfirst }}
                     Report {{ form.instance.report.version_UUID }}</strong>
                     {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
             </div>
             <div class="col-md-1">
                 <h4>
+                {% if form.instance.report.get_is_expert_validated %}
+                    <a href="{% url 'single_report_view' form.instance.report.version_UUID %}" target="_blank"><span class="glyphicon glyphicon-link" aria-hidden="true" title="View validation status"></span></a>
+                {% endif %}
+                </h4>
+            </div>
+            <div class="col-md-1">
+                <h4>
                     {% if form.instance.report.get_superexpert_completed_recipients %}
-                        <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_superexpert_completed_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to superexperts about this report..."></span></a>
+                        {% if request.user.userstat.is_superexpert %}
+                            <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_expert_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to experts about this report..."></span></a>
+                        {% else %}
+                            <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_superexpert_completed_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to superexperts about this report..."></span></a>
+                        {% endif %}
                     {% endif %}
-                    <!--<a href="mailto:?subject=Report with id {{form.instance.report}}&body=http://{{ request.META.HTTP_HOST }}{% url 'expert_report_annotation' %}?version_uuid={{form.instance.report}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>-->
                 </h4>
             </div>
         </div>
@@ -319,7 +329,7 @@
                     {% else %}
                     <strong>This is a full report - </strong>
                     {% endif %}
-                    <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}super {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
+                    <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}superexpert {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
                 </div>
                 <div class="col-md-6">
                     <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}
