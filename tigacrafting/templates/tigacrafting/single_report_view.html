@@ -168,7 +168,7 @@
             <div class="row row_for_{{ forloop.counter }}" style="background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
                 <div class="col-md-12">
                     <h4>
-                        <strong>{{ report.type|capfirst }} Report {{ report.version_UUID }}</strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC
+                        <strong>{{ report.type|capfirst }} Report {{ report.version_UUID }} </strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC
                     </h4>
                 </div>
             </div>
