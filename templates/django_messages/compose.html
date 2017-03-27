@@ -1,14 +1,59 @@
 {% extends "django_messages/base.html" %}
 {% load i18n %}
 {% block content %}
+<script>
+    $( document ).ready(function() {
+        $('.tokenize-user-address').tokenize2({
+        dropdownMaxItems: 15,
+        searchMinLength: 3,
+        dataSource: function(term, object){
+            $.ajax('/api/addresses/', {
+                data: { name: term, start: 0 },
+                dataType: 'json',
+                success: function(data){
+                        var $items = [];
+                        $.each(data, function(k, v){
+                            $items.push({"text":v.first_name + ' ' + v.last_name,"value":v.username});
+                        });
+                        object.trigger('tokenize:dropdown:fill', [$items]);
+                    }
+                });
+            }
+        });
+        {% if tokenized_recipients %}
+        initTokens = function(){
+            var form_recipients = JSON.parse('{{ tokenized_recipients | escapejs }}');
+            for (var i = 0; i < form_recipients.length; i++){
+                var recipient = form_recipients[i];
+                $('.tokenize-user-address').tokenize2().trigger('tokenize:tokens:add', [recipient.value, recipient.text, true]);
+            }
+        };
+        initTokens();
+        {% endif %}
+        tokensToRecipientList = function(){
+            data = [];
+            $('.token').each(function(index,value){
+                data.push($(value).attr('data-value'));
+            });
+            $("#id_recipient").val(data.join(","));
+        }
+        $('.tokenize-user-address').on('tokenize:tokens:add', function(e, value, text, force){
+            tokensToRecipientList();
+        });
+        $('.tokenize-user-address').on('tokenize:tokens:remove', function(e, value, text, force){
+            tokensToRecipientList();
+        });
+    });
+</script>
 <h1>{% trans "Compose Message"%}</h1>
 <form action="" method="post">
 {% csrf_token %}
 <table class="messages">
-<tr><th><label for="id_recipient">Recipient:</label></th><td><input id="id_recipient" name="recipient" type="text" /></td></tr>
-<tr><th><label for="id_subject">Subject:</label></th><td><input id="id_subject" maxlength="140" name="subject" type="text" /></td></tr>
-<tr><th><label for="id_body">Body:</label></th><td><textarea cols="55" id="id_body" name="body" rows="12"></textarea></td></tr>
+<tr><th><label for="recipient-selector">Recipients:</label></th><td><select id="recipient-selector" name="recipient" class="tokenize-user-address" multiple></select></td></tr>
+<tr><th><label for="id_subject">Subject:</label></th><td>{{ form.subject }}</td></tr>
+<tr><th><label for="id_body">Body:</label></th><td>{{ form.body }}</td></tr>
 </table>
+<div style="display:none">{{ form.recipient }}</div>
 <input type="submit" value="{% trans "Send" %} &raquo;"/>
 </form>
 

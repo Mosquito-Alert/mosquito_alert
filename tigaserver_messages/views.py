@@ -1,17 +1,26 @@
 from django.shortcuts import render
 
 # Create your views here.
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
-from django_messages.utils import get_user_model, get_username_field
+from django_messages.utils import format_quote, get_user_model, get_username_field
+from django.shortcuts import render_to_response, get_object_or_404
 from django_messages.forms import ComposeForm
+from django_messages.models import Message
 from django.utils.translation import ugettext as _
+import json
 
 User = get_user_model()
+
+def tokenize_recipients(recipients):
+    results = []
+    for recipient in recipients:
+        results.append({ "text": recipient.first_name + " " + recipient.last_name, "value" : recipient.username })
+    return json.dumps(results)
 
 @login_required
 def compose_w_data(request, recipient=None, body=None, subject=None, form_class=ComposeForm,template_name='django_messages/compose.html', success_url=None, recipient_filter=None):
@@ -27,7 +36,6 @@ def compose_w_data(request, recipient=None, body=None, subject=None, form_class=
         ``success_url``: where to redirect after successfull submission
     """
     if request.method == "POST":
-        sender = request.user
         form = form_class(request.POST, recipient_filter=recipient_filter)
         if form.is_valid():
             form.save(sender=request.user)
@@ -59,10 +67,46 @@ def compose_w_data(request, recipient=None, body=None, subject=None, form_class=
                     if user:
                         userlist.append(user)
             recipients = userlist
+            tokenized_recipients = tokenize_recipients(recipients)
             # recipients = [u for u in User.objects.filter(**{'%s__in' % get_username_field(): [r.strip() for r in recipient.split('+')]})]
             form.fields['recipient'].initial = recipients
         if body is not None:
             form.fields['body'].initial = body
         if subject is not None:
             form.fields['subject'].initial = subject
-    return render_to_response(template_name, {'form': form,}, context_instance=RequestContext(request))
+    return render_to_response(template_name, {'form': form, 'tokenized_recipients': tokenized_recipients}, context_instance=RequestContext(request))
+
+@login_required
+def reply_w_data(request, message_id, form_class=ComposeForm,
+        template_name='django_messages/compose.html', success_url=None,
+        recipient_filter=None, quote_helper=format_quote,
+        subject_template=_(u"Re: %(subject)s"),):
+    """
+    Prepares the ``form_class`` form for writing a reply to a given message
+    (specified via ``message_id``). Uses the ``format_quote`` helper from
+    ``messages.utils`` to pre-format the quote. To change the quote format
+    assign a different ``quote_helper`` kwarg in your url-conf.
+
+    """
+    parent = get_object_or_404(Message, id=message_id)
+
+    if parent.sender != request.user and parent.recipient != request.user:
+        raise Http404
+
+    if request.method == "POST":
+        sender = request.user
+        form = form_class(request.POST, recipient_filter=recipient_filter)
+        if form.is_valid():
+            form.save(sender=request.user, parent_msg=parent)
+            messages.info(request, _(u"Message successfully sent."))
+            if success_url is None:
+                success_url = reverse('messages_inbox')
+            return HttpResponseRedirect(success_url)
+    else:
+        tokenized_recipients = tokenize_recipients([parent.sender])
+        form = form_class(initial={
+            'body': quote_helper(parent.sender, parent.body),
+            'subject': subject_template % {'subject': parent.subject},
+            'recipient': [parent.sender,]
+            })
+    return render_to_response(template_name, {'form': form,'tokenized_recipients': tokenized_recipients}, context_instance=RequestContext(request))

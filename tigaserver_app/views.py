@@ -13,13 +13,14 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, UserAddressSerializer
 from tigaserver_app.models import Notification, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import Point, GEOSGeometry
+from django.contrib.auth.models import User, Group
 
 
 
@@ -436,15 +437,15 @@ def get_latest_validated_reports(reports):
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    #non_visible_report_id = []
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    #non_visible_report_id = []
+    #non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    non_visible_report_id = []
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
@@ -605,6 +606,23 @@ def user_notifications(request):
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
+
+def filter_partial_name_address(queryset, name):
+    if not name:
+        return queryset
+    return queryset.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
+
+class UserAddressFilter(django_filters.FilterSet):
+    name = django_filters.Filter(action=filter_partial_name_address)
+
+    class Meta:
+        model = User
+        fields = ['first_name','last_name']
+
+class UserAddressViewSet(ReadOnlyModelViewSet):
+    queryset = User.objects.exclude(first_name='').filter(groups__name__in=['expert','superexpert'])
+    serializer_class = UserAddressSerializer
+    filter_class = UserAddressFilter
 
 @api_view(['GET'])
 def nearby_reports(request):
