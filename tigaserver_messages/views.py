@@ -35,6 +35,7 @@ def compose_w_data(request, recipient=None, body=None, subject=None, form_class=
         ``template_name``: the template to use
         ``success_url``: where to redirect after successfull submission
     """
+    tokenized_recipients = None
     if request.method == "POST":
         form = form_class(request.POST, recipient_filter=recipient_filter)
         if form.is_valid():
