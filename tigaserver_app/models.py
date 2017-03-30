@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 import os
 import os.path
+import urllib
 from PIL import Image
 import datetime
 from math import floor
@@ -9,6 +10,7 @@ from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
 from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
+from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
@@ -1164,6 +1166,29 @@ class Report(models.Model):
             return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
         return result
 
+    def get_single_report_view_link(self):
+        result = reverse('single_report_view', kwargs={"version_uuid": self.version_UUID})
+        return result
+
+    def get_who_has_list(self):
+        result = []
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        i = these_annotations.count()
+        for ano in these_annotations:
+            result.append(ano.user.username)
+        return result
+
+    def get_who_has_message_recipients(self):
+        result = ''
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        i = these_annotations.count()
+        for ano in these_annotations:
+            result += ano.user.username
+            i -= 1
+            if i > 0:
+                result += '+'
+        return result
+
     def get_who_has(self):
         result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
@@ -1179,6 +1204,26 @@ class Report(models.Model):
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         i = these_annotations.count()
         return i
+
+    def get_annotations(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        return these_annotations
+
+    def get_expert_recipients(self):
+        result = []
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        for ano in these_annotations:
+            if not ano.user.userstat.is_superexpert():
+                result.append(ano.user.username)
+        return '+'.join(result)
+
+    def get_superexpert_completed_recipients(self):
+        result = []
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        for ano in these_annotations:
+            if ano.validation_complete and ano.user.userstat.is_superexpert():
+                result.append(ano.user.username)
+        return '+'.join(result)
 
     def get_who_has_bootstrap(self):
         result = ''

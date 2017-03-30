@@ -8,7 +8,9 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, single_report_view
+from tigaserver_messages.views import compose_w_data, reply_w_data
+from django_messages.views import *
 
 admin.autodiscover()
 
@@ -62,23 +64,38 @@ urlpatterns += i18n_patterns('',
     url(r'^bcn/$', show_filterable_report_map, {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon':2.225610, 'min_zoom': 12, 'max_zoom': 18}),
     url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', show_single_report_map, name='webmap.single_report'),
     url(r'^stats/$', show_usage),
-#   url(r'^reportstats/$', show_report_users),
-#    url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
-#    url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),
-#    url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation, name='movelab_annotation_scroll_position'),
-#    url(r'^movelab_annotation_pending/$', movelab_annotation_pending, name='movelab_annotation_pending'),
-#    url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation_pending,name='movelab_annotation_pending_tasks_per_page'),
-#    url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
+    #url(r'^reportstats/$', show_report_users),
+    #url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
+    #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),
+    #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation, name='movelab_annotation_scroll_position'),
+    #url(r'^movelab_annotation_pending/$', movelab_annotation_pending, name='movelab_annotation_pending'),
+    #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation_pending,name='movelab_annotation_pending_tasks_per_page'),
+    #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
 
     url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
     url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
+    url(r'^experts/status/reports/single/(?P<version_uuid>[-\w]+)/$', single_report_view, name='single_report_view'),
     url(r'^experts/status/people/$', expert_status, name='expert_status'),
     url(r'^photo_grid/$', picture_validation, name='picture_validation'),
 
-## should stay out
-#    url(r'^coveragestats/$', show_fix_users),
+    ## should stay out
+    #url(r'^coveragestats/$', show_fix_users),
 
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
-#    url(r'^processing/$', show_processing),
+    #url(r'^processing/$', show_processing),
     url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/experts/'}, name='auth_logout'),
+    # We do not include the message urls because two of the views (compose_w_data and reply_w_data) are slightly customized
+    #url(r'^messages/', include('django_messages.urls')),
+    #url(r'^$', RedirectView.as_view(permanent=True, url='inbox/'), name='messages_redirect'),
+    url(r'^messages/inbox/$', inbox, name='messages_inbox'),
+    url(r'^messages/outbox/$', outbox, name='messages_outbox'),
+    url(r'^messages/compose/$', compose, name='messages_compose'),
+    url(r'^messages/compose/(?P<recipient>[\w.@+-]+)/$', compose, name='messages_compose_to'),
+    #url(r'^reply/(?P<message_id>[\d]+)/$', reply, name='messages_reply'),
+    url(r'^messages/view/(?P<message_id>[\d]+)/$', view, name='messages_detail'),
+    url(r'^messages/delete/(?P<message_id>[\d]+)/$', delete, name='messages_delete'),
+    url(r'^messages/undelete/(?P<message_id>[\d]+)/$', undelete, name='messages_undelete'),
+    url(r'^messages/trash/$', trash, name='messages_trash'),
+    url(r'^messages/compose_w_data/$', compose_w_data, name='compose_w_data'),
+    url(r'^messages/reply/(?P<message_id>[\d]+)/$', reply_w_data, name='messages_reply'),
 )

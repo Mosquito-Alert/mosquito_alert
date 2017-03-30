@@ -1,0 +1,61 @@
+{% load staticfiles %}
+{% load i18n %}
+{% load url from future %}
+{% load inbox %}
+{% inbox_count as my_var %}
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+    <head>
+        {% block encoding %}
+            <meta charset="utf-8">{% endblock %}
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+        <meta name="description" content="MosquitoAlert">
+        <meta name="author" content="Movement Ecology Laboratory">
+
+        <title>{% block page_title %}Tigacrafting{% endblock %}</title>
+
+        {% block bootstrap_css %}
+            <!-- Bootstrap core CSS -->
+            <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+            <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+            <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+        {% endblock %}
+        <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
+        <link rel="stylesheet" href="{% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}">
+        <link rel="stylesheet" href="{% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}">
+        <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
+        <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
+        <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
+    </head>
+    <div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-brand">
+                        <span style="color:#ff9900; font-size: small">MosquitoAlert Messaging</span>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="{% url 'expert_report_annotation' %} ">Back to Entolab</a></li>
+                            <li><a href="{% url 'messages_inbox' %} ">{% trans "Inbox" %}<span class="badge {%if my_var > 0%}pending{% else %}clear{% endif %}">{{my_var}}</span></a></li>
+                            <li><a href="{% url 'messages_outbox' %} ">{% trans "Sent Messages" %}</a></li>
+                            <li><a href="{% url 'messages_compose' %} ">{% trans "New Message" %}</a></li>
+                            <li><a href="{% url 'messages_trash' %} ">{% trans "Trash" %}</a></li>
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="starter-template">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+    {% block sidebar %}
+    {% endblock %}
+</html>

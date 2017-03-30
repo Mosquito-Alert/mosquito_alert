@@ -61,6 +61,8 @@ INSTALLED_APPS = (
     'stats',
     'floppyforms',
     'taggit',
+    'django_messages',
+    'tigaserver_messages',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -192,6 +194,7 @@ IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
 
 SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',
+    'django_messages': 'django_messages.south_migrations',
 }
 
 

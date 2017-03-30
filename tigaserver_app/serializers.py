@@ -2,7 +2,7 @@ from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth
-
+from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -226,6 +226,11 @@ class CoverageMonthMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverageAreaMonth
         fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
+
+class UserAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','first_name','last_name','username')
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
