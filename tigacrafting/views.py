@@ -1052,7 +1052,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
         #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
         all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
         #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
-        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult')
+        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('creation_time')
         if version_uuid and version_uuid != 'na':
             reports = Report.objects.filter(version_UUID=version_uuid)
             n_reports = 1
