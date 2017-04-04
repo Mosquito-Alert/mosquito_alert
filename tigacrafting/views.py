@@ -1123,7 +1123,7 @@ def get_reports_imbornal():
 def get_reports_unfiltered_adults():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(
         note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(
-        n_annotations=0).order_by('-server_upload_time')
+        n_annotations__lt=3).order_by('-server_upload_time')
     return new_reports_unfiltered_adults
 
 @login_required
