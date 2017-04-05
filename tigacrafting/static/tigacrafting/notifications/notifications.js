@@ -333,4 +333,7 @@ $( document ).ready(function() {
     };
     $("#radio-1").prop("checked", true);
     clear_everything();
+    if(user_uuid!=''){
+        $('.tokenize-user-uuid').tokenize2().trigger('tokenize:tokens:add', [user_uuid, user_uuid, true]);
+    }
 });

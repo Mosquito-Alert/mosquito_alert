@@ -18,6 +18,11 @@
         //This is needed in jsonify_notification
         var csrf_token = '{{ csrf_token }}';
         var user_id = {{ user_id }};
+        {% if user_uuid %}
+        var user_uuid = '{{ user_uuid }}';
+        {% else %}
+        var user_uuid = '';
+        {% endif %}
     </script>
     <script src={% static "tigacrafting/notifications/notifications.js" %}></script>
 </head>

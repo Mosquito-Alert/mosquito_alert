@@ -296,7 +296,7 @@
 
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
-            <div class="col-md-11">
+            <div class="col-md-10">
                 <h4><strong>{{ form.instance.report.type|capfirst }}
                     Report {{ form.instance.report.version_UUID }}</strong>
                     {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
@@ -306,6 +306,13 @@
                     <a href="mailto:?subject=Report with id {{form.instance.report}}&body=http://{{ request.META.HTTP_HOST }}{% url 'expert_report_annotation' %}?version_uuid={{form.instance.report}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email about this report..."></span></a>
                 </h4>
             </div>
+            {% if request.user.userstat.is_superexpert %}
+            <div class="col-md-1">
+                <h4>
+                    <a href="http://{{ request.META.HTTP_HOST }}{% url 'notifications' %}?user_uuid={{ form.instance.report.user_id }}" target="_blank"><span class="glyphicon glyphicon-envelope" style="color:red;" aria-hidden="true" title="Send notification to owner of the report..."></span></a>
+                </h4>
+            </div>
+            {% endif %}
         </div>
         {% block report_title_status_row %}
             <div class="row">

@@ -878,7 +878,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     return render(request, 'tigacrafting/photo_grid.html', args)
 
 @login_required
-def notifications(request):
+def notifications(request,user_uuid=None):
     this_user = request.user
+    user_uuid = request.GET.get('user_uuid',None)
     total_users = TigaUser.objects.all().count()
-    return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users})
+    return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
