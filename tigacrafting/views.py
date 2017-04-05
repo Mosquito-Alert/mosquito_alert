@@ -1120,6 +1120,12 @@ def get_reports_imbornal():
             question='Type of breeding site', answer='Storm drain or similar receptacle')).values('report').distinct()
     return  reports_imbornal
 
+def get_reports_unfiltered_adults_except_being_validated():
+    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(
+        note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(
+        n_annotations=0).order_by('-server_upload_time')
+    return new_reports_unfiltered_adults
+
 def get_reports_unfiltered_adults():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(
         note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(
@@ -1156,7 +1162,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         visibility = request.GET.get('visibility', visibility)
         usr_note = request.GET.get('usr_note', usr_note)
 
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+    #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+    new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
 
     reports_imbornal = get_reports_imbornal()
     new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
