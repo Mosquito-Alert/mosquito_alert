@@ -1121,9 +1121,7 @@ def get_reports_imbornal():
     return  reports_imbornal
 
 def get_reports_unfiltered_adults_except_being_validated():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(
-        note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(
-        n_annotations=0).order_by('-server_upload_time')
+    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
     return new_reports_unfiltered_adults
 
 def get_reports_unfiltered_adults():
@@ -1134,93 +1132,98 @@ def get_reports_unfiltered_adults():
 
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
-    args = {}
-    args.update(csrf(request))
-    PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
-    if request.method == 'POST':
-        save_formset = request.POST.get('save_formset', "F")
-        tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
-        if save_formset == "T":
-            formset = PictureValidationFormSet(request.POST)
-            if formset.is_valid():
-                for f in formset:
-                    report = f.save(commit=False)
-                    #check that the report hasn't been assigned to anyone before saving, as a precaution to not hide assigned reports
-                    who_has = report.get_who_has()
-                    if who_has == '':
-                        report.save()
-        page = request.POST.get('page')
-        visibility = request.POST.get('visibility')
-        usr_note = request.POST.get('usr_note')
-        type = request.POST.get('type', type)
-        if not page:
-            page = '1'
-        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
+    this_user = request.user
+    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    if this_user_is_superexpert:
+        args = {}
+        args.update(csrf(request))
+        PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
+        if request.method == 'POST':
+            save_formset = request.POST.get('save_formset', "F")
+            tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+            if save_formset == "T":
+                formset = PictureValidationFormSet(request.POST)
+                if formset.is_valid():
+                    for f in formset:
+                        report = f.save(commit=False)
+                        #check that the report hasn't been assigned to anyone before saving, as a precaution to not hide assigned reports
+                        who_has = report.get_who_has()
+                        if who_has == '':
+                            report.save()
+            page = request.POST.get('page')
+            visibility = request.POST.get('visibility')
+            usr_note = request.POST.get('usr_note')
+            type = request.POST.get('type', type)
+            if not page:
+                page = '1'
+            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
+        else:
+            tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+            type = request.GET.get('type', type)
+            visibility = request.GET.get('visibility', visibility)
+            usr_note = request.GET.get('usr_note', usr_note)
+
+        #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
+
+        reports_imbornal = get_reports_imbornal()
+        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+
+        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+
+        #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
+        if type == 'adult':
+            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
+            new_reports_unfiltered = new_reports_unfiltered_adults
+        elif type == 'site':
+            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
+            new_reports_unfiltered = new_reports_unfiltered_sites_embornal
+        elif type == 'site-o':
+            new_reports_unfiltered = new_reports_unfiltered_sites_other
+        if visibility == 'visible':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+        elif visibility == 'hidden':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+        if usr_note and usr_note != '':
+            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
+
+        new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
+
+        paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
+        page = request.GET.get('page', 1)
+        try:
+            objects = paginator.page(page)
+        except PageNotAnInteger:
+            objects = paginator.page(1)
+        except EmptyPage:
+            objects = paginator.page(paginator.num_pages)
+        page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
+        this_formset = PictureValidationFormSet(queryset=page_query)
+        args['formset'] = this_formset
+        args['objects'] = objects
+        args['pages'] = range(1, objects.paginator.num_pages + 1)
+        args['new_reports_unfiltered'] = page_query
+        args['tasks_per_page'] = tasks_per_page
+        args['visibility'] = visibility
+        args['usr_note'] = usr_note
+        args['type'] = type
+        type_readable = ''
+        if type == 'site':
+            type_readable = "Breeding sites - Storm drains"
+        elif type == 'site-o':
+            type_readable = "Breeding sites - Other"
+        elif type == 'adult':
+            type_readable = "Adults"
+        elif type == 'all':
+            type_readable = "All"
+        args['type_readable'] = type_readable
+        #n_query_records = new_reports_unfiltered.count()
+        n_query_records = len(new_reports_unfiltered)
+        args['n_query_records'] = n_query_records
+        args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
+        #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
+        return render(request, 'tigacrafting/photo_grid.html', args)
     else:
-        tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
-        type = request.GET.get('type', type)
-        visibility = request.GET.get('visibility', visibility)
-        usr_note = request.GET.get('usr_note', usr_note)
-
-    #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
-
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-
-    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-    #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    if type == 'adult':
-        #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
-        new_reports_unfiltered = new_reports_unfiltered_adults
-    elif type == 'site':
-        #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
-        new_reports_unfiltered = new_reports_unfiltered_sites_embornal
-    elif type == 'site-o':
-        new_reports_unfiltered = new_reports_unfiltered_sites_other
-    if visibility == 'visible':
-        new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
-    elif visibility == 'hidden':
-        new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
-    if usr_note and usr_note != '':
-        new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
-
-    new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
-
-    paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
-    page = request.GET.get('page', 1)
-    try:
-        objects = paginator.page(page)
-    except PageNotAnInteger:
-        objects = paginator.page(1)
-    except EmptyPage:
-        objects = paginator.page(paginator.num_pages)
-    page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
-    this_formset = PictureValidationFormSet(queryset=page_query)
-    args['formset'] = this_formset
-    args['objects'] = objects
-    args['pages'] = range(1, objects.paginator.num_pages + 1)
-    args['new_reports_unfiltered'] = page_query
-    args['tasks_per_page'] = tasks_per_page
-    args['visibility'] = visibility
-    args['usr_note'] = usr_note
-    args['type'] = type
-    type_readable = ''
-    if type == 'site':
-        type_readable = "Breeding sites - Storm drains"
-    elif type == 'site-o':
-        type_readable = "Breeding sites - Other"
-    elif type == 'adult':
-        type_readable = "Adults"
-    elif type == 'all':
-        type_readable = "All"
-    args['type_readable'] = type_readable
-    #n_query_records = new_reports_unfiltered.count()
-    n_query_records = len(new_reports_unfiltered)
-    args['n_query_records'] = n_query_records
-    args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
-    #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
-    return render(request, 'tigacrafting/photo_grid.html', args)
+        return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
