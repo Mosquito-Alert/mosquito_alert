@@ -109,7 +109,7 @@
                                     Photo
                                 </th>
                                 <th>
-                                    Public Note
+                                    Public Note (webmap)
                                 </th>
                                 <th>
                                     Note to User
@@ -177,8 +177,8 @@
                                         <strong>Internal cmts:</strong> {{ ano.site_certainty_notes }}
                                         <br>
                                     {% endif %}
-                                    <strong>Public Note:</strong> {{ ano.edited_user_notes }}<br>
-                                    <strong>Message To User:</strong> {{ ano.message_for_user }}<br>
+                                    <strong>Public Note (webmap):</strong> {{ ano.edited_user_notes }}<br>
+                                    <strong>Private Message To User (app):</strong> {{ ano.message_for_user }}<br>
                                     <strong>Linked ID:</strong> {{ ano.linked_id }}<br>
                                     <strong>Photo:</strong> {% if ano.best_photo %}
                                     {{ ano.best_photo.popup_image | safe }}{% endif %}
