@@ -1125,9 +1125,7 @@ def get_reports_unfiltered_adults_except_being_validated():
     return new_reports_unfiltered_adults
 
 def get_reports_unfiltered_adults():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(
-        note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(
-        n_annotations__lt=3).order_by('-server_upload_time')
+    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
     return new_reports_unfiltered_adults
 
 @login_required

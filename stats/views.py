@@ -32,6 +32,23 @@ def show_usage(request):
     return render(request, 'stats/chart.html', context)
 
 
+def workload_stats(request):
+    tz = get_localzone()
+    users = User.objects.filter(groups__name='expert')
+    daily_work_output_per_expert = []
+    for user in users:
+        single_user_work_output = []
+        annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
+        ref_date = datetime(2017, 3, 1, 0, 0, 0, tzinfo=tz)
+        end_date = tz.localize(datetime.now())
+        while ref_date <= end_date:
+            single_user_work_output.append({'date': time.mktime(ref_date.timetuple()), 'n': annotated_reports.filter(last_modified__year=ref_date.year).filter(last_modified__month=ref_date.month).filter(last_modified__day=ref_date.day).count()})
+            ref_date += timedelta(hours=24)
+        daily_work_output_per_expert.append({'user': user, 'data': single_user_work_output})
+    context = {'daily_work_output_per_expert': daily_work_output_per_expert}
+    return render(request, 'stats/workload.html', context)
+
+
 def show_fix_users(request):
     real_fixes = Fix.objects.filter(fix_time__gt='2014-06-13')
     tz = get_localzone()
