@@ -713,6 +713,8 @@ def custom_render_notification(notification,locale):
         'id':notification.id,
         'report_id':notification.report.version_UUID,
         'user_id':notification.user.user_UUID,
+        'user_score':notification.user.score,
+        'user_score_label': score_label(notification.user.score),
         'expert_id':notification.expert.id,
         'date_comment':notification.date_comment,
         'expert_comment':expert_comment,
