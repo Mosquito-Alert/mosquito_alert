@@ -674,6 +674,38 @@ def user_count(request):
     content = { "user_count" : len(results) }
     return Response(content)
 
+def score_label(score):
+    if score > 66:
+        return "user_score_pro"
+    elif 33 < score <= 66:
+        return "user_score_advanced"
+    else:
+        return "user_score_beginner"
+
+
+@api_view(['GET', 'POST'])
+def user_score(request):
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    if user_id == -1:
+        raise ParseError(detail='user_id is mandatory')
+    queryset = TigaUser.objects.all()
+    user = get_object_or_404(queryset, pk=user_id)
+    if request.method == 'GET':
+        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+        return Response(content)
+    if request.method == 'POST':
+        score = request.QUERY_PARAMS.get('score', -1)
+        if score == -1:
+            raise ParseError(detail='score is mandatory')
+        try:
+            user.score = int(score)
+            user.save()
+        except ValueError:
+            raise ParseError(detail='Invalid score integer value')
+        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+        return Response(content)
+
+
 def custom_render_notification(notification,locale):
     expert_comment = notification.notification_content.get_body_locale_safe(locale)
     expert_html = notification.notification_content.get_title_locale_safe(locale)
