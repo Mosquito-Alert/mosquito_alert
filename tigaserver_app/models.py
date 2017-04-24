@@ -1598,3 +1598,4 @@ class Notification(models.Model):
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
     acknowledged = models.BooleanField(default=False,help_text='This is set to True through the public API, when the user signals that the message has been received')
+    public = models.BooleanField(default=False,help_text='Whether the notification is shown in the public map or not')

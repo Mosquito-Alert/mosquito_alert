@@ -246,8 +246,9 @@ class NotificationSerializer(serializers.ModelSerializer):
     photo_url = serializers.CharField()
     acknowledged = serializers.BooleanField()
     notification_content = NotificationContentSerializer()
+    public = serializers.BooleanField()
 
     class Meta:
         model = Notification
         #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
-        fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content')
+        fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')

@@ -719,7 +719,8 @@ def custom_render_notification(notification,locale):
         'date_comment':notification.date_comment,
         'expert_comment':expert_comment,
         'expert_html':expert_html,
-        'acknowledged':notification.acknowledged
+        'acknowledged':notification.acknowledged,
+        'public':notification.public,
     }
     return content
 
@@ -767,6 +768,7 @@ def user_notifications(request):
         title_ca = request.QUERY_PARAMS.get('title_ca', '-1')
         body_html_en = request.QUERY_PARAMS.get('body_html_en', '-1')
         title_en = request.QUERY_PARAMS.get('title_en', '-1')
+        public = request.QUERY_PARAMS.get('public', '-1')
         if body_html_ca != '-1':
             notification_content.body_html_ca = body_html_ca
         if title_ca != '-1':
@@ -782,6 +784,9 @@ def user_notifications(request):
         if ack != 'ignore':
             ack_bool = string_par_to_bool(ack)
             this_notification.acknowledged = ack_bool
+        if public != '-1':
+            public_bool = string_par_to_bool(public)
+            this_notification.public = public_bool
         notification_content.save()
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
