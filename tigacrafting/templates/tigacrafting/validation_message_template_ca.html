@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>La teva foto ha estat validada per un expert!</title>
+</head>
+<body>
+    {% if picture_link %}
+    <h1>La teva foto ha estat validada per un expert!</h1>
+    <img src="{{ picture_link }}" width=100%>
+    {% endif %}
+    {% if map_link %}
+    <p><a href="{{ map_link }}" target="_blank">Enllaç al mapa</a></p>
+    {% endif %}
+    {% if validation_category %}
+    <p><strong>Segons els experts, la teva observació es correspon amb:</strong> {{ validation_category }}</p>
+    {% endif %}
+    {% if expert_note %}
+    <p><strong>Nota de l'expert:</strong> <i>{{ expert_note }}</i></p>
+    {% endif %}
+    {% if message_for_user %}
+    <p><strong>Missatge de l'expert:</strong> <i>{{ message_for_user }}</i></p>
+    {% endif %}
+</body>
+</html>
