@@ -1,25 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>¡Tu foto ha sido validada!</title>
-</head>
-<body>
-    {% if picture_link %}
+{% extends "tigacrafting/validation_message_template.html" %}
+
+{% block title_block %}
+    <title>¡Tu foto ha sido validada por un experto!</title>
+{% endblock %}
+
+{% block title_header_block %}
     <h1>¡Tu foto ha sido validada por un experto!</h1>
-    <img src="{{ picture_link }}" width=100%>
-    {% endif %}
-    {% if map_link %}
-    <p><a href="{{ map_link }}" target="_blank">Enlace al mapa</a></p>
-    {% endif %}
-    {% if validation_category %}
-    <p><strong>Según los expertos, tu observación corresponde a:</strong> {{ validation_category }}</p>
-    {% endif %}
-    {% if expert_note %}
+{% endblock %}
+
+{% block validation_category_block %}
+    <p><strong>Tu observación corresponde a:</strong> {{ validation_category }}</p>
+{% endblock %}
+
+{% block map_link_block %}
+    <p><a href="{{ map_link }}" target="_blank">Míralo en el mapa</a></p>
+{% endblock %}
+
+{% block expert_note_block %}
     <p><strong>Nota del experto:</strong> <i>{{ expert_note }}</i></p>
-    {% endif %}
-    {% if message_for_user %}
+{% endblock %}
+
+{% block message_for_user_block %}
     <p><strong>Mensaje del experto:</strong> <i>{{ message_for_user }}</i></p>
-    {% endif %}
-</body>
-</html>
+{% endblock %}
