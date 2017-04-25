@@ -491,10 +491,14 @@ def issue_notification(report_annotation,current_domain):
         context_en['message_for_user'] = clean_annotation
         context_ca['message_for_user'] = clean_annotation
     if report_annotation.report:
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category())
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('es'))
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
         context_es['validation_category'] = clean_annotation
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('en'))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
         context_en['validation_category'] = clean_annotation
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('ca'))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
         context_ca['validation_category'] = clean_annotation
         map_data = get_sigte_map_info(report_annotation.report)
         if map_data:

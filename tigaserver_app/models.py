@@ -866,6 +866,27 @@ class Report(models.Model):
 
         return status
 
+    def get_final_combined_expert_category_public_map(self,locale):
+        classification = self.get_mean_combined_expert_adult_score()
+        score = int(round(classification['score']))
+
+        ca = {'tiger':'Mosquit tigre','yellow':'Mosquit febre groga','unclassified':'No identificable','other': 'Altres especies'}
+        es = {'tiger':'Mosquito tigre','yellow':'Mosquito fiebre amarilla','unclassified':'No identificable','other': 'Otras especies'}
+        en = {'tiger':'Tiger mosquito','yellow':'Yellow fever mosquito','unclassified':'Unidentifiable', 'other': 'Other species'}
+        labels = {'ca':ca, 'es':es, 'en':en}
+
+        if classification['is_aegypti']:
+            if score == 1 or score == 2:
+                return labels[locale]['yellow']
+        elif classification['is_albopictus']:
+            if score == 1 or score == 2:
+                return labels[locale]['tiger']
+        else:
+            if score == 0 or score == -3:
+                return labels[locale]['unclassified']
+            elif score == -1 or score == -2:
+                return labels[locale]['other']
+
     def get_final_combined_expert_category(self):
         # if self.type == 'site':
         #      return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
