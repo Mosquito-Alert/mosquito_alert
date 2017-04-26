@@ -1,0 +1,22 @@
+.small-font{
+    font-size: 9px;
+}
+.list-group-item {
+    padding: 5px 10px;
+}
+
+.list-group {
+    -moz-column-count: 2;
+    -moz-column-gap: 10px;
+    -webkit-column-count: 2;
+    -webkit-column-gap: 10px;
+    column-count: 2;
+    column-gap: 10px;
+}
+
+.solid-border{
+    border-style: solid;
+     border-width: 1px;
+     padding: 10px 10px 10px 10px;
+     margin: 10px 10px 10px 10px;
+}

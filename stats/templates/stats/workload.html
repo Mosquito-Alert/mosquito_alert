@@ -1,114 +1,59 @@
 {% load staticfiles %}
 {% load i18n %}
 <html>
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-	<title>MosquitoAlert Stats</title>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>MosquitoAlert Stats</title>
 
     <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    <link rel="stylesheet" href={% static "stats/workload.css" %}>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-    <script src="http://code.highcharts.com/highcharts.js"></script>
-
-
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script>
+        var userChart;
+        var dailyReportChart;
+        var expert_data = {};
+        var expert_color = ["#c0ce76","#7f4ed5","#4fdf89","#ed0d82","#01bb91","#ff5245","#00d0f3","#ff8324","#0099fc","#508500","#ff66b6","#3d5b12","#ff6d87","#87c9ff","#b20028","#d2a07a","#893169","#ad6e00","#79452c","#ff8d4e"];
+        var users = [];
+        var report_input_data = [];
+        {% for user in users %}
+            users.push({ 'username':'{{user.username}}','name':'{{user.first_name}} {{user.last_name}}'});
+        {% endfor %}
+        var user_data = {};
+        for(var i = 0; i < users.length; i++){
+            users[i].color = expert_color[i];
+            user_data[users[i].username] = users[i];
+        }
+    </script>
+    <script src={% static "stats/workload.js" %}></script>
   </head>
   <body>
-  <script>
-  var expert_data = {};
-  var expert_color = ["#c0ce76","#7f4ed5","#4fdf89","#ed0d82","#01bb91","#ff5245","#00d0f3","#ff8324","#0099fc","#508500","#ff66b6","#3d5b12","#ff6d87","#87c9ff","#b20028","#d2a07a","#893169","#ad6e00","#79452c","#ff8d4e"];
-  {% for expert_output in daily_work_output_per_expert %}
-    var actual_data = [];
-    {% for data_segment in expert_output.data %}
-        actual_data.push([parseInt("{{ data_segment.date }}")*1000, parseInt("{{ data_segment.n }}")]);
-    {% endfor %}
-    expert_data['{{ expert_output.user }}'] = actual_data;
-  {% endfor %}
-  var series_data =[];
-  Object.keys(expert_data).forEach(function(key,index){
-    if(index < 2){
-        series_data.push(
-            {
-                name: 'validated reports per day - ' + key,
-                data: expert_data[key],
-                color: expert_color[index],
-                marker: {
-                    enabled: false,
-                    symbol: 'circle',
-                    lineColor: '#000',
-                    lineWidth: 0.5
-                }
-            }
-        );
-    }
-  });
 
-  $(function () {
-    $('#container').highcharts({
-        chart: {
-            type: 'line'
-        },
-        title: {
-            text: null,
-            x: -20 //center
-        },
-        subtitle: {
-            text: null,
-            x: -20
-        },
-        xAxis: {
-            type: 'datetime',
-            dateTimeLabelFormats: {
-            day: '%d/%m/%y'
-        }
-        },
-        yAxis: {
-            title: {
-                text: 'Number of reports'
-            },
-            floor: 0,
-            plotLines: [{
-                value: 0,
-                width: 1,
-                color: '#808080'
-            }]
-        },
-        tooltip: {
-            dateTimeLabelFormats:{
-                minute: '%d/%m/%y, %H:%M'
-            }
-        },
-        legend: {
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'bottom',
-            borderWidth: 0
-        },
-        series: series_data
-            /*[
-                {
-                    name: 'validated reports per day - sdelacour',
-                    data: expert_data['sdelacour'],
-                    color: '#2ca25f',
-                    marker: {
-                        enabled: false,
-                        symbol: 'circle',
-                        lineColor: '#000',
-                        lineWidth: 1
-                    }
-                }
-            ]*/
-        });
-    });
-
-
-  </script>
-
-  <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-
-
-  <!--<script src="{% static "stats/workload.js" %}"></script>-->
-
+  <div class="row solid-border">
+    <div id="container_pending" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
+    <div class="col-md-2 solid-border">
+        <p><strong>Currently working in</strong></p>
+    </div>
+  </div>
+  <div class="row solid-border">
+    <div id="container" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
+    <div class="col-md-2 solid-border">
+        <p><strong>Select experts</strong></p>
+        <ul id="userlist" class="list-group">
+        </ul>
+    </div>
+  </div>
+  <div class="row solid-border">
+    <div id="container_two" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
+    <div class="col-md-2 solid-border">
+        <p><strong>Daily report input</strong></p>
+        <p>This graph shows how many reports enter the system at a given date, by creation date of the report.</p>
+    </div>
+  </div>
 
   </body>
 </html>

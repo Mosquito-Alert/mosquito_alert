@@ -6,7 +6,9 @@ from collections import Counter
 from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.cache import cache_page
-
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -32,20 +34,70 @@ def show_usage(request):
     return render(request, 'stats/chart.html', context)
 
 
+@api_view(['GET'])
+def workload_pending_per_user(request):
+    if request.method == 'GET':
+        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, username=user_slug)
+        single_user_pending = []
+        current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult').count()
+        single_user_pending.append([current_pending])
+        return Response(single_user_pending)
+
+@api_view(['GET'])
+def workload_stats_per_user(request):
+    if request.method == 'GET':
+        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        tz = get_localzone()
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset,username=user_slug)
+        single_user_work_output = []
+        annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
+        ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
+        end_date = tz.localize(datetime.now())
+        while ref_date <= end_date:
+            single_user_work_output.append([time.mktime(ref_date.timetuple())*1000, annotated_reports.filter(last_modified__year=ref_date.year).filter(last_modified__month=ref_date.month).filter(last_modified__day=ref_date.day).count()])
+            ref_date += timedelta(hours=24)
+        return Response(single_user_work_output)
+
+@api_view(['GET'])
+def workload_daily_report_input(request):
+    if request.method == 'GET':
+        tz = get_localzone()
+        daily_report_input = []
+        ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
+        end_date = tz.localize(datetime.now())
+        reports = Report.objects.all()
+        while ref_date <= end_date:
+            daily_report_input.append([time.mktime(ref_date.timetuple())*1000,reports.filter(phone_upload_time__year=ref_date.year).filter(phone_upload_time__month=ref_date.month).filter(phone_upload_time__day=ref_date.day).count()])
+            ref_date += timedelta(hours=24)
+        return Response(daily_report_input)
+
 def workload_stats(request):
-    tz = get_localzone()
-    users = User.objects.filter(groups__name='expert')
+    users = User.objects.filter(groups__name='expert').order_by('first_name','last_name')
+    '''
+    tz = get_localzone()    
     daily_work_output_per_expert = []
+    daily_report_input = []
     for user in users:
         single_user_work_output = []
         annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
-        ref_date = datetime(2017, 3, 1, 0, 0, 0, tzinfo=tz)
+        ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
         end_date = tz.localize(datetime.now())
         while ref_date <= end_date:
             single_user_work_output.append({'date': time.mktime(ref_date.timetuple()), 'n': annotated_reports.filter(last_modified__year=ref_date.year).filter(last_modified__month=ref_date.month).filter(last_modified__day=ref_date.day).count()})
             ref_date += timedelta(hours=24)
         daily_work_output_per_expert.append({'user': user, 'data': single_user_work_output})
-    context = {'daily_work_output_per_expert': daily_work_output_per_expert}
+    ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
+    end_date = tz.localize(datetime.now())
+    while ref_date <= end_date:
+        ref_date += timedelta(hours=24)
+        reports = Report.objects.all()
+        daily_report_input.append({'date': time.mktime(ref_date.timetuple()), 'n': reports.filter(phone_upload_time__year=ref_date.year).filter(phone_upload_time__month=ref_date.month).filter(phone_upload_time__day=ref_date.day).count()})    
+    context = {'daily_work_output_per_expert': daily_work_output_per_expert, 'daily_report_input': daily_report_input}    
+    '''
+    context = {'daily_work_output_per_expert': [], 'daily_report_input': [], 'users': users}
     return render(request, 'stats/workload.html', context)
 
 
