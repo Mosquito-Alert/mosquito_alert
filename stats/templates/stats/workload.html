@@ -13,6 +13,7 @@
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
     <script>
         var userChart;
         var dailyReportChart;
@@ -37,6 +38,7 @@
     <div id="container" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
     <div class="col-md-2 solid-border">
         <p><strong>Select experts</strong></p>
+        <p>This graph shows the number of reports that a given expert validated at a certain point in time.</p>
         <ul id="userlist" class="list-group">
         </ul>
     </div>
@@ -51,12 +53,16 @@
   <div class="row solid-border">
     <div id="container_pending" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
     <div class="col-md-2 solid-border">
-        <p><strong>Currently working in</strong></p>
         <p><strong>Select experts</strong></p>
+        <p>This graph shows how many reports currently are in the queue of an expert. The number of reports is between 0 and 5.</p>
         <ul id="userlist_pending" class="list-group">
         </ul>
     </div>
   </div>
-
+  <div class="row solid-border">
+    <div id="container_gauge" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
+    <div class="col-md-2 solid-border">
+    </div>
+  </div>
   </body>
 </html>
