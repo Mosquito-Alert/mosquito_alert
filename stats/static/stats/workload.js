@@ -32,6 +32,56 @@ $(function () {
         });
     };
 
+    load_pending_report_ajax = function(key){
+        var checked = $('#pending_' + key).prop('checked');
+        if(checked){
+            if (user_data[key].data_pending){
+                pendingChart.addSeries({
+                    name: user_data[key].name,
+                    data: user_data[key].data_pending,
+                    color: get_color_by_expert_slug(key),
+                    marker: {
+                        enabled: false,
+                        symbol: 'circle',
+                        lineColor: '#000',
+                        lineWidth: 1
+                    }
+                });
+            }else{
+                pendingChart.showLoading();
+                $.ajax({
+                    url: '/api/stats/workload_data/pending/',
+                    type: "GET",
+                    dataType: "json",
+                    data : {user_slug : key},
+                    success: function(data) {
+                        pendingChart.addSeries({
+                            name: user_data[key].name,
+                            data: data,
+                            color: get_color_by_expert_slug(key),
+                            marker: {
+                                enabled: false,
+                                symbol: 'circle',
+                                lineColor: '#000',
+                                lineWidth: 1
+                            }
+                        });
+                        pendingChart.hideLoading();
+                    },
+                    cache: false
+                });
+                user_data[key].data_pending = data;
+            }
+        }else{
+            series = pendingChart.series;
+            for(var i = 0; i < series.length; i++){
+                if (series[i].name == user_data[key].name){
+                    pendingChart.series[i].remove();
+                }
+            }
+        }
+    };
+
     ajaxload = function(key){
         var checked = $('#' + key).prop('checked');
         if(checked){
@@ -95,10 +145,10 @@ $(function () {
 
     users.forEach(function(key,index){
         $("#userlist").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="' + users[index].username + '" onclick="javascript:ajaxload(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
+        $("#userlist_pending").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="pending_' + users[index].username + '" onclick="javascript:load_pending_report_ajax(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
     });
 
-    /*
-    pendingChart = Highcharts.stockChart('container_pending',{
+    pendingChart = Highcharts.chart('container_pending',{
         chart: {
             type: 'bar'
         },
@@ -111,12 +161,13 @@ $(function () {
             x: -20
         },
         xAxis: {
-            categories: ['Pending reports']
+            categories: ['Pending reports'],
             title: {
                 text: null
             }
         },
         yAxis: {
+            allowDecimals: false,
             title: {
                 text: 'Number of pending reports'
             },
@@ -132,7 +183,7 @@ $(function () {
             borderWidth: 0
         }
         ,series: null
-    });*/
+    });
 
     userChart = Highcharts.stockChart('container',{
         chart: {
