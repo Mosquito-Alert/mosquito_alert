@@ -36,6 +36,12 @@ def show_usage(request):
     context = {'users': users, 'site_reports': site_reports, 'adult_reports': adult_reports}
     return render(request, 'stats/chart.html', context)
 
+def get_most_recently_validated_report(slug):
+    completed_annot = ExpertReportAnnotation.objects.filter(validation_complete=True).filter(user__username=slug).extra(order_by=['-last_modified'])
+    if len(completed_annot) > 0:
+        latest_uncomplete_annotation = completed_annot.first()
+        return latest_uncomplete_annotation.created
+    return None
 
 @api_view(['GET'])
 def workload_pending_per_user(request):
@@ -43,10 +49,10 @@ def workload_pending_per_user(request):
         user_slug = request.QUERY_PARAMS.get('user_slug', -1)
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=user_slug)
-        single_user_pending = []
         current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult').count()
-        single_user_pending.append([current_pending])
-        return Response(single_user_pending)
+        last_activity = get_most_recently_validated_report(user_slug)
+        pending = { 'current_pending_n' : current_pending, 'last_activity': last_activity.strftime('%d/%m/%Y') }
+        return Response(pending)
 
 @api_view(['GET'])
 def workload_stats_per_user(request):

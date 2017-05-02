@@ -90,8 +90,8 @@ $(function () {
                     data : {user_slug : key},
                     success: function(data) {
                         pendingChart.addSeries({
-                            name: user_data[key].name,
-                            data: data,
+                            name: user_data[key].name + ' (' + data['last_activity'] + ')',
+                            data: [data['current_pending_n']],
                             color: get_color_by_expert_slug(key),
                             marker: {
                                 enabled: false,
@@ -109,7 +109,7 @@ $(function () {
         }else{
             series = pendingChart.series;
             for(var i = 0; i < series.length; i++){
-                if (series[i].name == user_data[key].name){
+                if (series[i].name.includes(user_data[key].name)){
                     pendingChart.series[i].remove();
                 }
             }
@@ -352,8 +352,8 @@ $(function () {
             align: 'center',
             verticalAlign: 'bottom',
             borderWidth: 0
-        }
-        ,series: null
+        },
+        series: null
     });
 
     userChart = Highcharts.stockChart('container',{
