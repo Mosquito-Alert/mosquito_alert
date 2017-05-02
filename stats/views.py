@@ -51,7 +51,10 @@ def workload_pending_per_user(request):
         user = get_object_or_404(queryset, username=user_slug)
         current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult').count()
         last_activity = get_most_recently_validated_report(user_slug)
-        pending = { 'current_pending_n' : current_pending, 'last_activity': last_activity.strftime('%d/%m/%Y') }
+        if last_activity is not None:
+            pending = { 'current_pending_n' : current_pending, 'last_activity': last_activity.strftime('%d/%m/%Y') }
+        else:
+            pending = {'current_pending_n': current_pending, 'last_activity': 'Never'}
         return Response(pending)
 
 @api_view(['GET'])
