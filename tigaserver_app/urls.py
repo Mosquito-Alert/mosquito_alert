@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url, include
 from rest_framework import routers
 from tigaserver_app import views
-from stats.views import workload_stats_per_user,workload_daily_report_input,workload_pending_per_user
+from stats.views import workload_stats_per_user,workload_daily_report_input,workload_pending_per_user,workload_available_reports
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
@@ -27,5 +27,6 @@ urlpatterns = patterns('',
     url(r'^stats/workload_data/user/$', workload_stats_per_user),
     url(r'^stats/workload_data/report_input/$', workload_daily_report_input),
     url(r'^stats/workload_data/pending/$', workload_pending_per_user),
+    url(r'^stats/workload_data/available/$', workload_available_reports),
     url(r'^', include(router.urls)),
 )

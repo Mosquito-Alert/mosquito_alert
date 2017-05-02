@@ -6,9 +6,11 @@ from collections import Counter
 from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.cache import cache_page
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from tigacrafting.views import filter_reports
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -74,30 +76,20 @@ def workload_daily_report_input(request):
             ref_date += timedelta(hours=24)
         return Response(daily_report_input)
 
+@api_view(['GET'])
+def workload_available_reports(request):
+    if request.method == 'GET':
+        current_pending_n = []
+        #current_pending = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3)
+        current_pending = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+        current_pending = filter_reports(current_pending)
+        current_pending_n.append(len(current_pending))
+        return Response(current_pending_n)
+
+@login_required
 def workload_stats(request):
     users = User.objects.filter(groups__name='expert').order_by('first_name','last_name')
-    '''
-    tz = get_localzone()    
-    daily_work_output_per_expert = []
-    daily_report_input = []
-    for user in users:
-        single_user_work_output = []
-        annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
-        ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
-        end_date = tz.localize(datetime.now())
-        while ref_date <= end_date:
-            single_user_work_output.append({'date': time.mktime(ref_date.timetuple()), 'n': annotated_reports.filter(last_modified__year=ref_date.year).filter(last_modified__month=ref_date.month).filter(last_modified__day=ref_date.day).count()})
-            ref_date += timedelta(hours=24)
-        daily_work_output_per_expert.append({'user': user, 'data': single_user_work_output})
-    ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
-    end_date = tz.localize(datetime.now())
-    while ref_date <= end_date:
-        ref_date += timedelta(hours=24)
-        reports = Report.objects.all()
-        daily_report_input.append({'date': time.mktime(ref_date.timetuple()), 'n': reports.filter(phone_upload_time__year=ref_date.year).filter(phone_upload_time__month=ref_date.month).filter(phone_upload_time__day=ref_date.day).count()})    
-    context = {'daily_work_output_per_expert': daily_work_output_per_expert, 'daily_report_input': daily_report_input}    
-    '''
-    context = {'daily_work_output_per_expert': [], 'daily_report_input': [], 'users': users}
+    context = {'users': users}
     return render(request, 'stats/workload.html', context)
 
 

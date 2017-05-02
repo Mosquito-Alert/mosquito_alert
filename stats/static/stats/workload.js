@@ -8,6 +8,28 @@ var cache_data = function(expert_slug,data){
 
 
 $(function () {
+    load_available_reports_ajax = function(){
+        gaugeChart.showLoading();
+        $.ajax({
+            url: '/api/stats/workload_data/available/',
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                gaugeChart.addSeries({
+                    name: 'Reports',
+                    data: data,
+                    dataLabels: {
+                        format: '<div style="text-align:center"><span style="font-size:25px;color:' +
+                        ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
+                        '<span style="font-size:12px;color:silver"> available reports</span></div>'
+                    }
+                });
+                gaugeChart.hideLoading();
+            },
+            cache: false
+        });
+    };
+
     load_daily_report_input_ajax = function(){
         dailyReportChart.showLoading();
         $.ajax({
@@ -145,7 +167,7 @@ $(function () {
 
     users.forEach(function(key,index){
         $("#userlist").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="' + users[index].username + '" onclick="javascript:ajaxload(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
-        $("#userlist_pending").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="pending_' + users[index].username + '" onclick="javascript:load_pending_report_ajax(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
+        //$("#userlist_pending").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="pending_' + users[index].username + '" onclick="javascript:load_pending_report_ajax(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
     });
 
     gaugeChart = Highcharts.chart('container_gauge',{
@@ -160,12 +182,20 @@ $(function () {
             size: '140%',
             startAngle: -90,
             endAngle: 90,
-            background: {
-                backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
-                innerRadius: '60%',
-                outerRadius: '100%',
-                shape: 'arc'
-            }
+            background: [
+                {
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '60%',
+                    outerRadius: '100%',
+                    shape: 'arc'
+                },
+                {
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '20%',
+                    outerRadius: '59%',
+                    shape: 'arc'
+                }
+            ]
         },
         tooltip: {
             enabled: false
@@ -198,15 +228,26 @@ $(function () {
                 }
             }
         },
-        series: [{
-            name: 'Reports',
-            data: [88],
-            dataLabels: {
-                format: '<div style="text-align:center"><span style="font-size:25px;color:' +
-                    ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
-                   '<span style="font-size:12px;color:silver"> available reports</span></div>'
-            }
-        }]
+        series: [
+                    {
+                        name: 'Unclaimed reports',
+                        data: [80],
+                        dataLabels: {
+                            format: '<div style="text-align:center"><span style="font-size:25px;color:' +
+                            ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
+                            '<span style="font-size:12px;color:silver"> available reports</span></div>'
+                        }
+                    },
+                    {
+                        name: 'Some reports',
+                        data: [60],
+                        dataLabels: {
+                            format: '<div style="text-align:center"><span style="font-size:25px;color:' +
+                            ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
+                            '<span style="font-size:12px;color:silver"> available reports</span></div>'
+                        }
+                    }
+                ]
     });
 
     pendingChart = Highcharts.chart('container_pending',{
@@ -348,4 +389,5 @@ $(function () {
             ]
         });
     load_daily_report_input_ajax();
+    //load_available_reports_ajax();
 });
