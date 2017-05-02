@@ -32,40 +32,63 @@
     </script>
     <script src={% static "stats/workload.js" %}></script>
   </head>
+  <div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-brand">
+                        <span style="color:#ff9900; font-size: small">MosquitoAlert Workload Stats</span>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="{% url 'expert_report_annotation' %} ">Back to Entolab</a></li>
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
   <body>
-
-  <div class="row solid-border">
-    <div class="col-md-6">
-    <p><strong>Expert selection</strong></p>
-    <ul id="userlist" class="list-group">
-    </ul>
-    </div>
-  </div>
-  <div class="row solid-border">
-    <div id="container" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
-    <div class="col-md-2 solid-border">
-        <p><strong>Select experts</strong></p>
-        <p>This graph shows the number of reports that a given expert validated at a certain point in time.</p>
-    </div>
-  </div>
-  <div class="row solid-border">
-    <div id="container_pending" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
-    <div class="col-md-2 solid-border">
-        <p><strong>Select experts</strong></p>
-        <p>This graph shows how many reports currently are in the queue of an expert. The number of reports is between 0 and 5.</p>
-    </div>
-  </div>
-  <div class="row solid-border">
-    <div id="container_two" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
-    <div class="col-md-2 solid-border">
-        <p><strong>Daily report input</strong></p>
-        <p>This graph shows how many reports enter the system at a given date, by creation date of the report.</p>
-    </div>
-  </div>
-  <div class="row solid-border">
-    <div id="container_gauge" class="col-md-6" style="height: 400px; margin: 0 auto"></div>
-    <div class="col-md-2 solid-border">
-    </div>
+  <div class="container-custom">
+      <div class="row solid-border">
+        <div id="container" class="col-md-6" style="height: 475px; margin: 0 auto"></div>
+        <div class="col-md-2 solid-border">
+            <p><strong>Expert activity</strong></p>
+            <p>This graph shows the number of reports that a given expert validated at a certain point in time.</p>
+            <p><strong>Select experts</strong></p>
+            <ul id="userlist" class="list-group">
+            </ul>
+        </div>
+      </div>
+      <div class="row solid-border">
+        <div id="container_pending" class="col-md-6" style="height: 475px; margin: 0 auto"></div>
+        <div class="col-md-2 solid-border">
+            <p><strong>Pending reports per expert</strong></p>
+            <p>This graph shows how many reports currently are in the queue of an expert. The number of reports is between 0 and 5.</p>
+            <p><strong>Select experts</strong></p>
+            <ul id="userlist_pending" class="list-group">
+            </ul>
+        </div>
+      </div>
+      <div class="row solid-border">
+        <div id="container_two" class="col-md-6" style="height: 475px; margin: 0 auto"></div>
+        <div class="col-md-2 solid-border">
+            <p><strong>Daily report input</strong></p>
+            <p>This graph shows how many reports enter the system at a given date, by creation date of the report.</p>
+        </div>
+      </div>
+      <div class="row solid-border">
+        <div id="container_gauge" class="col-md-3" style="height: 200px; margin: 0 auto"></div>
+        <div id="pending_gauge" class="col-md-3" style="height: 200px; margin: 0 auto"></div>
+        <div class="col-md-2 solid-border">
+            <p><strong>Unassigned reports</strong></p>
+            <p>Unassigned reports are reports that have not been yet assigned to any user. Reports which are hidden or missing pictures are not included in this count.</p>
+            <p><strong>Reports in progress</strong></p>
+            <p>Reports in progress are reports which have not yet been assigned to at least 3 experts. Therefore, they are considered work in progress. This count exludes unassigned reports.</p>
+        </div>
+      </div>
   </div>
   </body>
 </html>

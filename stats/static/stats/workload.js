@@ -8,23 +8,35 @@ var cache_data = function(expert_slug,data){
 
 
 $(function () {
+
     load_available_reports_ajax = function(){
         gaugeChart.showLoading();
+        pendingGaugeChart.showLoading();
         $.ajax({
             url: '/api/stats/workload_data/available/',
             type: "GET",
             dataType: "json",
             success: function(data) {
                 gaugeChart.addSeries({
-                    name: 'Reports',
-                    data: data,
+                    name: 'Pending reports',
+                    data: [data['current_pending_n']],
                     dataLabels: {
                         format: '<div style="text-align:center"><span style="font-size:25px;color:' +
                         ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
-                        '<span style="font-size:12px;color:silver"> available reports</span></div>'
+                        '<span style="font-size:12px;color:silver"> unassigned</span></div>'
+                    }
+                });
+                pendingGaugeChart.addSeries({
+                    name: 'In progress reports',
+                    data: [data['current_progress_n']],
+                    dataLabels: {
+                        format: '<div style="text-align:center"><span style="font-size:25px;color:' +
+                        ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
+                        '<span style="font-size:12px;color:silver"> in progress</span></div>'
                     }
                 });
                 gaugeChart.hideLoading();
+                pendingGaugeChart.hideLoading();
             },
             cache: false
         });
@@ -104,6 +116,7 @@ $(function () {
         }
     };
 
+
     ajaxload = function(key){
         var checked = $('#' + key).prop('checked');
         if(checked){
@@ -167,15 +180,15 @@ $(function () {
 
     users.forEach(function(key,index){
         $("#userlist").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="' + users[index].username + '" onclick="javascript:ajaxload(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
-        //$("#userlist_pending").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="pending_' + users[index].username + '" onclick="javascript:load_pending_report_ajax(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
+        $("#userlist_pending").append('<li style="color:' + users[index].color + '" class="list-group-item small-font"><input id="pending_' + users[index].username + '" onclick="javascript:load_pending_report_ajax(\'' + users[index].username + '\')" type="checkbox">' + users[index].name + '</li>');
     });
 
-    gaugeChart = Highcharts.chart('container_gauge',{
+    pendingGaugeChart = Highcharts.chart('pending_gauge',{
         chart: {
             type: 'solidgauge'
         },
         title: {
-            text: 'Unassigned reports'
+            text: 'Reports in progress'
         },
         pane: {
             center: ['50%', '85%'],
@@ -187,12 +200,6 @@ $(function () {
                     backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
                     innerRadius: '60%',
                     outerRadius: '100%',
-                    shape: 'arc'
-                },
-                {
-                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
-                    innerRadius: '20%',
-                    outerRadius: '59%',
                     shape: 'arc'
                 }
             ]
@@ -228,7 +235,69 @@ $(function () {
                 }
             }
         },
-        series: [
+        series: null
+    });
+
+    gaugeChart = Highcharts.chart('container_gauge',{
+        chart: {
+            type: 'solidgauge'
+        },
+        title: {
+            text: 'Unassigned reports'
+        },
+        pane: {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: [
+                {
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '60%',
+                    outerRadius: '100%',
+                    shape: 'arc'
+                }
+                /*,{
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '20%',
+                    outerRadius: '59%',
+                    shape: 'arc'
+                }*/
+            ]
+        },
+        tooltip: {
+            enabled: false
+        },
+        // the value axis
+        yAxis: {
+            stops: [
+                [0.1, '#55BF3B'], // green
+                [0.5, '#DDDF0D'], // yellow
+                [0.9, '#DF5353'] // red
+            ],
+            lineWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 9,
+            title: {
+                y: -70
+            },
+            labels: {
+                y: 16
+            },
+            min: 0,
+            max: 100
+        },
+        plotOptions: {
+            solidgauge: {
+                dataLabels: {
+                    y: 5,
+                    borderWidth: 0,
+                    useHTML: true
+                }
+            }
+        },
+        series: null
+                /*[
                     {
                         name: 'Unclaimed reports',
                         data: [80],
@@ -247,7 +316,7 @@ $(function () {
                             '<span style="font-size:12px;color:silver"> available reports</span></div>'
                         }
                     }
-                ]
+                ]*/
     });
 
     pendingChart = Highcharts.chart('container_pending',{
@@ -389,5 +458,5 @@ $(function () {
             ]
         });
     load_daily_report_input_ajax();
-    //load_available_reports_ajax();
+    load_available_reports_ajax();
 });

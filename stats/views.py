@@ -7,6 +7,7 @@ from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -79,18 +80,23 @@ def workload_daily_report_input(request):
 @api_view(['GET'])
 def workload_available_reports(request):
     if request.method == 'GET':
-        current_pending_n = []
-        #current_pending = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3)
         current_pending = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+        current_progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
         current_pending = filter_reports(current_pending)
-        current_pending_n.append(len(current_pending))
-        return Response(current_pending_n)
+        current_progress = filter_reports(current_progress)
+        data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress)}
+        return Response(data)
 
 @login_required
 def workload_stats(request):
-    users = User.objects.filter(groups__name='expert').order_by('first_name','last_name')
-    context = {'users': users}
-    return render(request, 'stats/workload.html', context)
+    this_user = request.user
+    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    if this_user_is_superexpert:
+        users = User.objects.filter(groups__name='expert').order_by('first_name','last_name')
+        context = {'users': users}
+        return render(request, 'stats/workload.html', context)
+    else:
+        return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
 
 def show_fix_users(request):

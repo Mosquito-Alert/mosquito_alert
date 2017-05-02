@@ -6,11 +6,11 @@
 }
 
 .list-group {
-    -moz-column-count: 4;
+    -moz-column-count: 2;
     -moz-column-gap: 10px;
-    -webkit-column-count: 4;
+    -webkit-column-count: 2;
     -webkit-column-gap: 10px;
-    column-count: 4;
+    column-count: 2;
     column-gap: 10px;
 }
 
@@ -19,4 +19,8 @@
      border-width: 1px;
      padding: 10px 10px 10px 10px;
      margin: 10px 10px 10px 10px;
+}
+
+.container-custom{
+    margin: 60px 0 0 0;
 }
