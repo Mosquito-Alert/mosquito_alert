@@ -197,5 +197,6 @@ SOUTH_MIGRATION_MODULES = {
     'django_messages': 'django_messages.south_migrations',
 }
 
+USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34]
 
 from settings_local import *

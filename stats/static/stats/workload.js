@@ -12,6 +12,7 @@ $(function () {
     load_available_reports_ajax = function(){
         gaugeChart.showLoading();
         pendingGaugeChart.showLoading();
+        overallPendingChart.showLoading();
         $.ajax({
             url: '/api/stats/workload_data/available/',
             type: "GET",
@@ -35,8 +36,18 @@ $(function () {
                         '<span style="font-size:12px;color:silver"> in progress</span></div>'
                     }
                 });
+                overallPendingChart.addSeries({
+                    name: 'Overall pending reports',
+                    data: [data['overall_pending']],
+                    dataLabels: {
+                        format: '<div style="text-align:center"><span style="font-size:25px;color:' +
+                        ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
+                        '<span style="font-size:12px;color:silver"> overall pending</span></div>'
+                    }
+                });
                 gaugeChart.hideLoading();
                 pendingGaugeChart.hideLoading();
+                overallPendingChart.hideLoading();
             },
             cache: false
         });
@@ -66,13 +77,20 @@ $(function () {
         });
     };
 
+    pending_report_list = function(key,data){
+        $("#pending_detail").append('<li class="list-group-item small-font"><p style="color:white;background-color:' + user_data[key].color + '">' + user_data[key].name + '</p><ul id="pending_r_' + key +'" class="list-inline"></ul></li>');
+        for(var i = 0; i < data.current_pending.length; i++){
+            $("#pending_r_" + key).append('<li class="list-group-item small-font"><a target="_blank" href="/experts/status/reports/?version_uuid=' + data.current_pending[i].report_id + '">' + data.current_pending[i].report_id + ' - ' + data.current_pending[i].created + '</a></li>')
+        }
+    };
+
     load_pending_report_ajax = function(key){
         var checked = $('#pending_' + key).prop('checked');
         if(checked){
             if (user_data[key].data_pending){
                 pendingChart.addSeries({
-                    name: user_data[key].name,
-                    data: user_data[key].data_pending,
+                    name: user_data[key].name + ' (' + user_data[key].data_pending.last_activity + ')',
+                    data: [user_data[key].data_pending.current_pending_n],
                     color: get_color_by_expert_slug(key),
                     marker: {
                         enabled: false,
@@ -82,6 +100,7 @@ $(function () {
                     }
                 });
             }else{
+                $('#pending_' + key).attr("disabled", true);
                 pendingChart.showLoading();
                 $.ajax({
                     url: '/api/stats/workload_data/pending/',
@@ -100,11 +119,15 @@ $(function () {
                                 lineWidth: 1
                             }
                         });
+                        $('#pending_' + key).attr("disabled", false);
                         pendingChart.hideLoading();
+                        user_data[key].data_pending = data;
+                        if(data['current_pending_n'] > 0){
+                            pending_report_list(key,data);
+                        }
                     },
                     cache: false
                 });
-                user_data[key].data_pending = data;
             }
         }else{
             series = pendingChart.series;
@@ -216,7 +239,7 @@ $(function () {
             ],
             lineWidth: 0,
             minorTickInterval: null,
-            tickAmount: 9,
+            tickAmount: 11,
             title: {
                 y: -70
             },
@@ -277,7 +300,7 @@ $(function () {
             ],
             lineWidth: 0,
             minorTickInterval: null,
-            tickAmount: 9,
+            tickAmount: 11,
             title: {
                 y: -70
             },
@@ -297,26 +320,6 @@ $(function () {
             }
         },
         series: null
-                /*[
-                    {
-                        name: 'Unclaimed reports',
-                        data: [80],
-                        dataLabels: {
-                            format: '<div style="text-align:center"><span style="font-size:25px;color:' +
-                            ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
-                            '<span style="font-size:12px;color:silver"> available reports</span></div>'
-                        }
-                    },
-                    {
-                        name: 'Some reports',
-                        data: [60],
-                        dataLabels: {
-                            format: '<div style="text-align:center"><span style="font-size:25px;color:' +
-                            ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
-                            '<span style="font-size:12px;color:silver"> available reports</span></div>'
-                        }
-                    }
-                ]*/
     });
 
     pendingChart = Highcharts.chart('container_pending',{
@@ -352,6 +355,61 @@ $(function () {
             align: 'center',
             verticalAlign: 'bottom',
             borderWidth: 0
+        },
+        series: null
+    });
+
+    overallPendingChart = Highcharts.chart('container_overall_pending',{
+        chart: {
+            type: 'solidgauge'
+        },
+        title: {
+            text: 'Overall pending reports'
+        },
+        pane: {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: [
+                {
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '60%',
+                    outerRadius: '100%',
+                    shape: 'arc'
+                }
+            ]
+        },
+        tooltip: {
+            enabled: false
+        },
+        // the value axis
+        yAxis: {
+            stops: [
+                [0.1, '#55BF3B'], // green
+                [0.5, '#DDDF0D'], // yellow
+                [0.9, '#DF5353'] // red
+            ],
+            lineWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 11,
+            title: {
+                y: -70
+            },
+            labels: {
+                y: 16
+            },
+            min: 0,
+            max: 100
+        },
+        plotOptions: {
+            solidgauge: {
+                dataLabels: {
+                    y: 5,
+                    borderWidth: 0,
+                    useHTML: true
+                }
+            }
         },
         series: null
     });
@@ -459,4 +517,13 @@ $(function () {
         });
     load_daily_report_input_ajax();
     load_available_reports_ajax();
+    if(load_on_start){
+        for(var i = 0; i < users.length; i++){
+            var slug = users[i]['username'];
+            $('#'+slug).click();
+            $('#pending_'+slug).click();
+            ajaxload(slug);
+            load_pending_report_ajax(slug);
+        }
+    }
 });

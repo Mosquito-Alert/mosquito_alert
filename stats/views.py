@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from tigacrafting.views import filter_reports
+from tigaserver_project import settings
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -49,10 +50,13 @@ def workload_pending_per_user(request):
         user_slug = request.QUERY_PARAMS.get('user_slug', -1)
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=user_slug)
-        current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult').count()
+        current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult')
+        pending_detail = []
+        for ano in current_pending:
+            pending_detail.append({ 'report_id': ano.report_id, 'created': ano.report.creation_time.strftime('%d/%m/%Y - %H:%M:%S') })
         last_activity = get_most_recently_validated_report(user_slug)
         if last_activity is not None:
-            pending = { 'current_pending_n' : current_pending, 'last_activity': last_activity.strftime('%d/%m/%Y') }
+            pending = { 'current_pending_n' : current_pending.count(), 'current_pending': pending_detail, 'last_activity': last_activity.strftime('%d/%m/%Y') }
         else:
             pending = {'current_pending_n': current_pending, 'last_activity': 'Never'}
         return Response(pending)
@@ -91,18 +95,21 @@ def workload_available_reports(request):
     if request.method == 'GET':
         current_pending = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
         current_progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+        user_id_filter = settings.USERS_IN_STATS
+        overall_pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
         current_pending = filter_reports(current_pending)
         current_progress = filter_reports(current_progress)
-        data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress)}
+        data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress), 'overall_pending': overall_pending.count()}
         return Response(data)
 
 @login_required
 def workload_stats(request):
     this_user = request.user
+    user_id_filter = settings.USERS_IN_STATS
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     if this_user_is_superexpert:
-        users = User.objects.filter(groups__name='expert').order_by('first_name','last_name')
-        context = {'users': users}
+        users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name','last_name')
+        context = {'users': users, 'load_everything_on_start': True}
         return render(request, 'stats/workload.html', context)
     else:
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
