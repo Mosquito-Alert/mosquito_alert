@@ -1052,7 +1052,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
         #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
         all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
         #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
-        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('creation_time')
+        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('-creation_time')
         if version_uuid and version_uuid != 'na':
             reports = Report.objects.filter(version_UUID=version_uuid)
             n_reports = 1
@@ -1070,7 +1070,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             objects = paginator.page(1)
         except EmptyPage:
             objects = paginator.page(paginator.num_pages)
-        paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects])
+        paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
         reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
         context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
         context['objects'] = objects
