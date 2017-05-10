@@ -1572,37 +1572,37 @@ class NotificationContent(models.Model):
     title_en = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in english')
 
     def get_title_locale_safe(self, locale):
-        if locale.lower() == 'es':
+        if locale.lower().startswith('es'):
             return self.title_es
-        elif locale.lower() == 'ca':
+        elif locale.lower().startswith('ca'):
             if self.title_ca is None:
                 return self.title_es
             else:
                 return self.title_ca
-        elif locale.lower() == 'en':
+        elif locale.lower().startswith('en'):
             if self.title_en is None:
                 return self.title_es
             else:
                 return self.title_en
-        elif locale.lower() == 'zh_cn':
+        elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
             return self.title_en
         else:
             return self.title_es
 
     def get_body_locale_safe(self,locale):
-        if locale.lower() == 'es':
+        if locale.lower().startswith('es'):
             return self.body_html_es
-        elif locale.lower() == 'ca':
+        elif locale.lower().startswith('ca'):
             if self.body_html_ca is None:
                 return self.body_html_es
             else:
                 return self.body_html_ca
-        elif locale.lower() == 'en':
+        elif locale.lower().startswith('en'):
             if self.body_html_en is None:
                 return self.body_html_es
             else:
                 return self.body_html_en
-        elif locale.lower() == 'zh_cn':
+        elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
             return self.body_html_en
         else:
             return self.body_html_es
