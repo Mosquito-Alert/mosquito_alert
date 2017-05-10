@@ -445,7 +445,8 @@ class CoarseFilterAdultReports(ReadOnlyModelViewSet):
     unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
     unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
     unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-    queryset = unfiltered_clean_reports_query
+    #there seems to be some kind of caching issue .all() forces the queryset to refresh
+    queryset = unfiltered_clean_reports_query.all()
     serializer_class = ReportIdSerializer
 
 class CoarseFilterSiteReports(ReadOnlyModelViewSet):
@@ -456,7 +457,8 @@ class CoarseFilterSiteReports(ReadOnlyModelViewSet):
     unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
     unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
     unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-    queryset = unfiltered_clean_reports_query
+    # there seems to be some kind of caching issue .all() forces the queryset to refresh
+    queryset = unfiltered_clean_reports_query.all()
     serializer_class = ReportIdSerializer
 
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
