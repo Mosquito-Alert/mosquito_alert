@@ -619,6 +619,36 @@ def string_par_to_bool(string_par):
             return True
     return False
 
+@api_view(['GET'])
+def force_refresh_cfa_reports(request):
+    if request.method == 'GET':
+        new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+        unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
+        unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+        unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
+        # there seems to be some kind of caching issue .all() forces the queryset to refresh
+        results = []
+        for report in unfiltered_clean_reports_query:
+            results.append({"version_UUID": report.version_UUID})
+        return Response(results)
+
+@api_view(['GET'])
+def force_refresh_cfs_reports(request):
+    if request.method == 'GET':
+        reports_imbornal = get_reports_imbornal()
+        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+        unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
+        unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+        unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
+        # there seems to be some kind of caching issue .all() forces the queryset to refresh
+        results = []
+        for report in unfiltered_clean_reports_query:
+            results.append({"version_UUID":report.version_UUID})
+        return Response(results)
+
+
 @api_view(['GET','POST'])
 def user_notifications(request):
     if request.method == 'GET':

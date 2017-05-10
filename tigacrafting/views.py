@@ -1098,13 +1098,13 @@ def expert_status(request):
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
     new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(
         version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time')
+        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
     return new_reports_unfiltered_sites_embornal
 
 def get_reports_unfiltered_sites_other(reports_imbornal):
     new_reports_unfiltered_sites_other = Report.objects.exclude(type='adult').exclude(
         version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time')
+        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
     return new_reports_unfiltered_sites_other
 
 def get_reports_imbornal():
