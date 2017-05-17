@@ -93,6 +93,12 @@ input[type=checkbox]
     color: red;
 }
 
+.progress{
+    background-image: url("/static/tigacrafting/media/default_red.gif");
+    background-repeat: no-repeat;
+    background-position: 36%;
+}
+
 .messages {
     width: 100%;
     text-align: left;

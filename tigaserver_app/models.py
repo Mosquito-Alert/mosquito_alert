@@ -30,6 +30,9 @@ class TigaUser(models.Model):
                                                                       'registered and consented to sharing '
                                                                  'data. Automatically set by '
                                                                  'server when user uploads registration.')
+    device_token = models.TextField('Url to picture that originated the comment', null=True, blank=True,help_text='Device token, used in messaging. Must be supplied by the client')
+
+    score = models.IntegerField(help_text='Score associated with user. This field might be removed in the future and calculated dinamically', default=0)
 
     def __unicode__(self):
         return self.user_UUID
@@ -882,6 +885,27 @@ class Report(models.Model):
 
         return status
 
+    def get_final_combined_expert_category_public_map(self,locale):
+        classification = self.get_mean_combined_expert_adult_score()
+        score = int(round(classification['score']))
+
+        ca = {'tiger':'Mosquit tigre','yellow':'Mosquit febre groga','unclassified':'No identificable','other': 'Altres especies'}
+        es = {'tiger':'Mosquito tigre','yellow':'Mosquito fiebre amarilla','unclassified':'No identificable','other': 'Otras especies'}
+        en = {'tiger':'Tiger mosquito','yellow':'Yellow fever mosquito','unclassified':'Unidentifiable', 'other': 'Other species'}
+        labels = {'ca':ca, 'es':es, 'en':en}
+
+        if classification['is_aegypti']:
+            if score == 1 or score == 2:
+                return labels[locale]['yellow']
+        elif classification['is_albopictus']:
+            if score == 1 or score == 2:
+                return labels[locale]['tiger']
+        else:
+            if score == 0 or score == -3:
+                return labels[locale]['unclassified']
+            elif score == -1 or score == -2:
+                return labels[locale]['other']
+
     def get_final_combined_expert_category(self):
         # if self.type == 'site':
         #      return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
@@ -1608,12 +1632,60 @@ class CoverageAreaMonth(models.Model):
     class Meta:
         unique_together = ("lat", "lon", "year", "month")
 
+class NotificationContent(models.Model):
+    body_html_es = models.TextField(help_text='Expert comment, expanded and allows html, in spanish')
+    body_html_ca = models.TextField(default=None,blank=True,null=True,help_text='Expert comment, expanded and allows html, in catalan')
+    body_html_en = models.TextField(default=None,blank=True,null=True,help_text='Expert comment, expanded and allows html, in english')
+    title_es = models.TextField(help_text='Title of the comment, shown in non-detail view, in spanish')
+    title_ca = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in catalan')
+    title_en = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in english')
+
+    def get_title_locale_safe(self, locale):
+        if locale.lower().startswith('es'):
+            return self.title_es
+        elif locale.lower().startswith('ca'):
+            if self.title_ca is None:
+                return self.title_es
+            else:
+                return self.title_ca
+        elif locale.lower().startswith('en'):
+            if self.title_en is None:
+                return self.title_es
+            else:
+                return self.title_en
+        elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
+            return self.title_en
+        else:
+            return self.title_es
+
+    def get_body_locale_safe(self,locale):
+        if locale.lower().startswith('es'):
+            return self.body_html_es
+        elif locale.lower().startswith('ca'):
+            if self.body_html_ca is None:
+                return self.body_html_es
+            else:
+                return self.body_html_ca
+        elif locale.lower().startswith('en'):
+            if self.body_html_en is None:
+                return self.body_html_es
+            else:
+                return self.body_html_en
+        elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
+            return self.body_html_en
+        else:
+            return self.body_html_es
+
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
     user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
     expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
     date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    #blank is True to avoid problems in the migration, this should be removed!!
+    notification_content = models.ForeignKey(NotificationContent,blank=True, null=True,related_name="notification_content",help_text='Multi language content of the notification')
+    #All this becomes obsolete, now all notification text is outside. This allows for re-use in massive notifications
     expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
     acknowledged = models.BooleanField(default=False,help_text='This is set to True through the public API, when the user signals that the message has been received')
+    public = models.BooleanField(default=False,help_text='Whether the notification is shown in the public map or not')

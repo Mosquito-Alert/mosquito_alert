@@ -1,0 +1,25 @@
+{% extends "tigacrafting/validation_message_template.html" %}
+
+{% block title_block %}
+    <title>La teva foto ha estat validada per un expert!</title>
+{% endblock %}
+
+{% block title_header_block %}
+    <h1>La teva foto ha estat validada per un expert!</h1>
+{% endblock %}
+
+{% block validation_category_block %}
+    <p><strong>La teva observació correspon a:</strong> {{ validation_category }}</p>
+{% endblock %}
+
+{% block map_link_block %}
+    <p><a href="{{ map_link }}" target="_blank">Mira-ho al mapa</a></p>
+{% endblock %}
+
+{% block expert_note_block %}
+    <p><strong>Nota de l'expert:</strong> <i>{{ expert_note }}</i></p>
+{% endblock %}
+
+{% block message_for_user_block %}
+    <p><strong>Missatge de l'expert:</strong> <i>{{ message_for_user }}</i></p>
+{% endblock %}

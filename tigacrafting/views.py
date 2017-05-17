@@ -21,9 +21,10 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification
+from tigaserver_app.models import Notification, NotificationContent, TigaUser
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -31,6 +32,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User, Group
 import urllib
 import django.utils.html
+from django.db import connection
 from itertools import chain
 
 adults_2014_nonstandard_validation = ['72ada355-db35-4636-a462-64e492574a53',
@@ -743,22 +745,67 @@ def must_be_autoflagged(this_annotation, is_current_validated):
                 return True
     return False
 
+def get_sigte_map_info(report):
+    cursor = connection.cursor()
+    cursor.execute("SELECT id,lon,lat,private_webmap_layer FROM map_aux_reports WHERE version_uuid = %s", [report.version_UUID])
+    row = cursor.fetchone()
+    return row
+
+def get_sigte_report_link(report,locale,current_domain):
+    data = get_sigte_map_info(report)
+    if data:
+        lat = data[2]
+        lon = data[1]
+        id = data[0]
+        url_template = "http://{0}/static/tigapublic/spain.html#/{1}/19/{2}/{3}/A,B,C,D/all/all/{4}".format(current_domain, locale, lat, lon, id)
+        return url_template
+    return None
+
 # This can be called from outside the server, so we need current_domain for absolute urls
 def issue_notification(report_annotation,current_domain):
-    notification = Notification(report=report_annotation.report,user=report_annotation.report.user,expert=report_annotation.user)
-    notification.expert_comment = "¡Uno de sus informes ha sido validado por un experto!"
+    notification_content = NotificationContent()
+    context_es = {}
+    context_ca = {}
+    context_en = {}
+    notification_content.title_es = "¡Tu foto ha sido validada por un experto!"
+    notification_content.title_ca = "La teva foto ha estat validada per un expert!"
+    notification_content.title_en = "Your picture has been validated by an expert!"
     if report_annotation.report.get_final_photo_url_for_notification():
-        notification.expert_html = '<a href="http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification() + '" target="_blank">Enlace a tu foto</a>'
+        context_es['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+        context_en['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+        context_ca['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+    if report_annotation.edited_user_notes:
+        clean_annotation = django.utils.html.escape(report_annotation.edited_user_notes)
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        context_es['expert_note'] = clean_annotation
+        context_en['expert_note'] = clean_annotation
+        context_ca['expert_note'] = clean_annotation
     if report_annotation.message_for_user:
-        clean_annotation = ''
         clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
-        notification.expert_html = notification.expert_html + "</br> Mensaje de los expertos: </br>" + clean_annotation
-    photo = None
-    if report_annotation.report.get_final_photo_url_for_notification():
-        photo = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
-    if photo:
-        notification.photo_url = photo
+        context_es['message_for_user'] = clean_annotation
+        context_en['message_for_user'] = clean_annotation
+        context_ca['message_for_user'] = clean_annotation
+    if report_annotation.report:
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('es'))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        context_es['validation_category'] = clean_annotation
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('en'))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        context_en['validation_category'] = clean_annotation
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('ca'))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        context_ca['validation_category'] = clean_annotation
+        map_data = get_sigte_map_info(report_annotation.report)
+        if map_data:
+            context_es['map_link'] = get_sigte_report_link(report_annotation.report, "es", current_domain)
+            context_en['map_link'] = get_sigte_report_link(report_annotation.report, "en", current_domain)
+            context_ca['map_link'] = get_sigte_report_link(report_annotation.report, "ca", current_domain)
+    notification_content.body_html_es = render_to_string('tigacrafting/validation_message_template_es.html', context_es)
+    notification_content.body_html_ca = render_to_string('tigacrafting/validation_message_template_ca.html', context_ca)
+    notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en)
+    notification_content.save()
+    notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
 
 @login_required
@@ -1225,3 +1272,9 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         return render(request, 'tigacrafting/photo_grid.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+@login_required
+def notifications(request,user_uuid=None):
+    this_user = request.user
+    user_uuid = request.GET.get('user_uuid',None)
+    total_users = TigaUser.objects.all().count()
+    return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})

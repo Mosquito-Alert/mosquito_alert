@@ -8,7 +8,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, single_report_view
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view
 from tigaserver_messages.views import compose_w_data, reply_w_data
 from django_messages.views import *
 
@@ -78,6 +78,7 @@ urlpatterns += i18n_patterns('',
     url(r'^experts/status/reports/single/(?P<version_uuid>[-\w]+)/$', single_report_view, name='single_report_view'),
     url(r'^experts/status/people/$', expert_status, name='expert_status'),
     url(r'^photo_grid/$', picture_validation, name='picture_validation'),
+    url(r'^notifications/$', notifications, name='notifications'),
 
     ## should stay out
     #url(r'^coveragestats/$', show_fix_users),

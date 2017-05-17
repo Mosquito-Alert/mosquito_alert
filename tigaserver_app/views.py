@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins
@@ -13,19 +14,19 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer
-from tigaserver_app.models import Notification, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
-from django.contrib.gis import geos
-from django.contrib.gis.geos import Point, GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
 from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
-from django.contrib.auth.models import User, Group
-
-
+from django.contrib.auth.models import User
+from django.views.decorators.cache import cache_page
+from tigacrafting.messaging import send_message_ios, send_message_android
+from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -169,6 +170,16 @@ version_UUID linking this photo to a specific report version.
         instance.save()
         return Response('uploaded')
 
+def filter_partial_uuid(queryset, user_UUID):
+    if not user_UUID:
+        return queryset
+    return queryset.filter(user_UUID__startswith=user_UUID)
+
+class UserFilter(django_filters.FilterSet):
+    user_UUID = django_filters.Filter(action=filter_partial_uuid)
+    class Meta:
+        model = TigaUser
+        fields = ['user_UUID']
 
 # For production version, substitute WriteOnlyModelViewSet
 class UserViewSet(ReadWriteOnlyModelViewSet):
@@ -184,6 +195,7 @@ through the API.)
     """
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
+    filter_class = UserFilter
 
 
 class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
@@ -481,6 +493,7 @@ class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
 
     hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     queryset = hidden_reports | unfiltered_clean_reports_query
+
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
@@ -649,20 +662,162 @@ def force_refresh_cfs_reports(request):
         return Response(results)
 
 
-@api_view(['GET','POST'])
+@api_view(['POST'])
+def msg_ios(request):
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    alert_message = request.QUERY_PARAMS.get('alert_message', -1)
+    link_url = request.QUERY_PARAMS.get('link_url', -1)
+    if user_id != -1 and alert_message != -1 and link_url != -1:
+        queryset = TigaUser.objects.all()
+        this_user = get_object_or_404(queryset, pk=user_id)
+        if this_user.device_token is not None and this_user.device_token != '':
+            _token = this_user.device_token
+            try:
+                resp = send_message_ios(_token, alert_message, link_url)
+                return Response({'token':_token, 'alert_message': alert_message, 'link_url':link_url, 'push_status_msg':resp})
+            except Exception as e:
+                raise ParseError(detail=e.message)
+        else:
+            raise ParseError(detail='Token not set for user')
+    else:
+        raise ParseError(detail='Invalid parameters')
+
+@api_view(['POST'])
+def msg_android(request):
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    message = request.QUERY_PARAMS.get('message', -1)
+    title = request.QUERY_PARAMS.get('title', -1)
+    if user_id != -1 and message != -1 and title != -1:
+        queryset = TigaUser.objects.all()
+        this_user = get_object_or_404(queryset, pk=user_id)
+        if this_user.device_token is not None and this_user.device_token != '':
+            _token = this_user.device_token
+            try:
+                resp = send_message_android(_token, title, message)
+                return Response({'token': _token, 'message': message, 'title': title, 'push_status_msg':resp})
+            except Exception as e:
+                raise ParseError(detail=e.message)
+        else:
+            raise ParseError(detail='Token not set for user')
+    else:
+        raise ParseError(detail='Invalid parameters')
+
+@api_view(['POST'])
+def token(request):
+    token = request.QUERY_PARAMS.get('token', -1)
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    if( user_id != -1 and token != -1 ):
+        queryset = TigaUser.objects.all()
+        this_user = get_object_or_404(queryset, pk=user_id)
+        this_user.device_token = token
+        this_user.save()
+        return Response({'token' : token})
+    else:
+        raise ParseError(detail='Invalid parameters')
+
+@api_view(['GET'])
+@cache_page(60 * 5)
+def report_stats(request):
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    if user_id == -1:
+        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
+    else:
+        user_reports = Report.objects.filter(user__user_UUID=user_id).filter(type='adult')
+        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(version_UUID__in=user_reports).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
+    content = {'report_count' : r_count}
+    return Response(content)
+
+@api_view(['GET'])
+@cache_page(60)
+def user_count(request):
+    filter_criteria = request.QUERY_PARAMS.get('filter_criteria', -1)
+    if filter_criteria == -1:
+        raise ParseError(detail="Invalid filter criteria")
+    if filter_criteria == 'uploaded_pictures':
+        results = users_with_pictures()
+    elif filter_criteria == 'uploaded_pictures_sd':
+        results = users_with_storm_drain_pictures()
+    else:
+        raise ParseError(detail="Invalid filter criteria")
+    content = { "user_count" : len(results) }
+    return Response(content)
+
+def score_label(score):
+    if score > 66:
+        return "user_score_pro"
+    elif 33 < score <= 66:
+        return "user_score_advanced"
+    else:
+        return "user_score_beginner"
+
+
+@api_view(['GET', 'POST'])
+def user_score(request):
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    if user_id == -1:
+        raise ParseError(detail='user_id is mandatory')
+    queryset = TigaUser.objects.all()
+    user = get_object_or_404(queryset, pk=user_id)
+    if request.method == 'GET':
+        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+        return Response(content)
+    if request.method == 'POST':
+        score = request.QUERY_PARAMS.get('score', -1)
+        if score == -1:
+            raise ParseError(detail='score is mandatory')
+        try:
+            user.score = int(score)
+            user.save()
+        except ValueError:
+            raise ParseError(detail='Invalid score integer value')
+        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+        return Response(content)
+
+
+def custom_render_notification(notification,locale):
+    expert_comment = notification.notification_content.get_body_locale_safe(locale)
+    expert_html = notification.notification_content.get_title_locale_safe(locale)
+    content = {
+        'id':notification.id,
+        'report_id':notification.report.version_UUID,
+        'user_id':notification.user.user_UUID,
+        'user_score':notification.user.score,
+        'user_score_label': score_label(notification.user.score),
+        'expert_id':notification.expert.id,
+        'date_comment':notification.date_comment,
+        'expert_comment':expert_comment,
+        'expert_html':expert_html,
+        'acknowledged':notification.acknowledged,
+        'public':notification.public,
+    }
+    return content
+
+def custom_render_notification_queryset(queryset,locale):
+    content = []
+    for notification in queryset:
+        content.append(custom_render_notification(notification,locale))
+    return content
+
+@api_view(['GET','POST','DELETE','PUT'])
 def user_notifications(request):
     if request.method == 'GET':
+        locale = request.QUERY_PARAMS.get('locale', 'es')
         user_id = request.QUERY_PARAMS.get('user_id', -1)
         acknowledged = 'ignore'
         if request.QUERY_PARAMS.get('acknowledged') != None:
             acknowledged = request.QUERY_PARAMS.get('acknowledged', False)
         all_notifications = Notification.objects.all()
-        if user_id != -1:
-            all_notifications = all_notifications.filter(user_id=user_id)
+        if user_id == -1:
+            raise ParseError(detail='user_id is mandatory')
+        else:
+            all_notifications = all_notifications.filter(user_id=user_id).order_by('-date_comment')
         if acknowledged != 'ignore':
-            all_notifications = all_notifications.filter(acknowledged=acknowledged)
-        serializer = NotificationSerializer(all_notifications)
-        return Response(serializer.data)
+            ack_bool = string_par_to_bool(acknowledged)
+            all_notifications = all_notifications.filter(acknowledged=ack_bool).order_by('-date_comment')
+        #serializer = NotificationSerializer(all_notifications)
+        content = custom_render_notification_queryset(all_notifications,locale)
+        #return Response(serializer.data)
+        return Response(content)
     if request.method == 'POST':
         id = request.QUERY_PARAMS.get('id', -1)
         try:
@@ -671,12 +826,116 @@ def user_notifications(request):
             raise ParseError(detail='Invalid id integer value')
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
-        ack = request.QUERY_PARAMS.get('acknowledged', True)
-        ack_bool = string_par_to_bool(ack)
-        this_notification.acknowledged = ack_bool
+        notification_content = this_notification.notification_content
+        ack = 'ignore'
+        if request.QUERY_PARAMS.get('acknowledged') is not None:
+            ack = request.QUERY_PARAMS.get('acknowledged', True)
+        body_html_es = request.QUERY_PARAMS.get('body_html_es', '-1')
+        title_es = request.QUERY_PARAMS.get('title_es', '-1')
+        body_html_ca = request.QUERY_PARAMS.get('body_html_ca', '-1')
+        title_ca = request.QUERY_PARAMS.get('title_ca', '-1')
+        body_html_en = request.QUERY_PARAMS.get('body_html_en', '-1')
+        title_en = request.QUERY_PARAMS.get('title_en', '-1')
+        public = request.QUERY_PARAMS.get('public', '-1')
+        if body_html_ca != '-1':
+            notification_content.body_html_ca = body_html_ca
+        if title_ca != '-1':
+            notification_content.title_ca = title_ca
+        if body_html_en != '-1':
+            notification_content.body_html_en = body_html_en
+        if title_en != '-1':
+            notification_content.title_en = title_en
+        if body_html_es != '-1':
+            notification_content.body_html_es = body_html_es
+        if title_es != '-1':
+            notification_content.title_es = title_es
+        if ack != 'ignore':
+            ack_bool = string_par_to_bool(ack)
+            this_notification.acknowledged = ack_bool
+        if public != '-1':
+            public_bool = string_par_to_bool(public)
+            this_notification.public = public_bool
+        notification_content.save()
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
+    if request.method == 'PUT':
+        this_notification = Notification()
+        serializer = NotificationSerializer(this_notification,data=request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        id = request.QUERY_PARAMS.get('id', -1)
+        try:
+            int(id)
+        except ValueError:
+            raise ParseError(detail='Invalid id integer value')
+        queryset = Notification.objects.all()
+        this_notification = get_object_or_404(queryset, pk=id)
+        notification_content = this_notification.notification_content
+        this_notification.delete()
+        notification_content.delete()
+        return HttpResponse(status=204)
+
+@api_view(['PUT'])
+def notification_content(request):
+    if request.method == 'PUT':
+        this_notification_content = NotificationContent()
+        serializer = NotificationContentSerializer(this_notification_content,data=request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+def send_notifications(request):
+    if request.method == 'PUT':
+        data = request.DATA
+        id = data['notification_content_id']
+        sender = data['user_id']
+        push = data['ppush']
+        # report with oldest creation date
+        r = data['report_id']
+        queryset = NotificationContent.objects.all()
+        notification_content = get_object_or_404(queryset, pk=id)
+        recipients = data['recipients']
+        if recipients == 'all':
+            send_to = TigaUser.objects.all()
+        elif recipients.startswith("uploaded"):
+            if(recipients=='uploaded_pictures'):
+                send_to = users_with_pictures()
+            elif(recipients=='uploaded_pictures_sd'):
+                send_to = users_with_storm_drain_pictures()
+        else:
+            ids_list = recipients.split('$')
+            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
+        notifications_issued = 0
+        notifications_failed = 0
+        push_issued_android = 0
+        push_failed_android = 0
+        push_issued_ios = 0
+        push_failed_ios = 0
+        for recipient in send_to:
+            n = Notification(report_id=r,user=recipient,expert_id=sender,notification_content=notification_content)
+            try:
+                n.save()
+                notifications_issued = notifications_issued + 1
+            except Exception as e:
+                notifications_failed = notifications_failed + 1
+                #raise ParseError(detail=e.message)
+            if push and recipient.device_token is not None and recipient.device_token != '':
+                #send push
+                if(recipient.user_UUID.islower()):
+                    send_message_android(recipient.device_token, notification_content.title_es, '')
+                    push_issued_android = push_issued_android + 1
+                else:
+                    send_message_ios(recipient.device_token,notification_content.title_es,'')
+                    push_issued_ios = push_issued_ios + 1
+        results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
+        return Response(results)
 
 
 # This is the old method which used a Window. It is now deprecated

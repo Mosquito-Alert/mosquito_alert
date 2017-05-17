@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from taggit.models import Tag
-from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth
 from django.contrib.auth.models import User
 
@@ -237,17 +237,34 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ('id','name')
 
+class NotificationContentSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    body_html_es = serializers.CharField()
+    body_html_ca = serializers.CharField(required=False)
+    body_html_en = serializers.CharField(required=False)
+    title_es = serializers.CharField()
+    title_ca = serializers.CharField(required=False)
+    title_en = serializers.CharField(required=False)
+
+    class Meta:
+        model = NotificationContent
+        fields = ('id', 'body_html_es', 'body_html_ca', 'body_html_en', 'title_es', 'title_ca', 'title_en')
+        #fields = ('id', 'body_html_es', 'title_es')
+
 class NotificationSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     report_id = serializers.CharField()
     user_id = serializers.CharField()
     expert_id = serializers.IntegerField()
     date_comment = serializers.Field()
-    expert_comment = serializers.CharField()
-    expert_html = serializers.CharField()
+    #expert_comment = serializers.CharField()
+    #expert_html = serializers.CharField()
     photo_url = serializers.CharField()
     acknowledged = serializers.BooleanField()
+    notification_content = NotificationContentSerializer()
+    public = serializers.BooleanField()
 
     class Meta:
         model = Notification
-        fields = ('id','report_id','user_id','expert_id','date_comment','expert_comment','expert_html','photo_url','acknowledged')
+        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
+        fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')

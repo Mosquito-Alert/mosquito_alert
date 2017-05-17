@@ -324,14 +324,21 @@
                     {% endif %}
                 </h4>
             </div>
+            {% if request.user.userstat.is_superexpert %}
+            <!-- Keeping this for future uses, disabled right now -->
+            <!--<div class="col-md-1">
+                <h4>
+                    <a href="http://{{ request.META.HTTP_HOST }}{% url 'notifications' %}?user_uuid={{ form.instance.report.user_id }}" target="_blank"><span class="glyphicon glyphicon-envelope" style="color:red;" aria-hidden="true" title="Send notification to owner of the report..."></span></a>
+                </h4>
+            </div>-->
+            {% endif %}
         </div>
         {% block report_title_status_row %}
             <div class="row">
                 <div class="col-md-6">
                     {% if form.instance.simplified_annotation == True %}
                     <strong>This is a simplified report - </strong>
-                    {% else %}
-                    <strong>This is a full report - </strong>
+                    {% else %}<strong>This is a full report - </strong>
                     {% endif %}
                     <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}superexpert {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
                 </div>
@@ -369,7 +376,7 @@
                     </div>
                     {% if form.instance.simplified_annotation == False %}
                     <div class="form-group">
-                        <label>Public Note:</label>
+                        <label>Public Note (webmap):</label>
                         <div>
                             <button type="button" id="btn_gp_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Nice picture"><span class="glyphicon glyphicon-star-empty"></span></button>
                             <button type="button" id="btn_yes_thorax_pattern_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Yes thorax pattern"><span class="glyphicon glyphicon-thumbs-up"></span></button>
@@ -382,7 +389,7 @@
                         </div>
                     </div>
                     <div class="form-group" {% if request.user.userstat.is_expert %}style="display:none;"{% endif %}>
-                        <label>Message to User:</label>
+                        <label>Private Message to User (app):</label>
                         <div>
                             <button type="button" id="btn_pm_discovery_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-map-marker"></span></button>
                             <button type="button" id="btn_pm_contact_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Contact"><span class="glyphicon glyphicon-envelope"></span></button>
@@ -453,10 +460,10 @@
                             {{ form.instance.site_certainty_notes }}</div><br>
                     {% endif %}
 
-                    <strong>Public Note:</strong><br>
+                    <strong>Public Note (webmap):</strong><br>
                     <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
                         {{ form.instance.edited_user_notes }}</div><br>
-                    <strong>Message To User:</strong><br>
+                    <strong>Private Message To User (app):</strong><br>
                     <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
                         {{ form.instance.message_for_user }}</div><br>
                     <strong>Status:</strong><br>
