@@ -546,7 +546,7 @@ class Report(models.Model):
                         result['crowdcrafting_n_response'] = self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
                 if self.type == 'adult':
                     result['tiger_certainty_category'] = self.get_final_expert_score()
-                    result['aegypti_certainty_category'] = self.get_final_superexpert_aegypti_score()
+                    result['aegypti_certainty_category'] = self.get_final_expert_score_aegypti()
                     classification = self.get_mean_combined_expert_adult_score()
                     result['score'] = int(round(classification['score']))
                     if result['score'] <= 0:
