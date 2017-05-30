@@ -775,8 +775,8 @@ def user_score(request):
 
 
 def custom_render_notification(notification,locale):
-    expert_comment = notification.notification_content.get_body_locale_safe(locale)
-    expert_html = notification.notification_content.get_title_locale_safe(locale)
+    expert_comment = notification.notification_content.get_title_locale_safe(locale)
+    expert_html = notification.notification_content.get_body_locale_safe(locale)
     content = {
         'id':notification.id,
         'report_id':notification.report.version_UUID,
