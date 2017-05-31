@@ -17,11 +17,12 @@ def users_with_storm_drain_pictures():
 def filter_reports(type):
     photos = Photo.objects.filter(hide=False)
     report_ids = set(photos.values_list('report_id', flat=True))
-    reports = Report.objects.filter(hide=False).filter(version_UUID__in=report_ids).filter(type='site')
+    reports_site = Report.objects.filter(hide=False).filter(version_UUID__in=report_ids).filter(type='site')
+    reports_all = Report.objects.filter(hide=False).filter(version_UUID__in=report_ids)
     if type == 'users_with_storm_drain_pictures':
-        reports_filtered = filter_users_with_storm_drain_pictures(reports)
+        reports_filtered = filter_users_with_storm_drain_pictures(reports_site)
     elif type == 'users_with_pictures':
-        reports_filtered = filter_users_with_pictures(reports)
+        reports_filtered = filter_users_with_pictures(reports_all)
     user_ids = []
     for r in reports_filtered:
         user_ids.append(r.user_id)
