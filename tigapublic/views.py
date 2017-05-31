@@ -18,7 +18,7 @@ from django.contrib.auth import authenticate, login, logout
 
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LineString, Point
 from models import MapAuxReports, Notification, NotificationContent, NotificationImageFormModel
-from models import StormDrain, StormDrainRepresentation, StormDrainUserVersions, AuthUser
+from models import StormDrain, StormDrainUserVersions, AuthUser
 
 from resources import MapAuxReportsLimitedResource, MapAuxReportsResource, MapAuxReportsExtendedResource
 from resources import NotificationResource, NotificationExtendedResource, StormDrainResource, StormDrainCSVResource
