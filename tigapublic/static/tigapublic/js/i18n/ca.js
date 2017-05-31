@@ -8,6 +8,10 @@ trans.ca = {
     'header.motto': 'Observacions ciutadanes',
     'header.logo_url': "window.open('http://www.mosquitoalert.com/ca/')",
 
+    'group.observations':'Observacions ciutadanes',
+    'group.userfixes':'Distribució de participants',
+    'group.breeding_sites':'Llocs de cria',
+    'group.userdata':'Capes d\'usuari',
     'layer.mosquito_tiger_confirmed': 'Mosquit tigre confirmat',
     'layer.mosquito_tiger_probable': 'Possible mosquit tigre',
     'layer.yellow_fever_confirmed': 'Confirmat mosquit febre groga',
@@ -26,8 +30,6 @@ trans.ca = {
     'layer.tiger': 'Mosquit tigre',
     'layer.zika': 'Mosquit febre groga',
     'layer.site': 'Llocs de cria',
-
-
 
     'map.numfixes': 'Observacions',
     'map.control_layers': 'Llegenda',
@@ -116,7 +118,7 @@ trans.ca = {
     'map.anonim': 'Anònim',
     'map.share_social_text': 'Mira aquest mapa de @MosquitoAlert #cienciaciutadana',
 
-    'share.look_at': 'Mira',
+    'share.look_at': 'Mira el mapa de @Mosquito_Alert #MosquitTigre #CienciaCiutadana',
 
     'report.author': 'Autor',
     'report.license': 'Llicència: ',
@@ -124,5 +126,31 @@ trans.ca = {
 
     'error.invalid_login': 'No hi ha cap usuari amb aquestes credencials.',
     'error.no_points_selected': 'No hi ha cap punt.',
-    'error.too_many_points_selected': 'Hi ha massa punts.'
-};
+    'error.too_many_points_selected': 'Hi ha massa punts.',
+
+    //Control de descàrrega'map.control_download': 'Descarregar dades',
+    'map.download_btn': 'Descarregar dades',
+    'map.text_description_download': '<p>La descàrrega es realitzarà a partir dels elements que es visualitzen al mapa. Comprova que tens actives les capes de la llegenda que desitges, els filtres temporals i el nivell de zoom.</p><p>Un cop definida la vista desitjada, fes clic al botó de descàrrega.</p>',
+    'map.title_download': 'Descàrrega',
+
+    'info.notifications': 'Notificacions',
+
+
+    //Varis
+    'error.unknown': 'Hi ha hagut un error:',
+    'group.breeding_sites': 'Llocs de cria',
+    'group.observations': 'Observacions ciutadanes',
+    'group.userdata': 'Capes d\'usuari',
+    'group.userfixes': 'Distribució de participants',
+    'hashtag.filters.placeholder': 'Per #hashtag',
+    'observations.filters.title': 'Observacions',
+    'remove': 'Eliminar',
+    'title': 'Títol',
+    'display-example': 'Veure exemple',
+
+    //Draw. Not visible when defined in ca_logged
+    'leaflet.draw.polygon.continue': 'Continua dibuixant el contorn del polígon',
+    'leaflet.draw.polygon.end': 'Marca el primer punt (o fes doble clic en un punt nou) per acabar.',
+    'leaflet.draw.polygon.start': 'Marca la posició del primer punt al mapa.'
+
+ };

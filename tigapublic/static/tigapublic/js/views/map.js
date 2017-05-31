@@ -2,7 +2,7 @@ var MapView = BaseView.extend({
     el: '#map-view',
     initialize: function(options) {
         options = options || {};
-        this.filters = {year: null, months: [], excluded_types: []};
+        this.filters = {years: [], months: [], excluded_types: []};
         //_.extend(this.filters, Backbone.Events);
         this.controls = {};
         this.scope = {};
@@ -19,13 +19,13 @@ var MapView = BaseView.extend({
             this.LAYERS_CONF = MOSQUITO.config.logged.layers;
         }
         this.options = _.extend({}, this.defaults, options);
-        //console.log(this.options);
+
         //this.options.layers = this.options.layers.split(',').map(Number);
         this.options.layers = this.options.layers.split(',');
 
-        if('filters_year' in this.options){
-            if(this.options.filters_year !== null && this.options.filters_year !== 'all' && parseInt(this.options.filters_year)){
-                this.filters.year = parseInt(this.options.filters_year);
+        if('filters_years' in this.options){
+            if(this.options.filters_years !== null && this.options.filters_years !== 'all'){
+                this.filters.years = options.filters_years.split(',').map(Number);
             }
         }
         if('filters_months' in this.options){
@@ -35,6 +35,22 @@ var MapView = BaseView.extend({
         }
 
         this.render();
+    },
+
+    userCan: function(role) {
+      role_groups = MOSQUITO.config.roles[role];
+      if ('groups' in MOSQUITO.app.user) {
+        var i = 0, found = false;
+        user_groups = MOSQUITO.app.user.groups;
+        role_groups.forEach(function(role_group){
+            user_groups.forEach(function(user_group){
+                if (user_group == role_group) {
+                    found=true;
+                }
+            });
+        });
+        return found;
+      } else return false;
     },
 
     render: function() {
@@ -48,7 +64,6 @@ var MapView = BaseView.extend({
 
         this.map = map;
         window.map = map;
-
 
         this.addBaseLayer();
         this.addLayers();
@@ -66,7 +81,6 @@ var MapView = BaseView.extend({
 
         //xapussilla??
         if (MOSQUITO.config.printreports) this.addReportsDocumentControl();
-
         this.selectDefaultLayers();
 
         if (typeof MOSQUITO.config.minZoom != 'undefined') {
@@ -85,9 +99,15 @@ var MapView = BaseView.extend({
             }
             this.map.setMaxBounds(bounds);
         }
+        //Not registered users get to download data
+          this.addPanelDownloadControl();
 
-        if(MOSQUITO.config.login_allowed === true){
-            this.addPanelDownloadControl();
+        if(MOSQUITO.config.login_allowed === true && MOSQUITO.app.headerView.logged){
+
+            if (this.userCan('notification')) {
+              this.addNotificationControl();
+              //this.addRoleFunctions();
+            }
         }
 
         this.load_data();
@@ -115,23 +135,43 @@ var MapView = BaseView.extend({
               this.excludeLayerFromFilter(layer.layer._meta);
             }
 
+            if ('notificationServerIds' in MOSQUITO.app.mapView.scope) {
+                this.controls.notification.getNotificationClientIds();
+            }
             this.drawCluster();
 
         }, this);
 
-        this.filters.on('year_change', function(year){
-            this.filters.year = year;
-            this.filters.trigger('changed');
+        this.filters.on('years_change', function(years){
+            this.filters.years = years;
+            this.filters.trigger('changed','year');
         }, this);
 
         this.filters.on('months_change', function(months){
             this.filters.months = months;
-            this.filters.trigger('changed');
+            this.filters.trigger('changed','months');
         }, this);
 
-        this.filters.on('changed', function(){
-            this.refreshCoverageLayer();
-            this.drawCluster();
+        this.filters.on('notif_change', function(notif){
+            //this.filters.notif = notif?'1':'0';
+            this.filters.notif = notif;
+            this.filters.trigger('changed','notif');
+        }, this);
+
+        this.filters.on('hashtag_change', function(search_text){
+          this.filters.hashtag = search_text;
+          this.filters.trigger('changed','hashtag');
+        }, this)
+
+        this.filters.on('changed', function(filter){
+            if (filter !=='notif' && filter !=='hashtag'){
+                if (MOSQUITO.app.mapView.options.layers.indexOf('F')>-1) this.refreshCoverageLayer();
+                this.drawCluster();
+            } else {
+              this.load_data();
+            }
+            //if ('notification' in this.controls) this.controls.notification.getNotificationClientIds();
+
         }, this);
 
         return this;
@@ -139,13 +179,14 @@ var MapView = BaseView.extend({
     },
 
     redraw: function(options) {
+
         if('zoom' in options){
             this.map.setView([options.lat, options.lon], options.zoom);
         }
 
-        if('filters_year' in this.options){
-            if(this.options.filters_year !== null && this.options.filters_year !== 'all' && parseInt(this.options.filters_year)){
-                this.filters.year = parseInt(this.options.filters_year);
+        if('filters_years' in this.options){
+            if(this.options.filters_years !== null && this.options.filters_years !== 'all'){
+                this.filters.years = this.options.filters_years.split(',').map(Number);
             }
         }
 
@@ -154,6 +195,7 @@ var MapView = BaseView.extend({
                 this.filters.months = this.options.filters_months.split(',').map(Number);
             }
         }
+
         if('layers' in options){
 
             /*
@@ -196,6 +238,38 @@ var MapView = BaseView.extend({
         }
       }
 
+    },
+    /**
+     * @return {boolean} true if (lng, lat) is in bounds
+     */
+    isPointInPolygon: function(bounds, lat, lng) {
+        //https://rosettacode.org/wiki/Ray-casting_algorithm
+        var count = 0;
+        for (var b = 0; b < bounds.length; b++) {
+            var vertex1 = bounds[b];
+            var vertex2 = bounds[(b + 1) % bounds.length];
+            if (west(vertex1, vertex2, lng, lat))
+                ++count;
+        }
+        return count % 2;
+
+        /**
+         * @return {boolean} true if (x,y) is west of the line segment connecting A and B
+         */
+        function west(A, B, x, y) {
+            if (A.lat <= B.lat) {
+                if (y <= A.lat || y > B.lat ||
+                    x >= A.lng && x >= B.lng) {
+                    return false;
+                } else if (x < A.lng && x < B.lng) {
+                    return true;
+                } else {
+                    return (y - A.lat) / (x - A.lng) > (B.lat - A.lat) / (B.lng - A.lng);
+                }
+            } else {
+                return west(B, A, x, y);
+            }
+        }
     }
 
 });

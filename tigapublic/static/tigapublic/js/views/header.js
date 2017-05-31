@@ -60,7 +60,7 @@ var HeaderView = Backbone.View.extend({
     },
 
     "show_login_form": function() {
-      $('.collapse').removeClass('in');
+      //$('.collapse').removeClass('in');
       $('#control-login').modal('show');
       $('#control-login').on('shown.bs.modal', function() {
           $("#login_username").focus();
@@ -72,8 +72,9 @@ var HeaderView = Backbone.View.extend({
         $.ajax({
             type: 'GET',
             'async': false,
-            url:  MOSQUITO.config.URL_PUBLIC + 'ajax_is_logged/',
+            url:  MOSQUITO.config.URL_API + 'ajax_is_logged/',
             success: function(response){
+                MOSQUITO.app.user=response.data;
                 MOSQUITO.app.trigger('app_logged', response.success);
             }
         });
@@ -84,13 +85,12 @@ var HeaderView = Backbone.View.extend({
         var _this = this;
         $.ajax({
             type: 'POST',
-            url:  MOSQUITO.config.URL_PUBLIC + 'ajax_login/',
+            url:  MOSQUITO.config.URL_API + 'ajax_login/',
             data: {
                 username: this.$el.find('#login_username').val(),
                 password:  this.$el.find('#login_password').val()
             },
             success: function(response){
-              //console.log('login');
                 if (response.success) {
                   var url = MOSQUITO.app.mapView.controls.share_btn.options.build_url();
                   document.location = url+'';
@@ -105,9 +105,8 @@ var HeaderView = Backbone.View.extend({
     },
     logout: function(){
         var _this = this;
-        //MOSQUITO.app.trigger('app_logged', false);
         $.ajax({
-            url:  MOSQUITO.config.URL_PUBLIC + 'ajax_logout/',
+            url:  MOSQUITO.config.URL_API + 'ajax_logout/',
             success: function(){
                 _this.is_logged();
                 MOSQUITO.app.trigger('app_logged', false);

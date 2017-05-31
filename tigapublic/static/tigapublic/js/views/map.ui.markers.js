@@ -70,18 +70,6 @@ var MapView = MapView.extend({
                 this.controls.sidebar.closePane();
             }
         }
-
-        /*
-        if(marker !== undefined && marker !== null){
-            var type = marker._data.category;
-            this.scope.selectedMarker = null;
-            marker.setIcon(this.getIconType(type));
-            if($(this.report_panel).is(':visible')){
-                this.controls.sidebar.closePane();
-            }
-        }
-        */
-
     },
 
     markerSetSelected: function(marker){

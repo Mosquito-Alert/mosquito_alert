@@ -1,0 +1,66 @@
+﻿Descripción 
+===========
+
+Columnas requeridas 
+-------------------
+
+Las siguientes columnas deben aparecer obligatoriamente en el fichero de importación.
+
+*codigo*: Código del imbornal. 
+    Formato: Alfanumérico. Máximo 50 caracteres. 
+    Otros posibles nombres para esta columna son: code y codi.
+
+*x_etrs89*: Coordenadas X del imbornal expresada en ETRS89.
+
+*y_etrs89*: Coordenadas Y del imbornal expresada en ETRS89.
+
+*agua*: Indica la presencia/ausencia de agua en el imbornal. 
+    Formato: Posibles valores para indicar la presencia de agua: si, sí, yes, true y 1. Posibles valores para indicar la ausencia de agua: no, false, 0 y -1.
+    Otros posibles nombres para esta columna son: water, aigua y h2o.
+
+*fecha*: Fecha de recogida de la información del imbornal. 
+    Formato:dd/mm/yyyy (p. ej: 21/08/2016)
+    Otros posibles nombres para esta columna son: date y data
+    
+*e_tipo*: Tipo de imbornal (sifónico, arenero, etc.). 
+    Formato: Alfanumérico. Máximo 50 caracteres.
+    Otros posible nombres para esta columna son: shape y forma.
+
+    
+Columnas opcionales
+-------------------
+
+*tamaño*: Indica las dimensiones del imbornal.
+    Formato: numérico.
+    Otro posible nombres para esta columna es: size.
+
+*arena*: Indica la presencia o ausencia de arena en el imbornal.
+    Formato:Posibles valores para indicar la presencia de arena: si, sí, yes, true y 1. Posibles valores para indicar la ausencia de arena: no, false, 0 y -1.
+    Otros posibles nombres para esta columna son: sand y sorra.
+
+*municipio*: Indica el municipio al que pertenece cada imbornal. 
+    Formato: Alfanumérico. Máximo 50 caracteres.
+    Otros posibles nombres para esta columna son: municipality y municipi.
+
+*modelo*: Indica el modelo del imbornal. 
+    Formato:Alfanumérico. Máximo 50 caracteres.
+    Otros posibles nombres para esta columna son: model y tipus
+
+*actividad*: Indica si el imbornal presenta actividad.
+    Formato: Posibles valores para indicar la presencia de actividad: si, sí, yes, true y 1. Posibles valores para indicar la ausencia de actividad: no, false, 0 y -1.
+    Otros posibles nombres para esta columna son: activity y activitat.
+    
+*esp1*: Indica si en el imbornal se ha encontrado la especie 1.
+    Formato: Posibles valores para indicar la presencia de la especie 1: si, sí, yes, true y 1. Posibles valores para indicar la ausencia de la especie 1: no, false, 0 y -1
+
+*esp2*: Indica si en el imbornal se ha encontrado la especie 2
+    Posibles valores para indicar la presencia de la especie 2: si, sí, yes, true y 1
+    Posibles valores para indicar la ausencia de la especie 2: no, false, 0 y -1
+
+*trat*: Indica si se ha llevado a cabo algun tratamiento en el imbornal.
+    Formato: Posibles valores para indicar la presencia tratamiento: si, sí, yes, true y 1. Posibles valores para indicar la ausencia de tratamiento: no, false, 0 y -1.
+    Otros posibles nombres para esta columna son: treatment y tratamiento.
+    
+    
+
+

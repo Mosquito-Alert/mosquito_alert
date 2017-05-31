@@ -1,3 +1,4 @@
+appdirs==1.4.3
 diff-match-patch==20121119
 Django==1.6.5
 django-debug-toolbar==1.6
@@ -9,8 +10,11 @@ django-messages==0.5.3
 django-taggit==0.19.1
 djangorestframework==2.3.13
 Markdown==2.4.1
+packaging==16.8
 Pillow==2.4.0
 psycopg2==2.5.3
+pyparsing==2.2.0
+pyproj==1.9.5.1
 python-dateutil==2.2
 python-memcached==1.57
 pytz==2014.4

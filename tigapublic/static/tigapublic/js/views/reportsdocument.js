@@ -20,7 +20,7 @@ var ReportsdocumentView = MapView.extend({
         $.ajax({
             type: 'GET',
             'async': true,
-            url:  MOSQUITO.config.URL_PUBLIC + 'ajax_is_logged/',
+            url:  MOSQUITO.config.URL_API + 'ajax_is_logged/',
             success: function(response){
                 if (response.success) {
                     _this.LAYERS_CONF = MOSQUITO.config.logged.layers;
@@ -51,6 +51,7 @@ var ReportsdocumentView = MapView.extend({
 
             for(var i = 0; i < data.rows.length; i++){
                 row = data.rows[i];
+
                 // hide some fields
                 if (opener.MOSQUITO.app.headerView.logged){
                     if(row.t_q_1 != ''){
@@ -102,26 +103,42 @@ var ReportsdocumentView = MapView.extend({
 
             }
 
+
             _this.$el.html(_this.tpl(data));
             window.t().translate(MOSQUITO.lng, _this.$el);
-            //Clone TOC from window opener
+
+            //Clone TOC and filters from window opener
             var stuff = window.opener.$("#map_filters").clone();
             $('#map_filters').html(stuff);
+
+            var stuff = window.opener.$("#notif_filters").clone();
+            $('#notif_filters').html(stuff);
+
+            var stuff = window.opener.$("#hashtag_filters").clone();
+            //check if hashtag filter exists.
+             if ($(stuff).find('#hashtag_search_text').length){
+               if ($(stuff).find('#hashtag_search_text').val().trim()!=''){
+                 $('#hashtag_filters').html(stuff);
+               }
+             }
+
+
             //add active layers from opener
             stuff = window.opener.$('#map_layers_list li.active').clone();
-
             stuff.removeClass('active');
+
 
             $('#map_layers').html(stuff);
             //remove some unnecessary sublist elements
             $('#map_layers > li.sublist-group-item').remove();
             // remove userfixes layer
             $('#map_layers > li.list-group-item > label[i18n="layer.userfixes"]').parent().remove();
-
             $('#legend_reports_map button').addClass('disabled');
 
             // Create header map
-            var mapView = opener.MOSQUITO.app.mapView;
+
+            var mapView = window.opener.MOSQUITO.app.mapView;
+
             var z = mapView.map.getZoom() - 1; // the map is smaller so we need to zoom out
             var c = mapView.map.getCenter();
             var b = mapView.map.getBounds();
@@ -143,7 +160,11 @@ var ReportsdocumentView = MapView.extend({
 
             for(i = 0; i < data.rows.length; i++){
                 row = data.rows[i];
-
+                //if notif is checked and observation has no notif, then skip observation
+                if ($('#checkbox_notif').is(':checked')
+                    && row.notif!="1"){
+                      continue;
+                }
                 center  = [row.lat, row.lon];
                 map = L.map('map_report_' + row.id, { zoomControl:false}).
                     setView(center, 16);
@@ -152,8 +173,8 @@ var ReportsdocumentView = MapView.extend({
                         maxZoom: 18,
                         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     }).addTo(map);
-                L.marker(center, {icon: _this.getIconType(row.category)}).addTo(map);
-                layers.push(L.marker(center, {icon: _this.getIconType(row.category)}));
+                L.marker(center, {icon: _this.getIconType(row.private_webmap_layer)}).addTo(map);
+                layers.push(L.marker(center, {icon: _this.getIconType(row.private_webmap_layer)}));
             }
 
             // Create Marker cluster group and add its makers
@@ -190,10 +211,16 @@ var ReportsdocumentView = MapView.extend({
     },
 
     fetch_data: function(options, callback){
+        url = MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/';
+        url += options.years + '/' + options.months + '/' + options.categories ;
+        url += (('notifications' in options) && (options.notifications !="false" ))?'/' + options.notifications:'/N';
+        url += ('hashtag' in options)?'/' + options.hashtag:'';
+        url += '/';
 
         $.ajax({
             method: 'GET',
-            url: MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/' + options.year + '/' + options.months + '/' + options.categories
+            url: url
+
         })
         .done(function(resp) {
             callback(resp);
@@ -203,5 +230,6 @@ var ReportsdocumentView = MapView.extend({
         });
 
     },
+
 
 });

@@ -1,0 +1,82 @@
+DETAILED LEGEND DESCRIPTION
+
+Description of the categories assigned to each citizen report in the map (see map legend).
+
+*Confirmed or possible tiger mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus). If their taxonomic features can be clearly seen, especially the white stripe on head and thorax, it is classified as "confirmed". If some features cannot be observed, it is classified as "possible".
+
+*Confirmed or possible yellow fever mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be yellow fever mosquito (Aedes aegypti). If their taxonomic features can be clearly seen, especially the lyre in the head and thorax, it is classified as "confirmed". If some features cannot be seen, it is classified as "possible".
+
+*Other species*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the pictures of this observation may be of other species of mosquito.
+
+*Unidentifiable*: it includes all reports from citizen tagged by them as "adult mosquito" that don't contain any picture attached and therefore, could not be evaluated by entomological experts. It also includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, these observations and their photo/s do not help identify any particular species of mosquito (experts cannot decide on any other category according to the content of the pictures).
+
+*To validate*: it includes the most recent reports from citizen tagged by them as "adult mosquito" or "breeding site", that contain at least one picture but that it has not yet been validated by experts (real time data).
+
+*Breeding sites*: citizens' observations of possible breeding sites (storm drain or sewer and other categories of possible breeding sites) of tiger or yellow fever mosquitoes. It includes reports that contain at least one picture and that it has been evaluated by entomological experts, reports with at least one picture that have not been evaluated by experts and it might also contain reports without pictures. It also includes real time data, it is, the most recent observations tagged by participants as "breeding site" that have not been revised or checked yet by any expert or Mosquito Alert project manager.
+
+*Other observations*: observations that contain at least one picture, that do not correspond to any other category but which may contain information of interest to managers for surveillance or control actions. The Mosquito Alert team cannot assure their quality or usefulness. This can include: i) reports that have been expert validated by entomologists but removed from public view by experts or project managers because they might contain sensible or unrelated information (e.g. pictures with personal data; pictures of other animals or things; pictures of big landscapes without any specific breeding site; etc); ii) reports tagged by the participant as "adult mosquito" but containing pictures of breeding sites or vice versa.
+
+
+
+DETAILED FIELD DESCRIPTION
+
+Description of each field found in the downloadable data base
+
+*ID*: unique identifier for each observation. UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens). This corresponds to the latest version of the report (as opposed to an earlier version that the participant subsequently edited).	Example: 8664a3b2-7646-42ab-8c7b-475245ac88db.
+
+*user*: unique identifier for each user generated on phone to identify each user. Must be exactly 36 characters (32 hex digits plus 4 hyphens).  Example: 8a4b3b2-7646-a2ab-8c7b-7d5245ac88db.
+
+*Date*: creation date and time of the observation. Date and time on phone when first version of report was created, converted to UTC time zone 0. Format as YYYY-MM-DD hh:mm:ss. Example: 2016-07-31 17:39:12.
+
+*Longitude*: longitude of report location in decimal degrees. Participants select the location on a map, or use GPS and other Smartphone services to record their current location at the time of the observation. Accuracy or precision of the coordinates cannot be specified for each particular case, because it depends on many factors (each participant's device, specific day of recording, network coverage, GPS availability, etc.). Example: -0.4045194.
+
+*Latitude*: latitude of report location in decimal degrees. Participants select the location on a map, or use GPS and other Smartphone services to record their current location at the time of the observation. Accuracy or precision of the coordinates cannot be specified for each particular case, because it depends on many factors (each participant's device, specific day of recording, network coverage, GPS availability, etc.). Example: 39.55819.
+
+*Ref. System*: Reference System of the Geographic Coordinates (latitude, longitude) in EPSG:4326. Example: WGS84.
+
+*Type*: type of report. 'Adult' or 'site', depending on the app button that the participant selected to send the observation. Example: adult.
+
+*Adult/site question*: this field contains the responses the participant gave to the breeding site/taxonomic survey in the app when submitting the report. Note that survey questions have slightly changed in different periods of the project and can differ amongst devices (Android, iOS). Questions are formulated in their original language, depending on the language settings of the Mosquito Alert app participant. Some observations might not contain any question. Example:"�C�mo es el abdomen de tu mosquito? Consulta el bot�n (i) y selecciona una respuesta:".
+
+*Adult/site answers*: this field contains the responses the participant gave to the breeding site/taxonomic survey in the app when submitting the report. Note that survey questions have slightly changed in different periods of the project and can differ amongst devices (Android, iOS). Answers are formulated in their original language, depending on the language settings of the Mosquito Alert app participant. Some observations might not contain any answer. Example: "Abdomen como Ae. albopictus".
+
+*Expert validated*: it is a zero if the report has not been validated by entomology experts and 1, if yes. More information on the validation method on the project website. Example: 0.
+
+*Expert validation result*: Possible values are "mosquito_tiger_confirmed", "mosquito_tiger_probable", "yellow_fever_confirmed", "yellow_fever_probable", "other_species", "unidentified", "not_yet_validated", "trash_layer", "breeding_site_not_yet_filtered", "breeding_site_other", "storm_drain_dry", "storm_drain_water"
+
+    Adults
+    ------
+
+    mosquito_tiger_confirmed - Report with photograph of a mosquito in which all of the characteristics of the mosquito are recognised, or which show the characteristic white line on the head and thorax. With these qualities, the presented information almost surely represents a tiger mosquito.
+
+    mosquito_tiger_probable - Report with photograph of a mosquito partly fulfilling characteristics of the tiger mosquito, or photos in which the white line on head and thorax is not seen clearly. The characteristics also describe other similar species. The specimen could be a tiger mosquito, but this cannot be reliably assured.
+
+    yellow_fever_confirmed - Report with photograph of a mosquito in which all of the characteristics of the yellow fever mosquito are recognised, or which show the characteristic white lyre-shape on the head and thorax. With these qualities, the presented information almost surely represents a yellow fever mosquito (not yet detected in Spain).
+
+    yellow_fever_probable - Report with photograph of a mosquito partly fulfilling characteristics of the yellow fever mosquito, or photos in which the white lyre-shape pattern in the head and thorax is not seen clearly. The characteristics also describe other similar species. The specimen could be a yellow fever mosquito, but this cannot be reliably assured.
+
+    other_species - Report with photograph of other species. Therefore, the specimen is not a tiger or a yellow fever mosquito.
+
+    unidentified - Report without photographs and reports with photographs having a quality which do not allow choice of another category (blurry, �burnt,� uninformative angle, etc.). Therefore, with available information the category is unknown.
+
+    not_yet_validated - Adult reports with pictures that are sitting in the basic filter and not been yet expert validated by three experts, and therefore, there is no results available in the expert validation.
+
+
+    Sites
+    -----
+    storm_drain_water - Site reports tagged by the user as storm drain with water and not blocked in the basic filter, after waiting for 3 days.
+
+    storm_drain_dry - Site reports tagged by the user as storm drain without water and not blocked in the basic filter, after waiting for 3 days.
+
+    breeding_site_other - Site reports tagged by the user as other and not blocked in the basic filter, after waiting for 3 days.
+
+    breeding_site_not_yet_filtered - Site report with pictures that hasn't yet been promoted to storm_drain_water, storm_drain_dry, breeding_site_other, nor filtered in the basic filter.
+
+
+    Both
+    ----
+    trash_layer - Reports of any type which have been filtered in the basic filter or have been marked as hidden by the experts.
+
+
+*Map link*: an HTML string that produces a small version of the selected report. Example:
+http://webserver.mosquitoalert.com/spain.html#/es/19/40.83933/14.24665/0/all/all/5979
