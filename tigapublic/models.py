@@ -106,7 +106,7 @@ class StormDrain(models.Model):
     model = models.CharField(max_length=5, blank=True)
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'storm_drain'
 
 class NotificationContent(models.Model):
@@ -141,18 +141,18 @@ class Notification(models.Model):
         db_table = 'tigaserver_app_notification'
 
 
-class StormDrainRepresentation(models.Model):
-    id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser)
-    version = models.IntegerField()
-    condition = models.IntegerField()
-    key = models.CharField(max_length=36, blank=False)
-    value = models.CharField(max_length=36, blank=False)
-    operator = models.CharField(max_length=15, blank=False)
-
-    class Meta:
-        #managed = False
-        db_table = 'tigapublic_storm_drain_representation'
+# class StormDrainRepresentation(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     user = models.ForeignKey(AuthUser)
+#     version = models.IntegerField()
+#     condition = models.IntegerField()
+#     key = models.CharField(max_length=36, blank=False)
+#     value = models.CharField(max_length=36, blank=False)
+#     operator = models.CharField(max_length=15, blank=False)
+#
+#     class Meta:
+#         #managed = False
+#         db_table = 'tigapublic_storm_drain_representation'
 
 class StormDrainUserVersions(models.Model):
     id = models.AutoField(primary_key=True)
