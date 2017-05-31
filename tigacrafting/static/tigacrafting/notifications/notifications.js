@@ -5,15 +5,15 @@ $( document ).ready(function() {
 
     tinymce.init({
         selector: '#body_es',
-        plugins: ["image","code","link","fullpage"]
+        plugins: ["image","code","link"]
     });
     tinymce.init({
         selector: '#body_ca',
-        plugins: ["image","code","link","fullpage"]
+        plugins: ["image","code","link"]
     });
     tinymce.init({
         selector: '#body_en',
-        plugins: ["image","code","link","fullpage"]
+        plugins: ["image","code","link"]
     });
     $('.tokenize-user-uuid').tokenize2({
         dropdownMaxItems: 15,
