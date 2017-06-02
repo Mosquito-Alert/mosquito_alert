@@ -39,8 +39,8 @@
             this.route(/([a-z]{2})\/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_i18n');
 
             //Users, notifications param
-            this.route(/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_notif');
-            this.route(/([a-z]{2})\/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_notif_i18n');
+            this.route(/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_notif');
+            this.route(/([a-z]{2})\/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_notif_i18n');
 
             if(MOSQUITO.lng === undefined){
                 MOSQUITO.lng = $('html').attr('lang');
@@ -196,15 +196,17 @@
             //window.location.hash = '#/' + last_lang;
         },
 
-        reportsdocument_notif: function(bbox, years, months, categories, notifications){
-            this.reportsdocument_notif_i18n(MOSQUITO.config.default_lng, bbox, years, months, categories, notifications);
+        reportsdocument_notif: function(bbox, years, months, categories, notifications, hashtag){
+            console.log('reports document notif');
+            this.reportsdocument_notif_i18n(MOSQUITO.config.default_lng, bbox, years, months, categories, notifications, hashtag);
         },
 
-        reportsdocument_notif_i18n: function(lng, bbox, years, months, categories, notifications){
+        reportsdocument_notif_i18n: function(lng, bbox, years, months, categories, notifications, hashtag){
+          console.log(hashtag)
             $('.page').hide();
             $('#page-reports').show();
             MOSQUITO.lng = lng;
-            new ReportsdocumentView({bbox: bbox, years: years, months:months, categories: categories, notifications: notifications});
+            new ReportsdocumentView({bbox: bbox, years: years, months:months, categories: categories, notifications: notifications, hashtag:hashtag});
             //window.location.hash = '#/' + last_lang;
         },
 

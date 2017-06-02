@@ -214,7 +214,12 @@ var ReportsdocumentView = MapView.extend({
         url = MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/';
         url += options.years + '/' + options.months + '/' + options.categories ;
         url += (('notifications' in options) && (options.notifications !="false" ))?'/' + options.notifications:'/N';
-        url += ('hashtag' in options)?'/' + options.hashtag:'';
+        if ('hashtag' in options){
+          hashtag = options.hashtag.replace('#','');
+        }else{
+          hashtag = 'N';
+        }
+        url += '/'+hashtag;
         url += '/';
 
         $.ajax({
