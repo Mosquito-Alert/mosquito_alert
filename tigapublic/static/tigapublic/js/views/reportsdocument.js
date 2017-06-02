@@ -211,11 +211,15 @@ var ReportsdocumentView = MapView.extend({
     },
 
     fetch_data: function(options, callback){
+
         url = MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/';
         url += options.years + '/' + options.months + '/' + options.categories ;
         url += (('notifications' in options) && (options.notifications !="false" ))?'/' + options.notifications:'/N';
         if ('hashtag' in options){
           hashtag = options.hashtag.replace('#','');
+          if (hashtag==''){
+            hashtag='N'
+          }
         }else{
           hashtag = 'N';
         }

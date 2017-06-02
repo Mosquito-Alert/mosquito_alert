@@ -384,7 +384,12 @@ var MapView = MapView.extend({
             //Add filters if exists and !=false(all selected), N otherwise
             url += '&notifications='+(('notif' in _this.filters && _this.filters.notif!==false)?_this.filters.notif:'N');
             //Add hashtag if exists, N otherwise
-            url += '&hashtag='+(('hashtag' in _this.filters && _this.filters.hashtag.trim()!='')?_this.filters.hashtag:'N');
+            if ('hashtag' in _this.filters && _this.filters.hashtag.trim()!=''){
+              hashtag = _this.filters.hashtag.replace('#','');
+              if (hashtag=='') hashtag='N'
+            }
+            else hashtag = 'N';
+            url += '&hashtag='+hashtag;
             //console.log('the hashtag '+_this.filters.hashtag);
 
             window.location = url;

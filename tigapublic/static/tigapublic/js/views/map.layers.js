@@ -427,8 +427,10 @@ var MapView = MapView.extend({
                   notif_value = this.filters.notif;
                 else notif_value='N';
 
-                if ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='')
-                  hashtag_value = escape(this.filters.hashtag);
+                if ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='') {
+                  hashtag_value = this.filters.hashtag.replace('#','')
+                  if (hashtag_value =='') hashtag_value='N';
+                }
                 else hashtag_value='N';
 
               url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox + '/' + notif_value +'/'+hashtag_value;
