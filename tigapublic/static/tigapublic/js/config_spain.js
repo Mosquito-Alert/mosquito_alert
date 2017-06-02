@@ -6,7 +6,7 @@ var MOSQUITO = (function (m, _) {
         lngs: ['es', 'ca', 'en'],
         lngs_admin: ['es'],
         default_lng: ['es'],
-        //URL_API: '/tigapublic/',
+        URL_API: '/tigapublic/',
         //URL_PUBLIC: 'http://sigserver3.udg.edu/apps/mosquito/tigapublic/',
         
         lon: 1.130859375,
