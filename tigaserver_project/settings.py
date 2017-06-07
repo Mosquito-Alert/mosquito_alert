@@ -63,6 +63,7 @@ INSTALLED_APPS = (
     'taggit',
     'django_messages',
     'tigaserver_messages',
+    'tigascoring',
 )
 
 MIDDLEWARE_CLASSES = (
