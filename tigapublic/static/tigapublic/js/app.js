@@ -15,12 +15,12 @@
             //$zoom/$lat/$lon/
             this.route(/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/?$/, 'map');
             //$zoom/$lat/$lon/$layers/$year/$months
-            this.route(/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(.*)\/([\d]*|all)\/([\d,]*|all)\/?$/, 'map');
+            this.route(/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(.*)\/([\d,]*|all)\/([\d,]*|all)\/?$/, 'map');
             //this.route(/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(([A-Z0-9],?)*)\/([\d]*|all)\/([\d,]*|all)\/?$/, 'map');
 
             //$zoom/$lat/$lon/$layers/$year/$months/$report
             //this.route(/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/([\d,]*)\/([\d-]*|all)\/([\d,]*|all)\/([\d]*)\/?$/, 'report');
-            this.route(/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(.*)\/([\d-]*|all)\/([\d,]*|all)\/([\d]*)\/?$/, 'report');
+            this.route(/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(.*)\/([\d,]*|all)\/([\d,]*|all)\/([\d]*)\/?$/, 'report');
 
             //$lng/
             this.route(/([a-z]{2})\/?$/, 'map_i18n');
@@ -29,14 +29,18 @@
             this.route(/([a-z]{2})\/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/?$/, 'map_i18n');
             //$lng/$zoom/$lat/$lon/$layers/$year/$months
             //this.route(/([a-z]{2})\/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/([\d,]*)\/([\d]*|all)\/([\d,]*|all)\/?$/, 'map_i18n');
-            this.route(/([a-z]{2})\/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(.*)\/([\d]*|all)\/([\d,]*|all)\/?$/, 'map_i18n');
+            this.route(/([a-z]{2})\/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(.*)\/([\d,*]*|all)\/([\d,]*|all)\/?$/, 'map_i18n');
 
-            //$lng/$zoom/$lat/$lon/$layers/$year/$months/$report
-            //this.route(/([a-z]{2})\/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/([\d,]*)\/([\d]*|all)\/([\d,]*|all)\/([\d]*)\/?$/, 'report_i18n');
+
             this.route(/([a-z]{2})\/(\d\d|\d)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)\/(.*)\/([\d,]*|all)\/([\d,]*|all)\/([\d]*)\/?$/, 'report_i18n');
 
+            //Not registered users, no notifications param
             this.route(/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument');
             this.route(/([a-z]{2})\/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_i18n');
+
+            //Users, notifications param
+            this.route(/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_notif');
+            this.route(/([a-z]{2})\/reportsdocument\/(-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*,-?\d+\.?\d*)\/(.*)\/(.*)\/(.*)\/(.*)\/(.*)\/?$/, 'reportsdocument_notif_i18n');
 
             if(MOSQUITO.lng === undefined){
                 MOSQUITO.lng = $('html').attr('lang');
@@ -53,12 +57,11 @@
             '': 'map'
         },
 
-        map: function(zoom, lat, lon, layers, year, months) {
-            this.map_i18n(MOSQUITO.config.default_lng, zoom, lat, lon, layers, year, months);
+        map: function(zoom, lat, lon, layers, years, months) {
+            this.map_i18n(MOSQUITO.config.default_lng, zoom, lat, lon, layers, years, months);
         },
 
-        map_i18n: function(lng, zoom, lat, lon, layers, year, months) {
-
+        map_i18n: function(lng, zoom, lat, lon, layers, years, months) {
             if($('#page-map').is(':hidden')){
                 $('.page').hide();
                 $('#page-map').show();
@@ -90,8 +93,8 @@
             }
             options.layers = this.getSelectedLayersFromURL(layers);
 
-            if(year !== undefined && year !== 'all'){
-                options.filters_year = year;
+            if(years !== undefined && years !== 'all'){
+                options.filters_years = years;
             }
 
             if(months !== undefined && months !== 'all'){
@@ -119,11 +122,11 @@
             last_lang = lng;
         },
 
-        report: function(lng, zoom, lat, lon, layers, year, months, report_id){
-            this.report_i18n(MOSQUITO.config.default_lng, lng, zoom, lat, lon, layers, year, months, report_id);
+        report: function(lng, zoom, lat, lon, layers, years, months, report_id){
+            this.report_i18n(MOSQUITO.config.default_lng, lng, zoom, lat, lon, layers, years, months, report_id);
         },
 
-        report_i18n: function(lng, zoom, lat, lon, layers, year, months, report_id){
+        report_i18n: function(lng, zoom, lat, lon, layers, years, months, report_id){
             //MOSQUITO.config.clusterize = false;
             var _this = this;
             var show_report;
@@ -153,7 +156,7 @@
                         }
                     );
                 }
-                else{ 
+                else{
                     //search inside clusters
                     var cluster = _.find(_this.mapView.layers.layers.mcg._featureGroup._layers, function(layer){
                         if ( '_group' in layer){
@@ -175,21 +178,35 @@
                 this.off('cluster_drawn', show_report);
             };
 
-            this.map_i18n(lng, zoom, lat, lon, layers, year, months);
+            this.map_i18n(lng, zoom, lat, lon, layers, years, months);
             this.on('cluster_drawn', show_report);
 
 
         },
 
-        reportsdocument: function(bbox, years, months, excluded_types){
-            this.reportsdocument_i18n(MOSQUITO.config.default_lng, bbox, years, months, excluded_types);
+        reportsdocument: function(bbox, years, months, categories){
+            this.reportsdocument_i18n(MOSQUITO.config.default_lng, bbox, years, months, categories);
         },
 
         reportsdocument_i18n: function(lng, bbox, years, months, categories){
             $('.page').hide();
             $('#page-reports').show();
             MOSQUITO.lng = lng;
-            new ReportsdocumentView({bbox: bbox, year: years, months:months, categories: categories});
+            new ReportsdocumentView({bbox: bbox, years: years, months:months, categories: categories});
+            //window.location.hash = '#/' + last_lang;
+        },
+
+        reportsdocument_notif: function(bbox, years, months, categories, notifications, hashtag){
+            console.log('reports document notif');
+            this.reportsdocument_notif_i18n(MOSQUITO.config.default_lng, bbox, years, months, categories, notifications, hashtag);
+        },
+
+        reportsdocument_notif_i18n: function(lng, bbox, years, months, categories, notifications, hashtag){
+          console.log(hashtag)
+            $('.page').hide();
+            $('#page-reports').show();
+            MOSQUITO.lng = lng;
+            new ReportsdocumentView({bbox: bbox, years: years, months:months, categories: categories, notifications: notifications, hashtag:hashtag});
             //window.location.hash = '#/' + last_lang;
         },
 

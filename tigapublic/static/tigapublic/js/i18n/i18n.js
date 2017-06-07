@@ -3,6 +3,11 @@ _.extend(trans, Backbone.Events);
 window.t = function(){
     if(arguments.length === 0){
         return {
+            /*decode: function(text) {
+                if (typeof text === 'undefined') return '';
+                var APP_ROOT  = document.URL.replace(/#.*$/, '');
+                return text.replace('{{APP_ROOT}}',APP_ROOT);
+            },*/
             translate: function(lng, selector){
                 $(selector).find('*[i18n]').each(function(i, el){
                     var translated,
@@ -19,16 +24,18 @@ window.t = function(){
                         if(to_translate.indexOf('|') !==  -1){
                             var parts = to_translate.split('|');
                             to_translate = parts[0];
+                            //translated = this.decode(window.trans[lng][to_translate]);
                             translated = window.trans[lng][to_translate];
                             for(var l = 1; l < parts.length; l++){
                                 $(el).attr(parts[l], translated);
                             }
                         }else{
+                            //translated = this.decode(window.trans[lng][$(el).attr('i18n')]);
                             translated = window.trans[lng][$(el).attr('i18n')];
                             $(el).html(translated);
                         }
                     }
-                });
+                }.bind(this));
             },
             change: function(lng){
                 $('html').attr('lang', lng);

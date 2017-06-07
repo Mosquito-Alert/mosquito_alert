@@ -5,7 +5,7 @@
     <meta name="author" content="@sigte_udg" />
     <title>Mosquito Alert</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	<link href="http://www.mosquitoalert.com/wp-content/themes/enfold-child/images/favicons/favicon.ico" rel="shortcut icon">
+	  <link href="http://www.mosquitoalert.com/wp-content/themes/enfold-child/images/favicons/favicon.ico" rel="shortcut icon">
 
     <link href="lib/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <link href="lib/bootstrap-select-1.10.0/dist/css/bootstrap-select.min.css" rel="stylesheet">
@@ -13,18 +13,30 @@
 
 
     <link href="lib/Leaflet.markercluster-leaflet-0.7/dist/MarkerCluster.css" rel="stylesheet">
-	<link href="lib/Leaflet.markercluster-leaflet-0.7/dist/MarkerCluster.Default.css" rel="stylesheet">
+	  <link href="lib/Leaflet.markercluster-leaflet-0.7/dist/MarkerCluster.Default.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.9/leaflet.draw.css" rel="stylesheet">
 
     <link rel="stylesheet" type="text/css" href="lib/jssocials-1.2.1/jssocials.css">
     <link rel="stylesheet" type="text/css" href="lib/jssocials-1.2.1/jssocials-theme-flat.css">
+
+    <!--Font awesome-->
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- build:css css/style.min.css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/map.css" rel="stylesheet">
     <!-- endbuild -->
-	<!--Font awesome-->
-	<link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 
+    <meta property="og:title" content="Mosquito Alert Map"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:locale" content="en_US"/>
+    <meta property="og:url" content="http://sigserver3.udg.edu/mosquito/spain.html"/>
+    <meta property="og:image" content="http://sigserver3.udg.edu/mosquito/img/screenshot.png"/>
+    <meta property="og:site_name" content="Mosquito Alert"/>
+    <meta property="og:description"
+          content="Joining citizen, scientists and public health and environmental
+          managers to fight against the tiger mosquito and yellow fever mosquito,
+          vectors of Zika, Dengue and Chikungunya."/>
 </head>
 <body>
 <div id="page-map" class="page">
@@ -85,6 +97,7 @@
       <div id="control-login" class="modal fade" role="dialog">
         <div class="modal-dialog">
           <!-- Modal content-->
+          <form onsubmit="return false;">
           <div class="modal-content">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -92,6 +105,7 @@
             </div>
             <div class="modal-body content">
               <div id="form-login_" class="form-login" role="menu">
+
                 <div class="form-group">
                     <input i18n="header.username|placeholder" type="username" class="form-control" id="login_username" placeholder="Enter email" />
                 </div>
@@ -102,7 +116,7 @@
               </div>
             </div>
           </div>
-
+        </form>
         </div>
       </div>
     </div>
@@ -127,11 +141,494 @@
       </div>
     </div>
 
+    <div id="notification_form" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title" i18n="map.notification_add"></h4>
+          </div>
+          <div class="modal-body content">
+            <div id="form-notification" class="form-notification" role="menu">
+              <!-- hidden for image upload functionality -->
+              <iframe id="notification_form_target" name="form_target" style="display:none"></iframe>
+              <form id="notification_file_input" action="/tigapublic/imageupload/" target="form_target" method="post" enctype="multipart/form-data" style="width:0px;height:0;overflow:hidden">
+                  <input name="image" type="file" onchange="$('#notification_file_input').submit();this.value='';">
+              </form>
+              <!-- end of hidden code -->
+              <form id="notification_form_tpl" onsubmit="return false">
+                  <!-- NOTIFIER -->
+                  <div class="form-group notif-msg hidden" id="error_from_server">
+                  </div>
+                  <div class="form-group notif-msg hidden" id="notif_observations_none">
+                      <span i18n='notif.observations_none'></span>
+                  </div>
+                  <div class="form-group notif-msg hidden" id="notif_all_field_requiered">
+                      <span i18n='notif.all_field_requiered'></span>
+                  </div>
+                  <div class="form-group notif-msg hidden success" id="notif_saved">
+                      <span i18n='notif.saved'></span>
+                  </div>
+                  <div class="form-group">
+                    <input type="text" disabled i18n="map.notification.notifier|placeholder" class="form-control" id="notification-notifier">
+                    <input type="text" disabled i18n="map.notification.notified|placeholder" class="form-control" id="notification-notified">
+                  </div>
+                  <!-- TYPE -->
+                  <div class="form-group" style="margin-top:15px;">
+                      <select name="type" id="notification-type">
+                        <option name="none" i18n="map.notification.type.none"></option>
+                        <option name="public" i18n="map.notification.type.public"></option>
+                        <option name="private" i18n="map.notification.type.private"></option>
+                      </select>
+                  </div>
+                  <!-- PREDEFINED NOTIFICATIONS -->
+                  <div class="form-group" style="margin-bottom:0px;background:#ffde18;">
+                    <!--<span i18n="map.notification.predefined.title"></span>-->
+                      <select name="type" id="notification-presets" onchange="MOSQUITO.app.mapView.controls.notification.setPredefined(this)">
+                        <option name="-1" i18n="map.notification.predefined.title"></option>
+                        <option name="0" i18n="map.notification.preset0.title"></option>
+                        <option name="1" i18n="map.notification.preset1.title"></option>
+                      </select>
+                  </div>
+                  <!-- TITLE -->
+                  <div class="form-group" style="margin-bottom:0px;">
+                    <input type="text" i18n="title|placeholder" class="form-control" id="notification-title">
+                  </div>
+                  <!-- BODY -->
+                  <div class="form-group">
+                      <textarea class="form-control" id="notification_html" placeholder="<p>CA:Entra la notificació....</p><p>ES:Entra la notificación....</p><p>EN:Text notification....</p>">
+                      </textarea>
+                  </div>
+                  <button class="btn btn-success btn-block notification-submit"><i class="glyphicon glyphicon-ok"></i> <span i18n="header.submit">Submit</span></button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
 </div>
+
+<div id="stormdrain_upload" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" i18n="stormdrain.upload-title"></h4>
+      </div>
+    <!--form-->
+      <div class="modal-body content">
+        <!--<div>
+            <span i18n="stormdrain.upload-newversion"></span>
+            <div class="new-version-value"></div>
+        </div>-->
+        <form id="stormDrainUpload"
+          onsubmit="return false" method="post" enctype="multipart/form-data">
+
+          <!-- Upload messages-->
+          <div class="tt t-100">
+
+            <div class="tcol t-10"></div>
+            <div class="tcol t-80"></div>
+            <div class="tcol t-10"></div>
+
+            <div class="tr">
+              <div class="tcel"></div>
+              <div class="tcel st-upload-error" style="display:none">
+              </div>
+             <div class="tcel"></div>
+           </div>
+          </div>
+
+          <div class="upload-step1">
+              <div class="tt t-100 v-pd-10 button-file">
+                <div class="tcol t-100"></div>
+                <div class="tcel t-center">
+                  <button i18n='stormdrain.get-template' class="btn btn-success btn-st-template"></button>
+                </div>
+              </div>
+              <!-- INSERT TITLE / COMMENT -->
+              <div class="tt t-100 v-pd-10 button-file">
+                <div class="tcol t-10"></div>
+                <div class="tcol t-80"></div>
+                <div class="tcol t-10"></div>
+
+                <div class="tr">
+                  <div class="tcel"></div>
+                  <div class="tcel">
+
+                    <div class="input-group">
+                      <span class="input-group-addon color-white" i18n="stormdrain.upload-comment"></span>
+                      <input id="msg" type="text" class="form-control color-grey" name="stormdrain-title">
+                    </div>
+
+                  </div>
+                  <div class="tcel"></div>
+                </div>
+              </div>
+
+              <!-- Choose file-->
+              <div class="tt t-100 v-pd-10 button-file">
+
+                <div class="tcol t-10"></div>
+                <div class="tcol t-80"></div>
+                <div class="tcol t-10"></div>
+
+                <div class="tr">
+                  <div class="tcel"></div>
+                  <div class="tcel">
+                    <!--<input type="file" id="stormdrain-upload-file" name="uploadfile" style="border:1px">-->
+                    <div class="input-group">
+                      <label class="input-group-btn">
+                          <span class="btn btn-default">
+                              <span i18n="stormdrain.upload-button"></span>
+                              <input style="display: none;" id="stormdrain-upload-file" name="stormdrain-file" type="file">
+                          </span>
+                      </label>
+                      <input class="form-control selected-file-name" readonly="" type="text">
+                    </div>
+                  </div>
+                  <div class="tcel"></div>
+                </div>
+              </div>
+
+              <!--progress bar-->
+              <div class="tt t-100 v-pd-10 progress-bar-wrapper">
+                <div class="tcol t-10"></div>
+                <div class="tcol t-80"></div>
+                <div class="tcol t-10"></div>
+                <div class="tr">
+                      <div class="tcel"></div>
+                      <div class="tcel">
+                        <div class="list-group-item">
+                            <div class="progress progress-striped active">
+                              <div class="progress-bar progress-bar-info" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                       </div>
+                    <div class="tcel"></div>
+                 </div>
+               </div>
+
+               <!--SUBMIT-->
+               <div class="tt t-100 v-pd-10">
+                 <div class="tcol t-10"></div>
+                 <div class="tcol t-80"></div>
+                 <div class="tcol t-10"></div>
+                 <div class="tr">
+                       <div class="tcel"></div>
+                       <div class="tcel">
+                          <button class="btn btn-success btn-block stormdrain-upload-submit"><span i18n="stormdrain.send"></span></button>
+                        </div>
+                     <div class="tcel"></div>
+                  </div>
+                </div>
+          </div> <!--close upload-step1-->
+
+            <!--PROCESSING MESSAGES-->
+            <div class="tt t-100 v-pd-10 processing-messages">
+              <div class="tcol t-10"></div>
+              <div class="tcol t-80"></div>
+              <div class="tcol t-10"></div>
+              <div class="tr">
+                    <div class="tcel"></div>
+                    <div class="tcel t-center">
+                      <div class="stormdrain-import-started msg-ok" i18n="stormdrain.import-started" style="display:none"></div>
+                      <div class="stormdrain-import-finished msg-ok" i18n="stormdrain.import-finished" style="display:none"></div>
+                     </div>
+                  <div class="tcel"></div>
+               </div>
+            </div>
+
+            <div class="tt t-100 v-pd-10">
+              <div class="tcol t-10"></div>
+              <div class="tcol t-80"></div>
+              <div class="tcol t-10"></div>
+               <!--StormDrain setup button-->
+               <div class="tr">
+                     <div class="tcel"></div>
+                     <div class="tcel t-center stormdrain-import-finished" style="display:none">
+                       <button class="btn btn-success btn-st-setup-now" i18n="stormdrain.setup-now"></button>
+                      </div>
+                   <div class="tcel"></div>
+                </div>
+                <div class="tr v-pd-10">
+                      <div class="tcel"></div>
+                      <div class="v-pd-10 tcel t-center stormdrain-import-finished" style="display:none">
+                        <button class="btn btn-success btn-st-setup-later" i18n="stormdrain.setup-later"></button>
+                       </div>
+                    <div class="tcel"></div>
+                 </div>
+             </div>
+    </form>
+
+
+        <!-- Messages box-->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stormdrain_setup" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" i18n="stormdrain.main-title"></h4>
+      </div>
+      <div class="modal-body content">
+        <!--CONTENT-->
+        <form onsubmit="return false;">
+          <div class="tt t-100">
+              <div class="tcol"></div>
+              <!--ok msg-->
+              <div class="tr">
+                  <div class="tcel stormdrain-submit-ok" style="display:none">
+                    <span i18n="stormdrain.setup.submit.ok"></span>
+                  </div>
+              </div>
+              <!--ERROR msg-->
+              <div class="tr">
+                  <div class="tcel st-setup-err" style="display:none">
+                  </div>
+              </div>
+          </div>
+
+
+          <!--VERSION TEXT-->
+          <div class="tt t-pd t-100">
+            <div class="tcol"></div>
+            <div class="tr">
+              <div class="tcel t-center t-line">
+                <label><span i18n="stormdrain.version-helper"></span></label>
+            </div>
+            </div>
+          </div>
+
+          <!-- VERSION -->
+
+          <div class="tt t-pd">
+                <div class="tcol t-40"></div>
+                <div class="tcol t-60"></div>
+                <div class="tr tr-user-version">
+                    <div class="tcel t-center users-name">
+                      <select class="select-st-version" name="select-st-version">
+                      </select>
+                    </div>
+                    <div class="tcel users-select"></div>
+                </div>
+          </div>
+
+          <!--CATEGORIES TEXT-->
+          <div class="tt t-pd t-100">
+            <div class="tcol"></div>
+            <div class="tr">
+              <div class="tcel t-center t-line">
+                <label><span i18n="stormdrain.label-categories"></span></label>
+                <label data-toggle="collapse" data-target="#helper-text" class="icon-helper"><i class="fa fa-info" aria-hidden="true"></i></label>
+            </div>
+            </div>
+          </div>
+          <!-- HELP TEXT-->
+          <div class="collapse" id="helper-text">
+            <div class="tt t-100 v-pd-10">
+                <div class="tcol"></div>
+                <div class="tr">
+                      <div class="tcel p-center t-border" style="background:rgba(255,221,24,0.7)">
+                        <div class="t-pd-5">
+                          <p>
+                            - <span i18n="stormdrain.categories-helper1"></span>
+                          </p>
+                          <p>
+                            - <span i18n="stormdrain.categories-helper2"></span>
+                          </p>
+                          <p>
+                            - <span i18n="stormdrain.categories-helper3"></span>
+                          </p>
+                          <p>
+                            - <span i18n="stormdrain.categories-helper4"></span>
+                          </p>
+                          <button i18n="display-example" class="display_example"></button>
+                        </div>
+                      </div>
+                </div>
+            </div>
+          </div>
+
+          <div class="tt t-100 categories-container"><!--GROUP ALL CATEGORIES-->
+            <div class="tcol t-center"></div>
+              <div class="tr category-wrapper"><!--ONE CATEGORY WRAPPER-->
+                <div class="tt t-100 v-pd">
+                    <div class="tcol t-20"></div>
+                    <div class="tcol t-60"></div>
+                    <div class="tcol t-20"></div>
+
+                    <div class="tr">
+                      <div class="tcel"></div>
+                      <div class="tcel">
+                        <div class="tt t-100 t-pd-5 category_content">
+                          <div class="tcol"></div> <!--just one column-->
+                          <div class="tr">
+                            <div class="tcel">
+
+                              <div class="tt t-100">
+
+                                <div class="tcol"></div>
+                                <div class="tcol"></div>
+                                <div class="tcol"></div>
+
+                                <div class="tr">
+
+                                  <div class="tcel m-20"></div>
+                                  <!-- FIRST BORDER-->
+                                  <div class="tcel t-80 t-border h-pd">
+                                  <!-- COLOR -->
+                                  <div class="tt v-pd-5 t-100">
+                                    <div class="tcol"></div>
+
+                                    <div class="tr">
+                                        <div class="tcel t-bold t-center">
+                                          <span i18n="stormdrain.label-color"></span>
+                                          <input type="color" class="color" value='#ffffff' style="width:40px;">
+                                        </div>
+                                    </div>
+                                  </div>
+
+                                    <!-- CONDITIONS-->
+                                    <div class="h-pd-10">
+                                    <div class="tt t-100 t-border category-conditions">
+                                      <div class="tcol"></div>
+                                      <div class="tcol"></div>
+                                      <div class="tcol"></div>
+                                      <div class="tcol"></div>
+
+                                      <!-- HEADERS -->
+                                      <div class="tr category-headers">
+                                        <div class="tcel t-right pd-right-15">
+                                          <span i18n="stormdrain.label-field"></span>
+                                        </div>
+
+                                      <div class="tcel t-left"></div>
+
+                                        <div class="tcel t-left">
+                                          <span i18n="stormdrain.label-value"></span>
+                                        </div>
+                                        <div class="tcel t-left">
+                                          <button class="stormdrain-add-condition"><i class="fa fa-plus"></i></button>
+                                        </div>
+                                      </div>
+
+                                      <!-- SELECTS -->
+                                      <div class="tr category-values">
+                                        <div class="tcel t-right pd-right-15">
+                                          <select class="stormdrain_field" name="field" id="field">
+                                          </select>
+                                        </div>
+
+                                        <div class="tcel t-right pd-right-15">
+                                          <select class="stormdrain_operator" name="operator" id="operator">
+                                          </select>
+                                        </div>
+
+                                        <div class="tcel t-left pd-right-15">
+                                          <select class="stormdrain_value" name="value" id="value">
+                                          </select>
+                                        </div>
+                                        <div class="tcel">
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  </div>
+
+                                  <div class="tcel t-top t-center m-20 t-addcategory">
+                                    <button class="category-add"><i class="fa fa-plus"></i></button>
+                                  </div>
+                                </div>
+
+                              </div>
+                              <!-- -->
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="tcel"></div>
+                    </div>
+                  </div> <!--CLOSE CATEGORY WRAPPER-->
+                </div>
+          </div>
+
+          <!--LINE-->
+          <div class="tt t-100 t-pd">
+            <div class="tcol"></div>
+            <div class="tr">
+              <div class="tcel t-center t-line">
+            </div>
+            </div>
+          </div>
+
+          <div class="tt t-100 t-pd">
+            <button class="btn btn-success btn-block stormdrain-submit"><span i18n="stormdrain.send"></span></button>
+          </div>
+          </form>
+        <!--END CONTENT-->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stormdrain_setup_example" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" i18n="stormdrain.example-title"></h4>
+      </div>
+      <div class="modal-body content">
+        <p i18n="stormdrain.example-body-1"></p>
+        <p>
+          - <span i18n="stormdrain.example-body-2"></span>
+        </p>
+        <p>
+          - <span i18n="stormdrain.example-body-3"></span>
+        </p>
+        <p i18n="stormdrain.example-body-4"></p>
+        <div align="center"><img src="" i18n="stormdrain.example-body-5|src"></div>
+        <p i18n="stormdrain.example-body-6"></p>
+        <div align="center"><img src="" i18n="stormdrain.example-body-7|src"></div>
+        <p i18n="stormdrain.example-body-8"></p>
+        <ol>
+          <li i18n="stormdrain.example-body-9"</li>
+          <li i18n="stormdrain.example-body-10"</li>
+          <li i18n="stormdrain.example-body-11"</li>
+        </ol>
+        <p i18n="stormdrain.example-body-12"></p>
+        <p i18n="stormdrain.example-body-13"></p>
+        <p i18n="stormdrain.example-body-14"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div id="page-reports" class="page">
 </div>
+
+<!--DEFINITION OF TEMPLATES -->
+
+
     <script type = "text/template" id="content-control-moreinfo-tpl">
         <div>
+
         <h3 i18n="map.controlmoreinfo_title"></h3>
         <!--<span i18n="map.controlmoreinfo_desc_es"></span>-->
         <ul class="info_list">
@@ -200,6 +697,41 @@
         </div>
     </script>
 
+    <script type = "text/template" id="content-control-notification-tpl">
+        <div>
+            <h3>
+                <span i18n="map.title_notification"></span>
+            </h3>
+
+            <div id="notification_hint" style="display:none">
+                <span id="results_found">0</span> <span i18n="map.results_found_text"></span>
+                <span id="users_found">0</span> <span i18n="map.users_found_text"></span>
+            </div>
+            <div align="left">
+            <div class="notification_button">
+                <button href="#" class="btn btn-success btn-block" id="notification_select_polygon_btn">
+                    <i class="fa fa-pencil" aria-hidden="true" i18n="map.notification_select_polygon_btn|title"></i>
+                </button>
+            </div>
+            <!--- EXTRA BUTTONS
+            <div class="notification_button">
+                <a href="#" class="btn btn-success btn-block disabled" id="create_notification_btn">
+                    <i class="fa fa-newspaper-o" aria-hidden="true" i18n="mmap.notification_add|title"></i>
+                </a>
+            </div>
+
+            <div class="notification_button">
+                <a href="#" class="btn btn-success btn-block disabled" id="cancel_notification_btn">
+                    <i class="fa fa-trash-o" aria-hidden="true" i18n="notif.notification_cancel|title"></i>
+                </a>
+            </div>-->
+          </div>
+            <div id="notification_text">
+                <span i18n="map.text_description_notification"></span>
+            </div>
+        </div>
+    </script>
+
     <script type = "text/template" id="content-control-reportsdocument-tpl">
         <div>
         <h3 i18n="map.controldocumentsreport_title"></h3>
@@ -211,7 +743,7 @@
     </script>
 
     <script type = "text/template" id="content-report-tpl">
-        <!--<h3 i18n="map.report_title"></h3>-->
+
         <div id="popup_expert_validated">
             <div class="titol_capa">
                 <h3>
@@ -271,8 +803,8 @@
                     </div>
 
                 </div>
-
             <% } %>
+
             <!- end mosquito answers-->
 
             <!-- User breeding site Answers -->
@@ -299,8 +831,8 @@
                     <!--quarta pregunta-->
                     <div class="one_answer">
                         <% if ( s_answers.length > 3 ) { %>
-                            <span class="query"><%=questions[2]%></span>
-                            <span class="response"><%=s_answers[2]%></span>
+                            <span class="query"><%=questions[3]%></span>
+                            <span class="response"><%=s_answers[3]%></span>
                         <% } %>
                     </div>
                 </div>
@@ -317,6 +849,41 @@
                   <span i18n="map.expert_note"></span><%= edited_user_notes %>
               </div>
            <% } %>
+           <!--notificacions-->
+           <% if (notifs[0].f1!=null) { %>
+               <div class="notif_container">
+                   <select id="notif_selectpicker">
+                       <option value="0" i18n='info.notifications'></option>
+                       <%
+                       var num_n = 0;
+                        var sorted = _.sortBy(notifs, function(notif) {
+                           return moment(notif.f4, 'DD/MM/YYYY');
+                        });
+                        var notifs = sorted.reverse();
+
+                        _.each(notifs, function(notif) { %>
+                           <option value="notif_<%=num_n%>">
+                               <%=notif.f1%> (<%=notif.f4%>)
+                              <% if (notif.f5) {%>
+                                (<%=notif.f5%>)
+                              <% } %>
+                           </option>
+                           <% num_n += 1;
+                       }); %>
+                   </select>
+               </div>
+               <div id="notifs_details">
+               <%
+               var num_n = 0;
+                _.each(notifs, function(notif) { %>
+                   <div class="detailed_notif" id="notif_<%=num_n%>" style="display: none;">
+                       <%=notif.f2%>
+                   </div>
+                   <% num_n += 1;
+               }); %>
+               </div>
+           <% } %>
+           <!-- fi notificcions-->
            <% if( ( version_uuid != null) && (version_uuid != "") ) { %>
                <div id="popup_id">
                    <span i18n="map.versio_informe"></span>: <%= version_uuid %>
@@ -351,13 +918,15 @@
             <div id="legend_reports_map">
                 <ul id ="map_layers"></ul>
                 <div id="map_filters"></div>
+                <div id="notif_filters"></div>
+                <div id="hashtag_filters"></div>
             </div>
         </div>
-        <% if (license === true) {%>
-            <div id="reports_license_text">
-                <div i18n="report.license_text"></div>
-        </div>
-        <% } %>        
+            <% if (license === true) {%>
+              <div id="reports_license_text">
+               <div i18n="report.license_text"></div>
+              </div>
+            <% } %>
     <%
     counter = 1;
     _.each(rows, function(row) { %>
@@ -475,17 +1044,18 @@
                     </div>
                  <% } %>
 
-                <% if( ( row.version_uuid != null) && (row.version_uuid != "") ) { %>
-                    <div id="popup_id_reports">
-                    <span i18n="map.versio_informe"></span>: <%= row.version_uuid %>
-                    </div>
-                 <% } %>
+                 <% if( ( row.version_uuid != null) && (row.version_uuid != "") ) { %>
+                     <div id="popup_id_reports">
+                         <span i18n="map.versio_informe"></span>: <%= row.version_uuid %>
+                     </div>
 
-                 <% if( ( row.observation_date != null) && (row.observation_date != "") ) { %>
-                    <div id="popup_observation_date_reports">
-                    <span i18n="map.observation_date"></span>: <%= row.observation_date %>
-                    </div>
-                 <% } %>
+                  <% } %>
+
+                  <% if( ( row.observation_date != null) && (row.observation_date != "") ) { %>
+                     <div id="popup_observation_date_reports">
+                         <span i18n="map.observation_date"></span>: <%= row.observation_date %>
+                     </div>
+                  <% } %>
 
                  <% if( ( row.lon != null) && (row.lon != "") && ( row.lat != null) && (row.lat != "") ) { %>
                     <div id="popup_coordenadas_reports">
@@ -501,6 +1071,7 @@
 
 
     <!-- build:js js/vendor.min.js -->
+    <script src="lib/moment/moment.min.js"></script>
     <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="lib/backbone-min.js"></script>
@@ -515,7 +1086,12 @@
     <script src="lib/Leaflet.markercluster-leaflet-0.7/dist/leaflet.markercluster-src.js"></script>
     <script src="lib/Leaflet.CustomButton/L.Control.CustomButton.js"></script>
 
+
     <script src="lib/jssocials-1.2.1/jssocials.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.9/leaflet.draw.js"></script>
+
+    <script src="lib/tinymce/jquery.tinymce.min.js"></script>
+    <script src="lib/tinymce/tinymce.min.js"></script>
 
     <!-- endbuild -->
 
@@ -527,10 +1103,16 @@
      <script src="js/i18n/en.js"></script>
      <script src="js/i18n/es.js"></script>
      <script src="js/i18n/i18n.js"></script>
+     <script src="js/i18n/leaflet.draw.js"></script>
      <script src="js/leaflet/control-div.js"></script>
+     <script src="js/leaflet/geojson-vt-dev.js"></script>
+     <script src="js/leaflet/L.CanvasTiles.js"></script>
+
      <script src="js/leaflet/control-sidebar-button.js"></script>
+     <script src="lib/L.CanvasOverlay.js"></script>
      <script src="js/leaflet/control-layers.js"></script>
      <script src="js/leaflet/control-download.js"></script>
+     <script src="js/leaflet/control-notification.js"></script>
      <script src="js/leaflet/control-moreinfo.js"></script>
      <script src="js/leaflet/control-share.js"></script>
      <script src="js/leaflet/control-reportsdocument.js"></script>
@@ -546,7 +1128,5 @@
      <!-- endinject -->
     <!-- endbuild -->
 
-
 </body>
 </html>
-

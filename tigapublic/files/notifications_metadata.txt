@@ -1,0 +1,19 @@
+DETAILED FIELD DESCRIPTION
+
+Description of each field found in the downloadable data base.
+
+*ID*: unique identifier for each observation. UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens). This corresponds to the latest version of the report (as opposed to an earlier version that the participant subsequently edited). Example: 8664a3b2-7646-42ab-8c7b-475245ac88db.
+
+*user*: unique identifier for each user generated on phone to identify each user. Must be exactly 36 characters (32 hex digits plus 4 hyphens).  Example: 8a4b3b2-7646-a2ab-8c7b-7d5245ac88db.
+
+*Date notification*: creation date and time of the notification. Date and time obtained from the server at the moment when the notification was created, converted to UTC time zone 0. Format as YYYY-MM-DD hh:mm:ss. Example: 2016-07-31 17:39:12.
+
+*Notification type*: public (1) or private (0) notification. Private notifications are only sent to the user who sent the observation, via the Mosquito Alert app. Thus, only the sender of the observation can see the notification in his/her app.  Public notifications are similar to private notifications, but they are also publicly shown in the mosquito online map; anyone can see and read them.
+
+*Notification sender*: specifies the sender of the notification. This name is exactly the same as sender user name in the private Mosquito Alert platform.
+
+*User reaction*: notification open and read by the user in its app (1) or not (0). Only applicable to private notifications.
+
+*Notification title*: the title of the notification added by the sender.
+
+*Notification content*: the body of the notification added by the sender.

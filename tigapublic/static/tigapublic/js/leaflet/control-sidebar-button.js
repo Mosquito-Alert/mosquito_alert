@@ -29,7 +29,7 @@ L.Control.SidebarButton = L.Control.extend({
         var _this = this;
         var style_class = 'leaflet-bar leaflet-control leaflet-control-sidebar-btn';
         if(this.options.style !== 'leaflet-control-sidebar-btn'){
-            style_class += this.options.style;
+            style_class += ' '+this.options.style;
         }
         var container = $('<div>').attr('class', style_class);
         this._container = container[0];
@@ -43,7 +43,7 @@ L.Control.SidebarButton = L.Control.extend({
         			e.stopPropagation();
         			e.preventDefault();
         			//if (!$(this).hasClass('active'))
-                     _this.options.sidebar.togglePane(_this.pane, button);
+              _this.options.sidebar.togglePane(_this.pane, button);
         		}).appendTo(container);
 
         if(typeof(this.options.text) !== 'undefined' &&
@@ -54,7 +54,7 @@ L.Control.SidebarButton = L.Control.extend({
         this.options.sidebar.addPane(this.pane);
 
         if(this.options.active === true){
-            _this.options.sidebar.togglePane(this.pane, button);
+            this.options.sidebar.togglePane(this.pane, button);
         }
         return this._container;
     },
@@ -64,6 +64,16 @@ L.Control.SidebarButton = L.Control.extend({
         var url = MOSQUITO.app.mapView.controls.share_btn.options.build_url();
         document.location = url+''
         document.location.reload();
+    },
+
+    active_class: function(){
+        //if(this.options.apply_active_class === true){
+            if(this.active){
+                L.DomUtil.addClass(this._container, 'active');
+            }else{
+                L.DomUtil.removeClass(this._container, 'active');
+            }
+        //}
     }
 
 });

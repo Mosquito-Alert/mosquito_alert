@@ -49,7 +49,7 @@ var MOSQUITO = (function (m) {
 
             this._map.on(
                 'zoomend movestart move moveend layerchange', this.set_url, this);
-                
+
             trans.on('i18n_lang_changed', this.set_url, this);
             //set_url.call(this);
             this.set_url();
@@ -81,6 +81,7 @@ var MOSQUITO = (function (m) {
 
             this.share_input.on('change', function(){
                 social_butons.jsSocials('shareOption', 'twitter', 'url', $(this).val());
+                social_butons.jsSocials('shareOption', 'twitter', 'text', t('share.look_at'));
                 social_butons.jsSocials('shareOption', 'facebook', 'url', $(this).val());
             });
 

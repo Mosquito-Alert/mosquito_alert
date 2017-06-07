@@ -196,8 +196,10 @@ a.control-button {
 	border-radius: 5px;
 }
 
+.leaflet-bar a.control-button.active,
 .leaflet-bar a.control-button:hover,
-.leaflet-bar a.control-button:active,
+.leaflet-bar a.control-button:active
+/*,
 .leaflet-bar a.reports-button:hover,
 .leaflet-bar a.reports-button:active,
 .leaflet-bar a.share-control:hover,
@@ -211,7 +213,8 @@ a.control-button {
 .leaflet-control-sidebar-btnleaflet-control-layers-btn a:hover,
 .leaflet-control-sidebar-btnleaflet-control-layers-btn a.active,
 .leaflet-control-sidebar-btnleaflet-control-reportsdocument-btn a.active,
-.leaflet-control-sidebar-btnleaflet-control-download-btn a.active {
+.leaflet-control-sidebar-btnleaflet-control-download-btn a.active */
+{
 	width:40px;
 	height:40px;
 	font-size:16px;
@@ -221,6 +224,7 @@ a.control-button {
 }
 
 /*MAP PANEL*/
+.sidebar-control,
 .sidebar-report,
 .sidebar-control-share,
 .sidebar-control-moreinfo,
@@ -371,7 +375,7 @@ div.section.layers ul{
 
 	padding-bottom:0px;
 	max-height: 300px;
-	max-width: 100%;
+	max-width: calc(100% - 15px);
 }
 .popup_photo_reports img{
 	max-height: 150px;
@@ -510,6 +514,7 @@ div.section.layers ul{
 	font-size:16px;
 	font-weight: bold;
 	text-align: center;
+	margin-top:10px;
 }
 
 .sidebar-control-moreinfo > div {
@@ -580,4 +585,51 @@ div#map-ui{
 
 .bold{
 	font-weight: bold;
+}
+
+/* NOTIFICACIONS */
+#notification_hint {
+	padding:2px 0px;
+	border-bottom:1px dotted #ACACAC;
+	border-radius:5px;
+	/*background:#ECECEC;*/
+	margin:10px 20px 10px 10px;
+	color:#A0A0A0;
+	text-align:center;
+}
+#notification_text {
+	font-size:.9em;
+	margin-top:20px;
+	padding-right:10px;
+}
+.notification_button {
+	text-align:center;
+	margin-bottom:5px;
+	display:inline-block;
+}
+.notification_button button {
+	width:40px !important;
+}
+.mce-panel {
+	background-image:linear-gradient(to bottom, #fdfdfd, #ddd) !important;
+}
+.mce-window {
+	border-radius:6px;
+}
+.mce-button {
+	background-image: linear-gradient(to bottom, #fff, #d9d9d9) !important;
+}
+#notification-notifier, #notification-notified {
+	width:49%;
+	float:left;
+	margin-bottom:10px;
+}
+#notification-notified {
+	position:relative;
+	right:0px;
+	float:right;
+}
+
+button[data-id='notification-presets'] {
+	background:#fff9d2;
 }

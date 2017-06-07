@@ -1,6 +1,18 @@
 var MapView = MapView.extend({
 
     LAYERS_CONF: MOSQUITO.config.layers,
+    stormDrainData :[],
+    userfixtileIndex:null,
+    userFixtileOptions:  {
+                maxZoom: 20,  // max zoom to preserve detail on
+                tolerance: 5, // simplification tolerance (higher means simpler)
+                extent: 4096, // tile extent (both width and height)
+                buffer: 64,   // tile buffer on each side
+                debug: 0,      // logging level (0 to disable, 1 or 2)
+
+                indexMaxZoom: 0,        // max zoom in the initial tile index
+                indexMaxPoints: 100000, // max number of points per tile in the index
+    },
 
     addBaseLayer: function(){
         this.layers = this.layers || {};
@@ -12,30 +24,28 @@ var MapView = MapView.extend({
 
 
     addLayers: function(){
-        marc =this;
         var _this = this;
         this.layers = this.layers || {};
-
         var mcg = new L.MarkerClusterGroup({
-          "maxClusterRadius": function (zoom) {
-              //return (MOSQUITO.config.clusterize ? 180:1);
-              return (zoom <= MOSQUITO.config.maxzoom_cluster) ? 180 : 30; // radius in pixels
-          },
-        	"chunkedLoading": true,
-        	"spiderfyOnMaxZoom": true,
-        	"showCoverageOnHover": MOSQUITO.config.showCoverageOnHover,
+            "maxClusterRadius": function (zoom) {
+                return (zoom <= MOSQUITO.config.maxzoom_cluster) ? 60 : 30; // radius in pixels
+                //return _this.radius;
+            },
+            "chunkedLoading": true,
+            "spiderfyOnMaxZoom": true,
+            "showCoverageOnHover": MOSQUITO.config.showCoverageOnHover,
           //disableClusteringAtZoom: MOSQUITO.config.maxzoom_cluster,
-          "iconCreateFunction": function(cluster) {
-              var markerCount = cluster._childCount;
-              var r = markerCount.toString().length;
-              var className = '';
-              switch (r) {
-                case 1: className = 'marker-cluster-radius20'; break;
-                case 2: className = 'marker-cluster-radius30'; break;
-                case 3: className = 'marker-cluster-radius40'; break;
-                case 4: className = 'marker-cluster-radius50'; break;
-                case 5: className = 'marker-cluster-radius60'; break;
-              }
+            "iconCreateFunction": function(cluster) {
+                var markerCount = cluster._childCount;
+                var r = markerCount.toString().length;
+                var className = '';
+                switch (r) {
+                    case 1: className = 'marker-cluster-radius20'; break;
+                    case 2: className = 'marker-cluster-radius30'; break;
+                    case 3: className = 'marker-cluster-radius40'; break;
+                    case 4: className = 'marker-cluster-radius50'; break;
+                    case 5: className = 'marker-cluster-radius60'; break;
+                }
               return new L.DivIcon({html: '<div class=" leaflet-marker-icon '+className+' marker-cluster-medium leaflet-zoom-animated leaflet-clickable" tabindex="0"><div><span>'+markerCount+'</span></div></div>'});
           }
         });
@@ -130,6 +140,9 @@ var MapView = MapView.extend({
         userfixeslayer = this.getLayerPositionFromKey('F');
         if (userfixeslayer) this.addCoverageLayer();
 
+        stormdrainlayer = this.getLayerPositionFromKey('Q');
+        if (stormdrainlayer) this.addDrainStormLayer();
+
         var layer, key;
 
         for (var i = 0; i < this.LAYERS_CONF.length; i++){
@@ -189,49 +202,240 @@ var MapView = MapView.extend({
         } else style['fill'+layer.segmentationkey.ucfirst()] = layer.segments[i-1][layer.segmentationkey];
         return style;
     },
-
-    addCoverageLayer: function() {
+    addDrainStormLayer: function(){
         _this = this;
-        this.coverage_layer = L.geoJson(false, {
-            "style": function(feature) {
-                layerid = _this.getLayerPositionFromKey('F');
-                return _this.getGradientStyle(feature.properties.num_fixes, _this.LAYERS_CONF[layerid]);
-            },
-            "onEachFeature": function(feature, layer) {
-                if ('num_fixes' in feature.properties) {
-                  layer.bindPopup('<div style="white-space:nowrap;"><span i18n="map.numfixes">'+t('map.numfixes')+'</span>: '+feature.properties.num_fixes+'</div>');
+        this.drainstorm_layer = L.canvasOverlay()
+            .drawing(drawingOnCanvas)
+
+        function drawingOnCanvas(canvasOverlay, params) {
+
+            var ctx = params.canvas.getContext('2d');
+            ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
+
+            layer = _this.LAYERS_CONF[_this.getLayerPositionFromKey('Q')];
+
+            //Get dots radius size
+            for (var key in layer.radius){
+                size = layer.radius[key];
+                if (_this.map.getZoom() <= parseInt(key)){
+                    size = layer.radius[key];
+                    break;
                 }
             }
-        }).addTo(this.map);
-        this.map.removeLayer(this.coverage_layer);
 
-        this.coverage_layer.on('click', function (e) {
-            t().translate($('html').attr('lang'), $('.leaflet-popup-pane'));
+            //Get stroke property
+            for (var key in layer.stroke){
+                stroke = layer.stroke[key];
+                if (_this.map.getZoom() <= parseInt(key)){
+                    stroke = layer.stroke[key];
+                    break;
+                }
+            }
+
+            if (stroke){
+                ctx.strokeStyle = layer.strokecolor;
+                ctx.lineWidth   = layer.strokewidth;
+            }
+            else{
+                ctx.lineWidth   = 0;
+            }
+
+
+            data = _this.stormDrainData.rows;
+            colors = _this.stormDrainData.colors;
+            var increase = 1;
+            if (params.zoomScale < 0.1){
+                  increase = Math.floor(1/params.zoomScale/5);
+            };
+
+            var pointsdrawn=0;
+            for (var i = 0; i < data.length; i+=increase) {
+                var d = data[i];
+                //d[3]==-1 means no color is applied to object
+                if ( (d[2]!=-1) && (params.bounds.contains([d[0], d[1]])) ){
+
+                    dot = canvasOverlay._map.latLngToContainerPoint([d[0], d[1]]);
+                    //ctx.fillStyle = (d[2]=="Si")?"rgba(255,0,0, 1)":"rgba(0,255,0, 1)";
+                    ctx.fillStyle = colors[d[2]]
+                    ctx.beginPath();
+                    ctx.arc(dot.x, dot.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    if (stroke) ctx.stroke();
+                    ctx.closePath();
+                }
+                pointsdrawn+=1;
+            }
+            //Uncomment to see how many points are drawn
+            //console.log(params.zoomScale+' '+increase+'  '+pointsdrawn);
+        };
+    }
+    ,
+    loadStormDrainData: function(forced=false){
+        //if data not yet loaded
+        _this = this;
+        if (this.stormDrainData.length==0 || forced) {
+            url = MOSQUITO.config.URL_API + 'embornals/';
+            $.ajax({
+                "method": 'GET',
+                "async": true,
+                "url": url,
+                "datatype": 'json',
+                "context":this,
+            }).done(function(data) {
+
+                this.map.removeLayer(this.drainstorm_layer);
+                this.stormDrainData = data;
+                //Show legend and data if there is some data
+
+                if (Object.keys(data.style_json).length){
+                  this.putStormDrainLegend(data.style_json)
+                }
+
+                //add layer even if it is empty
+                this.drainstorm_layer.addTo(_this.map);
+                /*
+                if (data.rows.length){
+                  this.drainstorm_layer.addTo(_this.map);
+                }
+                else{
+                  _this.map.removeLayer(this.drainstorm_layer);
+                }
+                */
+                //_this.map.on('click', _this.checkStormDrainInfo);
+
+            });
+        }
+        //otherwise
+        else{
+            _this.drainstorm_layer.addTo(_this.map);
+            //_this.map.on('click', _this.checkStormDrainInfo);
+        }
+
+    },
+    checkStormDrainInfo:function(){
+      console.log('checkStormDrainInfo');
+    }
+    ,
+    colorizeFeatures: function(arr) {
+        _this = this;
+        layer = this.LAYERS_CONF[this.getLayerPositionFromKey('F')];
+        arr.forEach(function(item){
+            pos = (item.properties.num_fixes.toString().length > 4)?3:item.properties.num_fixes.toString().length - 1;
+            item.properties.color = 'rgba('+ layer.segments[pos].color+' , '+ layer.segments[pos].opacity +')';
         });
-        this.refreshCoverageLayer();
+        return true;
+    }
+    ,
+    addCoverageLayer: function() {
+        _this = this;
+        var pad = 0;
+
+        function drawingOnCanvas(canvasOverlay, params) {
+            var bounds = params.bounds;
+            params.tilePoint.z = params.zoom;
+
+            var ctx = params.canvas.getContext('2d');
+            ctx.globalCompositeOperation = 'source-over';
+
+            if (!_this.userfixtileIndex){
+                return;
+            }
+            var tile = _this.userfixtileIndex.getTile(params.tilePoint.z, params.tilePoint.x, params.tilePoint.y);
+            if (!tile) {
+                return;
+            }
+            /*console.log('arguments', arguments);
+            console.log('canvasOverlay', canvasOverlay);
+            console.log('params', params);
+            console.log('tile', tile);*/
+            ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
+            var features = tile.features;
+            //ctx.strokeStyle = 'grey';
+
+            for (var i = 0; i < features.length; i++) {
+                var feature = features[i],
+                    type = feature.type;
+
+                ctx.fillStyle = feature.tags.color? feature.tags.color : 'rgba(255,0,0,0.05)';
+                ctx.strokeStyle = 'rgba(255,0,0,0.1)';
+                ctx.beginPath();
+
+                for (var j = 0; j < feature.geometry.length; j++) {
+                    var geom = feature.geometry[j];
+                    if (type === 1) {
+                        ctx.arc(geom[0] * ratio + pad, geom[1] * ratio + pad, 2, 0, 2 * Math.PI, false);
+                        continue;
+                    }
+                    for (var k = 0; k < geom.length; k++) {
+                        var p = geom[k];
+                        var extent = 4096;
+                        var x = p[0] / extent * 256;
+                        var y = p[1] / extent * 256;
+                        if (k) ctx.lineTo(x  + pad, y   + pad);
+                        else ctx.moveTo(x  + pad, y  + pad);
+                    }
+                }
+                if (type === 3 || type === 1) ctx.fill('evenodd');
+                ctx.stroke();
+            }
+            //if (MOSQUITO.app.mapView) MOSQUITO.app.mapView.loading.off();
+        };
+
+        year = this.filters.year || 'all';
+        months = (this.filters.months.length>0)?this.filters.months:'all';
+        url = MOSQUITO.config.URL_API + 'userfixes/'+year+'/'+months;
+
+        var zeroPoint ={"type": "Point",
+            "coordinates": [0,0]};
+
+        _this.userfixtileIndex = geojsonvt(zeroPoint , _this.userFixtileOptions);
+        //_this.colorizeFeatures(data);
+        _this.coverage_layer = L.canvasTiles()
+            .params({ debug: false, padding: 5 })
+            .drawing(drawingOnCanvas);
+
+        _this.coverage_layer.addTo(_this.map);
     },
 
     refreshCoverageLayer: function() {
+        layerLI = $('label[i18n="layer.userfixes"]').parent();
+        MOSQUITO.app.mapView.loading.on(layerLI);
         _this = this;
         year = this.filters.year || 'all';
         months = (this.filters.months.length>0)?this.filters.months:'all';
-        url = MOSQUITO.config.URL_PUBLIC + 'userfixes/'+year+'/'+months;
+        url = MOSQUITO.config.URL_API + 'userfixes/'+year+'/'+months;
         $.ajax({
             "method": 'GET',
             "async": true,
             "url": url
-        }).done(function(resp) {
-            _this.coverage_layer.clearLayers();
-            _this.coverage_layer.addData(resp);
-            if (_this.controls.layers_btn.getSelectedKeys().indexOf('F') > -1) {
-              _this.map.addLayer(_this.coverage_layer);
-            }
+        }).done(function(data) {
+            _this.colorizeFeatures(data.features);
+            _this.userfixtileIndex = geojsonvt(data, _this.userFixtileOptions);
+            _this.map.removeLayer(_this.coverage_layer);
+            _this.map.addLayer(_this.coverage_layer);
+            //_this.coverage_layer.redraw();
         });
     },
 
     fetch_data: function(zoom, bbox, callback){
         var url = '';
-        if(zoom >= MOSQUITO.config.maxzoom_cluster){
+        //check notification & hashtag filters
+        if ( ('notif' in this.filters && this.filters.notif !== false )
+              || ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='') ) {
+
+                if ('notif' in this.filters && this.filters.notif !== false )
+                  notif_value = this.filters.notif;
+                else notif_value='N';
+
+                if ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='') {
+                  hashtag_value = this.filters.hashtag.replace('#','')
+                  if (hashtag_value =='') hashtag_value='N';
+                }
+                else hashtag_value='N';
+
+              url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox + '/' + notif_value +'/'+hashtag_value;
+        }
+        else if( (zoom >= MOSQUITO.config.maxzoom_cluster) ) {
             url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox;
         }else{
             url = MOSQUITO.config.URL_API + 'map_aux_reports_zoom_bounds/' + zoom+'/'+bbox;
@@ -266,7 +470,7 @@ var MapView = MapView.extend({
 
             $.ajax({
                 method: 'GET',
-                url: MOSQUITO.config.URL_PUBLIC + 'map_aux_reports/' + id
+                url: MOSQUITO.config.URL_API + 'map_aux_reports/' + id
             })
             .done(function(resp) {
                 callback(resp);
@@ -281,11 +485,11 @@ var MapView = MapView.extend({
         var _this = this;
         var search = function(zoom, bbox){
             _this.fetch_data(zoom, bbox, function(data){
-                    _this.scope.data = data.rows;
-                    _this.data2markers();
-                    _this.drawCluster();
-                }
-            );
+                _this.scope.data = data.rows;
+                _this.data2markers();
+                _this.drawCluster();
+
+            });
         };
 
         search(this.map.getZoom(), this.map.getBounds().toBBoxString());
@@ -327,6 +531,7 @@ var MapView = MapView.extend({
             if(this.map.getZoom()<MOSQUITO.config.maxzoom_cluster){
                 n = item.c;
             }
+
             for(var i = 0; i < n; i++){
                 pos = new L.LatLng(item.lat, item.lon);
                 marker = _this.getMarkerType(pos, item.category);
@@ -372,23 +577,37 @@ var MapView = MapView.extend({
             return false;
         }
 
-        /*for(var i = 0; i < this.filters.excluded_types.length; i++){
-            excluded_type=this.filters.excluded_types[i];
-            if(marker._data.category.indexOf(excluded_type) !== -1){
-                return false;
-            }
-        }
-        */
-
         var year = parseInt(marker._data.month.substring(0,4));
         var month = parseInt(marker._data.month.substring(4,6));
+        var notif = marker._data.notif;
 
-        if(this.filters.year !== null && year !== this.filters.year){
+        //If only year selected, then discard years not selected
+        if(this.filters.years.length > 0 && this.filters.months.length == 0){
+          if ( _.indexOf(this.filters.years, year) == -1) {
             return false;
+          };
         }
-        if(this.filters.months.length > 0){
-            return _.indexOf(this.filters.months, month) !== -1;
+
+        //If only month selected, then discard months not selected
+        if (this.filters.years.length ==0 && this.filters.months.length > 0){
+          if (_.indexOf(this.filters.months, month) == -1){
+            return false;
+          };
         }
+
+        //check both and discard not selected ones
+        if(this.filters.years.length > 0 && this.filters.months.length > 0){
+            if (_.indexOf(this.filters.years, year) == -1
+                    || _.indexOf(this.filters.months, month) == -1){
+                      return false;
+                    };
+        }
+        //check notification filter
+        if('notif' in this.filters) {
+            if (this.filters.notif !== false) return notif == this.filters.notif;
+            else return true;
+        }
+
         return true;
     },
 
@@ -418,7 +637,6 @@ var MapView = MapView.extend({
             }
             if (!found) ++i;
         }
-
         return retorna;
     },
 

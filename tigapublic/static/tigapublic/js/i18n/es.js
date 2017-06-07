@@ -1,5 +1,21 @@
 var trans = trans || {};
 trans.es = {
+    //TO DELETE?
+    'map.si': 'Sí',
+    'map.no': 'No',
+    'map.no_confirmado': 'Seguro que no',
+    'map.no_posible': 'No lo parece',
+    'map.si_posible': 'Posible',
+    'map.si_confirmado': 'Confirmado',
+    'map.no_answers': '-',
+    'map.site_water': 'Imbornales con agua',
+    'map.site_dry': 'Imbornales sin agua',
+    'map.site_other': 'Otros',
+    'map.site_pending': 'Por filtrar',
+    'hashtag.filters.placeholder': 'Por #hashtag',
+    'check_notifications': 'Notificaciones',
+
+    //header
     'header.login': 'Login',
     'header.logout': 'Logout',
     'header.username': 'Usuario',
@@ -7,6 +23,23 @@ trans.es = {
     'header.submit': 'Aceptar',
     'header.motto': 'Observaciones ciudadanas',
     'header.logo_url': "window.open('http://www.mosquitoalert.com')",
+
+    //COOKIE
+    'map.cookie_consent': 'Este sitio web utiliza cookies. Si continuas navegando asumimos tu permiso para utilizarlas.'+
+      '<br/>Para más información sobre las políticas del sitio web, por favor consulta nuestra <a href="http://webserver.mosquitoalert.com/es/privacy/">Política de privacidad</a> y <a href="http://webserver.mosquitoalert.com/es/terms/">Acuerdo del usuario</a>.',
+    'map.cookie_accept': 'Cerrar notificación',
+
+    //GENERALITIES
+    'title': 'Título',
+    'error.unknown': 'Ocurrió un error',
+    'remove': 'Eliminar',
+    'display-example': 'Ver ejemplo',
+
+    //TOC
+    'group.observations':'Observaciones ciudadanas',
+    'group.userfixes':'Distribución de participantes',
+    'group.breeding_sites':'Lugares de cría',
+    'group.userdata':'Capas de usuario',
 
     'layer.mosquito_tiger_probable': 'Posible mosquito tigre',
     'layer.mosquito_tiger_confirmed': 'Mosquito tigre confirmado',
@@ -26,6 +59,7 @@ trans.es = {
     'layer.zika': 'Mosquito fiebre amarilla',
     'layer.site': 'Lugares de cría',
 
+    //MAP CONTROLS
     'map.numfixes': 'Observaciones',
     'map.control_layers': 'Leyenda',
     'map.control_moreinfo': 'Más información acerca de la leyenda',
@@ -38,10 +72,7 @@ trans.es = {
     'map.controlshare_home': 'Proyecto',
     'map.controlshare_view': 'Vista',
 
-    'map.cookie_consent': 'Este sitio web utiliza cookies. Si continuas navegando asumimos tu permiso para utilizarlas.'+
-      '<br/>Para más información sobre las políticas del sitio web, por favor consulta nuestra <a href="http://webserver.mosquitoalert.com/es/privacy/">Política de privacidad</a> y <a href="http://webserver.mosquitoalert.com/es/terms/">Acuerdo del usuario</a>.',
-    'map.cookie_accept': 'Cerrar notificación',
-
+    //MAP FILTERS
     'All years': 'Todos los años',
     'All months': 'Todos los meses',
     'January': 'Enero',
@@ -90,29 +121,13 @@ trans.es = {
     'map.breeding_site_answers': 'Lugar de cría',
     'map.expert_validated': 'Validación experta: ',
     'map.citizen_validated': 'Validación ciudadana: ',
-
-
     'map.showed_reports': 'Puntos mostrados:',
-    'map.si': 'Sí',
-    //'map.nosabe': 'No identificable',
-    'map.no': 'No',
 
-    //'map.no_clasificado': 'Por validar',
-    'map.no_confirmado': 'Seguro que no',
-    'map.no_posible': 'No lo parece',
-    //'map.no_sabe': 'No identificable',
-    'map.si_posible': 'Posible',
-    'map.si_confirmado': 'Confirmado',
     'map.multi_report_title': 'Mosquito Alert: Listado de observaciones',
-    'map.no_answers': '-',
-    'map.site_water': 'Imbornales con agua',
-    'map.site_dry': 'Imbornales sin agua',
-    'map.site_other': 'Otros',
-    'map.site_pending': 'Por filtrar',
     'map.anonim': 'Anónimo',
     'map.share_social_text': 'Mira este mapa de @MosquitoAlert #cienciaciudadana',
 
-    'share.look_at': 'Mira',
+    'share.look_at': 'Mira el mapa de @Mosquito_Alert #MosquitoTigre #CienciaCiudadana',
 
     'report.author': 'Autor',
     'report.license': 'Licencia: ',
@@ -120,5 +135,17 @@ trans.es = {
 
     'error.invalid_login': 'No hay ningún usuario con estas credenciales.',
     'error.no_points_selected': 'No hay ningún punto.',
-    'error.too_many_points_selected': 'Hay demasiados puntos.'
+    'error.too_many_points_selected': 'Hay demasiados puntos.',
+
+    // Descarga de datos
+    'map.control_download':'Descargar datos',
+    'map.download_btn':'Descargar datos',
+    'map.text_description_download': '<p>La descarga se realizará a partir de los elementos que se visualizan en el mapa. Comprueba que estén activas las capas de la leyenda que deseas así como los filtros temporales y el nivel de zoom.</p><p>Una vez definida la vista deseada pulsa en el botón de descarga.</p>',
+    'map.title_download': 'Descarga',
+
+    //Draw. Not visible when defined in es_logged
+    'leaflet.draw.polygon.start': 'Marca la posición del primer punto en el mapa.',
+    'leaflet.draw.polygon.continue': 'Sigue dibujando el contorno del polígono.',
+    'leaflet.draw.polygon.end': 'Marca el primer punto (o haz doble clic en un nuevo punto) para terminar.'
+
 };

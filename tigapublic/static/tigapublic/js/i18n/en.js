@@ -8,6 +8,10 @@ trans.en = {
     'header.motto': 'Citizens\' observations',
     'header.logo_url': "window.open('http://www.mosquitoalert.com/en/')",
 
+    'group.observations':'Citizens observations',
+    'group.userfixes':'Participants\' distribution',
+    'group.breeding_sites':'Breeding sites',
+
     'layer.mosquito_tiger_confirmed': 'Confirmed tiger mosquito',
     'layer.mosquito_tiger_probable': 'Possible tiger mosquito',
     'layer.yellow_fever_confirmed': 'Confirmed yellow fever mosquito',
@@ -31,6 +35,13 @@ trans.en = {
     'map.control_moreinfo': 'More information about the legend',
     'map.control_share': 'Share',
     'map.control_viewreports': 'List of observations',
+
+    //Download control
+    'map.control_download': 'Download data',
+    'map.download_btn': 'Download data',
+    'map.text_description_download': '<p>Only data displayed in the current map view will be downloaded. Verify your current active layers, temporal filters and zoom.</p><p>Once verified, press the download button.</p>',
+    'map.title_download': 'Download',
+
 
     'map.controlshare_share': 'Share',
     'map.controlshare_share_description': 'Share this map',
@@ -60,6 +71,7 @@ trans.en = {
     'map.controlmoreinfo_title': 'Description',
     'map.mundial_controlmoreinfo_title': 'Description',
 
+    'info.notifications': 'Notifications',
     'citizeninfo.tiger_mosquito': ' According to citizens, the pictures of this observation could be tiger mosquito (<i>Aedes albopictus</i>).',
     'citizeninfo.yellow_fever_mosquito':' According to citizens, the pictures of this observation could be yellow fever mosquito (<i>Aedes aegypti</i>).',
     'citizeninfo.other_species':' According to citizens, the pictures of this observation may be of other species of mosquito.',
@@ -111,7 +123,7 @@ trans.en = {
     'map.anonim': 'Anonymous',
     'map.share_social_text': 'Look at this map from @MosquitoAlert #citizenscience',
 
-    'share.look_at': 'Look at',
+    'share.look_at': 'Look at the @Mosquito_Alert map #TigerMosquito #CitizenScience',
 
     'report.author': 'Author',
     'report.license': 'License: ',
@@ -119,5 +131,22 @@ trans.en = {
 
     'error.invalid_login': 'No user with this password.',
     'error.no_points_selected': 'There are no points.',
-    'error.too_many_points_selected': 'There are too many points.'
+    'error.too_many_points_selected': 'There are too many points.',
+
+    //Other
+    'title': 'Title',
+    'error.unknown': 'There has been an error:',
+    'group.breeding_sites': 'Breeding sites',
+    'group.observations': 'Citizen observations',
+    'group.userdata': 'User layers',
+    'group.userfixes': 'Distribution of participants',
+    'hashtag.filters.placeholder': 'By #hashtag',
+    'observations.filters.title': 'Observations',
+    'remove': 'Remove',
+    'display-example': 'See an example',
+
+    //Draw. Not visible when defined in en_logged
+    'leaflet.draw.polygon.continue': 'Keep drawing the polygon contour',
+    'leaflet.draw.polygon.end': 'Set the first point (or double click in a new point) to end',
+    'leaflet.draw.polygon.start': 'Set the position of the starting point in the map.'
 };
