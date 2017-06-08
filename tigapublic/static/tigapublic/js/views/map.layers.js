@@ -270,8 +270,11 @@ var MapView = MapView.extend({
         };
     }
     ,
-    loadStormDrainData: function(forced=false){
+    loadStormDrainData: function(forced){
         //if data not yet loaded
+        if (arguments.length==0) {
+          forced=false;
+        }
         _this = this;
         if (this.stormDrainData.length==0 || forced) {
             url = MOSQUITO.config.URL_API + 'embornals/';

@@ -201,12 +201,11 @@ var MapView = MapView.extend({
         var div_hashtag = $('<div/>', {'id':'hashtag_filters', 'class':'section filters'})
             .appendTo(container);
 
-        div_hashtag.html(`
-            <form onsubmit="return:false">
-            <input id="hashtag_search_text" type="text" placeholder="#hashtag" value="">
-              <button id="hashtag_button_search" type="submit"><i class="fa fa-search"></i></button>
-              <button id="hashtag_button_trash" type="submit"><i class="fa fa-trash"></i></button>
-              </form>`);
+        div_hashtag.html('<form onsubmit="return:false">' +
+            '<input id="hashtag_search_text" type="text" placeholder="#hashtag" value="">' +
+              '<button id="hashtag_button_search" type="submit"><i class="fa fa-search"></i></button>' +
+              '<button id="hashtag_button_trash" type="submit"><i class="fa fa-trash"></i></button>' +
+              '</form>');
         $('#hashtag_button_search').click(function(){
             _this.filters.trigger('hashtag_change', $('#hashtag_search_text').val());
             return false;
@@ -871,12 +870,11 @@ var MapView = MapView.extend({
       sorted.forEach(function(category, index, arr){
 
           svgContent = '<circle cx="10" cy="7" r="5" stroke="black" stroke-width="1" fill="'+category.color+'" />'
-          str +=`<li class="stormdrain_legend">
-          <div class="tr t-top">
-            <div class="tcel t-top">
-            <svg width="25px" height="20px" xmlns="http://www.w3.org/2000/svg">` + svgContent + `
-            </svg>
-            </div>`;
+          str +='<li class="stormdrain_legend">'+
+          '<div class="tr t-top">' +
+            '<div class="tcel t-top">' +
+            '<svg width="25px" height="20px" xmlns="http://www.w3.org/2000/svg">' + svgContent +
+            '</svg></div>';
 
           conds = category.conditions;
 
