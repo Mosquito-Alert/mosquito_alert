@@ -9,3 +9,4 @@ tigaserver_project/settings/local.pyc
 *.sublime*
 celerybeat-schedule
 celerybeat.pid
+dump.rdb
