@@ -29,6 +29,10 @@ from tigacrafting.messaging import send_message_ios, send_message_android
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures
 from tigascoring.maUsers import smmry
 
+from celery.task.schedules import crontab
+from celery.decorators import periodic_task
+
+
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
@@ -755,6 +759,15 @@ def get_user_score(user_id):
     summary = smmry()
     return summary.getScore(user_id)
 
+@periodic_task(run_every=(crontab(minute='*/1')), name="refresh_user_scores", ignore_result=True)
+def refresh_user_scores():
+    summary = smmry()
+    queryset = TigaUser.objects.all()
+    for user in queryset:
+        score = summary.getScore(user.user_UUID)
+        user.score = score
+        user.save()
+
 #@api_view(['GET', 'POST'])
 @api_view(['GET'])
 def user_score(request):
@@ -764,10 +777,7 @@ def user_score(request):
     queryset = TigaUser.objects.all()
     user = get_object_or_404(queryset, pk=user_id)
     if request.method == 'GET':
-        user_score = get_user_score(user_id)
-        user.score = user_score[0]
-        user.save()
-        content = {"user_id": user_id, "score": user_score[0], "score_label": user_score[1]}
+        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
     '''
     if request.method == 'POST':
