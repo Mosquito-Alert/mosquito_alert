@@ -759,13 +759,12 @@ def get_user_score(user_id):
     summary = smmry()
     return summary.getScore(user_id)
 
-@periodic_task(run_every=(crontab(minute='*/1')), name="refresh_user_scores", ignore_result=True)
 def refresh_user_scores():
     summary = smmry()
     queryset = TigaUser.objects.all()
     for user in queryset:
         score = summary.getScore(user.user_UUID)
-        user.score = score
+        user.score = score[0]
         user.save()
 
 #@api_view(['GET', 'POST'])
