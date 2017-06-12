@@ -15,24 +15,38 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'tigapublic', ['NotificationImageFormModel'])
 
-        # Adding model 'StormDrainRepresentation'
-        db.create_table(u'tigapublic_storm_drain_representation', (
+        # Adding model 'StormDrain'
+        db.create_table(u'storm_drain', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('icon', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+            ('version', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+            ('municipality', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
+            ('type', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
+            ('water', self.gf('django.db.models.fields.BooleanField')(max_length=10)),
+            ('sand', self.gf('django.db.models.fields.BooleanField')(max_length=10)),
+            ('treatment', self.gf('django.db.models.fields.BooleanField')(max_length=10)),
+            ('species2', self.gf('django.db.models.fields.BooleanField')(max_length=10)),
+            ('species1', self.gf('django.db.models.fields.BooleanField')(max_length=10)),
+            ('activity', self.gf('django.db.models.fields.BooleanField')(max_length=10)),
+            ('code', self.gf('django.db.models.fields.CharField')(max_length=50, blank=True)),
+            ('lon', self.gf('django.db.models.fields.DecimalField')(max_digits=15, decimal_places=6)),
+            ('lat', self.gf('django.db.models.fields.DecimalField')(max_digits=15, decimal_places=6)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tigapublic.AuthUser'])),
-            ('version', self.gf('django.db.models.fields.IntegerField')()),
-            ('condition', self.gf('django.db.models.fields.IntegerField')()),
-            ('key', self.gf('django.db.models.fields.CharField')(max_length=36)),
-            ('value', self.gf('django.db.models.fields.CharField')(max_length=36)),
-            ('operator', self.gf('django.db.models.fields.CharField')(max_length=15)),
+            ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2017, 6, 12, 0, 0), blank=True)),
+            ('original_lon', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
+            ('original_lat', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
+            ('idalfa', self.gf('django.db.models.fields.CharField')(max_length=5, blank=True)),
+            ('size', self.gf('django.db.models.fields.CharField')(max_length=5, blank=True)),
+            ('model', self.gf('django.db.models.fields.CharField')(max_length=5, blank=True)),
         ))
-        db.send_create_signal(u'tigapublic', ['StormDrainRepresentation'])
+        db.send_create_signal(u'tigapublic', ['StormDrain'])
 
         # Adding model 'StormDrainUserVersions'
         db.create_table(u'tigapublic_storm_drain_user_version', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tigapublic.AuthUser'])),
             ('version', self.gf('django.db.models.fields.IntegerField')()),
-            ('published_date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2017, 5, 30, 0, 0))),
+            ('published_date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2017, 6, 12, 0, 0))),
             ('style_json', self.gf('django.db.models.fields.TextField')()),
             ('visible', self.gf('django.db.models.fields.BooleanField')()),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=50, blank=True)),
@@ -44,8 +58,8 @@ class Migration(SchemaMigration):
         # Deleting model 'NotificationImageFormModel'
         db.delete_table(u'tigapublic_notificationimageformmodel')
 
-        # Deleting model 'StormDrainRepresentation'
-        db.delete_table(u'tigapublic_storm_drain_representation')
+        # Deleting model 'StormDrain'
+        db.delete_table(u'storm_drain')
 
         # Deleting model 'StormDrainUserVersions'
         db.delete_table(u'tigapublic_storm_drain_user_version')
@@ -107,7 +121,7 @@ class Migration(SchemaMigration):
         u'tigapublic.notification': {
             'Meta': {'object_name': 'Notification', 'db_table': "u'tigaserver_app_notification'", 'managed': 'False'},
             'acknowledged': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'date_comment': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2017, 5, 30, 0, 0)'}),
+            'date_comment': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2017, 6, 12, 0, 0)'}),
             'expert': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['tigapublic.AuthUser']"}),
             'expert_comment': ('django.db.models.fields.TextField', [], {}),
             'expert_html': ('django.db.models.fields.TextField', [], {}),
@@ -134,10 +148,10 @@ class Migration(SchemaMigration):
             'image': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'})
         },
         u'tigapublic.stormdrain': {
-            'Meta': {'object_name': 'StormDrain', 'db_table': "u'storm_drain'", 'managed': 'False'},
+            'Meta': {'object_name': 'StormDrain', 'db_table': "u'storm_drain'"},
             'activity': ('django.db.models.fields.BooleanField', [], {'max_length': '10'}),
             'code': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
-            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2017, 5, 30, 0, 0)', 'blank': 'True'}),
+            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2017, 6, 12, 0, 0)', 'blank': 'True'}),
             'icon': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'idalfa': ('django.db.models.fields.CharField', [], {'max_length': '5', 'blank': 'True'}),
@@ -157,20 +171,10 @@ class Migration(SchemaMigration):
             'version': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'water': ('django.db.models.fields.BooleanField', [], {'max_length': '10'})
         },
-        u'tigapublic.stormdrainrepresentation': {
-            'Meta': {'object_name': 'StormDrainRepresentation', 'db_table': "u'tigapublic_storm_drain_representation'"},
-            'condition': ('django.db.models.fields.IntegerField', [], {}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'key': ('django.db.models.fields.CharField', [], {'max_length': '36'}),
-            'operator': ('django.db.models.fields.CharField', [], {'max_length': '15'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['tigapublic.AuthUser']"}),
-            'value': ('django.db.models.fields.CharField', [], {'max_length': '36'}),
-            'version': ('django.db.models.fields.IntegerField', [], {})
-        },
         u'tigapublic.stormdrainuserversions': {
             'Meta': {'object_name': 'StormDrainUserVersions', 'db_table': "u'tigapublic_storm_drain_user_version'"},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'published_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2017, 5, 30, 0, 0)'}),
+            'published_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2017, 6, 12, 0, 0)'}),
             'style_json': ('django.db.models.fields.TextField', [], {}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['tigapublic.AuthUser']"}),
