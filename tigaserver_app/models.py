@@ -26,7 +26,7 @@ class TigaUser(models.Model):
     user_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
                                                                             'phone to identify each unique user. Must be exactly 36 '
                                                                             'characters (32 hex digits plus 4 hyphens).')
-    registration_time = models.DateTimeField(auto_now=True, help_text='The date and time when user '
+    registration_time = models.DateTimeField(auto_now_add=True, help_text='The date and time when user '
                                                                       'registered and consented to sharing '
                                                                  'data. Automatically set by '
                                                                  'server when user uploads registration.')

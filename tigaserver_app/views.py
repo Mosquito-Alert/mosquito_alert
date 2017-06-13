@@ -27,6 +27,11 @@ from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios, send_message_android
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures
+from tigascoring.maUsers import smmry
+
+from celery.task.schedules import crontab
+from celery.decorators import periodic_task
+
 
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -750,8 +755,20 @@ def score_label(score):
     else:
         return "user_score_beginner"
 
+def get_user_score(user_id):
+    summary = smmry()
+    return summary.getScore(user_id)
 
-@api_view(['GET', 'POST'])
+def refresh_user_scores():
+    summary = smmry()
+    queryset = TigaUser.objects.all()
+    for user in queryset:
+        score = summary.getScore(user.user_UUID)
+        user.score = score[0]
+        user.save()
+
+#@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def user_score(request):
     user_id = request.QUERY_PARAMS.get('user_id', -1)
     if user_id == -1:
@@ -761,6 +778,7 @@ def user_score(request):
     if request.method == 'GET':
         content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
+    '''
     if request.method == 'POST':
         score = request.QUERY_PARAMS.get('score', -1)
         if score == -1:
@@ -772,6 +790,7 @@ def user_score(request):
             raise ParseError(detail='Invalid score integer value')
         content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
+    '''
 
 
 def custom_render_notification(notification,locale):
