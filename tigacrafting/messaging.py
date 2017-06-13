@@ -55,8 +55,10 @@ def send_message_android(token,title, message):
 
         values = {
             "registration_ids": private_keys,
+            "collapse_key": "mosquito_alert",
             "data": {
                 "message": message,
+                "big_icon": True,
                 "title": title
             }
         }
