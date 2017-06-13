@@ -46,7 +46,8 @@ def send_message_android(token,title, message):
         private_keys = [token]
         #private_keys.append(token)
 
-        url = "https://android.googleapis.com/gcm/send"
+        #url = "https://android.googleapis.com/gcm/send"
+        url = "https://fcm.googleapis.com/fcm/send"
         headers = {
             "Content-Type": "application/json",
             "Authorization": "key=" + app_id
