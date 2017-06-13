@@ -13,7 +13,7 @@ compulsatory_stormdrain_fields = {
     'lon': ['longitud','lon','x_etrs_89'],
     'date':['date','fecha','data'],
     'water':['h2o','water','agua','aigua'],
-    'type':['e_tipo','forma','shape']
+    'type':['e_tipo','forma','shape','type']
 }
 
 optional_stormdrain_fields = {
