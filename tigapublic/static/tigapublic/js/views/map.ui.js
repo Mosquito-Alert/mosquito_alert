@@ -58,7 +58,7 @@ var MapView = MapView.extend({
         );
         this.controls.reports = pnl.addTo(this.map);
         this.map.on('movestart', function(){
-          if (!MOSQUITO.app.mapView.scope.notifying) $(pnl.el).find('span').eq(1).html('0');
+          if ('mapView' in MOSQUITO.app && !MOSQUITO.app.mapView.scope.notifying) $(pnl.el).find('span').eq(1).html('0');
         });
         MOSQUITO.app.on('cluster_drawn', function(e){
             $(pnl.el).find('span').eq(1).html(e.n);

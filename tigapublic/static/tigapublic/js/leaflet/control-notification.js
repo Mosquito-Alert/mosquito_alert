@@ -252,7 +252,10 @@ var MOSQUITO = (function (m) {
                 default_link_target: "_blank",
                 link_assume_external_targets: true,
                 link_title: false,
-                statusbar: false
+                statusbar: false,
+                relative_urls : false,
+                remove_script_host : false,
+                convert_urls : true
             });
           }
         },

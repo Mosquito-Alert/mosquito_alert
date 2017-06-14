@@ -343,6 +343,7 @@ var MapView = MapView.extend({
             if (!_this.userfixtileIndex){
                 return;
             }
+
             var tile = _this.userfixtileIndex.getTile(params.tilePoint.z, params.tilePoint.x, params.tilePoint.y);
             if (!tile) {
                 return;
@@ -359,16 +360,16 @@ var MapView = MapView.extend({
                 var feature = features[i],
                     type = feature.type;
 
-                ctx.fillStyle = feature.tags.color? feature.tags.color : 'rgba(255,0,0,0.05)';
+                ctx.fillStyle = (feature.tags && feature.tags.color)? feature.tags.color : 'rgba(255,0,0,0.05)';
                 ctx.strokeStyle = 'rgba(255,0,0,0.1)';
                 ctx.beginPath();
 
                 for (var j = 0; j < feature.geometry.length; j++) {
                     var geom = feature.geometry[j];
-                    if (type === 1) {
+                    /*if (type === 1) {
                         ctx.arc(geom[0] * ratio + pad, geom[1] * ratio + pad, 2, 0, 2 * Math.PI, false);
                         continue;
-                    }
+                    }*/
                     for (var k = 0; k < geom.length; k++) {
                         var p = geom[k];
                         var extent = 4096;

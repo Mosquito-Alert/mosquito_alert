@@ -6,16 +6,18 @@ var MOSQUITO = (function (m, _) {
         lngs: ['es', 'ca', 'en'],
         lngs_admin: ['es'],
         default_lng: ['es'],
+
         URL_API: '/tigapublic/',
-        //URL_PUBLIC: 'http://sigserver3.udg.edu/apps/mosquito/tigapublic/',
-        
+        URL_PUBLIC: '/tigapublic/',
+        //lon: 4.130859375,
+        //lat: 38.53097889440026,
         lon: 1.130859375,
         lat: 37.53097889440026,
         maxzoom_cluster: 13,
         zoom: 5,
         login_allowed: true,
         embeded: window !== parent,
-        minZoom: 5,
+        minZoom: 1,
         //lock_bounds: true,
         /*lock_bounds: {
           "ymin": 10.94304553343818,
@@ -27,8 +29,7 @@ var MOSQUITO = (function (m, _) {
         printreports:true,
         maxPrintReports: 300,
         "groups":[
-            //{'name':'observations', 'icon': 'fa fa-mobile'},
-            //{'name':'breeding_sites', 'icon':'fa fa-dot-circle-o'},
+
             {'name': 'none', 'icon':''}
         ]
         ,
@@ -67,7 +68,6 @@ var MOSQUITO = (function (m, _) {
             },
             {
                 key: 'E',
-                //group:'breeding_sites',
                 group:'none',
                 title: 'layer.site',
                 categories: {
@@ -116,13 +116,16 @@ var MOSQUITO = (function (m, _) {
             "lngs": ['es'],
             "groups":[
                 {'name':'observations', 'icon': 'fa fa-mobile'},
-                //{'name': 'userfixes', 'icon':'fa fa-th-large'},
                 {'name': 'userdata', 'icon':'fa fa-user'},
-                //{'name':'observations', 'icon': 'fa fa-plus'},
-                //{'name':'userdata', 'icon': 'fa fa-plus'},
                 {'name': 'none', 'icon':''}
-            ]
-            ,
+            ],
+            "minZoom": 5,
+            "lock_bounds": {
+              "ymin": 10.94304553343818,
+              "ymax": 61.42951794712287,
+              "xmin": -46.77148437499999,
+              "xmax": 49.056640625
+            },
             "layers": [
               {
                   key: 'A2',

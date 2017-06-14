@@ -127,7 +127,7 @@ class Notification(models.Model):
     report = models.ForeignKey(MapAuxReports, to_field='version_uuid')
     user_id = models.CharField(max_length=36, blank=False)
     expert = models.ForeignKey(AuthUser)
-    date_comment = models.DateTimeField(default=datetime.now())
+    date_comment = models.DateTimeField(auto_now_add=True)
     expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
