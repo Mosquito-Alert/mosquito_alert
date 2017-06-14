@@ -712,9 +712,11 @@ def imageupload(request):
         filename = handle_uploaded_file(request, form.cleaned_data['image'])
         model = NotificationImageFormModel(image=request.FILES["image"])
         # Copia el nom al formulari
-        return HttpResponse("<script>top.$('.mce-btn.mce-open').parent().find('.mce-textbox').val('%s').closest('.mce-form').find('.mce-last.mce-formitem input:eq(0)').val('%s').parent().find('input:eq(1)').val('%s');top.$('.mce-form.mce-first > div .mce-formitem:eq(1) input').focus();top.$('.mce-notification').remove();</script>" % (settings.MEDIA_URL + filename, str(model.image.width), str(model.image.height)))
+        return HttpResponse("<script>top.$('.mce-btn.mce-open').parent().find('.mce-textbox').val('%s').closest('.mce-form').find('.mce-last.mce-formitem input:eq(0)').val('%s').parent().find('input:eq(1)').val('%s');top.$('.mce-form.mce-first > div .mce-formitem:eq(1) input').focus();top.$('.mce-notification').remove();</script>" % (settings.MEDIA_URL + filename, '100%', ''))
+        # return the size of the image
+        #return HttpResponse("<script>top.$('.mce-btn.mce-open').parent().find('.mce-textbox').val('%s').closest('.mce-form').find('.mce-last.mce-formitem input:eq(0)').val('%s').parent().find('input:eq(1)').val('%s');top.$('.mce-form.mce-first > div .mce-formitem:eq(1) input').focus();top.$('.mce-notification').remove();</script>" % (settings.MEDIA_URL + filename, str(model.image.width), str(model.image.height)))
         # Copia el nom al formulari i tanca el quadre de dialeg
-        return HttpResponse("<script>top.$('.mce-btn.mce-open').parent().find('.mce-textbox').val('%s').closest('.mce-window').find('.mce-primary').click();</script>" % (settings.MEDIA_URL + str(filename)))
+        # return HttpResponse("<script>top.$('.mce-btn.mce-open').parent().find('.mce-textbox').val('%s').closest('.mce-window').find('.mce-primary').click();</script>" % (settings.MEDIA_URL + str(filename)))
 
     return HttpResponse("<script>alert('%s');</script>" % json.dumps('\n'.join([v[0] for k, v in form.errors.items()])))
 
@@ -1407,7 +1409,7 @@ def stormDrainUpload(request, **kwargs):
                 numerics=[]
 
                 for field in StormDrain._meta.fields:
-                    if field.get_internal_type() == 'BooleanField':
+                    if field.get_internal_type() == 'NullBooleanField':
                         booleans.append(field.name)
                     elif field.get_internal_type() in ['FloatField', 'DecimalField', 'IntegerField']:
                         numerics.append(field.name)
