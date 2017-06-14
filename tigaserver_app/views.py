@@ -767,8 +767,7 @@ def refresh_user_scores():
         user.score = score[0]
         user.save()
 
-#@api_view(['GET', 'POST'])
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def user_score(request):
     user_id = request.QUERY_PARAMS.get('user_id', -1)
     if user_id == -1:
@@ -778,7 +777,6 @@ def user_score(request):
     if request.method == 'GET':
         content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
-    '''
     if request.method == 'POST':
         score = request.QUERY_PARAMS.get('score', -1)
         if score == -1:
@@ -790,7 +788,6 @@ def user_score(request):
             raise ParseError(detail='Invalid score integer value')
         content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
-    '''
 
 
 def custom_render_notification(notification,locale):
@@ -948,7 +945,8 @@ def send_notifications(request):
             if push and recipient.device_token is not None and recipient.device_token != '':
                 #send push
                 if(recipient.user_UUID.islower()):
-                    send_message_android(recipient.device_token, notification_content.title_es, '')
+                    json_notif = custom_render_notification(n,'es')
+                    send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
                     push_issued_android = push_issued_android + 1
                 else:
                     send_message_ios(recipient.device_token,notification_content.title_es,'')
