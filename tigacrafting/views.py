@@ -34,6 +34,8 @@ import urllib
 import django.utils.html
 from django.db import connection
 from itertools import chain
+from tigaserver_app.views import custom_render_notification
+from tigacrafting.messaging import send_message_android,send_message_ios
 
 
 def get_current_domain(request):
@@ -513,6 +515,13 @@ def issue_notification(report_annotation,current_domain):
     notification_content.save()
     notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
+    recipient = report_annotation.report.user
+    if recipient.device_token is not None and recipient.device_token != '':
+        if (recipient.user_UUID.islower()):
+            json_notif = custom_render_notification(notification, 'es')
+            send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+        else:
+            send_message_ios(recipient.device_token, notification_content.title_es, '')
 
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na'):
