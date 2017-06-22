@@ -28,6 +28,7 @@ from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios, send_message_android
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures
 from tigascoring.maUsers import smmry
+from tigaserver_app.serializers import custom_render_notification,score_label
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -747,6 +748,7 @@ def user_count(request):
     content = { "user_count" : len(results) }
     return Response(content)
 
+'''
 def score_label(score):
     if score > 66:
         return "user_score_pro"
@@ -754,6 +756,8 @@ def score_label(score):
         return "user_score_advanced"
     else:
         return "user_score_beginner"
+'''
+
 
 def get_user_score(user_id):
     summary = smmry()
@@ -789,7 +793,7 @@ def user_score(request):
         content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
 
-
+'''
 def custom_render_notification(notification,locale):
     expert_comment = notification.notification_content.get_title_locale_safe(locale)
     expert_html = notification.notification_content.get_body_locale_safe(locale)
@@ -807,6 +811,7 @@ def custom_render_notification(notification,locale):
         'public':notification.public,
     }
     return content
+'''
 
 def custom_render_notification_queryset(queryset,locale):
     content = []

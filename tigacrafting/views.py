@@ -34,8 +34,8 @@ import urllib
 import django.utils.html
 from django.db import connection
 from itertools import chain
-from tigaserver_app.views import custom_render_notification
 from tigacrafting.messaging import send_message_android,send_message_ios
+from tigaserver_app.serializers import custom_render_notification
 
 
 def get_current_domain(request):

@@ -4,6 +4,32 @@ from tigaserver_app.models import Notification, NotificationContent, TigaUser, M
     Fix, Configuration, CoverageArea, CoverageAreaMonth
 from django.contrib.auth.models import User
 
+def score_label(score):
+    if score > 66:
+        return "user_score_pro"
+    elif 33 < score <= 66:
+        return "user_score_advanced"
+    else:
+        return "user_score_beginner"
+
+def custom_render_notification(notification,locale):
+    expert_comment = notification.notification_content.get_title_locale_safe(locale)
+    expert_html = notification.notification_content.get_body_locale_safe(locale)
+    content = {
+        'id':notification.id,
+        'report_id':notification.report.version_UUID,
+        'user_id':notification.user.user_UUID,
+        'user_score':notification.user.score,
+        'user_score_label': score_label(notification.user.score),
+        'expert_id':notification.expert.id,
+        'date_comment':notification.date_comment,
+        'expert_comment':expert_comment,
+        'expert_html':expert_html,
+        'acknowledged':notification.acknowledged,
+        'public':notification.public,
+    }
+    return content
+
 class UserSerializer(serializers.ModelSerializer):
 
     def validate_user_UUID(self, attrs, source):
