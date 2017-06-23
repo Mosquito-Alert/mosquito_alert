@@ -26,7 +26,7 @@ from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios, send_message_android
-from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures
+from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
 from tigascoring.maUsers import smmry
 from tigaserver_app.serializers import custom_render_notification,score_label
 
@@ -743,6 +743,11 @@ def user_count(request):
         results = users_with_pictures()
     elif filter_criteria == 'uploaded_pictures_sd':
         results = users_with_storm_drain_pictures()
+    elif filter_criteria.startswith('score_arbitrary'):
+        range = filter_criteria.split('-')
+        results = users_with_score_range(range[1],range[2])
+    elif filter_criteria.startswith('score'):
+        results = users_with_score(filter_criteria)
     else:
         raise ParseError(detail="Invalid filter criteria")
     content = { "user_count" : len(results) }
@@ -930,6 +935,11 @@ def send_notifications(request):
                 send_to = users_with_pictures()
             elif(recipients=='uploaded_pictures_sd'):
                 send_to = users_with_storm_drain_pictures()
+        elif recipients.startswith("score_arbitrary"):
+            range = recipients.split('-')
+            send_to = users_with_score_range(range[1], range[2])
+        elif recipients.startswith("score"):
+            send_to = users_with_score(recipients)
         else:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)

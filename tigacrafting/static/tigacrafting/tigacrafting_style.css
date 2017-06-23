@@ -129,3 +129,13 @@ input[type=checkbox]
 .label-margin{
     margin-right: 5px;
 }
+
+ul {
+ list-style: none;
+}
+
+.separator_line{
+    border-bottom: 1px solid #ddd;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

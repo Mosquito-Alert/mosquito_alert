@@ -292,18 +292,21 @@ $( document ).ready(function() {
         $('#number_estimate').show();
         $('#number_estimate_text').addClass("progress");
         set_message_user_count("Estimating number of messages...");
+        $('.ui-slider').slider('disable');
         $.ajax({
             type: "GET",
-            url: '/api/user_count/?filter_criteria=' + select_op,
+            url: '/api/user_count/?filter_criteria=' +  encodeURIComponent(select_op),
             dataType: 'json',
             headers: { "X-CSRFToken": csrf_token },
             success: function(data){
                 set_message_user_count("Message will be sent to " + data.user_count + " users");
                 $('#number_estimate_text').removeClass("progress");
+                $('.ui-slider').slider('enable');
             },
             error: function(jqXHR, textStatus, errorThrown){
                 set_message_user_count("Error estimating number of users: " + jqXHR.responseText);
                 $('#number_estimate_text').removeClass("progress");
+                $('.ui-slider').slider('enable');
             }
         });
     }
@@ -312,11 +315,25 @@ $( document ).ready(function() {
     };
     get_selected_radio_op = function(){
         var selected = $('input[type=radio][name=criteriarb]:checked').attr('id');
+        if(selected == 'score_arbitrary'){
+            ranges = $('#amount').val();
+            min = ranges.split('-')[0].trim();
+            max = ranges.split('-')[1].trim();
+            selected = selected + '-' + min + '-' + max;
+        }
         return selected;
     };
     $('input[type=radio][name=criteriarb]').change(function() {
         var selected = $(this).attr('id');
-        ajax_number_users(selected);
+        if (selected!='score_arbitrary'){
+            ajax_number_users(selected);
+        }else{
+            ranges = $('#amount').val();
+            min = ranges.split('-')[0].trim();
+            max = ranges.split('-')[1].trim();
+            ajax_number_users(selected + '-' + min + '-' + max);
+        }
+
     });
     clear_criteria = function(){
         $('#number_estimate').hide();
@@ -336,4 +353,18 @@ $( document ).ready(function() {
     if(user_uuid!=''){
         $('.tokenize-user-uuid').tokenize2().trigger('tokenize:tokens:add', [user_uuid, user_uuid, true]);
     }
+    $( "#slider-range" ).slider({
+        range: true,
+        min: 0,
+        max: 100,
+        values: [ 95, 100 ],
+        slide: function( event, ui ) {
+            $( "#amount" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+        },
+        stop: function( event, ui ) {
+            if (get_selected_radio_op().startsWith("score_arbitrary")){
+                ajax_number_users("score_arbitrary" + "-" + ui.values[ 0 ] + "-" + ui.values[ 1 ])
+            }
+        }
+    });
 });

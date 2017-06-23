@@ -106,11 +106,25 @@
                 <p>Select one or more user ids to which the notification will be sent (start typing the first 3 symbols of the user id and select from the dropdown):</p>
                 <select class="tokenize-user-uuid" multiple></select>
             </div>
-            <h3>Send message to some people (choose criteria filter)</h3>
+            <h3>Send message to some people (choose filter)</h3>
             <div>
-                <p>Select a group of users according to filter criteria</p>
-                <input class="radioop" type="radio" name="criteriarb" id="uploaded_pictures">Users that have uploaded non-spam pictures
-                <input class="radioop" type="radio" name="criteriarb" id="uploaded_pictures_sd">Users that have uploaded non-spam storm drain pictures
+                <ul>
+                    <hr class="separator_line">
+                    <li><i>By type of uploaded pictures</i></li>
+                    <li><input class="radioop" type="radio" name="criteriarb" id="uploaded_pictures"><label for="uploaded_pictures">Users that have uploaded non-spam pictures</label></li>
+                    <li><input class="radioop" type="radio" name="criteriarb" id="uploaded_pictures_sd"><label for="uploaded_pictures_sd">Users that have uploaded non-spam storm drain pictures</label></li>
+                    <hr class="separator_line">
+                    <li><i>User score level by category</i></li>
+                    <li>
+                        <input class="radioop" type="radio" name="criteriarb" id="score_bronze"><label for="score_bronze">Users with Bronze level</label>
+                        <input class="radioop" type="radio" name="criteriarb" id="score_silver"><label for="score_silver">Users with Silver level</label>
+                        <input class="radioop" type="radio" name="criteriarb" id="score_gold"><label for="score_gold">Users with Gold level</label>
+                    </li>
+                    <hr class="separator_line">
+                    <li><i>User score level by value</i></li>
+                    <li><input class="radioop" type="radio" name="criteriarb" id="score_arbitrary"><label for="amount">Score between:</label>
+  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;"><div id="slider-range"></div></li>
+                </ul>
                 <div id="number_estimate" style="display:none;"><p id="number_estimate_text" style="background-color:red;color:white;">Estimating number of messages...</p></div>
             </div>
             <h3>Send message to everyone</h3>
