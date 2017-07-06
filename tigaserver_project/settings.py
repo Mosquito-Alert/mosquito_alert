@@ -209,5 +209,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 #every 15 minutes
 CELERY_REFRESH_SCORE_FREQUENCY = '*/15'
 
+APNS_ADDRESS = 'gateway.push.apple.com'
+FCM_ADDRESS = 'https://fcm.googleapis.com/fcm/send'
 
 from settings_local import *

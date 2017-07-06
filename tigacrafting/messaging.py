@@ -6,6 +6,7 @@ import binascii
 import urllib2
 import json
 from tigaserver_project import settings_local
+from tigaserver_project import settings
 from datetime import date, datetime
 
 
@@ -29,7 +30,8 @@ def send_message_ios(token,alert_message,link_url):
     }
 
     # APNS development server
-    apns_address = ('gateway.sandbox.push.apple.com', 2195)
+    #apns_address = ('gateway.sandbox.push.apple.com', 2195)
+    apns_address = (settings.APNS_ADDRESS, 2195)
 
     # Use a socket to connect to APNS over SSL
     s = socket.socket()
@@ -57,7 +59,7 @@ def send_message_android(token,title, message, notification=None):
         #private_keys.append(token)
 
         #url = "https://android.googleapis.com/gcm/send"
-        url = "https://fcm.googleapis.com/fcm/send"
+        url = settings.FCM_ADDRESS
         headers = {
             "Content-Type": "application/json",
             "Authorization": "key=" + app_id
