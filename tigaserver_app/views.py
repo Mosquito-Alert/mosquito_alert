@@ -961,11 +961,17 @@ def send_notifications(request):
                 #send push
                 if(recipient.user_UUID.islower()):
                     json_notif = custom_render_notification(n,'es')
-                    send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-                    push_issued_android = push_issued_android + 1
+                    try:
+                        send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+                        push_issued_android = push_issued_android + 1
+                    except Exception as e:
+                        pass
                 else:
-                    send_message_ios(recipient.device_token,notification_content.title_es,'')
-                    push_issued_ios = push_issued_ios + 1
+                    try:
+                        send_message_ios(recipient.device_token,notification_content.title_es,'')
+                        push_issued_ios = push_issued_ios + 1
+                    except Exception as e:
+                        pass
         results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
         return Response(results)
 

@@ -519,9 +519,15 @@ def issue_notification(report_annotation,current_domain):
     if recipient.device_token is not None and recipient.device_token != '':
         if (recipient.user_UUID.islower()):
             json_notif = custom_render_notification(notification, 'es')
-            send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+            try:
+                send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+            except Exception as e:
+                pass
         else:
-            send_message_ios(recipient.device_token, notification_content.title_es, '')
+            try:
+                send_message_ios(recipient.device_token, notification_content.title_es, '')
+            except Exception as e:
+                pass
 
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na'):
