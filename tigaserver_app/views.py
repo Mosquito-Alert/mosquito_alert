@@ -1042,10 +1042,26 @@ class UserAddressViewSet(ReadOnlyModelViewSet):
     serializer_class = UserAddressSerializer
     filter_class = UserAddressFilter
 
+def report_to_point(report):
+    return GEOSGeometry('SRID=4326;POINT(' + str(report.point.x) + ' ' + str(report.point.y) + ')')
+
+def distance_matrix(center_point, all_points):
+    center_point_meters = center_point.transform(3857,True)
+    points_by_distance = []
+    for report in all_points:
+        point = report_to_point(report)
+        point_meters = point.transform(3857,True)
+        distance = point_meters.distance(center_point_meters)
+        this_point_by_distance = [report,distance]
+        points_by_distance.append(this_point_by_distance)
+    sorted_list = sorted(points_by_distance, key=lambda x: x[1])
+    return sorted_list
+
 
 @api_view(['GET'])
 def nearby_reports(request):
     if request.method == 'GET':
+        MAX_SEARCH_RADIUS = 100000
         dwindow = request.QUERY_PARAMS.get('dwindow', 30)
         try:
             int(dwindow)
@@ -1058,14 +1074,28 @@ def nearby_reports(request):
 
         center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
-        radius = request.QUERY_PARAMS.get('radius', '2500')
+        radius = request.QUERY_PARAMS.get('radius', 5000)
         if center_buffer_lat is None or center_buffer_lon is None:
             return Response(status=400,data='invalid parameters')
 
         center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
 
         all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
-        all_reports = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=radius)))
-        classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,all_reports)
-        serializer = NearbyReportSerializer(classified_reports)
+        reports_in_max_radius = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=MAX_SEARCH_RADIUS)))
+        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,reports_in_max_radius)
+        dst = distance_matrix(center_point_4326,classified_reports_in_max_radius)
+        reports_sorted_by_distance = [dst[i][0] for i in range(0,len(dst))]
+        if(len(reports_sorted_by_distance) < 10):
+            serializer = NearbyReportSerializer(reports_sorted_by_distance)
+        else:
+            serializer = NearbyReportSerializer(reports_sorted_by_distance[:10])
         return Response(serializer.data)
+        '''
+        keep_looping = True
+        while( (len(classified_reports) < minimum_points) and keep_looping ):
+            radius = radius + RADIUS_INCREASE
+            reports_in_radius = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=radius)))
+            classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,reports_in_radius)
+            if radius > MAX_SEARCH_RADIUS:
+                keep_looping = False
+        '''
