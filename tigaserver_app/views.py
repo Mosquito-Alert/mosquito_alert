@@ -1062,7 +1062,7 @@ def distance_matrix(center_point, all_points):
 def nearby_reports(request):
     if request.method == 'GET':
         MAX_SEARCH_RADIUS = 100000
-        dwindow = request.QUERY_PARAMS.get('dwindow', 30)
+        dwindow = request.QUERY_PARAMS.get('dwindow', 90)
         try:
             int(dwindow)
         except ValueError:
