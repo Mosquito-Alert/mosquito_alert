@@ -64,7 +64,7 @@
                     <a data-lang="es" href="#/es/">ES</a>
                   </li>
                   <li>
-                    <a data-lang="en"href="#/en/">EN</a>
+                    <a data-lang="en" href="#/en/">EN</a>
                   </li>
                   <li>
                     <a data-lang="ca" href="#/ca/">CA</a>
@@ -187,16 +187,12 @@
                     <!--<span i18n="map.notification.predefined.title"></span>-->
                       <select name="type" id="notification-presets" onchange="MOSQUITO.app.mapView.controls.notification.setPredefined(this)">
                         <option name="-1" i18n="map.notification.predefined.title"></option>
+                        <!--
                         <option name="0" i18n="map.notification.preset0.title"></option>
                         <option name="1" i18n="map.notification.preset1.title"></option>
-                          <option name="2" i18n="map.notification.preset2.title"></option>
-                          <option name="3" i18n="map.notification.preset3.title"></option>
-                          <option name="4" i18n="map.notification.preset4.title"></option>
-                          <option name="5" i18n="map.notification.preset5.title"></option>
-                          <option name="6" i18n="map.notification.preset6.title"></option>
-                          <option name="7" i18n="map.notification.preset7.title"></option>
-                          <option name="8" i18n="map.notification.preset8.title"></option>
+                      -->
                       </select>
+                      <input type="hidden" id="preset_notification_id" value='0'>
                   </div>
                   <!-- TITLE -->
                   <div class="form-group" style="margin-bottom:0px;">
@@ -614,9 +610,9 @@
         <div align="center"><img src="" i18n="stormdrain.example-body-7|src"></div>
         <p i18n="stormdrain.example-body-8"></p>
         <ol>
-          <li i18n="stormdrain.example-body-9"</li>
-          <li i18n="stormdrain.example-body-10"</li>
-          <li i18n="stormdrain.example-body-11"</li>
+          <li i18n="stormdrain.example-body-9"></li>
+          <li i18n="stormdrain.example-body-10"></li>
+          <li i18n="stormdrain.example-body-11"></li>
         </ol>
         <p i18n="stormdrain.example-body-12"></p>
         <p i18n="stormdrain.example-body-13"></p>

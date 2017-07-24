@@ -34,5 +34,6 @@ tematic_fields=['water','sand','treatment','species1','species2','activity','typ
 
 true_values = ['si', 'sí', 'yes', 'true', '1']
 false_values= ['no', 'false', '0','-1']
+null_values =['null','nulo','nul','-']
 
 stormdrain_templates_path = settings.BASE_DIR + '/tigapublic/templates'

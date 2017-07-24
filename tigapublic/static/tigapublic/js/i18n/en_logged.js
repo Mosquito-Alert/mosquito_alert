@@ -16,7 +16,8 @@ add = {
     'share.private_layer_warn': 'Attention! The private data and some of its layers of the current view will only be visible to registered users.',
 
     //Notification
-  'all_notifications': 'All',
+  'usernotification.not-predefined':'Not predefined',
+  'all_notifications': 'All notifications',
   'check_notifications': 'Notifications',
   'map.control_notifications': 'Issue notification',
   'map.notification.notified': 'To',
@@ -37,6 +38,7 @@ add = {
   'notif.saved': 'Notification successfully sent',
   'notif.notification_cancel': 'Cancel',
   'notif.observations_none': 'No observations selected',
+  'map.notification.type.filters.title': 'All notification types',
 
   //modal
   'map.users_found_text': 'Users',
@@ -98,6 +100,7 @@ add = {
   'stormdrain.value-false': 'No',
   'stormdrain.value-R': 'Grating',
   'stormdrain.value-true': 'Yes',
+  'stormdrain.value-null': 'No value',
   'stormdrain.version-helper': 'Select version to setup',
   'stormdrain.version-txt': 'Version',
   'stormdrain.water': 'Water',

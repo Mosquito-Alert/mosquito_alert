@@ -16,7 +16,6 @@ add = {
     'share.private_layer_warn': '¡Atención! Los datos privados de la vista actual y algunas de las capas solo serán visibles para los usuarios registrados.',
 
     //NOFIFICATIONS
-    'info.notifications': 'Notificaciones',
     'map.notification_add':'Nueva notificación',
     'notif.observations_none':'No hay ninguna observación seleccionada',
     'notif.all_field_requiered':'Todos los campos son obligatorios',
@@ -34,25 +33,11 @@ add = {
     'map.notification.type.public': 'Notificación pública',
     'map.notification.type.private': 'Notificación privada',
     'map.notification.predefined.title': 'Si lo prefieres puedes usar una notificación predefinida:',
-    'map.notification.preset0.title': 'ASPB #PCP17',
-    'map.notification.preset0.body': '<p>Su incidencia ha sido incorporada en el Programa de Vigilancia y Control de mosquitos de la ciudad de Barcelona que llevamos a cabo desde el Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Gracias por su comunicaci&#243;n, la colaboraci&#243;n ciudadana es clave para poder combatir la proliferaci&#243;n de mosquitos, os animamos a continuar informando. &#161;Entre todos podemos conseguirlo!</p><p>#PCP17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-    'map.notification.preset1.title': 'ASPB #AVT17',
-    'map.notification.preset1.body': '<p>Su incidencia ha sido incorporada en el Programa de Vigilancia y Control de mosquitos de la ciudad de Barcelona que llevamos a cabo desde el Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Gracias a su colaboraci&#243;n se ha detectado actividad en la zona y se han ejecutado medidas de control. Es importante la implicaci&#243;n de los ciudadanos para poder combatir la proliferaci&#243;n de mosquitos, os animamos a continuar informando. &#161;Entre todos podemos conseguirlo!</p><p>#AVT17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-    'map.notification.preset2.title': 'ASPB #CLB17',
-    'map.notification.preset2.body': '<p>Su incidencia ha sido incorporada en el Programa de Vigilancia y Control del Mosquito Tigre de la ciudad de Barcelona que llevamos a cabo desde el Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Le informamos que no hemos detectado actividad larvaria ni de adultos en la zona. Gracias por su colaboraci&#243;n, es importante la implicaci&#243;n de los ciudadanos para poder combatir la proliferaci&#243;n de mosquitos, os animamos a continuar informando. &#161;Entre todos podemos conseguirlo!</p><p>#CLB17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-    'map.notification.preset3.title': 'ASPB #MT17',
-    'map.notification.preset3.body': '<p>Su incidencia ha sido incorporada en el Programa de Vigilancia y Control de mosquitos de la ciudad de Barcelona que llevamos a cabo desde el Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Gracias a su colaboraci&#243;n se ha detectado actividad de mosquito tigre en la zona y se han ejecutado medidas de control. Es importante la implicaci&#243;n de los ciudadanos para poder combatir la proliferaci&#243;n de mosquitos, os animamos a continuar informando. &#161;Entre todos podemos conseguirlo!</p><p>#MT17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-    'map.notification.preset4.title': 'Regidoria Sanitat i Salut - Confirmado/posible caso de tigre/fiebre amarilla',
-    'map.notification.preset4.body': '<p><b>&#161;Gracias por sumarte a la lucha contra el mosquito tigre!</b></p><p>Los t&#233;cnicos municipales acudir&#225;n a inspeccionar la zona, si contactas con el telf. 962063960 o controlplagas@valencia.es indicando Mosquito Alert, se podr&#225; precisar el &#225;rea de revisi&#243;n.</p><p>#Tigre</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-    'map.notification.preset5.title': 'Regidoria Sanitat i Salut - Aviso diferente a mosquito tigre/fiebre amarilla (Culex/Culiseta)',
-    'map.notification.preset5.body': '<p><b>&#161;Gracias por la informaci&#243;n!</b></p><p>Gracias por participar, para poder aumentar la informaci&#243;n disponible contacta con el telf.&#160;962063960 o controlplagas@valencia.es indicando Mosquito Alert y la direcci&#243;n del aviso</p><p>#Informaci&#243;n</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-    'map.notification.preset6.title': 'Regidoria Sanitat i Salut - Aviso de lugar de cría descartado',
-    'map.notification.preset6.body': '<p><b>&#161;Gracias por contactar con Mosquito Alert!</b></p><p>&#161;Gracias por contactar con Mosquito Alert! Tu informaci&#243;n es muy valiosa para nosotros</p><p>#Contactar</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-    'map.notification.preset7.title': 'Regidoria Sanitat i Salut - Aviso de lugar de cría destacado',
-    'map.notification.preset7.body': '<p><b>&#161;Gracias por unirte a mosquito alert!</b></p><p>&#161;Gracias por unirte a Mosquito Alert! Tu informaci&#243;n es muy valiosa para nosotros</p><p>#Unirte</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-    'map.notification.preset8.title': 'Regidoria Sanitat i Salut - Diferente a Mosquito',
-    'map.notification.preset8.body': '<p><b>&#161;Gracias por participar en el proyecto!</b></p><p>&#161;Gracias por participar adjuntando tu fotograf&#237;a!</p><p>#Participar</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-
+    'map.notification.preset0.title': 'Notificación predefinida 1',
+    'map.notification.preset0.body': '<p>Esta es la notificación predefinida número 1</p><p>En el cuerpo del mensaje ponemos lo que convenga.</p>',
+    'map.notification.preset1.title': 'Notificación predefinida 2',
+    'map.notification.preset1.body': '<p>Esta es la notificación predefinida número 2</p><p>En el cuerpo de este mensaje hay un poco más de texto.</p>',
+    'map.notification.type.filters.title': 'Todos los tipos de notificaciones',
      //NOTIFICATIONS DRAW
     'leaflet.draw.toolbar.cancel.title': 'Cancelar edición',
 
@@ -64,7 +49,8 @@ add = {
     'observations.filters.title': 'Observaciones',
     'with_my_notifications': 'Con mis notificaciones',
     'without_my_notifications': 'Sin mis notificaciones',
-    'all_notifications': 'Todas',
+    'all_notifications': 'Todas las notificaciones',
+    'usernotification.not-predefined':'No predefinidas',
 
     // FIN NOTIFICACIONES
 
@@ -92,6 +78,7 @@ add = {
     'stormdrain.value-F':'Fuente',
     'stormdrain.value-E':'Imbornal',
     'stormdrain.value-R':'Rejilla',
+    'stormdrain.value-null': 'Sin valor',
     'stormdrain.field-water':'Agua',
     'stormdrain.field-sand':'Arena',
     'stormdrain.field-treatment':'Tratamiento',

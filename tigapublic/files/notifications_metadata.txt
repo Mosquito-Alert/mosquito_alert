@@ -12,8 +12,6 @@ Description of each field found in the downloadable data base.
 
 *Notification sender*: specifies the sender of the notification. This name is exactly the same as sender user name in the private Mosquito Alert platform.
 
-*User reaction*: notification open and read by the user in its app (1) or not (0). Only applicable to private notifications.
-
 *Notification title*: the title of the notification added by the sender.
 
 *Notification content*: the body of the notification added by the sender.

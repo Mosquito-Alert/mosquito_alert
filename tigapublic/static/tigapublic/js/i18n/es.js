@@ -14,6 +14,7 @@ trans.es = {
     'map.site_pending': 'Por filtrar',
     'hashtag.filters.placeholder': 'Por #hashtag',
     'check_notifications': 'Notificaciones',
+    'info.notifications': 'Notificaciones',
 
     //header
     'header.login': 'Login',

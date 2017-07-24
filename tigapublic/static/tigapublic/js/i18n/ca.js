@@ -135,7 +135,6 @@ trans.ca = {
 
     'info.notifications': 'Notificacions',
 
-
     //Varis
     'error.unknown': 'Hi ha hagut un error:',
     'group.breeding_sites': 'Llocs de cria',

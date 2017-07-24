@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import json, decimal
+import copy
 from pyproj import Proj, transform
 import tempfile
 import django.db.models.fields
@@ -9,7 +11,7 @@ from StringIO import StringIO
 from zipfile import ZipFile
 from django.views.generic import View
 from django.db import models
-from django.db.models import Q, CharField
+from django.db.models import Q, CharField, Max
 from operator import __or__ as OR
 
 from django.views.decorators.csrf import csrf_exempt
@@ -17,11 +19,12 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth import authenticate, login, logout
 
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LineString, Point
-from models import MapAuxReports, Notification, NotificationContent, NotificationImageFormModel
-from models import StormDrain, StormDrainUserVersions, AuthUser
+from models import MapAuxReports, Notification, NotificationContent, NotificationImageFormModel, ObservationNotifications
+from models import StormDrain, StormDrainUserVersions, AuthUser, NotificationPredefined
 
 from resources import MapAuxReportsLimitedResource, MapAuxReportsResource, MapAuxReportsExtendedResource
-from resources import NotificationResource, NotificationExtendedResource, StormDrainResource, StormDrainCSVResource
+from resources import NotificationResource, NotificationExtendedResource
+from resources import StormDrainResource, StormDrainCSVResource
 from django.db import connection
 from jsonutils import DateTimeJSONEncoder
 from dbutils import dictfetchall
@@ -33,8 +36,63 @@ from forms import *
 import datetime
 from tablib import Dataset
 import os
+import requests
+import xml
+import sys
+from django.utils.html import strip_tags
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 from decorators import cross_domain_ajax
+
+def remove_html_tags(text):
+    return ''.join(xml.etree.ElementTree.fromstring(text).itertext())
+
+class Struct:
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
+def sendPushNotification(usernotif):
+    content = NotificationContent.objects.get(pk=usernotif.notification_content_id)
+    # user_id = usernotif.user_id
+    if settings.ENVIRON == 'production':
+        user_id = usernotif.user_id
+    else:
+        # PROVES - ENVIA SEMPRE A ANTUANJOSEFF
+        user_id = settings.TEST_CLIENTID
+
+    if user_id.islower():
+        # Android endpoint
+        # set the url
+        url = '%smsg_android/?user_id=%s&title=%s&message=%s' % (
+            settings.TIGASERVER_API,
+            user_id,
+            content.title_es,
+            strip_tags(content.body_html_es)
+        )
+    else:
+        # iOS endpoint
+        # get the link to this report
+        qs = MapAuxReports.objects.filter(version_uuid=usernotif.report_id)
+        qsobject = Struct(**qs.values()[0])
+        link_url = MapAuxReportsResource().dehydrate_single_report_map_url(qsobject)
+        # set the url
+        url = '%smsg_ios/?user_id=%s&link_url=%s&alert_message=%s' % (
+            settings.TIGASERVER_API,
+            user_id,
+            link_url,
+            strip_tags(content.body_html_es)
+        )
+    response = requests.post(
+        url,
+        data = {},
+        headers = {
+            "Authorization": "Token %s" % (settings.TIGASERVER_API_TOKEN,)
+        }
+    )
+    
+    return response.text+' '+url
+
 
 @csrf_exempt
 @never_cache
@@ -48,6 +106,10 @@ def save_notification(request):
         post['user_id'] = '1'
         post['report_id'] = '1'
         post['public'] = True
+        if post['preset_notification_id']=='0' or post['preset_notification_id']=='':
+            preset_instance = None
+        else:
+            preset_instance = NotificationPredefined.objects.get(id = post['preset_notification_id'])
 
         report_ids = request.POST.getlist('report_ids[]')
 
@@ -65,7 +127,9 @@ def save_notification(request):
                     notif_content.save()
                     last_notif_content_id = notif_content.pk
                     notifs = {}
+                    usernotifs={}
                     goodToGo = True
+                    distinctUsers=[]
                     for i in range(0, len(report_ids)):
                         report_id = report_ids[i]
                         sql = """
@@ -76,15 +140,26 @@ def save_notification(request):
                         row = db.fetchall()
                         if (db.rowcount > 0):
                             public = True
+                            user = row[0][0]
+                            if user not in distinctUsers:
+                                distinctUsers.append(user)
+                                usernotifs[i] = Notification(
+                                    report_id = row[0][1],
+                                    user_id = user,
+                                    expert_id = request.user.id,
+                                    acknowledged = False,
+                                    public = public,
+                                    notification_content_id = last_notif_content_id
+                                )
+
                             if (post['type'] == 'private'):
                                 public = False
 
-                            notifs[i] = Notification(
+                            notifs[i] = ObservationNotifications(
                                 report_id = row[0][1],
-                                user_id = row[0][0],
+                                user_id = user,
                                 expert_id = request.user.id,
-                                photo_url = '',
-                                acknowledged = False,
+                                preset_notification = preset_instance,
                                 public = public,
                                 notification_content_id = last_notif_content_id
                             )
@@ -92,9 +167,13 @@ def save_notification(request):
                             goodToGo = False
 
                     if goodToGo:
+                        #Save notifications
                         with transaction.atomic():
                             for i in notifs:
                                 notifs[i].save()
+                            for i in usernotifs:
+                                usernotifs[i].save()
+                                a = sendPushNotification(usernotifs[i])
 
                         response['success'] = True
                         response['ids'] = ', '.join(report_ids)
@@ -105,7 +184,7 @@ def save_notification(request):
                         return HttpResponse(json.dumps(response, cls=DateTimeJSONEncoder),
                                 content_type='application/json')
 
-        response['err'] = 'Unauthorized yea'
+        response['err'] = 'Unauthorized yes'
         return HttpResponse(json.dumps(response, cls=DateTimeJSONEncoder),
                 content_type='application/json')
 
@@ -232,28 +311,39 @@ class MapAuxReportsExportView(View):
         northeast_lat = bbox[3]
 
         qs = MapAuxReports.objects.all()
-
+        #Filter bbox
         qs = self.bbox_filter(qs)
+
+        #Check for date filters
         qs = self.time_filter(qs)
+
+        #filter categories
         qs = self.category_filter(qs)
+
         qs = qs.order_by('-observation_date')
 
         #Check if notification filters apply
         notifications = self.request.GET.get('notifications')
-        if notifications is not None:
+        if notifications.lower()!='n':
             MY_NOTIFICATIONS = "1"
             NOT_MY_NOTIFICATIONS = "0"
 
             if notifications == MY_NOTIFICATIONS:
-                qs = qs.filter(version_uuid__in = Notification.objects.values('report').filter(expert = request.user.id))
+                qs = qs.filter(version_uuid__in = ObservationNotifications.objects.values('report').filter(expert = request.user.id))
             elif notifications == NOT_MY_NOTIFICATIONS:
-                qs = qs.exclude(version_uuid__in = Notification.objects.values('report').filter(expert = request.user.id))
+                qs = qs.exclude(version_uuid__in = ObservationNotifications.objects.values('report').filter(expert = request.user.id))
+        else:
+            #check notification type filter
+            notification_types = self.request.GET.get('notif_types').split(',')
+            if notification_types[0].lower()!='n':
+                qs = qs.filter(version_uuid__in = ObservationNotifications.objects.values('report').filter(preset_notification__in = notification_types))
 
         #Check hashtag filters
         hashtag = self.request.GET.get('hashtag')
         if hashtag.lower() !='n':
             hashtag = '#' + self.request.GET.get('hashtag').replace('#','')
             qs = qs.filter(note__icontains=hashtag)
+
 
         export_type = kwargs['format']
 
@@ -263,11 +353,11 @@ class MapAuxReportsExportView(View):
             observations_id = qs.values_list('id', flat=True)
             #If supermosquito then get all notifications with all fields
             if request.user.groups.filter(name=superusers_group).exists():
-                qs_n = Notification.objects.filter(Q(report__id__in=list(observations_id)))
+                qs_n = ObservationNotifications.objects.filter(Q(report__id__in=list(observations_id)))
                 notifications_dataset = NotificationExtendedResource().export(qs_n)
             else:
                 #Get registered user private notifications + anyone public notifications
-                qs_n = Notification.objects.filter(
+                qs_n = ObservationNotifications.objects.filter(
                     Q(report__id__in=list(observations_id)) &
                         ((Q(expert__id__exact = request.user.id) & Q(public__exact=0))
                         |
@@ -403,8 +493,8 @@ def map_aux_reports(request, id):
 
             #If registered user in super-mosquito, private_notifs = all private notifs
             private_notifs = """union all
-                    select """ + author + """n.report_id, nc.title_es, nc.body_html_es, n.acknowledged, TO_CHAR(n.date_comment, 'DD/MM/YYYY') as date_comment
-                    from tigaserver_app_notification n, tigaserver_app_notificationcontent  nc, map_Aux_reports r, auth_user au
+                    select """ + author + """n.report_id, nc.title_es, nc.body_html_es, TO_CHAR(n.date_comment, 'DD/MM/YYYY') as date_comment
+                    from tigapublic_map_notification n, tigaserver_app_notificationcontent  nc, map_Aux_reports r, auth_user au
                     where n.public=false and n.notification_content_id = nc.id
                      and r.version_uuid = n.report_id and au.id=n.expert_id and r.id=""" + id
 
@@ -413,16 +503,16 @@ def map_aux_reports(request, id):
             if request.user.groups.filter(name=managers_group).exists():
 
                 private_notifs = """union all
-                    select """ + author + """n.report_id, nc.title_es, nc.body_html_es, n.acknowledged, TO_CHAR(n.date_comment, 'DD/MM/YYYY') as date_comment
-                    from tigaserver_app_notification n , tigaserver_app_notificationcontent nc, map_Aux_reports r, auth_user au
+                    select """ + author + """n.report_id, nc.title_es, nc.body_html_es, TO_CHAR(n.date_comment, 'DD/MM/YYYY') as date_comment
+                    from tigapublic_map_notification n , tigaserver_app_notificationcontent nc, map_Aux_reports r, auth_user au
                     where n.notification_content_id = nc.id and n.expert_id=""" + str(request.user.id) + """
                     and n.public=false and au.id=n.expert_id and r.version_uuid = n.report_id and r.id=""" + id
 
 
     #Get all public notifications regardless who made them
     public_notifs = """
-        select """ + author + """n.report_id, nc.title_es, nc.body_html_es, n.acknowledged, TO_CHAR(n.date_comment, 'DD/MM/YYYY') as date_comment
-        from tigaserver_app_notification n, tigaserver_app_notificationcontent  nc, map_Aux_reports r, auth_user au
+        select """ + author + """n.report_id, nc.title_es, nc.body_html_es, TO_CHAR(n.date_comment, 'DD/MM/YYYY') as date_comment
+        from tigapublic_map_notification n, tigaserver_app_notificationcontent  nc, map_Aux_reports r, auth_user au
         where n.public=true and n.notification_content_id = nc.id and r.version_uuid = n.report_id
         and au.id=n.expert_id and r.id=""" + id
 
@@ -434,7 +524,7 @@ def map_aux_reports(request, id):
     db = connection.cursor()
 
     sql ="""
-        select json_agg((title_es, body_html_es, acknowledged, date_comment"""+author_in_json+""")) as notifs,""" + columns + """, TO_CHAR(observation_date, 'YYYYMM') AS month
+        select json_agg((title_es, body_html_es, date_comment"""+author_in_json+""")) as notifs,""" + columns + """, TO_CHAR(observation_date, 'YYYYMM') AS month
             from map_aux_reports r left join (""" + sql + """) as notifs_table
         on r.version_uuid = notifs_table.report_id
         where r.id=""" + id + """
@@ -446,7 +536,7 @@ def map_aux_reports(request, id):
     if db.rowcount == 1:
         return HttpResponse(json.dumps(rows[0], cls=DateTimeJSONEncoder),
                             content_type='application/json')
-
+    
     return HttpResponse('404 Not found', status=404)
 
 
@@ -498,7 +588,7 @@ def map_aux_reports_bounds_notifs_hashtag(request, bounds, notifs, hashtag):
                         CASE n.expert_id = """+str(request.user.id)+""" WHEN true THEN 1
                         ELSE 0 END
                     END as notif"""
-        join_notifs = """LEFT OUTER JOIN tigaserver_app_notification n
+        join_notifs = """LEFT OUTER JOIN tigapublic_map_notification n
             ON (n.report_id = r.version_uuid and n.expert_id = """ + str(request.user.id)+ ") "
 
     #Check HASTHTAG
@@ -538,6 +628,77 @@ def map_aux_reports_bounds_notifs_hashtag(request, bounds, notifs, hashtag):
 
 
 @cross_domain_ajax
+def getReportsByNotifType(request, bounds, types, hashtag):
+    #Only registered users
+    success = request.user.is_authenticated()
+    if success is False:
+        return HttpResponse('Unauthorized', status=401)
+    else:
+        iduser = request.user.id
+
+    db = connection.cursor()
+
+    res = {'num_rows': 0, 'rows': []}
+    box = bounds.split(',')
+
+    box = map(float, box)
+
+    #CHECK notificationsjoin_hashtag = ''
+    notif_where =''
+    notif_column =''
+    notif_join =''
+    if types.lower() != 'n':
+        #Not predefined notfications
+        typesArr = types.split(',')
+        if '0' in typesArr:
+            #Check if other values apart from 0
+            if len(set(typesArr))>0:
+                notif_where = 'AND ( ( m.preset_notification_id in ('+types+') ) OR (m.preset_notification_id is null and expert_id=' + str(iduser) + ') )'
+            else:
+                notif_where = ' AND m.preset_notification_id is null and expert_id='+str(iduser)
+
+            notif_join = '''
+                JOIN tigapublic_map_notification m ON r.version_uuid = m.report_id
+                LEFT OUTER JOIN tigaserver_app_notificationpredefined p on m.preset_notification_id = p.id
+                '''
+        #Only predefined notfications
+        else:
+            notif_where = ' AND m.preset_notification_id in (' + types + ')'
+            notif_join = '''
+                JOIN tigapublic_map_notification m ON r.version_uuid = m.report_id
+                JOIN tigaserver_app_notificationpredefined p on m.preset_notification_id = p.id
+                '''
+    #Check HASTHTAG
+    hashtag_join = ''
+    hashtag_where =''
+    if hashtag.lower() != 'n':
+        hashtag = '#' + hashtag.replace('#','')
+        hashtag_join = " LEFT OUTER JOIN map_aux_reports aux ON (r.version_uuid = aux.version_uuid)"
+        hashtag_where = " AND aux.note ilike '%%" + hashtag +"%%' "
+
+    # 1 as c emulates cluster of 1 item
+    sql = """SELECT 1 as c, r.private_webmap_layer AS category, r.expert_validation_result,
+                to_Char(observation_date,'YYYYMM') AS month, r.lon, r.lat, r.id
+            FROM  map_aux_reports r """+ notif_join + hashtag_join +"""
+            WHERE ST_Intersects(
+                ST_Point(r.lon,r.lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
+            ) """ + notif_where + hashtag_where +"""
+             GROUP BY category, expert_validation_result, month, lon, lat, r.id
+             ORDER BY id """
+
+    params = [box[0], box[1], box[2], box[3]]
+
+    db.execute(sql, params)
+
+    rows = dictfetchall(db)
+
+    res['rows'] = rows
+    res['num_rows'] = db.rowcount
+    #return HttpResponse(sql)
+    return HttpResponse(DateTimeJSONEncoder().encode(res),
+                        content_type='application/json')
+
+@cross_domain_ajax
 def map_aux_reports_bounds_notifs(request, bounds, notifs):
 
     db = connection.cursor()
@@ -557,7 +718,7 @@ def map_aux_reports_bounds_notifs(request, bounds, notifs):
                 ELSE 0 END
             END as notif
             from reports_map_data r
-            LEFT OUTER JOIN tigaserver_app_notification n ON (n.report_id = r.version_uuid and n.expert_id = %s)
+            LEFT OUTER JOIN tigapublic_map_notification n ON (n.report_id = r.version_uuid and n.expert_id = %s)
             where geohashlevel=8 AND
             ST_Intersects(
                 ST_Point(lon,lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
@@ -658,7 +819,7 @@ def notifications(request, bounds, year, months):
     sql = """
         select json_agg((notif.expert_comment, notif.date_comment)) as notifs, """ + columns +""", TO_CHAR(observation_date, 'YYYYMM') AS month,
            private_webmap_layer AS category
-        from map_aux_reports a, tigaserver_app_notification notif
+        from map_aux_reports a, tigapublic_map_notification notif
         where
         a.lon is not null and a.lat is not null
         AND
@@ -722,7 +883,7 @@ def imageupload(request):
 
 @csrf_exempt
 @cross_domain_ajax
-def intersects(request):
+def intersects(request,excluded_categories, years, months):
     selection = request.POST.getlist('selection[]')
     nodes = []
     for i in range(0, len(selection)):
@@ -731,14 +892,23 @@ def intersects(request):
     poly = 'Polygon(( ' + (', '.join(nodes)) + ' ))'
 
     db = connection.cursor()
+
+    #Define sql filters
+    where = ''
+    if years.lower() !='all':
+        where += " and to_char(observation_date, 'YYYY'::text)::integer in ("+years+")"
+
+    if months.lower() !='all':
+        where += " and to_char(observation_date, 'MM'::text)::integer in ("+months+")"
+
     sql = """
-        select id, private_webmap_layer as category, md5(user_id) as user_id,
-        to_char(observation_date, 'YYYYMM'::text) AS month
+        select id, md5(user_id) as user_id
         from map_aux_reports where private_webmap_layer is not null and
-        ST_Intersects(
+        private_webmap_layer not in (""" + "'" + "', '".join(excluded_categories.split(','))+ "'" """)
+        and ST_Intersects(
             ST_Point(lon,lat), St_GeomFromText('"""+poly+"""')
-        )
-        """
+        )""" + where
+
 
     db.execute(sql)
     rows = dictfetchall(db)
@@ -747,7 +917,6 @@ def intersects(request):
     response['success'] = True
     response['rows'] = rows
     response['num_rows'] = db.rowcount
-
 
     return HttpResponse(json.dumps(response, cls=DateTimeJSONEncoder),
         content_type='application/json')
@@ -780,7 +949,7 @@ def embornals(request):
                 content_type='application/json')
 
 
-def reports_notif(request, bounds, years, months, categories, notifications, hashtag):
+def reports_notif(request, bounds, years, months, categories, my_notifications, hashtag):
     #Only registered users
     #Returns a notif column where 0->none notification of user, 1 some user notification
 
@@ -811,7 +980,7 @@ def reports_notif(request, bounds, years, months, categories, notifications, has
                 ELSE 0
             END as notif
         FROM map_aux_reports aux
-        LEFT OUTER JOIN tigaserver_app_notification n
+        LEFT OUTER JOIN tigapublic_map_notification n
         ON (aux.version_uuid = n.report_id)
         WHERE
         lon is not null and lat is not null
@@ -840,7 +1009,7 @@ def reports_notif(request, bounds, years, months, categories, notifications, has
     sql += " ORDER BY observation_date DESC "
 
     sql = "SELECT id, photo_url, "+columns+", month, max(notif)as notif FROM (" + sql +") as foo group by id, photo_url," + columns + ", month"
-    sql = "SELECT * FROM ("+sql+") as fooo WHERE notif = " + notifications + " LIMIT " + str(maxReports)
+    sql = "SELECT * FROM ("+sql+") as fooo WHERE notif = " + my_notifications + " LIMIT " + str(maxReports)
 
 
     db.execute(sql, [request.user.id, box[0], box[1], box[2], box[3]])
@@ -853,7 +1022,7 @@ def reports_notif(request, bounds, years, months, categories, notifications, has
     return HttpResponse(DateTimeJSONEncoder().encode(res),
                         content_type='application/json')
 
-def reports(request, bounds, years, months, categories, hashtag):
+def reports(request, bounds, years, months, categories, hashtag, notif_types):
 
     db = connection.cursor()
 
@@ -866,24 +1035,30 @@ def reports(request, bounds, years, months, categories, hashtag):
 
     box = map(float, box)
 
-    columns = 'id, version_uuid, observation_date, lon,lat, ref_system, type, breeding_site_answers,mosquito_answers, expert_validated, expert_validation_result,simplified_expert_validation_result, site_cat,storm_drain_status, edited_user_notes, photo_url,photo_license, dataset_license, single_report_map_url,n_photos, visible, final_expert_status, private_webmap_layer'
+    columns = 'm.id, version_uuid, observation_date, lon,lat, ref_system, type, breeding_site_answers,mosquito_answers, expert_validated, expert_validation_result,simplified_expert_validation_result, site_cat,storm_drain_status, edited_user_notes, m.photo_url,photo_license, dataset_license, single_report_map_url,n_photos, visible, final_expert_status, private_webmap_layer'
 
     success = request.user.is_authenticated()
     if success is True:
        columns = columns + ', note, t_q_1, t_q_2, t_q_3, t_a_1, t_a_2, t_a_3, s_q_1, s_q_2, s_q_3, s_q_4, s_a_1, s_a_2, s_a_3, s_a_4'
 
+    #check for notif_types filters
+    join_notif =''
+    where_notif=''
+
+    if notif_types.lower() != 'n':
+        join_notif = ' JOIN tigapublic_map_notification on report_id=version_uuid '
+        where_notif= ' AND preset_notification_id in ('+ notif_types+')'
 
     sql = """
         select """ + columns +""", TO_CHAR(observation_date, 'YYYYMM') AS month,
            private_webmap_layer AS category
-        from map_aux_reports
+        from map_aux_reports m""" + join_notif + """
         where
         lon is not null and lat is not null
         AND
         ST_Intersects(
             ST_Point(lon,lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
-        )
-    """
+        )""" + where_notif
 
     # And date and layers filters to sql
     filters = ""
@@ -900,6 +1075,8 @@ def reports(request, bounds, years, months, categories, hashtag):
 
     sql += filters
 
+    sql += " GROUP BY "+ columns
+
     sql += " ORDER BY observation_date DESC "
 
     sql = "SELECT * FROM (" + sql +") as foo where category in (" + cat + ") LIMIT " + str(maxReports)
@@ -909,7 +1086,7 @@ def reports(request, bounds, years, months, categories, hashtag):
 
     res['rows'] = rows
     res['num_rows'] = len(rows)
-
+    #return HttpResponse(sql)
     return HttpResponse(DateTimeJSONEncoder().encode(res),
                         content_type='application/json')
 
@@ -1037,24 +1214,21 @@ def getStormDrainUserSetup(request):
         res['users_version'] = vdic
 
     for fieldname in fields:
-        myFirstFilter = fieldname + '__isnull'
-        mySecondFilter = fieldname + '__gt'#Used for varchar columns, avoid empty
+        nullFilter = fieldname + '__isnull'
+        #emptyFilter = fieldname + '__gt'#Used for varchar columns, avoid empty
 
         #For datatimefield
         if StormDrain._meta.get_field(fieldname).get_internal_type() == 'DateTimeField':
             if request.user.groups.filter(name=superusers_group).exists():
-                fieldValues = StormDrain.objects.filter(
-                    **{ myFirstFilter: False }
-                    ).extra(
+                fieldValues = StormDrain.objects.extra(
                         select={
                             'date':'TO_CHAR(date, \'YYYY/MM\')',
                             'aversion':'1' #super users have only one version to choose
                         }
                     ).values('version','user_id','date').distinct().order_by('-date')
+
             else:
                 fieldValues = StormDrain.objects.filter(
-                    **{ myFirstFilter: False }
-                    ).filter(
                     user__exact=user_id
                     ).extra(
                         select={
@@ -1069,13 +1243,10 @@ def getStormDrainUserSetup(request):
                     select={
                         'aversion':'1' #superusers have only one version to choose
                     }
-                ).filter(
-                    **{ myFirstFilter: False }
-                    ).values('version','user_id',fieldname).distinct().order_by(fieldname)
+                ).values('version','user_id',fieldname).distinct().order_by(fieldname)
+
             else:
                 fieldValues = StormDrain.objects.filter(
-                    **{ myFirstFilter: False }
-                    ).filter(
                     user__exact=user_id
                     ).values('version', 'user_id', fieldname).distinct().order_by(fieldname)
 
@@ -1092,11 +1263,28 @@ def getStormDrainUserSetup(request):
                 if not version in res['fields'][iduser]:
                     res['fields'][iduser].update({version:{}})
 
+                if value == None:
+                    value = 'null'
+
                 if value!='':
                     if not fieldname in res['fields'][iduser][version]:
                         res['fields'][iduser][version].update({fieldname:[]})
 
                     res['fields'][iduser][version][fieldname].append(value)
+
+        #Remove elements that have just one value and that value is null
+        #Not for supermosquitos
+        if not request.user.groups.filter(name=superusers_group).exists():
+            jsonCopy = copy.deepcopy(res)
+            for user in jsonCopy['fields']:
+                for version in jsonCopy['fields'][user]:
+                    for fieldname in jsonCopy['fields'][user][version]:
+                        if (
+                            len(jsonCopy['fields'][user][version][fieldname])==1 and
+                            jsonCopy['fields'][user][version][fieldname][0]=='null'
+                            ):
+                                del res['fields'][user][version][fieldname]
+
 
     return HttpResponse(json.dumps(res, cls=DateTimeJSONEncoder),
         content_type='application/json')
@@ -1142,55 +1330,6 @@ def putStormDrainStyle(request, ):
         )
     qs.update(visible=True, style_json=style_str)
 
-    '''
-    qs = StormDrainRepresentation.objects.filter(
-        user__exact = user_id, version__exact=version
-        )
-
-    #Cancel previous representation for this dataset
-    qs.delete()
-
-    version = dic['version_data']
-    categories = list(dic['categories'])
-    n=0 #First condition is 0, so it matches position of colors array
-    l=0
-
-    #Get user isinstance
-    user = AuthUser.objects.only('id').get(id=user_id)
-
-    for i in categories:
-
-        category = dict(i)
-        color = category['color']
-        catConditions = list(category['conditions'])
-        for partialCondition in catConditions:
-            partial = dict(partialCondition)
-
-            field = partial['field']
-            value = partial['value']
-            operator = partial['operator']
-
-            raw =StormDrainRepresentation(
-                user = user,
-                version = version,
-                condition = n,
-                key = field,
-                value = value,
-                operator = operator
-                )
-            raw.save()
-        #Now it's time to save the color of this category
-        raw =StormDrainRepresentation(
-            user = user,
-            version = version,
-            condition = n,
-            key = 'color',
-            value = color,
-            operator = '='
-            )
-        raw.save()
-        n += 1
-        '''
     res={'success':True}
     return HttpResponse(json.dumps(res),
             content_type='application/json')
@@ -1280,7 +1419,15 @@ def getStormDrainData(request):
             if StormDrain._meta.get_field(field).get_internal_type() == 'DateTimeField':
                 field ='TO_CHAR(' + field + ', \'YYYY/MM\')'
 
-            cond.append(field + operator +"'"+value.lower()+"'")
+            if value in null_values:
+                if operator=='=':
+                    operator = ' is null '
+                else: #If value is null, and operator is not '=', then force operator to 'is not null'
+                    operator = ' is not null '
+
+                cond.append(field + operator)
+            else:
+                cond.append(field + operator +"'"+value.lower()+"'")
 
         conds = ' and '.join(cond)
         t = 'case when ('+conds+') then '+str(counter)+' else '
@@ -1308,8 +1455,6 @@ def getStormDrainData(request):
 
     #exclude rows where no condition applies, n=-1
     sql = "select * from ("+ sql +") as foo where n != -1"
-
-
 
     db = connection.cursor()
     db.execute(sql)
@@ -1470,12 +1615,14 @@ def stormDrainUpload(request, **kwargs):
 def getStormDrainLastVersion(request):
     #Return the last uploaded version.0 if there is none
     if request.user.is_authenticated():
-        qs = StormDrain.objects.filter(
+        qs = StormDrain.objects.values(
+            'version'
+        ).filter(
             user__exact=request.user.id, version__isnull=False
-        ).values_list('version', flat=True).distinct().order_by('-version')
+        ).distinct().order_by('-version')
 
         if qs.count() > 0:
-            version = qs.count()
+            version = qs[0]['version'] #the first is the latest
         else:
             version = 0
     else:
@@ -1539,5 +1686,86 @@ def getStormDrainTemplate(request):
         response.write(in_memory.read())
 
         return response
+    else:
+        return HttpResponse('Unauthorized', status=401)
+
+@csrf_exempt
+@never_cache
+@cross_domain_ajax
+def getPredefinedNotifications(request):
+    success = request.user.is_authenticated()
+
+    if success and (request.user.groups.filter(name=managers_group).exists()
+        or request.user.groups.filter(name=superusers_group).exists() ):
+
+        res = {'success': False, 'notifications':[]}
+
+        qs = NotificationPredefined.objects.filter(
+            user__exact = request.user.id
+            ).values(
+                'id','title_es','title_ca','title_en','body_html_es','body_html_ca','body_html_en'
+            )
+
+        for row in qs:
+
+            res['notifications'].append(
+                {'id': row['id'], 'content':{
+                    'ca': {'title':row['title_ca'], 'body':row['body_html_ca']},
+                    'es': {'title':row['title_es'], 'body':row['body_html_es']},
+                    'en': {'title':row['title_en'], 'body':row['body_html_en']}
+                    }
+                }
+            )
+
+        res['success']=True
+        return HttpResponse(json.dumps(res, cls=DateTimeJSONEncoder),
+                    content_type='application/json')
+    else:
+        return HttpResponse('Unauthorized', status=401)
+
+@csrf_exempt
+@never_cache
+@cross_domain_ajax
+def getListNotifications(request):
+
+    res = {'success': False, 'notifications':[]}
+
+    success = request.user.is_authenticated()
+    if success:
+        iduser = request.user.id
+        if success and (request.user.groups.filter(name=managers_group).exists()):
+            qs = NotificationPredefined.objects.filter(
+                user__exact = request.user.id
+                ).values(
+                    'id','title_es','title_ca','title_en','body_html_es','body_html_ca','body_html_en','user','user__username'
+                )
+        elif success and (request.user.groups.filter(name=superusers_group).exists() ):
+                qs = NotificationPredefined.objects.values(
+                        'id','title_es','title_ca','title_en','body_html_es','body_html_ca','body_html_en','user','user__username'
+                    )
+
+        for row in qs:
+            res['notifications'].append(
+                {'notificationid': row['id'], 'userid':iduser,'username':row['user__username'], 'content':{
+                    'ca': {'title':row['title_ca'], 'body':row['body_html_ca']},
+                    'es': {'title':row['title_es'], 'body':row['body_html_es']},
+                    'en': {'title':row['title_en'], 'body':row['body_html_en']}
+                }}
+            )
+
+        #Uncomment to add not predifined notifications
+        '''
+        res['notifications'].append(
+            {'notificationid': 0, 'userid':iduser,'username':row['user__username'], 'content':{
+                'ca': {'title':'usernotification.not-predefined', 'body':''},
+                'es': {'title':'usernotification.not-predefined', 'body':''},
+                'en': {'title':'usernotification.not-predefined', 'body':''}
+            }}
+        )
+        '''
+
+        res['success']=True
+        return HttpResponse(json.dumps(res, cls=DateTimeJSONEncoder),
+                        content_type='application/json')
     else:
         return HttpResponse('Unauthorized', status=401)

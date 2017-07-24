@@ -156,7 +156,15 @@ var MapView = BaseView.extend({
         this.filters.on('notif_change', function(notif){
             //this.filters.notif = notif?'1':'0';
             this.filters.notif = notif;
+            this.filters.notif_types = ['N'];
             this.filters.trigger('changed','notif');
+        }, this);
+
+        this.filters.on('notif_type_change', function(notif_types){
+            //this.filters.notif = notif?'1':'0';
+            this.filters.notif = false;
+            this.filters.notif_types = notif_types;
+            this.filters.trigger('changed','notif_types');
         }, this);
 
         this.filters.on('hashtag_change', function(search_text){
@@ -165,7 +173,7 @@ var MapView = BaseView.extend({
         }, this)
 
         this.filters.on('changed', function(filter){
-            if (filter !=='notif' && filter !=='hashtag'){
+            if (filter !=='notif' && filter !=='hashtag' && filter !== 'notif_types'){
                 if (MOSQUITO.app.mapView.options.layers.indexOf('F')>-1) this.refreshCoverageLayer();
                 this.drawCluster();
             } else {

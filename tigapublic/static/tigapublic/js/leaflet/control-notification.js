@@ -109,49 +109,11 @@ var MOSQUITO = (function (m) {
                 MOSQUITO.app.mapView.scope.notificationClientIds = [];
                 MOSQUITO.app.mapView.scope.number_of_users = [];
                 MOSQUITO.app.mapView.scope.notificationServerIds.forEach(function(item){
-
-                    var year = parseInt(item.month.substring(0,4));
-                    var month = parseInt(item.month.substring(4,6));
-                    var notif = item.notif;
-                    excluded_type = filters.excluded_types.join(',');
-
-                    if(excluded_type.indexOf(item.category) !== -1){
-                        return false;
-                    }
-
-                    //If only year selected, then discard years not selected
-                    if(filters.years.length > 0 && filters.months.length == 0){
-                      if ( _.indexOf(filters.years, year) !== -1 ){
-                          return false;
-                      };
-                    }
-
-                    //If only month selected, then discard months not selected
-                    if(filters.years.length == 0 && filters.months.length > 0){
-                        if ( _.indexOf(filters.months, month) !== -1 ){
-                            return false;
-                        };
-                    }
-
-                    //check both and discard not selected ones
-                    if(filters.years.length > 0 && filters.months.length > 0){
-                        if (_.indexOf(filters.years, year) == -1
-                                || _.indexOf(filters.months, month) == -1){
-                                  return false;
-                                };
-                    }
-
-                    //check notification filter
-                    if('notif' in filters) {
-                        if (filters.notif !== false) return notif == filters.notif;
-                        else return true;
-                    }
-
-                    //If notification passed filters, then check if user is in number_of_users
+                    MOSQUITO.app.mapView.scope.notificationClientIds.push(item.id);
+                    //check if user is in number_of_users
                     if (MOSQUITO.app.mapView.scope.number_of_users.indexOf(item.user_id)==-1){
                       MOSQUITO.app.mapView.scope.number_of_users.push(item.user_id);
                     }
-                    MOSQUITO.app.mapView.scope.notificationClientIds.push(item.id);
                 });
                 this.updateResults(
                       MOSQUITO.app.mapView.scope.notificationClientIds,
@@ -191,18 +153,25 @@ var MOSQUITO = (function (m) {
           polygon.forEach(function(obj) {
             MOSQUITO.app.mapView.scope.notificationSelection.push(obj.lng +' '+ obj.lat);
           });
-          // get the features inside the polygon bounds
+
+          // Prepare url with filters
+          var url = MOSQUITO.config.URL_API + 'intersect/'+MOSQUITO.app.mapView.filters.excluded_types.join(',')+'/';
+          url += (MOSQUITO.app.mapView.filters.years.length)?MOSQUITO.app.mapView.filters.years.join(',') + '/':'all/'
+          url += (MOSQUITO.app.mapView.filters.months.length)?MOSQUITO.app.mapView.filters.months.join(',') + '/':'all/'
+
+          console.log(url);
+
           $.ajax({
               type: 'POST',
               context: this,
-              url:  MOSQUITO.config.URL_API + 'intersect/',
+              url:  url,
               data: {'selection': MOSQUITO.app.mapView.scope.notificationSelection},
               cache: false,
               success: function(response){
                   if (response.success) {
                     MOSQUITO.app.mapView.scope.notificationServerIds = response.rows;
                     this.getNotificationClientIds();
-                    this.openForm();
+                    this.getPredefinedNotifications();
                   } else {
                     console.log(response.err);
                   }
@@ -213,6 +182,36 @@ var MOSQUITO = (function (m) {
           MOSQUITO.app.mapView.scope.notifying = false;
         },
 
+        "getPredefinedNotifications": function(){
+            $.ajax({
+                type: 'POST',
+                context: this,
+                url:  MOSQUITO.config.URL_API + 'getpredefinednotifications/',
+                cache: false,
+                success: function(response){
+                    if (response.success) {
+                        MOSQUITO.app.mapView.scope.predefinedNotifications = response;
+                        //REmove preset notifications, but first
+                        $('#notification-presets').find('option').not(':first').remove();
+
+                        //spanish version includes 3 languages
+                        var defaultPresets = MOSQUITO.app.mapView.scope.predefinedNotifications['notifications'];
+                        defaultPresets.forEach(function(item, index){
+                          $('<option>')
+                             .attr('name',index) //used to recover selected option text
+                             .attr('value',item['id'])
+                             .text(item['content']['es']['title'])
+                             .appendTo($('#notification-presets'));
+                        });
+                        $('#notification-presets').selectpicker('refresh');
+                        this.openForm();
+                    } else {
+                        alert(t('error.unknown')+': '+response.err);
+                    }
+                }
+            });
+        },
+
         "openForm": function(button) {
           if (!$(button).hasClass('disabled')) {
             //change form action
@@ -221,6 +220,7 @@ var MOSQUITO = (function (m) {
 
             $('.form-group.notif-msg').addClass('hidden');
             $('#notification_form').modal('show');
+            $('#preset_notification_id').val('0');
             setTimeout(function(){
                 $('#notification-type').selectpicker('refresh');
                 $('#notification-presets').selectpicker('refresh');
@@ -277,7 +277,8 @@ var MOSQUITO = (function (m) {
                     "selection": MOSQUITO.app.mapView.scope.notificationSelection,
                     "type": $('#notification-type option:selected').attr('name'),
                     "expert_comment": $('#notification-title').val(),
-                    "expert_html": tinyMCE.activeEditor.getContent()
+                    "expert_html": tinyMCE.activeEditor.getContent(),
+                    "preset_notification_id": $('#preset_notification_id').val()
                 };
                 $.ajax({
                     type: 'POST',
@@ -307,13 +308,19 @@ var MOSQUITO = (function (m) {
 
         "setPredefined": function(obj) {
           selected = parseInt($(obj.options[obj.selectedIndex]).attr('name'));
+          value = parseInt($(obj.options[obj.selectedIndex]).val());
           if (selected > -1) {
-            title = t('map.notification.preset'+selected+'.title');
-            body = t('map.notification.preset'+selected+'.body');
+            var notifs = MOSQUITO.app.mapView.scope.predefinedNotifications.notifications;
+            title = notifs[selected]['content']['es']['title'];
+            body = notifs[selected]['content']['es']['body'];
+            $('#preset_notification_id').val(value);
+            console.log('hidden value'+value)
           } else {
             title = '';
             body = '';
+            $('#preset_notification_id').val('0');
           }
+
           $('#notification-title').val(title);
           tinyMCE.activeEditor.setContent(body);
         }

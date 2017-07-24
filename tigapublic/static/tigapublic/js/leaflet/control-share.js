@@ -7,31 +7,8 @@ var MOSQUITO = (function (m) {
                 console.error('ERROR: no options.build_url function defined');
             }
             return this.options.build_url();
-        },
-        // build_url: function(){
-        //
-        //     var layers = [];
-        //     $('.sidebar-control-layers ul li').each(function(i, el){
-        //         if($(el).hasClass('active')){
-        //             layers.push(i+'');
-        //         }
-        //     });
-        //
-        //     //$lng/$zoom/$lat/$lon/$layers/$year/$months
-        //     var url  = document.URL.replace(/#.*$/, '');
-        //     if(url[url.length-1] !== '/'){
-        //         url += '/';
-        //     }
-        //     url += '#';
-        //     url += '/' + document.documentElement.lang;
-        //     url += '/' + this._map.getZoom();
-        //     url += '/' + this._map.getCenter().lat;
-        //     url += '/' + this._map.getCenter().lng;
-        //     url += '/' + layers.join();
-        //
-        //     return url;
-        //
-        // },
+        }
+        ,
         onAdd: function(){
             L.Control.CustomButton.prototype.onAdd.call(this);
 

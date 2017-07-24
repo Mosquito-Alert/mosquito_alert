@@ -119,13 +119,14 @@ var MOSQUITO = (function (m, _) {
                 {'name': 'userdata', 'icon':'fa fa-user'},
                 {'name': 'none', 'icon':''}
             ],
+            /*
             "minZoom": 5,
             "lock_bounds": {
               "ymin": 10.94304553343818,
               "ymax": 61.42951794712287,
               "xmin": -46.77148437499999,
               "xmax": 49.056640625
-            },
+            },*/
             "layers": [
               {
                   key: 'A2',

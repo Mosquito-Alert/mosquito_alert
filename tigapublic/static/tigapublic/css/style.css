@@ -27,6 +27,10 @@ body{
   padding-left:5px;
 }
 
+#legend_reports_map {
+  max-width: 250px;
+}
+
 #legend_reports_map li.list-group-only-item{
   position: relative;
   display: block;
@@ -401,7 +405,7 @@ a[data-lang].active{
 
 /*OVERWRITE BOOTSTRAP BUTTON*/
 .bootstrap-select:not([class*="col-"]):not([class*="form-control"]):not(.input-group-btn){
-	width:100% !important;
+	width:100%;
 }
 
 .btn-block{
@@ -533,7 +537,7 @@ h3.reports{
     right:0px;
   }
   .collapse.in {
-    height:60px;
+  /*  height:60px;*/
   }
   .container-fluid>.navbar-collapse {
     top:0px;
@@ -748,6 +752,13 @@ div.notif-list.collapsed{
     border: 1px solid #ddd;
     padding: 6px 12px;*/
 }
+#notif_filters.section.filters .notif_type_filter, #notif_filters.section.filters .notif_filter {
+  width:90%;
+  /*float:left;*/
+}
+#notif_filters input[type=radio] {
+  margin-right:5px;
+}
 .section.filters .title {
   padding-bottom: 10px;
 }
@@ -877,6 +888,9 @@ div.layer-group.list-group-item div.group-title {
 
 div.notif_container div.dropdown-menu.open {
   position:relative;
+}
+div#notif_type_filters ul.dropdown-menu li{
+  border-bottom: 1px solid #ccc;
 }
 
 /*tinymce placeholder*/
@@ -1044,4 +1058,13 @@ li.stormdrain_legend{ padding-top:5px}
 }
 .icon-helper[aria-expanded="true"]{
   background: rgba(255, 221, 24, 0.7) none repeat scroll 0% 0%;
+}
+
+.bootstrap-select.btn-group.show-tick .dropdown-menu li.selected a span.check-mark {
+  /*left:3px;*/
+}
+
+#map-ui .dropdown-menu>li>a {
+  white-space: normal;
+  border-bottom: 1px solid #ccc;
 }
