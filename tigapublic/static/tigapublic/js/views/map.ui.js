@@ -861,26 +861,26 @@ var MapView = MapView.extend({
     },
 
     moveMarkerIfNecessary: function(marker){
-      //Check if dragging selected is required
-      var x = _this.map.getSize().x ;
-      var y = _this.map.getSize().y ;
-      var barWidth = parseInt($('.sidebar-report').css('width'));
-      var mapIconsWidth = parseInt($('.leaflet-control-zoom-out').css('width')) + 40 //20px padding;
+          //Check if dragging selected is required
+          var x = _this.map.getSize().x ;
+          var y = _this.map.getSize().y ;
+          var barWidth = parseInt($('.sidebar-report').css('width'));
+          var mapIconsWidth = parseInt($('.leaflet-control-zoom-out').css('width')) + 40 //20px padding;
 
-      //if too left, then move it
-      var ne = _this.map.containerPointToLatLng([x - (barWidth + mapIconsWidth), 0]) ;
+          //if too left, then move it
+          var ne = _this.map.containerPointToLatLng([x - (barWidth + mapIconsWidth), 0]) ;
 
-      if (ne.lng < marker.getLatLng().lng){
-        var sw = _this.map.containerPointToLatLng([0 , y]) ;
-        var newBB = L.latLngBounds(sw, ne);
-        var curCenter = _this.map.getCenter();
-        var newCenter = newBB.getCenter();
-        var moveLng = marker.getLatLng().lng - newCenter.lng;
+          if (ne.lng < marker.getLatLng().lng){
+            var sw = _this.map.containerPointToLatLng([0 , y]) ;
+            var newBB = L.latLngBounds(sw, ne);
+            var curCenter = _this.map.getCenter();
+            var newCenter = newBB.getCenter();
+            var moveLng = marker.getLatLng().lng - newCenter.lng;
 
-        _this.forceReloadView = false;
-        _this.map.setView( [curCenter.lat, curCenter.lng + moveLng], _this.map.getZoom());
-      }
-    },
+            _this.forceReloadView = false;
+            _this.map.setView( [curCenter.lat, curCenter.lng + moveLng], _this.map.getZoom());
+          }
+        },
 
     loading: {
         on: function(obj) {
