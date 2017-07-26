@@ -124,15 +124,16 @@ var ReportsdocumentView = MapView.extend({
              }
 
             //var stuff = window.opener.$("#notif_filters").clone();
-            var stuff = window.opener.document.getElementById("notif_filters").outerHTML;
-            $('#notif_filters').html(stuff);
+            if (window.opener.document.getElementById("notif_filters")){
+              var stuff = window.opener.document.getElementById("notif_filters").outerHTML;
+              $('#notif_filters').html(stuff);
+            }
 
+            if (window.opener.document.getElementById("map_layers_list")){
+              var stuff = $('<div>').html(window.opener.document.getElementById("map_layers_list").outerHTML).find('li.active');
+              stuff.removeClass('active');
+            }
 
-            //add active layers from opener
-            //stuff = window.opener.$('#map_layers_list li.active').clone();
-            //var stuff = document.importNode(window.opener.$("#map_layers_list li.active"),true);
-            var stuff = $('<div>').html(window.opener.document.getElementById("map_layers_list").outerHTML).find('li.active');
-            stuff.removeClass('active');
 
 
             $('#map_layers').html(stuff);

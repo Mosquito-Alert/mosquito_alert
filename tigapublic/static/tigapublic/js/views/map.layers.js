@@ -416,7 +416,8 @@ var MapView = MapView.extend({
           if (hashtag_value =='') hashtag_value='N';
         }
         else hashtag_value='N';
-        if ( ('notif' in this.filters && this.filters.notif !== false ) ) {
+
+        if ( ('notif' in this.filters && this.filters.notif !== false )  ) {
           if ('notif' in this.filters )
             notif_value = this.filters.notif;
           else notif_value='N';
@@ -428,12 +429,16 @@ var MapView = MapView.extend({
           else notif_types = notif_types.join(',');
           url = MOSQUITO.config.URL_API + 'get_reports_by_notif_type/' + bbox + '/' + notif_types +'/'+hashtag_value;
         }
+        else if ( hashtag_value !=='N'){
+            url = MOSQUITO.config.URL_API + 'get_reports_by_notif_type/' + bbox + '/N/'+hashtag_value;
+        }
         else if( (zoom >= MOSQUITO.config.maxzoom_cluster) ) {
             url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox;
         }else{
             url = MOSQUITO.config.URL_API + 'map_aux_reports_zoom_bounds/' + zoom+'/'+bbox;
         }
 
+        console.log(url)
         $.ajax({
             method: 'GET',
             url: url

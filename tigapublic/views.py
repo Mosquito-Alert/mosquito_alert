@@ -39,21 +39,21 @@ import os
 import requests
 import xml
 import sys
+import urllib
 from django.utils.html import strip_tags
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from decorators import cross_domain_ajax
 
-def remove_html_tags(text):
-    return ''.join(xml.etree.ElementTree.fromstring(text).itertext())
-
 class Struct:
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
 def sendPushNotification(usernotif):
+
     content = NotificationContent.objects.get(pk=usernotif.notification_content_id)
+
     # user_id = usernotif.user_id
     if settings.ENVIRON == 'production':
         user_id = usernotif.user_id
@@ -70,12 +70,14 @@ def sendPushNotification(usernotif):
             content.title_es,
             strip_tags(content.body_html_es)
         )
+
     else:
         # iOS endpoint
         # get the link to this report
-        qs = MapAuxReports.objects.filter(version_uuid=usernotif.report_id)
-        qsobject = Struct(**qs.values()[0])
-        link_url = MapAuxReportsResource().dehydrate_single_report_map_url(qsobject)
+        #qs = MapAuxReports.objects.filter(version_uuid=usernotif.report_id)
+        #qs['title']
+        #qsobject = Struct(**qs.values()[0])
+        link_url = ''
         # set the url
         url = '%smsg_ios/?user_id=%s&link_url=%s&alert_message=%s' % (
             settings.TIGASERVER_API,
@@ -83,6 +85,8 @@ def sendPushNotification(usernotif):
             link_url,
             strip_tags(content.body_html_es)
         )
+
+    #url = urllib.urlencode(url)
     response = requests.post(
         url,
         data = {},
@@ -90,7 +94,7 @@ def sendPushNotification(usernotif):
             "Authorization": "Token %s" % (settings.TIGASERVER_API_TOKEN,)
         }
     )
-    
+
     return response.text+' '+url
 
 
@@ -171,6 +175,7 @@ def save_notification(request):
                         with transaction.atomic():
                             for i in notifs:
                                 notifs[i].save()
+
                             for i in usernotifs:
                                 usernotifs[i].save()
                                 a = sendPushNotification(usernotifs[i])
@@ -536,7 +541,7 @@ def map_aux_reports(request, id):
     if db.rowcount == 1:
         return HttpResponse(json.dumps(rows[0], cls=DateTimeJSONEncoder),
                             content_type='application/json')
-    
+
     return HttpResponse('404 Not found', status=404)
 
 
@@ -632,7 +637,9 @@ def getReportsByNotifType(request, bounds, types, hashtag):
     #Only registered users
     success = request.user.is_authenticated()
     if success is False:
-        return HttpResponse('Unauthorized', status=401)
+        iduser=0
+        types='n'
+        #return HttpResponse('Unauthorized', status=401)
     else:
         iduser = request.user.id
 
@@ -673,8 +680,7 @@ def getReportsByNotifType(request, bounds, types, hashtag):
     hashtag_where =''
     if hashtag.lower() != 'n':
         hashtag = '#' + hashtag.replace('#','')
-        hashtag_join = " LEFT OUTER JOIN map_aux_reports aux ON (r.version_uuid = aux.version_uuid)"
-        hashtag_where = " AND aux.note ilike '%%" + hashtag +"%%' "
+        hashtag_where = " AND r.note ilike '%%" + hashtag +"%%' "
 
     # 1 as c emulates cluster of 1 item
     sql = """SELECT 1 as c, r.private_webmap_layer AS category, r.expert_validation_result,
@@ -1087,6 +1093,7 @@ def reports(request, bounds, years, months, categories, hashtag, notif_types):
     res['rows'] = rows
     res['num_rows'] = len(rows)
     #return HttpResponse(sql)
+
     return HttpResponse(DateTimeJSONEncoder().encode(res),
                         content_type='application/json')
 
