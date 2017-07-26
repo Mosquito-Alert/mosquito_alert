@@ -150,6 +150,12 @@ trans.ca = {
     //Draw. Not visible when defined in ca_logged
     'leaflet.draw.polygon.continue': 'Continua dibuixant el contorn del polígon',
     'leaflet.draw.polygon.end': 'Marca el primer punt (o fes doble clic en un punt nou) per acabar.',
-    'leaflet.draw.polygon.start': 'Marca la posició del primer punt al mapa.'
+    'leaflet.draw.polygon.start': 'Marca la posició del primer punt al mapa.',
+
+    //Notificacions
+    'map.notification.type.filters.title': 'Tots els tipus de notificació',
+    'all_notifications': 'Totes les notificacions',
+    'with_my_notifications': 'Amb les meves notificacions',
+    'without_my_notifications': 'Sense les meves notificacions'
 
  };

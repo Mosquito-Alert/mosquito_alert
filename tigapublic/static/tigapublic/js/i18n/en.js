@@ -148,5 +148,11 @@ trans.en = {
     //Draw. Not visible when defined in en_logged
     'leaflet.draw.polygon.continue': 'Keep drawing the polygon contour',
     'leaflet.draw.polygon.end': 'Set the first point (or double click in a new point) to end',
-    'leaflet.draw.polygon.start': 'Set the position of the starting point in the map.'
+    'leaflet.draw.polygon.start': 'Set the position of the starting point in the map.',
+
+    //NOTIFICACIONES
+    'map.notification.type.filters.title': 'All notification types',
+    'all_notifications': 'All notifications',
+    'with_my_notifications': 'With my notifications',
+    'without_my_notifications': 'Without my notifications',
 };

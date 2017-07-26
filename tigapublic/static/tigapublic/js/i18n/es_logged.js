@@ -37,7 +37,7 @@ add = {
     'map.notification.preset0.body': '<p>Esta es la notificación predefinida número 1</p><p>En el cuerpo del mensaje ponemos lo que convenga.</p>',
     'map.notification.preset1.title': 'Notificación predefinida 2',
     'map.notification.preset1.body': '<p>Esta es la notificación predefinida número 2</p><p>En el cuerpo de este mensaje hay un poco más de texto.</p>',
-    'map.notification.type.filters.title': 'Todos los tipos de notificaciones',
+    
      //NOTIFICATIONS DRAW
     'leaflet.draw.toolbar.cancel.title': 'Cancelar edición',
 
@@ -47,9 +47,6 @@ add = {
     'map.text_description_notification': '<p>Pulsa en <span class="fa fa-pencil"></span> "Seleccionar territorio" para seleccionar las observaciones a las que deseas enviar una notificación.</p><p>Puedes cerrar el polígono con un doble click sobre nuevo vértice, o con un solo click sobre el vértice inicial.<br/><br/>Al finalizar el polígono se indicará el número de observaciones afectadas en la parte superior de este panel y se mostrará el formulario para crear la notificación.</p><p>Al cerrar el formulario de notificación será necesario empezar de nuevo con la selección del territorio.</p>',
 
     'observations.filters.title': 'Observaciones',
-    'with_my_notifications': 'Con mis notificaciones',
-    'without_my_notifications': 'Sin mis notificaciones',
-    'all_notifications': 'Todas las notificaciones',
     'usernotification.not-predefined':'No predefinidas',
 
     // FIN NOTIFICACIONES

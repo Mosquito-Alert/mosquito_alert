@@ -258,7 +258,8 @@ var MapView = MapView.extend({
             select_notifications.on('change', function(){
               $('input[name=notification_radio][value=by_owner]').prop('checked',true);
               $('.notif_type_filter').val(['N']);
-              $('.notif_type_filter').selectpicker('refresh');
+              $('.notif_type_filter').data('pre', ['N']);
+              select_notifications.selectpicker('refresh');
               //_this.filters.trigger('notif_change', $(this).val());
               //console.log($(this).val());
               switch ($(this).val()) {
@@ -275,6 +276,7 @@ var MapView = MapView.extend({
                   _this.filters.trigger('notif_change', 0);
                 break;
               }
+              select_type_notifications.selectpicker('refresh');
             });
             // notification types
             var radio_notif_type = $('<input>', {
@@ -292,10 +294,8 @@ var MapView = MapView.extend({
             select_type_notifications.on('change', function(event){
               var pre = $(this).data('pre');
               var now = $(this).val();
-              /*console.log('now', now);
-              console.log('pre', pre);*/
               // hem fet clic a una nova opció
-              if (now && pre.length < now.length) {
+              if (now !== null && pre !== null && typeof now !== 'undefined' && typeof pre !== 'undefined' && pre.length < now.length) {
                 pre.forEach(function(elem) {
                   now.splice(now.indexOf(elem),1);
                 });
@@ -315,8 +315,8 @@ var MapView = MapView.extend({
 
               }
               $(this).data('pre', $(this).val());
-              $(this).selectpicker('refresh');
-              $('.notif_filter').selectpicker('refresh');
+              select_type_notifications.selectpicker('refresh');
+              select_notifications.selectpicker('refresh');
               _this.filters.trigger('notif_type_change', $(this).val());
             });
 
@@ -358,7 +358,7 @@ var MapView = MapView.extend({
                     }
                   });
                   //refresh selectpicker
-                  $('.selectpicker.notif_type_filter').selectpicker('refresh');
+                  select_type_notifications.selectpicker('refresh');
                 } else {
                   console.error("An error was found while trying to get the list of notification types");
                 }

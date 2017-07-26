@@ -43,15 +43,13 @@ add = {
   'notif.notification_cancel': 'Cancel·lar',
   'notif.observations_none': 'No hi ha cap observació seleccionada',
   'notif.saved': 'Notificació enviada correctament',
-  'map.notification.type.filters.title': 'Tots els tipus de notificació',
+
 
   //Dibuix
   'map.text_description_notification': '<p>Fes clic a <span class="fa fa-pencil"></span> "Seleccionar territori" per seleccionar les observacions a les que vols enviar una notificació.</p><p>Pots tancar el polígon amb un doble clic sobre nou vèrtex, o amb un sol clic sobre el vèrtex inicial.<br/><br/>En finalitzar el polígon s\'indicarà el nombre d\'observacions afectades a la part superior d\'aquest panell i es mostrarà el formulari per crear la notificació.</p><p>En tancar el formulari de notificació caldrà tornar a començar la selecció del territori.</p>',
 
   //Select
-  'with_my_notifications': 'Amb les meves notificacions',
-  'without_my_notifications': 'Sense les meves notificacions',
-  //Modal
+    //Modal
   'map.users_found_text': 'Usuaris',
   'map.results_found_text': 'Observacions',
 
