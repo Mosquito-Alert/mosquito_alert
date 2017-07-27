@@ -126,7 +126,7 @@ $( document ).ready(function() {
         if(get_selected_tokens() == '' && $("#accordion").accordion( "option", "active" ) == 0){
             return false;
         }
-        if($("#accordion").accordion( "option", "active" ) == SELECTED_ALL && some_field_in_tinymce_is_missing){
+        if($("#accordion").accordion( "option", "active" ) == SELECTED_ALL && some_field_in_tinymce_is_missing()){
             return false;
         }
         if($("#accordion").accordion( "option", "active" ) == SELECTED_SOME_FILTER && criteria_is_unchecked()){
