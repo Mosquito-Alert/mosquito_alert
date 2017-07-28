@@ -8,6 +8,8 @@ import json
 from tigaserver_project import settings_local
 from tigaserver_project import settings
 from datetime import date, datetime
+from tigaserver_app.models import TigaUser
+from tigaserver_app.models import Notification
 
 
 def stringify_date(notification):
@@ -18,14 +20,27 @@ def stringify_date(notification):
     return notification
 
 
+def get_pending_messages(token):
+    unread_notifications = 0
+    user = TigaUser.objects.filter(device_token=token).first()
+    if user is not None:
+        unread_notifications = Notification.objects.filter(user=user).filter(acknowledged=False).count()
+    return unread_notifications
+
+
 def send_message_ios(token,alert_message,link_url):
     cert = '/home/webuser/webapps/tigaserver/CertificatMosquito.pem'
+    try:
+        unread_notifications = get_pending_messages(token)
+    except:
+        unread_notifications = 0
     TOKEN = token
     PAYLOAD = {
         'aps': {
             'alert': alert_message,
             'sound': 'default',
-            'link_url': link_url
+            'link_url': link_url,
+            'badge': unread_notifications
         }
     }
 
