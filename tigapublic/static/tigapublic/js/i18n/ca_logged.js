@@ -21,35 +21,21 @@ add = {
   'notif.notification_cancel':'Cancel·la',
 
   //Notificacions
-  'all_notifications': 'Totes',
+  'usernotification.not-predefined':'No predefinides',
+  'all_notifications': 'Totes les notificacions',
   'check_notifications': 'Notificacions',
   'map.notification.notified': 'A',
   'map.notification.notifier': 'De',
   'map.notification.predefined.title': 'Si ho prefereixes pots fer servir una notificació predefinida:',
-  'map.notification.preset0.body': '<p>La vostra incid&#232;ncia ha estat incorporada al Programa de Vigil&#224;ncia i Control de mosquits de la ciutat de Barcelona que es porta a terme des del Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Gr&#224;cies per la seva comunicaci&#243;, la col&#183;laboraci&#243; ciutadana &#233;s clau per poder combatre la proliferaci&#243; de mosquits, us animem a continuar informant. Entre tots podem aconseguir-ho!</p><p>#PCP17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-  'map.notification.preset0.title': 'ASPB #PCP17',
-  'map.notification.preset1.body': '<p>La vostra incid&#232;ncia ha estat incorporada al Programa de Vigil&#224;ncia i Control de mosquits de la ciutat de Barcelona que es porta a terme des del Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Gr&#224;cies a la seva col&#183;laboraci&#243; s&#8217;ha detectat activitat a la zona i s&#8217;han executat mesures de control. &#201;s important la implicaci&#243; dels ciutadans per poder combatre la proliferaci&#243; de mosquits, us animem a continuar informant. Entre tots podem aconseguir-ho!</p><p>#AVT17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-  'map.notification.preset1.title': 'ASPB #AVT17',
-  'map.notification.preset2.body': '<p>La vostra incid&#232;ncia ha estat incorporada al Programa de Vigil&#224;ncia i Control de mosquits de la ciutat de Barcelona que es porta a terme des del Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Gr&#224;cies a la vostra col&#183;laboraci&#243; s'ha detectat activitat a la zona i s'han executat mesures de control. &#201;s important la implicaci&#243; dels ciutadans per poder combatre la proliferaci&#243; de mosquits, us animem a continuar informant. Entre tots podem aconseguir-ho!</p><p>#CLB17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-  'map.notification.preset2.title': 'ASPB #CLB17',
-  'map.notification.preset3.body': '<p>La vostra incid&#232;ncia ha estat incorporada al Programa de Vigil&#224;ncia i Control de mosquits de la ciutat de Barcelona que es porta a terme des del Servei de Vigil&#224;ncia i Control de Plagues Urbanes de l&#8217;Ag&#232;ncia de Salut P&#250;blica de Barcelona.</p><p>Gr&#224;cies a la seva col&#183;laboraci&#243; s&#8217;ha detectat activitat de mosquit tigre a la zona i s&#8217;han executat mesures de control. &#201;s important la implicaci&#243; dels ciutadans per poder combatre la proliferaci&#243; de mosquits, us animem a continuar informant. Entre tots podem aconseguir-ho!</p><p>#MT17</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/ASPB_649logo2filas.jpg" width="200px"></p>',
-  'map.notification.preset3.title': 'ASPB #MT17',
-  'map.notification.preset4.title': 'Regidoria Sanitat i Salut - Confirmado/posible caso de tigre/fiebre amarilla',
-  'map.notification.preset4.body': '<p><b>&#161;Gracias por sumarte a la lucha contra el mosquito tigre!</b></p><p>Los t&#233;cnicos municipales acudir&#225;n a inspeccionar la zona, si contactas con el telf. 962063960 o controlplagas@valencia.es indicando Mosquito Alert, se podr&#225; precisar el &#225;rea de revisi&#243;n.</p><p>#Tigre</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-  'map.notification.preset5.title': 'Regidoria Sanitat i Salut - Aviso diferente a mosquito tigre/fiebre amarilla (Culex/Culiseta)',
-  'map.notification.preset5.body': '<p><b>&#161;Gracias por la informaci&#243;n!</b></p><p>Gracias por participar, para poder aumentar la informaci&#243;n disponible contacta con el telf.&#160;962063960 o controlplagas@valencia.es indicando Mosquito Alert y la direcci&#243;n del aviso</p><p>#Informaci&#243;n</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-  'map.notification.preset6.title': 'Regidoria Sanitat i Salut - Aviso de lugar de cría descartado',
-  'map.notification.preset6.body': '<p><b>&#161;Gracias por contactar con Mosquito Alert!</b></p><p>&#161;Gracias por contactar con Mosquito Alert! Tu informaci&#243;n es muy valiosa para nosotros</p><p>#Contactar</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-  'map.notification.preset7.title': 'Regidoria Sanitat i Salut - Aviso de lugar de cría destacado',
-  'map.notification.preset7.body': '<p><b>&#161;Gracias por unirte a mosquito alert!</b></p><p>&#161;Gracias por unirte a Mosquito Alert! Tu informaci&#243;n es muy valiosa para nosotros</p><p>#Unirte</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
-  'map.notification.preset8.title': 'Regidoria Sanitat i Salut - Diferente a Mosquito',
-  'map.notification.preset8.body': '<p><b>&#161;Gracias por participar en el proyecto!</b></p><p>&#161;Gracias por participar adjuntando tu fotograf&#237;a!</p><p>#Participar</p><p><img src="http://www.mosquitoalert.com/wp-content/uploads/2017/06/Logo-Regidoria-Sanitat-i-Salut.jpg" width="200px"></p>',
+  'map.notification.preset0.body': '<p>Aquesta és la notificació predefinida número 1</p><p>Al cos del missatge posem el que convingui.</p>',
+  'map.notification.preset0.title': 'Notificació predefinida 1',
+  'map.notification.preset1.body': '<p>Aquesta és la notificació predefinida número 2</p><p>Al cos del missatge hi ha una mica més de text.</p>',
+  'map.notification.preset1.title': 'Notificació predefinida 2',
   'map.notification.type.none': 'Tipus de notificació',
   'map.notification.type.private': 'Notificació privada',
   'map.notification.type.public': 'Notificació pública',
   'map.notification_add': 'Nova notificació',
   'map.notification_select_polygon_btn': 'Selecciona territori',
-  'info.notifications': 'Notificacions',
   'leaflet.draw.toolbar.cancel.title': 'Cancel·lar notificació',
   'map.control_notifications': 'Emetre notificació',
   'map.title_notification': 'Notificació',
@@ -57,13 +43,13 @@ add = {
   'notif.notification_cancel': 'Cancel·lar',
   'notif.observations_none': 'No hi ha cap observació seleccionada',
   'notif.saved': 'Notificació enviada correctament',
+
+
   //Dibuix
   'map.text_description_notification': '<p>Fes clic a <span class="fa fa-pencil"></span> "Seleccionar territori" per seleccionar les observacions a les que vols enviar una notificació.</p><p>Pots tancar el polígon amb un doble clic sobre nou vèrtex, o amb un sol clic sobre el vèrtex inicial.<br/><br/>En finalitzar el polígon s\'indicarà el nombre d\'observacions afectades a la part superior d\'aquest panell i es mostrarà el formulari per crear la notificació.</p><p>En tancar el formulari de notificació caldrà tornar a començar la selecció del territori.</p>',
 
   //Select
-  'with_my_notifications': 'Amb les meves notificacions',
-  'without_my_notifications': 'Sense les meves notificacions',
-  //Modal
+    //Modal
   'map.users_found_text': 'Usuaris',
   'map.results_found_text': 'Observacions',
 
@@ -118,6 +104,7 @@ add = {
   'stormdrain.value-false': 'No',
   'stormdrain.value-R': 'Reixeta',
   'stormdrain.value-true': 'Sí',
+  'stormdrain.value-null': 'Sense valor',
   'stormdrain.version-helper': 'Selecciona la versió que vols configurar',
   'stormdrain.version-txt': 'Versió',
   'stormdrain.water': 'Aigua',

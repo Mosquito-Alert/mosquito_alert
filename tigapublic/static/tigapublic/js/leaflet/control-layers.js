@@ -167,10 +167,10 @@ var MOSQUITO = (function (m) {
                             div = $('<div class="icon-setup"></div>');
                             label = $('<label i18n="'+layer.title+'" class="multiclass">');
                             iconSetup = $('<i class="fa fa-cog storm_drain"></i>')
-                            
 
                             div.appendTo(item)
                             iconSetup.appendTo(div);
+
                             label.appendTo(item);
 
                             $(iconSetup).on('click', function(e){
@@ -178,7 +178,7 @@ var MOSQUITO = (function (m) {
                                 e.stopPropagation();
                                 e.preventDefault();
                             })
-                            
+
                             //Only for loggend and manager_group users
                             if (MOSQUITO.app.headerView.logged)
                             {
@@ -200,7 +200,7 @@ var MOSQUITO = (function (m) {
                                 })
                               }
                             }
-                            
+
                             var sublist = $('<ul id="stormdrain_legend">').attr('class', 'sub-sites').appendTo(item);
                             /*
                             layer.categories.drainstorm.forEach(function (item, index) {
@@ -253,7 +253,7 @@ var MOSQUITO = (function (m) {
                             MOSQUITO.app.mapView.loading.on(layerLI);
                             if (layer.key=='F') MOSQUITO.app.mapView.refreshCoverageLayer();
                             else if (layer.key=='Q') MOSQUITO.app.mapView.loadStormDrainData();
-                            else _this._map.addLayer(theLayer, function() {alert('eiva');});
+                            else _this._map.addLayer(theLayer, function() {});
                         }
                         _this._map.fire('layerchange', {
                             layer : theLayer

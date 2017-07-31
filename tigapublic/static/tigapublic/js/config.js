@@ -22,7 +22,6 @@ var MOSQUITO = (function (m, _) {
               key: 'A',
               group:'observations',
               title: 'layer.tiger',
-              //categories: ["albopictus#1#", "albopictus#2#"]
               categories: {
                 'albopictus_2': ['mosquito_tiger_probable', 'mosquito_tiger_confirmed']
               }
@@ -31,11 +30,10 @@ var MOSQUITO = (function (m, _) {
               key: 'B',
               group:'observations',
               title: 'layer.zika',
-              //categories: ["aegypti#1#", "aegypti#2#"]
               categories: {
                 'aegypti_2': ['yellow_fever_confirmed', 'yellow_fever_probable']
               }
-          }, //aegypti
+          }, 
           {
               key: 'C',
               group:'observations',

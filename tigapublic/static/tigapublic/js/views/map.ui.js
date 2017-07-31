@@ -12,6 +12,9 @@ var MapView = MapView.extend({
             this.map.on('click', function(e){
                 if (this.scope.selectedMarker){
                     this.controls.sidebar.closePane();
+                    if (_this.lastViewWasReload === false){
+                        this.load_data();
+                    }
                 }
             }, this);
         }
@@ -220,28 +223,146 @@ var MapView = MapView.extend({
         if (MOSQUITO.app.headerView.logged) {
             var div_notif = $('<div/>', {'id':'notif_filters', 'class':'section filters'})
                 .appendTo(container);
-            var title_notif = $('<div>', {'i18n':'observations.filters.title', "class": "title"})
-                .appendTo(div_notif);
+            /*var title_notif = $('<div>', {'i18n':'observations.filters.title', "class": "title"})
+                .appendTo(div_notif);*/
+            var radio_notif_type = $('<input>', {
+                  'type': 'radio',
+                  'name': 'notification_radio',
+                  'value': 'by_owner'}
+                ).appendTo(div_notif);
+
+            $(radio_notif_type).on('click', function(e){
+                if ($(this).val() === 'by_owner'){
+                  $('.notif_type_filter').val(['N']);
+                  _this.filters.trigger('notif_type_change', ['N']);
+                  $('.notif_type_filter').selectpicker('refresh');
+                }
+            })
+
             var select_notifications = $('<select>').attr('class', 'notif_filter')
                 .appendTo(div_notif);
-            var notif_filter_all = $('<option>', {"value": "all", "i18n": "all_notifications", "selected": "selected"})
-                .appendTo(select_notifications);
+
+            var notif_filter_all = $('<option>', {
+                    "value": "all",
+                    "i18n": "all_notifications",
+                    "text": window.t().translate('es','all_notifications'),
+                    "selected": "selected"
+                  }).appendTo(select_notifications);
+
             var notif_filter_mine = $('<option>', {"value": "withmine", "i18n": "with_my_notifications"})
                 .appendTo(select_notifications);
+
             var notif_filter_notmine = $('<option>', {"value": "withoutmine", "i18n": "without_my_notifications"})
                 .appendTo(select_notifications);
 
             select_notifications.on('change', function(){
+              $('input[name=notification_radio][value=by_owner]').prop('checked',true);
+              $('.notif_type_filter').val(['N']);
+              $('.notif_type_filter').data('pre', ['N']);
+              select_notifications.selectpicker('refresh');
+              //_this.filters.trigger('notif_change', $(this).val());
+              //console.log($(this).val());
               switch ($(this).val()) {
                 case 'all':
                   _this.filters.trigger('notif_change', false);
+                  _this.filters.trigger('notif_type_change', ['N']);
+                  $('input[name=notification_radio][value=by_owner]').prop('checked',false);
                 break;
                 case 'withmine':
                   _this.filters.trigger('notif_change', 1);
+                  MOSQUITO.app.mapView.filters.notif_type = '0';
                 break;
                 case 'withoutmine':
                   _this.filters.trigger('notif_change', 0);
                 break;
+              }
+              select_type_notifications.selectpicker('refresh');
+            });
+            // notification types
+            var radio_notif_type = $('<input>', {
+                      'type': 'radio',
+                      'name': 'notification_radio',
+                      'value': 'by_type'}
+                ).appendTo(div_notif);
+
+            var select_type_notifications = $('<select multiple>').attr('class', 'selectpicker notif_type_filter')
+                .appendTo(div_notif);
+
+            // onchage trigger
+            select_type_notifications.selectpicker('refresh');
+            select_type_notifications.data('pre', ['N']);
+            select_type_notifications.on('change', function(event){
+              var pre = $(this).data('pre');
+              var now = $(this).val();
+              // hem fet clic a una nova opció
+              if (now !== null && pre !== null && typeof now !== 'undefined' && typeof pre !== 'undefined' && pre.length < now.length) {
+                pre.forEach(function(elem) {
+                  now.splice(now.indexOf(elem),1);
+                });
+              }
+              // si hem fet clic a TODOS
+              if (!now || (now.length === 1 && now[0] === 'N') || (now.length === 0)) {
+                $(this).val(['N']);
+                $('input[name=notification_radio][value=by_type]').prop('checked',false);
+              } else {
+                if ($(this).val().indexOf('N') !== -1) {
+                  let options = $(this).val();
+                  options.splice(options.indexOf('N'),1);
+                  $(this).val(options);
+                }
+                $('input[name=notification_radio][value=by_type]').prop('checked',true);
+                $('.notif_filter').val('all');
+
+              }
+              $(this).data('pre', $(this).val());
+              select_type_notifications.selectpicker('refresh');
+              select_notifications.selectpicker('refresh');
+              _this.filters.trigger('notif_type_change', $(this).val());
+            });
+
+            $('div.bootstrap-select.notif_type_filter').on('click', function(e){
+              var maxAllowedHeight = parseInt($('#notif_filters').offset().top);
+              var divHeight = parseInt($('#notif_filters').height());
+              $(this).find('ul.dropdown-menu.inner').css('max-height', (maxAllowedHeight - divHeight))
+            });
+            // populate the filter with values
+            $.ajax({
+              "url": MOSQUITO.config.URL_API + 'getlistnotifications/',
+              "complete": function(result, status) {
+                if (status == 'success') {
+                  $('<option>', {
+                      'value': 'N',
+                      'text': t('map.notification.type.filters.title'),
+                      'i18n': 'map.notification.type.filters.title',
+                      'selected': true
+                    }).appendTo(select_type_notifications);
+
+                  result.responseJSON.notifications.forEach(function(type,b) {
+                    var lng = (typeof MOSQUITO.lng == 'array')?MOSQUITO.lng[0]:MOSQUITO.lng;
+                    //if there is translation, then add it as i18n attribute, else add label text
+                    if ((type.content[lng].title) in trans[MOSQUITO.lng]){
+                      var label = t(type.content[lng].title);
+                      //Add label in proper lng, and add i18n for future lang changes
+                      $('<option>', {
+                          "value": type.notificationid,
+                          "i18n":type.content[lng].title,
+                          "text":label,
+                         }).appendTo(select_type_notifications);
+                    }
+                    else{
+                      var label = type.username.charAt(0).toUpperCase()+type.username.slice(1)+' / '+type.content[lng].title;
+                      $('<option>', {
+                        "value": type.notificationid,
+                        "text": label
+                      }).appendTo(select_type_notifications);
+                    }
+                  });
+                  //refresh selectpicker
+                  select_type_notifications.selectpicker('refresh');
+                } else {
+                  console.error("An error was found while trying to get the list of notification types");
+                }
+
               }
             });
         }
@@ -252,12 +373,13 @@ var MapView = MapView.extend({
               select_months.selectpicker('refresh');
               if (MOSQUITO.app.headerView.logged) {
                 select_notifications.selectpicker('refresh');
+                select_type_notifications.selectpicker('refresh');
               }
           }, 0);
         });
 
-    }
-    ,
+    },
+
     addPanelMoreinfoControl: function(){
         var btn = new MOSQUITO.control.ControlMoreinfo(
             {
@@ -382,6 +504,19 @@ var MapView = MapView.extend({
 
             //Add filters if exists and !=false(all selected), N otherwise
             url += '&notifications='+(('notif' in _this.filters && _this.filters.notif!==false)?_this.filters.notif:'N');
+
+            //Check for notif_types filter
+            notif_types='N'
+            if ('notif_types' in _this.filters){
+              if (_this.filters.notif_types!==null && _this.filters.notif_types!==false){
+                notif_types = _this.filters.notif_types;
+              }
+              else
+                notif_types = 'N';
+            }
+
+            url += '&notif_types='+ notif_types;
+
             //Add hashtag if exists, N otherwise
             if ('hashtag' in _this.filters && _this.filters.hashtag.trim()!=''){
               hashtag = _this.filters.hashtag.replace('#','');
@@ -389,7 +524,6 @@ var MapView = MapView.extend({
             }
             else hashtag = 'N';
             url += '&hashtag='+hashtag;
-            //console.log('the hashtag '+_this.filters.hashtag);
 
             window.location = url;
 
@@ -483,8 +617,10 @@ var MapView = MapView.extend({
 
             //Add filters if exists and !=false(all selected)
             url += (('notif' in _this.filters)&&(_this.filters.notif!==false))?'/'+_this.filters.notif:'/N';
-            //Add hastag if exists and !=''
+            //Add hashtag if exists and !=''
             url += ('hashtag' in _this.filters)?((_this.filters.hashtag.length)?'/'+_this.filters.hashtag:'/N'):'/N';
+            //Add notif type filters if exists and != null
+            url += (('notif_types' in _this.filters)&&(_this.filters.notif_types!==null))?'/'+_this.filters.notif_types:'/N';
             window.open(url);
         });
         this.controls.reportsdocument_btn = btn.addTo(this.map);
@@ -506,7 +642,7 @@ var MapView = MapView.extend({
                         layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-item');
                     }
                     else{
-                        layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-only-item');
+                        layersDiv = $('.sidebar-control-layers #div_none ul > li.list-group-only-item');
                    }
                     layersDiv.each(function(i, el){
                         if($(el).hasClass('active')){
@@ -598,7 +734,7 @@ var MapView = MapView.extend({
         this.controls.sidebar.addPane(this.report_panel);
 
         this.report_panel.on('show', function(){
-            if (_this.scope.selectedMarker){
+            if(_this.scope.selectedMarker !== undefined && _this.scope.selectedMarker !== null){
                 _this.markerSetSelected(_this.scope.selectedMarker);
             }
             else{
@@ -628,9 +764,7 @@ var MapView = MapView.extend({
                     _this.markerSetSelected(found);
                 }else{
                     _this.markerUndoSelected(_this.scope.selectedMarker);
-
                     //search inside clusters
-
                     var cluster = _.find(_this.layers.layers.mcg._featureGroup._layers, function(layer){
                         if ( '_group' in layer){
                             // search marker inside clusters
@@ -750,7 +884,7 @@ var MapView = MapView.extend({
                 MOSQUITO.app.mapView.scope.notificationSelected = [MOSQUITO.app.mapView.scope.selectedMarker];
                 MOSQUITO.app.mapView.scope.notificationClientIds = [MOSQUITO.app.mapView.scope.selectedMarker._data.id];
                 MOSQUITO.app.mapView.controls.notification.updateResults(MOSQUITO.app.mapView.scope.notificationClientIds,['oneUser']);
-                MOSQUITO.app.mapView.controls.notification.openForm();
+                MOSQUITO.app.mapView.controls.notification.getPredefinedNotifications();
             });
         }
         //////////////////
@@ -788,10 +922,34 @@ var MapView = MapView.extend({
 
         });
 
+        this.moveMarkerIfNecessary(marker);
+
         $('#map-ui .close_button').on('click', function(){
             _this.controls.sidebar.closePane();
         });
     },
+
+    moveMarkerIfNecessary: function(marker){
+          //Check if dragging selected is required
+          var x = _this.map.getSize().x ;
+          var y = _this.map.getSize().y ;
+          var barWidth = parseInt($('.sidebar-report').css('width'));
+          var mapIconsWidth = parseInt($('.leaflet-control-zoom-out').css('width')) + 40 //20px padding;
+
+          //if too left, then move it
+          var ne = _this.map.containerPointToLatLng([x - (barWidth + mapIconsWidth), 0]) ;
+
+          if (ne.lng < marker.getLatLng().lng){
+            var sw = _this.map.containerPointToLatLng([0 , y]) ;
+            var newBB = L.latLngBounds(sw, ne);
+            var curCenter = _this.map.getCenter();
+            var newCenter = newBB.getCenter();
+            var moveLng = marker.getLatLng().lng - newCenter.lng;
+
+            _this.forceReloadView = false;
+            _this.map.setView( [curCenter.lat, curCenter.lng + moveLng], _this.map.getZoom());
+          }
+        },
 
     loading: {
         on: function(obj) {
@@ -891,7 +1049,7 @@ var MapView = MapView.extend({
             operator_txt = 'stormdrain.operator-'+operator;
             field_txt = 'stormdrain.field-'+field;
 
-            str+='<div class="tcel"><span i18n="'+field_txt+'"></span></div>';
+            str+='<div class="tcel"><span class="st-legendcategory" i18n="'+field_txt+'"></span></div>';
 
             //translate value, only if there is a translation
             if (('stormdrain.value-'+value.toLowerCase()) in trans[MOSQUITO.lng]){
@@ -1160,6 +1318,9 @@ var MapView = MapView.extend({
               //Check if val exists within available options
               if ($('select[name=value]:last  option[value="'+val+'"]').length > 0){
                 $(currentCategoryDiv).find('select[name=value]:last').val(val);
+                if (val=='null') {
+                  $('.stormdrain_operator').trigger('change');
+                }
               }
               else{
                 $(currentCategoryDiv).find('select[name=value]:last').find('option:first').attr('selected','true');
@@ -1185,7 +1346,6 @@ var MapView = MapView.extend({
     ,
     stormDrainEvents : function(ajaxData){
       _this = this;
-
       // Show additional help
       $('#helper-text .display_example').on('click', function() {
         $('#stormdrain_setup_example').modal('show');
@@ -1285,6 +1445,26 @@ var MapView = MapView.extend({
         val = $(this).val();
         _this.stormDrainStyleUI(val);
       })
+
+      //When Value selected is null then check operator.
+      $('.stormdrain_value').on('change',function(){
+          relatedOperator = $(this).parent().siblings().find('.stormdrain_operator');
+          relatedOperatorValue = relatedOperator.val();
+          var value = $(this).val();
+          if (value=='null' && ['<=','>='].indexOf(relatedOperatorValue)!=-1){
+            relatedOperator.val('=');
+          }
+        });
+
+        //When Operator selected is null then check value.
+        $('.stormdrain_operator').on('change',function(){
+            relatedValue = $(this).parent().siblings().find('.stormdrain_value');
+            relatedValueValue = relatedValue.val();
+            var operator = $(this).val();
+            if (relatedValueValue=='null' && ['<=','>='].indexOf(operator)!=-1){
+              $(this).val('=');
+            }
+          });
 
       //When field selected,then search for its values
       $('.stormdrain_field').on('change',function(){

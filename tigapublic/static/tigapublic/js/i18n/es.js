@@ -14,6 +14,7 @@ trans.es = {
     'map.site_pending': 'Por filtrar',
     'hashtag.filters.placeholder': 'Por #hashtag',
     'check_notifications': 'Notificaciones',
+    'info.notifications': 'Notificaciones',
 
     //header
     'header.login': 'Login',
@@ -146,6 +147,12 @@ trans.es = {
     //Draw. Not visible when defined in es_logged
     'leaflet.draw.polygon.start': 'Marca la posición del primer punto en el mapa.',
     'leaflet.draw.polygon.continue': 'Sigue dibujando el contorno del polígono.',
-    'leaflet.draw.polygon.end': 'Marca el primer punto (o haz doble clic en un nuevo punto) para terminar.'
+    'leaflet.draw.polygon.end': 'Marca el primer punto (o haz doble clic en un nuevo punto) para terminar.',
+
+    //NOTIFICACIONES
+    'with_my_notifications': 'Con mis notificaciones',
+    'without_my_notifications': 'Sin mis notificaciones',
+    'all_notifications': 'Todas las notificaciones',
+    'map.notification.type.filters.title': 'Todos los tipos de notificaciones'
 
 };

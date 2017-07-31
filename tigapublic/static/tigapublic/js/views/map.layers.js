@@ -2,8 +2,10 @@ var MapView = MapView.extend({
 
     LAYERS_CONF: MOSQUITO.config.layers,
     stormDrainData :[],
-    userfixtileIndex:null,
-    userFixtileOptions:  {
+    forceReloadView : true, //Allows pan without reloading data just once. Need to make it false each time
+    lastViewWasReload : true, //Tells if last map move reloaded
+    userfixtileIndex : null,
+    userFixtileOptions :  {
                 maxZoom: 20,  // max zoom to preserve detail on
                 tolerance: 5, // simplification tolerance (higher means simpler)
                 extent: 4096, // tile extent (both width and height)
@@ -106,21 +108,6 @@ var MapView = MapView.extend({
                     }
                     return;
                 }
-            }
-
-            //<----Mirem si hem de desplaçar
-            var w0 = _this.map.getSize().x;
-            var w1 = w0 - 500;
-            var x100 = 100*w1/w0;
-            var b = _this.map.getBounds();
-            var distance = b.getEast() - b.getWest();
-            var d = distance / 100 * x100;
-            var bb0 = L.latLngBounds(b.getSouthWest(), [b.getNorth(), b.getWest() + d]);
-            if(bb0.contains(e.layer.getLatLng())===false){
-                //var bb1 = L.latLngBounds([b.getSouth(), b.getWest() + d, b.getNorthEast()]);
-                //_this.map.setView([_this.map.getCenter().lat, bb1.getCenter().lng], _this.map.getZoom());
-                //var bb1 = L.latLngBounds([b.getSouth(), b.getWest() + d, b.getNorthEast()]);
-                _this.map.setView([_this.map.getCenter().lat, e.layer.getLatLng().lng], _this.map.getZoom());
             }
 
             _this.loading.show(_this.map.latLngToContainerPoint(e.latlng));
@@ -424,20 +411,26 @@ var MapView = MapView.extend({
     fetch_data: function(zoom, bbox, callback){
         var url = '';
         //check notification & hashtag filters
-        if ( ('notif' in this.filters && this.filters.notif !== false )
-              || ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='') ) {
+        if ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='') {
+          hashtag_value = this.filters.hashtag.replace('#','')
+          if (hashtag_value =='') hashtag_value='N';
+        }
+        else hashtag_value='N';
 
-                if ('notif' in this.filters && this.filters.notif !== false )
-                  notif_value = this.filters.notif;
-                else notif_value='N';
-
-                if ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='') {
-                  hashtag_value = this.filters.hashtag.replace('#','')
-                  if (hashtag_value =='') hashtag_value='N';
-                }
-                else hashtag_value='N';
-
-              url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox + '/' + notif_value +'/'+hashtag_value;
+        if ( ('notif' in this.filters && this.filters.notif !== false )  ) {
+          if ('notif' in this.filters )
+            notif_value = this.filters.notif;
+          else notif_value='N';
+          url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox + '/' + notif_value +'/'+hashtag_value;
+        }
+        else if ('notif_types' in this.filters && this.filters.notif_types!==null ) {
+          var notif_types = this.filters.notif_types;
+          if (notif_types === null) notif_types = 'N';
+          else notif_types = notif_types.join(',');
+          url = MOSQUITO.config.URL_API + 'get_reports_by_notif_type/' + bbox + '/' + notif_types +'/'+hashtag_value;
+        }
+        else if ( hashtag_value !=='N'){
+            url = MOSQUITO.config.URL_API + 'get_reports_by_notif_type/' + bbox + '/N/'+hashtag_value;
         }
         else if( (zoom >= MOSQUITO.config.maxzoom_cluster) ) {
             url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox;
@@ -445,6 +438,7 @@ var MapView = MapView.extend({
             url = MOSQUITO.config.URL_API + 'map_aux_reports_zoom_bounds/' + zoom+'/'+bbox;
         }
 
+        console.log(url)
         $.ajax({
             method: 'GET',
             url: url
@@ -505,24 +499,34 @@ var MapView = MapView.extend({
 
         this.map.on('movestart',function(){
             var bbox = _this.map.getBounds().toBBoxString();
-            if(bbox !== _this.last_bbox){
-                _this.scope.markers = [];
-                _this.layers.layers.mcg.clearLayers();
+            console.log('movestart '+_this.forceReloadView)
+            if (_this.forceReloadView){
+              if(bbox !== _this.last_bbox){
+                  _this.scope.markers = [];
+                  _this.layers.layers.mcg.clearLayers();
+              }
             }
         });
 
         this.map.on('moveend',function(){
             var bbox = _this.map.getBounds().toBBoxString();
-            if(bbox !== _this.last_bbox){
-                if(_this.scope.markers.length > 0){
-                    _this.scope.markers = [];
-                    _this.layers.layers.mcg.clearLayers();
-                }
-                _this.last_bbox = _this.map.getBounds().toBBoxString();
-                search(_this.map.getZoom(), _this.map.getBounds().toBBoxString());
+
+            if (_this.forceReloadView){
+              if(bbox !== _this.last_bbox){
+                  if(_this.scope.markers.length > 0){
+                      _this.scope.markers = [];
+                      _this.layers.layers.mcg.clearLayers();
+                  }
+                  _this.last_bbox = _this.map.getBounds().toBBoxString();
+                  _this.lastViewWasReload = true;
+                  search(_this.map.getZoom(), _this.map.getBounds().toBBoxString());
+              }
+            }
+            else{
+              _this.forceReloadView = true; //By default, next time data will be reloaded
+              _this.lastViewWasReload = false;
             }
         });
-
     },
 
     data2markers: function(){
@@ -575,6 +579,7 @@ var MapView = MapView.extend({
     },
 
     check_filters: function(marker){
+
         excluded_type = this.filters.excluded_types.join(',');
 
         if(excluded_type.indexOf(marker._data.category) !== -1){
@@ -610,6 +615,9 @@ var MapView = MapView.extend({
         if('notif' in this.filters) {
             if (this.filters.notif !== false) return notif == this.filters.notif;
             else return true;
+        }
+        if('notif_types' in this.filters) {
+          //console.log(marker._data, this.filters.notif_types);
         }
 
         return true;

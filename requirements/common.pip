@@ -39,7 +39,7 @@ python-dateutil==2.6.0
 python-memcached==1.57
 pytz==2017.2
 redis==2.10.3
-requests==2.3.0
+requests==2.18.1
 scandir==1.5
 scikit-learn==0.18.1
 scipy==0.19.0

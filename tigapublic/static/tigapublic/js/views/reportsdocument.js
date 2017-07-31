@@ -108,13 +108,14 @@ var ReportsdocumentView = MapView.extend({
             window.t().translate(MOSQUITO.lng, _this.$el);
 
             //Clone TOC and filters from window opener
-            var stuff = window.opener.$("#map_filters").clone();
+            //var stuff = window.opener.$("#map_filters").clone();
+            var stuff = window.opener.document.getElementById("map_filters").outerHTML;
             $('#map_filters').html(stuff);
 
-            var stuff = window.opener.$("#notif_filters").clone();
-            $('#notif_filters').html(stuff);
+            var stuff = window.opener.document.getElementById("hashtag_filters").outerHTML;
+            //var stuff = window.opener.$("#hashtag_filters").clone();
 
-            var stuff = window.opener.$("#hashtag_filters").clone();
+
             //check if hashtag filter exists.
              if ($(stuff).find('#hashtag_search_text').length){
                if ($(stuff).find('#hashtag_search_text').val().trim()!=''){
@@ -122,10 +123,17 @@ var ReportsdocumentView = MapView.extend({
                }
              }
 
+            //var stuff = window.opener.$("#notif_filters").clone();
+            if (window.opener.document.getElementById("notif_filters")){
+              var stuff = window.opener.document.getElementById("notif_filters").outerHTML;
+              $('#notif_filters').html(stuff);
+            }
 
-            //add active layers from opener
-            stuff = window.opener.$('#map_layers_list li.active').clone();
-            stuff.removeClass('active');
+            if (window.opener.document.getElementById("map_layers_list")){
+              var stuff = $('<div>').html(window.opener.document.getElementById("map_layers_list").outerHTML).find('li.active');
+              stuff.removeClass('active');
+            }
+
 
 
             $('#map_layers').html(stuff);
@@ -214,7 +222,7 @@ var ReportsdocumentView = MapView.extend({
 
         url = MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/';
         url += options.years + '/' + options.months + '/' + options.categories ;
-        url += (('notifications' in options) && (options.notifications !="false" ))?'/' + options.notifications:'/N';
+        url += (('notifications' in options) && (options.notifications !== "false" ))?'/' + options.notifications:'/N';
         if ('hashtag' in options){
           hashtag = options.hashtag.replace('#','');
           if (hashtag==''){
@@ -224,7 +232,7 @@ var ReportsdocumentView = MapView.extend({
           hashtag = 'N';
         }
         url += '/'+hashtag;
-        url += '/';
+        url += (('notif_types' in options) && (options.notif_types !== null ))?'/' + options.notif_types:'/N';
 
         $.ajax({
             method: 'GET',

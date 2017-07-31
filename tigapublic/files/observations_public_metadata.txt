@@ -27,6 +27,8 @@ Description of each field found in the downloadable data base
 
 *Ref. System*: Reference System of the Geographic Coordinates (latitude, longitude) in EPSG:4326. Example: WGS84.
 
+*Municipality*: Municipality where the citizen report is located. Ex: Sabadell.
+
 *Type*: type of report. 'Adult' or 'site', depending on the app button that the participant selected to send the observation. Example: adult.
 
 *Expert validated*: it is a zero if the report has not been validated by entomology experts and 1, if yes. More information on the validation method on the project website. Example: 0.

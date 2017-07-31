@@ -16,7 +16,7 @@ add = {
     'share.private_layer_warn': 'Attention! The private data and some of its layers of the current view will only be visible to registered users.',
 
     //Notification
-  'all_notifications': 'All',
+  'usernotification.not-predefined':'Not predefined',
   'check_notifications': 'Notifications',
   'map.control_notifications': 'Issue notification',
   'map.notification.notified': 'To',
@@ -31,12 +31,11 @@ add = {
   'map.notification.type.public': 'Public notification',
   'map.notification_add': 'New notification',
   'map.notification_select_polygon_btn': 'Select territory',
-  'with_my_notifications': 'With my notifications',
-  'without_my_notifications': 'Without my notifications',
   'map.text_description_notification': '<p>Click <span class="fa fa-pencil"></span> "Select territory" to select the observations which will be sent a notification.</p><p>You can close the polygon double clicking a new vertex, or single clicking an existing vertex (...)',
   'notif.saved': 'Notification successfully sent',
   'notif.notification_cancel': 'Cancel',
   'notif.observations_none': 'No observations selected',
+  
 
   //modal
   'map.users_found_text': 'Users',
@@ -98,6 +97,7 @@ add = {
   'stormdrain.value-false': 'No',
   'stormdrain.value-R': 'Grating',
   'stormdrain.value-true': 'Yes',
+  'stormdrain.value-null': 'No value',
   'stormdrain.version-helper': 'Select version to setup',
   'stormdrain.version-txt': 'Version',
   'stormdrain.water': 'Water',

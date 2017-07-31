@@ -35,7 +35,7 @@ window.t = function(){
                             $(el).html(translated);
                         }
                     }
-                }.bind(this));
+                });
             },
             change: function(lng){
                 $('html').attr('lang', lng);
