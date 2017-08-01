@@ -41,6 +41,7 @@ import xml
 import sys
 import urllib
 from django.utils.html import strip_tags
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -54,7 +55,6 @@ def sendPushNotification(usernotif):
 
     content = NotificationContent.objects.get(pk=usernotif.notification_content_id)
 
-    # user_id = usernotif.user_id
     if settings.ENVIRON == 'production':
         user_id = usernotif.user_id
     else:
@@ -63,30 +63,35 @@ def sendPushNotification(usernotif):
 
     if user_id.islower():
         # Android endpoint
-        # set the url
+        # set the url & params
         url = '%smsg_android/?user_id=%s&title=%s&message=%s' % (
             settings.TIGASERVER_API,
-            user_id,
-            content.title_es,
-            strip_tags(content.body_html_es)
+            urllib.quote(user_id, ''),
+            urllib.quote(content.title_es, ''),
+            urllib.quote(strip_tags(content.body_html_es), '')
         )
 
     else:
         # iOS endpoint
         # get the link to this report
         #qs = MapAuxReports.objects.filter(version_uuid=usernotif.report_id)
-        #qs['title']
         #qsobject = Struct(**qs.values()[0])
+        #link_url = MapAuxReportsResource().dehydrate_single_report_map_url(qsobject)
         link_url = ''
-        # set the url
+        # set the url & params
         url = '%smsg_ios/?user_id=%s&link_url=%s&alert_message=%s' % (
             settings.TIGASERVER_API,
-            user_id,
-            link_url,
-            strip_tags(content.body_html_es)
+            urllib.quote(user_id, ''),
+            urllib.quote(link_url, ''),
+            urllib.quote(strip_tags(content.body_html_es), '')
         )
 
-    #url = urllib.urlencode(url)
+
+    #Response codes
+    # 400 - "Invalid parameters"
+    # 404 - "Not found" . Unknown user id
+    # 400 - "Token not set for user"
+
     response = requests.post(
         url,
         data = {},
@@ -94,8 +99,9 @@ def sendPushNotification(usernotif):
             "Authorization": "Token %s" % (settings.TIGASERVER_API_TOKEN,)
         }
     )
-
-    return response.text+' '+url
+    #print response.url
+    #print response.text
+    return response.text
 
 
 @csrf_exempt
@@ -171,6 +177,9 @@ def save_notification(request):
                             goodToGo = False
 
                     if goodToGo:
+                        #Save push responses
+                        pushResponses = []
+                        Ids =[]
                         #Save notifications
                         with transaction.atomic():
                             for i in notifs:
@@ -178,10 +187,14 @@ def save_notification(request):
 
                             for i in usernotifs:
                                 usernotifs[i].save()
-                                a = sendPushNotification(usernotifs[i])
+                                text_response = sendPushNotification(usernotifs[i])
+                                notification_id = str(usernotifs[i].pk )
+                                pushResponses.append({'text':text_response, 'notification_id':notification_id})
 
                         response['success'] = True
-                        response['ids'] = ', '.join(report_ids)
+                        response['ds'] = ', '.join(report_ids)
+                        response['codes'] = pushResponses
+
                         return HttpResponse(json.dumps(response, cls=DateTimeJSONEncoder),
                                     content_type='application/json')
                     else:
