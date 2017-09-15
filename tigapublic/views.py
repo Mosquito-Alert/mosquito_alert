@@ -41,6 +41,7 @@ import xml
 import sys
 import urllib
 from django.utils.html import strip_tags
+from HTMLParser import HTMLParser
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -64,11 +65,13 @@ def sendPushNotification(usernotif):
     if user_id.islower():
         # Android endpoint
         # set the url & params
+        body_msg = HTMLParser()
+
         url = '%smsg_android/?user_id=%s&title=%s&message=%s' % (
             settings.TIGASERVER_API,
             urllib.quote(user_id, ''),
-            urllib.quote(content.title_es, ''),
-            urllib.quote(strip_tags(content.body_html_es), '')
+            urllib.quote(content.title_es.encode('utf8'), ''),
+            urllib.quote(body_msg.unescape(strip_tags(content.body_html_es)).encode('utf8'), '')
         )
 
     else:
