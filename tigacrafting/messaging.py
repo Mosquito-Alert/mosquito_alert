@@ -1,4 +1,5 @@
 import ssl
+import time
 import json
 import socket
 import struct
@@ -10,6 +11,7 @@ from tigaserver_project import settings
 from datetime import date, datetime
 from tigaserver_app.models import TigaUser
 from tigaserver_app.models import Notification
+from apns import APNs, Frame, Payload
 
 
 def stringify_date(notification):
@@ -34,36 +36,29 @@ def send_message_ios(token,alert_message,link_url):
         unread_notifications = get_pending_messages(token)
     except:
         unread_notifications = 0
-    TOKEN = token
-    PAYLOAD = {
-        'aps': {
-            'alert': alert_message,
-            'sound': 'default',
-            'link_url': link_url,
-            'badge': unread_notifications
-        }
-    }
 
-    # APNS development server
-    #apns_address = ('gateway.sandbox.push.apple.com', 2195)
-    apns_address = (settings.APNS_ADDRESS, 2195)
+    apns = APNs(use_sandbox=True, cert_file=cert)
+    token_hex = token
+    payload = Payload(alert=alert_message, sound="default", badge=unread_notifications)
+    apns.gateway_server.send_notification(token_hex,payload)
 
-    # Use a socket to connect to APNS over SSL
-    s = socket.socket()
-    sock = ssl.wrap_socket(s, certfile=cert)
-    sock.connect(apns_address)
 
-    # Generate a notification packet
-    TOKEN = binascii.unhexlify(TOKEN)
-    PAYLOAD = json.dumps(PAYLOAD)
-    fmt = '!cH32sH{0:d}s'.format(len(PAYLOAD))
-    cmd = '\x00'
-    message = struct.pack(fmt, cmd, len(TOKEN), TOKEN, len(PAYLOAD), PAYLOAD)
+def send_multiple_messages_ios(token,alert_message,link_url):
+    cert = '/home/webuser/webapps/tigaserver/CertificatMosquito.pem'
+    frame = Frame()
+    identifier = 1
+    expiry = time.time() + 3600
+    priority = 10
+    apns = APNs(use_sandbox=True, cert_file=cert)
+    for single_token in token:
+        try:
+            unread_notifications = get_pending_messages(token)
+        except:
+            unread_notifications = 0
+        payload = Payload(alert=alert_message, sound="default", badge=unread_notifications)
+        frame.add_item(single_token, payload, identifier, expiry, priority)
+    apns.gateway_server.send_notification_multiple(frame)
 
-    response = sock.write(message)
-    #print response
-    sock.close()
-    return response
 
 def send_message_android(token,title, message, notification=None):
     try:
