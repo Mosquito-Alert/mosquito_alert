@@ -633,13 +633,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     if user_stats:
                         grabbed_reports = user_stats.grabbed_reports
                     for this_report in reports_to_take:
-                        new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                        who_has_count = this_report.get_who_has_count()
-                        if who_has_count == 0 or who_has_count == 1:
-                            #No one has the report, is simplified
-                            new_annotation.simplified_annotation = True
-                        grabbed_reports += 1
-                        new_annotation.save()
+                        if not this_report.user_has_report(this_user):
+                            new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                            who_has_count = this_report.get_who_has_count()
+                            if who_has_count == 0 or who_has_count == 1:
+                                #No one has the report, is simplified
+                                new_annotation.simplified_annotation = True
+                            grabbed_reports += 1
+                            new_annotation.save()
                     if grabbed_reports != -1 and user_stats:
                         user_stats.grabbed_reports = grabbed_reports
                         user_stats.save()

@@ -1213,6 +1213,13 @@ class Report(models.Model):
                 result += '+'
         return result
 
+    def user_has_report(self, user):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        assigned_to = []
+        for ano in these_annotations:
+            assigned_to.append(ano.user)
+        return user in assigned_to
+
     def get_who_has(self):
         result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
