@@ -210,6 +210,14 @@ def filter_tasks(tasks):
     return tasks_filtered
 
 
+def filter_false_validated(reports, sort=True):
+    if sort:
+        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports),key=attrgetter('n_annotations'), reverse=True)
+    else:
+        reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
+    return reports_filtered
+
+
 def filter_reports(reports, sort=True):
     if sort:
         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports), key=attrgetter('n_annotations'), reverse=True)
@@ -612,7 +620,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         if this_user_is_expert and load_new_reports == 'T':
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
+
                 new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+                new_reports_unfiltered_and_false_validated = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given+1)
                 #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
 
@@ -622,7 +632,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
 
                 if new_reports_unfiltered:
-                    new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+                    new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+                    new_filtered_false_validated_reports = filter_false_validated(new_reports_unfiltered_and_false_validated.order_by('creation_time'))
+                    new_reports = list(set(new_filtered_reports + new_filtered_false_validated_reports))
                     reports_to_take = new_reports[0:n_to_get]
                     user_stats = None
                     try:

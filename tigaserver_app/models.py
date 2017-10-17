@@ -1148,6 +1148,16 @@ class Report(models.Model):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
         return result
 
+    def is_validated_by_two_experts_and_superexpert(self):
+        """
+        This is used to locate reports validated by two experts and the superexpert. This commonly
+        happens as a consequence of detecting some reports validated 2 times by the same expert; to solve
+        this situation, one of the two repeated annotations is removed. As a consequence, the report
+        is validated by 2 experts and 1 superexpert
+        :return: True if the report is validqted by exactly 2 experts and 1 superexpert
+        """
+        return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() == 2 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True).count() == 1
+
     def get_is_expert_validated(self):
         return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3
 
@@ -1438,6 +1448,7 @@ class Report(models.Model):
     creation_month = property(get_creation_month)
     n_photos = property(get_n_photos)
     final_expert_status_text = property(get_final_expert_status)
+    is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
 
     class Meta:
         unique_together = ("user", "version_UUID")
