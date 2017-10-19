@@ -10,3 +10,4 @@ tigaserver_project/settings/local.pyc
 celerybeat-schedule
 celerybeat.pid
 dump.rdb
+CertificatMosquito.pem
