@@ -72,8 +72,7 @@ var MapView = MapView.extend({
                return new L.polygon(latlngs);
            }
 
-
-            if (_this.map._zoom < 19) {
+          if (_this.map._zoom < 19) {
                 //a.layer.zoomToBounds();
                 var bounds = new L.LatLngBounds();
                 childs = a.layer.getAllChildMarkers();
@@ -189,6 +188,7 @@ var MapView = MapView.extend({
         } else style['fill'+layer.segmentationkey.ucfirst()] = layer.segments[i-1][layer.segmentationkey];
         return style;
     },
+
     addDrainStormLayer: function(){
         _this = this;
         this.drainstorm_layer = L.canvasOverlay()
@@ -252,11 +252,9 @@ var MapView = MapView.extend({
                 }
                 pointsdrawn+=1;
             }
-            //Uncomment to see how many points are drawn
-            //console.log(params.zoomScale+' '+increase+'  '+pointsdrawn);
         };
-    }
-    ,
+    },
+
     loadStormDrainData: function(forced){
         //if data not yet loaded
         if (arguments.length==0) {
@@ -283,29 +281,19 @@ var MapView = MapView.extend({
 
                 //add layer even if it is empty
                 this.drainstorm_layer.addTo(_this.map);
-                /*
-                if (data.rows.length){
-                  this.drainstorm_layer.addTo(_this.map);
-                }
-                else{
-                  _this.map.removeLayer(this.drainstorm_layer);
-                }
-                */
-                //_this.map.on('click', _this.checkStormDrainInfo);
 
             });
         }
         //otherwise
         else{
             _this.drainstorm_layer.addTo(_this.map);
-            //_this.map.on('click', _this.checkStormDrainInfo);
         }
 
     },
+
     checkStormDrainInfo:function(){
-      console.log('checkStormDrainInfo');
-    }
-    ,
+    },
+
     colorizeFeatures: function(arr) {
         _this = this;
         layer = this.LAYERS_CONF[this.getLayerPositionFromKey('F')];
@@ -314,8 +302,8 @@ var MapView = MapView.extend({
             item.properties.color = 'rgba('+ layer.segments[pos].color+' , '+ layer.segments[pos].opacity +')';
         });
         return true;
-    }
-    ,
+    },
+
     addCoverageLayer: function() {
         _this = this;
         var pad = 0;
@@ -335,10 +323,6 @@ var MapView = MapView.extend({
             if (!tile) {
                 return;
             }
-            /*console.log('arguments', arguments);
-            console.log('canvasOverlay', canvasOverlay);
-            console.log('params', params);
-            console.log('tile', tile);*/
             ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
             var features = tile.features;
             //ctx.strokeStyle = 'grey';
@@ -369,12 +353,7 @@ var MapView = MapView.extend({
                 if (type === 3 || type === 1) ctx.fill('evenodd');
                 ctx.stroke();
             }
-            //if (MOSQUITO.app.mapView) MOSQUITO.app.mapView.loading.off();
         };
-
-        year = this.filters.year || 'all';
-        months = (this.filters.months.length>0)?this.filters.months:'all';
-        url = MOSQUITO.config.URL_API + 'userfixes/'+year+'/'+months;
 
         var zeroPoint ={"type": "Point",
             "coordinates": [0,0]};
@@ -394,7 +373,15 @@ var MapView = MapView.extend({
         _this = this;
         year = this.filters.year || 'all';
         months = (this.filters.months.length>0)?this.filters.months:'all';
-        url = MOSQUITO.config.URL_API + 'userfixes/'+year+'/'+months;
+        if ('daterange' in this.filters && typeof this.filters.daterange !== 'undefined') {
+          daterange = this.filters.daterange;
+          date_start = moment(daterange.start).format('YYYY-MM-DD');
+          date_end = moment(daterange.end).format('YYYY-MM-DD');
+        } else {
+          date_start = 'N';
+          date_end = 'N';
+        }
+        url = MOSQUITO.config.URL_API + 'userfixes/'+year+'/'+months+'/'+date_start+'/'+date_end;
         $.ajax({
             "method": 'GET',
             "async": true,
@@ -410,35 +397,42 @@ var MapView = MapView.extend({
 
     fetch_data: function(zoom, bbox, callback){
         var url = '';
+        bbox = this.shortenBbox(bbox);
+
         //check notification & hashtag filters
-        if ( 'hashtag' in this.filters && this.filters.hashtag.trim()!='') {
-          hashtag_value = this.filters.hashtag.replace('#','')
-          if (hashtag_value =='') hashtag_value='N';
-        }
-        else hashtag_value='N';
+        hashtag_value = this.getHashtagValue();
 
-        if ( ('notif' in this.filters && this.filters.notif !== false )  ) {
-          if ('notif' in this.filters )
-            notif_value = this.filters.notif;
-          else notif_value='N';
-          url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox + '/' + notif_value +'/'+hashtag_value;
-        }
-        else if ('notif_types' in this.filters && this.filters.notif_types!==null ) {
-          var notif_types = this.filters.notif_types;
-          if (notif_types === null) notif_types = 'N';
-          else notif_types = notif_types.join(',');
-          url = MOSQUITO.config.URL_API + 'get_reports_by_notif_type/' + bbox + '/' + notif_types +'/'+hashtag_value;
-        }
-        else if ( hashtag_value !=='N'){
-            url = MOSQUITO.config.URL_API + 'get_reports_by_notif_type/' + bbox + '/N/'+hashtag_value;
-        }
+        //check municipalities filter
+        municipalities_value = this.getMunicipalitiesValue();
+
+        //Daterange
+        daterange_value = this.getDaterangeValue();
+
+        //Notif and notiftypes
+        notif_value =  this.getNotifValue();
+        notiftypes_value = this.getNotifTypesValue();
+
+        if (
+            daterange_value.toUpperCase() != 'N/N'  ||
+            hashtag_value.toUpperCase() != 'N'  ||
+            municipalities_value != ['N']  ||
+            notif_value.toUpperCase() != 'N'  ||
+            notiftypes_value != ['N']
+          ) {
+            url = MOSQUITO.config.URL_API +
+                'map_aux_reports_bounds/' + bbox + '/' + daterange_value + '/' +
+                hashtag_value +'/'+ municipalities_value +'/'+notif_value +'/' +
+                notiftypes_value;
+          }
+
         else if( (zoom >= MOSQUITO.config.maxzoom_cluster) ) {
-            url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox;
-        }else{
-            url = MOSQUITO.config.URL_API + 'map_aux_reports_zoom_bounds/' + zoom+'/'+bbox;
+            url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox ;
+        }
+        else{
+            url = MOSQUITO.config.URL_API + 'map_aux_reports_zoom_bounds/' +
+                  zoom + '/' + bbox;
         }
 
-        console.log(url)
         $.ajax({
             method: 'GET',
             url: url
@@ -447,20 +441,13 @@ var MapView = MapView.extend({
             callback(resp);
         })
         .fail(function(error) {
-            console.log(error);
+            if (console && console.error) console.error(error);
         });
 
     },
 
     fetch_item: function(id, callback){
         var item;
-        /*if(this.map.getZoom()>=MOSQUITO.config.maxzoom_cluster){
-            item = _(this.scope.markers).find(function(item){
-                if(item._data.id === id){
-                    return item;
-                }
-            });
-        }*/
 
         if(item !== undefined){
             callback(item._data);
@@ -474,7 +461,7 @@ var MapView = MapView.extend({
                 callback(resp);
             })
             .fail(function(error) {
-                console.log(error);
+                if (console && console.error) console.error(error);
             });
         }
     },
@@ -486,7 +473,6 @@ var MapView = MapView.extend({
                 _this.scope.data = data.rows;
                 _this.data2markers();
                 _this.drawCluster();
-
             });
         };
 
@@ -499,7 +485,6 @@ var MapView = MapView.extend({
 
         this.map.on('movestart',function(){
             var bbox = _this.map.getBounds().toBBoxString();
-            console.log('movestart '+_this.forceReloadView)
             if (_this.forceReloadView){
               if(bbox !== _this.last_bbox){
                   _this.scope.markers = [];
@@ -616,9 +601,6 @@ var MapView = MapView.extend({
             if (this.filters.notif !== false) return notif == this.filters.notif;
             else return true;
         }
-        if('notif_types' in this.filters) {
-          //console.log(marker._data, this.filters.notif_types);
-        }
 
         return true;
     },
@@ -672,5 +654,69 @@ var MapView = MapView.extend({
         }
         return key;
     }
+    ,
+    shortenBbox: function (bbox){
+      var longBbox = bbox.split(',');
+      var shortBbox = longBbox.map(function(x) {
+         return (parseFloat(x).toFixed(4));
+      });
+      return shortBbox.toString();
+    },
 
+    getDaterangeValue: function(){
+      var value = 'N/N';
+
+      if ( 'daterange' in this.filters && this.filters.daterange !== null) {
+        start = moment(this.filters.daterange.start).format('YYYY-MM-DD');
+        end = moment(this.filters.daterange.end).format('YYYY-MM-DD');
+        value = start + '/' + end;
+        if (value === '/') value='N/N';
+      }
+      return value;
+    },
+
+    getMunicipalitiesValue: function(){
+      var value  = 'N';
+      if (MOSQUITO.app.headerView.logged){
+        if ($('#municipalities-checkbox').prop('checked')){
+          value = '0';
+          return value;
+        }
+      }
+
+      if ( 'municipalities' in this.filters && this.filters.municipalities.length>0 ) {
+        value=this.filters.municipalities;
+      }
+      else{
+        value = 'N';
+      }
+
+      return value;
+    },
+
+    getNotifValue: function(){
+      var value = 'N'
+      if ( ('notif' in this.filters && this.filters.notif !== false )  ) {
+        value = this.filters.notif.toString();
+      }
+      return value;
+    },
+
+    getNotifTypesValue: function(){
+      var value = 'N'
+      if ( 'notif_types' in this.filters && this.filters.notif_types !== null ) {
+        value = this.filters.notif_types;
+      }
+      return value;
+    },
+
+    getHashtagValue: function(){
+      var value = 'N'
+      if ( 'hashtag' in this.filters && typeof this.filters.hashtag !== 'undefined' && this.filters.hashtag.trim()!='') {
+        value = this.filters.hashtag.replace('#','')
+        if (value =='') value='N';
+      }
+      else value='N';
+      return value;
+    }
 });

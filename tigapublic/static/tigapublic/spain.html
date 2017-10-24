@@ -9,8 +9,7 @@
 
     <link href="lib/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <link href="lib/bootstrap-select-1.10.0/dist/css/bootstrap-select.min.css" rel="stylesheet">
-    <link href="lib/leaflet/dist/leaflet.css" rel="stylesheet">
-
+        <link href="lib/leaflet/dist/leaflet.css" rel="stylesheet">
 
     <link href="lib/Leaflet.markercluster-leaflet-0.7/dist/MarkerCluster.css" rel="stylesheet">
 	  <link href="lib/Leaflet.markercluster-leaflet-0.7/dist/MarkerCluster.Default.css" rel="stylesheet">
@@ -37,6 +36,9 @@
           content="Joining citizen, scientists and public health and environmental
           managers to fight against the tiger mosquito and yellow fever mosquito,
           vectors of Zika, Dengue and Chikungunya."/>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="./lib/bootstrap-tokenfield-master/dist/css/bootstrap-tokenfield.min.css">
+    <link href="lib/daterangepicker/jquery.comiseo.daterangepicker.css" rel="stylesheet">
 </head>
 <body>
 <div id="page-map" class="page">
@@ -64,7 +66,7 @@
                     <a data-lang="es" href="#/es/">ES</a>
                   </li>
                   <li>
-                    <a data-lang="en" href="#/en/">EN</a>
+                    <a data-lang="en"href="#/en/">EN</a>
                   </li>
                   <li>
                     <a data-lang="ca" href="#/ca/">CA</a>
@@ -150,6 +152,7 @@
             <h4 class="modal-title" i18n="map.notification_add"></h4>
           </div>
           <div class="modal-body content">
+            <div class="warning"><div i18n="notification.warning.municiaplities"></div></div>
             <div id="form-notification" class="form-notification" role="menu">
               <!-- hidden for image upload functionality -->
               <iframe id="notification_form_target" name="form_target" style="display:none"></iframe>
@@ -610,9 +613,9 @@
         <div align="center"><img src="" i18n="stormdrain.example-body-7|src"></div>
         <p i18n="stormdrain.example-body-8"></p>
         <ol>
-          <li i18n="stormdrain.example-body-9"></li>
-          <li i18n="stormdrain.example-body-10"></li>
-          <li i18n="stormdrain.example-body-11"></li>
+          <li i18n="stormdrain.example-body-9"</li>
+          <li i18n="stormdrain.example-body-10"</li>
+          <li i18n="stormdrain.example-body-11"</li>
         </ol>
         <p i18n="stormdrain.example-body-12"></p>
         <p i18n="stormdrain.example-body-13"></p>
@@ -859,14 +862,13 @@
                        <option value="0" i18n='info.notifications'></option>
                        <%
                        var num_n = 0;
-                        var sorted = _.sortBy(notifs, function(notif) {
-                           return moment(notif.f4, 'DD/MM/YYYY');
-                        });
-                        var notifs = sorted.reverse();
-
                         _.each(notifs, function(notif) { %>
                            <option value="notif_<%=num_n%>">
-                               <%=notif.f1%> (<%=notif.f4%>)
+                               <%=notif.f1%> ( <%=notif.f3%>
+                               <% if (notif.f4) {%>
+                                 - <%=notif.f4%>
+                               <% } %>
+                               )
                               <% if (notif.f5) {%>
                                 (<%=notif.f5%>)
                               <% } %>
@@ -1082,6 +1084,9 @@
     <script src="lib/bootstrap-3.3.6/js/bootstrap.min.js"></script>
     <script src="lib/bootstrap-select-1.10.0/dist/js/bootstrap-select.min.js"></script>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="./lib/bootstrap-tokenfield-master/dist/bootstrap-tokenfield.js"></script>
+
     <script src="js/latlon-geohash.js"></script>
 
     <script src="lib/leaflet/dist/leaflet.js"></script>
@@ -1095,6 +1100,9 @@
 
     <script src="lib/tinymce/jquery.tinymce.min.js"></script>
     <script src="lib/tinymce/tinymce.min.js"></script>
+
+    <script src="lib/daterangepicker/jquery.comiseo.daterangepicker.min.js"></script>
+
 
     <!-- endbuild -->
 

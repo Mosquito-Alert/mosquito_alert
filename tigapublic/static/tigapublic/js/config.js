@@ -14,6 +14,34 @@ var MOSQUITO = (function (m, _) {
         embeded: window !== parent,
         default_layers: 'A,B',
         printreports:false,
+        autocomplete_min_chars: 2,
+        calendar_presets: [
+          {
+             text: 'general.today',
+             dateStart: function() { return moment() },
+             dateEnd: function() { return moment()}
+          },
+          {
+             text: 'general.yesterday',
+             dateStart: function() { return moment().subtract(1, 'days') },
+             dateEnd: function() { return moment().subtract(1, 'days') }
+          },
+          {
+             text: 'general.before_yesterday',
+             dateStart: function() { return moment().subtract(2, 'days') },
+             dateEnd: function() { return moment().subtract(2, 'days') }
+          },
+          {
+             text: 'group.filters.shortcut.this_week',
+             dateStart: function() { return moment().startOf('isoweek') },
+             dateEnd: function() { return moment() }
+          },
+          {
+             text: 'group.filters.shortcut.last_7_days',
+             dateStart: function() { return moment().subtract(1, 'week') },
+             dateEnd: function() { return moment() }
+          }
+        ],
         "groups":[
             {'name':'observations', 'icon': 'fa fa-mobile'},
         ],
@@ -22,6 +50,7 @@ var MOSQUITO = (function (m, _) {
               key: 'A',
               group:'observations',
               title: 'layer.tiger',
+              //categories: ["albopictus#1#", "albopictus#2#"]
               categories: {
                 'albopictus_2': ['mosquito_tiger_probable', 'mosquito_tiger_confirmed']
               }
@@ -30,10 +59,11 @@ var MOSQUITO = (function (m, _) {
               key: 'B',
               group:'observations',
               title: 'layer.zika',
+              //categories: ["aegypti#1#", "aegypti#2#"]
               categories: {
                 'aegypti_2': ['yellow_fever_confirmed', 'yellow_fever_probable']
               }
-          }, 
+          }, //aegypti
           {
               key: 'C',
               group:'observations',

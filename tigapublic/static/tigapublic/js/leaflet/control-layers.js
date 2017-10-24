@@ -244,7 +244,6 @@ var MOSQUITO = (function (m) {
                         if ($('#layer_'+layer.key).hasClass('active')){
                             _this._map.removeLayer(theLayer);
                             if (layer.key=='Q') {
-                              console.log('off for storm drain click');
                               _this._map.off('click', MOSQUITO.app.mapView.checkStormDrainInfo);
                             }
                         }

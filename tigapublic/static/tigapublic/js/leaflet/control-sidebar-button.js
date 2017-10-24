@@ -60,7 +60,7 @@ L.Control.SidebarButton = L.Control.extend({
     },
 
     removeFrom: function(a){
-        console.debug('TODO: pendent de fer el removeFrom de L.Control.SidebarButton');
+        //console.debug('TODO: pendent de fer el removeFrom de L.Control.SidebarButton');
         var url = MOSQUITO.app.mapView.controls.share_btn.options.build_url();
         document.location = url+''
         document.location.reload();

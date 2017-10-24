@@ -22,7 +22,7 @@ class MapAuxReportsLimitedResource(resources.ModelResource):
         return headers
 
     def dehydrate_single_report_map_url(self, report):
-        return settings.SITE_URL+'spain.html#/es/19/' + str(round(report.lat,4)) + '/' + str(round(report.lon,4)) + '/' + report.private_webmap_layer+ '/' + str(report.observation_date.year) +'/all/' + str(report.id)
+        return settings.SITE_URL+'spain.html#/es/19/' + str(round(report.lat,4)) + '/' + str(round(report.lon,4)) + '/' + report.private_webmap_layer+ '/' + str(report.observation_date.year) +'/all/N/N/' + str(report.id)
 
 class MapAuxReportsResource(resources.ModelResource):
     class Meta:
@@ -35,7 +35,7 @@ class MapAuxReportsResource(resources.ModelResource):
         return headers
 
     def dehydrate_single_report_map_url(self, report):
-        return settings.SITE_URL+'spain.html#/es/19/' + str(round(report.lat,4)) + '/' + str(round(report.lon,4)) + '/' + report.private_webmap_layer+ '/' + str(report.observation_date.year) +'/all/' + str(report.id)
+        return settings.SITE_URL+'spain.html#/es/19/' + str(round(report.lat,4)) + '/' + str(round(report.lon,4)) + '/' + report.private_webmap_layer+ '/' + str(report.observation_date.year) +'/all/N/N/' + str(report.id)
 
     def dehydrate_user_id(self, report):
         m = hashlib.md5()
@@ -53,10 +53,11 @@ class MapAuxReportsExtendedResource(resources.ModelResource):
         return headers
 
     def dehydrate_note(self, report):
-        return ','.join(re.findall(r'(?<=\W)[#]\S*', report.note))
+        return ','.join(re.findall(r"#(\w+)", report.note))
+
 
     def dehydrate_single_report_map_url(self, report):
-        return settings.SITE_URL+'spain.html#/es/19/' + str(report.lat) + '/' + str(report.lon) + '/' + report.private_webmap_layer+ '/' + str(report.observation_date.year) +'/all/' + str(report.id)
+        return settings.SITE_URL+'spain.html#/es/19/' + str(report.lat) + '/' + str(report.lon) + '/' + report.private_webmap_layer+ '/' + str(report.observation_date.year) +'/all/N/N/' + str(report.id)
 
     def dehydrate_user_id(self, report):
         m = hashlib.md5()

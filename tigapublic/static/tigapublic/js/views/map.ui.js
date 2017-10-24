@@ -69,315 +69,683 @@ var MapView = MapView.extend({
 
     },
 
+    newFilterGroup:function(params) {
+      if (typeof params.id == 'undefined') {
+        if (console && console.error) console.error('map.ui.newFilterGroup requires and object with an ID attribute.');
+        return false;
+      }
+
+      return $('<div/>', {
+        'id': params.id,
+        'class':'section filters',
+        "i18n": params.title+'|title'
+      });
+    },
+
+    addTimeFiltersTo: function(section) {
+      var _this = this;
+      // Setup Years
+      var years = [ ['all', t('All years')] ];
+      var current_year = new Date().getFullYear();
+      for(var i = 2014; i <= current_year; i++){
+          years.push([i,i]);
+      }
+      // Create time group
+      var div_time = this.newFilterGroup({
+        'id': 'time_group',
+        'title': 'group.filters.time'
+      });
+      if (div_time) div_time.appendTo(section);
+      // Create year select
+      var select_years = $('<select multiple>')
+          .attr('class', 'years')
+          .attr('id', 'select_years')
+          .appendTo(div_time);
+      // Add options to year select
+      $.each(years, function(i, year) {
+          var opt = $('<option>', {
+              value: year[0],
+              i18n: year[1]})
+            .text(year[1]).appendTo(select_years);
+
+          if(_this.filters.years.length > 0 &&
+              _this.filters.years.indexOf(year[0]) !== -1){
+              opt.attr('selected', 'selected');
+          }
+      });
+      // Select the 'all' option if none is used
+      if(_this.filters.years.length === 0){
+          select_years.val('all');
+      }
+      // Store the current value in the HTML
+      select_years.data('pre', select_years.val());
+      // Year Change event
+      select_years.on('change', function(){
+          var pre = $(this).data('pre');
+          var now = $(this).val();
+          if(pre.indexOf('all') !== -1){
+              var newdata = $(this).val();
+              if(newdata!==null){
+                  newdata.shift();
+                  $(this).val(newdata);
+                  _this.activeFilterBackground(this);
+                  calendar_input.daterangepicker('clearRange');
+              }else{
+                  $(this).val('all');
+              }
+          }else if((now === null) || (pre.indexOf('all') === -1 && now.indexOf('all') !== -1)){
+              $(this).val('all');
+          }
+          $(this).selectpicker('refresh');
+          var years = $(this).val();
+          $(this).data('pre', $(this).val());
+          if(years[0] === 'all'){
+              years = [];
+              _this.deactiveFilterBackground(this);
+          }else{
+              years =_.map(years, Number);
+          }
+
+          _this.filters.trigger('years_change', years);
+      });
+      // Define months
+      var months = [
+        ['all', t('All months')],
+        ['1', t('January')], ['2', t('February')], ['3', t('March')],
+        ['4', t('April')], ['5', t('May')], ['6', t('June')],
+        ['7', t('July')], ['8',t('August')], ['9', t('September')],
+        ['10', t('October')], ['11', t('November')],
+        ['12', t('December')]
+      ];
+      // Create month select
+      var select_months = $('<select multiple>')
+            .attr('class', 'months')
+            .attr('id', 'select_months')
+            .appendTo(div_time);
+      // Add options to month select
+      $.each(months, function(i, month) {
+          var opt = $('<option>',
+            {
+                value: month[0],
+                i18n: month[1]
+            })
+            .text(month[1]);
+
+          if(_this.filters.months.length > 0 &&
+              _this.filters.months.indexOf(parseInt(month[0])) !== -1){
+              opt.attr('selected', 'selected');
+          }
+
+          select_months.append(opt);
+      });
+      // Select the 'all' option if none is used
+      if(_this.filters.months.length === 0){
+          select_months.val('all');
+      }
+      // Store the current value in the HTML
+      select_months.data('pre', select_months.val());
+      // Month Change event
+      select_months.on('change', function(){
+          var pre = $(this).data('pre');
+          var now = $(this).val();
+          if(pre.indexOf('all') !== -1){
+              var newdata = $(this).val();
+              if(newdata!==null){
+                  newdata.shift();
+                  $(this).val(newdata);
+                  _this.activeFilterBackground(this);
+                  calendar_input.daterangepicker('clearRange');
+              }else{
+                  $(this).val('all');
+              }
+          }else if((now === null) || (pre.indexOf('all') === -1 && now.indexOf('all') !== -1)){
+              $(this).val('all');
+          }
+          $(this).selectpicker('refresh');
+          var months = $(this).val();
+          $(this).data('pre', $(this).val());
+          if(months[0] === 'all'){
+              months = [];
+              _this.deactiveFilterBackground(this);
+          }else{
+              months =_.map(months, Number);
+          }
+          _this.filters.trigger('months_change', months);
+      });
+      // Create calendar anchor
+      var calendar_input = $('<input>', {'id': 'calendar_input'})
+          .appendTo(div_time);
+      options = {
+        datepickerOptions : {
+          numberOfMonths : 1,
+          //dayNames: [ "Diumenge", "Dilluns", "Dimarts", "Dimecres", "Dijous", "Divendres", "Dissabte" ],
+          firstDay: 1,
+          //monthNamesShort: [ "Gen", "Feb", "Mar", "Abr", "Maig", "Juny", "Jul", "Ago", "Set", "Oct", "Nov", "Des" ],
+          maxDate: null,
+          minDate:new Date(2014,5,1)
+        },
+        applyOnMenuSelect: false,
+        altFormat: "yyyy-mm-dd",
+        dateFormat: "dd/mm/yy"
+      };
+      trans.on('i18n_lang_changed', function(){
+        month_names = [];
+        months.forEach(function(month, idx) {
+          if (month[0]!='all') month_names.push(t(month[1]));
+        });
+        presets = [];
+        MOSQUITO.config.calendar_presets.forEach(function(obj, idx) {
+          var newobj = _.extend({}, obj);
+          newobj.text = t(newobj.text);
+          presets.push(newobj);
+        });
+        lang_options = {
+          datepickerOptions : {
+            dayNamesMin: [
+              t('general.shortday.sunday'),
+              t('general.shortday.monday'),
+              t('general.shortday.tuesday'),
+              t('general.shortday.wednesday'),
+              t('general.shortday.thursday'),
+              t('general.shortday.friday'),
+              t('general.shortday.saturday')
+            ],
+            monthNames: month_names,
+            nextText: t('general.next'),
+            prevText: t('general.previous')
+          },
+          presetRanges: presets,
+          initialText: t('group.filters.time.custom_daterange'),
+          applyButtonText: t('group.filters.time.apply'),
+          clearButtonText: t('group.filters.time.clear'),
+          cancelButtonText: t('group.filters.time.cancel'),
+        };
+        calendar_input.daterangepicker(lang_options);
+      });
+      calendar_input.daterangepicker(options);
+      calendar_input.on('change', function() {
+        var range = calendar_input.daterangepicker('getRange');
+        if (range !== null) {
+          $('.comiseo-daterangepicker-triggerbutton').addClass('selected-filter-button');
+          if (select_months.val().indexOf('all') === -1)
+              select_months.val('all').trigger('change');
+          if (select_years.val().indexOf('all') === -1)
+              select_years.val('all').trigger('change');
+        } else {
+          $('.comiseo-daterangepicker-triggerbutton').removeClass('selected-filter-button');
+        }
+        _this.filters.trigger('daterange_change', range);
+      });
+      //
+      if(this.filters.daterange && typeof this.filters.daterange !== 'undefined'){
+          calendar_input.daterangepicker('setRange', this.filters.daterange);
+      }
+    },
+
+    addHashtagFilterTo: function(section) {
+      var _this = this;
+
+      var div_hashtag = this.newFilterGroup({
+        'id': 'hashtag_filters',
+        'title': 'group.filters.hashtag'
+      });
+      if (div_hashtag) div_hashtag.appendTo(section);
+
+      div_hashtag.html('<form class="hashtag_form" onsubmit="return:false">'+
+              '<div style="display:flex;">' +
+              '    <input id="hashtag_search_text" type="text" placeholder="#hashtag" value="">' +
+              '    <button id="hashtag_button_search" type="submit"><i class="fa fa-search"></i></button>' +
+              '    <button id="hashtag_button_trash" type="submit"><i class="fa fa-trash"></i></button>' +
+              '</div></form>');
+
+      if (this.filters.hashtag && this.filters.hashtag!='N'){
+        $('#hashtag_search_text').val(this.filters.hashtag);
+        _this.activeFilterBackground($('#hashtag_search_text'));
+      }
+
+      $('#hashtag_button_search').click(function(){
+          _this.filters.trigger('hashtag_change', $('#hashtag_search_text').val());
+          if ($('#hashtag_search_text').val()==''){
+            $('#hashtag_search_text').removeClass('active');
+          }
+          else{
+            $('#hashtag_search_text').addClass('active');
+          }
+          return false;
+      });
+      $('#hashtag_button_trash').click(function(){
+          $('#hashtag_search_text').val('')
+          $('#hashtag_search_text').removeClass('active');
+          _this.filters.trigger('hashtag_change', '');
+          return false;
+      });
+
+      $('#hashtag_search_text').change(function(){
+          if ($(this).val()===''){
+            _this.deactiveFilterBackground($(this));
+            _this.filters.trigger('hashtag_change', $('#hashtag_search_text').val());
+          }
+          else{
+            _this.activeFilterBackground($(this));
+          }
+      });
+    },
+
+    addNotificationFiltersTo: function(section) {
+      if (MOSQUITO.app.headerView.logged) {
+          var div_notif = this.newFilterGroup({
+            'id': 'notif_filters',
+            'title': 'group.filters.notifications'
+          });
+          if (div_notif) div_notif.appendTo(section);
+
+          var select_notifications = $('<select>')
+              .attr('class', 'notif_filter')
+              .attr('id', 'select_notifications')
+              .appendTo(div_notif);
+
+          var notif_filter_all = $('<option>', {
+                  "value": "all",
+                  "i18n": "all_notifications",
+                  "text": window.t().translate('es','all_notifications'),
+                  "selected": "selected"
+                }).appendTo(select_notifications);
+
+          var notif_filter_mine = $('<option>', {"value": "withmine", "i18n": "with_my_notifications"})
+              .appendTo(select_notifications);
+
+          var notif_filter_notmine = $('<option>', {"value": "withoutmine", "i18n": "without_my_notifications"})
+              .appendTo(select_notifications);
+
+          select_notifications.on('change', function(){
+            $('.notif_type_filter').val(['N']);
+            $('.notif_type_filter').data('pre', ['N']);
+
+            select_notifications.selectpicker('refresh');
+
+            switch ($(this).val()) {
+              case 'all':
+                _this.filters.trigger('notif_change', false);
+                _this.filters.trigger('notif_type_change', ['N']);
+                _this.deactiveFilterBackground(this);
+              break;
+              case 'withmine':
+                _this.filters.trigger('notif_change', 1);
+                MOSQUITO.app.mapView.filters.notif_type = '0';
+                _this.activeFilterBackground(this);
+              break;
+              case 'withoutmine':
+                _this.filters.trigger('notif_change', 0);
+                _this.activeFilterBackground(this);
+              break;
+            }
+            _this.deactiveFilterBackground($(this).parent().siblings('.bootstrap-select').find('select'));
+            select_type_notifications.selectpicker('refresh');
+          });
+          // notification types
+          $('<br>').appendTo(div_notif);
+
+          var select_type_notifications = $('<select multiple>')
+              .attr('class', 'selectpicker notif_type_filter')
+              .attr('id', 'select_type_notifications')
+              .appendTo(div_notif);
+
+          // onchage trigger
+          select_type_notifications.selectpicker('refresh');
+          select_type_notifications.data('pre', ['N']);
+          select_type_notifications.on('change', function(event){
+            var pre = $(this).data('pre');
+            var now = $(this).val();
+            // hem fet clic a una nova opció
+            if (now !== null && pre !== null && typeof now !== 'undefined' && typeof pre !== 'undefined' && pre.length < now.length) {
+              pre.forEach(function(elem) {
+                now.splice(now.indexOf(elem),1);
+              });
+            }
+            // si hem fet clic a TODOS
+            if (!now || (now.length === 1 && now[0] === 'N') || (now.length === 0)) {
+              $(this).val(['N']);
+              _this.deactiveFilterBackground(this);
+            } else {
+              if ($(this).val().indexOf('N') !== -1) {
+                let options = $(this).val();
+                options.splice(options.indexOf('N'),1);
+                $(this).val(options);
+                _this.activeFilterBackground(this);
+              }
+              $('.notif_filter').val('all');
+            }
+
+            $(this).data('pre', $(this).val());
+            select_type_notifications.selectpicker('refresh');
+            select_notifications.selectpicker('refresh');
+            _this.filters.trigger('notif_type_change', $(this).val());
+
+            //deactivate my notifs filter
+            _this.deactiveFilterBackground($(this).parent().siblings('.bootstrap-select').find('select'));
+          });
+
+          $('div.bootstrap-select.notif_type_filter').on('click', function(e){
+            var maxAllowedHeight = parseInt($('#notif_filters').offset().top);
+            var divHeight = parseInt($('#notif_filters').height());
+            $(this).find('ul.dropdown-menu.inner').css('max-height', (maxAllowedHeight - divHeight))
+          });
+          // populate the filter with values
+          $.ajax({
+            "url": MOSQUITO.config.URL_API + 'getlistnotifications/',
+            "complete": function(result, status) {
+              if (status == 'success') {
+                $('<option>', {
+                    'value': 'N',
+                    'text': t('map.notification.type.filters.title'),
+                    'i18n': 'map.notification.type.filters.title',
+                    'selected': true
+                  }).appendTo(select_type_notifications);
+
+                result.responseJSON.notifications.forEach(function(type,b) {
+                  var lng = (typeof MOSQUITO.lng == 'array')?MOSQUITO.lng[0]:MOSQUITO.lng;
+                  //if there is translation, then add it as i18n attribute, else add label text
+                  if ((type.content[lng].title) in trans[MOSQUITO.lng]){
+                    var label = t(type.content[lng].title);
+                    //Add label in proper lng, and add i18n for future lang changes
+                    $('<option>', {
+                        "value": type.notificationid,
+                        "i18n":type.content[lng].title,
+                        "text":label,
+                       }).appendTo(select_type_notifications);
+                  }
+                  else{
+                    var label = type.username.charAt(0).toUpperCase()+type.username.slice(1)+' / '+type.content[lng].title;
+                    $('<option>', {
+                      "value": type.notificationid,
+                      "text": label
+                    }).appendTo(select_type_notifications);
+                  }
+                });
+                //refresh selectpicker
+                select_type_notifications.selectpicker('refresh');
+              } else {
+                console.error("An error was found while trying to get the list of notification types");
+              }
+
+            }
+          });
+      }
+    },
+
+    addMunicipalityFiltersTo: function(section) {
+      var _this = this;
+
+      // Create time group
+      var div_municipality = this.newFilterGroup({
+        'id': 'municipality_group',
+        'title': 'group.filters.municipalities'
+      });
+
+      if (div_municipality) {
+        div_municipality.appendTo(section);
+      }
+
+      //Registered users get input checkbox
+      if (MOSQUITO.app.headerView.logged){
+
+        var input_user_municipalities = $('<input>')
+            .attr('type', 'checkbox')
+            .attr('id', 'municipalities-checkbox')
+            .appendTo(div_municipality);
+
+        var label_my_municipalities = $('<span>')
+            .attr('i18n', 'label.user-municipalities')
+            .appendTo(div_municipality);
+
+        input_user_municipalities.on('change', function(e){
+          _this.emptyMunicipalitiesSearch();
+          _this.initMunicipalitiesSelect();
+
+          if (this.checked){
+            _this.filters.trigger('municipalities_change', '0');
+          }
+          else{
+            _this.filters.trigger('municipalities_change', 'N');
+          }
+        })
+      }
+
+      // Create year select
+      var select_municipalities = $('<input>')
+          .attr('class', 'form-control')
+          .attr('id', 'tokenfield')
+          .appendTo(div_municipality);
+
+      if (this.filterMunicipalitisIsEmpty()){
+        this.initMunicipalitiesSelect();
+      }
+      else{
+        this.setMunicipalitiesInFilter();
+      }
+
+    },
+
     addFiltersInPanelLayers: function(){
         var _this = this;
         _.extend(this.filters, Backbone.Events);
 
         var container = $('div.sidebar-control-layers');
 
-        //Filters
-        var years = [ ['all', t('All years')] ];
-        var current_year = new Date().getFullYear();
-        for(var i = 2014; i <= current_year; i++){
-            years.push([i,i]);
-        }
+        //Add filter accordion
+        var toggleGrup = $('<div/>')
+            .attr('data-toggle','collapse')
+            .attr('data-target', '#div_filters')
+            .attr('class','layer-group-trigger')
+            .attr('aria-expanded',"false")
+            .attr('id', 'idfilters')
+        .appendTo(container);
 
+        var parentDiv = $('<div/>')
+            .attr('class', 'layer-group list-group-item')
+        .appendTo(toggleGrup);
+
+        $('<div/>')
+           .attr('i18n', 'group.filters')
+           .attr('class','group-title')
+       .appendTo(parentDiv)
+
+        var divGroup = $('<div>')
+            .attr('id', 'div_filters')
+            .attr('class', 'collapse') //+(!group.collapsed?'in':''))
+        .appendTo(container);
+
+        //Start adding filters to filters accordion
         var filtersSection = $('<div>')
             .attr('id', 'map_filters')
-            .attr('class', 'section filters')
-            .appendTo(container);
+            .attr('class', 'filters_group')
+            .appendTo(divGroup);
 
-        var select_years = $('<select multiple>')
-            .attr('class', 'years')
-            .appendTo(filtersSection);
+        this.addTimeFiltersTo(filtersSection);
 
+        this.addHashtagFilterTo(filtersSection);
 
+        this.addNotificationFiltersTo(filtersSection);
 
+        this.addMunicipalityFiltersTo(filtersSection)
 
-        $.each(years, function(i, year) {
-            var opt = $('<option>', {
-                value: year[0],
-                i18n: year[1]})
-              .text(year[1]).appendTo(select_years);
-
-            if(_this.filters.years.length > 0 &&
-                _this.filters.years.indexOf(year[0]) !== -1){
-
-                opt.attr('selected', 'selected');
-            }
-
-        });
-
-        if(_this.filters.years.length === 0){
-            select_years.val('all');
-        }
-
-        select_years.data('pre', select_years.val());
-
-        select_years.on('change', function(){
-            var pre = $(this).data('pre');
-            var now = $(this).val();
-            if(pre.indexOf('all') !== -1 && pre.indexOf('all') !== -1){
-                var newdata = $(this).val();
-                if(newdata!==null){
-                    newdata.shift();
-                    $(this).val(newdata);
-                }else{
-                    $(this).val('all');
-                }
-            }else if((now === null) || (pre.indexOf('all') === -1 && now.indexOf('all') !== -1)){
-                $(this).val('all');
-            }
-            $(this).selectpicker('refresh');
-            var years = $(this).val();
-            $(this).data('pre', $(this).val());
-            if(years[0] === 'all'){
-                years = [];
-            }else{
-                years =_.map(years, Number);
-            }
-
-            _this.filters.trigger('years_change', years);
-        });
-
-        var months = [
-          ['all', t('All months')],
-          ['1', t('January')], ['2', t('February')], ['3', t('March')],
-          ['4', t('April')], ['5', t('May')], ['6', t('June')],
-          ['7', t('July')], ['8',t('August')], ['9', t('September')],
-          ['10', t('October')], ['11', t('November')],
-          ['12', t('December')]
-        ];
-
-        var select_months = $('<select multiple>')
-              .attr('class', 'months')
-              .appendTo(filtersSection);
-
-        $.each(months, function(i, month) {
-            var opt = $('<option>',
-              {
-                  value: month[0],
-                  i18n: month[1]
-              })
-              .text(month[1]);
-
-            if(_this.filters.months.length > 0 &&
-                _this.filters.months.indexOf(parseInt(month[0])) !== -1){
-                opt.attr('selected', 'selected');
-            }
-
-            select_months.append(opt);
-        });
-
-        if(_this.filters.months.length === 0){
-            select_months.val('all');
-        }
-
-        select_months.data('pre', select_months.val());
-
-        select_months.on('change', function(){
-            var pre = $(this).data('pre');
-            var now = $(this).val();
-            if(pre.indexOf('all') !== -1 && pre.indexOf('all') !== -1){
-                var newdata = $(this).val();
-                if(newdata!==null){
-                    newdata.shift();
-                    $(this).val(newdata);
-                }else{
-                    $(this).val('all');
-                }
-            }else if((now === null) || (pre.indexOf('all') === -1 && now.indexOf('all') !== -1)){
-                $(this).val('all');
-            }
-            $(this).selectpicker('refresh');
-            var months = $(this).val();
-            $(this).data('pre', $(this).val());
-            if(months[0] === 'all'){
-                months = [];
-            }else{
-                months =_.map(months, Number);
-            }
-            _this.filters.trigger('months_change', months);
-        });
-
-        //Add hashtag filters<div class="input-append">
-        var div_hashtag = $('<div/>', {'id':'hashtag_filters', 'class':'section filters'})
-            .appendTo(container);
-
-        div_hashtag.html('<form onsubmit="return:false">' +
-            '<input id="hashtag_search_text" type="text" placeholder="#hashtag" value="">' +
-              '<button id="hashtag_button_search" type="submit"><i class="fa fa-search"></i></button>' +
-              '<button id="hashtag_button_trash" type="submit"><i class="fa fa-trash"></i></button>' +
-              '</form>');
-        $('#hashtag_button_search').click(function(){
-            _this.filters.trigger('hashtag_change', $('#hashtag_search_text').val());
-            return false;
-        });
-        $('#hashtag_button_trash').click(function(){
-            $('#hashtag_search_text').val('')
-            _this.filters.trigger('hashtag_change', '');
-            return false;
-        });
-
-        // Notification filter only for registered users
-        if (MOSQUITO.app.headerView.logged) {
-            var div_notif = $('<div/>', {'id':'notif_filters', 'class':'section filters'})
-                .appendTo(container);
-            /*var title_notif = $('<div>', {'i18n':'observations.filters.title', "class": "title"})
-                .appendTo(div_notif);*/
-            var radio_notif_type = $('<input>', {
-                  'type': 'radio',
-                  'name': 'notification_radio',
-                  'value': 'by_owner'}
-                ).appendTo(div_notif);
-
-            $(radio_notif_type).on('click', function(e){
-                if ($(this).val() === 'by_owner'){
-                  $('.notif_type_filter').val(['N']);
-                  _this.filters.trigger('notif_type_change', ['N']);
-                  $('.notif_type_filter').selectpicker('refresh');
-                }
-            })
-
-            var select_notifications = $('<select>').attr('class', 'notif_filter')
-                .appendTo(div_notif);
-
-            var notif_filter_all = $('<option>', {
-                    "value": "all",
-                    "i18n": "all_notifications",
-                    "text": window.t().translate('es','all_notifications'),
-                    "selected": "selected"
-                  }).appendTo(select_notifications);
-
-            var notif_filter_mine = $('<option>', {"value": "withmine", "i18n": "with_my_notifications"})
-                .appendTo(select_notifications);
-
-            var notif_filter_notmine = $('<option>', {"value": "withoutmine", "i18n": "without_my_notifications"})
-                .appendTo(select_notifications);
-
-            select_notifications.on('change', function(){
-              $('input[name=notification_radio][value=by_owner]').prop('checked',true);
-              $('.notif_type_filter').val(['N']);
-              $('.notif_type_filter').data('pre', ['N']);
-              select_notifications.selectpicker('refresh');
-              //_this.filters.trigger('notif_change', $(this).val());
-              //console.log($(this).val());
-              switch ($(this).val()) {
-                case 'all':
-                  _this.filters.trigger('notif_change', false);
-                  _this.filters.trigger('notif_type_change', ['N']);
-                  $('input[name=notification_radio][value=by_owner]').prop('checked',false);
-                break;
-                case 'withmine':
-                  _this.filters.trigger('notif_change', 1);
-                  MOSQUITO.app.mapView.filters.notif_type = '0';
-                break;
-                case 'withoutmine':
-                  _this.filters.trigger('notif_change', 0);
-                break;
-              }
-              select_type_notifications.selectpicker('refresh');
-            });
-            // notification types
-            var radio_notif_type = $('<input>', {
-                      'type': 'radio',
-                      'name': 'notification_radio',
-                      'value': 'by_type'}
-                ).appendTo(div_notif);
-
-            var select_type_notifications = $('<select multiple>').attr('class', 'selectpicker notif_type_filter')
-                .appendTo(div_notif);
-
-            // onchage trigger
-            select_type_notifications.selectpicker('refresh');
-            select_type_notifications.data('pre', ['N']);
-            select_type_notifications.on('change', function(event){
-              var pre = $(this).data('pre');
-              var now = $(this).val();
-              // hem fet clic a una nova opció
-              if (now !== null && pre !== null && typeof now !== 'undefined' && typeof pre !== 'undefined' && pre.length < now.length) {
-                pre.forEach(function(elem) {
-                  now.splice(now.indexOf(elem),1);
-                });
-              }
-              // si hem fet clic a TODOS
-              if (!now || (now.length === 1 && now[0] === 'N') || (now.length === 0)) {
-                $(this).val(['N']);
-                $('input[name=notification_radio][value=by_type]').prop('checked',false);
-              } else {
-                if ($(this).val().indexOf('N') !== -1) {
-                  let options = $(this).val();
-                  options.splice(options.indexOf('N'),1);
-                  $(this).val(options);
-                }
-                $('input[name=notification_radio][value=by_type]').prop('checked',true);
-                $('.notif_filter').val('all');
-
-              }
-              $(this).data('pre', $(this).val());
-              select_type_notifications.selectpicker('refresh');
-              select_notifications.selectpicker('refresh');
-              _this.filters.trigger('notif_type_change', $(this).val());
-            });
-
-            $('div.bootstrap-select.notif_type_filter').on('click', function(e){
-              var maxAllowedHeight = parseInt($('#notif_filters').offset().top);
-              var divHeight = parseInt($('#notif_filters').height());
-              $(this).find('ul.dropdown-menu.inner').css('max-height', (maxAllowedHeight - divHeight))
-            });
-            // populate the filter with values
-            $.ajax({
-              "url": MOSQUITO.config.URL_API + 'getlistnotifications/',
-              "complete": function(result, status) {
-                if (status == 'success') {
-                  $('<option>', {
-                      'value': 'N',
-                      'text': t('map.notification.type.filters.title'),
-                      'i18n': 'map.notification.type.filters.title',
-                      'selected': true
-                    }).appendTo(select_type_notifications);
-
-                  result.responseJSON.notifications.forEach(function(type,b) {
-                    var lng = (typeof MOSQUITO.lng == 'array')?MOSQUITO.lng[0]:MOSQUITO.lng;
-                    //if there is translation, then add it as i18n attribute, else add label text
-                    if ((type.content[lng].title) in trans[MOSQUITO.lng]){
-                      var label = t(type.content[lng].title);
-                      //Add label in proper lng, and add i18n for future lang changes
-                      $('<option>', {
-                          "value": type.notificationid,
-                          "i18n":type.content[lng].title,
-                          "text":label,
-                         }).appendTo(select_type_notifications);
-                    }
-                    else{
-                      var label = type.username.charAt(0).toUpperCase()+type.username.slice(1)+' / '+type.content[lng].title;
-                      $('<option>', {
-                        "value": type.notificationid,
-                        "text": label
-                      }).appendTo(select_type_notifications);
-                    }
-                  });
-                  //refresh selectpicker
-                  select_type_notifications.selectpicker('refresh');
-                } else {
-                  console.error("An error was found while trying to get the list of notification types");
-                }
-
-              }
-            });
+        if (this.anyFilterChecked()){
+          this.activateFilterAcordion();
         }
 
         trans.on('i18n_lang_changed', function(){
           setTimeout(function(){
-              select_years.selectpicker('refresh');
-              select_months.selectpicker('refresh');
+              $('#select_years').selectpicker('refresh');
+              $('#select_months').selectpicker('refresh');
+              //reset municipalities select2
+              _this.initMunicipalitiesSelect();
+
+              _this.checkFiltersBackground();
               if (MOSQUITO.app.headerView.logged) {
-                select_notifications.selectpicker('refresh');
-                select_type_notifications.selectpicker('refresh');
+                $('#select_notifications').selectpicker('refresh');
+                $('#select_type_notifications').selectpicker('refresh');
               }
           }, 0);
         });
+    },
 
+    filterMunicipalitisIsEmpty: function(){
+        return (this.filters.municipalities == 'N')
+    },
+
+    setMunicipalitiesInFilter: function(){
+      if (MOSQUITO.app.headerView.logged){
+        if (_this.filters.municipalities.toString()=='0'){
+          $('#municipalities-checkbox').prop('checked','true');
+          return true;
+        }
+      }
+
+      _this = this;
+      $.ajax({
+          url:  MOSQUITO.config.URL_API + 'get/municipalities/id/',
+          type: 'POST',
+          //data: params,
+          data: _this.filters.municipalities.toString(),
+          contentType: "application/json; charset=utf-8",
+          context: this,
+          success: function(result) {
+              //Load layer even if it wasn't loaded
+              if (result.data.length){
+                _this.initMunicipalitiesSelect();
+                //Prevent loading date each time filter is changed
+                this.setDataLoading(false)
+                result.data.forEach(function(e){
+                  e = {'label':e.label, 'value':e.label, 'id':e.id}
+                  $('#tokenfield').tokenfield('createToken', e);
+                })
+                this.setDataLoading(true)
+              }
+          }
+      });
+    },
+
+    emptyMunicipalitiesSearch: function(){
+        $('div.token').remove();
+    },
+
+    initMunicipalitiesSelect: function(){
+      $('#tokenfield').tokenfield({
+          autocomplete: {
+            position: {my: "left bottom", at: "left top", collision: "flip flip"},
+            source: function (request, response) {
+              if (request.term.length > 1){
+                    jQuery.get(MOSQUITO.config.URL_API +"municipalities/search/", {
+                        query: request.term
+                    }, function (data) {
+                        // data = $.parseJSON(data);
+                        var t = [];
+                        $.each(data,function(k,v){
+                          t[k] = {'label':v.label, 'value':v.label, 'id': v.id};
+                        })
+                        response(t);
+                    });
+              }
+              setTimeout(function() {
+                var width = $('.tokenfield').outerWidth();
+                var offset = $('.tokenfield.form-control').offset();
+                $('.ui-menu.ui-widget.ui-widget-content.ui-autocomplete.ui-front').css('width', width);
+                $('.ui-menu.ui-widget.ui-widget-content.ui-autocomplete.ui-front').css('left',offset.left);
+              }, 100);
+            },
+
+            delay: 100
+          },
+          showAutocompleteOnFocus: true
+          })
+
+        $('#tokenfield').on('change', function(e){
+            $('#municipalities-checkbox').prop('checked', false);
+            if ($('#tokenfield').val()){
+              var value = _this.getSelectedMunicipalitiesId();
+            }
+            else value = 'N';
+
+            _this.filters.trigger('municipalities_change', value);
+          });
+
+      $('#tokenfield').on('tokenfield:createdtoken', function (e) {
+          // Über-simplistic e-mail validation
+          $(e.relatedTarget).attr('data-value',e.attrs.id)
+          $(e.relatedTarget).find('.token-label').css('max-width', $(e.relatedTarget).parent().width() - 30);
+      })
+
+      $('#tokenfield').on('tokenfield:createtoken', function (event) {
+        if (typeof event.attrs.id==='undefined'){
+            event.preventDefault();
+        }
+
+        var existingTokens = $(this).tokenfield('getTokens');
+        $.each(existingTokens, function(index, token) {
+            if (token.label === event.attrs.label){
+                event.preventDefault();
+            }
+        });
+      });
+      $('#map-ui').scroll(function() {
+        $('.ui-menu.ui-widget.ui-widget-content.ui-autocomplete.ui-front').css('display','none');
+      });
+    },
+
+    getSelectedMunicipalitiesId: function(){
+      var ids = []
+      $('.tokenfield div.token').each(function(a,b) {
+        ids.push($(b).attr('data-value'));
+      })
+      return ids.toString();
+    },
+
+    checkFiltersBackground: function(){
+      if ($('#select_years').val().toString()!=='all'){
+        this.activeFilterBackground($('#select_years'));
+      }
+      if ($('#select_months').val().toString()!=='all'){
+        this.activeFilterBackground($('#select_months'));
+      }
+    },
+
+    activateFilterAcordion: function(){
+      $('#idfilters').find('.layer-group.list-group-item').addClass('active');
+    },
+
+    deactivateFilterAcordion: function(){
+      $('#idfilters').find('.layer-group.list-group-item').removeClass('active');
+    },
+
+    activeFilterBackground: function(Elm){
+      if ($(Elm).is('select')){
+        $(Elm).closest('.bootstrap-select').find('button').addClass('selected-filter-button');
+      }
+      else if ($(Elm).is('input')){
+        $(Elm).addClass('active');
+      }
+    },
+
+    deactiveFilterBackground: function(Elm){
+      if ($(Elm).is('select')){
+        $(Elm).closest('.bootstrap-select').find('button').removeClass('selected-filter-button');
+      }
+      else if ($(Elm).is('input')){
+        $(Elm).removeClass('active');
+      }
+    },
+
+    anyFilterChecked: function() {
+        return (
+            this.filters.years.length ||
+            this.filters.months.length ||
+            (this.filters.hashtag!==undefined && this.filters.hashtag != 'N' && this.filters.hashtag != '') ||
+            (this.filters.notif!==undefined && this.filters.notif!==false) ||
+            (this.filters.notif_types!==undefined && this.filters.notif_types[0]!='N') ||
+            (this.filters.municipalities!==undefined && this.filters.municipalities!='N' ) ||
+            ('daterange' in this.filters && this.filters.daterange !== null &&
+              this.filters.daterange !== false)
+          );
     },
 
     addPanelMoreinfoControl: function(){
@@ -390,8 +758,8 @@ var MapView = MapView.extend({
         );
         this.controls.info_btn = btn.addTo(this.map);
         $(btn._container).find('a').attr('i18n', 'map.control_moreinfo|title');
-    }
-    ,
+    },
+
     "show_message": function(text, parent) {
       if (arguments.length<2) parent = '#map';
       container = $(parent+' #sys_message');
@@ -473,13 +841,17 @@ var MapView = MapView.extend({
             var url = MOSQUITO.config.URL_API + 'map_aux_reports_export.xls';
             //prepare params based on filters
             url += '?bbox=' + this._map.getBounds().toBBoxString();
+            if (_this.filters.daterange) {
+              url += '&date_start=' + moment(_this.filters.daterange.start).format('YYYY-MM-DD');
+              url += '&date_end=' + moment(_this.filters.daterange.end).format('YYYY-MM-DD');
+            } else {
+              if(_this.filters.years.length > 0){
+                  url += '&years=' + _this.filters.years.join(',');
+              }
 
-            if(_this.filters.years.length > 0){
-                url += '&years=' + _this.filters.years.join(',');
-            }
-
-            if(_this.filters.months.length > 0){
-                url += '&months=' + _this.filters.months.join(',');
+              if(_this.filters.months.length > 0){
+                  url += '&months=' + _this.filters.months.join(',');
+              }
             }
 
             // get categories to fetch
@@ -525,12 +897,20 @@ var MapView = MapView.extend({
             else hashtag = 'N';
             url += '&hashtag='+hashtag;
 
-            window.location = url;
+            //Add municipalities if exists, N otherwise
+            if ('municipalities' in _this.filters && _this.filters.municipalities.length>0){
+              municipalities = _this.filters.municipalities;
+            }
+            else {
+              municipalities = 'N';
+            }
+            url += '&municipalities='+municipalities;
 
+            window.location = url;
         });
 
 
-        btn.addTo(_this.map);
+        btn.addTo(this.map);
         $(btn._container).find('a').attr('i18n', 'map.control_download|title');
         window.t().translate(MOSQUITO.lng, $(btn._container));
         window.t().translate(MOSQUITO.lng, $('.sidebar-control-download'));
@@ -582,18 +962,28 @@ var MapView = MapView.extend({
 
         btn.on('reportsdocument_btn_click', function(){
             var url = '#/' + $('html').attr('lang') + '/reportsdocument/';
-            url += _this.map.getBounds().toBBoxString();
 
-            if(_this.filters.years.length === 0){
-                url += '/all';
-            }else{
-                url += '/' + _this.filters.years;
-            }
+            var longBbox = _this.map.getBounds().toBBoxString().split(',');
+            var shortBbox = longBbox.map(function(x) {
+               return (parseFloat(x).toFixed(4));
+            });
+            url += shortBbox.toString();
 
-            if(_this.filters.months.length === 0){
-                url += '/all';
-            }else{
-                url += '/' + _this.filters.months.join(',');
+            if (_this.filters.daterange && typeof _this.filters.daterange !== 'undefined') {
+              url += '/' + moment(_this.filters.daterange.start).format('YYYY-MM-DD');
+              url += '/' + moment(_this.filters.daterange.end).format('YYYY-MM-DD');
+            } else {
+              if(_this.filters.years.length === 0){
+                  url += '/all';
+              }else{
+                  url += '/' + _this.filters.years;
+              }
+
+              if(_this.filters.months.length === 0){
+                  url += '/all';
+              }else{
+                  url += '/' + _this.filters.months.join(',');
+              }
             }
 
             // get categories to fetch
@@ -615,10 +1005,15 @@ var MapView = MapView.extend({
             }
             url += '/' + categories.join(',');
 
-            //Add filters if exists and !=false(all selected)
-            url += (('notif' in _this.filters)&&(_this.filters.notif!==false))?'/'+_this.filters.notif:'/N';
             //Add hashtag if exists and !=''
             url += ('hashtag' in _this.filters)?((_this.filters.hashtag.length)?'/'+_this.filters.hashtag:'/N'):'/N';
+
+            //Add municipalities if exists
+            url += ('municipalities' in _this.filters)?((_this.filters.municipalities.length)?'/'+_this.filters.municipalities:'/N'):'/N';
+
+            //Add filters if exists and !=false(all selected)
+            url += (('notif' in _this.filters)&&(_this.filters.notif!==false))?'/'+_this.filters.notif:'/N';
+
             //Add notif type filters if exists and != null
             url += (('notif_types' in _this.filters)&&(_this.filters.notif_types!==null))?'/'+_this.filters.notif_types:'/N';
             window.open(url);
@@ -635,57 +1030,60 @@ var MapView = MapView.extend({
                 text: '<i class="fa fa-share-alt" aria-hidden="true"></i>',
                 style: 'share-control',
                 build_url: function(){
-                    var layers = [];
-                    //Get layers set to look for active layers
-                    if (MOSQUITO.app.headerView.logged) {
-                        //Accordion objects has list-group-item class
-                        layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-item');
-                    }
-                    else{
-                        layersDiv = $('.sidebar-control-layers #div_none ul > li.list-group-only-item');
-                   }
-                    layersDiv.each(function(i, el){
-                        if($(el).hasClass('active')){
-                            //Get position of selected layers
-                            id = $(el).attr('id').replace('layer_','');
-                            pos = _this.getLayerPositionFromKey(id);
-                            if (!MOSQUITO.app.headerView.logged) {
-                                layers.push(MOSQUITO.config.layers[pos].key);
-                                $('#control-share .warning').html('');
-                            }
-                            else{
-                                layers.push(MOSQUITO.config.logged.layers[pos].key);
-                                txt = t('share.private_layer_warn');
-                                $('#control-share .warning').html('<div>'+txt+'</div>');
-                            }
-                            // layers.push(i+'');
+                  var layers = [];
+                  //Get layers set to look for active layers
+                  if (MOSQUITO.app.headerView.logged) {
+                      //Accordion objects has list-group-item class
+                      layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-item');
+                  }
+                  else{
+                      layersDiv = $('.sidebar-control-layers #div_none ul > li.list-group-only-item');
+                  }
+                  layersDiv.each(function(i, el){
+                    if($(el).hasClass('active')){
+                        //Get position of selected layers
+                        id = $(el).attr('id').replace('layer_','');
+                        pos = _this.getLayerPositionFromKey(id);
+                        if (!MOSQUITO.app.headerView.logged) {
+                            layers.push(MOSQUITO.config.layers[pos].key);
+                            $('#control-share .warning').html('');
                         }
-                    });
-
-                    //$lng/$zoom/$lat/$lon/$layers/$year/$months
-                    var url  = document.URL.replace(/#.*$/, '');
-                    // if(url[url.length-1] !== '/'){
-                    //     url += '/';
-                    // }
-                    url += '#';
-                    url += '/' + document.documentElement.lang;
-
-                    //if show report, center url in the report.
-                    //report_id
-                    if(_this.scope.selectedMarker !== undefined &&
-                        _this.scope.selectedMarker !== null){
-                            url += '/19' ;//fixed zoom when reporting
-                            url += '/' + _this.scope.selectedMarker._latlng.lat.toFixed(4);
-                            url += '/' + _this.scope.selectedMarker._latlng.lng.toFixed(4);
+                        else{
+                            layers.push(MOSQUITO.config.logged.layers[pos].key);
+                            txt = t('share.private_layer_warn');
+                            $('#control-share .warning').html('<div>'+txt+'</div>');
+                        }
+                        // layers.push(i+'');
                     }
-                    else{
-                        url += '/' + _this.map.getZoom();
-                        url += '/' + _this.map.getCenter().lat.toFixed(4);
-                        url += '/' + _this.map.getCenter().lng.toFixed(4);
-                    }
-                    url += '/' + layers.join();
+                  });
 
-                    if(_this.filters.years === null){
+                  //$lng/$zoom/$lat/$lon/$layers/$year/$months
+                  var url  = document.URL.replace(/#.*$/, '');
+
+                  url += '#';
+                  url += '/' + document.documentElement.lang;
+
+                  //if show report, center url in the report.
+                  //report_id
+                  if(_this.scope.selectedMarker !== undefined &&
+                      _this.scope.selectedMarker !== null){
+                          url += '/19' ;//fixed zoom when reporting
+                          url += '/' + _this.scope.selectedMarker._latlng.lat.toFixed(4);
+                          url += '/' + _this.scope.selectedMarker._latlng.lng.toFixed(4);
+                  }
+                  else{
+                      url += '/' + _this.map.getZoom();
+                      url += '/' + _this.map.getCenter().lat.toFixed(4);
+                      url += '/' + _this.map.getCenter().lng.toFixed(4);
+                  }
+
+                  url += '/' + layers.join();
+
+                  if (_this.filters.daterange && typeof _this.filters.daterange !== 'undefined') {
+                    url += '/' + moment(_this.filters.daterange.start).format('YYYY-MM-DD');
+                    url += '/' + moment(_this.filters.daterange.end).format('YYYY-MM-DD');
+                  } else {
+                    if(_this.filters.years.length === 0){
                         url += '/all';
                     }else{
                         url += '/' + _this.filters.years;
@@ -696,6 +1094,21 @@ var MapView = MapView.extend({
                     }else{
                         url += '/' + _this.filters.months.join(',');
                     }
+                  }
+
+                  //hashtag
+                  if(!'hashtag' in _this.filters || _this.filters.hashtag == ''){
+                      url += '/N';
+                  }else{
+                      url += '/' + _this.filters.hashtag;
+                  }
+
+                    //municipalities
+                    if(!'municipalities' in _this.filters || _this.filters.municipalities.length == 0){
+                        url += '/N';
+                    }else{
+                        url += '/' + _this.filters.municipalities.toString();
+                    }
 
                     //report_id
                     if(_this.scope.selectedMarker !== undefined &&
@@ -703,7 +1116,7 @@ var MapView = MapView.extend({
                         url += '/' + _this.scope.selectedMarker._data.id;
                     }
 
-                    return url;
+                  return url;
 
                 }
             }
@@ -749,7 +1162,6 @@ var MapView = MapView.extend({
         });
 
         MOSQUITO.app.on('cluster_drawn', function(){
-
             if(_this.scope.selectedMarker !== undefined &&
                 _this.scope.selectedMarker !== null){
                 var found = _.find(_this.layers.layers.mcg.getLayers(), function(layer){
@@ -763,25 +1175,11 @@ var MapView = MapView.extend({
                 if(found !== undefined){
                     _this.markerSetSelected(found);
                 }else{
-                    _this.markerUndoSelected(_this.scope.selectedMarker);
-                    //search inside clusters
-                    var cluster = _.find(_this.layers.layers.mcg._featureGroup._layers, function(layer){
-                        if ( '_group' in layer){
-                            // search marker inside clusters
-                            var marker = _.find(layer._markers, function(m){
-                                if ( m._data.id === _this.scope.selectedMarker._data.id ) {
-                                    return m;
-                                }
-                            })
-
-                            if(marker !== undefined){
-                                layer.spiderfy();
-                                _this.markerSetSelected(marker);
-                                marker.fireEvent('click',{latlng:[0,0]});//latlng required for fireEvent
-                                //return layer;
-                            }
-                        }
-                    })
+                    //if not found
+                    _this.scope.selectedMarker = null;
+                    if($(_this.report_panel).is(':visible')){
+                        _this.controls.sidebar.closePane();
+                    }
                 }
             }
         });
@@ -849,7 +1247,6 @@ var MapView = MapView.extend({
                 nreport.observation_date = theDate.getDate() + '-' + ( theDate.getMonth() + 1 ) + '-' + theDate.getFullYear();
         }
 
-
         this.controls.sidebar.closePane();
 
         if(!('content-report-tpl' in this.templates)){
@@ -864,9 +1261,8 @@ var MapView = MapView.extend({
 
         this.report_panel.append(tpl(nreport));
 
-        //New notification button
-
-        if (MOSQUITO.app.headerView.logged && this.userCan('notification') ){
+        //New notification button if applies
+        if (MOSQUITO.app.headerView.logged && nreport.notifiable ){
             var notif_btn = $('<button>')
                 .attr('class', 'btn btn-success btn-block')
                 .attr('id', 'new_notification_btn')
@@ -883,7 +1279,7 @@ var MapView = MapView.extend({
             notif_btn.on('click', function(){
                 MOSQUITO.app.mapView.scope.notificationSelected = [MOSQUITO.app.mapView.scope.selectedMarker];
                 MOSQUITO.app.mapView.scope.notificationClientIds = [MOSQUITO.app.mapView.scope.selectedMarker._data.id];
-                MOSQUITO.app.mapView.controls.notification.updateResults(MOSQUITO.app.mapView.scope.notificationClientIds,['oneUser']);
+                MOSQUITO.app.mapView.controls.notification.updateResults(MOSQUITO.app.mapView.scope.notificationClientIds,[' ']);
                 MOSQUITO.app.mapView.controls.notification.getPredefinedNotifications();
             });
         }
@@ -921,8 +1317,9 @@ var MapView = MapView.extend({
             $('#'+notif).show();
 
         });
-
-        this.moveMarkerIfNecessary(marker);
+        if (!MOSQUITO.app.mapView.isMobile()){
+          this.moveMarkerIfNecessary(marker);
+        }
 
         $('#map-ui .close_button').on('click', function(){
             _this.controls.sidebar.closePane();
@@ -930,26 +1327,26 @@ var MapView = MapView.extend({
     },
 
     moveMarkerIfNecessary: function(marker){
-          //Check if dragging selected is required
-          var x = _this.map.getSize().x ;
-          var y = _this.map.getSize().y ;
-          var barWidth = parseInt($('.sidebar-report').css('width'));
-          var mapIconsWidth = parseInt($('.leaflet-control-zoom-out').css('width')) + 40 //20px padding;
+      //Check if dragging selected is required
+      var x = _this.map.getSize().x ;
+      var y = _this.map.getSize().y ;
+      var barWidth = parseInt($('.sidebar-report').css('width'));
+      var mapIconsWidth = parseInt($('.leaflet-control-zoom-out').css('width')) + 40 //20px padding;
 
-          //if too left, then move it
-          var ne = _this.map.containerPointToLatLng([x - (barWidth + mapIconsWidth), 0]) ;
+      //if too righty, then move it
+      var ne = _this.map.containerPointToLatLng([x - (barWidth + mapIconsWidth), 0]) ;
 
-          if (ne.lng < marker.getLatLng().lng){
-            var sw = _this.map.containerPointToLatLng([0 , y]) ;
-            var newBB = L.latLngBounds(sw, ne);
-            var curCenter = _this.map.getCenter();
-            var newCenter = newBB.getCenter();
-            var moveLng = marker.getLatLng().lng - newCenter.lng;
+      if (ne.lng < marker.getLatLng().lng){
+        var sw = _this.map.containerPointToLatLng([0 , y]) ;
+        var newBB = L.latLngBounds(sw, ne);
+        var curCenter = _this.map.getCenter();
+        var newCenter = newBB.getCenter();
+        var moveLng = marker.getLatLng().lng - newCenter.lng;
 
-            _this.forceReloadView = false;
-            _this.map.setView( [curCenter.lat, curCenter.lng + moveLng], _this.map.getZoom());
-          }
-        },
+        _this.forceReloadView = false;
+        _this.map.setView( [curCenter.lat, curCenter.lng + moveLng], _this.map.getZoom());
+      }
+    },
 
     loading: {
         on: function(obj) {
@@ -1072,8 +1469,8 @@ var MapView = MapView.extend({
       $('#stormdrain_legend').html(str);
       //Evan new i19n attribs
       trans.trigger('i18n_lang_changed', MOSQUITO.lng);
-    }
-    ,
+    },
+
     //Make ajax call and prepare input, select and call stormDrainStyleUI to show style UI.
     stormDrainSetup:function(){
       //Ajax call to get params
@@ -1220,8 +1617,8 @@ var MapView = MapView.extend({
 
       });
 
-    }
-    ,
+    },
+
     //stormDrainStyleUI: function(version, fieldsData){
     stormDrainStyleUI: function(version){
       if (version) {
@@ -1342,8 +1739,8 @@ var MapView = MapView.extend({
           }
         })
       }
-    }
-    ,
+    },
+
     stormDrainEvents : function(ajaxData){
       _this = this;
       // Show additional help
@@ -1635,8 +2032,7 @@ var MapView = MapView.extend({
         }
       }.bind(this))
       this.stormdrain_setup.admin_values = distinctValues;
-    }
-    ,
+    },
 
     stormDrainResetUpload: function(){
       $('#stormDrainUpload').find('.selected-file-name').val('');
@@ -1652,9 +2048,7 @@ var MapView = MapView.extend({
       $('#stormDrainUpload').find('.button-file').show();
       $('#stormDrainUpload').find('.stormdrain-upload-submit').show();
       $('#stormDrainUpload').find('.progress-bar-info').css('width','0%');
-    }
-
-    ,
+    },
 
     stormDrainUploadEvents: function(){
       //Get template button
@@ -1775,8 +2169,8 @@ var MapView = MapView.extend({
           $('.st-upload-error').show();
         }
       })
-    }
-    ,
+    },
+
     stormDrainUploadSetup: function(){
       _this = this;
       //Reset form just in case it was opened before

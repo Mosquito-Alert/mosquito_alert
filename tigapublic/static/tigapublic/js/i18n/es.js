@@ -41,13 +41,12 @@ trans.es = {
     'group.userfixes':'Distribución de participantes',
     'group.breeding_sites':'Lugares de cría',
     'group.userdata':'Capas de usuario',
-
+    'group.filters':'Filtros',
     'layer.mosquito_tiger_probable': 'Posible mosquito tigre',
     'layer.mosquito_tiger_confirmed': 'Mosquito tigre confirmado',
     'layer.yellow_fever_confirmed': 'Mosquito fiebre amarilla confirmado',
     'layer.yellow_fever_probable': 'Posible mosquito fiebre amarilla',
     'layer.unidentified': 'No identificable',
-
     'layer.breeding_site_other': 'Lugares de cría',
     'layer.breeding_site_not_yet_filtered': 'Lugares de cría',
     'layer.storm_drain_dry': 'Lugares de cría',
@@ -152,7 +151,35 @@ trans.es = {
     //NOTIFICACIONES
     'with_my_notifications': 'Con mis notificaciones',
     'without_my_notifications': 'Sin mis notificaciones',
-    'all_notifications': 'Todas las notificaciones',
-    'map.notification.type.filters.title': 'Todos los tipos de notificaciones'
+    'all_notifications': 'Con/sin mis notificaciones',
+    'map.notification.type.filters.title': 'Por tipo de notificación',
 
+    // NEW
+    'notification.warning.municiaplities': 'Solo es posible enviar notificaciones a las observaciones hechas en municipios vinculados al usuario de esta sesión.',
+    'group.filters.time': 'Filtros temporales',
+    'group.filters.hashtag': 'Filtro por #hashtag',
+    'group.filters.notifications': 'Filtros por notificaciones',
+    'group.filters.municipalities': 'Filtro por municipio',
+    'group.filters.time.custom_daterange': 'Fecha personalizada',
+    'group.filters.time.apply': 'Filtra',
+    'group.filters.time.clear': 'Borra',
+    'group.filters.time.cancel': 'Cierra',
+    'general.next': 'Siguiente',
+    'general.previous': 'Anterior',
+    'general.shortday.sunday': 'Do',
+    'general.shortday.monday': 'Lu',
+    'general.shortday.tuesday': 'Ma',
+    'general.shortday.wednesday': 'Mi',
+    'general.shortday.thursday': 'Ju',
+    'general.shortday.friday': 'Vi',
+    'general.shortday.saturday': 'Sa',
+    'general.today': 'Hoy',
+    'general.yesterday': 'Ayer',
+    'general.before_yesterday': 'Anteayer',
+    'group.filters.shortcut.this_week': 'Esta semana',
+    'group.filters.shortcut.last_7_days': 'Últimos 7 días',
+
+    'filter.municipality.placeholder': 'Búsqueda de municipios',
+    'filter.municipalities.inputtooshort': 'Mínimo 2 caracteres',
+    'label.user-municipalities': 'Mis municipios'
 };

@@ -90,7 +90,8 @@ var MapView = MapView.extend({
             popupAnchor: [1, -34]
         });
         marker.setIcon(selectedIcon);
-        if (marker._icon !==null) marker._bringToFront();
+        //if (marker._icon !==null)
+        marker._bringToFront();
     }
 
 });

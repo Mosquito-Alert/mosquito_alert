@@ -1,11 +1,17 @@
-var MapView = BaseView.extend({
+  var MapView = BaseView.extend({
     el: '#map-view',
     initialize: function(options) {
         options = options || {};
-        this.filters = {years: [], months: [], excluded_types: []};
+        this.filters = {
+            years: [],
+            months: [],
+            excluded_types: [],
+            hashtag:'N',
+            municipalities:'N'
+          };
         //_.extend(this.filters, Backbone.Events);
         this.controls = {};
-        this.scope = {};
+        this.scope = {'allowDataLoading': true};
         this.templates = {};
         this.defaults  = {
             zoom: MOSQUITO.config.zoom,
@@ -32,6 +38,27 @@ var MapView = BaseView.extend({
         if('filters_months' in this.options){
             if(this.options.filters_months !== null && this.options.filters_months !== 'all'){
                 this.filters.months = options.filters_months.split(',').map(Number);
+            }
+        }
+        if('filters_daterange' in this.options){
+            if(this.options.filters_daterange !== null){
+                this.filters.daterange = options.filters_daterange;
+            }
+        }
+
+        if('filters_hashtag' in this.options){
+            if(this.options.filters_hashtag != 'N'){
+                this.filters.hashtag = this.options.filters_hashtag;
+            }
+        }
+
+        if('filters_municipalities' in this.options){
+           if (!MOSQUITO.app.headerView.logged &&
+                    options.filters_municipalities == '0'){
+              this.filters.municipalities = 'N';
+           }
+          else if(this.options.filters_municipalities && this.options.filters_municipalities.length){
+                this.filters.municipalities = options.filters_municipalities;
             }
         }
 
@@ -111,7 +138,10 @@ var MapView = BaseView.extend({
             }
         }
 
-        this.load_data();
+        if (this.dataLoadingIsAllowed()){
+          this.load_data();
+        }
+
 
         this.map.on('layerchange', function(layer){
             if (_this.map.hasLayer(layer.layer)) {
@@ -170,17 +200,38 @@ var MapView = BaseView.extend({
         this.filters.on('hashtag_change', function(search_text){
           this.filters.hashtag = search_text;
           this.filters.trigger('changed','hashtag');
+        }, this);
+
+        this.filters.on('daterange_change', function(range){
+          this.filters.daterange = range;
+          this.filters.trigger('changed','daterange');
+        }, this)
+
+        this.filters.on('municipalities_change', function(municipalities){
+          this.filters.municipalities = municipalities;
+          this.filters.trigger('changed','municipalities');
         }, this)
 
         this.filters.on('changed', function(filter){
-            if (filter !=='notif' && filter !=='hashtag' && filter !== 'notif_types'){
-                if (MOSQUITO.app.mapView.options.layers.indexOf('F')>-1) this.refreshCoverageLayer();
-                this.drawCluster();
-            } else {
+          var newCallFilters = [
+            'notif', 'hashtag', 'notif_types', 'municipalities','daterange'
+          ];
+          if (newCallFilters.indexOf(filter) === -1){
+              if (MOSQUITO.app.mapView.options.layers.indexOf('F')>-1)
+                  this.refreshCoverageLayer();
+              this.drawCluster();
+              // make an exception for daterange and load observations
+          } else {
+            if (this.dataLoadingIsAllowed()){
               this.load_data();
             }
-            //if ('notification' in this.controls) this.controls.notification.getNotificationClientIds();
-
+          }
+          if (this.anyFilterChecked()){
+            this.activateFilterAcordion();
+          }
+          else{
+            this.deactivateFilterAcordion();
+          }
         }, this);
 
         return this;
@@ -202,6 +253,11 @@ var MapView = BaseView.extend({
         if('filters_months' in this.options){
             if(this.options.filters_months !== null && this.options.filters_months !== 'all'){
                 this.filters.months = this.options.filters_months.split(',').map(Number);
+            }
+        }
+        if('filters_daterange' in this.options){
+            if(this.options.filters_daterange !== null){
+                this.filters.daterange = this.options.filters_daterange;
             }
         }
 
@@ -279,6 +335,13 @@ var MapView = BaseView.extend({
                 return west(B, A, x, y);
             }
         }
-    }
+    },
 
+    setDataLoading: function(state){
+      this.scope.allowDataLoading = state
+    },
+
+    dataLoadingIsAllowed: function(){
+      return (this.scope.allowDataLoading)
+    }
 });

@@ -67,7 +67,6 @@ trans.en = {
     'October': 'October',
     'November': 'November',
     'December': 'December',
-
     'map.controlmoreinfo_title': 'Description',
     'map.mundial_controlmoreinfo_title': 'Description',
 
@@ -139,6 +138,7 @@ trans.en = {
     'group.breeding_sites': 'Breeding sites',
     'group.observations': 'Citizen observations',
     'group.userdata': 'User layers',
+    'group.filters':'Filters',
     'group.userfixes': 'Distribution of participants',
     'hashtag.filters.placeholder': 'By #hashtag',
     'observations.filters.title': 'Observations',
@@ -155,4 +155,33 @@ trans.en = {
     'all_notifications': 'All notifications',
     'with_my_notifications': 'With my notifications',
     'without_my_notifications': 'Without my notifications',
+
+    // NEW
+    'notification.warning.municiaplities': 'Sending notifications can only be done on observations published in the municipalites linked to the current session\'s user.',
+    'group.filters.time': 'Time filters',
+    'group.filters.hashtag': '#hashtag filter',
+    'group.filters.notifications': 'Notification filters',
+    'group.filters.municipalities': 'Filter by municipality',
+    'group.filters.time.custom_daterange': 'Custom date',
+    'group.filters.time.apply': 'Apply',
+    'group.filters.time.clear': 'Clear',
+    'group.filters.time.cancel': 'Close',
+    'general.next': 'Next',
+    'general.previous': 'Previous',
+    'general.shortday.sunday': 'Su',
+    'general.shortday.monday': 'Mo',
+    'general.shortday.tuesday': 'Tu',
+    'general.shortday.wednesday': 'We',
+    'general.shortday.thursday': 'Th',
+    'general.shortday.friday': 'Fr',
+    'general.shortday.saturday': 'Sa',
+    'general.today': 'Today',
+    'general.yesterday': 'Yesterday',
+    'general.before_yesterday': 'Day before yesterday',
+    'group.filters.shortcut.this_week': 'This week',
+    'group.filters.shortcut.last_7_days': 'Last 7 days',
+
+    'filter.municipality.placeholder': 'Search municipalities',
+    'filter.municipalities.inputtooshort': 'At least 2 characters',
+    'label.user-municipalities': 'My municipalities'
 };

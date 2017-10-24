@@ -210,21 +210,143 @@ body{
 }
 
 .section{
-	margin-top:10px;
+	margin-top:5px;
+  margin-bottom:5px;
 }
 
 #legend_reports_map .section.filters,
 #legend_reports_map .section.filters .title{
   text-align: left;
-  color:#ccc;
+  color: #ccc;
 }
+
 #legend_reports_map .section.filters,
 #map-ui .section.filters{
-    margin-left: 5px;
-    margin-right: 5px;
     border-radius:5px;
-    padding:10px;
+    padding:10px 0px 10px 30px;
     border:1px solid #ddd;
+}
+
+.section.filters#time_group {
+  background:url('../img/icon_calendar.png') no-repeat 5px 5px;
+}
+
+.section.filters#hashtag_filters {
+  background:url('../img/icon_tag.png') no-repeat 5px 5px;
+}
+
+.section.filters#notif_filters {
+  background:url('../img/icon_bell.png') no-repeat 5px 5px;
+}
+
+.section.filters#municipality_group {
+  background:url('../img/icon_globe.png') no-repeat 5px 5px;
+}
+
+.section.filters#time_group .comiseo-daterangepicker-triggerbutton {
+  min-width:100%;
+}
+
+button.ui-widget {
+    font-family: inherit;
+}
+
+.ui-front.comiseo-daterangepicker {
+  background:white;
+  z-index:9999;
+  border-radius:5px;
+  border:1px solid #cacaca;
+  margin-left:1px;
+  background:#ececec;
+  width: 220px;
+}
+.comiseo-daterangepicker .comiseo-daterangepicker-main,
+.comiseo-daterangepicker .comiseo-daterangepicker-calendar {
+  background:none;
+}
+
+.comiseo-daterangepicker .ui-datepicker.ui-widget-content {
+  width:100%;
+}
+
+.comiseo-daterangepicker .comiseo-daterangepicker-presets {
+  display: table-row;
+  height:auto;
+}
+
+.comiseo-daterangepicker-triggerbutton.ui-widget {
+  font-size:.9em;
+}
+
+.comiseo-daterangepicker.comiseo-daterangepicker-left .comiseo-daterangepicker-buttonpanel {
+  float:none;
+  text-align:center;
+}
+.comiseo-daterangepicker .comiseo-daterangepicker-buttonpanel .ui-button {
+  padding:4px;
+  font-size:.9em;
+  font-weight:normal;
+  border: 1px solid #ffde18;
+  color: black;
+  display: inline-block;
+  padding: 4px 8px;
+  line-height: 1.42857143;
+  border-radius: 4px
+}
+.comiseo-daterangepicker .comiseo-daterangepicker-buttonpanel .ui-priority-primary {
+  background: rgba(255,222, 24, 0.8);
+}
+.comiseo-daterangepicker .comiseo-daterangepicker-buttonpanel .ui-priority-primary:hover {
+  background: #449d44;
+  border-color: #398439;
+  color: #fff;
+}
+.comiseo-daterangepicker .ui-priority-secondary,
+.comiseo-daterangepicker .ui-helper-clearfix .ui-priority-secondary,
+.comiseo-daterangepicker .ui-widget-header .ui-priority-secondary {
+  opacity:1;
+  background: rgba(255,0,0,0.7);
+}
+
+.comiseo-daterangepicker-left .comiseo-daterangepicker-main .comiseo-daterangepicker-calendar {
+  border-right-width:0;
+  padding-right:0;
+  height:auto;
+  font-size:.8em;
+}
+
+.comiseo-daterangepicker-presets .ui-menu .ui-menu-item {
+  float:left;
+  border-radius:10px;
+  border:1px solid #cacaca;
+  margin:3px;
+  font-size:.8em;
+  background:white;
+}
+
+.comiseo-daterangepicker-presets .ui-menu .ui-menu-item .ui-state-active {
+  border-radius:10px;
+  background: #b0c4de;
+}
+
+.comiseo-daterangepicker-triggerbutton.ui-button {
+  background:white;
+}
+.comiseo-daterangepicker-triggerbutton.ui-button:hover {
+  background:#e6e6e6;
+}
+
+#map-ui .filters_group{
+  margin: 0px 5px 0px 20px;
+  padding: 0px 0px 0px 0px;
+}
+
+#map-ui .selected-filter-button{
+    background-color: #dedede;
+}
+
+#map-ui .unselected-filter-button{
+    background-color: none;
 }
 
 div.layer-group.list-group-item{
@@ -331,7 +453,7 @@ div.layer-group.list-group-item i{
     width: 500px !important;
 }
 
-#control-share .warning {
+.warning {
   font-size:.9em;
   font-style:italic;
   background:#ECECEC;
@@ -340,14 +462,14 @@ div.layer-group.list-group-item i{
   display:table;
   border-radius:4px;
 }
-#control-share .warning > div {
+.warning > div {
   padding:5px 20px;
 }
-#control-share .warning ul {
+.warning ul {
   margin-top:10px;
   list-style: none;
 }
-#control-share .warning ul li img{
+.warning ul li img{
     margin-right:5px;
 }
 
@@ -487,6 +609,9 @@ h3.reports{
   margin:2px 2px;
   background:#CCCCCC !important;
 }
+.sidebar-control-layers {
+  margin-bottom:50px;
+}
 .sidebar-control-layers .close_button {
   margin:12px 2px 2px;
 }
@@ -496,6 +621,7 @@ h3.reports{
 
 #map-ui .btn {
   margin-right:10px;
+  font-size: .9em;
 }
 #map-ui .btn-block {
   width:auto;
@@ -536,12 +662,12 @@ h3.reports{
     top:20px;
     right:0px;
   }
-  .collapse.in {
-  /*  height:60px;*/
+  .navbar-collapse.collapse.in {
+    height:60px;
   }
   .container-fluid>.navbar-collapse {
     top:0px;
-    z-index: 9999;
+    z-index: 1001;
     position: relative;
     background: #ECECEC;
     margin-right:-16px;
@@ -609,25 +735,28 @@ h3.reports{
   }
   #map-ui div[class^="sidebar-"] {
   }
-  /*************************/
-  /* Landscape orientation */
-  /*************************/
-  @media  (max-height: 321px) {
-    .leaflet-control {
-      clear:none;
-    }
-    .map-sidebar {
-      width:45% !important;
-    }
+
+}
+@media  (min-width: 450px) {
+/*************************/
+/* Landscape orientation */
+/*************************/
+@media  (max-height: 321px) {
+  .leaflet-control {
+    clear:none;
   }
-  @media  (min-height:321px) and (max-height: 467px) {
-    .leaflet-control {
-      clear:none;
-    }
-    .map-sidebar {
-      width:50% !important;
-    }
+  .map-sidebar {
+    width:45% !important;
   }
+}
+@media  (min-height:321px) and (max-height: 467px) {
+  .leaflet-control {
+    clear:none;
+  }
+  .map-sidebar {
+    width:50% !important;
+  }
+}
 }
 
 li.tiger_mosquito {
@@ -747,15 +876,12 @@ div.notif-list.collapsed{
 }
 
 .notif_filter{
-    font-size:0.9em;
+    /*font-size:0.9em;*/
     /*border-radius: 5px;
     border: 1px solid #ddd;
     padding: 6px 12px;*/
 }
-#notif_filters.section.filters .notif_type_filter, #notif_filters.section.filters .notif_filter {
-  width:90%;
-  /*float:left;*/
-}
+
 #notif_filters input[type=radio] {
   margin-right:5px;
 }
@@ -812,6 +938,7 @@ div[aria-expanded="false"] div.layer-group.list-group-item div.group-title::afte
 	border: 5px solid transparent;
 	border-top-color: #333;
 }
+
 div[aria-expanded="false"] div.layer-group.list-group-item div.group-title::after {
   content: " ";
   left: 10px;
@@ -900,10 +1027,24 @@ label > p{
   overflow-y: hidden;
 }
 
+form.hashtag_form {
+}
+
+form.hashtag_form input[type="text"]{
+  /*Required to flex input. Otherwise min-width is too big*/
+  min-width: 50px;
+}
+
+
 #hashtag_search_text{
-  width:130px;
   border-radius: 4px;
   padding: 4px;
+  font-size:.9em;
+  width:100%;
+}
+
+#hashtag_search_text.active{
+    background: #dedede;
 }
 
 #hashtag_search_text button{
@@ -1067,4 +1208,52 @@ li.stormdrain_legend{ padding-top:5px}
 #map-ui .dropdown-menu>li>a {
   white-space: normal;
   border-bottom: 1px solid #ccc;
+}
+
+/*Municipalities filter*/
+
+.checkbox-container{
+    display:inline-block;
+}
+
+div.form-control.tokenfield {
+  overflow:hidden;
+  padding:0;
+}
+
+#tokenfield-tokenfield {
+  padding:6px 12px 0px;
+  height:auto;
+  font-size:.9em;
+}
+
+div.tokenfield .token {
+  margin:5px 0px 0px 5px;
+}
+
+.ui-menu.ui-widget.ui-widget-content.ui-autocomplete.ui-front {
+  overflow-y:auto;
+  overflow-x:hidden;
+  font-size:.9em;
+}
+
+.ui-autocomplete {
+  max-height: 290px;
+}
+
+#ui-id-9 li div {
+  padding:6px 12px;
+}
+
+div#legend_reports_map ul#map_layers{
+  font-size:0.9em;
+}
+
+/*Background color for autocomplete suggestions*/
+.ui-state-active, ul.ui-widget-content div.ui-state-active,
+.ui-widget-header .ui-state-active, a.ui-button:active,
+.ui-button:active, .ui-button.ui-state-active:hover {
+    background: #e6e6e6;
+    border:none;
+    margin:0;
 }

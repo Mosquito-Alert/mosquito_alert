@@ -4,7 +4,7 @@ var MOSQUITO = (function (m) {
         style: 'leaflet-control-share-btn',
         build_url: function(){
             if(!(this.options.build_url)){
-                console.error('ERROR: no options.build_url function defined');
+                if (console && console.error) console.error('ERROR: no options.build_url function defined');
             }
             return this.options.build_url();
         }

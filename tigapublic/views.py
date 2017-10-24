@@ -6,6 +6,7 @@ import tempfile
 import django.db.models.fields
 from django.db import transaction
 import datetime
+from datetime import date
 from django.http import HttpResponse
 from StringIO import StringIO
 from zipfile import ZipFile
@@ -20,7 +21,7 @@ from django.contrib.auth import authenticate, login, logout
 
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LineString, Point
 from models import MapAuxReports, Notification, NotificationContent, NotificationImageFormModel, ObservationNotifications
-from models import StormDrain, StormDrainUserVersions, AuthUser, NotificationPredefined
+from models import StormDrain, StormDrainUserVersions, AuthUser, NotificationPredefined, Municipalities, UserMunicipalities
 
 from resources import MapAuxReportsLimitedResource, MapAuxReportsResource, MapAuxReportsExtendedResource
 from resources import NotificationResource, NotificationExtendedResource
@@ -33,7 +34,7 @@ from constants import *
 from django.conf import settings
 from django import forms
 from forms import *
-import datetime
+
 from tablib import Dataset
 import os
 import requests
@@ -263,20 +264,34 @@ class MapAuxReportsExportView(View):
     def time_filter(self, qs):
         years = self.request.GET.get('years')
 
-        if years is not None:
-            years = years.split(',')
-            years_lst = []
-            for i in years:
-                years_lst.append(Q(observation_date__year=str(i).zfill(2)))
-            qs = qs.filter(reduce(OR, years_lst))
+        date_start = self.request.GET.get('date_start')
+        date_end = self.request.GET.get('date_end')
 
-        months = self.request.GET.get('months')
-        if months is not None:
-            months = months.split(',')
-            lst = []
-            for i in months:
-                lst.append(Q(observation_date__month=str(i).zfill(2)))
-            qs = qs.filter(reduce(OR, lst))
+        if date_start is not None and date_end is not None:
+            #Get Max time of date_end
+            date_end = date(*map(int, date_end.split('-')))
+            date_end = datetime.datetime.combine(date_end, datetime.time.max)
+
+            qs = qs.filter(observation_date__range=(
+                date_start, date_end)
+            )
+
+        else:
+            if years is not None:
+                years = years.split(',')
+                years_lst = []
+                for i in years:
+                    years_lst.append(Q(observation_date__year=str(i).zfill(2)))
+                qs = qs.filter(reduce(OR, years_lst))
+
+            months = self.request.GET.get('months')
+
+            if months is not None:
+                months = months.split(',')
+                lst = []
+                for i in months:
+                    lst.append(Q(observation_date__month=str(i).zfill(2)))
+                qs = qs.filter(reduce(OR, lst))
 
         return qs
 
@@ -365,6 +380,31 @@ class MapAuxReportsExportView(View):
             hashtag = '#' + self.request.GET.get('hashtag').replace('#','')
             qs = qs.filter(note__icontains=hashtag)
 
+        #Check municipalities filters
+        municipalities = self.request.GET.get('municipalities')
+
+        if request.user.is_authenticated() and municipalities=='0':
+            if request.user.groups.filter(name=managers_group).exists():
+                #All municipalities of registered user
+                qs = qs.filter(municipality__in = Municipalities.objects.values('nombre').filter(
+                        municipality_id__in = UserMunicipalities.objects.values('municipality_id').filter(user_id__exact=int(request.user.id))
+                ))
+
+            elif request.user.groups.filter(name=superusers_group).exists():
+                #All municipalities of spain
+                qs = qs.filter(municipality__in = Municipalities.objects.values('nombre').filter(
+                        tipo__exact='Municipio'
+                        )
+                )
+
+        else:
+            if municipalities.upper() != 'N':
+                #Only selected municipalities
+                #Turn sring array to integer array
+                municipalitiesArray = municipalities.split(',')
+                int_array = map(int, municipalitiesArray)
+                qs = qs.filter(municipality__in = Municipalities.objects.values('nombre').filter(municipality_id__in = int_array))
+
 
         export_type = kwargs['format']
 
@@ -443,7 +483,7 @@ class MapAuxReportsExportView(View):
 
         zip.close()
 
-        response = HttpResponse(mimetype="application/zip")
+        response = HttpResponse(content_type="application/zip")
         response["Content-Disposition"] = "attachment; filename=mosquito_alert.zip"
 
         in_memory.seek(0)
@@ -500,17 +540,23 @@ def map_aux_reports(request, id):
     author_in_json =''
     private_notifs =''
     public_notifs = ''
-    columns = 'r.id, version_uuid, observation_date, lon,lat, ref_system, type, breeding_site_answers,mosquito_answers, expert_validated, expert_validation_result,simplified_expert_validation_result, site_cat,storm_drain_status, edited_user_notes, r.photo_url,photo_license, dataset_license, single_report_map_url,n_photos, visible, final_expert_status, private_webmap_layer'
+    columns = 'r.id, version_uuid, observation_date, lon,lat, ref_system, type, breeding_site_answers,mosquito_answers, expert_validated, expert_validation_result,simplified_expert_validation_result, site_cat,storm_drain_status, edited_user_notes, r.photo_url,photo_license, dataset_license, single_report_map_url,n_photos, visible, final_expert_status, private_webmap_layer, municipality'
 
+    #reset notifiable column to empty for public users
+    notifiable_column =''
+    notifiable_name=''
     # IF registered user then get corresponding private notifications
     if request.user.is_authenticated():
         #Add extra columns to query
         columns = columns + ', note, t_q_1, t_q_2, t_q_3, t_a_1, t_a_2, t_a_3, s_q_1, s_q_2, s_q_3, s_q_4, s_a_1, s_a_2, s_a_3, s_a_4'
+        notifiable_name = ', notifiable'
 
         if request.user.is_active and request.user.groups.filter(name=superusers_group).exists():
             #Set author's notification column
-            author = 'au.username as author,'
+            author = 'au.username as author, '
             author_in_json = ',author'
+            #Super users can alwahs send a notification
+            notifiable_column = ', 1 as notifiable'
 
             #If registered user in super-mosquito, private_notifs = all private notifs
             private_notifs = """union all
@@ -520,9 +566,19 @@ def map_aux_reports(request, id):
                      and r.version_uuid = n.report_id and au.id=n.expert_id and r.id=""" + id
 
         else:
+            #Managers can send notification to observations inside their municipalities
+            notifiable_column =  ''', case when municipality in (
+	                   select nombre from municipis_4326 m, tigapublic_user_municipalities um
+	                    where m.municipality_id = um.municipality_id and um.user_id=''' + str(request.user.id)+ '''
+	                   ) then 1
+	                   else 0
+	                   end as notifiable '''
+
             #If registered user in gestors, private_notifs = get their own notifications
             if request.user.groups.filter(name=managers_group).exists():
-
+                author = 'au.username as author,'
+                author_in_json = ',author'
+                #Super users can always send a notification
                 private_notifs = """union all
                     select """ + author + """n.report_id, nc.title_es, nc.body_html_es, TO_CHAR(n.date_comment, 'DD/MM/YYYY') as date_comment
                     from tigapublic_map_notification n , tigaserver_app_notificationcontent nc, map_Aux_reports r, auth_user au
@@ -545,12 +601,12 @@ def map_aux_reports(request, id):
     db = connection.cursor()
 
     sql ="""
-        select json_agg((title_es, body_html_es, date_comment"""+author_in_json+""")) as notifs,""" + columns + """, TO_CHAR(observation_date, 'YYYYMM') AS month
-            from map_aux_reports r left join (""" + sql + """) as notifs_table
-        on r.version_uuid = notifs_table.report_id
-        where r.id=""" + id + """
-        group by """ + columns +""", TO_CHAR(observation_date, 'YYYYMM')"""
-
+        select json_agg((title_es, body_html_es, date_comment"""+author_in_json+""")) as notifs,""" + columns + notifiable_column + """,
+            TO_CHAR(observation_date AT TIME ZONE 'UTC', 'YYYYMM') AS month
+                from map_aux_reports r left join (""" + sql + """) as notifs_table
+                    on r.version_uuid = notifs_table.report_id
+                where r.id=""" + id + """
+                group by """ + columns + notifiable_name +""", TO_CHAR(observation_date AT TIME ZONE 'UTC', 'YYYYMM')"""
 
     db.execute(sql, (id,))
     rows = dictfetchall(db)
@@ -590,7 +646,13 @@ def map_aux_reports_bounds(request, bounds):
                         content_type='application/json')
 
 @cross_domain_ajax
-def map_aux_reports_bounds_notifs_hashtag(request, bounds, notifs, hashtag):
+def map_aux_reports_bounds_notifs(request, bounds, dateStart, dateEnd, hashtag, municipalities, mynotifs, notif_types ):
+    success = request.user.is_authenticated()
+    #WHEN SHARING URL FROM REGISTERED USER TO PUBLIC USER
+    if success is False:
+        iduser=0
+        mynotifs = 'N'
+        notif_types = 'N'
 
     db = connection.cursor()
 
@@ -603,156 +665,90 @@ def map_aux_reports_bounds_notifs_hashtag(request, bounds, notifs, hashtag):
     condition_notifs =''
     column_notif =''
     join_notifs =''
-    if notifs.lower() != 'n':
+    where_notifs =''
+
+    if mynotifs.upper() != 'N':
         column_notif = ", max(e.notif) AS notif"
         condition_notifs = """, CASE n.id is null WHEN true THEN 0 ELSE
-                        CASE n.expert_id = """+str(request.user.id)+""" WHEN true THEN 1
+                        CASE n.expert_id = """ + str(request.user.id) + """ WHEN true THEN 1
                         ELSE 0 END
                     END as notif"""
-        join_notifs = """LEFT OUTER JOIN tigapublic_map_notification n
-            ON (n.report_id = r.version_uuid and n.expert_id = """ + str(request.user.id)+ ") "
+        join_notifs = """ LEFT OUTER JOIN tigapublic_map_notification n
+            ON (n.report_id = aux.version_uuid and n.expert_id = """ + str(request.user.id)+ ") "
+    elif notif_types.upper()!='N':
+        #CHECK notificationsjoin_hashtag = ''
+        if notif_types.upper() != 'N':
+            #Not predefined notfications
+            typesArr = notif_types.split(',')
+            if '0' in typesArr:
+                #Check if other values apart from 0
+                if len(set(typesArr))>0:
+                    where_notifs = ' AND ( ( m.preset_notification_id in ('+notif_types+') ) OR (m.preset_notification_id is null and expert_id=' + str(iduser) + ') )'
+                else:
+                    where_notifs = ' AND m.preset_notification_id is null and expert_id='+str(iduser)
 
+                join_notifs = '''
+                    JOIN tigapublic_map_notification m ON aux.version_uuid = m.report_id
+                    LEFT OUTER JOIN tigaserver_app_notificationpredefined p on m.preset_notification_id = p.id
+                    '''
+            #Only predefined notfications
+            else:
+                where_notifs = ' AND m.preset_notification_id in (' + notif_types + ')'
+                join_notifs = '''
+                    JOIN tigapublic_map_notification m ON aux.version_uuid = m.report_id
+                    JOIN tigaserver_app_notificationpredefined p on m.preset_notification_id = p.id
+                    '''
     #Check HASTHTAG
     join_hashtag = ''
     condition_hashtag =''
-    if hashtag.lower() != 'n':
+    if hashtag.upper() != 'N':
         hashtag = '#' + hashtag.replace('#','')
-        join_hashtag = """ LEFT OUTER JOIN
-                            map_aux_reports aux ON (r.version_uuid = aux.version_uuid)"""
         condition_hashtag = " AND aux.note ilike '%%""" + hashtag +"%%' "
+
+    #Daterange
+    if dateStart.upper() != 'N' and dateEnd.upper() != 'N':
+        condition_hashtag += " AND (observation_date AT TIME ZONE 'UTC')::date BETWEEN '%s' AND '%s'" % (dateStart, dateEnd)
+
+    #Check Municipalities. Default values empty
+    join_municipalities = ''
+    where_municipalities =''
+
+    #Check Municipalities. Default values empty
+    if municipalities not in ['N','0']:
+        #All municipalities of spain
+        join_municipalities += ' JOIN municipis_4326 muni ON aux.municipality = muni.nombre'
+        where_municipalities += " AND muni.tipo='Municipio' AND muni.municipality_id in (" + municipalities + ")"
+
+    elif municipalities =='0': #registered users
+        if request.user.groups.filter(name=managers_group).exists():
+            #All municipalities of registered user
+            join_municipalities += ' JOIN municipis_4326 muni ON aux.municipality = muni.nombre'
+            join_municipalities += ' JOIN tigapublic_user_municipalities um ON um.municipality_id = muni.municipality_id'
+            where_municipalities += " AND um.user_id = " + str(request.user.id)
+
+        elif request.user.groups.filter(name=superusers_group).exists():
+            #All municipalities of spain
+            join_municipalities += ' JOIN municipis_4326 muni ON aux.municipality = muni.nombre'
+            where_municipalities += " AND muni.tipo='Municipio'"
 
     sql = """
         SELECT c, category, expert_validation_result, month, lon, lat, id """+column_notif+"""
         FROM (
-            SELECT r.c, r.category, r.expert_validation_result, r.month,
-            r.lon, r.lat, r.id """ + condition_notifs +"""
-            FROM reports_map_data r """+ join_notifs + join_hashtag + """
-            WHERE geohashlevel=8 """ + condition_hashtag + """
-            AND ST_Intersects(
-                ST_Point(r.lon,r.lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
-            )
-        ) as e
-        GROUP BY c, category, expert_validation_result, month, lon, lat, id
-        ORDER BY id
-        """
-    params = [box[0], box[1], box[2], box[3]]
-
-    db.execute(sql, params)
-
-    rows = dictfetchall(db)
-
-    res['rows'] = rows
-    res['num_rows'] = db.rowcount
-
-    return HttpResponse(DateTimeJSONEncoder().encode(res),
-                        content_type='application/json')
-
-
-@cross_domain_ajax
-def getReportsByNotifType(request, bounds, types, hashtag):
-    #Only registered users
-    success = request.user.is_authenticated()
-    if success is False:
-        iduser=0
-        types='n'
-        #return HttpResponse('Unauthorized', status=401)
-    else:
-        iduser = request.user.id
-
-    db = connection.cursor()
-
-    res = {'num_rows': 0, 'rows': []}
-    box = bounds.split(',')
-
-    box = map(float, box)
-
-    #CHECK notificationsjoin_hashtag = ''
-    notif_where =''
-    notif_column =''
-    notif_join =''
-    if types.lower() != 'n':
-        #Not predefined notfications
-        typesArr = types.split(',')
-        if '0' in typesArr:
-            #Check if other values apart from 0
-            if len(set(typesArr))>0:
-                notif_where = 'AND ( ( m.preset_notification_id in ('+types+') ) OR (m.preset_notification_id is null and expert_id=' + str(iduser) + ') )'
-            else:
-                notif_where = ' AND m.preset_notification_id is null and expert_id='+str(iduser)
-
-            notif_join = '''
-                JOIN tigapublic_map_notification m ON r.version_uuid = m.report_id
-                LEFT OUTER JOIN tigaserver_app_notificationpredefined p on m.preset_notification_id = p.id
-                '''
-        #Only predefined notfications
-        else:
-            notif_where = ' AND m.preset_notification_id in (' + types + ')'
-            notif_join = '''
-                JOIN tigapublic_map_notification m ON r.version_uuid = m.report_id
-                JOIN tigaserver_app_notificationpredefined p on m.preset_notification_id = p.id
-                '''
-    #Check HASTHTAG
-    hashtag_join = ''
-    hashtag_where =''
-    if hashtag.lower() != 'n':
-        hashtag = '#' + hashtag.replace('#','')
-        hashtag_where = " AND r.note ilike '%%" + hashtag +"%%' "
-
-    # 1 as c emulates cluster of 1 item
-    sql = """SELECT 1 as c, r.private_webmap_layer AS category, r.expert_validation_result,
-                to_Char(observation_date,'YYYYMM') AS month, r.lon, r.lat, r.id
-            FROM  map_aux_reports r """+ notif_join + hashtag_join +"""
+            SELECT 1 as c, private_webmap_layer as category, aux.expert_validation_result,
+            to_Char(observation_date AT TIME ZONE 'UTC','YYYYMM') AS month,
+            aux.lon, aux.lat, aux.id """ + condition_notifs +"""
+            FROM map_aux_reports aux """+ join_notifs + join_hashtag + join_municipalities + """
             WHERE ST_Intersects(
-                ST_Point(r.lon,r.lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
-            ) """ + notif_where + hashtag_where +"""
-             GROUP BY category, expert_validation_result, month, lon, lat, r.id
-             ORDER BY id """
+                ST_Point(aux.lon,aux.lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
+            ) """ + condition_hashtag + where_municipalities + where_notifs +"""
 
-    params = [box[0], box[1], box[2], box[3]]
-
-    db.execute(sql, params)
-
-    rows = dictfetchall(db)
-
-    res['rows'] = rows
-    res['num_rows'] = db.rowcount
-    #return HttpResponse(sql)
-    return HttpResponse(DateTimeJSONEncoder().encode(res),
-                        content_type='application/json')
-
-@cross_domain_ajax
-def map_aux_reports_bounds_notifs(request, bounds, notifs):
-
-    db = connection.cursor()
-
-    res = {'num_rows': 0, 'rows': []}
-    box = bounds.split(',')
-
-    box = map(float, box)
-
-    sql = """
-        SELECT c, category, expert_validation_result, month, lon, lat, id, max(e.notif) AS notif
-        FROM (
-            SELECT c, category, expert_validation_result, month,
-            lon, lat, r.id,
-            CASE n.id is null WHEN true THEN 0 ELSE
-                CASE n.expert_id = %s WHEN true THEN 1
-                ELSE 0 END
-            END as notif
-            from reports_map_data r
-            LEFT OUTER JOIN tigapublic_map_notification n ON (n.report_id = r.version_uuid and n.expert_id = %s)
-            where geohashlevel=8 AND
-            ST_Intersects(
-                ST_Point(lon,lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
-            )
         ) as e
         GROUP BY c, category, expert_validation_result, month, lon, lat, id
         ORDER BY id
         """
-    params = [request.user.id, request.user.id, box[0], box[1], box[2], box[3]]
 
+    params = [box[0], box[1], box[2], box[3]]
     db.execute(sql, params)
-
     rows = dictfetchall(db)
 
     res['rows'] = rows
@@ -762,8 +758,7 @@ def map_aux_reports_bounds_notifs(request, bounds, notifs):
                         content_type='application/json')
 
 
-
-def userfixes(request, year, months):
+def userfixes(request, years, months, dateStart, dateEnd):
 
     db = connection.cursor()
 
@@ -779,21 +774,26 @@ def userfixes(request, year, months):
         ORDER BY masked_lat, masked_lon
     """
 
-    if year == 'all' and months == 'all':
-        sql = sql_head + sql_foot
-    elif year == 'all':
+    if dateStart.upper() != 'N' and dateEnd.upper() != 'N':
         sql = sql_head + """
-            WHERE extract(month FROM fix_time) in ("""+months+""")
-        """ + sql_foot
-    elif months == 'all':
-        sql = sql_head + """
-            WHERE extract(year FROM fix_time) = """+year+"""
+            WHERE fix_time::date BETWEEN '"""+dateStart+"""' AND '"""+dateEnd+"""'
         """ + sql_foot
     else:
-        sql = sql_head + """
-            WHERE extract(year FROM fix_time) = """+year+"""
-            AND extract(month FROM fix_time) in ("""+months+""")
-        """ + sql_foot
+        if years == 'all' and months == 'all':
+            sql = sql_head + sql_foot
+        elif years == 'all':
+            sql = sql_head + """
+                WHERE extract(month FROM fix_time) in ("""+months+""")
+            """ + sql_foot
+        elif months == 'all':
+            sql = sql_head + """
+                WHERE extract(year FROM fix_time) in ("""+years+""")
+            """ + sql_foot
+        else:
+            sql = sql_head + """
+                WHERE extract(year FROM fix_time) in ("""+years+""")
+                AND extract(month FROM fix_time) in ("""+months+""")
+            """ + sql_foot
 
     db.execute(sql)
 
@@ -815,67 +815,6 @@ def userfixes(request, year, months):
 
     return HttpResponse(DateTimeJSONEncoder().encode(res),
                         content_type='application/json')
-
-
-
-def notifications(request, bounds, year, months):
-
-    db = connection.cursor()
-
-    res = {'num_rows': 0, 'rows': []}
-    box = bounds.split(',')
-
-    # Get and prepare categories param for the sql
-    # layers = categories.split(',')
-    # cat = "'" + "', '".join([i for i in layers]) + "'"
-
-    box = map(float, box)
-
-    columns = 'a.id, a.version_uuid, a.observation_date, a.lon,a.lat, a.ref_system, a.type, a.breeding_site_answers,a.mosquito_answers, a.expert_validated, a.expert_validation_result,a.simplified_expert_validation_result, a.site_cat,a.storm_drain_status, a.edited_user_notes, a.photo_url,a.photo_license, a.dataset_license, a.single_report_map_url,a.n_photos, a.visible, a.final_expert_status, a.private_webmap_layer'
-
-    success = request.user.is_authenticated()
-    if success is True:
-       columns = columns + ', a.note, a.t_q_1, a.t_q_2, a.t_q_3, a.t_a_1, a.t_a_2, a.t_a_3, a.s_q_1, a.s_q_2, a.s_q_3, a.s_q_4, a.s_a_1, a.s_a_2, a.s_a_3, a.s_a_4'
-
-
-    sql = """
-        select json_agg((notif.expert_comment, notif.date_comment)) as notifs, """ + columns +""", TO_CHAR(observation_date, 'YYYYMM') AS month,
-           private_webmap_layer AS category
-        from map_aux_reports a, tigapublic_map_notification notif
-        where
-        a.lon is not null and a.lat is not null
-        AND
-        ST_Intersects(
-            ST_Point(a.lon,a.lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
-        )
-        and a.version_uuid = notif.report_id
-    """
-
-    # And date and layers filters to sql
-    filters = ""
-
-    if year != 'all':
-        filters = " and extract(year from observation_date) = "+year
-
-    if months != 'all':
-        filters += " and extract(month from observation_date) in (" + months + ")"
-
-
-    sql += filters
-
-    sql += " GROUP BY " + columns + " ORDER BY observation_date DESC"
-
-    # sql = "SELECT * FROM (" + sql +") as foo where category in (" + cat + ") LIMIT " + str(maxReports)
-
-    db.execute(sql, box)
-    rows = dictfetchall(db)
-
-    res['rows'] = rows
-    res['num_rows'] = len(rows)
-
-    return HttpResponse(DateTimeJSONEncoder().encode(res),
-                        content_type='application/json')
-
 
 def handle_uploaded_file(request, f):
     now = datetime.datetime.now()
@@ -903,13 +842,27 @@ def imageupload(request):
 
     return HttpResponse("<script>alert('%s');</script>" % json.dumps('\n'.join([v[0] for k, v in form.errors.items()])))
 
+
 @csrf_exempt
 @cross_domain_ajax
-def intersects(request,excluded_categories, years, months):
+def intersects_daterange(request,excluded_categories, date_start, date_end, hashtag, munis, notif, notif_types):
+    return intersects(request,excluded_categories, 'all', 'all', date_start, date_end, hashtag, munis, notif, notif_types)
+
+@csrf_exempt
+@cross_domain_ajax
+def intersects_no_daterange(request,excluded_categories, years, months, hashtag, munis, notif, notif_types):
+    return intersects(request,excluded_categories, years, months, 'N', 'N', hashtag, munis, notif, notif_types)
+
+
+@csrf_exempt
+@cross_domain_ajax
+def intersects(request,excluded_categories, years, months, date_start, date_end, hashtag, municipalities, notif, notif_types):
     selection = request.POST.getlist('selection[]')
+
     nodes = []
     for i in range(0, len(selection)):
         nodes.append( selection[i] )
+
     nodes.append( selection[0] )
     poly = 'Polygon(( ' + (', '.join(nodes)) + ' ))'
 
@@ -917,20 +870,69 @@ def intersects(request,excluded_categories, years, months):
 
     #Define sql filters
     where = ''
-    if years.lower() !='all':
-        where += " and to_char(observation_date, 'YYYY'::text)::integer in ("+years+")"
+    joins = ''
+    columns = 'map_aux_reports.id, md5(map_aux_reports.user_id) as user_id'
+    group = ''
+    if date_start.upper() != 'N' and date_end.upper()!='N':
+        where += " AND observation_date::date BETWEEN '%s' AND '%s'" % (date_start, date_end)
 
-    if months.lower() !='all':
-        where += " and to_char(observation_date, 'MM'::text)::integer in ("+months+")"
+    else:
+        if years.lower() !='all':
+            where += " and to_char(observation_date AT TIME ZONE 'UTC', 'YYYY'::text)::integer in ("+years+")"
+
+        if months.lower() !='all':
+            where += " and to_char(observation_date AT TIME ZONE 'UTC', 'MM'::text)::integer in ("+months+")"
+
+    if hashtag.lower() not in ['all', 'n']:
+        where += " AND note ilike '%%#%s%%'" % hashtag
+
+    #Check Municipalities. Default values empty
+    if municipalities not in ['N','0']:
+        #All municipalities of spain
+        joins += ' JOIN municipis_4326 muni ON map_aux_reports.municipality = muni.nombre'
+        where += " AND muni.tipo='Municipio' AND muni.municipality_id in (" + municipalities + ")"
+
+        if request.user.groups.filter(name=managers_group).exists():
+            joins += ' JOIN tigapublic_user_municipalities um ON um.municipality_id = muni.municipality_id'
+            where += " AND um.user_id = " + str(request.user.id)
+
+    elif municipalities =='0': #registered users
+        if request.user.groups.filter(name=managers_group).exists():
+            #All municipalities of registered user
+            joins += ' JOIN municipis_4326 muni ON map_aux_reports.municipality = muni.nombre'
+            joins += ' JOIN tigapublic_user_municipalities um ON um.municipality_id = muni.municipality_id'
+            where += " AND um.user_id = " + str(request.user.id)
+
+        elif request.user.groups.filter(name=superusers_group).exists():
+            #All municipalities of spain
+            joins += ' JOIN municipis_4326 muni ON map_aux_reports.municipality = muni.nombre'
+            where += " AND muni.tipo='Municipio'"
+
+
+    if notif.lower() != 'all':
+        joins += " LEFT OUTER JOIN tigapublic_map_notification n ON (map_aux_reports.version_uuid = n.report_id)"
+        columns += ", CASE n.expert_id = %s WHEN true THEN 1 ELSE 0 END as hasnotif" % request.user.id
+
+    if notif_types.lower() != 'all':
+        joins += " LEFT OUTER JOIN tigapublic_map_notification n ON (map_aux_reports.version_uuid = n.report_id)"
+        where += " AND preset_notification_id in (" + notif_types + ")"
+        group = "GROUP BY map_aux_reports.id, map_aux_reports.user_id"
 
     sql = """
-        select id, md5(user_id) as user_id
-        from map_aux_reports where private_webmap_layer is not null and
+        select """ + columns + """
+        from map_aux_reports
+        """ + joins + """
+        where private_webmap_layer is not null and
         private_webmap_layer not in (""" + "'" + "', '".join(excluded_categories.split(','))+ "'" """)
         and ST_Intersects(
             ST_Point(lon,lat), St_GeomFromText('"""+poly+"""')
         )""" + where
 
+    if notif.lower() != 'all':
+        sql = "SELECT id, user_id, max(hasnotif) as notif FROM (" + sql + ") as foo GROUP BY id, user_id, hasnotif HAVING max(hasnotif) = %s" % notif
+
+    if notif_types.lower() != 'all':
+        sql += " " + group
 
     db.execute(sql)
     rows = dictfetchall(db)
@@ -939,6 +941,7 @@ def intersects(request,excluded_categories, years, months):
     response['success'] = True
     response['rows'] = rows
     response['num_rows'] = db.rowcount
+    response['sql'] = sql
 
     return HttpResponse(json.dumps(response, cls=DateTimeJSONEncoder),
         content_type='application/json')
@@ -970,8 +973,38 @@ def embornals(request):
         return HttpResponse(json.dumps(response, cls=DateTimeJSONEncoder),
                 content_type='application/json')
 
+def reports_no_daterange(request, bounds, years, months, categories, hashtag, municipalities, mynotif, notif_types):
 
-def reports_notif(request, bounds, years, months, categories, my_notifications, hashtag):
+    success = request.user.is_authenticated()
+    #WHEN SHARING URL FROM REGISTERED USER TO PUBLIC USER
+    if success is False:
+        iduser=0
+        mynotifs='N'
+        notif_types='N'
+
+    if str(mynotif).upper() != 'N':
+        return reports_notif(request, bounds, years, months, 'N', 'N', categories, hashtag, municipalities, mynotif, notif_types)
+    else:
+        return reports(request, bounds, years, months, 'N', 'N', categories, hashtag, municipalities, mynotif, notif_types)
+
+
+def reports_daterange(request, bounds, date_start, date_end, categories, hashtag, municipalities, mynotifs, notif_types):
+    success = request.user.is_authenticated()
+
+    #WHEN SHARING URL FROM REGISTERED USER TO PUBLIC USER
+    if success is False:
+        iduser=0
+        mynotifs='N'
+        notif_types='N'
+
+    if mynotifs.upper() != 'N':
+        return reports_notif(request, bounds, 'all','all', date_start, date_end, categories, hashtag, municipalities, mynotifs, notif_types)
+    else:
+        return reports(request, bounds, 'all', 'all', date_start, date_end, categories, hashtag, municipalities, mynotifs, notif_types)
+
+
+def reports_notif(request, bounds, years, months, date_start, date_end, categories, hashtag, municipalities, my_notifications, notif_types):
+
     #Only registered users
     #Returns a notif column where 0->none notification of user, 1 some user notification
 
@@ -994,36 +1027,59 @@ def reports_notif(request, bounds, years, months, categories, my_notifications, 
     else:
        return HttpResponse('Unauthorized', status=401)
 
+    #Check Municipalities. Default values empty
+    join_municipalities = ''
+    municipality_filter = ''
+    if municipalities not in ['N','0']:
+        #All municipalities of spain
+        join_municipalities += ' JOIN municipis_4326 muni ON aux.municipality = muni.nombre'
+        municipality_filter += " AND muni.tipo='Municipio' AND muni.municipality_id in (" + municipalities + ")"
+
+    elif municipalities =='0': #registered users
+        if request.user.groups.filter(name=managers_group).exists():
+            #All municipalities of registered user
+            join_municipalities += ' JOIN municipis_4326 muni ON aux.municipality = muni.nombre'
+            join_municipalities += ' JOIN tigapublic_user_municipalities um ON um.municipality_id = muni.municipality_id'
+            municipality_filter += " AND um.user_id = " + str(request.user.id)
+
+        elif request.user.groups.filter(name=superusers_group).exists():
+            #All municipalities of spain
+            join_municipalities += ' JOIN municipis_4326 muni ON aux.municipality = muni.nombre'
+            municipality_filter += " AND muni.tipo='Municipio'"
+
+
 
     sql = """
-        SELECT """ + ambiguous_columns +""",""" + columns +""", TO_CHAR(observation_date, 'YYYYMM') AS month,
+        SELECT """ + ambiguous_columns +""",""" + columns +""", TO_CHAR(observation_date AT TIME ZONE 'UTC', 'YYYYMM') AS month,
             CASE n.expert_id = %s
                 WHEN true THEN 1
                 ELSE 0
             END as notif
         FROM map_aux_reports aux
         LEFT OUTER JOIN tigapublic_map_notification n
-        ON (aux.version_uuid = n.report_id)
+        ON (aux.version_uuid = n.report_id) """ + join_municipalities + """
         WHERE
         lon is not null and lat is not null
         AND
         ST_Intersects(
             ST_Point(lon,lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
-        )"""
+        )""" + municipality_filter
 
     if hashtag.lower() not in ['none','null','n','undefined']:
         hashtag = '#' + hashtag.replace('#','')
         sql = sql + " AND note ilike '%%" + hashtag +"%%'"
 
+    filters = ''
     # And date and layers filters to sql
-    filters = ""
+    if date_start.upper() != 'N' and date_end.upper() != 'N':
+        filters = " AND observation_date::date BETWEEN '%s' AND '%s'" % (date_start, date_end)
 
-    if years != 'all':
-        filters = " and extract(year from observation_date) in (" + years + ")"
+    else:
+        if years != 'all':
+            filters = " and extract(year from observation_date) in (" + years + ")"
 
-
-    if months != 'all':
-        filters += " and extract(month from observation_date) in (" + months + ")"
+        if months != 'all':
+            filters += " and extract(month from observation_date) in (" + months + ")"
 
     filters += " and private_webmap_layer in (" +categories+ ")"
     sql += filters
@@ -1044,7 +1100,8 @@ def reports_notif(request, bounds, years, months, categories, my_notifications, 
     return HttpResponse(DateTimeJSONEncoder().encode(res),
                         content_type='application/json')
 
-def reports(request, bounds, years, months, categories, hashtag, notif_types):
+
+def reports(request, bounds, years, months, date_start, date_end, categories, hashtag, municipalities, notif, notif_types):
 
     db = connection.cursor()
 
@@ -1063,37 +1120,62 @@ def reports(request, bounds, years, months, categories, hashtag, notif_types):
     if success is True:
        columns = columns + ', note, t_q_1, t_q_2, t_q_3, t_a_1, t_a_2, t_a_3, s_q_1, s_q_2, s_q_3, s_q_4, s_a_1, s_a_2, s_a_3, s_a_4'
 
+    #Check Municipalities. Default values empty
+    join_municipalities = ''
+    where_municipalities =''
+
+    #Check Municipalities. Default values empty
+    if municipalities not in ['N','0']:
+        #All municipalities of spain
+        join_municipalities += ' JOIN municipis_4326 muni ON m.municipality = muni.nombre'
+        where_municipalities += " AND muni.tipo='Municipio' AND muni.municipality_id in (" + municipalities + ")"
+
+    elif municipalities =='0': #registered users
+        if request.user.groups.filter(name=managers_group).exists():
+            #All municipalities of registered user
+            join_municipalities += ' JOIN municipis_4326 muni ON m.municipality = muni.nombre'
+            join_municipalities += ' JOIN tigapublic_user_municipalities um ON um.municipality_id = muni.municipality_id'
+            where_municipalities += " AND um.user_id = " + str(request.user.id)
+
+        elif request.user.groups.filter(name=superusers_group).exists():
+            #All municipalities of spain
+            join_municipalities += ' JOIN municipis_4326 muni ON m.municipality = muni.nombre'
+            where_municipalities += " AND muni.tipo='Municipio'"
+
     #check for notif_types filters
     join_notif =''
     where_notif=''
 
-    if notif_types.lower() != 'n':
+    if notif_types.upper() != 'N':
         join_notif = ' JOIN tigapublic_map_notification on report_id=version_uuid '
         where_notif= ' AND preset_notification_id in ('+ notif_types+')'
 
     sql = """
-        select """ + columns +""", TO_CHAR(observation_date, 'YYYYMM') AS month,
+        select """ + columns +""", TO_CHAR(observation_date AT TIME ZONE 'UTC', 'YYYYMM') AS month,
            private_webmap_layer AS category
-        from map_aux_reports m""" + join_notif + """
+        from map_aux_reports m""" + join_notif + join_municipalities + """
         where
         lon is not null and lat is not null
         AND
         ST_Intersects(
             ST_Point(lon,lat), ST_MakeBox2D(ST_Point(%s,%s),ST_Point(%s,%s))
-        )""" + where_notif
+        )""" + where_notif + where_municipalities
 
     # And date and layers filters to sql
     filters = ""
-    if hashtag.lower() != 'n':
+    if hashtag.upper() != 'N':
         hashtag = '#' + hashtag.replace('#','')
         sql = sql + " AND note ilike '%%" + hashtag +"%%'"
 
-    if years != 'all':
-        filters = " and extract(year from observation_date) in (" + years + ")"
+    if date_start.upper() !='N' and date_end.upper() != 'N':
+        filters = " AND observation_date::date BETWEEN '%s' AND '%s'" % (date_start, date_end)
 
+    else:
+        if years != 'all':
+            filters = " and extract(year from observation_date) in (" + years + ")"
 
-    if months != 'all':
-        filters += " and extract(month from observation_date) in (" + months + ")"
+        if months != 'all':
+            filters += " and extract(month from observation_date) in (" + months + ")"
 
     sql += filters
 
@@ -1702,7 +1784,7 @@ def getStormDrainTemplate(request):
                 zip.write(os.path.join(dirname, filename), filename)
         zip.close()
 
-        response = HttpResponse(mimetype="application/zip")
+        response = HttpResponse(content_type="application/zip")
         response["Content-Disposition"] = "attachment; filename=mosquito_alert_template.zip"
 
         in_memory.seek(0)
@@ -1792,3 +1874,45 @@ def getListNotifications(request):
                         content_type='application/json')
     else:
         return HttpResponse('Unauthorized', status=401)
+
+@csrf_exempt
+@cross_domain_ajax
+def getMunicipalities(request, search):
+    search_qs = Municipalities.objects.filter(
+            nombre__istartswith=request.REQUEST['query']
+        ).filter(
+            tipo__exact='Municipio'
+        ).distinct().order_by('nombre')[:20]
+
+    results = []
+    for r in search_qs:
+        #Javascript autoco  mplete requires id, text
+        results.append({
+            'id':str(r.municipality_id),
+            'label':r.nombre
+        })
+    #resp = request.REQUEST['callback'] + '(' + simplejson.dumps(result) + ');'
+    return HttpResponse(json.dumps(results, cls=DateTimeJSONEncoder), content_type='application/json')
+
+@csrf_exempt
+@cross_domain_ajax
+def getMunicipalitiesById(request,):
+    if len(request.body.decode(encoding='UTF-8')) == 0:
+        return HttpResponse({})
+
+    municipalitiesArray = request.body.decode(encoding='UTF-8').split(',')
+    int_array = map(int, municipalitiesArray)
+    qs =Municipalities.objects.filter(
+        municipality_id__in = int_array
+        ).distinct().order_by('nombre')
+
+    results = {'data':[]}
+    for r in qs:
+        #Javascript autoco  mplete requires id, text
+        results['data'].append({
+            'id':str(r.municipality_id),
+            'label':r.nombre
+        })
+    #resp = request.REQUEST['callback'] + '(' + simplejson.dumps(result) + ');'
+    return HttpResponse(json.dumps(results, cls=DateTimeJSONEncoder),
+        content_type='application/json')

@@ -29,6 +29,10 @@ class AuthUser(models.Model):
     is_staff = models.BooleanField()
     is_active = models.BooleanField()
     date_joined = models.DateTimeField()
+
+    def __str__(self):
+        return self.username
+
     class Meta:
         managed = False
         db_table = 'auth_user'
@@ -194,3 +198,37 @@ class StormDrainUserVersions(models.Model):
     class Meta:
         #managed = False
         db_table = 'tigapublic_storm_drain_user_version'
+
+class MunicipalitiesManager(models.Manager):
+    def get_queryset(self):
+        return super(MunicipalitiesManager, self).get_queryset().filter(tipo='Municipio')
+
+
+class Municipalities(models.Model):
+    gid = models.AutoField(primary_key=True)
+    municipality_id = models.IntegerField(unique=True)
+    nombre = models.CharField(max_length=254, blank=True)
+    tipo = models.CharField(max_length=10, blank=True)
+    pertenenci = models.CharField(max_length=50, blank=True)
+    codigoine = models.CharField(max_length=5, blank=True)
+    codprov = models.CharField(max_length=2, blank=True)
+    cod_ccaa = models.CharField(max_length=2, blank=True)
+
+    def __str__(self):
+        return self.nombre + ' (' + self.tipo + ')'
+
+    class Meta:
+        #managed = False
+        db_table = 'municipis_4326'
+
+class UserMunicipalities(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(AuthUser)
+    municipality =  models.ForeignKey(Municipalities, to_field='municipality_id')
+
+    def __str__(self):
+        return self.user.username + ' (' + str(self.municipality.nombre) + ', Provincia: ' +self.municipality.codprov + ')'
+
+    class Meta:
+        #managed = False
+        db_table = 'tigapublic_user_municipalities'

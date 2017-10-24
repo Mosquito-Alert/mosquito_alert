@@ -16,10 +16,15 @@ var MOSQUITO = (function (m) {
         },
 
         getContent: function(){
-            var container = $('<div>').attr('class', 'sidebar-control sidebar-control-notification');
+            var container = $('<div>').attr(
+              'class', 'sidebar-control sidebar-control-notification'
+            );
             var closeButton = this.getCloseButton().appendTo(container);
             container.append($('#content-control-notification-tpl').html());
             this.setup();
+            if (MOSQUITO.app.headerView.logged && MOSQUITO.app.user.groups.indexOf('supermosquito') != -1) {
+              $('#notification_form .warning').css('display','none');
+            }
             return container;
         },
 
@@ -148,6 +153,7 @@ var MOSQUITO = (function (m) {
           this.capaNotificacion.addLayer(layer);
           // get the polygon bounds
           polygon = e.layer.getLatLngs();
+          filters = MOSQUITO.app.mapView.filters;
 
           MOSQUITO.app.mapView.scope.notificationSelection = [];
           polygon.forEach(function(obj) {
@@ -155,11 +161,34 @@ var MOSQUITO = (function (m) {
           });
 
           // Prepare url with filters
-          var url = MOSQUITO.config.URL_API + 'intersect/'+MOSQUITO.app.mapView.filters.excluded_types.join(',')+'/';
-          url += (MOSQUITO.app.mapView.filters.years.length)?MOSQUITO.app.mapView.filters.years.join(',') + '/':'all/'
-          url += (MOSQUITO.app.mapView.filters.months.length)?MOSQUITO.app.mapView.filters.months.join(',') + '/':'all/'
+          var url = MOSQUITO.config.URL_API + 'intersect/';
+          // layers
+          url += filters.excluded_types.join(',')+'/';
+          // time
 
-          console.log(url);
+          if (filters.daterange && typeof filters.daterange !== 'undefined') {
+            // daterange
+            url += moment(filters.daterange.start).format('YYYY-MM-DD') + '/'
+            url += moment(filters.daterange.end).format('YYYY-MM-DD') + '/';
+          } else {
+            // years
+            url += (filters.years.length)?filters.years.join(',') + '/':'all/';
+            // months
+            url += (filters.months.length)?filters.months.join(',') + '/':'all/';
+          }
+
+          // hashtag
+          url += (MOSQUITO.app.mapView.filters.hashtag &&
+                MOSQUITO.app.mapView.filters.hashtag !== '') ?
+                    MOSQUITO.app.mapView.filters.hashtag + '/' : 'all/';
+          //Municipalities
+          var muni = MOSQUITO.app.mapView.getMunicipalitiesValue();
+          //When no municipalities selected then pass 0 (user municipalities)
+          url += (muni=='N')?'0/': muni + '/';
+          // my notifications
+          url += (filters.notif && filters.notif !== false)?filters.notif + '/':'all/';
+          // notification typesstatus
+          url += (MOSQUITO.app.mapView.filters.notif_types && (MOSQUITO.app.mapView.filters.notif_types.length > 1 || MOSQUITO.app.mapView.filters.notif_types[0] !== 'N'))?MOSQUITO.app.mapView.filters.notif_types.join(',') + '/':'all/';
 
           $.ajax({
               type: 'POST',
@@ -172,8 +201,6 @@ var MOSQUITO = (function (m) {
                     MOSQUITO.app.mapView.scope.notificationServerIds = response.rows;
                     this.getNotificationClientIds();
                     this.getPredefinedNotifications();
-                  } else {
-                    console.log(response.err);
                   }
               }
 
@@ -230,6 +257,11 @@ var MOSQUITO = (function (m) {
                 //Plus info about number of users
                 contentText += ' (' + $('#users_found').html() + ' ' + t('map.users_found_text')+')';
                 $('#notification-notified').val(contentText);
+                //If no notification show error on open form
+                if (!MOSQUITO.app.mapView.scope.notificationServerIds.length){
+                  $('#notif_observations_none').removeClass('hidden');
+                }
+
             }, 0);
 
             //if tinymce was already init then reset contents
@@ -314,7 +346,6 @@ var MOSQUITO = (function (m) {
             title = notifs[selected]['content']['es']['title'];
             body = notifs[selected]['content']['es']['body'];
             $('#preset_notification_id').val(value);
-            console.log('hidden value'+value)
           } else {
             title = '';
             body = '';

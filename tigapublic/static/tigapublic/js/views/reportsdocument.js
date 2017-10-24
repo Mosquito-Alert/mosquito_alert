@@ -103,7 +103,6 @@ var ReportsdocumentView = MapView.extend({
 
             }
 
-
             _this.$el.html(_this.tpl(data));
             window.t().translate(MOSQUITO.lng, _this.$el);
 
@@ -113,20 +112,20 @@ var ReportsdocumentView = MapView.extend({
             $('#map_filters').html(stuff);
 
             var stuff = window.opener.document.getElementById("hashtag_filters").outerHTML;
-            //var stuff = window.opener.$("#hashtag_filters").clone();
+            var hastag_opener_value = window.opener.document.getElementById("hashtag_search_text").value;
 
-
-            //check if hashtag filter exists.
-             if ($(stuff).find('#hashtag_search_text').length){
-               if ($(stuff).find('#hashtag_search_text').val().trim()!=''){
-                 $('#hashtag_filters').html(stuff);
-               }
-             }
+            if (hastag_opener_value.length){
+               if (hastag_opener_value.trim()!=''){
+                 $('#hashtag_search_text').val(hastag_opener_value);
+                 $('#hashtag_search_text').prop('disabled',true);
+                }
+              }
 
             //var stuff = window.opener.$("#notif_filters").clone();
             if (window.opener.document.getElementById("notif_filters")){
-              var stuff = window.opener.document.getElementById("notif_filters").outerHTML;
+              var stuff = window.opener.document.getElementById("notif_filters").innerHTML;
               $('#notif_filters').html(stuff);
+              $( "input[name='notification_radio']" ).prop('disabled',true);
             }
 
             if (window.opener.document.getElementById("map_layers_list")){
@@ -134,6 +133,13 @@ var ReportsdocumentView = MapView.extend({
               stuff.removeClass('active');
             }
 
+            //Disable municipalities checkbox
+            if ($('#municipalities-checkbox').length){
+              $('#municipalities-checkbox').prop('disabled', true)
+            }
+            //Remove municipalities cancel x
+            $('div.token a.close').remove()
+            $('span.token-label').css('padding-right','4px')
 
 
             $('#map_layers').html(stuff);
@@ -218,11 +224,25 @@ var ReportsdocumentView = MapView.extend({
 
     },
 
-    fetch_data: function(options, callback){
+    isDaterangeEmpty: function(o){
+      return (
+        typeof o.daterange.start == 'undefined' ||
+        typeof o.daterange.end == 'undefined' ||
+        o.daterange.start == 'N' ||
+        o.daterange.end == 'N'
+      )
+    },
 
+    fetch_data: function(options, callback){
         url = MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/';
-        url += options.years + '/' + options.months + '/' + options.categories ;
-        url += (('notifications' in options) && (options.notifications !== "false" ))?'/' + options.notifications:'/N';
+
+        if (!this.isDaterangeEmpty(options)) {
+          url += options.daterange.start + '/' + options.daterange.end;
+        } else {
+          url += options.years + '/' + options.months;
+        }
+        url += '/' + options.categories ;
+
         if ('hashtag' in options){
           hashtag = options.hashtag.replace('#','');
           if (hashtag==''){
@@ -232,6 +252,19 @@ var ReportsdocumentView = MapView.extend({
           hashtag = 'N';
         }
         url += '/'+hashtag;
+
+        //check municipalities
+        if ('municipalities' in options){
+          municipalities = options.municipalities;
+        }else{
+          municipalities = 'N';
+        }
+        url += '/' + municipalities;
+
+        //my notifications
+        url += (('notifications' in options) && (options.notifications !== "false" ))?'/' + options.notifications:'/N';
+
+        //Notifications types
         url += (('notif_types' in options) && (options.notif_types !== null ))?'/' + options.notif_types:'/N';
 
         $.ajax({
@@ -243,7 +276,7 @@ var ReportsdocumentView = MapView.extend({
             callback(resp);
         })
         .fail(function(error) {
-            console.log(error);
+            if (console && console.error) console.error(error);
         });
 
     },

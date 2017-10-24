@@ -13,11 +13,6 @@ window.t = function(){
                     var translated,
                         to_translate = $(el).attr('i18n'),
                         type = el.nodeName;
-                    if ($(el).attr('i18n').indexOf('layer.')>-1) {
-                      //console.log($(el));
-                      //console.log($(el).attr('i18n')+' '+$(el).parent().attr('class'));
-                      //console.log($(el).attr('i18n')+' '+$(el).parent().parent().attr('class'));
-                    }
                     if(type === 'IMAGE'){
                         //Alt
                     }else{
