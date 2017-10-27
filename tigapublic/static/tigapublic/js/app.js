@@ -10,23 +10,23 @@ var AppRouter = Backbone.Router.extend({
         _.extend(this, Backbone.Events);
         //Regular expressions for each possible param
 
-        var re_lang = new RegExp(/^([a-z]{2})\/?/,'i').source
-        var re_zoom = new RegExp(/\/?(\d{1,2})\/?/,'i').source
-        var re_lat = new RegExp(/\/([-\d\.,]+)\/?/,'i').source
+        var re_lang = new RegExp(/^([a-z]{2})\/?/i).source
+        var re_zoom = new RegExp(/\/?(\d{1,2})\/?/i).source
+        var re_lat = new RegExp(/\/([-\d\.,]+)\/?/i).source
         var re_lon = re_lat
-        var re_layers = new RegExp(/\/([^ /]+)\/?/,'i').source
-        var re_years = new RegExp(/\/([\d,]+|all)\/?/,'i').source
-        var re_months = new RegExp(/\/([\d,]+|all)\/?/,'i').source
-        var re_hashtag = new RegExp(/\/([^ /]+)\/?/,'i').source
-        var re_munis = new RegExp(/\/([N,0-9]+)\/?/,'i').source
-        var re_report = new RegExp(/\/(\d+)\/?/,'i').source
-        var re_bbox = new RegExp(/([-\d\.,]*)\/?/,'i').source
-        var re_notif = new RegExp(/([^ /]+)\/?/,'i').source
-        var re_notiftype = new RegExp(/([^ /]+)\/?/,'i').source
+        var re_layers = new RegExp(/\/([^ /]+)\/?/i).source
+        var re_years = new RegExp(/\/([\d,]+|all)\/?/i).source
+        var re_months = new RegExp(/\/([\d,]+|all)\/?/i).source
+        var re_hashtag = new RegExp(/\/([^ /]+)\/?/i).source
+        var re_munis = new RegExp(/\/([N,0-9]+)\/?/i).source
+        var re_report = new RegExp(/\/(\d+)\/?/i).source
+        var re_bbox = new RegExp(/([-\d\.,]*)\/?/i).source
+        var re_notif = new RegExp(/([^ /]+)\/?/i).source
+        var re_notiftype = new RegExp(/([^ /]+)\/?/i).source
         //day-month-year
-        var re_startdate = new RegExp(/(\d{4}-\d{1,2}-\d{1,2})\/?/,'i').source
+        var re_startdate = new RegExp(/(\d{4}-\d{1,2}-\d{1,2})\/?/i).source
         var re_enddate = re_startdate
-        var re_end = new RegExp(/\/?$/).source;
+        var re_end = new RegExp('\/?$').source;
 
         var re =  new RegExp(
             re_end

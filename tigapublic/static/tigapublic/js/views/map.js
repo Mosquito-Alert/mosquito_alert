@@ -53,11 +53,11 @@
         }
 
         if('filters_municipalities' in this.options){
-           if (!MOSQUITO.app.headerView.logged &&
+            if (!MOSQUITO.app.headerView.logged &&
                     options.filters_municipalities == '0'){
-              this.filters.municipalities = 'N';
-           }
-          else if(this.options.filters_municipalities && this.options.filters_municipalities.length){
+                this.filters.municipalities = 'N';
+            }
+            else {
                 this.filters.municipalities = options.filters_municipalities;
             }
         }

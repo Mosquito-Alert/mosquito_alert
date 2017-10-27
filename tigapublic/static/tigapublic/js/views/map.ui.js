@@ -457,8 +457,8 @@ var MapView = MapView.extend({
                   else{
                     var label = type.username.charAt(0).toUpperCase()+type.username.slice(1)+' / '+type.content[lng].title;
                     $('<option>', {
-                      "value": type.notificationid,
-                      "text": label
+                      'value': type.notificationid,
+                      'text': label
                     }).appendTo(select_type_notifications);
                   }
                 });
@@ -1097,7 +1097,7 @@ var MapView = MapView.extend({
                   }
 
                   //hashtag
-                  if(!'hashtag' in _this.filters || _this.filters.hashtag == ''){
+                  if(!'hashtag' in _this.filters || typeof _this.filters.hashtag === 'undefined' || _this.filters.hashtag === ''){
                       url += '/N';
                   }else{
                       url += '/' + _this.filters.hashtag;
