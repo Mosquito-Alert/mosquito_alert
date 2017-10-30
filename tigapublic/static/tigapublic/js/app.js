@@ -200,7 +200,8 @@ var AppRouter = Backbone.Router.extend({
             && munis !== '0' ){
             options.filters_municipalities = munis.split(',');
         }else{
-          options.filters_municipalities = munis
+            if (munis === '0') options.filters_municipalities = munis;
+            else options.filters_municipalities = 'N';
         }
 
         if(!this.mapView){
