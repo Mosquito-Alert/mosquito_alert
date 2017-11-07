@@ -144,6 +144,19 @@ var AppRouter = Backbone.Router.extend({
     },
 
     map_i18n: function(lng, zoom, lat, lon, layers, years, months, dateStart, dateEnd, hashtag, munis) {
+        //Initialize  params if necessary
+        if (lng===undefined) lng = MOSQUITO.config.default_lng;
+        if (zoom===undefined) zoom = MOSQUITO.config.zoom;
+        if (lat===undefined) lat = MOSQUITO.config.lat;
+        if (lon===undefined) lon = MOSQUITO.config.lon;
+        if (years===undefined) years='all';
+        if (months===undefined) months='all';
+        if (layers===undefined) layers = MOSQUITO.config.default_layers;
+        if (hashtag===undefined) hashtag='N';
+        if (munis === undefined) munis= 'N';
+        if (dateStart === undefined) dateStart= false;
+        if (dateEnd === undefined) dateEnd= false;
+
         if (dateStart) dateStart = moment(dateStart, 'YYYY-MM-DD').toDate();
         if (dateEnd) dateEnd = moment(dateEnd, 'YYYY-MM-DD').toDate();
 
@@ -153,18 +166,12 @@ var AppRouter = Backbone.Router.extend({
         }
         var options = {};
 
-        //_.extend(trans.ca, add);
-        if(zoom !== undefined && lat !== undefined && lon !== undefined){
-            options.zoom = zoom;
-            options.lat = lat;
-            options.lon = lon;
-        }
 
         if(!this.headerView){
             this.headerView = new HeaderView();
         }
         // Particular case. Enter spain.html but already logged
-        if(layers === undefined || layers === null || layers.length === 0){
+        if(layers === null || layers.length === 0){
             if (('mapView' in MOSQUITO.app) && ('options' in MOSQUITO.app.mapView)) {
               layers = MOSQUITO.app.mapView.options.layers.join(',');
             } else {
@@ -178,11 +185,11 @@ var AppRouter = Backbone.Router.extend({
         }
         options.layers = this.getSelectedLayersFromURL(layers);
 
-        if(years !== undefined && years !== 'all'){
+        if(years !== 'all'){
             options.filters_years = years;
         }
 
-        if(months !== undefined && months !== 'all'){
+        if(months !== 'all'){
             options.filters_months = months;
         }
 
@@ -196,12 +203,10 @@ var AppRouter = Backbone.Router.extend({
           options.filters_hashtag = 'N';
         }
 
-        if(munis !== undefined && munis !== 'N'
-            && munis !== '0' ){
+        if( munis !== 'N' && munis !== '0' ){
             options.filters_municipalities = munis.split(',');
         }else{
-            if (munis === '0') options.filters_municipalities = munis;
-            else options.filters_municipalities = 'N';
+          options.filters_municipalities = munis
         }
 
         if(!this.mapView){
