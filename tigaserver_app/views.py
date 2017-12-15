@@ -773,8 +773,9 @@ def refresh_user_scores():
     queryset = TigaUser.objects.all()
     for user in queryset:
         score = summary.getScore(user.user_UUID)
-        user.score = score[0]
-        user.save()
+        if user.score != score[0]:
+            user.score = score[0]
+            user.save()
 
 @api_view(['GET', 'POST'])
 def user_score(request):
