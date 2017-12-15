@@ -36,6 +36,7 @@ from django.db import connection
 from itertools import chain
 from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification
+from django.contrib.gis.geos import GEOSGeometry
 
 
 def get_current_domain(request):
@@ -413,6 +414,8 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 
 BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
 
+ITALY_GEOMETRY = GEOSGeometry('{"type": "Polygon","coordinates": [[[7.250976562499999,43.70759350405294],[8.96484375,44.071800467511565],[10.96435546875,41.95131994679697],[7.822265625000001,41.0130657870063],[8.1298828125,38.788345355085625],[11.865234375,37.735969208590504],[14.1064453125,36.70365959719456],[14.985351562499998,36.31512514748051],[18.80859375,40.27952566881291],[12.45849609375,44.5278427984555],[13.86474609375,45.413876460821086],[14.04052734375,46.51351558059737],[12.238769531249998,47.264320080254805],[6.8994140625,46.10370875598026],[6.43798828125,45.120052841530544],[7.250976562499999,43.70759350405294]]]}')
+
 def autoflag_others(id_annotation_report):
     this_annotation = ExpertReportAnnotation.objects.get(id=id_annotation_report)
     the_report = this_annotation.report
@@ -545,6 +548,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
+    this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
+    this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
     this_user_is_reritja = (this_user.id == 25)
 
     if this_user_is_expert or this_user_is_superexpert:
@@ -630,6 +635,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+                if new_reports_unfiltered and this_user_is_team_italy:
+                    new_reports_unfiltered = new_reports_unfiltered.filter(point__within=ITALY_GEOMETRY)
+                if new_reports_unfiltered and this_user_is_team_not_italy:
+                    new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
+                if new_reports_unfiltered_and_false_validated and this_user_is_team_italy:
+                    new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.filter(point__within=ITALY_GEOMETRY)
+                if new_reports_unfiltered_and_false_validated and this_user_is_team_not_italy:
+                    new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.exclude(point__within=ITALY_GEOMETRY)
 
                 if new_reports_unfiltered:
                     new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
@@ -665,6 +678,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
             if new_reports_unfiltered and this_user_is_team_not_bcn:
                 new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+            if new_reports_unfiltered and this_user_is_team_italy:
+                new_reports_unfiltered = new_reports_unfiltered.filter(point__within=ITALY_GEOMETRY)
+            if new_reports_unfiltered and this_user_is_team_not_italy:
+                    new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
             if this_user.id == 25: #it's roger, don't assign reports from barcelona prior to 03/10/2017
                 new_reports_unfiltered = new_reports_unfiltered.exclude(Q(
                     Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),
