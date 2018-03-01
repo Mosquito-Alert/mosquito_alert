@@ -15,7 +15,7 @@ from django.db import models
 class NotificationImageFormModel(models.Model):
     image = models.ImageField(upload_to=settings.MEDIA_ROOT)
     class Meta:
-        db_table = None
+        db_table = 'tigapublic_notificationimageformmodel'
 
 class AuthUser(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -83,7 +83,7 @@ class MapAuxReports(models.Model):
     municipality = models.CharField(max_length=100, blank=True)
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'map_aux_reports'
         #test = type
 
@@ -110,7 +110,6 @@ class StormDrain(models.Model):
     model = models.CharField(max_length=5, blank=True, null=True)
 
     class Meta:
-        #managed = False
         db_table = 'storm_drain'
 
 class NotificationContent(models.Model):
@@ -124,6 +123,7 @@ class NotificationContent(models.Model):
     title_en = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in english')
 
     class Meta:
+        managed = False
         db_table = 'tigaserver_app_notificationcontent'
 
 class NotificationPredefined(models.Model):
@@ -154,7 +154,7 @@ class Notification(models.Model):
     notification_content = models.ForeignKey(NotificationContent)
 
     class Meta:
-        #managed = False
+        managed = False
         db_table = 'tigaserver_app_notification'
 
 class ObservationNotifications(models.Model):
@@ -169,9 +169,8 @@ class ObservationNotifications(models.Model):
     preset_notification = models.ForeignKey(NotificationPredefined, null=True, blank=True, default = None)
 
     class Meta:
-        #managed = False
         db_table = 'tigapublic_map_notification'
-'''
+
 
 class StormDrainRepresentation(models.Model):
     id = models.AutoField(primary_key=True)
@@ -183,9 +182,9 @@ class StormDrainRepresentation(models.Model):
     operator = models.CharField(max_length=15, blank=False)
 
     class Meta:
-        #managed = False
+        managed = False
         db_table = 'tigapublic_storm_drain_representation'
-'''
+
 class StormDrainUserVersions(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(AuthUser)
@@ -196,7 +195,6 @@ class StormDrainUserVersions(models.Model):
     title = models.CharField(max_length=50, blank=True)
 
     class Meta:
-        #managed = False
         db_table = 'tigapublic_storm_drain_user_version'
 
 class MunicipalitiesManager(models.Manager):
@@ -218,7 +216,6 @@ class Municipalities(models.Model):
         return self.nombre + ' (' + self.tipo + ')'
 
     class Meta:
-        #managed = False
         db_table = 'municipis_4326'
 
 class UserMunicipalities(models.Model):
@@ -230,5 +227,4 @@ class UserMunicipalities(models.Model):
         return self.user.username + ' (' + str(self.municipality.nombre) + ', Provincia: ' +self.municipality.codprov + ')'
 
     class Meta:
-        #managed = False
         db_table = 'tigapublic_user_municipalities'
