@@ -32,7 +32,7 @@ def send_message_ios(token,alert_message,link_url):
     if settings.DISABLE_PUSH_IOS:
         return "DISABLED"
     else:
-        cert = '/home/webuser/webapps/tigaserver/CertificatMosquito.pem'
+        cert = '/home/webuser/webapps/tigaserver/CertificatMosquito_prod.pem'
         try:
             unread_notifications = get_pending_messages(token)
         except:
