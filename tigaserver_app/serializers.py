@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile
 from django.contrib.auth.models import User
 
 def score_label(score):
@@ -294,3 +294,69 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
         fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
+
+
+class TigaUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TigaUser
+        fields = ('user_UUID','registration_time','device_token','score')
+
+
+class TigaProfileSerializer(serializers.ModelSerializer):
+    profile_devices = TigaUserSerializer(many=True)
+
+    class Meta:
+        model = TigaProfile
+        fields = ('id', 'firebase_token', 'score', 'profile_devices')
+
+class DetailedPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photo
+        fields = ('id', 'photo', 'uuid')
+
+class DetailedReportSerializer(serializers.ModelSerializer):
+
+    photos = DetailedPhotoSerializer(many=True)
+    user = UserListingField
+    version_UUID = serializers.CharField()
+    version_number = serializers.IntegerField()
+    report_id = serializers.CharField()
+    phone_upload_time = serializers.DateTimeField()
+    creation_time = serializers.DateTimeField()
+    version_time = serializers.DateTimeField()
+    type = serializers.CharField()
+    mission = MissionListingField
+    location_choice = serializers.CharField()
+    current_location_lon = serializers.FloatField(required=False)
+    current_location_lat = serializers.FloatField(required=False)
+    selected_location_lon = serializers.FloatField(required=False)
+    selected_location_lat = serializers.FloatField(required=False)
+    note = serializers.CharField(required=False)
+    package_name = serializers.CharField(required=False)
+    package_version = serializers.IntegerField(required=False)
+    device_manufacturer = serializers.CharField(required=False)
+    device_model = serializers.CharField(required=False)
+    os = serializers.CharField(required=False)
+    os_version = serializers.CharField(required=False)
+    os_language = serializers.CharField(required=False)
+    app_language = serializers.CharField(required=False)
+    responses = ReportResponseSerializer(many=True)
+
+    class Meta:
+        model = Report
+
+
+class DetailedTigaUserSerializer(serializers.ModelSerializer):
+    user_reports = DetailedReportSerializer(many=True)
+
+    class Meta:
+        model = TigaUser
+        fields = ('user_UUID','registration_time','device_token','score','user_reports')
+
+
+class DetailedTigaProfileSerializer(serializers.ModelSerializer):
+    profile_devices = DetailedTigaUserSerializer(many=True)
+
+    class Meta:
+        model = TigaProfile
+        fields = ('id', 'firebase_token', 'score', 'profile_devices')

@@ -21,6 +21,11 @@ from datetime import datetime
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 
+class TigaProfile(models.Model):
+    firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
+    score = models.IntegerField(help_text='Score associated with profile. This is the score associated with the account', default=0)
+
+
 
 class TigaUser(models.Model):
     user_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
@@ -32,7 +37,9 @@ class TigaUser(models.Model):
                                                                  'server when user uploads registration.')
     device_token = models.TextField('Url to picture that originated the comment', null=True, blank=True,help_text='Device token, used in messaging. Must be supplied by the client')
 
-    score = models.IntegerField(help_text='Score associated with user. This field might be removed in the future and calculated dinamically', default=0)
+    score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
+
+    profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True)
 
     def __unicode__(self):
         return self.user_UUID
@@ -175,7 +182,7 @@ class Report(models.Model):
                                                    'most recent version on the device, but all versions are stored on the server.')
     user = models.ForeignKey(TigaUser, help_text='user_UUID for the user sending this report. Must be exactly 36 '
                                                  'characters (32 hex digits plus 4 hyphens) and user must have '
-                                                 'already registered this ID.')
+                                                 'already registered this ID.', related_name="user_reports")
     report_id = models.CharField(db_index=True, max_length=4, help_text='4-digit alpha-numeric code generated on user phone to '
                                                          'identify each unique report from that user. Digits should '
                                                          'lbe randomly drawn from the set of all lowercase and '
