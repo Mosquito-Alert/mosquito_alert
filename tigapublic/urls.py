@@ -10,7 +10,10 @@ re_zoom = re.compile(r"(?P<zoom>\d{1,2})\/?").pattern
 # BOUNDS: Geographic bounding box
 # Matches 4 coordinates separated by commas: lon, lat, lon, lat
 # LON: Longitude
-re_lon = "-?(?:180(?:(?:\.0{1,4})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,4})?))"
+# This solves the problem that won't show data points for very general zooms
+#re_lon = "-?(?:180(?:(?:\.0{1,4})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,4})?))"
+re_lon = "[-\d\.]*"
+
 # LAT: Latitude
 re_lat = "-?(?:90(?:(?:\.0{1,4})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,4})?))"
 re_bounds = re.compile(r"(?P<bounds>" + re_lon + "," + re_lat + "," + re_lon + "," + re_lat + ")\/?").pattern
