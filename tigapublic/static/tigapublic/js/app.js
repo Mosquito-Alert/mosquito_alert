@@ -166,6 +166,9 @@ var AppRouter = Backbone.Router.extend({
         }
         var options = {};
 
+        options.zoom = zoom;
+        options.lat = lat;
+        options.lon = lon;
 
         if(!this.headerView){
             this.headerView = new HeaderView();
