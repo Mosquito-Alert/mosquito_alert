@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db import connection
 from tigaserver_app.models import *
 from datetime import date, timedelta, datetime
 import time
@@ -13,6 +14,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
+import json
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -101,6 +103,48 @@ def workload_available_reports(request):
         current_progress = filter_reports(current_progress)
         data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress), 'overall_pending': overall_pending.count()}
         return Response(data)
+
+@login_required
+def user_stats(request):
+    """
+    data
+
+    select cod_ccaa, ct, count("version_UUID")
+    FROM
+    (select c.cod_ccaa, ct, r."version_UUID"
+    from
+    (select *,extract(year from creation_time) as ct from tigaserver_app_report where type='adult') r JOIN
+    comunitats_4326 c
+    on st_contains(c.geom,r.point)) as t
+    group by cod_ccaa, ct order by 2;
+
+    """
+    cursor = connection.cursor()
+    cursor.execute("""
+        select cod_ccaa, ct, count("version_UUID")
+        FROM
+        (select c.cod_ccaa, ct, r."version_UUID"
+        from
+        (select *,extract(year from creation_time) as ct from tigaserver_app_report where type='adult') r JOIN
+        comunitats_4326 c
+        on st_contains(c.geom,r.point)) as t
+        group by cod_ccaa, ct order by 2
+    """)
+    data_adults = cursor.fetchall()
+    cursor.execute("""
+            select cod_ccaa, ct, count("version_UUID")
+            FROM
+            (select c.cod_ccaa, ct, r."version_UUID"
+            from
+            (select *,extract(year from creation_time) as ct from tigaserver_app_report where type='site') r JOIN
+            comunitats_4326 c
+            on st_contains(c.geom,r.point)) as t
+            group by cod_ccaa, ct order by 2
+        """)
+    data_sites = cursor.fetchall()
+
+    context = {'data_adults': json.dumps(data_adults), 'data_sites': json.dumps(data_sites)}
+    return render(request, 'stats/users.html', context)
 
 @login_required
 def workload_stats(request):

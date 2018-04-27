@@ -29,6 +29,7 @@ from tigacrafting.messaging import send_message_ios, send_message_android
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
 from tigascoring.maUsers import smmry
 from tigaserver_app.serializers import custom_render_notification,score_label
+import tigaserver_project.settings as conf
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -494,8 +495,10 @@ class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
     unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
 
     #new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-    non_visible_report_id = [ report.version_UUID for report in Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if not report.visible]
-    #non_visible_report_id = []
+    if conf.FAST_LOAD and conf.FAST_LOAD == True:
+        non_visible_report_id = []
+    else:
+        non_visible_report_id = [report.version_UUID for report in Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if not report.visible]
 
     hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     queryset = hidden_reports | unfiltered_clean_reports_query
@@ -504,8 +507,10 @@ class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    #non_visible_report_id = []
+    if conf.FAST_LOAD and conf.FAST_LOAD == True:
+        non_visible_report_id = []
+    else:
+        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image
 from tigamap.views import show_filterable_report_map, show_single_report_map
-from stats.views import show_usage, workload_stats
+from stats.views import show_usage, workload_stats, user_stats
 from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view
 from tigaserver_messages.views import compose_w_data, reply_w_data
@@ -65,6 +65,7 @@ urlpatterns += i18n_patterns('',
     url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', show_single_report_map, name='webmap.single_report'),
     url(r'^stats/$', show_usage),
     url(r'^stats/workload/$', workload_stats, name='workload_stats'),
+    url(r'^stats/user/$', user_stats, name='user_stats'),
     #url(r'^reportstats/$', show_report_users),
     #url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
     #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),
