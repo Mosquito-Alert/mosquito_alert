@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
 import json
+from sets import Set
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -104,46 +105,51 @@ def workload_available_reports(request):
         data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress), 'overall_pending': overall_pending.count()}
         return Response(data)
 
+
 @login_required
 def user_stats(request):
-    """
-    data
-
-    select cod_ccaa, ct, count("version_UUID")
-    FROM
-    (select c.cod_ccaa, ct, r."version_UUID"
-    from
-    (select *,extract(year from creation_time) as ct from tigaserver_app_report where type='adult') r JOIN
-    comunitats_4326 c
-    on st_contains(c.geom,r.point)) as t
-    group by cod_ccaa, ct order by 2;
-
-    """
     cursor = connection.cursor()
-    cursor.execute("""
-        select cod_ccaa, ct, count("version_UUID")
-        FROM
-        (select c.cod_ccaa, ct, r."version_UUID"
-        from
-        (select *,extract(year from creation_time) as ct from tigaserver_app_report where type='adult') r JOIN
-        comunitats_4326 c
-        on st_contains(c.geom,r.point)) as t
-        group by cod_ccaa, ct order by 2
-    """)
-    data_adults = cursor.fetchall()
-    cursor.execute("""
-            select cod_ccaa, ct, count("version_UUID")
-            FROM
-            (select c.cod_ccaa, ct, r."version_UUID"
-            from
-            (select *,extract(year from creation_time) as ct from tigaserver_app_report where type='site') r JOIN
-            comunitats_4326 c
-            on st_contains(c.geom,r.point)) as t
-            group by cod_ccaa, ct order by 2
-        """)
-    data_sites = cursor.fetchall()
 
-    context = {'data_adults': json.dumps(data_adults), 'data_sites': json.dumps(data_sites)}
+    cursor.execute("""
+        select
+        cod_ccaa, nom_ccaa
+        from comunitats_4326
+    """)
+    data_ccaa = cursor.fetchall()
+
+    cursor.execute("""
+    select cod_ccaa, ct, type, count("version_UUID")
+    FROM
+    (select c.cod_ccaa, r.type, ct, r."version_UUID"
+    from
+    (select *,extract(year from creation_time) as ct from tigaserver_app_report where "version_UUID" in (select version_uuid from map_aux_reports where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable', 'yellow_fever_confirmed','yellow_fever_probable','storm_drain_dry','storm_drain_water'))) r JOIN
+    comunitats_4326 c
+    on st_contains(c.geom,r.point)) as t 
+    group by cod_ccaa, ct, type order by 3,2
+    """)
+    data = cursor.fetchall()
+
+    # cursor.execute("""
+    # select codigoine, ct, type, count("version_UUID")
+    # FROM
+    # (select c.codigoine, r.type, ct, r."version_UUID"
+    # from
+    # (select *,extract(year from creation_time) as ct from tigaserver_app_report where "version_UUID" in (select version_uuid from map_aux_reports where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable', 'yellow_fever_confirmed','yellow_fever_probable','storm_drain_dry','storm_drain_water'))) r JOIN
+    # municipis_4326 c
+    # on st_contains(c.geom,r.point)) as t
+    # group by codigoine, ct, type order by 3,2
+    # """)
+    # m_data = cursor.fetchall()
+
+    years = Set()
+    for elem in data:
+        years.add(int(elem[1]))
+    years = list(years)
+    years.sort()
+
+
+    # context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa),  'm_data': json.dumps(m_data), 'years': years}
+    context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa), 'years': years}
     return render(request, 'stats/users.html', context)
 
 @login_required
