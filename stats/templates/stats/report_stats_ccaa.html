@@ -15,12 +15,8 @@
         <script src="http://code.highcharts.com/maps/highmaps.js"></script>
         <script src={% static "stats/underscore-min.js" %}></script>
         <script src={% static "stats/geojson_ccaa.js" %}></script>
-        <script src={% static "stats/users.js" %}></script>
+        <script src={% static "stats/report_stats_ccaa.js" %}></script>
         <script>
-            /*
-            var reports_data_adults = JSON.parse('{{ data_adults | escapejs }}');;
-            var reports_data_sites = JSON.parse('{{ data_sites | escapejs }}');;
-            */
             var reports_data = JSON.parse('{{ data | escapejs }}');
             var data_ccaa = JSON.parse('{{ data_ccaa | escapejs }}');
             var year_list = [];

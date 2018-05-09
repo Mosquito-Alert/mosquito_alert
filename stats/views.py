@@ -16,6 +16,7 @@ from tigacrafting.views import filter_reports
 from tigaserver_project import settings
 import json
 from sets import Set
+import datetime
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -106,8 +107,68 @@ def workload_available_reports(request):
         return Response(data)
 
 
+@xframe_options_exempt
+def registration_stats(request):
+    cursor = connection.cursor()
+    cursor.execute("""
+        select 
+        count("user_UUID"), 
+        extract(year from registration_time), 
+        extract(month from registration_time) 
+        from tigaserver_app_tigauser 
+        group by extract(year from registration_time), extract(month from registration_time)
+        order by 2,3
+    """)
+    registration = cursor.fetchall()
+
+    now = datetime.datetime.now()
+    current_year = now.year
+    years = []
+
+    for i in range(2014, current_year + 1):
+        years.append(i)
+
+    context = {'registration': json.dumps(registration), 'years': json.dumps(years), 'years_list': years}
+    return render(request, 'stats/user_registration.html', context)
+
+
+@cache_page(60 * 15)
+@xframe_options_exempt
+def report_stats(request):
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        select count("version_UUID"), extract(year from server_upload_time), extract(month from server_upload_time) 
+        from (
+        select "version_UUID",server_upload_time from tigaserver_app_report where "version_UUID" in (select version_uuid from map_aux_reports where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable', 'yellow_fever_confirmed','yellow_fever_probable'))
+        ) as t1
+        group by extract(year from server_upload_time), extract(month from server_upload_time) 
+        order by 2,3
+    """)
+    adults = cursor.fetchall()
+
+    cursor.execute("""
+        select count("version_UUID"), extract(year from server_upload_time), extract(month from server_upload_time) 
+        from (
+        select "version_UUID",server_upload_time from tigaserver_app_report where "version_UUID" in (select version_uuid from map_aux_reports where private_webmap_layer in ('storm_drain_dry','storm_drain_water'))
+        ) as t1
+        group by extract(year from server_upload_time), extract(month from server_upload_time) 
+        order by 2,3
+    """)
+    sites = cursor.fetchall()
+    now = datetime.datetime.now()
+    current_year = now.year
+    years = []
+
+    for i in range(2014, current_year + 1):
+        years.append(i)
+
+    context = {'adults': json.dumps(adults), 'sites': json.dumps(sites), 'years': json.dumps(years), 'years_list': years}
+    return render(request, 'stats/user_activity.html', context)
+
+
 @login_required
-def user_stats(request):
+def report_stats_ccaa(request):
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -129,18 +190,6 @@ def user_stats(request):
     """)
     data = cursor.fetchall()
 
-    # cursor.execute("""
-    # select codigoine, ct, type, count("version_UUID")
-    # FROM
-    # (select c.codigoine, r.type, ct, r."version_UUID"
-    # from
-    # (select *,extract(year from creation_time) as ct from tigaserver_app_report where "version_UUID" in (select version_uuid from map_aux_reports where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable', 'yellow_fever_confirmed','yellow_fever_probable','storm_drain_dry','storm_drain_water'))) r JOIN
-    # municipis_4326 c
-    # on st_contains(c.geom,r.point)) as t
-    # group by codigoine, ct, type order by 3,2
-    # """)
-    # m_data = cursor.fetchall()
-
     years = Set()
     for elem in data:
         years.add(int(elem[1]))
@@ -150,7 +199,7 @@ def user_stats(request):
 
     # context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa),  'm_data': json.dumps(m_data), 'years': years}
     context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa), 'years': years}
-    return render(request, 'stats/users.html', context)
+    return render(request, 'stats/report_stats_ccaa.html', context)
 
 @login_required
 def workload_stats(request):
