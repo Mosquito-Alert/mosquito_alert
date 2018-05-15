@@ -134,6 +134,7 @@ def registration_stats(request):
 
 @cache_page(60 * 15)
 @xframe_options_exempt
+@login_required
 def report_stats(request):
     cursor = connection.cursor()
 
@@ -167,6 +168,8 @@ def report_stats(request):
     return render(request, 'stats/user_activity.html', context)
 
 
+@cache_page(60 * 15)
+@xframe_options_exempt
 @login_required
 def report_stats_ccaa(request):
     cursor = connection.cursor()
