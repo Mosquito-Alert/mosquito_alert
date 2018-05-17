@@ -107,7 +107,7 @@ def workload_available_reports(request):
         return Response(data)
 
 
-@xframe_options_exempt
+@login_required
 def registration_stats(request):
     cursor = connection.cursor()
     cursor.execute("""
@@ -132,8 +132,6 @@ def registration_stats(request):
     return render(request, 'stats/user_registration.html', context)
 
 
-@cache_page(60 * 15)
-@xframe_options_exempt
 @login_required
 def report_stats(request):
     cursor = connection.cursor()
@@ -168,8 +166,6 @@ def report_stats(request):
     return render(request, 'stats/user_activity.html', context)
 
 
-@cache_page(60 * 15)
-@xframe_options_exempt
 @login_required
 def report_stats_ccaa(request):
     cursor = connection.cursor()
