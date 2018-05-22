@@ -167,6 +167,12 @@ def report_stats(request):
 
 
 @login_required
+def report_stats_ccaa_pie(request):
+    context = {}
+    return render(request, 'stats/report_stats_ccaa_pie.html', context)
+
+
+@login_required
 def report_stats_ccaa(request):
     cursor = connection.cursor()
 

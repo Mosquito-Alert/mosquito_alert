@@ -6,7 +6,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image
 from tigamap.views import show_filterable_report_map, show_single_report_map
-from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa
+from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie
 from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view
 from tigaserver_messages.views import compose_w_data, reply_w_data
@@ -66,6 +66,7 @@ urlpatterns += i18n_patterns('',
     url(r'^stats/$', show_usage),
     url(r'^stats/workload/$', workload_stats, name='workload_stats'),
     url(r'^stats/report_stats_ccaa/$', report_stats_ccaa, name='report_stats_ccaa'),
+    url(r'^stats/report_stats_ccaa_pie/$', report_stats_ccaa_pie, name='report_stats_ccaa_pie'),
     url(r'^stats/report_stats/$', report_stats, name='report_stats'),
     url(r'^stats/registration_stats/$', registration_stats, name='registration_stats'),
     #url(r'^reportstats/$', show_report_users),
