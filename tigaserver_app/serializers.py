@@ -341,9 +341,17 @@ class DetailedReportSerializer(serializers.ModelSerializer):
     os_language = serializers.CharField(required=False)
     app_language = serializers.CharField(required=False)
     responses = ReportResponseSerializer(many=True)
+    point = serializers.SerializerMethodField(method_name='get_point')
 
     class Meta:
         model = Report
+
+    def get_point(self,obj):
+        if obj.point is not None:
+            return { "lat": obj.point.y, "long": obj.point.x}
+        else:
+            return None
+
 
 
 class DetailedTigaUserSerializer(serializers.ModelSerializer):

@@ -1169,4 +1169,12 @@ def profile_detail(request):
             raise ParseError(detail='firebase token is mandatory')
         profile = get_object_or_404(TigaProfile.objects,firebase_token=firebase_token)
         serializer = DetailedTigaProfileSerializer(profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        #This is probably very wrong. We filter a copy of the serialized data to exclude missions
+        copied_data = copy.deepcopy(serializer.data)
+        for device in copied_data['profile_devices']:
+            for idx, report in reversed(list(enumerate(device['user_reports']))):
+                if report['type'] == 'mission':
+                    del device['user_reports'][idx]
+
+        return Response(copied_data, status=status.HTTP_200_OK)
