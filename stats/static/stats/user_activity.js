@@ -136,19 +136,19 @@ var extract_series_data_pie = function(year, aggregated_data){
 }
 
 var adult_colors = {
-    '2014': '#e6e6ff',
-    '2015': '#9999ff',
-    '2016': '#6666ff',
-    '2017': '#3333ff',
-    '2018': '#0000e6'
+    '2014': '#eff3ff',
+    '2015': '#bdd7e7',
+    '2016': '#6baed6',
+    '2017': '#3182bd',
+    '2018': '#08519c'
 };
 
 var site_colors = {
-    '2014': '#ffcccc',
-    '2015': '#ff8080',
-    '2016': '#ff6666',
-    '2017': '#ff3333',
-    '2018': '#e60000'
+    '2014': '#edf8e9',
+    '2015': '#bae4b3',
+    '2016': '#74c476',
+    '2017': '#31a354',
+    '2018': '#006d2c'
 }
 
 var combined_chart_empty = function(title, div_id){

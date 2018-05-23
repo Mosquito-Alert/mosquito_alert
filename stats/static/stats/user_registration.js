@@ -7,11 +7,11 @@ var params_2018;
 var chart_register;
 
 var register_colors = {
-    '2014': '#e6ffe6',
-    '2015': '#80ff80',
-    '2016': '#1aff1a',
-    '2017': '#00b300',
-    '2018': '#004d00'
+    '2014': '#f2f0f7',
+    '2015': '#cbc9e2',
+    '2016': '#9e9ac8',
+    '2017': '#756bb1',
+    '2018': '#54278f'
 }
 
 var extract_series_data = function(year,aggregated_data){

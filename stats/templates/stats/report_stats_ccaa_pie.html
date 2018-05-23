@@ -15,27 +15,27 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.15/proj4.js"></script>
         <script src="https://code.highcharts.com/highcharts.js"></script>
         <script src="https://code.highcharts.com/maps/modules/map.js"></script>
+        <script src="https://code.highcharts.com/maps/modules/data.js"></script>
         <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
         <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
-        <script src="https://code.highcharts.com/mapdata/countries/us/us-all.js"></script>
+        <script src="https://code.highcharts.com/mapdata/countries/es/es-all.js"></script>
+
         <script src={% static "stats/underscore-min.js" %}></script>
-        <script src={% static "stats/geojson_ccaa.js" %}></script>
+        <!--<script src={% static "stats/geojson_ccaa.js" %}></script>-->
         <script src={% static "stats/report_stats_ccaa_pie.js" %}></script>
         <script>
-
+            var map_data = JSON.parse('{{ map_data | escapejs }}');
         </script>
         <style>
             #container {
                 min-width: 320px;
                 max-width: 800px;
-                height: 500px;
+                height: 800px;
                 margin: 1em auto;
             }
         </style>
     </head>
     <body>
-        <div class="container-custom">
-            <div id="container"></div>
-        </div>
+        <div id="container"></div>
     </body>
 </html>

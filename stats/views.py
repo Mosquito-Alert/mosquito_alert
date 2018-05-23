@@ -168,7 +168,26 @@ def report_stats(request):
 
 @login_required
 def report_stats_ccaa_pie(request):
-    context = {}
+    cursor = connection.cursor()
+    cursor.execute("""
+        select count("version_UUID"), nomprov, code_hc, private_webmap_layer
+        from 
+        (
+            (
+            select *
+            from
+            map_aux_reports m,
+            tigaserver_app_report r
+            where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable','other_species','unidentified') AND
+            m.version_uuid = r."version_UUID") r
+            join
+            provincies_4326 p
+            on st_contains(p.geom,r.point)
+        ) as t 
+        group by nomprov, code_hc, private_webmap_layer order by 2, 4
+    """)
+    map_data = cursor.fetchall()
+    context = { 'map_data': json.dumps(map_data) }
     return render(request, 'stats/report_stats_ccaa_pie.html', context)
 
 
