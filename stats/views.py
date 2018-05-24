@@ -108,6 +108,38 @@ def workload_available_reports(request):
 
 
 @login_required
+def mosquito_ccaa_rich(request):
+    cursor = connection.cursor()
+    cursor.execute("""
+            select count("version_UUID"), extract(year from observation_date), nomprov, code_hc
+            from 
+            (
+                (
+                select *
+                from
+                map_aux_reports m,
+                tigaserver_app_report r
+                where private_webmap_layer in ('mosquito_tiger_confirmed') AND
+                m.version_uuid = r."version_UUID") r
+                join
+                provincies_4326 p
+                on st_contains(p.geom,r.point)
+            ) as t 
+            group by nomprov, extract(year from observation_date), code_hc order by 3, 2
+        """)
+    map_data = cursor.fetchall()
+
+    now = datetime.datetime.now()
+    current_year = now.year
+    years = []
+
+    for i in range(2014, current_year + 1):
+        years.append(i)
+
+    context = {'map_data': json.dumps(map_data), 'years': json.dumps(years)}
+    return render(request, 'stats/mosquito_ccaa_rich.html', context)
+
+@login_required
 def registration_stats(request):
     cursor = connection.cursor()
     cursor.execute("""
