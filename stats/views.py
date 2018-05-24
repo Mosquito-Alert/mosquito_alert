@@ -208,7 +208,14 @@ def report_stats_ccaa_pie(request):
     """)
     map_data_year = cursor.fetchall()
 
-    context = { 'map_data': json.dumps(map_data), 'map_data_year': json.dumps(map_data_year) }
+    now = datetime.datetime.now()
+    current_year = now.year
+    years = []
+
+    for i in range(2014, current_year + 1):
+        years.append(i)
+
+    context = { 'map_data': json.dumps(map_data), 'map_data_year': json.dumps(map_data_year), 'years': json.dumps(years) }
     return render(request, 'stats/report_stats_ccaa_pie.html', context)
 
 
