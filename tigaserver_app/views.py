@@ -29,6 +29,7 @@ from tigacrafting.messaging import send_message_ios, send_message_android
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
 from tigascoring.maUsers import smmry
 from tigaserver_app.serializers import custom_render_notification,score_label
+import copy
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
