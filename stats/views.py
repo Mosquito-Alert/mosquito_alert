@@ -129,6 +129,25 @@ def mosquito_ccaa_rich(request):
         """)
     map_data = cursor.fetchall()
 
+    cursor.execute("""
+        select count("version_UUID"), extract(year from observation_date), nomprov, code_hc, private_webmap_layer
+        from (
+        (
+            select *
+            from
+            map_aux_reports m,
+            tigaserver_app_report r
+            where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable','other_species','unidentified') AND
+            m.version_uuid = r."version_UUID") r
+            join
+            provincies_4326 p
+            on st_contains(p.geom,r.point)
+        ) as t 
+        group by nomprov, extract(year from observation_date), code_hc,private_webmap_layer order by 3, 2
+        """)
+
+    all_data = cursor.fetchall()
+
     now = datetime.datetime.now()
     current_year = now.year
     years = []
@@ -136,7 +155,7 @@ def mosquito_ccaa_rich(request):
     for i in range(2014, current_year + 1):
         years.append(i)
 
-    context = {'map_data': json.dumps(map_data), 'years': json.dumps(years)}
+    context = {'map_data': json.dumps(map_data), 'years': json.dumps(years), 'all_data': json.dumps(all_data)}
     return render(request, 'stats/mosquito_ccaa_rich.html', context)
 
 @login_required

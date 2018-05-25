@@ -99,6 +99,7 @@ $(function () {
     var mapData = Highcharts.maps['countries/es/es-all'];
     for (var i = 0; i < mapData.features.length; i++){
         centers[mapData.features[i].id] = { 'lat': mapData.features[i].properties.latitude, 'long': mapData.features[i].properties.longitude};
+        mapData.features[i].properties.id = mapData.features[i].id;
     }
 
     Highcharts.seriesType('mappie', 'pie', {
@@ -215,7 +216,7 @@ $(function () {
                     showInLegend: false,
                     data: map_data,
                     keys: ['hasc', 'nom', 'mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'other_species', 'unidentified', 'total' ],
-                    //joinBy: ['hasc','hasc'],
+                    //joinBy: ['id','hasc'],
                     name: 'Comunitats autònomes',
                     states: {
                         hover: {

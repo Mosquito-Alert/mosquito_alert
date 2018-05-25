@@ -51,6 +51,7 @@
         <script src={% static "stats/mosquito_ccaa_rich.js" %}></script>
         <script>
             var map_data = JSON.parse('{{ map_data | escapejs }}');
+            var all_data = JSON.parse('{{ all_data | escapejs }}');
             var years = JSON.parse('{{ years | escapejs }}');
         </script>
         <style>

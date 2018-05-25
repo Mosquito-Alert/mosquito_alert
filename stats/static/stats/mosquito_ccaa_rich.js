@@ -1,21 +1,90 @@
 var data = [];
 var data_pais = {};
 var pre_parsed = {};
+var data_levels = {};
 var mapData;
 var countryChart;
 
 $(function () {
 
-    for (var i = 0; i < map_data.length; i++){
-        var elem = map_data[i];
-        if( pre_parsed[elem[3]] == null ){
-            pre_parsed[elem[3]] = {};
-            for (var j = 0; j < years.length; j++){
-                pre_parsed[elem[3]][years[j]] = 0;
+    data_levels = {
+        'accuracy_3':{}, //confirmed
+        'accuracy_2':{}, //confirmed + probable
+        'accuracy_1':{}, //confirmed + probable + other
+        'accuracy_0':{}, //confirmed + probable + other + unidentified
+    };
+
+    for (var i = 0; i < all_data.length; i++){
+        var elem = all_data[i];
+        if(elem[4] == 'mosquito_tiger_confirmed'){
+            if (data_levels['accuracy_3'][elem[3]] == null){
+                data_levels['accuracy_3'][elem[3]] = {};
+                for (var j = 0; j < years.length; j++){
+                    data_levels['accuracy_3'][elem[3]][years[j]] = 0;
+                }
             }
+            data_levels['accuracy_3'][elem[3]][elem[1]] = elem[0];
+            data_levels['accuracy_3'][elem[3]]['name'] = elem[2];
+        }else if(elem[4] == 'mosquito_tiger_probable'){
+            if (data_levels['accuracy_2'][elem[3]] == null){
+                data_levels['accuracy_2'][elem[3]] = {};
+                for (var j = 0; j < years.length; j++){
+                    data_levels['accuracy_2'][elem[3]][years[j]] = 0;
+                }
+            }
+            data_levels['accuracy_2'][elem[3]][elem[1]] = elem[0];
+            if( data_levels['accuracy_3'][elem[3]] != null && data_levels['accuracy_3'][elem[3]][elem[1]] != null){
+                data_levels['accuracy_2'][elem[3]][elem[1]] = data_levels['accuracy_2'][elem[3]][elem[1]] + data_levels['accuracy_3'][elem[3]][elem[1]]
+            }
+            data_levels['accuracy_2'][elem[3]]['name'] = elem[2];
+        }else if(elem[4] == 'other_species'){
+            if (data_levels['accuracy_1'][elem[3]] == null){
+                data_levels['accuracy_1'][elem[3]] = {};
+                for (var j = 0; j < years.length; j++){
+                    data_levels['accuracy_1'][elem[3]][years[j]] = 0;
+                }
+            }
+            data_levels['accuracy_1'][elem[3]][elem[1]] = elem[0];
+            if( data_levels['accuracy_3'][elem[3]] != null && data_levels['accuracy_3'][elem[3]][elem[1]] != null){
+                data_levels['accuracy_1'][elem[3]][elem[1]] = data_levels['accuracy_1'][elem[3]][elem[1]] + data_levels['accuracy_3'][elem[3]][elem[1]]
+            }
+            if( data_levels['accuracy_2'][elem[3]] != null && data_levels['accuracy_2'][elem[3]][elem[1]] != null){
+                data_levels['accuracy_1'][elem[3]][elem[1]] = data_levels['accuracy_1'][elem[3]][elem[1]] + data_levels['accuracy_2'][elem[3]][elem[1]]
+            }
+            data_levels['accuracy_1'][elem[3]]['name'] = elem[2];
+        }else if(elem[4] == 'unidentified'){
+            if (data_levels['accuracy_0'][elem[3]] == null){
+                data_levels['accuracy_0'][elem[3]] = {};
+                for (var j = 0; j < years.length; j++){
+                    data_levels['accuracy_0'][elem[3]][years[j]] = 0;
+                }
+            }
+            data_levels['accuracy_0'][elem[3]][elem[1]] = elem[0];
+            if( data_levels['accuracy_3'][elem[3]] != null && data_levels['accuracy_3'][elem[3]][elem[1]] != null){
+                data_levels['accuracy_0'][elem[3]][elem[1]] = data_levels['accuracy_0'][elem[3]][elem[1]] + data_levels['accuracy_3'][elem[3]][elem[1]]
+            }
+            if( data_levels['accuracy_2'][elem[3]] != null && data_levels['accuracy_2'][elem[3]][elem[1]] != null){
+                data_levels['accuracy_0'][elem[3]][elem[1]] = data_levels['accuracy_0'][elem[3]][elem[1]] + data_levels['accuracy_2'][elem[3]][elem[1]]
+            }
+            if( data_levels['accuracy_1'][elem[3]] != null && data_levels['accuracy_1'][elem[3]][elem[1]] != null){
+                data_levels['accuracy_0'][elem[3]][elem[1]] = data_levels['accuracy_0'][elem[3]][elem[1]] + data_levels['accuracy_1'][elem[3]][elem[1]]
+            }
+            data_levels['accuracy_0'][elem[3]]['name'] = elem[2];
         }
-        pre_parsed[elem[3]][elem[1]] = elem[0];
-        pre_parsed[elem[3]]['name'] = elem[2];
+    }
+
+    for (var i = 0; i < all_data.length; i++){
+        var elem = all_data[i];
+        if(elem[4] == 'mosquito_tiger_confirmed'){
+            if( pre_parsed[elem[3]] == null ){
+                pre_parsed[elem[3]] = {};
+                for (var j = 0; j < years.length; j++){
+                    pre_parsed[elem[3]][years[j]] = 0;
+                }
+            }
+            pre_parsed[elem[3]][elem[1]] = elem[0];
+            pre_parsed[elem[3]]['name'] = elem[2];
+        }
     }
 
     for (var key in pre_parsed){
