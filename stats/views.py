@@ -108,45 +108,75 @@ def workload_available_reports(request):
 
 
 @login_required
-def mosquito_ccaa_rich(request):
-    cursor = connection.cursor()
-    cursor.execute("""
-            select count("version_UUID"), extract(year from observation_date), nomprov, code_hc
-            from 
-            (
-                (
-                select *
-                from
-                map_aux_reports m,
-                tigaserver_app_report r
-                where private_webmap_layer in ('mosquito_tiger_confirmed') AND
-                m.version_uuid = r."version_UUID") r
-                join
-                provincies_4326 p
-                on st_contains(p.geom,r.point)
-            ) as t 
-            group by nomprov, extract(year from observation_date), code_hc order by 3, 2
-        """)
-    map_data = cursor.fetchall()
+def mosquito_ccaa_rich_iframetest(request):
+    context = {}
+    return render(request, 'stats/mosquito_ccaa_rich_iframetest.html', context)
 
-    cursor.execute("""
-        select count("version_UUID"), extract(year from observation_date), nomprov, code_hc, private_webmap_layer
-        from (
+
+@login_required
+@xframe_options_exempt
+def mosquito_ccaa_rich(request, tiger_category='confirmed'):
+    cursor = connection.cursor()
+    sql_template = """
+        select count("version_UUID"), extract(year from observation_date), nomprov, code_hc
+        from 
         (
+            (
             select *
             from
             map_aux_reports m,
             tigaserver_app_report r
-            where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable','other_species','unidentified') AND
+            where private_webmap_layer in ('{0}') AND
             m.version_uuid = r."version_UUID") r
             join
             provincies_4326 p
             on st_contains(p.geom,r.point)
         ) as t 
-        group by nomprov, extract(year from observation_date), code_hc,private_webmap_layer order by 3, 2
-        """)
+        group by nomprov, extract(year from observation_date), code_hc order by 3, 2
+    """
 
-    all_data = cursor.fetchall()
+    if tiger_category == 'confirmed':
+
+        sql_template = sql_template.format('mosquito_tiger_confirmed')
+
+        title_linechart = 'Nombre d\'observacions confirmades de Mosquit Tigre per any'
+        title = 'Observacions de mosquit tigre confirmades, 2014-2018'
+        series_title = 'Observacions de mosquit tigre confirmades, (2014-2018)'
+
+    elif tiger_category == 'probable':
+
+        sql_template = sql_template.format('mosquito_tiger_probable')
+
+        title_linechart = 'Nombre d\'observacions confirmades de Mosquit Tigre possible per any'
+        title = 'Observacions de mosquit tigre possibles, 2014-2018'
+        series_title = 'Observacions de mosquit tigre possibles, 2014-2018'
+
+    elif tiger_category == 'other':
+
+        sql_template = sql_template.format('other_species')
+
+        title_linechart = 'Nombre d\'observacions d\'altres especies per any'
+        title = 'Observacions d\'altres especies, 2014-2018'
+        series_title = 'Observacions d\'altres especies, 2014-2018'
+
+    elif tiger_category == 'unidentified':
+
+        sql_template = sql_template.format('unidentified')
+
+        title_linechart = 'Nombre d\'observacions no identificables per any'
+        title = 'Observacions no identificables, 2014-2018'
+        series_title = 'Observacions no identificables, 2014-2018'
+
+    else:
+
+        sql_template = sql_template.format('mosquito_tiger_confirmed')
+
+        title_linechart = ''
+        title = ''
+        series_title = ''
+
+    cursor.execute(sql_template)
+    map_data = cursor.fetchall()
 
     now = datetime.datetime.now()
     current_year = now.year
@@ -155,7 +185,13 @@ def mosquito_ccaa_rich(request):
     for i in range(2014, current_year + 1):
         years.append(i)
 
-    context = {'map_data': json.dumps(map_data), 'years': json.dumps(years), 'all_data': json.dumps(all_data)}
+    context = {
+        'map_data': json.dumps(map_data),
+        'years': json.dumps(years),
+        'title_linechart' : title_linechart,
+        'title' : title,
+        'series_title' : series_title
+    }
     return render(request, 'stats/mosquito_ccaa_rich.html', context)
 
 @login_required

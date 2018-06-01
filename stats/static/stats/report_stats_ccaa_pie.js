@@ -151,11 +151,7 @@ $(function () {
     });
 
 
-    var spawn_chart = function(div_id, map_data, title, subtitle){
-        var maxTotal = 0;
-        Highcharts.each(map_data, function (row) {
-            maxTotal = Math.max(maxTotal, row[5]);
-        });
+    var spawn_chart = function(div_id, map_data, title, subtitle, max){
 
         var chart = Highcharts.mapChart(div_id, {
 
@@ -283,7 +279,7 @@ $(function () {
                             (yAxis.max - yAxis.min);
                     return Math.max(
                         this.chart.chartWidth / 45 * zoomFactor, // Min size
-                        this.chart.chartWidth / 11 * zoomFactor * state.total / maxTotal
+                        this.chart.chartWidth / 11 * zoomFactor * state.total / max
                     );
                 },
                 tooltip: {
@@ -327,26 +323,38 @@ $(function () {
         return chart;
     }
 
+    var totalMax = 0;
+    for (var year in year_map_data){
+        Highcharts.each(year_map_data[year], function (row) {
+            totalMax = Math.max(totalMax, row[5]);
+        });
+    }
+
+    var maxAcum = 0;
+    Highcharts.each(map_parsed_acum, function (row) {
+        maxAcum = Math.max(maxAcum, row[5]);
+    });
+
     if(year_map_data[2014]){
-        var chart_2014 = spawn_chart('container_2014', year_map_data[2014], 'Dades any 2014', 'Any 2014');
+        var chart_2014 = spawn_chart('container_2014', year_map_data[2014], 'Dades any 2014', 'Any 2014', maxAcum);
         chart_2014.redraw();
     }
     if(year_map_data[2015]){
-        var chart_2015 = spawn_chart('container_2015', year_map_data[2015], 'Dades any 2015', 'Any 2015');
+        var chart_2015 = spawn_chart('container_2015', year_map_data[2015], 'Dades any 2015', 'Any 2015', maxAcum);
         chart_2015.redraw();
     }
     if(year_map_data[2016]){
-        var chart_2016 = spawn_chart('container_2016', year_map_data[2016], 'Dades any 2016', 'Any 2016');
+        var chart_2016 = spawn_chart('container_2016', year_map_data[2016], 'Dades any 2016', 'Any 2016', maxAcum);
         chart_2016.redraw();
     }
     if(year_map_data[2017]){
-        var chart_2017 = spawn_chart('container_2017', year_map_data[2017], 'Dades any 2017', 'Any 2017');
+        var chart_2017 = spawn_chart('container_2017', year_map_data[2017], 'Dades any 2017', 'Any 2017', maxAcum);
         chart_2017.redraw();
     }
     if(year_map_data[2018]){
-        var chart_2018 = spawn_chart('container_2018', year_map_data[2018], 'Dades any 2018', 'Any 2018');
+        var chart_2018 = spawn_chart('container_2018', year_map_data[2018], 'Dades any 2018', 'Any 2018', maxAcum);
         chart_2018.redraw();
     }
-    var chart_acum = spawn_chart('container_acum', map_parsed_acum, 'Dades acumulades tots els anys', 'Anys 2014-2018');
+    var chart_acum = spawn_chart('container_acum', map_parsed_acum, 'Dades acumulades tots els anys', 'Anys 2014-2018', maxAcum);
     chart_acum.redraw();
 });

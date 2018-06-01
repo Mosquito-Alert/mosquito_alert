@@ -1,0 +1,51 @@
+{% load staticfiles %}
+{% load i18n %}
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <title>MosquitoAlert Stats</title>
+
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src={% static "stats/isotope.pkgd.min.js" %}></script>
+        <script src={% static "stats/mosquito_ccaa_rich_iframetest.js" %}></script>
+        <style>
+
+            .grid-item {
+                float: left;
+                width: 1000px;
+                height: 450px;
+                /*background: #e6e5e4;*/
+                /*border: 1px solid #b6b5b4;*/
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h3>Selecciona les categories per les quals vols veure dades:</h3>
+            <div class="row">
+                <div class="col-md-12">
+                    <ul class="list-inline" id="categories">
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="grid">
+            <div id="confirmed" class="grid-item">
+                 <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/confirmed"></iframe>
+            </div>
+            <div id="probable" class="grid-item">
+                <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/probable"></iframe>
+            </div>
+            <div id="other" class="grid-item">
+                <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/other"></iframe>
+            </div>
+            <div id="unidentified" class="grid-item">
+                <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/unidentified"></iframe>
+            </div>
+        </div>
+    </body>
+</html>
