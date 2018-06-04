@@ -1177,5 +1177,8 @@ def profile_detail(request):
             for idx, report in reversed(list(enumerate(device['user_reports']))):
                 if report['type'] == 'mission':
                     del device['user_reports'][idx]
+                r = Report.objects.get(pk=report['version_UUID'])
+                if not r.latest_version:
+                    del device['user_reports'][idx]
 
         return Response(copied_data, status=status.HTTP_200_OK)
