@@ -8,20 +8,11 @@
 
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        <link rel="stylesheet" href={% static "stats/mosquito_ccaa_rich_iframetest.css" %}>
 
-        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
         <script src={% static "stats/isotope.pkgd.min.js" %}></script>
         <script src={% static "stats/mosquito_ccaa_rich_iframetest.js" %}></script>
-        <style>
-
-            .grid-item {
-                float: left;
-                width: 1000px;
-                height: 450px;
-                /*background: #e6e5e4;*/
-                /*border: 1px solid #b6b5b4;*/
-            }
-        </style>
     </head>
     <body>
         <div class="container">
@@ -35,16 +26,20 @@
         </div>
         <div class="grid">
             <div id="confirmed" class="grid-item">
-                 <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/confirmed"></iframe>
+                 <div class="progress"></div>
+                 <iframe id="confirmed_iframe" width="1000px" height="450px"></iframe>
             </div>
             <div id="probable" class="grid-item">
-                <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/probable"></iframe>
+                <div class="progress"></div>
+                <iframe id="probable_iframe" width="1000px" height="450px"></iframe>
             </div>
             <div id="other" class="grid-item">
-                <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/other"></iframe>
+                <div class="progress"></div>
+                <iframe id="other_iframe" width="1000px" height="450px"></iframe>
             </div>
             <div id="unidentified" class="grid-item">
-                <iframe width="1000px" height="450px" src="/stats/mosquito_ccaa_rich/unidentified"></iframe>
+                <div class="progress"></div>
+                <iframe id="unidentified_iframe" width="1000px" height="450px"></iframe>
             </div>
         </div>
     </body>

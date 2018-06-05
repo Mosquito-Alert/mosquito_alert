@@ -24,8 +24,12 @@ var showPanel = function(category){
     }
 }
 
+var hideLoader = function(div_id){
+    $('#' + div_id + " .progress").hide();
+}
 
-$(function () {
+$( document ).ready(function() {
+//$(function () {
 
     $grid = $('.grid').isotope({
         layoutMode: 'fitRows',
@@ -37,5 +41,26 @@ $(function () {
     $("#categories").append('<li><input id="probable" onclick="javascript:showPanel(\'probable\')" type="checkbox">Mosquit tigre probable</li>');
     $("#categories").append('<li><input id="other" onclick="javascript:showPanel(\'other\')" type="checkbox">Altres espècies</li>');
     $("#categories").append('<li><input id="unidentified" onclick="javascript:showPanel(\'unidentified\')" type="checkbox">No identificats</li>');
+
+    $('#confirmed_iframe').attr('src','/stats/mosquito_ccaa_rich/confirmed');
+    $('#probable_iframe').attr('src','/stats/mosquito_ccaa_rich/probable');
+    $('#other_iframe').attr('src','/stats/mosquito_ccaa_rich/other');
+    $('#unidentified_iframe').attr('src','/stats/mosquito_ccaa_rich/unidentified');
+
+    $("#confirmed_iframe").on('load',function(){
+        hideLoader('confirmed');
+    });
+
+    $("#probable_iframe").on('load',function(){
+        hideLoader('probable');
+    });
+
+    $("#other_iframe").on('load',function(){
+        hideLoader('other');
+    });
+
+    $("#unidentified_iframe").on('load',function(){
+        hideLoader('unidentified');
+    });
 
 });

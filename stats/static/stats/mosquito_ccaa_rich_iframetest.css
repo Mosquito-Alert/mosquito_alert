@@ -1,0 +1,13 @@
+.grid-item {
+    float: left;
+    width: 1000px;
+    height: 450px;
+}
+
+.progress{
+    position: absolute;
+    width: 1000px;
+    height: 450px;
+    background: black url(/static/stats/ajax-loader.gif) center center no-repeat;
+    opacity: .5;
+}
