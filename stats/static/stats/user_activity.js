@@ -1,11 +1,16 @@
-var all_data = {};
-var params_2014;
-var params_2015;
-var params_2016;
-var params_2017;
-var params_2018;
+var split_data = {};
 var chart_adults;
 var chart_sites;
+
+var readableChartNames = {
+    'mosquito_tiger_confirmed': 'Confirmed tiger mosquito',
+    'mosquito_tiger_probable': 'Possible tiger mosquito',
+    'other_species': 'Other species',
+    'unidentified': 'Unidentifiable species',
+    'storm_drain_dry': 'Storm drain with water',
+    'storm_drain_water': 'Storm drain without water',
+    'breeding_site_other': 'Other breeding site'
+}
 
 var getCheckedYears = function(){
     var checked_list = [];
@@ -28,40 +33,39 @@ var removeSeries = function(chart, series_name){
 }
 
 var addColumnSeries = function(chart, year){
+    var adultSelectValue = $( "#adult_select" ).val();
+    var siteSelectValue = $( "#site_select" ).val();
     if(chart == chart_adults){
         chart_adults.addSeries({
             type: 'column',
-            name: 'Adults ' + year,
-            data: all_data[year].adult_series,
+            name: year,
+            //data: all_data[year].adult_series,
+            data: extract_series_data(year,split_data[year][adultSelectValue]),
             color: adult_colors[ year ]
         });
     }else if(chart == chart_sites){
         chart_sites.addSeries({
             type: 'column',
-            name: 'Breeding sites ' + year,
-            data: all_data[year].site_series,
+            name: year,
+            //data: all_data[year].site_series,
+            data: extract_series_data(year,split_data[year][siteSelectValue]),
             color: site_colors[ year ]
         });
     }
 }
 
-var refreshPieSeries = function(){
+var refreshAdultPieSeries = function(){
     var adults_pie_data = [];
-    var sites_pie_data = [];
     var checked_years = getCheckedYears();
     removeSeries(chart_adults, 'Adult reports per year');
-    removeSeries(chart_sites, 'Breeding site reports per year');
+    var adultSelectValue = $( "#adult_select" ).val();
     if(checked_years.length > 1){
         for(var i = 0; i < checked_years.length; i++){
             adults_pie_data.push({
-                name: 'Adults ' + checked_years[i],
-                y: all_data[checked_years[i].toString()].adult_series_pie,
+                name: checked_years[i],
+                //y: all_data[checked_years[i].toString()].adult_series_pie,
+                y: extract_series_data_pie(checked_years[i],split_data[checked_years[i]][adultSelectValue]),
                 color: adult_colors[ checked_years[i].toString() ]
-            });
-            sites_pie_data.push({
-                name: 'Breeding sites ' + checked_years[i],
-                y: all_data[checked_years[i].toString()].site_series_pie,
-                color: site_colors[ checked_years[i].toString() ]
             });
         }
         chart_adults.addSeries({
@@ -76,6 +80,23 @@ var refreshPieSeries = function(){
                 format: '<b>{point.name}</b>: {y}'
             }
         });
+    }
+}
+
+var refreshSitePieSeries = function(){
+    var sites_pie_data = [];
+    var checked_years = getCheckedYears();
+    removeSeries(chart_sites, 'Breeding site reports per year');
+    var siteSelectValue = $( "#site_select" ).val();
+    if(checked_years.length > 1){
+        for(var i = 0; i < checked_years.length; i++){
+            sites_pie_data.push({
+                name: checked_years[i],
+                //y: all_data[checked_years[i].toString()].site_series_pie,
+                y: extract_series_data_pie(checked_years[i],split_data[checked_years[i]][siteSelectValue]),
+                color: site_colors[ checked_years[i].toString() ]
+            });
+        }
         chart_sites.addSeries({
             type: 'pie',
             name: 'Breeding site reports per year',
@@ -91,23 +112,52 @@ var refreshPieSeries = function(){
     }
 }
 
+var refreshPieSeries = function(){
+    refreshAdultPieSeries();
+    refreshSitePieSeries();
+}
 
-var addSeries = function(year){
+var addAdultSeries = function(year){
+    var adultSelectValue = $( "#adult_select" ).val();
+
     if(chart_adults==null){
         chart_adults = combined_chart_empty("Adult reports", 'base_graph');
     }
-    if(chart_sites==null){
-        chart_sites = combined_chart_empty("Breeding site reports", 'sites');
-    }
+
+    chart_adults.setTitle({text: readableChartNames[adultSelectValue]});
+
     var checked = $('#year_check_' + year).prop('checked');
     if(checked){
         addColumnSeries(chart_adults, year);
+    }else{
+        removeSeries(chart_adults, year);
+    }
+    //refreshPieSeries();
+    refreshAdultPieSeries();
+}
+
+var addSiteSeries = function(year){
+    var siteSelectValue = $( "#site_select" ).val();
+
+    if(chart_sites==null){
+        chart_sites = combined_chart_empty("Breeding site reports", 'sites');
+    }
+
+    chart_sites.setTitle({text: readableChartNames[siteSelectValue]});
+
+    var checked = $('#year_check_' + year).prop('checked');
+    if(checked){
         addColumnSeries(chart_sites, year);
     }else{
-        removeSeries(chart_adults, 'Adults ' + year);
-        removeSeries(chart_sites, 'Breeding sites ' + year);
+        removeSeries(chart_sites, year);
     }
-    refreshPieSeries();
+    //refreshPieSeries();
+    refreshSitePieSeries();
+}
+
+var addSeries = function(year){
+    addAdultSeries(year);
+    addSiteSeries(year);
 }
 
 var extract_series_data = function(year,aggregated_data){
@@ -185,20 +235,51 @@ $(function () {
         $("#years").append('<li><input id="year_check_' + years_data[index]+ '" onclick="javascript:addSeries(\'' + years_data[index] + '\')" type="checkbox">' + years_data[index] + '</li>');
     });
 
+    $( "#adult_select" ).change(function() {
+        var adultSelectValue = $(this).val();
+        var years = getCheckedYears();
+
+        if(chart_adults){
+            while(chart_adults.series.length > 0){
+                chart_adults.series[0].remove(true);
+            }
+
+            for( var i = 0; i < years.length; i++){
+                addAdultSeries(years[i]);
+            }
+        }
+    });
+
+    $( "#site_select" ).change(function() {
+        var siteSelectValue = $(this).val();
+        var years = getCheckedYears();
+
+        if(chart_sites){
+            while(chart_sites.series.length > 0){
+                chart_sites.series[0].remove(true);
+            }
+
+            for( var i = 0; i < years.length; i++){
+                addSiteSeries(years[i]);
+            }
+        }
+    });
 
     for(var i = 0; i < years_data.length; i++){
-        all_data[ years_data[i].toString() ] = {
-            'adult_series': extract_series_data(years_data[i], adults_data),
-            'site_series': extract_series_data(years_data[i], sites_data),
-            'adult_series_pie': extract_series_data_pie(years_data[i], adults_data),
-            'site_series_pie': extract_series_data_pie(years_data[i], sites_data)
+        split_data[years_data[i].toString()] = {};
+        split_data[years_data[i].toString()]['mosquito_tiger_confirmed'] = [];
+        split_data[years_data[i].toString()]['mosquito_tiger_probable'] = [];
+        split_data[years_data[i].toString()]['other_species'] = [];
+        split_data[years_data[i].toString()]['unidentified'] = [];
+        split_data[years_data[i].toString()]['storm_drain_dry'] = [];
+        split_data[years_data[i].toString()]['storm_drain_water'] = [];
+        split_data[years_data[i].toString()]['breeding_site_other'] = [];
+        for(var j = 0; j < all_sliced_data.length; j++){
+            var elem = all_sliced_data[j];
+            if(elem[1] === years_data[i]){
+                split_data[years_data[i].toString()][elem[3]].push([elem[0],elem[1],elem[2]])
+            }
         }
     }
-
-    params_2014 = all_data[ '2014' ];
-    params_2015 = all_data[ '2015' ];
-    params_2016 = all_data[ '2016' ];
-    params_2017 = all_data[ '2017' ];
-    params_2018 = all_data[ '2018' ];
 
 });

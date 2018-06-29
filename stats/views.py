@@ -237,6 +237,29 @@ def registration_stats(request):
 def report_stats(request):
     cursor = connection.cursor()
 
+    '''    
+    **** alt query. Does exactly the same as the one below, but the data is separated by adult category ****
+    '''
+
+    cursor.execute("""
+        select count("version_UUID"), extract(year from server_upload_time), extract(month from server_upload_time), private_webmap_layer
+        from 
+        (
+        select 
+        r."version_UUID",
+        r.server_upload_time,
+        m.private_webmap_layer
+        from 
+        tigaserver_app_report r,
+        (select version_uuid,private_webmap_layer from map_aux_reports where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable', 'other_species','unidentified','storm_drain_dry','storm_drain_water','breeding_site_other')) m
+        where r."version_UUID" = m.version_uuid
+        ) as t1
+        group by extract(year from server_upload_time), extract(month from server_upload_time), private_webmap_layer
+        order by 2,3
+    """)
+    all_sliced = cursor.fetchall()
+
+
     cursor.execute("""
         select count("version_UUID"), extract(year from server_upload_time), extract(month from server_upload_time) 
         from (
@@ -263,7 +286,7 @@ def report_stats(request):
     for i in range(2014, current_year + 1):
         years.append(i)
 
-    context = {'adults': json.dumps(adults), 'sites': json.dumps(sites), 'years': json.dumps(years), 'years_list': years}
+    context = {'adults': json.dumps(adults), 'sites': json.dumps(sites), 'years': json.dumps(years), 'years_list': years, 'all_sliced': json.dumps(all_sliced)}
     return render(request, 'stats/user_activity.html', context)
 
 

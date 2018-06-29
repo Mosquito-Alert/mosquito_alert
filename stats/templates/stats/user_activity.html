@@ -17,18 +17,38 @@
         <script src={% static "stats/underscore-min.js" %}></script>
         <script src={% static "stats/user_activity.js" %}></script>
         <script>
-            var adults_data = JSON.parse('{{ adults | escapejs }}');
-            var sites_data = JSON.parse('{{ sites | escapejs }}');
+            /*var adults_data = JSON.parse('{{ adults | escapejs }}');
+            var sites_data = JSON.parse('{{ sites | escapejs }}');*/
             var years_data = JSON.parse('{{ years | escapejs }}');
+            var all_sliced_data = JSON.parse('{{ all_sliced | escapejs }}');
         </script>
     </head>
     <body>
         <div class="container">
-            <h3>This place looks so empty... click on a few years to visualize data!</h3>
+            <h3>So much empty space... click on a few years to visualize data!</h3>
             <div class="row">
                 <div class="col-md-12">
                     <ul class="list-inline" id="years">
                     </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="adult_select">Plot adult data for:</label>
+                    <select id="adult_select">
+                        <option value="mosquito_tiger_confirmed" selected>Confirmed tiger mosquito</option>
+                        <option value="mosquito_tiger_probable">Possible tiger mosquito</option>
+                        <option value="other_species">Other species</option>
+                        <option value="unidentified">Unidentified</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="site_select">Plot site data for:</label>
+                    <select id="site_select">
+                        <option value="storm_drain_water" selected>Storm drain with water</option>
+                        <option value="storm_drain_dry">Storm drain without water</option>
+                        <option value="breeding_site_other">Other breeding sites</option>
+                    </select>
                 </div>
             </div>
         </div>
