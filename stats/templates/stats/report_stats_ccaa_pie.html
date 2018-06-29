@@ -16,8 +16,8 @@
         <script src="https://code.highcharts.com/highcharts.js"></script>
         <script src="https://code.highcharts.com/maps/modules/map.js"></script>
         <script src="https://code.highcharts.com/maps/modules/data.js"></script>
-        <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
-        <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
+        <!--<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+        <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>-->
         <script src="https://code.highcharts.com/mapdata/countries/es/es-all.js"></script>
         <script src={% static "stats/isotope.pkgd.min.js" %}></script>
 
@@ -47,12 +47,14 @@
     </head>
     <body>
         <div class="container">
-            <h3>Això està molt buit... selecciona alguns anys per veure dades!</h3>
+            <h3>This place looks so empty... click on a few years to visualize data!</h3>
             <div class="row">
                 <div class="col-md-12">
                     <ul class="list-inline" id="years">
                     </ul>
                 </div>
+            </div>
+            <div id="size_legend" class="row">
             </div>
         </div>
         <div class="grid">

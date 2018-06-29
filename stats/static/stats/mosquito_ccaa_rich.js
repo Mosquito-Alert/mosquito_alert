@@ -70,7 +70,7 @@ $(function () {
 
             var points = mapChart.getSelectedPoints();
             if (points.length) {
-                $('#info .subheader').html('<h4>' + title_linechart + '</h4><small><em>Majúsc + Click al mapa per comparar províncies</em></small>');
+                $('#info .subheader').html('<h4>' + title_linechart + '</h4><small><em>Shift + Click on map to compare Provinces</em></small>');
 
                 if (!countryChart) {
                     countryChart = Highcharts.chart(linechart_id, {
@@ -159,13 +159,17 @@ $(function () {
 
             colorAxis: {
                 type: 'logarithmic',
+                /*min: 1,
+                max: 1000,*/
                 endOnTick: false,
-                startOnTick: false
+                startOnTick: false,
+                minColor: '#fef0d9',
+                maxColor: '#b30000'
                 //min: 50000
             },
 
             tooltip: {
-                footerFormat: '<span style="font-size: 10px">(Fes click per veure detalls)</span>'
+                footerFormat: '<span style="font-size: 10px">(Click to see details)</span>'
             },
 
             series: [{

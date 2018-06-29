@@ -37,6 +37,29 @@ var showPanel = function(panel_id){
     }
 }
 
+var getIntervalSize = function(max, numIntervals){
+    return Math.round(max / numIntervals);
+}
+
+var getIntervalNum = function(max, numIntervals, index){
+    var retVal = [];
+    var intSize = max / numIntervals;
+    var lowerBound = index * intSize;
+    var upperBound;
+    if(index + 1 == numIntervals){
+        upperBound = max;
+    }else{
+        upperBound = lowerBound + intSize;
+    }
+    retVal.push(lowerBound);
+    retVal.push(upperBound);
+    return retVal;
+}
+
+var getReverseLog = function(value){
+    return Math.pow(10,value);
+}
+
 $(function () {
 
     $grid = $('.grid').isotope({
@@ -48,7 +71,7 @@ $(function () {
     years_data.forEach(function(key,index){
         $("#years").append('<li><input id="year_check_' + years_data[index]+ '" onclick="javascript:showPanel(\'container_' + years_data[index] + '\')" type="checkbox">' + years_data[index] + '</li>');
     });
-    $("#years").append('<li><input id="year_check_acumulat" onclick="javascript:showPanel(\'container_acum\')" type="checkbox">Dades acumulades tots els anys</li>');
+    $("#years").append('<li><input id="year_check_acumulat" onclick="javascript:showPanel(\'container_acum\')" type="checkbox">All years</li>');
 
     for( var i = 0; i < map_data.length; i++){
         var elem = map_data[i];
@@ -90,10 +113,10 @@ $(function () {
 
 
     var colors = {
-        'confirmed': '#e66101',
-        'probable': '#fdb863',
-        'other': '#5e3c99',
-        'noid': '#b2abd2'
+        'confirmed': '#ff0000',
+        'probable': '#ff5500',
+        'other': '#0000ff',
+        'noid': '#808080'
     };
 
     var mapData = Highcharts.maps['countries/es/es-all'];
@@ -150,8 +173,107 @@ $(function () {
         }
     });
 
+    var spawn_size_legend = function(div_id, max, interval_1_log, interval_2_log, interval_3_log, interval_4_log){
+        var renderer;
+        renderer = new Highcharts.Renderer(
+            $(div_id)[0],
+            600,
+            100
+        );
 
-    var spawn_chart = function(div_id, map_data, title, subtitle, max){
+        var interval_1 = [ Math.round(getReverseLog(interval_1_log[0])), Math.round(getReverseLog(interval_1_log[1])) ];
+        var interval_2 = [ Math.round(getReverseLog(interval_2_log[0])), Math.round(getReverseLog(interval_2_log[1])) ];
+        var interval_3 = [ Math.round(getReverseLog(interval_3_log[0])), Math.round(getReverseLog(interval_3_log[1])) ];
+        var interval_4 = [ Math.round(getReverseLog(interval_4_log[0])), Math.round(getReverseLog(interval_4_log[1])) ];
+
+        var left_margin = 30;
+        var right_margin_1 = 140;
+        var right_margin_2 = 240;
+        var right_margin_3 = 320;
+        var top_margin = 40;
+        var bottom_margin = 75;
+
+        var biggest_circle_y = top_margin;
+        var biggest_circle_x = left_margin;
+        var biggest_circle_radius = 20;
+
+        var bigger_circle_y = top_margin;
+        var bigger_circle_x = right_margin_1;
+        var bigger_circle_radius = 15;
+
+        var big_circle_y = top_margin;
+        var big_circle_x = right_margin_2;
+        var big_circle_radius = 10;
+
+        var small_circle_y = top_margin;
+        var small_circle_x = right_margin_3;
+        var small_circle_radius = 5;
+
+        var right_gap_circle_to_text = 25;
+        var top_gap_circle_to_text = 5;
+
+        renderer.text('<strong>Number of observations and pie size</strong>', left_margin - 20, 12 ).attr({
+            zIndex: 6
+        })
+        .css({
+            fontSize: '12px'
+        })
+        .add();
+
+        /* BIGGEST */
+
+        renderer.circle(biggest_circle_x, biggest_circle_y, biggest_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        renderer.text(interval_4[0] + ' to ' + interval_4[1], biggest_circle_x + right_gap_circle_to_text, biggest_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+
+        /* BIGGER */
+
+        renderer.circle(bigger_circle_x, bigger_circle_y, bigger_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        renderer.text(interval_3[0] + ' to ' + interval_3[1], bigger_circle_x + right_gap_circle_to_text, bigger_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+
+        /* BIG */
+
+        renderer.circle(big_circle_x, big_circle_y, big_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        renderer.text( interval_2[0] + ' to ' + interval_2[1] , big_circle_x + right_gap_circle_to_text, big_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+
+        /* SMALL */
+
+        renderer.circle(small_circle_x, small_circle_y, small_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        renderer.text(interval_1[0] + ' to ' + interval_1[1], small_circle_x + right_gap_circle_to_text, small_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+    }
+
+    var spawn_chart = function(div_id, map_data, title, subtitle, max, interval_1_log, interval_2_log, interval_3_log, interval_4_log){
 
         var chart = Highcharts.mapChart(div_id, {
 
@@ -159,30 +281,30 @@ $(function () {
                 text: title
             },
 
-            subtitle: {
+            /*subtitle: {
             text: subtitle
-            },
+            },*/
 
             colorAxis: {
                 dataClasses: [{
                     from: -1,
                     to: 0,
                     color: colors.confirmed,
-                    name: 'Mosquit tigre confirmat'
+                    name: 'Confirmed tiger mosquito'
                 }, {
                     from: 0,
                     to: 1,
                     color: colors.probable,
-                    name: 'Mosquit tigre probable'
+                    name: 'Probable tiger mosquito'
                 }, {
                     from: 2,
                     to: 3,
-                    name: 'Altres espècies',
+                    name: 'Other species',
                     color: colors.other
                 }, {
                     from: 3,
                     to: 4,
-                    name: 'No identificable',
+                    name: 'Unidentifiable',
                     color: colors.noid
                 }]
             },
@@ -264,6 +386,20 @@ $(function () {
             return;
         }
 
+        /*
+        interval_1_log = getIntervalNum(Math.log10(max), 4, 0);
+        interval_1 = [ Math.round(getReverseLog(interval_1_log[0])), Math.round(getReverseLog(interval_1_log[1])) ];
+
+        interval_2_log = getIntervalNum(Math.log10(max), 4, 1);
+        interval_2 = [ Math.round(getReverseLog(interval_2_log[0])), Math.round(getReverseLog(interval_2_log[1])) ];
+
+        interval_3_log = getIntervalNum(Math.log10(max), 4, 2);
+        interval_3 = [ Math.round(getReverseLog(interval_3_log[0])), Math.round(getReverseLog(interval_3_log[1])) ];
+
+        interval_4_log = getIntervalNum(Math.log10(max), 4, 3);
+        interval_4 = [ Math.round(getReverseLog(interval_4_log[0])), Math.round(getReverseLog(interval_4_log[1])) ];
+        */
+
         var pieOffset = state.pieOffset || {},
             centerLat = parseFloat(centers[state.hasc].lat),
             centerLon = parseFloat(centers[state.hasc].long);
@@ -274,13 +410,24 @@ $(function () {
                 name: state.hasc,
                 zIndex: 6, // Keep pies above connector lines
                 sizeFormatter: function () {
+                    /*
                     var yAxis = this.chart.yAxis[0],
-                        zoomFactor = (yAxis.dataMax - yAxis.dataMin) /
-                            (yAxis.max - yAxis.min);
+                        zoomFactor = (yAxis.dataMax - yAxis.dataMin) / (yAxis.max - yAxis.min);
                     return Math.max(
                         this.chart.chartWidth / 45 * zoomFactor, // Min size
                         this.chart.chartWidth / 11 * zoomFactor * state.total / max
                     );
+                    */
+                    if (Math.log10(state.total) >= interval_1_log[0] && Math.log10(state.total) < interval_1_log[1]){
+                        return 10;
+                    } else if ( Math.log10(state.total) >= interval_2_log[0] && Math.log10(state.total) < interval_2_log[1] ){
+                        return 20;
+                    } else if ( Math.log10(state.total) >= interval_3_log[0] && Math.log10(state.total) < interval_3_log[1] ){
+                        return 30;
+                    } else {
+                        return 40;
+                    }
+
                 },
                 tooltip: {
                     // Use the state tooltip for the pies as well
@@ -320,41 +467,178 @@ $(function () {
             }, false);
         });
 
+        /*
+        var left_margin = 390;
+        var right_margin_1 = 500;
+        var top_margin = 40;
+        var bottom_margin = 75;
+
+        var biggest_circle_y = top_margin;
+        var biggest_circle_x = left_margin;
+        var biggest_circle_radius = 20;
+
+        var bigger_circle_y = top_margin;
+        var bigger_circle_x = right_margin_1;
+        var bigger_circle_radius = 15;
+
+        var big_circle_y = bottom_margin;
+        var big_circle_x = left_margin;
+        var big_circle_radius = 10;
+
+        var small_circle_y = bottom_margin;
+        var small_circle_x = right_margin_1;
+        var small_circle_radius = 5;
+
+        var right_gap_circle_to_text = 25;
+        var top_gap_circle_to_text = 5;
+
+        chart.renderer.rect(360, 0, 220, 95, 0)
+        .attr({
+            fill: '#FFFFEF',
+            //stroke: 'gray',
+            //'stroke-width': 1,
+            zIndex: 4
+        })
+        .add();
+
+        chart.renderer.text('<strong>Number of observations and pie size</strong>', left_margin - 20, 12 ).attr({
+            zIndex: 6
+        })
+        .css({
+            fontSize: '12px'
+        })
+        .add();
+        */
+
+        /* BIGGEST */
+
+        /*
+        chart.renderer.circle(biggest_circle_x, biggest_circle_y, biggest_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        chart.renderer.text(interval_4[0] + ' to ' + interval_4[1], biggest_circle_x + right_gap_circle_to_text, biggest_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+        */
+
+        /* BIGGER */
+
+        /*
+        chart.renderer.circle(bigger_circle_x, bigger_circle_y, bigger_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        chart.renderer.text(interval_3[0] + ' to ' + interval_3[1], bigger_circle_x + right_gap_circle_to_text, bigger_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+        */
+
+        /* BIG */
+
+        /*
+        chart.renderer.circle(big_circle_x, big_circle_y, big_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        chart.renderer.text( interval_2[0] + ' to ' + interval_2[1] , big_circle_x + right_gap_circle_to_text, big_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+        */
+
+        /* SMALL */
+
+        /*
+        chart.renderer.circle(small_circle_x, small_circle_y, small_circle_radius).attr({
+            fill: '#808080',
+            'stroke-width': 0,
+            zIndex: 5
+        })
+        .add();
+
+        chart.renderer.text(interval_1[0] + ' to ' + interval_1[1], small_circle_x + right_gap_circle_to_text, small_circle_y + top_gap_circle_to_text ).attr({
+            zIndex: 6
+        }).add();
+        */
+
         return chart;
+    }
+
+    var max_per_year = {};
+    for (var year in year_map_data){
+        for ( var measure in year_map_data[year] ){
+            if( max_per_year[year]){
+                var current_value = max_per_year[year];
+                max_per_year[year] = Math.max(current_value, year_map_data[year][measure][6]);
+            }else{
+                max_per_year[year] = year_map_data[year][measure][6];
+            }
+        }
     }
 
     var totalMax = 0;
     for (var year in year_map_data){
         Highcharts.each(year_map_data[year], function (row) {
-            totalMax = Math.max(totalMax, row[5]);
+            totalMax = Math.max(totalMax, row[6]);
         });
     }
 
     var maxAcum = 0;
     Highcharts.each(map_parsed_acum, function (row) {
-        maxAcum = Math.max(maxAcum, row[5]);
+        maxAcum = Math.max(maxAcum, row[6]);
     });
 
+    var interval_1_log = getIntervalNum(Math.log10(maxAcum), 4, 0);
+    var interval_1 = [ Math.round(getReverseLog(interval_1_log[0])), Math.round(getReverseLog(interval_1_log[1])) ];
+
+
+    var interval_2_log = getIntervalNum(Math.log10(maxAcum), 4, 1);
+    var interval_2 = [ Math.round(getReverseLog(interval_2_log[0])), Math.round(getReverseLog(interval_2_log[1])) ];
+
+
+    var interval_3_log = getIntervalNum(Math.log10(maxAcum), 4, 2);
+    var interval_3 = [ Math.round(getReverseLog(interval_3_log[0])), Math.round(getReverseLog(interval_3_log[1])) ];
+
+
+    var interval_4_log = getIntervalNum(Math.log10(maxAcum), 4, 3);
+    var interval_4 = [ Math.round(getReverseLog(interval_4_log[0])), Math.round(getReverseLog(interval_4_log[1])) ];
+
     if(year_map_data[2014]){
-        var chart_2014 = spawn_chart('container_2014', year_map_data[2014], 'Dades any 2014', 'Any 2014', maxAcum);
+        //var chart_2014 = spawn_chart('container_2014', year_map_data[2014], 'Year 2014', 'Year 2014', max_per_year[2014]);
+        var chart_2014 = spawn_chart('container_2014', year_map_data[2014], 'Year 2014', 'Year 2014', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
         chart_2014.redraw();
     }
     if(year_map_data[2015]){
-        var chart_2015 = spawn_chart('container_2015', year_map_data[2015], 'Dades any 2015', 'Any 2015', maxAcum);
+        //var chart_2015 = spawn_chart('container_2015', year_map_data[2015], 'Year 2015', 'Year 2015', max_per_year[2015]);
+        var chart_2015 = spawn_chart('container_2015', year_map_data[2015], 'Year 2015', 'Year 2015', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
         chart_2015.redraw();
     }
     if(year_map_data[2016]){
-        var chart_2016 = spawn_chart('container_2016', year_map_data[2016], 'Dades any 2016', 'Any 2016', maxAcum);
+        //var chart_2016 = spawn_chart('container_2016', year_map_data[2016], 'Year 2016', 'Year 2016', max_per_year[2016]);
+        var chart_2016 = spawn_chart('container_2016', year_map_data[2016], 'Year 2016', 'Year 2016', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
         chart_2016.redraw();
     }
     if(year_map_data[2017]){
-        var chart_2017 = spawn_chart('container_2017', year_map_data[2017], 'Dades any 2017', 'Any 2017', maxAcum);
+        //var chart_2017 = spawn_chart('container_2017', year_map_data[2017], 'Year 2017', 'Year 2017', max_per_year[2017]);
+        var chart_2017 = spawn_chart('container_2017', year_map_data[2017], 'Year 2017', 'Year 2017', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
         chart_2017.redraw();
     }
     if(year_map_data[2018]){
-        var chart_2018 = spawn_chart('container_2018', year_map_data[2018], 'Dades any 2018', 'Any 2018', maxAcum);
+        //var chart_2018 = spawn_chart('container_2018', year_map_data[2018], 'Year 2018', 'Year 2018', max_per_year[2018]);
+        var chart_2018 = spawn_chart('container_2018', year_map_data[2018], 'Year 2018', 'Year 2018', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
         chart_2018.redraw();
     }
-    var chart_acum = spawn_chart('container_acum', map_parsed_acum, 'Dades acumulades tots els anys', 'Anys 2014-2018', maxAcum);
+    var chart_acum = spawn_chart('container_acum', map_parsed_acum, 'All years', 'Years 2014-2018', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
     chart_acum.redraw();
+
+    spawn_size_legend('#size_legend', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
 });

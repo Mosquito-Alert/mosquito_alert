@@ -126,7 +126,7 @@ def mosquito_ccaa_rich(request, tiger_category='confirmed'):
             from
             map_aux_reports m,
             tigaserver_app_report r
-            where private_webmap_layer in ('{0}') AND
+            where private_webmap_layer in ({0}) AND
             m.version_uuid = r."version_UUID") r
             join
             provincies_4326 p
@@ -135,41 +135,55 @@ def mosquito_ccaa_rich(request, tiger_category='confirmed'):
         group by nomprov, extract(year from observation_date), code_hc order by 3, 2
     """
 
-    if tiger_category == 'confirmed':
+    if tiger_category == 'confirmedpossible':
 
-        sql_template = sql_template.format('mosquito_tiger_confirmed')
+        sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\'')
+        title_linechart = 'Number of confirmed and possible mosquito tiger observations, 2014-2018'
+        title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
+        series_title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
 
-        title_linechart = 'Nombre d\'observacions confirmades de Mosquit Tigre per any'
-        title = 'Observacions de mosquit tigre confirmades, 2014-2018'
-        series_title = 'Observacions de mosquit tigre confirmades, (2014-2018)'
+    elif tiger_category == 'confirmedpossibleunident':
+
+        sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\',\'unidentified\'')
+        title_linechart = 'Number of confirmed, possible and unidentifiable mosquito tiger observations'
+        title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
+        series_title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
+
+    elif tiger_category == 'confirmed':
+
+        sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
+
+        title_linechart = 'Number of confirmed mosquito tiger observations, 2014-2018'
+        title = 'Confirmed mosquito tiger observations, 2014-2018'
+        series_title = 'Confirmed mosquito tiger observations, 2014-2018'
 
     elif tiger_category == 'probable':
 
-        sql_template = sql_template.format('mosquito_tiger_probable')
+        sql_template = sql_template.format('\'mosquito_tiger_probable\'')
 
-        title_linechart = 'Nombre d\'observacions confirmades de Mosquit Tigre possible per any'
-        title = 'Observacions de mosquit tigre possibles, 2014-2018'
-        series_title = 'Observacions de mosquit tigre possibles, 2014-2018'
+        title_linechart = 'Number of possible mosquito tiger observations, 2014-2018'
+        title = 'Possible mosquito tiger observations, 2014-2018'
+        series_title = 'Possible mosquito tiger observations, 2014-2018'
 
     elif tiger_category == 'other':
 
-        sql_template = sql_template.format('other_species')
+        sql_template = sql_template.format('\'other_species\'')
 
-        title_linechart = 'Nombre d\'observacions d\'altres especies per any'
-        title = 'Observacions d\'altres especies, 2014-2018'
-        series_title = 'Observacions d\'altres especies, 2014-2018'
+        title_linechart = 'Number of other species observations, 2014-2018'
+        title = 'Other species observations, 2014-2018'
+        series_title = 'Other species observations, 2014-2018'
 
     elif tiger_category == 'unidentified':
 
-        sql_template = sql_template.format('unidentified')
+        sql_template = sql_template.format('\'unidentified\'')
 
-        title_linechart = 'Nombre d\'observacions no identificables per any'
-        title = 'Observacions no identificables, 2014-2018'
-        series_title = 'Observacions no identificables, 2014-2018'
+        title_linechart = 'Number of unidentifiable observations, 2014-2018'
+        title = 'Unidentifiable observations, 2014-2018'
+        series_title = 'Unidentifiable observations, 2014-2018'
 
     else:
 
-        sql_template = sql_template.format('mosquito_tiger_confirmed')
+        sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
 
         title_linechart = ''
         title = ''

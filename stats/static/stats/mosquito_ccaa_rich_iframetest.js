@@ -1,6 +1,6 @@
 var getCheckedCategories = function(){
     var checked_list = [];
-    var categories = ['confirmed','probable','other','unidentified'];
+    var categories = ['confirmed','probable','other','unidentified','confirmedpossible','confirmedpossibleunident'];
     for(var i = 0; i < categories.length; i++){
         var checked = $('#' + categories[i]).prop('checked');
         if(checked){
@@ -37,15 +37,19 @@ $( document ).ready(function() {
     });
     $grid.isotope({ filter: '#kk' });
 
-    $("#categories").append('<li><input id="confirmed" onclick="javascript:showPanel(\'confirmed\')" type="checkbox">Mosquit tigre confirmat</li>');
-    $("#categories").append('<li><input id="probable" onclick="javascript:showPanel(\'probable\')" type="checkbox">Mosquit tigre probable</li>');
-    $("#categories").append('<li><input id="other" onclick="javascript:showPanel(\'other\')" type="checkbox">Altres espècies</li>');
-    $("#categories").append('<li><input id="unidentified" onclick="javascript:showPanel(\'unidentified\')" type="checkbox">No identificats</li>');
+    $("#categories").append('<li><input id="confirmed" onclick="javascript:showPanel(\'confirmed\')" type="checkbox">Confirmed tiger mosquito</li>');
+    $("#categories").append('<li><input id="probable" onclick="javascript:showPanel(\'probable\')" type="checkbox">Possible tiger mosquito</li>');
+    $("#categories").append('<li><input id="confirmedpossible" onclick="javascript:showPanel(\'confirmedpossible\')" type="checkbox">Confirmed and Possible tiger mosquito</li>');
+    $("#categories").append('<li><input id="other" onclick="javascript:showPanel(\'other\')" type="checkbox">Other species</li>');
+    $("#categories").append('<li><input id="unidentified" onclick="javascript:showPanel(\'unidentified\')" type="checkbox">Unidentifiable</li>');
+    $("#categories").append('<li><input id="confirmedpossibleunident" onclick="javascript:showPanel(\'confirmedpossibleunident\')" type="checkbox">Confirmed, Possible and Unidentifiable</li>');
 
     $('#confirmed_iframe').attr('src','/stats/mosquito_ccaa_rich/confirmed');
+    $('#confirmedpossible_iframe').attr('src','/stats/mosquito_ccaa_rich/confirmedpossible');
     $('#probable_iframe').attr('src','/stats/mosquito_ccaa_rich/probable');
     $('#other_iframe').attr('src','/stats/mosquito_ccaa_rich/other');
     $('#unidentified_iframe').attr('src','/stats/mosquito_ccaa_rich/unidentified');
+    $('#confirmedpossibleunident_iframe').attr('src','/stats/mosquito_ccaa_rich/confirmedpossibleunident');
 
     $("#confirmed_iframe").on('load',function(){
         hideLoader('confirmed');
@@ -61,6 +65,14 @@ $( document ).ready(function() {
 
     $("#unidentified_iframe").on('load',function(){
         hideLoader('unidentified');
+    });
+
+    $("#confirmedpossible_iframe").on('load',function(){
+        hideLoader('confirmedpossible');
+    });
+
+    $("#confirmedpossibleunident_iframe").on('load',function(){
+        hideLoader('confirmedpossibleunident');
     });
 
 });

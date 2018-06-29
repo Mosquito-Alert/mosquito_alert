@@ -38,7 +38,7 @@ var addColumnSeries = function(chart, year){
     }else if(chart == chart_sites){
         chart_sites.addSeries({
             type: 'column',
-            name: 'Llocs de cria ' + year,
+            name: 'Breeding sites ' + year,
             data: all_data[year].site_series,
             color: site_colors[ year ]
         });
@@ -49,8 +49,8 @@ var refreshPieSeries = function(){
     var adults_pie_data = [];
     var sites_pie_data = [];
     var checked_years = getCheckedYears();
-    removeSeries(chart_adults, 'Informes adults/any');
-    removeSeries(chart_sites, 'Informes llocs de cria/any');
+    removeSeries(chart_adults, 'Adult reports per year');
+    removeSeries(chart_sites, 'Breeding site reports per year');
     if(checked_years.length > 1){
         for(var i = 0; i < checked_years.length; i++){
             adults_pie_data.push({
@@ -59,14 +59,14 @@ var refreshPieSeries = function(){
                 color: adult_colors[ checked_years[i].toString() ]
             });
             sites_pie_data.push({
-                name: 'Llocs de cria ' + checked_years[i],
+                name: 'Breeding sites ' + checked_years[i],
                 y: all_data[checked_years[i].toString()].site_series_pie,
                 color: site_colors[ checked_years[i].toString() ]
             });
         }
         chart_adults.addSeries({
             type: 'pie',
-            name: 'Informes adults/any',
+            name: 'Adult reports per year',
             data: adults_pie_data,
             center: [200, 80],
             size: 70,
@@ -78,7 +78,7 @@ var refreshPieSeries = function(){
         });
         chart_sites.addSeries({
             type: 'pie',
-            name: 'Informes llocs de cria/any',
+            name: 'Breeding site reports per year',
             data: sites_pie_data,
             center: [200, 80],
             size: 70,
@@ -94,10 +94,10 @@ var refreshPieSeries = function(){
 
 var addSeries = function(year){
     if(chart_adults==null){
-        chart_adults = combined_chart_empty("Informes adults", 'base_graph');
+        chart_adults = combined_chart_empty("Adult reports", 'base_graph');
     }
     if(chart_sites==null){
-        chart_sites = combined_chart_empty("Informes llocs de cria", 'sites');
+        chart_sites = combined_chart_empty("Breeding site reports", 'sites');
     }
     var checked = $('#year_check_' + year).prop('checked');
     if(checked){
@@ -105,7 +105,7 @@ var addSeries = function(year){
         addColumnSeries(chart_sites, year);
     }else{
         removeSeries(chart_adults, 'Adults ' + year);
-        removeSeries(chart_sites, 'Llocs de cria ' + year);
+        removeSeries(chart_sites, 'Breeding sites ' + year);
     }
     refreshPieSeries();
 }
@@ -136,20 +136,22 @@ var extract_series_data_pie = function(year, aggregated_data){
 }
 
 var adult_colors = {
-    '2014': '#eff3ff',
-    '2015': '#bdd7e7',
-    '2016': '#6baed6',
-    '2017': '#3182bd',
-    '2018': '#08519c'
+    '2014': '#fef0d9',
+    '2015': '#fdcc8a',
+    '2016': '#fc8d59',
+    '2017': '#e34a33',
+    '2018': '#b30000'
 };
 
+
 var site_colors = {
-    '2014': '#edf8e9',
-    '2015': '#bae4b3',
-    '2016': '#74c476',
-    '2017': '#31a354',
-    '2018': '#006d2c'
+    '2014': '#f1eef6',
+    '2015': '#bdc9e1',
+    '2016': '#74a9cf',
+    '2017': '#2b8cbe',
+    '2018': '#045a8d'
 }
+
 
 var combined_chart_empty = function(title, div_id){
     var chart = Highcharts.chart(div_id, {
@@ -164,11 +166,11 @@ var combined_chart_empty = function(title, div_id){
             }
         },
         xAxis: {
-            categories: ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre']
+            categories: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'Desember']
         },
         yAxis: {
             title: {
-                text: "Nombre d'informes"
+                text: "Number of reports"
             }
         },
         series: [
