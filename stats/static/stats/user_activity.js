@@ -7,8 +7,8 @@ var readableChartNames = {
     'mosquito_tiger_probable': 'Possible tiger mosquito',
     'other_species': 'Other species',
     'unidentified': 'Unidentifiable species',
-    'storm_drain_dry': 'Storm drain with water',
-    'storm_drain_water': 'Storm drain without water',
+    'storm_drain_dry': 'Storm drain without water',
+    'storm_drain_water': 'Storm drain with water',
     'breeding_site_other': 'Other breeding site'
 }
 

@@ -8,7 +8,7 @@
 
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
-        <link rel="stylesheet" href={% static "stats/workload.css" %}>
+        <link rel="stylesheet" href={% static "stats/user_activity.css" %}>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
@@ -25,7 +25,8 @@
     </head>
     <body>
         <div class="container">
-            <h3>So much empty space... click on a few years to visualize data!</h3>
+            <h1>Adult vs breeding site observations per month and year (bar chart)</h1>
+            <h3 class="call_to_action">Select types of report and years to see and compare maps</h3>
             <div class="row">
                 <div class="col-md-12">
                     <ul class="list-inline" id="years">
@@ -52,6 +53,7 @@
                 </div>
             </div>
         </div>
+        <hr />
         <div class="container">
             <div class="row">
                 <div id="base_graph" class="col-md-12"></div>
@@ -59,6 +61,23 @@
             <div class="row">
                 <div id="sites" class="col-md-12"></div>
             </div>
+        </div>
+        <hr />
+        <div class="container">
+            <p>
+                License and usage policy: for internal use only. Do not distribute.
+            </p>
+            <p>
+                Data : The map include the following categories (note that it doesn’t include: yellow fever mosquitoes, to validate reports and other observations – it is, observations that do not fall into any other category-.
+            </p>
+            <p>
+                <ul>
+                    <li>*Confirmed or possible tiger mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus). If their taxonomic features can be clearly seen, especially the white stripe on head and thorax, it is classified as "confirmed". If some features cannot be observed, it is classified as "possible".</li>
+                    <li>*Other species*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the pictures of this observation may be of other species of mosquito.</li>
+                    <li>*Unidentifiable*: it includes all reports from citizen tagged by them as "adult mosquito" that don't contain any picture attached and therefore, could not be evaluated by entomological experts. It also includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, these observations and their photo/s do not help identify any particular species of mosquito (experts cannot decide on any other category according to the content of the pictures).</li>
+                    <li>*Breeding sites*: citizens' observations of possible breeding sites (storm drain or sewer and other categories of possible breeding sites) of tiger or yellow fever mosquitoes. It includes reports that contain at least one picture and that it has been evaluated by entomological experts, reports with at least one picture that have not been evaluated by experts and it might also contain reports without pictures.</li>
+                </ul>
+            </p>
         </div>
     </body>
 </html>

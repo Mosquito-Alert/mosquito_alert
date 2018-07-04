@@ -106,6 +106,10 @@ def workload_available_reports(request):
         data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress), 'overall_pending': overall_pending.count()}
         return Response(data)
 
+@login_required
+def mosquito_ccaa_rich_iframetest_sites(request):
+    context = {}
+    return render(request, 'stats/mosquito_ccaa_rich_iframetest_sites.html', context)
 
 @login_required
 def mosquito_ccaa_rich_iframetest(request):
@@ -115,7 +119,7 @@ def mosquito_ccaa_rich_iframetest(request):
 
 @login_required
 @xframe_options_exempt
-def mosquito_ccaa_rich(request, tiger_category='confirmed'):
+def mosquito_ccaa_rich(request, category='confirmed'):
     cursor = connection.cursor()
     sql_template = """
         select count("version_UUID"), extract(year from observation_date), nomprov, code_hc
@@ -126,7 +130,7 @@ def mosquito_ccaa_rich(request, tiger_category='confirmed'):
             from
             map_aux_reports m,
             tigaserver_app_report r
-            where private_webmap_layer in ({0}) AND
+            where private_webmap_layer in %s AND
             m.version_uuid = r."version_UUID") r
             join
             provincies_4326 p
@@ -135,61 +139,106 @@ def mosquito_ccaa_rich(request, tiger_category='confirmed'):
         group by nomprov, extract(year from observation_date), code_hc order by 3, 2
     """
 
-    if tiger_category == 'confirmedpossible':
+    categories = ()
 
-        sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\'')
+    if category == 'confirmedpossible':
+
+        categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable',)
+        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\'')
+
         title_linechart = 'Number of confirmed and possible mosquito tiger observations, 2014-2018'
         title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
         series_title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
 
-    elif tiger_category == 'confirmedpossibleunident':
+    elif category == 'confirmedpossibleunident':
 
-        sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\',\'unidentified\'')
+        categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'unidentified')
+        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\',\'unidentified\'')
+
         title_linechart = 'Number of confirmed, possible and unidentifiable mosquito tiger observations'
         title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
         series_title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
 
-    elif tiger_category == 'confirmed':
+    elif category == 'confirmed':
 
-        sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
+        categories = ('mosquito_tiger_confirmed',)
+        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
 
         title_linechart = 'Number of confirmed mosquito tiger observations, 2014-2018'
         title = 'Confirmed mosquito tiger observations, 2014-2018'
         series_title = 'Confirmed mosquito tiger observations, 2014-2018'
 
-    elif tiger_category == 'probable':
+    elif category == 'probable':
 
-        sql_template = sql_template.format('\'mosquito_tiger_probable\'')
+        categories = ('mosquito_tiger_probable',)
+        #sql_template = sql_template.format('\'mosquito_tiger_probable\'')
 
         title_linechart = 'Number of possible mosquito tiger observations, 2014-2018'
         title = 'Possible mosquito tiger observations, 2014-2018'
         series_title = 'Possible mosquito tiger observations, 2014-2018'
 
-    elif tiger_category == 'other':
+    elif category == 'other':
 
-        sql_template = sql_template.format('\'other_species\'')
+        categories = ('other_species',)
+        #sql_template = sql_template.format('\'other_species\'')
 
         title_linechart = 'Number of other species observations, 2014-2018'
         title = 'Other species observations, 2014-2018'
         series_title = 'Other species observations, 2014-2018'
 
-    elif tiger_category == 'unidentified':
+    elif category == 'unidentified':
 
-        sql_template = sql_template.format('\'unidentified\'')
+        categories = ('unidentified',)
+        #sql_template = sql_template.format('\'unidentified\'')
 
         title_linechart = 'Number of unidentifiable observations, 2014-2018'
         title = 'Unidentifiable observations, 2014-2018'
         series_title = 'Unidentifiable observations, 2014-2018'
 
+    elif category == 'all':
+
+        categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'unidentified', 'other_species',)
+        #sql_template = sql_template.format('\'unidentified\'')
+
+        title_linechart = 'All categories, 2014-2018'
+        title = 'All categories, 2014-2018'
+        series_title = 'All categories, 2014-2018'
+
+    elif category == 'storm_drain_water':
+
+        categories = ('storm_drain_water', )
+        # sql_template = sql_template.format('\'unidentified\'')
+
+        title_linechart = 'Breeding sites with water, 2014-2018'
+        title = 'Breeding sites with water, 2014-2018'
+        series_title = 'Breeding sites with water, 2014-2018'
+
+    elif category == 'storm_drain_dry':
+
+        categories = ('storm_drain_dry', )
+
+        title_linechart = 'Breeding sites without water, 2014-2018'
+        title = 'Breeding sites without water, 2014-2018'
+        series_title = 'Breeding sites without water, 2014-2018'
+
+    elif category == 'breeding_site_other':
+
+        categories = ('breeding_site_other', )
+
+        title_linechart = 'Other breeding sites, 2014-2018'
+        title = 'Other breeding sites, 2014-2018'
+        series_title = 'Other breeding sites, 2014-2018'
+
     else:
 
-        sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
+        categories = ('mosquito_tiger_confirmed',)
+        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
 
         title_linechart = ''
         title = ''
         series_title = ''
 
-    cursor.execute(sql_template)
+    cursor.execute(sql_template,(categories,))
     map_data = cursor.fetchall()
 
     now = datetime.datetime.now()
@@ -290,46 +339,45 @@ def report_stats(request):
     return render(request, 'stats/user_activity.html', context)
 
 
-@login_required
-def report_stats_ccaa_pie(request):
+def create_pie_data(request, categories, view_name):
     cursor = connection.cursor()
     cursor.execute("""
-        select count("version_UUID"), nomprov, code_hc, private_webmap_layer
-        from 
-        (
+            select count("version_UUID"), nomprov, code_hc, private_webmap_layer
+            from 
             (
-            select *
-            from
-            map_aux_reports m,
-            tigaserver_app_report r
-            where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable','other_species','unidentified') AND
-            m.version_uuid = r."version_UUID") r
-            join
-            provincies_4326 p
-            on st_contains(p.geom,r.point)
-        ) as t 
-        group by nomprov, code_hc, private_webmap_layer order by 2, 4
-    """)
+                (
+                select *
+                from
+                map_aux_reports m,
+                tigaserver_app_report r
+                where private_webmap_layer in %s AND
+                m.version_uuid = r."version_UUID") r
+                join
+                provincies_4326 p
+                on st_contains(p.geom,r.point)
+            ) as t 
+            group by nomprov, code_hc, private_webmap_layer order by 2, 4
+        """, (categories,))
     map_data = cursor.fetchall()
 
     cursor = connection.cursor()
     cursor.execute("""
-        select count("version_UUID"), extract(year from observation_date), nomprov, code_hc, private_webmap_layer
-        from 
-        (
+            select count("version_UUID"), extract(year from observation_date), nomprov, code_hc, private_webmap_layer
+            from 
             (
-            select *
-            from
-            map_aux_reports m,
-            tigaserver_app_report r
-            where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable','other_species','unidentified') AND
-            m.version_uuid = r."version_UUID") r
-            join
-            provincies_4326 p
-            on st_contains(p.geom,r.point)
-        ) as t 
-        group by nomprov, extract(year from observation_date), code_hc, private_webmap_layer order by 2, 3
-    """)
+                (
+                select *
+                from
+                map_aux_reports m,
+                tigaserver_app_report r
+                where private_webmap_layer in %s AND
+                m.version_uuid = r."version_UUID") r
+                join
+                provincies_4326 p
+                on st_contains(p.geom,r.point)
+            ) as t 
+            group by nomprov, extract(year from observation_date), code_hc, private_webmap_layer order by 2, 3
+        """, (categories,))
     map_data_year = cursor.fetchall()
 
     now = datetime.datetime.now()
@@ -339,8 +387,18 @@ def report_stats_ccaa_pie(request):
     for i in range(2014, current_year + 1):
         years.append(i)
 
-    context = { 'map_data': json.dumps(map_data), 'map_data_year': json.dumps(map_data_year), 'years': json.dumps(years) }
-    return render(request, 'stats/report_stats_ccaa_pie.html', context)
+    context = {'map_data': json.dumps(map_data), 'map_data_year': json.dumps(map_data_year), 'years': json.dumps(years)}
+    return render(request, view_name, context)
+
+@login_required
+def report_stats_ccaa_pie_sites(request):
+    categories = ('storm_drain_water', 'storm_drain_dry', 'breeding_site_other', )
+    return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie_sites.html')
+
+@login_required
+def report_stats_ccaa_pie(request):
+    categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'other_species', 'unidentified',)
+    return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie.html')
 
 
 @login_required

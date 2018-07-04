@@ -1,6 +1,6 @@
 var getCheckedCategories = function(){
     var checked_list = [];
-    var categories = ['confirmed','probable','other','unidentified','confirmedpossible','confirmedpossibleunident'];
+    var categories = ['confirmed','probable','other','unidentified','confirmedpossible','confirmedpossibleunident','all'];
     for(var i = 0; i < categories.length; i++){
         var checked = $('#' + categories[i]).prop('checked');
         if(checked){
@@ -43,6 +43,7 @@ $( document ).ready(function() {
     $("#categories").append('<li><input id="other" onclick="javascript:showPanel(\'other\')" type="checkbox">Other species</li>');
     $("#categories").append('<li><input id="unidentified" onclick="javascript:showPanel(\'unidentified\')" type="checkbox">Unidentifiable</li>');
     $("#categories").append('<li><input id="confirmedpossibleunident" onclick="javascript:showPanel(\'confirmedpossibleunident\')" type="checkbox">Confirmed, Possible and Unidentifiable</li>');
+    $("#categories").append('<li><input id="all" onclick="javascript:showPanel(\'all\')" type="checkbox">All categories</li>');
 
     $('#confirmed_iframe').attr('src','/stats/mosquito_ccaa_rich/confirmed');
     $('#confirmedpossible_iframe').attr('src','/stats/mosquito_ccaa_rich/confirmedpossible');
@@ -50,6 +51,7 @@ $( document ).ready(function() {
     $('#other_iframe').attr('src','/stats/mosquito_ccaa_rich/other');
     $('#unidentified_iframe').attr('src','/stats/mosquito_ccaa_rich/unidentified');
     $('#confirmedpossibleunident_iframe').attr('src','/stats/mosquito_ccaa_rich/confirmedpossibleunident');
+    $('#all_iframe').attr('src','/stats/mosquito_ccaa_rich/all');
 
     $("#confirmed_iframe").on('load',function(){
         hideLoader('confirmed');
@@ -73,6 +75,10 @@ $( document ).ready(function() {
 
     $("#confirmedpossibleunident_iframe").on('load',function(){
         hideLoader('confirmedpossibleunident');
+    });
+
+    $("#all_iframe").on('load',function(){
+        hideLoader('all');
     });
 
 });

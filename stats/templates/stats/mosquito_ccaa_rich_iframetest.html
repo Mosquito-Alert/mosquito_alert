@@ -9,20 +9,26 @@
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
         <link rel="stylesheet" href={% static "stats/mosquito_ccaa_rich_iframetest.css" %}>
-
+        <style>
+            .call_to_action {
+                color: red;
+            }
+        </style>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
         <script src={% static "stats/isotope.pkgd.min.js" %}></script>
         <script src={% static "stats/mosquito_ccaa_rich_iframetest.js" %}></script>
     </head>
     <body>
         <div class="container">
-            <h3>Choose one or more categories below to see and compare data!:</h3>
+            <h1>Mosquitos: expert validation result per province (map with province annual comparison tool)</h1>
+            <h3 class="call_to_action">Select a type of report to see and compare maps</h3>
             <div class="row">
                 <div class="col-md-12">
                     <ul class="list-inline" id="categories">
                     </ul>
                 </div>
             </div>
+            <hr />
         </div>
         <div class="grid">
             <div id="confirmed" class="grid-item">
@@ -49,6 +55,26 @@
                 <div class="progress"></div>
                 <iframe id="confirmedpossibleunident_iframe" width="1000px" height="450px"></iframe>
             </div>
+            <div id="all" class="grid-item">
+                <div class="progress"></div>
+                <iframe id="all_iframe" width="1000px" height="450px"></iframe>
+            </div>
+        </div>
+        <div class="container">
+            <hr />
+            <p>
+                License and usage policy: for internal use only. Do not distribute.
+            </p>
+            <p>
+                Data : The map include the following categories (note that it doesn’t include: yellow fever mosquitoes,
+                breeding sites, pending to validate reports and other observations – it is, observations that do not fall into
+                any other category-.
+            </p>
+            <p>
+                <ul>
+                    <li>*Confirmed or possible tiger mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus). If their taxonomic features can be clearly seen, especially the white stripe on head and thorax, it is classified as "confirmed". If some features cannot be observed, it is classified as "possible".</li>
+                </ul>
+            </p>
         </div>
     </body>
 </html>

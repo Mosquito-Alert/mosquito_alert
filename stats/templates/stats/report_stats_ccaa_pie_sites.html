@@ -22,7 +22,7 @@
         <script src={% static "stats/isotope.pkgd.min.js" %}></script>
 
         <script src={% static "stats/underscore-min.js" %}></script>
-        <script src={% static "stats/report_stats_ccaa_pie.js" %}></script>
+        <script src={% static "stats/report_stats_ccaa_pie_sites.js" %}></script>
         <script>
             var map_data = JSON.parse('{{ map_data | escapejs }}');
             var map_data_year = JSON.parse('{{ map_data_year | escapejs }}');
@@ -51,7 +51,7 @@
     </head>
     <body>
         <div class="container">
-            <h1>Mosquitos: expert validation result per province and year (pie-chart map)</h1>
+            <h1>Breeding sites: result per province and year (pie-chart map)</h1>
             <hr />
             <h3 class="call_to_action">Select a date and type of report to see and compare maps</h3>
             <div class="row">
@@ -78,14 +78,11 @@
             </p>
             <p>
                 Data : The map includes the following
-                categories (note that it doesn’t include: yellow fever mosquitoes, breeding sites, to validate reports
-                and other observations – it is, observations that do not fall into any other category-.
+                categories...
             </p>
             <p>
                 <ul>
-                    <li> *Confirmed or possible tiger mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus). If their taxonomic features can be clearly seen, especially the white stripe on head and thorax, it is classified as "confirmed". If some features cannot be observed, it is classified as "possible".</li>
-                    <li> *Other species*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the pictures of this observation may be of other species of mosquito.</li>
-                    <li> *Unidentifiable*: it includes all reports from citizen tagged by them as "adult mosquito" that don't contain any picture attached and therefore, could not be evaluated by entomological experts. It also includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, these observations and their photo/s do not help identify any particular species of mosquito (experts cannot decide on any other </li>
+                    <li> *Breeding sites*: citizens' observations of possible breeding sites (storm drain or sewer and other categories of possible breeding sites) of tiger or yellow fever mosquitoes. It includes reports that contain at least one picture and that it has been evaluated by entomological experts, reports with at least one picture that have not been evaluated by experts and it might also contain reports without pictures. </li>
                 </ul>
             </p>
         </div>

@@ -70,7 +70,7 @@ $(function () {
 
             var points = mapChart.getSelectedPoints();
             if (points.length) {
-                $('#info .subheader').html('<h4>' + title_linechart + '</h4><small><em>Shift + Click on map to compare Provinces</em></small>');
+                $('#info .subheader').html('<h4>' + title_linechart + '</h4><small><em>Shift + Click on map to compare the number of observations in each province</em></small>');
 
                 if (!countryChart) {
                     countryChart = Highcharts.chart(linechart_id, {
@@ -149,7 +149,6 @@ $(function () {
             title: {
                 text: title
             },
-
             mapNavigation: {
                 enabled: true,
                 buttonOptions: {

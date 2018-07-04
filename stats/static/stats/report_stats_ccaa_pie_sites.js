@@ -76,14 +76,14 @@ $(function () {
     for( var i = 0; i < map_data.length; i++){
         var elem = map_data[i];
         if (pre_parsed_acum[elem[2]] == null){
-            pre_parsed_acum[elem[2]] = {'nom': elem[1], 'mosquito_tiger_confirmed':0,'mosquito_tiger_probable':0,'other_species':0,'unidentified':0,'total': 0};
+            pre_parsed_acum[elem[2]] = {'nom': elem[1], 'storm_drain_water':0,'storm_drain_dry':0,'breeding_site_other':0,'total': 0};
         }
         pre_parsed_acum[elem[2]][elem[3]] = pre_parsed_acum[elem[2]][elem[3]] + elem[0];
-        pre_parsed_acum[elem[2]]['total'] = pre_parsed_acum[elem[2]]['mosquito_tiger_confirmed'] + pre_parsed_acum[elem[2]]['mosquito_tiger_probable'] + pre_parsed_acum[elem[2]]['other_species'] + pre_parsed_acum[elem[2]]['unidentified'];
+        pre_parsed_acum[elem[2]]['total'] = pre_parsed_acum[elem[2]]['storm_drain_water'] + pre_parsed_acum[elem[2]]['storm_drain_dry'] + pre_parsed_acum[elem[2]]['breeding_site_other'];
     }
 
     for (var key in pre_parsed_acum){
-        _this_row = [key, pre_parsed_acum[key]['nom'], pre_parsed_acum[key]['mosquito_tiger_confirmed'], pre_parsed_acum[key]['mosquito_tiger_probable'], pre_parsed_acum[key]['other_species'],  pre_parsed_acum[key]['unidentified'], pre_parsed_acum[key]['total']];
+        _this_row = [key, pre_parsed_acum[key]['nom'], pre_parsed_acum[key]['storm_drain_water'], pre_parsed_acum[key]['storm_drain_dry'], pre_parsed_acum[key]['breeding_site_other'],  pre_parsed_acum[key]['total']];
         map_parsed_acum.push(_this_row.slice());
     }
 
@@ -93,16 +93,16 @@ $(function () {
             pre_parsed[elem[1]] = {};
         }
         if (pre_parsed[elem[1]][elem[3]] == null){
-            pre_parsed[elem[1]][elem[3]] = {'nom': elem[2], 'mosquito_tiger_confirmed':0,'mosquito_tiger_probable':0,'other_species':0,'unidentified':0,'total': 0};
+            pre_parsed[elem[1]][elem[3]] = {'nom': elem[2], 'storm_drain_water':0,'storm_drain_dry':0,'breeding_site_other':0,'total': 0};
         }
         pre_parsed[elem[1]][elem[3]][elem[4]] = pre_parsed[elem[1]][elem[3]][elem[4]] + elem[0];
-        pre_parsed[elem[1]][elem[3]]['total'] = pre_parsed[elem[1]][elem[3]]['mosquito_tiger_confirmed'] + pre_parsed[elem[1]][elem[3]]['mosquito_tiger_probable'] + pre_parsed[elem[1]][elem[3]]['other_species'] + pre_parsed[elem[1]][elem[3]]['unidentified'];
+        pre_parsed[elem[1]][elem[3]]['total'] = pre_parsed[elem[1]][elem[3]]['storm_drain_water'] + pre_parsed[elem[1]][elem[3]]['storm_drain_dry'] + pre_parsed[elem[1]][elem[3]]['breeding_site_other'];
 
     }
 
     for (var year in pre_parsed){
         for (var key in pre_parsed[year]){
-            _this_row = [key, pre_parsed[year][key]['nom'], pre_parsed[year][key]['mosquito_tiger_confirmed'], pre_parsed[year][key]['mosquito_tiger_probable'], pre_parsed[year][key]['other_species'],  pre_parsed[year][key]['unidentified'], pre_parsed[year][key]['total']];
+            _this_row = [key, pre_parsed[year][key]['nom'], pre_parsed[year][key]['storm_drain_water'], pre_parsed[year][key]['storm_drain_dry'], pre_parsed[year][key]['breeding_site_other'],  pre_parsed[year][key]['total']];
             //map_parsed_data.push(_this_row.slice());
             if( year_map_data[year] == null ){
                 year_map_data[year] = [];
@@ -113,10 +113,9 @@ $(function () {
 
 
     var colors = {
-        'confirmed': '#ff0000',
-        'probable': '#ff5500',
-        'other': '#0000ff',
-        'noid': '#808080'
+        'water': '#0000ff',
+        'dry': '#0095ff',
+        'other': '#9fdaff'
     };
 
     var mapData = Highcharts.maps['countries/es/es-all'];
@@ -290,23 +289,18 @@ $(function () {
                 dataClasses: [{
                     from: -1,
                     to: 0,
-                    color: colors.confirmed,
-                    name: 'Confirmed tiger mosquito'
+                    color: colors.water,
+                    name: 'Breeding sites with water'
                 }, {
                     from: 0,
                     to: 1,
-                    color: colors.probable,
-                    name: 'Possible tiger mosquito'
+                    color: colors.dry,
+                    name: 'Breeding sites without water'
                 }, {
                     from: 2,
                     to: 3,
-                    name: 'Other species',
+                    name: 'Other breeding sites',
                     color: colors.other
-                }, {
-                    from: 3,
-                    to: 4,
-                    name: 'Unidentifiable',
-                    color: colors.noid
                 }]
             },
 
@@ -334,7 +328,7 @@ $(function () {
                     mapData: Highcharts.maps['countries/es/es-all'],
                     showInLegend: false,
                     data: map_data,
-                    keys: ['hasc', 'nom', 'mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'other_species', 'unidentified', 'total' ],
+                    keys: ['hasc', 'nom', 'storm_drain_water', 'storm_drain_dry', 'breeding_site_other', 'total' ],
                     //joinBy: ['id','hasc'],
                     name: 'Comunitats autònomes',
                     states: {
@@ -347,10 +341,9 @@ $(function () {
                         pointFormatter: function () {
                             return '<b> Observations in ' + this.nom + '</b><br/>' +
                                 Highcharts.map([
-                                    ['Mosquit tigre confirmat', this.mosquito_tiger_confirmed, colors.confirmed],
-                                    ['Mosquit tigre probable', this.mosquito_tiger_probable, colors.probable],
-                                    ['Altres espècies', this.other_species, colors.other],
-                                    ['No identificable', this.unidentified, colors.noid]
+                                    ['Breeding sites with water', this.storm_drain_water, colors.water],
+                                    ['Breeding sites without water', this.storm_drain_dry, colors.dry],
+                                    ['Other breeding sites', this.breeding_site_other, colors.other]
                                 ].sort(function (a, b) {
                                     return b[1] - a[1]; // Sort tooltip by most votes
                                 }), function (line) {
@@ -422,30 +415,25 @@ $(function () {
                         return state.series.tooltipOptions.pointFormatter.call({
                             hasc: state.hasc,
                             nom: state.nom,
-                            mosquito_tiger_confirmed: state.mosquito_tiger_confirmed,
-                            mosquito_tiger_probable: state.mosquito_tiger_probable,
-                            other_species: state.other_species,
-                            unidentified: state.unidentified,
+                            storm_drain_water: state.storm_drain_water,
+                            storm_drain_dry: state.storm_drain_dry,
+                            breeding_site_other: state.breeding_site_other,
                             total: state.total
                         });
                     }
                 },
                 data: [{
-                    name: 'Mosquit tigre confirmat',
-                    y: state.mosquito_tiger_confirmed,
-                    color: colors.confirmed
+                    name: 'Breeding sites with water',
+                    y: state.storm_drain_water,
+                    color: colors.water
                 }, {
-                    name: 'Mosquit tigre probable',
-                    y: state.mosquito_tiger_probable,
-                    color: colors.probable
+                    name: 'Breeding sites without water',
+                    y: state.storm_drain_dry,
+                    color: colors.dry
                 }, {
-                    name: 'Altres espècies',
-                    y: state.other_species,
+                    name: 'Other breeding sites',
+                    y: state.breeding_site_other,
                     color: colors.other
-                }, {
-                    name: 'No identificable',
-                    y: state.unidentified,
-                    color: colors.noid
                 }],
                 center: {
                     lat: centerLat + (pieOffset.lat || 0),
@@ -462,9 +450,9 @@ $(function () {
         for ( var measure in year_map_data[year] ){
             if( max_per_year[year]){
                 var current_value = max_per_year[year];
-                max_per_year[year] = Math.max(current_value, year_map_data[year][measure][6]);
+                max_per_year[year] = Math.max(current_value, year_map_data[year][measure][5]);
             }else{
-                max_per_year[year] = year_map_data[year][measure][6];
+                max_per_year[year] = year_map_data[year][measure][5];
             }
         }
     }
@@ -472,13 +460,13 @@ $(function () {
     var totalMax = 0;
     for (var year in year_map_data){
         Highcharts.each(year_map_data[year], function (row) {
-            totalMax = Math.max(totalMax, row[6]);
+            totalMax = Math.max(totalMax, row[5]);
         });
     }
 
     var maxAcum = 0;
     Highcharts.each(map_parsed_acum, function (row) {
-        maxAcum = Math.max(maxAcum, row[6]);
+        maxAcum = Math.max(maxAcum, row[5]);
     });
 
     var interval_1_log = getIntervalNum(Math.log10(maxAcum), 4, 0);

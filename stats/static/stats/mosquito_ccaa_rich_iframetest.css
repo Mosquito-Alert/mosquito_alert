@@ -11,3 +11,7 @@
     background: black url(/static/stats/ajax-loader.gif) center center no-repeat;
     opacity: .5;
 }
+
+.call_to_action {
+    color: red;
+}
