@@ -162,8 +162,8 @@ $(function () {
                 max: 1000,*/
                 endOnTick: false,
                 startOnTick: false,
-                minColor: '#fef0d9',
-                maxColor: '#b30000'
+                minColor: minColor,
+                maxColor: maxColor
                 //min: 50000
             },
 

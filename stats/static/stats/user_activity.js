@@ -9,7 +9,12 @@ var readableChartNames = {
     'unidentified': 'Unidentifiable species',
     'storm_drain_dry': 'Storm drain without water',
     'storm_drain_water': 'Storm drain with water',
-    'breeding_site_other': 'Other breeding site'
+    'breeding_site_other': 'Other breeding site',
+    'confirmed_probable_tiger': 'Confirmed and possible tiger mosquito',
+    'confirmed_possible_unident': 'Confirmed, possible and unidentified',
+    'all_adults': 'All categories',
+    'storm_drain': 'Storm drain with or without water',
+    'all_sites': 'All categories'
 }
 
 var getCheckedYears = function(){
@@ -281,5 +286,73 @@ $(function () {
             }
         }
     }
+
+    var category_is_in_array = function(category_array, category_label){
+        for(var i = 0; i < category_array.length; i++){
+            if(category_array[i] === category_label){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    var append_composite_category = function(data_array, new_category_label, category_array){
+        for(var i = 0; i < years_data.length; i++){
+            split_data[years_data[i].toString()][new_category_label] = [];
+            for(var j = 0; j < all_sliced_data.length; j++){
+                var elem = all_sliced_data[j];
+                if(elem[1] === years_data[i]){
+                    if(category_is_in_array(category_array,elem[3])){
+                        if(split_data[years_data[i].toString()][new_category_label].length > 0){
+                            var year_and_month_exists = false;
+                            for( var k = 0; k < split_data[years_data[i].toString()][new_category_label].length; k++ ){
+                                if( split_data[years_data[i].toString()][new_category_label][k][1] == elem[1] &&  split_data[years_data[i].toString()][new_category_label][k][2] == elem[2]){
+                                    year_and_month_exists = true;
+                                    split_data[years_data[i].toString()][new_category_label][k][0] = split_data[years_data[i].toString()][new_category_label][k][0] + elem[0];
+                                }
+                            }
+                            if(!year_and_month_exists){
+                                split_data[years_data[i].toString()][new_category_label].push([elem[0],elem[1],elem[2]])
+                            }
+                        }else{
+                            split_data[years_data[i].toString()][new_category_label].push([elem[0],elem[1],elem[2]]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    append_composite_category(split_data, 'confirmed_probable_tiger', ['mosquito_tiger_confirmed','mosquito_tiger_probable']);
+    append_composite_category(split_data, 'confirmed_possible_unident', ['mosquito_tiger_confirmed','mosquito_tiger_probable','unidentified']);
+    append_composite_category(split_data, 'all_adults', ['mosquito_tiger_confirmed','mosquito_tiger_probable','unidentified','other_species']);
+    append_composite_category(split_data, 'storm_drain', ['storm_drain_dry','storm_drain_water']);
+    append_composite_category(split_data, 'all_sites', ['storm_drain_dry','storm_drain_water','breeding_site_other']);
+
+    /*
+    for(var i = 0; i < years_data.length; i++){
+        split_data[years_data[i].toString()]['confirmed_probable_tiger'] = [];
+        for(var j = 0; j < all_sliced_data.length; j++){
+            var elem = all_sliced_data[j];
+            if(elem[1] === years_data[i]){
+                if(elem[3] === 'mosquito_tiger_confirmed' || elem[3] === 'mosquito_tiger_probable'){
+                    if(split_data[years_data[i].toString()]['confirmed_probable_tiger'].length > 0){
+                        var year_and_month_exists = false;
+                        for( var k = 0; k < split_data[years_data[i].toString()]['confirmed_probable_tiger'].length; k++ ){
+                            if( split_data[years_data[i].toString()]['confirmed_probable_tiger'][k][1] == elem[1] &&  split_data[years_data[i].toString()]['confirmed_probable_tiger'][k][2] == elem[2]){
+                                year_and_month_exists = true;
+                                split_data[years_data[i].toString()]['confirmed_probable_tiger'][k][0] = split_data[years_data[i].toString()]['confirmed_probable_tiger'][k][0] + elem[0];
+                            }
+                        }
+                        if(!year_and_month_exists){
+                            split_data[years_data[i].toString()]['confirmed_probable_tiger'].push([elem[0],elem[1],elem[2]])
+                        }
+                    }else{
+                        split_data[years_data[i].toString()]['confirmed_probable_tiger'].push([elem[0],elem[1],elem[2]]);
+                    }
+                }
+            }
+        }
+    }*/
 
 });

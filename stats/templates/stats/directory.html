@@ -1,0 +1,34 @@
+{% load staticfiles %}
+{% load i18n %}
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <title>MosquitoAlert Stats</title>
+
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+
+        <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+        <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>Charts directory</h1>
+                </div>
+            </div>
+            <div class="row">
+                <ul>
+                    <li><a target="_blank" href="{% url 'speedmeter' %}">Speed Meter</a> - shows number of reports that entered the system last week, as well as average number of reports per day (last 7 days). This graph self updates every 10 seconds.</li>
+                    <li><a target="_blank" href="{% url 'report_stats_ccaa_pie' %}">Pie chart adults</a> - Shows number of adult observations geographically, with pie charts showing different categories of adult observations. The size of the pies indicates the number of observations.</li>
+                    <li><a target="_blank" href="{% url 'report_stats_ccaa_pie_sites' %}">Pie chart sites</a> - Same as above, with breeding sites</li>
+                    <li><a target="_blank" href="{% url 'mosquito_ccaa_rich_iframetest' %}">Province sampling comparison, adults</a> - Shows a cloropleth map with number of observations determining color intensity. When click in a province, it shows a mini-graph with the sampling distribution in the province by year. With Shift+click, multiple provinces can be selected and compared.</li>
+                    <li><a target="_blank" href="{% url 'mosquito_ccaa_rich_iframetest_sites' %}">Province sampling comparison, sites</a> - Same as above, with breeding sites</li>
+                    <li><a target="_blank" href="{% url 'report_stats' %}">Adult and breeding site sampling, monthly</a> - Side by side comparison of number of reports per month, with selectable categories</li>
+                </ul>
+            <div>
+        </div>
+    </body>
+</html>

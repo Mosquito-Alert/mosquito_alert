@@ -125,13 +125,13 @@ var removeSeries = function(chart, series_name){
 
 var addSeries = function(year){
     if(chart_register==null){
-        chart_register = combined_chart_empty("Usuaris registrats per mes", 'register');
+        chart_register = combined_chart_empty("Registered users per month", 'register');
     }
     var checked = $('#year_check_' + year).prop('checked');
     if(checked){
         addColumnSeries(chart_register, year);
     }else{
-        removeSeries(chart_register, 'Usuaris registrats ' + year);
+        removeSeries(chart_register, 'Registered users ' + year);
     }
     refreshPieSeries();
 }

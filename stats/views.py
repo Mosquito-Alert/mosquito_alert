@@ -3,6 +3,7 @@ from django.db import connection
 from tigaserver_app.models import *
 from datetime import date, timedelta, datetime
 import time
+import pytz
 from collections import Counter
 from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -17,6 +18,7 @@ from tigaserver_project import settings
 import json
 from sets import Set
 import datetime
+from django.utils import timezone
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -81,6 +83,7 @@ def workload_stats_per_user(request):
             ref_date += timedelta(hours=24)
         return Response(single_user_work_output)
 
+
 @api_view(['GET'])
 def workload_daily_report_input(request):
     if request.method == 'GET':
@@ -94,6 +97,7 @@ def workload_daily_report_input(request):
             ref_date += timedelta(hours=24)
         return Response(daily_report_input)
 
+
 @api_view(['GET'])
 def workload_available_reports(request):
     if request.method == 'GET':
@@ -106,10 +110,61 @@ def workload_available_reports(request):
         data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress), 'overall_pending': overall_pending.count()}
         return Response(data)
 
+
+def compute_speedmeter_params():
+    current_date = timezone.now()
+    date_7_days_ago = current_date - datetime.timedelta(days=7)
+    reports_last_seven = Report.objects.filter(creation_time__gte=date_7_days_ago).filter(
+        creation_time__lte=current_date)
+
+    date_intervals = []
+    days = 7
+    while days >= 0:
+        date_intervals.append(current_date - datetime.timedelta(days=days))
+        days -= 1
+
+    results = []
+    for idx, val in enumerate(date_intervals):
+        if idx + 1 >= len(date_intervals):
+            break
+        r = Report.objects.filter(creation_time__gte=date_intervals[idx]).filter(
+            creation_time__lte=date_intervals[idx + 1])
+        results.append(len(r))
+
+    total = 0
+    for result in results:
+        total = total + result
+    avg = total / len(results)
+
+    data = {'reports_last_seven': len(reports_last_seven), 'avg_last_seven': avg}
+    return data
+
+
+@api_view(['GET'])
+def speedmeter_api(request):
+    if request.method == 'GET':
+        data = compute_speedmeter_params()
+        return Response(data)
+
+
+@login_required
+def stats_directory(request):
+    context = {}
+    return render(request, 'stats/directory.html', context)
+
+
+@login_required
+def speedmeter(request):
+    data = compute_speedmeter_params()
+    context = {'data': data}
+    return render(request, 'stats/speedmeter.html', context)
+
+
 @login_required
 def mosquito_ccaa_rich_iframetest_sites(request):
     context = {}
     return render(request, 'stats/mosquito_ccaa_rich_iframetest_sites.html', context)
+
 
 @login_required
 def mosquito_ccaa_rich_iframetest(request):
@@ -149,6 +204,8 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title_linechart = 'Number of confirmed and possible mosquito tiger observations, 2014-2018'
         title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
         series_title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
 
     elif category == 'confirmedpossibleunident':
 
@@ -159,6 +216,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
         series_title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
 
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
+
     elif category == 'confirmed':
 
         categories = ('mosquito_tiger_confirmed',)
@@ -167,6 +227,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title_linechart = 'Number of confirmed mosquito tiger observations, 2014-2018'
         title = 'Confirmed mosquito tiger observations, 2014-2018'
         series_title = 'Confirmed mosquito tiger observations, 2014-2018'
+
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
 
     elif category == 'probable':
 
@@ -177,6 +240,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title = 'Possible mosquito tiger observations, 2014-2018'
         series_title = 'Possible mosquito tiger observations, 2014-2018'
 
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
+
     elif category == 'other':
 
         categories = ('other_species',)
@@ -185,6 +251,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title_linechart = 'Number of other species observations, 2014-2018'
         title = 'Other species observations, 2014-2018'
         series_title = 'Other species observations, 2014-2018'
+
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
 
     elif category == 'unidentified':
 
@@ -195,6 +264,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title = 'Unidentifiable observations, 2014-2018'
         series_title = 'Unidentifiable observations, 2014-2018'
 
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
+
     elif category == 'all':
 
         categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'unidentified', 'other_species',)
@@ -203,6 +275,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title_linechart = 'All categories, 2014-2018'
         title = 'All categories, 2014-2018'
         series_title = 'All categories, 2014-2018'
+
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
 
     elif category == 'storm_drain_water':
 
@@ -213,6 +288,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title = 'Breeding sites with water, 2014-2018'
         series_title = 'Breeding sites with water, 2014-2018'
 
+        minColor = '#ece7f2'
+        maxColor = '#2b8cbe'
+
     elif category == 'storm_drain_dry':
 
         categories = ('storm_drain_dry', )
@@ -220,6 +298,20 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title_linechart = 'Breeding sites without water, 2014-2018'
         title = 'Breeding sites without water, 2014-2018'
         series_title = 'Breeding sites without water, 2014-2018'
+
+        minColor = '#ece7f2'
+        maxColor = '#2b8cbe'
+
+    elif category == 'storm_drain':
+
+        categories = ('storm_drain_dry', 'storm_drain_water',)
+
+        title_linechart = 'Breeding sites with and without water, 2014-2018'
+        title = 'Breeding sites with and without water, 2014-2018'
+        series_title = 'Breeding sites with and without water, 2014-2018'
+
+        minColor = '#ece7f2'
+        maxColor = '#2b8cbe'
 
     elif category == 'breeding_site_other':
 
@@ -229,6 +321,20 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title = 'Other breeding sites, 2014-2018'
         series_title = 'Other breeding sites, 2014-2018'
 
+        minColor = '#ece7f2'
+        maxColor = '#2b8cbe'
+
+    elif category == 'all_sites':
+
+        categories = ('storm_drain_dry','storm_drain_water','breeding_site_other',)
+
+        title_linechart = 'All breeding sites, 2014-2018'
+        title = 'All breeding sites, 2014-2018'
+        series_title = 'All breeding sites, 2014-2018'
+
+        minColor = '#ece7f2'
+        maxColor = '#2b8cbe'
+
     else:
 
         categories = ('mosquito_tiger_confirmed',)
@@ -237,6 +343,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         title_linechart = ''
         title = ''
         series_title = ''
+
+        minColor = '#fef0d9'
+        maxColor = '#b30000'
 
     cursor.execute(sql_template,(categories,))
     map_data = cursor.fetchall()
@@ -253,7 +362,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         'years': json.dumps(years),
         'title_linechart' : title_linechart,
         'title' : title,
-        'series_title' : series_title
+        'series_title' : series_title,
+        'minColor' : minColor,
+        'maxColor' : maxColor
     }
     return render(request, 'stats/mosquito_ccaa_rich.html', context)
 

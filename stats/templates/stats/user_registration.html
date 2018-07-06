@@ -8,6 +8,7 @@
 
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        <link rel="stylesheet" href={% static "stats/user_activity.css" %}>
         <link rel="stylesheet" href={% static "stats/workload.css" %}>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
@@ -23,7 +24,8 @@
     </head>
     <body>
         <div class="container">
-            <h3>Això està molt buit... selecciona alguns anys per veure dades!</h3>
+            <h1>User registration by year</h1>
+            <h3 class="call_to_action">Select years to see data</h3>
             <div class="row">
                 <div class="col-md-12">
                     <ul class="list-inline" id="years">
@@ -31,10 +33,17 @@
                 </div>
             </div>
         </div>
+        <hr />
         <div class="container">
             <div class="row">
                 <div id="register" class="col-md-12"></div>
             </div>
+        </div>
+        <hr />
+        <div class="container">
+            <p>
+                License and usage policy: for internal use only. Do not distribute.
+            </p>
         </div>
     </body>
 </html>
