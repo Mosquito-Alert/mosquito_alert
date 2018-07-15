@@ -1,5 +1,5 @@
 #workers = 8
-workers = 21
+workers = 10
 bind = '127.0.0.1:49153'
 max_requests = 5000
 timeout = 1200
