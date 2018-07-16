@@ -76,8 +76,8 @@ def workload_stats_per_user(request):
         user = get_object_or_404(queryset,username=user_slug)
         single_user_work_output = []
         annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
-        ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
-        end_date = tz.localize(datetime.now())
+        ref_date = datetime.datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
+        end_date = tz.localize(datetime.datetime.now())
         while ref_date <= end_date:
             single_user_work_output.append([time.mktime(ref_date.timetuple())*1000, annotated_reports.filter(last_modified__year=ref_date.year).filter(last_modified__month=ref_date.month).filter(last_modified__day=ref_date.day).count()])
             ref_date += timedelta(hours=24)
@@ -89,8 +89,8 @@ def workload_daily_report_input(request):
     if request.method == 'GET':
         tz = get_localzone()
         daily_report_input = []
-        ref_date = datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
-        end_date = tz.localize(datetime.now())
+        ref_date = datetime.datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
+        end_date = tz.localize(datetime.datetime.now())
         reports = Report.objects.all()
         while ref_date <= end_date:
             daily_report_input.append([time.mktime(ref_date.timetuple())*1000,reports.filter(phone_upload_time__year=ref_date.year).filter(phone_upload_time__month=ref_date.month).filter(phone_upload_time__day=ref_date.day).count()])
@@ -562,8 +562,8 @@ def workload_stats(request):
 def show_fix_users(request):
     real_fixes = Fix.objects.filter(fix_time__gt='2014-06-13')
     tz = get_localzone()
-    ref_date = datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
-    end_date = tz.localize(datetime.now())
+    ref_date = datetime.datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
+    end_date = tz.localize(datetime.datetime.now())
     fix20_users = []
     fix15_users = []
     fix10_users = []
@@ -586,8 +586,8 @@ def show_fix_users(request):
 def show_report_users(request):
     real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)) if report.latest_version]
     tz = get_localzone()
-    ref_date = datetime(2014, 6, 13,  tzinfo=tz)
-    end_date = tz.localize(datetime.now())
+    ref_date = datetime.datetime(2014, 6, 13,  tzinfo=tz)
+    end_date = tz.localize(datetime.datetime.now())
     r0_users = []
     r1_users = []
     r2_users = []
