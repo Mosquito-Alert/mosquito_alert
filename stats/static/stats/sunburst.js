@@ -49,7 +49,7 @@ $( document ).ready(function() {
     Highcharts.chart('container', {
 
         chart: {
-            height: '1000px'
+            height: '800px'
         },
 
         title: {
