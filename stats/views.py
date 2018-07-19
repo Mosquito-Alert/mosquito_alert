@@ -147,6 +147,67 @@ def speedmeter_api(request):
         return Response(data)
 
 
+def get_sunburst_data(days_back, categories):
+    cursor = connection.cursor()
+    sql = """
+                select 
+                distinct    
+                version_uuid, 
+                c.nom_ccaa,
+                'c' || c.cod_ccaa,
+                p.nomprov,
+                'p' || p.codprov,
+                municipality,
+                'm' || mm.codigoine
+                from 
+                map_aux_reports m,
+                municipis_4326 mm,
+                provincies_4326 p,
+                comunitats_4326 c
+                where 
+                m.municipality = mm.nombre
+                AND m.private_webmap_layer in %s 
+                AND mm.cod_ccaa = c.cod_ccaa
+                AND mm.codprov = p.codprov
+                AND observation_date >= (NOW() - interval '%s days')
+                AND m.municipality is not null order by 3, 5, 7
+            """
+
+    cursor.execute(sql, (categories, days_back))
+    data = cursor.fetchall()
+    return json.dumps(data)
+
+
+@login_required
+def site_sunburst(request):
+    data = get_sunburst_data(30, ('storm_drain_dry', 'storm_drain_water', 'breeding_site_other',) )
+
+    context = {
+        'data': data,
+        'header': 'Sunburst graph of breeding sites in Spain last 30 days, by region',
+        'call_to_action': 'Click the slices for drilldown!',
+        'graph_title': 'Sampling by Regions, Spain',
+        'categories' : ["*Breeding sites*: citizens' observations of possible breeding sites (storm drain or sewer and other categories of possible breeding sites) of tiger or yellow fever mosquitoes. It includes reports that contain at least one picture and that it has been evaluated by entomological experts, reports with at least one picture that have not been evaluated by experts and it might also contain reports without pictures."]
+    }
+
+    return render(request, 'stats/sunburst.html', context)
+
+
+@login_required
+def adult_sunburst(request):
+    data = get_sunburst_data(30, ('mosquito_tiger_probable','mosquito_tiger_confirmed',) )
+
+    context = {
+        'data': data,
+        'header': 'Sunburst graph of tiger mosquito observations in Spain last 30 days, by region',
+        'call_to_action': 'Click the slices for drilldown!',
+        'graph_title': 'Sampling by Regions, Spain',
+        'categories' : ['*Confirmed or possible tiger mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus). If their taxonomic features can be clearly seen, especially the white stripe on head and thorax, it is classified as "confirmed". If some features cannot be observed, it is classified as "possible".']
+    }
+
+    return render(request, 'stats/sunburst.html', context)
+
+
 @login_required
 def stats_directory(request):
     context = {}
