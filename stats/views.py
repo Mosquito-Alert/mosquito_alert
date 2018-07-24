@@ -214,7 +214,7 @@ def stats_directory(request):
     return render(request, 'stats/directory.html', context)
 
 
-@login_required
+@xframe_options_exempt
 def speedmeter(request):
     data = compute_speedmeter_params()
     context = {'data': data}

@@ -134,9 +134,9 @@ $( document ).ready(function() {
         });
     };
 
-    setInterval(function () {
+    /*setInterval(function () {
         load_number_reports_ajax();
-    }, 15000);
+    }, 15000);*/
 
 
 });
