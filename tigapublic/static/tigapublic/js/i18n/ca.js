@@ -158,7 +158,6 @@ trans.ca = {
     'with_my_notifications': 'Amb les meves notificacions',
     'without_my_notifications': 'Sense les meves notificacions',
 
-    // NEW
     'notification.warning.municiaplities': 'Només és possible enviar notificacions a les observacions fetes en municipis vinculats a l\'usuari d\'aquesta sessió.',
     'group.filters.time': 'Filtres temporals',
     'group.filters.hashtag': 'Filtre per #hashtag',
@@ -185,5 +184,20 @@ trans.ca = {
 
     'filter.municipality.placeholder': 'Cerca municipis',
     'filter.municipalities.inputtooshort': 'Mínim 2 caracters',
-    'label.user-municipalities': 'Els meus municipis'
+    'label.user-municipalities': 'Els meus municipis',
+
+    // MODELS
+    'layer.predictionmodels': 'Probabilitat Mosquit Tigre',
+    //HTML FORMAT
+    'layer.predictionmodels.description': 'El mapa mostra la probabilitat mitjana d\'alerta de mosquit tigre (valors de 0 a 1), en una quadrícula de 4x4 km, classificats en 4 nivells d\'incertesa derivats de les desviacions estàndards associades a les nostres estimacions mitjanes. Aquests nivells d\'incertesa representen la probabilitat que un participant enviï almenys, una fotografia fiable d\'un mosquit tigre des d\'una determinada cel·la de la quadrícula de 4x4 km durant les dues setmanes precedents al dia en qüestió, controlant per l\'esforç de mostreig.<p>Aquestes probabilitats majoritàriament depenen de la distribució de les poblacions de mosquit tigre i de l\'època de l\'any (ja que aquestes espècies tenen un cicle estacional amb variacions en la seva abundància poblacional). El model, publicat a Nature Communications 8: 916 (2017), controla l\'esforç de mostreig i ha demostrat que produeix estimacions similars a les que es poden realitzar a partir de trampes d\'ovoposició de mosquit. Aquest model estacional, que encara no inclou dades climàtiques ni ambientals, s\'executa un cop a la setmana generant estimacions diàries.</p>',
+    'models.label.prob-1': 'Molt baixa',
+    'models.label.prob-2': 'Baixa',
+    'models.label.prob-3': 'Mitja',
+    'models.label.prob-4': 'Alta',
+    'models.label.sd-1': 'Molt baixa',
+    'models.label.sd-2': 'Baixa',
+    'models.label.sd-3': 'Mitja',
+    'models.label.sd-4': 'Alta',
+    'models.probability': 'Probabilitat',
+    'models.uncertainty': 'Incertesa',
  };

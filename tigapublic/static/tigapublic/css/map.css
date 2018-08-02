@@ -539,6 +539,7 @@ ul.sub-sites{
 	list-style:none;
 	white-space: nowrap;
 	font-size:90%;
+  width: 50%;
 }
 
 ul.sub-sites li img{
@@ -633,3 +634,87 @@ div#map-ui{
 button[data-id='notification-presets'] {
 	background:#fff9d2;
 }
+
+
+
+/* NEW */
+/* MODELS */
+#forecast_date_selector {
+  font-size: .9em;
+}
+#forecast_date_selector div {
+  float: left;
+  width: auto;
+}
+#forecast_date_selector div.bootstrap-select {
+  width:150px;
+}
+#layer_I h5 {
+  font-size: 1em;
+  font-weight: bold;
+  border-bottom: 1px solid #ECECEC;
+}
+
+div#map canvas.leaflet-heatmap-layer {
+  position: absolute;
+}
+.question-mark-toc {
+  position: absolute;
+  right: 10px;
+  border: 1px solid #cacaca;
+  padding: 2px 5px;
+  border-radius: 30%;
+  cursor: default;
+  color: #acacac;
+}
+.question-mark-toc:hover {
+  background: #C0C0C0;
+  color: black;
+}
+.ui-tooltip, .arrow:after {
+    background: white;
+    border: 1px solid #CACACA;
+}
+.ui-tooltip {
+  padding: 10px 20px;
+  color: white;
+  border-radius: 20px;
+  max-width: 500px !important;
+  font-size: .9em !important;
+}
+ .arrow {
+	overflow: hidden;
+	/* width: 70px;
+  height: 16px;
+  position: absolute;
+  left: 100%;
+  margin-left: -7px;
+  bottom: 50%;
+  transform: rotate(-90deg) translate(-5px, 0px); */
+}
+.ui-tooltip.ui-widget-shadow {
+  box-shadow: 0 0 8px #aaa;
+}
+/* .arrow.top {
+  top: 0px;
+  bottom: 0px;
+}
+.arrow.left {
+  left: 0px;
+} */
+.arrow:after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: -20px;
+  width: 25px;
+  height: 25px;
+  /* box-shadow: 6px 5px 9px -9px black; */
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+/* .arrow.top:after {
+  bottom: 0px;
+  top: auto;
+} */

@@ -183,5 +183,20 @@ trans.en = {
 
     'filter.municipality.placeholder': 'Search municipalities',
     'filter.municipalities.inputtooshort': 'At least 2 characters',
-    'label.user-municipalities': 'My municipalities'
+    'label.user-municipalities': 'My municipalities',
+
+    // MODELS
+    'layer.predictionmodels': 'Tiger Mosquito Probability',
+    //HTLM FORMAT
+    'layer.predictionmodels.description': 'The map shows the mean alert probability of tiger mosquitoes (values from 0 to 1) in a grid of 4x4 Km, classified by 4 levels of uncertainty derived from the standard deviations associated to our mean estimates. These levels represent the probability of a participant sending at least one reliable picture of a tiger mosquito from the given sampling cell during the two weeks preceding the day in question, controlling for sampling effort.<p>These probabilities mainly depend on the tiger mosquito’s population distribution and the time of the year (given that mosquitoes have a seasonal cycle with abundance variation).  The model, published in Nature Communications 8:916 (2017), controls for sampling effort and has been shown to produce estimates similar to those from traditional surveillance based on mosquito egg traps. This seasonal model which still does not include climatic nor environmental data is executed once a week generating daily estimates.</p>',
+    'models.label.prob-1': 'Very low',
+    'models.label.prob-2': 'Low',
+    'models.label.prob-3': 'Medium',
+    'models.label.prob-4': 'High',
+    'models.label.sd-1': 'Very low',
+    'models.label.sd-2': 'Low',
+    'models.label.sd-3': 'Medium',
+    'models.label.sd-4': 'High',
+    'models.probability': 'Probability',
+    'models.uncertainty': 'Uncertainty',
 };

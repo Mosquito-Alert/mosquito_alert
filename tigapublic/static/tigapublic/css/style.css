@@ -789,12 +789,27 @@ li.unclassified{
 li.userfixes{
     background:url('../img/userfixes_info_icon.png') 0 0 no-repeat no-repeat;
 }
+li.predictionmodels {
+    background:url('../img/predictionmodels_info_icon.png') 0 0 no-repeat no-repeat;
+}
+
+.popover{
+    max-width: 40%
+}
+
+.popover-content p{
+  margin-top:10px
+}
+
+ul.info_list li span p{
+    margin-top:10px
+}
 
 li.tiger_mosquito, li.mosquito_tiger_probable, li.mosquito_tiger_confirmed,
 li.yellow_fever_confirmed, li.yellow_fever_probable, li.unidentified,
 li.unclassified, li.not_yet_validated, li.trash_layer, li.site,
 li.other_species, li.userfixes, li.filtered, li.yellow_fever_mosquito,
-li.userfixes{
+li.userfixes, li.predictionmodels {
     text-indent: 20px;
 }
 body ul.info_list .private{
@@ -1256,4 +1271,38 @@ div#legend_reports_map ul#map_layers{
     background: #e6e6e6;
     border:none;
     margin:0;
+}
+
+/* epidemiology */
+#epidemiology-tpl-container {
+  padding:10px;
+}
+.epi-tpl-div {
+  margin-bottom:15px;
+  border-bottom:1px solid #ececec;
+}
+.epi-tpl-div span{
+		font-weight: bold;
+    display:block;
+}
+.epi-tpl-title {
+   margin-top:10px;
+}
+
+li.epidemiology_legend img{
+  margin-right:5px
+}
+
+img.epi-icon{
+  height:20px
+}
+
+.legend_header, .legend_footer{
+  font-size:0.8em;
+  font-weight:bold;
+  text-align:center;
+}
+
+.lowercase{
+  text-transform: lowercase;
 }

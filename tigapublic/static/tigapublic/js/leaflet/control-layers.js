@@ -32,6 +32,10 @@ var MOSQUITO = (function (m) {
                   MOSQUITO.app.mapView.coverage_layer._meta = layer.layer._meta;
                   layer.layer = MOSQUITO.app.mapView.coverage_layer;
                 }
+                if (layer.layer._meta.key == 'I' && 'mapView' in MOSQUITO.app && 'forecast_layer' in MOSQUITO.app.mapView) {
+                  MOSQUITO.app.mapView.forecast_layer._meta = layer.layer._meta;
+                  layer.layer = MOSQUITO.app.mapView.forecast_layer;
+                }
                 if (_this._map.hasLayer(layer.layer)) {
                     item.addClass('active');
                     _this.container.find('#id' + layer.group).attr('aria-expanded','true');
@@ -75,7 +79,7 @@ var MOSQUITO = (function (m) {
                 }
                 //if group<>none
 
-                if (group.name != 'none'){
+                if (group.name != 'none') {
                   //toggle button for one group
                   var toggleGrup = $('<div/>')
                       .attr('data-toggle','collapse')
@@ -115,7 +119,7 @@ var MOSQUITO = (function (m) {
 
                 var ulGroup = $('<ul>').attr('id', 'ul_'+group.name).appendTo(divGroup);
 
-                //Layers of each group
+                //Iterate all layers of one group
                 $.each(layers, function(i, layer) {
 
                   classname = (group.name != 'none')?'list-group-item':'list-group-only-item';
@@ -135,7 +139,7 @@ var MOSQUITO = (function (m) {
                               $('<label i18n="map.'+cat+'">').appendTo(subitem);
                             }
                         break;
-                        case 'F':
+                        case 'F': // user fixes
                             $('<label i18n="'+layer.title+'" class="multiclass">').appendTo(item);
                             var sublist = $('<ul>').attr('class', 'sub-sites').appendTo(item);
                             // get the segments for the legend
@@ -148,7 +152,7 @@ var MOSQUITO = (function (m) {
                                   .css('width', 20)
                                   .css('height', 20)
                                   .css('background','rgb('+color+')')
-                                  .css('border', '1px solid orange')
+                                  .css('border', '1px solid '+layer.style.strokecolor)
                                   .css('float', 'left')
                                   .css('margin-right', '10px')
                                   .css('opacity', opacity)
@@ -160,10 +164,107 @@ var MOSQUITO = (function (m) {
                                 $('<label>').html(label).appendTo(subitem);
                             }
                         break;
-                        case 'Q': //DrainStorm
-                            /*$('<img>').attr('src', layer.icon).attr('class', 'icon').appendTo(item);
-                            $('<label i18n="'+layer.title+'">').appendTo(item);*/
+                        case 'I': // Forecast models
+                            // TITLE
+                            $('<label i18n="'+layer.title+'" class="multiclass">').appendTo(item);
 
+                            // QUESTION MARK
+                            let question_mark = $('<a>', {
+                              'href':'#',
+                              'data-toggle':'popover',
+                              'data-placement':'left',
+                              'i18n': 'layer.predictionmodels.description|data-content',
+                              'data-container': 'body',
+                              'class':'fa fa-question question-mark-toc'
+                            })
+
+                            question_mark.appendTo(item)
+                            question_mark.on('click', function(event) {
+                              event.preventDefault();
+                              event.stopPropagation();
+                            });
+                            $(question_mark).popover({
+                              html: true,
+                              content: function() {
+                                return true;
+                                }
+                            });
+                            //LISTEN ANY CLICK TO HIDE POPOVER
+                            $(document).click(function(e) {
+                              console.log('click')
+                              var isVisible = $("[data-toggle='popover']").data('bs.popover').tip().hasClass('in');
+                              if (isVisible) $("[data-toggle='popover']").popover('hide')
+                            });
+                            // DATE SELECTOR
+                            var date_selector = $('<div>', {'id': 'forecast_date_selector'})
+                              .appendTo(item);
+                            $('<div>', {'i18n': 'map.observation_date'}).css('padding', '5px')
+                              .appendTo(date_selector);
+                            var select = $('<select>', {
+                                'name': 'forecast_date',
+                                'id': 'forecast_date',
+                                'class': 'selectpicker dropup'})
+                              .appendTo(date_selector);
+                            url = MOSQUITO.config.URL_API + 'get/pred/nextdays/';
+                            $.ajax({
+                              method: 'GET',
+                              url: url
+                            })
+                            .done(function(resp) {
+                              var dates = resp.split(',');
+                              dates.forEach(function(date) {
+                                select.append($('<option>', {'value': date}).html(date));
+                              });
+                              $('#forecast_date').selectpicker('refresh');
+                            })
+                            .fail(function(error) {
+                              if (console && console.error) {
+                                console.log('AJAX ERROR !!! '+error);
+                              }
+                            });
+                            $('<div>', {'style': 'clear:both'}).appendTo(item);
+                            // LEGEND PROBABILTY
+                            var sublist = $('<ul>').attr('class', 'sub-sites').css('font-weight', 'bold').css('float', 'left').appendTo(item);
+                            sublist.append($('<h5>', {'i18n': 'models.probability'}));
+                            this.prob_ranges.forEach(function(range) {
+                              var subitem = $('<li>').attr('class', 'sublist-group-item').appendTo(sublist);
+                              $('<div>')
+                                .css('width', 20)
+                                .css('height', 20)
+                                .css('background',range.color)
+                                .css('border', '1px solid orange')
+                                .css('float', 'left')
+                                .css('margin-right', '10px')
+                                .appendTo(subitem);
+                              $('<label>', {'i18n': range.label}).appendTo(subitem);
+                            });
+                            // LEGEND ST. DEV.
+                            sublist = $('<ul>', {'class': 'sub-sites', 'id': 'forecast_sd'})
+                              .css('font-weight', 'bold')
+                              .css('float', 'left')
+                              .appendTo(item);
+                            sublist.append($('<h5>', {'i18n': 'models.uncertainty'}));
+                            this.sd_ranges.forEach(function(range) {
+                              var subitem = $('<li>').attr('class', 'sublist-group-item').appendTo(sublist);
+                              $('<div>')
+                                .css('width', 10)
+                                .css('height', 10)
+                                .css('background',range.color)
+                                .css('border', '1px solid black')
+                                .css('border-radius', '50%')
+                                .css('float', 'left')
+                                .css('margin-right', '10px')
+                                .css('margin', '3px 10px 0 0px')
+                                .appendTo(subitem);
+                              $('<label>', {'i18n': range.label}).appendTo(subitem);
+                            });
+                            if (map.getZoom() <= 7) {
+                              sublist.css('opacity', '.3');
+                            } else {
+                              sublist.css('opacity', '1');
+                            }
+                        break;
+                        case 'Q': //DrainStorm
                             div = $('<div class="icon-setup"></div>');
                             label = $('<label i18n="'+layer.title+'" class="multiclass">');
                             iconSetup = $('<i class="fa fa-cog storm_drain"></i>')
@@ -202,65 +303,155 @@ var MOSQUITO = (function (m) {
                             }
 
                             var sublist = $('<ul id="stormdrain_legend">').attr('class', 'sub-sites').appendTo(item);
-                            /*
-                            layer.categories.drainstorm.forEach(function (item, index) {
-                              var subitem = $('<li>').attr('class', 'sublist-group-item').appendTo(sublist);
-                              $('<img>').attr('src', 'img/marker_drainstorm_'+item+'.svg').attr('class', 'icon').appendTo(subitem);
-                              $('<label i18n="drainstorm.'+item+'">').appendTo(subitem);
-                            })*/
+
                         break;
+
+                        case 'P': //Epidemilogy
+                            div = $('<div class="icon-setup"></div>');
+                            label = $('<label i18n="'+layer.title+'" class="multiclass">');
+                            iconSetup = $('<i class="fa fa-cog epidemiology"></i>')
+
+                            div.appendTo(item)
+                            iconSetup.appendTo(div);
+
+                            label.appendTo(item);
+
+                            $(iconSetup).on('click', function(e){
+                                MOSQUITO.app.mapView.epidemiologyFormSetup();
+                                e.stopPropagation();
+                                e.preventDefault();
+                            })
+
+                                  //add listener to epidemiology filter
+                            $('#select_epi-state').on('change', function(){
+                                var pre = $(this).data('pre');
+                                var newdata = $(this).val();
+                                if (newdata===null){
+                                    $(this).val(['all']);
+                                }
+                                else {
+                                    if (pre.indexOf('all')!==-1 && newdata.indexOf('all')!==-1 ) {
+                                      newdata.shift()
+                                    }
+                                    else if (pre.indexOf('all')===-1 && newdata.indexOf('all')!==-1 ) {
+                                      newdata=['all']
+                                    }
+                                    $(this).val(newdata);
+                                }
+
+                                $(this).selectpicker('refresh');
+                                $(this).data('pre', $(this).val());
+                            });
+
+                            //Only for loggend and manager_group users
+                            if (MOSQUITO.app.headerView.logged)
+                            {
+                              var isEpidemiologist = false;
+                              MOSQUITO.app.user.groups.some(function (v, i, arr){
+                                if  (MOSQUITO.config.logged.epidemiologist_group.indexOf(v) !== -1) {
+                                  isEpidemiologist = true;
+                                  return true;
+                                }
+                              })
+
+                              if (isEpidemiologist) {
+                                iconUpload = $('<i class="fa fa-upload storm_drain"></i>')
+                                iconUpload.appendTo(div);
+                                $(iconUpload).on('click', function(e){
+                                    MOSQUITO.app.mapView.epidemiologyUploadSetup();
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                })
+                              }
+                            }
+
+                            var sublist = $('<ul id="epidemiolgy_legend">').attr('class', 'sub-sites').appendTo(item);
+
+                        break;
+
                         default:
                             $('<img>').attr('src', layer.icon).attr('class', 'icon').appendTo(item);
                             $('<label i18n="'+layer.title+'">').appendTo(item);
                         break;
                     }
 
-            		item.on('click', function() {
+                //when click on a layer selector
+                // console.log(MOSQUITO);
+            		item.on('click', function(event) {
+                  if (layer.key === 'I') {
+                    MOSQUITO.app.mapView.forecast_layer._meta = {
+                      'key': 'I',
+                      'icon': "img/epi_confirmed.svg",
+                      'layer': MOSQUITO.app.mapView.forecast_layer
+                    };
+                    theLayer = MOSQUITO.app.mapView.forecast_layer;
+                    // When we unfold the select
+                    var option = event.target;
 
-                        if (layer.key == 'F') {
-                            //MOSQUITO.app.mapView.refreshCoverageLayer();
-                            MOSQUITO.app.mapView.coverage_layer._meta = {
-                              'key': 'F',
-                              'icon': "img/marker_userfixes.svg",
-                              'layer': MOSQUITO.app.mapView.coverage_layer
-                            };
-                            theLayer = MOSQUITO.app.mapView.coverage_layer;
+                    if ($(option).hasClass('filter-option') ||
+                          $(option).hasClass('caret') ||
+                          $(option).hasClass('dropdown-toggle')) return;
+                    // when we pick an option
+                    // ... because we clicked on the span.text
 
-                        } else if (layer.key == 'Q') {
-                            /*if (!_this._map.hasLayer(MOSQUITO.app.mapView.drainstorm_layer)) {
-                                MOSQUITO.app.mapView.loadStormDrainData();
-                            }*/
-                            MOSQUITO.app.mapView.drainstorm_layer._meta = {
-                              'key': 'Q',
-                              'icon': "img/marker_userfixes.svg",
-                              'layer': MOSQUITO.app.mapView.drainstorm_layer
-                            };
-                            theLayer = MOSQUITO.app.mapView.drainstorm_layer;
-                        }
-                        else {
-                            theLayer = layer.layer;
-                        }
+                    if (option.tagName === 'A') option = event.target.children[0];
+                    // if (option.tagName === 'SPAN' &&
+                    //       $(option).hasClass('text')) {
+                    //     if ($('#layer_'+layer.key).hasClass('active')) {
+                    //       _this._map.removeLayer(theLayer);
+                    //     }
+                    //   }
+                  }
+                  else if (layer.key === 'F') {
+                      MOSQUITO.app.mapView.coverage_layer._meta = {
+                        'key': 'F',
+                        'icon': 'img/marker_userfixes.svg',
+                        'layer': MOSQUITO.app.mapView.coverage_layer
+                      };
+                      theLayer = MOSQUITO.app.mapView.coverage_layer;
 
-                        if ($('#layer_'+layer.key).hasClass('active')){
-                            _this._map.removeLayer(theLayer);
-                            if (layer.key=='Q') {
-                              _this._map.off('click', MOSQUITO.app.mapView.checkStormDrainInfo);
-                            }
-                        }
-                         else {
-                            layerLI = $('label[i18n="'+layer.title+'"]').parent();
-                            MOSQUITO.app.mapView.loading.on(layerLI);
-                            if (layer.key=='F') MOSQUITO.app.mapView.refreshCoverageLayer();
-                            else if (layer.key=='Q') MOSQUITO.app.mapView.loadStormDrainData();
-                            else _this._map.addLayer(theLayer, function() {});
-                        }
-                        _this._map.fire('layerchange', {
-                            layer : theLayer
-                        });
-                        // deactivate the parent menu
-                        if (ulGroup.find('.active').length == 0) divGroup.prev().find('.layer-group').removeClass('active');
+                  } else if (layer.key === 'Q') {
+                      MOSQUITO.app.mapView.drainstorm_layer._meta = {
+                        'key': 'Q',
+                        'icon': "img/marker_userfixes.svg",
+                        'layer': MOSQUITO.app.mapView.drainstorm_layer
+                      };
+                      theLayer = MOSQUITO.app.mapView.drainstorm_layer;
+                  }
+                  else if (layer.key == 'P') {
+                      MOSQUITO.app.mapView.epidemiology_layer._meta = {
+                        'key': 'P',
+                        'icon': "img/epi_confirmed.svg",
+                        'layer': MOSQUITO.app.mapView.epidemiology_layer
+                      };
+                      theLayer = MOSQUITO.app.mapView.epidemiology_layer;
+                  }
+                  else {
+                      theLayer = layer.layer;
+                  }
+
+                  if ($('#layer_'+layer.key).hasClass('active')){
+                      _this._map.removeLayer(theLayer);
+                      if (layer.key=='Q') {
+                        _this._map.off('click', MOSQUITO.app.mapView.checkStormDrainInfo);
+                      }
+                  }
+                   else {
+                      layerLI = $('label[i18n="'+layer.title+'"]').parent();
+                      MOSQUITO.app.mapView.loading.on(layerLI);
+                      if (layer.key === 'F') MOSQUITO.app.mapView.refreshCoverageLayer();
+                      else if (layer.key === 'Q') MOSQUITO.app.mapView.loadStormDrainData();
+                      else if (layer.key === 'I') MOSQUITO.app.mapView.refreshForecastModel();
+                      else if (layer.key === 'P') MOSQUITO.app.mapView.addEpidemiologyLayer();
+                      else _this._map.addLayer(theLayer, function() {});
+                  }
+                  _this._map.fire('layerchange', {
+                      layer : theLayer
+                  });
+                  // deactivate the parent menu
+                  if (ulGroup.find('.active').length == 0) divGroup.prev().find('.layer-group').removeClass('active');
             		});
-                });//end first each
+              });//end first each
             }); //end second each
 
             this.setActiveClass(section);
@@ -270,7 +461,8 @@ var MOSQUITO = (function (m) {
                 var item = section.find('#layer_'+ layer.layer._meta.key) ;
                 item.addClass('active');
                 item.parent().parent().prev().find('.layer-group').addClass('active');
-                MOSQUITO.app.mapView.loading.off(item);
+                if (typeof MOSQUITO.app.mapView !== 'undefined')
+                  MOSQUITO.app.mapView.loading.off(item);
               }
       			});
 

@@ -181,5 +181,20 @@ trans.es = {
 
     'filter.municipality.placeholder': 'Búsqueda de municipios',
     'filter.municipalities.inputtooshort': 'Mínimo 2 caracteres',
-    'label.user-municipalities': 'Mis municipios'
+    'label.user-municipalities': 'Mis municipios',
+
+    // MODELS
+    'layer.predictionmodels': 'Probabilidad Mosquito Tigre',
+    //HTML FORMAT
+    'layer.predictionmodels.description': 'El mapa muestra la probabilidad media de alerta de mosquito tigre (valores de 0 a 1), en una cuadrícula de 4x4 Km, clasificados en 4 niveles de incertidumbre derivados de las desviaciones estándares asociadas a nuestras estimaciones medias. Estos niveles de incertidumbre representan la probabilidad de que un participante envíe al menos, una fotografía confiable de un mosquito tigre desde una determinada celda de la cuadrícula de 4x4 Km durante las dos semanas precedentes al día en cuestión, controlando por el esfuerzo de muestreo.<p>Estas probabilidades en su mayoría dependen de la distribución de las poblaciones de mosquito tigre y de la época del año (ya que estas especies tienen un ciclo estacional con variaciones en su abundancia poblacional). El modelo, publicado en Nature Communications 8:916 (2017), controla el esfuerzo de muestreo y ha demostrado que produce estimaciones similares a las que se pueden realizar a partir de trampas de ovoposición de mosquito. Este modelo estacional que no incluye aún información climática ni ambiental se ejecuta una vez a la semana generando estimaciones diarias.</p>',
+    'models.label.prob-1': 'Muy baja',
+    'models.label.prob-2': 'Baja',
+    'models.label.prob-3': 'Media',
+    'models.label.prob-4': 'Alta',
+    'models.label.sd-1': 'Muy baja',
+    'models.label.sd-2': 'Baja',
+    'models.label.sd-3': 'Media',
+    'models.label.sd-4': 'Alta',
+    'models.probability': 'Probabilidad',
+    'models.uncertainty': 'Incertidumbre',
 };

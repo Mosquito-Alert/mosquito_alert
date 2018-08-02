@@ -234,7 +234,7 @@ var ReportsdocumentView = MapView.extend({
     },
 
     fetch_data: function(options, callback){
-        url = MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/';
+        url = MOSQUITO.config.URL_API + 'observations/report/' + options.bbox + '/';
 
         if (!this.isDaterangeEmpty(options)) {
           url += options.daterange.start + '/' + options.daterange.end;

@@ -161,7 +161,7 @@ var MOSQUITO = (function (m) {
           });
 
           // Prepare url with filters
-          var url = MOSQUITO.config.URL_API + 'intersect/';
+          var url = MOSQUITO.config.URL_API + 'notifications/intersect/';
           // layers
           url += filters.excluded_types.join(',')+'/';
           // time
@@ -186,9 +186,9 @@ var MOSQUITO = (function (m) {
           //When no municipalities selected then pass 0 (user municipalities)
           url += (muni=='N')?'0/': muni + '/';
           // my notifications
-          url += (filters.notif && filters.notif !== false)?filters.notif + '/':'all/';
+          url += (filters.notif && filters.notif !== false)?filters.notif + '/':'N/';
           // notification typesstatus
-          url += (MOSQUITO.app.mapView.filters.notif_types && (MOSQUITO.app.mapView.filters.notif_types.length > 1 || MOSQUITO.app.mapView.filters.notif_types[0] !== 'N'))?MOSQUITO.app.mapView.filters.notif_types.join(',') + '/':'all/';
+          url += (MOSQUITO.app.mapView.filters.notif_types && (MOSQUITO.app.mapView.filters.notif_types.length > 1 || MOSQUITO.app.mapView.filters.notif_types[0] !== 'N'))?MOSQUITO.app.mapView.filters.notif_types.join(',') + '/':'N/';
 
           $.ajax({
               type: 'POST',
@@ -213,7 +213,7 @@ var MOSQUITO = (function (m) {
             $.ajax({
                 type: 'POST',
                 context: this,
-                url:  MOSQUITO.config.URL_API + 'getpredefinednotifications/',
+                url:  MOSQUITO.config.URL_API + 'notifications/mypredefined/',
                 cache: false,
                 success: function(response){
                     if (response.success) {
@@ -243,7 +243,7 @@ var MOSQUITO = (function (m) {
           if (!$(button).hasClass('disabled')) {
             //change form action
             $('#notification_file_input')
-              .attr('action', MOSQUITO.config.URL_API + 'imageupload/');
+              .attr('action', MOSQUITO.config.URL_API + 'notifications/imageupload/');
 
             $('.form-group.notif-msg').addClass('hidden');
             $('#notification_form').modal('show');
@@ -258,7 +258,7 @@ var MOSQUITO = (function (m) {
                 contentText += ' (' + $('#users_found').html() + ' ' + t('map.users_found_text')+')';
                 $('#notification-notified').val(contentText);
                 //If no notification show error on open form
-                if (!MOSQUITO.app.mapView.scope.notificationServerIds.length){
+                if (MOSQUITO.app.mapView.scope.notificationServerIds !== undefined && !MOSQUITO.app.mapView.scope.notificationServerIds.length){
                   $('#notif_observations_none').removeClass('hidden');
                 }
 
@@ -279,7 +279,7 @@ var MOSQUITO = (function (m) {
                 file_browser_callback: function(field_name, url, type, win) {
                     if(type=='image') $('#notification_file_input input').click();
                 },
-                images_upload_url: MOSQUITO.config.URL_API + 'imageupload/',
+                images_upload_url: MOSQUITO.config.URL_API + 'notifications/imageupload/',
                 automatic_uploads: true,
                 default_link_target: "_blank",
                 link_assume_external_targets: true,
@@ -315,7 +315,7 @@ var MOSQUITO = (function (m) {
                 $.ajax({
                     type: 'POST',
                     context: this,
-                    url:  MOSQUITO.config.URL_API + 'save_notification/',
+                    url:  MOSQUITO.config.URL_API + 'notifications/',
                     data: data,
                     cache: false,
                     success: function(response){

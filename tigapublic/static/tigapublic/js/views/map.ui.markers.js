@@ -1,6 +1,19 @@
 var MapView = MapView.extend({
 
     iconstype: {},
+    epiIcon: L.Icon.extend({
+        options: {
+          iconSize:    [20, 20],
+          iconAnchor:  [10, 10],
+        }
+    }),
+
+    epiSelectedIcon: L.Icon.extend({
+        options: {
+          iconSize:    [34, 34],
+          iconAnchor:  [15, 15],
+        }
+    }),
 
     getLayerKey: function(type) {
 
@@ -53,44 +66,63 @@ var MapView = MapView.extend({
 
     markerUndoSelected: function(marker){
         var _this = this;
-        var marker = _.find(MOSQUITO.app.mapView.layers.layers.mcg.getLayers(), function(layer){
-            if(layer._data.id === _this.scope.selectedMarker._data.id &&
-                _this.map.hasLayer(layer)
-            ){
-                return layer;
-            }
-        });
+        if (marker._data.marker_type=='observation'){
+          var marker = _.find(MOSQUITO.app.mapView.layers.layers.mcg.getLayers(), function(layer){
+              if(layer._data.id === _this.scope.selectedMarker._data.id &&
+                  _this.map.hasLayer(layer)
+              ){
+                  return layer;
+              }
+          });
 
-        if(marker !== undefined){
-            //_this.markerSetSelected(found);
-            var type = marker._data.category;
-            this.scope.selectedMarker = null;
-            marker.setIcon(this.getIconType(type));
-            if($(this.report_panel).is(':visible')){
-                this.controls.sidebar.closePane();
-            }
+          if(marker !== undefined){
+              //_this.markerSetSelected(found);
+              var type = marker._data.category;
+              this.scope.selectedMarker = null;
+              marker.setIcon(this.getIconType(type));
+              if($(this.report_panel).is(':visible')){
+                  this.controls.sidebar.closePane();
+              }
+          }
+        }
+        else{
+          iconImgUrl = _this.getEpidemiologyIcon(marker._data)
+
+          this.scope.selectedMarker = null;
+
+          var selectedIcon = new this.epiIcon(
+            {iconUrl: iconImgUrl})
+
+          marker.setIcon(selectedIcon);
+          if($(this.report_panel).is(':visible')){
+              this.controls.sidebar.closePane();
+          }
         }
     },
 
     markerSetSelected: function(marker){
-        var _this = this;
-        var type = marker._data.category;
-        var iconUrl = this.getIconUrl(type);
-        var ext = iconUrl.split('.').slice(-1)[0];
-        iconUrl = iconUrl.replace('.' + ext, '_selected.' + ext);
 
-        var selectedIcon = new L.Icon({
-            iconUrl: iconUrl,
-            //iconSize:    [21, 28],
-            //iconAnchor:  [10, 28],
-            iconSize:    [36, 46],
-            //iconAnchor:  [18, 46],
-            //iconSize:    [54, 69],
-            iconAnchor:  [18, 46],
-            popupAnchor: [1, -34]
-        });
+        var _this = this;
+        //observation marker
+        if (marker._data.marker_type=='observation'){
+          var type = marker._data.category;
+          var iconUrl = this.getIconUrl(type);
+          var ext = iconUrl.split('.').slice(-1)[0];
+          iconUrl = iconUrl.replace('.' + ext, '_selected.' + ext);
+
+          var selectedIcon = new L.Icon({
+              iconUrl: iconUrl,
+              iconSize:    [36, 46],
+              iconAnchor:  [18, 46],
+              popupAnchor: [1, -34]
+          });
+        }
+        //epidemiology marker
+        else{
+          var selectedIcon = new this.epiSelectedIcon(
+            {iconUrl: 'img/epi_selected.svg'})
+        }
         marker.setIcon(selectedIcon);
-        //if (marker._icon !==null)
         marker._bringToFront();
     }
 

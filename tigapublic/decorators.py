@@ -1,3 +1,4 @@
+"""Custom decorators."""
 from django.http import HttpResponse
 
 ACC_HEADERS = {'Access-Control-Allow-Origin': '*',
@@ -7,7 +8,7 @@ ACC_HEADERS = {'Access-Control-Allow-Origin': '*',
 
 
 def cross_domain_ajax(func):
-    """ Sets Access Control request headers."""
+    """Set Access Control request headers."""
     def wrap(request, *args, **kwargs):
         # Firefox sends 'OPTIONS' request for cross-domain javascript call.
         if request.method != "OPTIONS":

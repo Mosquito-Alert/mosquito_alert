@@ -73,10 +73,8 @@ var MOSQUITO = (function (m) {
         _click: function (e) {
             L.DomEvent.stopPropagation(e);
             L.DomEvent.preventDefault(e);
-            this.build_url();
-            //this.fire('click', e);
+            this.set_url();
             $('#control-share').modal('show');
-            //router.navigate('home', {trigger: true});
         }
 
     });
