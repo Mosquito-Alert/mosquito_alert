@@ -11,6 +11,7 @@ router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
 router.register(r'coverage_month', views.CoverageMonthMapViewSet, base_name='coverage_month')
 router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_reports')
+router.register(r'all_reports_paginated', views.AllReportsMapViewSetPaginated, base_name='all_reports_paginated')
 router.register(r'hidden_reports', views.NonVisibleReportsMapViewSet, base_name='hidden_reports')
 # There was some sort of uncontrolled caching happening here. To avoid it, I build the resultset
 # record by record. This is slower. I don't care.

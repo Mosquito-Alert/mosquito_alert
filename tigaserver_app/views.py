@@ -506,6 +506,20 @@ class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 
+
+class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
+    if conf.FAST_LOAD and conf.FAST_LOAD == True:
+        non_visible_report_id = []
+    else:
+        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    serializer_class = MapDataSerializer
+    filter_class = MapDataFilter
+    paginate_by = 10
+    paginate_by_param = 'page_size'
+    max_paginate_by = 100
+
+
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
         non_visible_report_id = []
