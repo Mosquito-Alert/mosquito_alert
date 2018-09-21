@@ -38,7 +38,7 @@
 			return new L.DivIcon({ html: '<div><span>' + childCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(270, 270)  });
 		};
 		
-		var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+		var tiles = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 				maxZoom: 18,
 				attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 			}),

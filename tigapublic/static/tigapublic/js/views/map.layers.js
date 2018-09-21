@@ -18,7 +18,7 @@ var MapView = MapView.extend({
 
     addBaseLayer: function(){
         this.layers = this.layers || {};
-        this.layers.baselayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        this.layers.baselayer = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(this.map);
