@@ -199,4 +199,7 @@ trans.en = {
     'models.label.sd-4': 'High',
     'models.probability': 'Probability',
     'models.uncertainty': 'Uncertainty',
+
+    'general.year': 'Year',
+    'general.month': 'Month',
 };

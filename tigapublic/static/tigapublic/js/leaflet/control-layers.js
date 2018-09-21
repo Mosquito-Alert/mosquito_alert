@@ -77,7 +77,21 @@ var MOSQUITO = (function (m) {
                         layers.push(layer)
                     }
                 }
-                //if group<>none
+
+                //check user types
+                if (MOSQUITO.app.headerView.logged)
+                  {
+                    var isManager = false;
+                    var isSuperUser = false;
+                    MOSQUITO.app.user.groups.some(function (v, i, arr){
+                      if  (MOSQUITO.config.logged.managers_group.indexOf(v) !== -1) {
+                        isManager = true;
+                      }
+                      if  (MOSQUITO.config.logged.superusers_group.indexOf(v) !== -1) {
+                        isSuperUser = true;
+                      }
+                    })
+                  }
 
                 if (group.name != 'none') {
                   //toggle button for one group
@@ -127,7 +141,9 @@ var MOSQUITO = (function (m) {
                         .attr('class', classname)
                         .attr('id', 'layer_'+layer.key)
                     .appendTo(ulGroup);
-
+                    if (layer.key=='Q' && (!isManager && !isSuperUser)){
+                      return true
+                    }
                     switch (layer.key) {
                         case 'E':
                             //Different types of breeding sites
@@ -189,39 +205,71 @@ var MOSQUITO = (function (m) {
                                 return true;
                                 }
                             });
-                            //LISTEN ANY CLICK TO HIDE POPOVER
+                            // LISTEN ANY CLICK TO HIDE POPOVER
                             $(document).click(function(e) {
-                              console.log('click')
                               var isVisible = $("[data-toggle='popover']").data('bs.popover').tip().hasClass('in');
                               if (isVisible) $("[data-toggle='popover']").popover('hide')
                             });
                             // DATE SELECTOR
+                            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                                          'August', 'September', 'October', 'November', 'December'];
+                            // YEAR
                             var date_selector = $('<div>', {'id': 'forecast_date_selector'})
                               .appendTo(item);
-                            $('<div>', {'i18n': 'map.observation_date'}).css('padding', '5px')
+                            $('<div>', {'i18n': 'general.year'}).css('padding', '5px')
+                              .css('width', 40)
                               .appendTo(date_selector);
-                            var select = $('<select>', {
-                                'name': 'forecast_date',
-                                'id': 'forecast_date',
+                            var first_time_loading = true;
+                            var this_month = new Date().getMonth();
+                            var year_select = $('<select>', {
+                                'name': 'forecast_year',
+                                'id': 'forecast_year',
+                                'class': 'selectpicker dropup'})
+                              .appendTo(date_selector)
+                              .on('change', function(e) {
+                                let year = $(this).val();
+                                let found = false;
+                                let i = 0;
+                                let months_availability = [];
+                                while (i < MOSQUITO.config.predictionmodels_available.length && !found) {
+                                  if (MOSQUITO.config.predictionmodels_available[i][0] == year) {
+                                    found = true;
+                                    months_availability = MOSQUITO.config.predictionmodels_available[i][1];
+                                  } else ++i;
+                                }
+                                month_select.empty();
+                                months.forEach(function(month, i) {
+                                  let attrs = {'value': i + 1, 'i18n': month};
+                                  if (months_availability[i] === 0) attrs['disabled'] = 'false';
+                                  month_select.append($('<option>', attrs));
+                                });
+                                t().translate(MOSQUITO.lng,month_select);
+                                // t(month_select);
+                                if (first_time_loading) {
+                                  let option = $('#forecast_month option')[this_month];
+                                  $(option).attr('selected', 'selected');
+                                }
+                                month_select.selectpicker('refresh');
+                                first_time_loading = false;
+                              });
+                            $('<div>', {'style': 'clear:both'}).appendTo(item);
+                            // MONTH
+                            var date_selector = $('<div>', {'id': 'forecast_date_selector'})
+                              .appendTo(item);
+                            $('<div>', {'i18n': 'general.month'}).css('padding', '5px')
+                                .css('width', 40)
+                                .appendTo(date_selector);
+                            var month_select = $('<select>', {
+                                'name': 'forecast_month',
+                                'id': 'forecast_month',
                                 'class': 'selectpicker dropup'})
                               .appendTo(date_selector);
-                            url = MOSQUITO.config.URL_API + 'get/pred/nextdays/';
-                            $.ajax({
-                              method: 'GET',
-                              url: url
-                            })
-                            .done(function(resp) {
-                              var dates = resp.split(',');
-                              dates.forEach(function(date) {
-                                select.append($('<option>', {'value': date}).html(date));
-                              });
-                              $('#forecast_date').selectpicker('refresh');
-                            })
-                            .fail(function(error) {
-                              if (console && console.error) {
-                                console.log('AJAX ERROR !!! '+error);
-                              }
+                            MOSQUITO.config.predictionmodels_available.forEach(function(y, i) {
+                              let attrs = {'value': y[0]};
+                              if (i === 0) attrs['selected'] = 'selected';
+                              year_select.append($('<option>', attrs).html(y[0]));
                             });
+                            setTimeout(function() {year_select.change()}, 100);
                             $('<div>', {'style': 'clear:both'}).appendTo(item);
                             // LEGEND PROBABILTY
                             var sublist = $('<ul>').attr('class', 'sub-sites').css('font-weight', 'bold').css('float', 'left').appendTo(item);
@@ -265,33 +313,29 @@ var MOSQUITO = (function (m) {
                             }
                         break;
                         case 'Q': //DrainStorm
-                            div = $('<div class="icon-setup"></div>');
-                            label = $('<label i18n="'+layer.title+'" class="multiclass">');
-                            iconSetup = $('<i class="fa fa-cog storm_drain"></i>')
-
-                            div.appendTo(item)
-                            iconSetup.appendTo(div);
-
-                            label.appendTo(item);
-
-                            $(iconSetup).on('click', function(e){
-                                MOSQUITO.app.mapView.stormDrainSetup();
-                                e.stopPropagation();
-                                e.preventDefault();
-                            })
-
                             //Only for loggend and manager_group users
                             if (MOSQUITO.app.headerView.logged)
                             {
-                              var isManager = false;
-                              MOSQUITO.app.user.groups.some(function (v, i, arr){
-                                if  (MOSQUITO.config.logged.managers_group.indexOf(v) !== -1) {
-                                  isManager = true;
-                                  return true;
-                                }
-                              })
+
+                              if (isManager || isSuperUser){
+                                div = $('<div class="icon-setup"></div>');
+                                label = $('<label i18n="'+layer.title+'" class="multiclass">');
+                                iconSetup = $('<i class="fa fa-cog storm_drain"></i>')
+
+                                div.appendTo(item)
+                                iconSetup.appendTo(div);
+
+                                label.appendTo(item);
+
+                                $(iconSetup).on('click', function(e){
+                                    MOSQUITO.app.mapView.stormDrainSetup();
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                })
+                              }
 
                               if (isManager) {
+
                                 iconUpload = $('<i class="fa fa-upload storm_drain"></i>')
                                 iconUpload.appendTo(div);
                                 $(iconUpload).on('click', function(e){
@@ -300,13 +344,38 @@ var MOSQUITO = (function (m) {
                                     e.preventDefault();
                                 })
                               }
-                            }
 
-                            var sublist = $('<ul id="stormdrain_legend">').attr('class', 'sub-sites').appendTo(item);
+                              var sublist = $('<ul id="stormdrain_legend">').attr('class', 'sub-sites').appendTo(item);
+                            }
 
                         break;
 
                         case 'P': //Epidemilogy
+                            isEpidemiologist_view = false
+                            isEpidemiologist_edit = false
+
+                            //Only for loggend and manager_group users
+                            if (MOSQUITO.app.headerView.logged)
+                            {
+                              var isEpidemiologist = false;
+                              MOSQUITO.app.user.groups.some(function (v, i, arr){
+                                if  (MOSQUITO.config.logged.epidemiologist_view_group.indexOf(v) !== -1) {
+                                  isEpidemiologist_view = true;
+                                }
+                                if  (MOSQUITO.config.logged.epidemiologist_edit_group.indexOf(v) !== -1) {
+                                  isEpidemiologist_edit = true;
+                                }
+                              })
+                            }
+                            else{
+                              return false
+                            }
+
+                            //only some groups can view this layer
+                            if (!isEpidemiologist_view && !isEpidemiologist_edit && !isSuperUser) {
+                              return false
+                            }
+
                             div = $('<div class="icon-setup"></div>');
                             label = $('<label i18n="'+layer.title+'" class="multiclass">');
                             iconSetup = $('<i class="fa fa-cog epidemiology"></i>')
@@ -343,27 +412,16 @@ var MOSQUITO = (function (m) {
                                 $(this).data('pre', $(this).val());
                             });
 
-                            //Only for loggend and manager_group users
-                            if (MOSQUITO.app.headerView.logged)
-                            {
-                              var isEpidemiologist = false;
-                              MOSQUITO.app.user.groups.some(function (v, i, arr){
-                                if  (MOSQUITO.config.logged.epidemiologist_group.indexOf(v) !== -1) {
-                                  isEpidemiologist = true;
-                                  return true;
-                                }
+                            if (isEpidemiologist_edit) {
+                              iconUpload = $('<i class="fa fa-upload storm_drain"></i>')
+                              iconUpload.appendTo(div);
+                              $(iconUpload).on('click', function(e){
+                                  MOSQUITO.app.mapView.epidemiologyUploadSetup();
+                                  e.stopPropagation();
+                                  e.preventDefault();
                               })
-
-                              if (isEpidemiologist) {
-                                iconUpload = $('<i class="fa fa-upload storm_drain"></i>')
-                                iconUpload.appendTo(div);
-                                $(iconUpload).on('click', function(e){
-                                    MOSQUITO.app.mapView.epidemiologyUploadSetup();
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                })
-                              }
                             }
+
 
                             var sublist = $('<ul id="epidemiolgy_legend">').attr('class', 'sub-sites').appendTo(item);
 
@@ -395,12 +453,6 @@ var MOSQUITO = (function (m) {
                     // ... because we clicked on the span.text
 
                     if (option.tagName === 'A') option = event.target.children[0];
-                    // if (option.tagName === 'SPAN' &&
-                    //       $(option).hasClass('text')) {
-                    //     if ($('#layer_'+layer.key).hasClass('active')) {
-                    //       _this._map.removeLayer(theLayer);
-                    //     }
-                    //   }
                   }
                   else if (layer.key === 'F') {
                       MOSQUITO.app.mapView.coverage_layer._meta = {
@@ -431,10 +483,14 @@ var MOSQUITO = (function (m) {
                   }
 
                   if ($('#layer_'+layer.key).hasClass('active')){
+                    if ($(option).hasClass('text') && layer.key === 'I') {
+                      MOSQUITO.app.mapView.refreshForecastModel();
+                    } else {
                       _this._map.removeLayer(theLayer);
                       if (layer.key=='Q') {
                         _this._map.off('click', MOSQUITO.app.mapView.checkStormDrainInfo);
                       }
+                    }
                   }
                    else {
                       layerLI = $('label[i18n="'+layer.title+'"]').parent();

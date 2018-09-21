@@ -8,7 +8,7 @@ from .models import AuthUser, Municipalities, PredefinedNotification
 class AuthUserAdmin(admin.ModelAdmin):
     """AuthUserAdmin."""
 
-    filter_horizontal = ('province', 'municipalities',)
+    filter_horizontal = ('province', 'municipalities')
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         """formfield_for_manytomany."""
@@ -26,6 +26,7 @@ class AuthUserAdmin(admin.ModelAdmin):
         return super(AuthUserAdmin, self).formfield_for_manytomany(db_field,
                                                                    request,
                                                                    **kwargs)
+
 
 admin.site.register(AuthUser, AuthUserAdmin)
 admin.site.register(PredefinedNotification)

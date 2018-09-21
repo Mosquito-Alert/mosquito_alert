@@ -23,17 +23,19 @@ from libs.upload import ExcelUploader
 from libs.epidemiology import EpidemiologyData
 from libs.predictionmodels import predictionModels
 from models import MapAuxReports, Municipalities, Epidemiology
-from utils import CustomJSONEncoder, julianDay, urlExists
+from utils import CustomJSONEncoder
 from tigapublic.constants import (compulsatory_epidemiology_fields,
                                   optional_epidemiology_fields,
                                   epi_templates_path, epi_form_file,
-                                  prediction_file_head_name,
-                                  prediction_file_tail_name,
-                                  prediction_models_url)
+                                  prediction_file_name,
+                                  prediction_file_ext,
+                                  epidemiologist_editor_group,
+                                  prediction_models_folder
+                                  )
 # from tigapublic.constants import prediction_models_folder
-from datetime import datetime
-import requests
+import os
 from tablib import Dataset
+from tigapublic.utils import get_directory_structure
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -93,6 +95,9 @@ def ajax_is_logged(request):
         for g in request.user.groups.all():
             response['data']['groups'].append(g.name)
         response['data']['roles'] = list(request.user.get_all_permissions())
+
+    # Logged or not, check available models
+    response['models'] = get_directory_structure(prediction_models_folder)
 
     return HttpResponse(json.dumps(response),
                         content_type='application/json')
@@ -248,6 +253,11 @@ def epidemiologyData(request):
         return data_provider.get()
 
     elif request.method == 'POST':
+
+        if (epidemiologist_editor_group not in
+                request.user.groups.values_list('name', flat=True)):
+            return HttpResponse('Unauthorized', status=401)
+
         uploader = ExcelUploader(
                 request=request,
                 model=Epidemiology,
@@ -278,40 +288,38 @@ def getEpidemiologyTemplate(request):
 #####################
 
 
-@csrf_exempt
-@cross_domain_ajax
-def predictionGetNextDays(request):
-    """Get the next day predictions file names."""
-    # return HttpResponse (predictionModels().getDate())
-    files = predictionModels().getNextPredictionDates()
-    return HttpResponse(",".join(files))
-
-
 @cache_page(36000)
-def predictionModelData(request, prediction_date):
+def predictionModelData(request, year, month):
     """Get Prediction Data. Date format %Y-%m-%d."""
+    if len(month) == 1:
+        month = month.rjust(2, '0')
+
     # Get file name based on date
-    myDate = datetime.strptime(prediction_date, '%Y-%m-%d').date()
-    year = myDate.year
-    jDay = julianDay(myDate)
-    filename = (prediction_models_url + str(year) + '/' +
-                prediction_file_head_name + str(jDay) +
-                prediction_file_tail_name)
+    filename = (prediction_models_folder + str(year) + '/' +
+                str(month) + '/' +
+                prediction_file_name + prediction_file_ext)
 
     # If file exist then get data and create JSON
-    if urlExists(filename):
-        response = requests.get(filename)
-        myModel = predictionModels(prediction_date)
-        myModel.data = Dataset()
-        myModel.data.load(response.text, 'csv')
+    if os.path.exists(filename):
+        try:
+            file = open(filename, 'r')
+        except IOError:
+            return HttpResponse(status=401)
 
+        myModel = predictionModels(year, month)
+        myModel.data = Dataset()
+        myModel.data.load(file.read(), 'csv')
+        # Lower case headers
+        lowerHeaders = [h.lower() for h in myModel.data.headers]
+        myModel.data.headers = lowerHeaders
+        print myModel.data.headers
         response = {}
         response['prob'] = myModel.getProbGeometries()
         response['sd'] = myModel.getSdGeometries()
         myModel.response = response
         return myModel._end()
     else:
-        return myModel._end_unauthorized()
+        return HttpResponse(status=404)
 
 
 #################

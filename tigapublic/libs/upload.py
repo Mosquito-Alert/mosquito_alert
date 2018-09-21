@@ -8,6 +8,7 @@ from zipfile import ZipFile
 from django.db import connection
 from django.http import HttpResponse
 from tablib import Dataset
+import csv
 
 from base import BaseManager
 from tigapublic.utils import extendUser
@@ -25,6 +26,7 @@ class ExcelUploader(BaseManager):
         self.request = request
         self.request.user = extendUser(request.user)
         self.model = kwargs['model']
+
         self.compulsatory_fields = kwargs['compulsatory_fields']
         self.optional_fields = kwargs['optional_fields']
         self.template_location = kwargs['template_location']
@@ -33,7 +35,7 @@ class ExcelUploader(BaseManager):
 
     def get_template(self):
         """Return the template used to import storm drain data."""
-        if self.request.user.is_authorized():
+        if self.request.user.is_epidemiologist_editor():
             in_memory = StringIO()
             zip = ZipFile(in_memory, "a")
             # Add files to zip
@@ -136,6 +138,7 @@ class ExcelUploader(BaseManager):
                         ) else None
                     )
                 )
+
         return row
 
     def _import(self):
@@ -146,7 +149,10 @@ class ExcelUploader(BaseManager):
 
         for row in self.read_dataset.dict:
             # Ignore rows with emtpy lat or lon
-            if row['lon'] is not None and row['lat'] is not None:
+            if (row['lon'] is not None and row['lat'] is not None and
+                    row['date_arribal'] is not None and
+                    row['date_symptom'] is not None):
+
                 row = self._check_fieldtypes(row, fieldtypes)
                 new = []
                 for key in row:
@@ -157,8 +163,8 @@ class ExcelUploader(BaseManager):
         db = connection.cursor()
         import_dataset.headers = None
 
-        with tempfile.NamedTemporaryFile() as f:
-                f.write(import_dataset.csv)
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+                f.write(import_dataset.get_csv(delimiter='\t'))
                 f.seek(0)
 
                 try:
@@ -166,7 +172,7 @@ class ExcelUploader(BaseManager):
                     self.model.objects.all().delete()
                     db.copy_from(f, self.model._meta.db_table,
                                  columns=(self.read_dataset.headers),
-                                 sep=",",
+                                 sep="\t",
                                  null='null')
                     self.response = {
                         'success': True,
@@ -178,7 +184,8 @@ class ExcelUploader(BaseManager):
 
     def put(self, *args, **kwargs):
         """Import a file."""
-        if self.request.user.is_manager():
+        print self.model
+        if self.request.user.is_epidemiologist_editor():
             if self.request.method == 'POST':
                 # Prepare the input Dataset
                 self.read_dataset = Dataset()

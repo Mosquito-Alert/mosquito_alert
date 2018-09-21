@@ -384,6 +384,15 @@
       </div>
     <!--form-->
       <div class="modal-body content">
+        <div class="tt t-100 v-pd-10">
+          <div class="tcol"></div>
+          <div class="tr">
+            <div class="hv-pd-10 tcel p-center t-border t-note">
+              <span i18n="epidemiology.upload-explanation"></span>
+            </div>
+
+          </div>
+        </div>
 
         <form id="epiFormUpload"
           onsubmit="return false" method="post" enctype="multipart/form-data">
@@ -532,33 +541,18 @@
       </div>
       <div class="modal-body content">
         <div class="tt t-100 v-pd-10">
+          <div class="tcol"></div>
+          <div class="tr">
+            <div class="hv-pd-10 tcel p-center t-border t-note">
+              <span i18n="epidemiology.filter-explanation"></span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="tt t-100 v-pd-10">
           <div class="tcol t-30"></div>
           <div class="tcol t-60"></div>
-          <div class="tr">
-                <div class="tcel t-right h-pd-10">
-                    <span i18n="epidemiology.field-map"></span>
-                </div>
-                <div class="tcel t-left h-pd-10" id="epi-palette-container">
-                  <!-- SELECT PALETTE-->
-                      <select name="epidemiology-palette" class="epi-select">
-                        <option value="patient_states" i18n="epidemiology.patient_state"></option>
-                        <option value="patient_age" i18n="epidemiology.age_band"></option>
-                      </select>
-                </div>
-          </div>
-          <hr>
-          <div class="tr">
-                <div class="tcel t-right h-pd-10">
-                    <span i18n="epidemiology.period"></span>
-                </div>
-                <div class="tcel t-left h-pd-10" id="epi-date-container">
-                  <!-- SELECT DATE -->
-                      <select name="epidemiology-date" class="epi-select">
-                        <option value="date_symptom" i18n="epidemiology.date_symptom"></option>
-                        <option value="date_arribal" i18n="epidemiology.date_arribal"></option>
-                      </select>
-                </div>
-          </div>
           <div class="tr">
                 <div class="tcel t-right h-pd-10">
                     <span i18n="epidemiology.patient-filter"></span>
@@ -570,10 +564,10 @@
                         <option value="likely" i18n="epidemiology.likely"></option>
                         <option value="suspected" i18n="epidemiology.suspected"></option>
                         <option value="confirmed" i18n="epidemiology.confirmed"></option>
+                        <option value="nocase" i18n="epidemiology.nocase"></option>
                       </select>
                 </div>
           </div>
-
         </div>
         <div class="tt t-100 v-pd-10">
              <div class="tcol t-10"></div>
@@ -664,7 +658,7 @@
             <div class="tt t-100 v-pd-10">
                 <div class="tcol"></div>
                 <div class="tr">
-                      <div class="tcel p-center t-border" style="background:rgba(255,221,24,0.7)">
+                      <div class="tcel p-center t-border t-note">
                         <div class="t-pd-5">
                           <p>
                             - <span i18n="stormdrain.categories-helper1"></span>
@@ -1324,10 +1318,10 @@
            </div>
           <% } %>
 
-          <% if( ( address != null) && (address != "") ) { %>
+          <% if( ( year != null) && (year != "") ) { %>
           <div class="epi-tpl-div">
-            <span i18n="epi.address"></span>
-            <%= address %>
+            <span i18n="epi.year"></span>
+            <%= year %>
           </div>
           <% } %>
 

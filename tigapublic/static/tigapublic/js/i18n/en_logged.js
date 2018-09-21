@@ -134,7 +134,7 @@ add = {
   'epi.patient_state':'State',
   'epi.province':'Province',
   'epi.health_center':'Center',
-  'epi.address':'Address',
+  'epi.year':'Year',
   'epidemiology.setup-title': 'Epidemiology. View setup',
   'epidemiology.update': 'Update',
   'epidemiology.period': 'By',
@@ -149,6 +149,9 @@ add = {
   'epidemiology.suspected': 'Suspected',
   'epidemiology.confirmed': 'Confirmed',
   'epidemiology.undefined': 'Undefined',
-  'epidemiology.all': 'All states'
+  'epidemiology.nocase': 'No case',
+  'epidemiology.all': 'All states',
+  'epidemiology.filter-explanation':'If a date filter is applied to the map, it will also be applied to this layer on *date_arribal* field',
+  'epidemiology.upload-explanation': 'WARNING!! The upload proces will delete all previouly stored data for the epidemiology layer',
 };
 _.extend(trans.en, add);

@@ -4,9 +4,13 @@ import datetime
 import decimal
 import json
 import requests
+import os
 from django.contrib.auth.models import User
 
-from constants import managers_group, superusers_group, user_roles
+from constants import (managers_group, superusers_group, user_roles,
+                       epidemiologist_editor_group,
+                       epidemiologist_viewer_group)
+
 
 ###################
 # User extensions #
@@ -39,6 +43,35 @@ class ExtendedUser(User):
         """
         return (self.is_valid() and
                 self.groups.filter(name=managers_group).exists())
+
+    def is_epidemiologist_editor(self):
+        """Return True if user is epidemiologist editor.
+
+        A epidemiologist must be valid user and belong to the groups
+        epidemiologist_editor.
+        """
+        return (self.is_valid() and
+                self.groups.filter(name=epidemiologist_editor_group).exists())
+
+    def is_epidemiologist_viewer(self):
+        """Return True if user is epidemiologist viewer.
+
+        A epidemiologist must be valid user and belong to the groups
+        is_epidemiologist_viewer  or editor
+        """
+        return (
+                self.groups.filter(
+                            name=epidemiologist_viewer_group
+                            ).exists()
+                or
+                self.groups.filter(
+                            name=epidemiologist_editor_group
+                            ).exists()
+                or
+                self.groups.filter(
+                            name=superusers_group
+                            ).exists()
+                )
 
     def is_root(self):
         """Return True if user is root/superadmin.
@@ -200,3 +233,37 @@ def urlExists(url):
     """Check if url exists."""
     r = requests.head(url)
     return r.status_code == requests.codes.ok
+
+
+def get_directory_structure(rootdir):
+    """
+    Nested dictionaryself.
+
+    Creates an ordered list (desc) that represents the availability of models
+    """
+    valid_ext = [".csv"]
+    files = []
+    folders = []
+    dictlist = []
+    dict = {}
+    for root, dirs, files in os.walk(rootdir):
+        if root[len(rootdir)+1:].count(os.sep) < 2:
+            for f in files:
+                if f.endswith(tuple(valid_ext)):
+                    root = root.replace(rootdir, '')
+                    root = root.replace('\\', '/')
+                    # split
+                    folders = root.split('/')
+                    if not folders[0] in dict:
+                        # initialize all 12 months as disabled
+                        dict[folders[0]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+                    # Enable current month
+                    dict[folders[0]][int(folders[1]) - 1] = 1
+
+    # Turn dict into array
+    for key, value in dict.iteritems():
+        temp = [key, value]
+        dictlist.append(temp)
+    # Return properly ordered list
+    return sorted(dictlist, key=lambda l: l[1], reverse=True)

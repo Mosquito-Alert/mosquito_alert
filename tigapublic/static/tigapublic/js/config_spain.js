@@ -9,7 +9,7 @@ var MOSQUITO = (function (m, _) {
 
         URL_API: '/tigapublic/',
         URL_PUBLIC: '/tigapublic/',
-        
+
         lon: 1.130859375,
         lat: 37.53097889440026,
         maxzoom_cluster: 13,
@@ -127,10 +127,12 @@ var MOSQUITO = (function (m, _) {
         ],
         "logged": {
             "managers_group":['gestors'],
-            "epidemiologist_group":['epidemiologist'],
+            "superusers_group":['supermosquito'],
+            "epidemiologist_edit_group":['epidemiologist'],
+            "epidemiologist_view_group":['epidemiologist_viewer'],
             "lngs": ['es'],
             "groups":[
-                {'name':'observations', 'icon': 'fa fa-mobile'},
+                {'name': 'observations', 'icon': 'fa fa-mobile'},
                 {'name': 'userdata', 'icon':'fa fa-user'},
                 {'name': 'none', 'icon':''}
             ],
@@ -185,7 +187,7 @@ var MOSQUITO = (function (m, _) {
               },
               {
                   key: 'Q',
-                  group:'userdata',
+                  group: 'userdata',
                   title: 'layer.drainstorm',
                   categories: {
                     'drainstorm': ['water', 'nowater']
@@ -199,7 +201,10 @@ var MOSQUITO = (function (m, _) {
                   key: 'P',
                   group:'userdata',
                   title: 'layer.epidemiology',
-                  default_palette:'patient_states',
+                  categories: {
+                    'state': ['suspected', 'confirmed']
+                  },
+                  default_palette: 'patient_states',
                   palettes:{
                       'patient_states':{'name': 'patient_states',//select value
                                         'column': 'patient_state',
@@ -209,19 +214,8 @@ var MOSQUITO = (function (m, _) {
                                                 'confirmat':'img/epi_confirmed.svg',
                                                 'sospitos': 'img/epi_suspected.svg',
                                                 'probable': 'img/epi_likely.svg',
+                                                'no_cas': 'img/epi_nocase.svg',
                                                 'indefinit': 'img/epi_none.svg',}
-                      },
-                      'patient_age':{'name': 'patient_age',//select value
-                                    'column': 'age',
-                                    'units': 'epidemiology.years',
-                                    'type':'quantitative',
-                                    'rangs':[
-                                        {'name': '0-20', 'minValue':0, 'maxValue':20, 'image': 'img/epi_20.svg'},
-                                        {'name': '21-35', 'minValue':21, 'maxValue':35, 'image': 'img/epi_35.svg'},
-                                        {'name': '36-50', 'minValue':36, 'maxValue':50, 'image': 'img/epi_50.svg'},
-                                        {'name': '51-65', 'minValue':51, 'maxValue':65, 'image': 'img/epi_65.svg'},
-                                        {'name': '66...', 'minValue':66, 'maxValue':1000, 'image':'img/epi_66.svg'}
-                                    ]
                       }
                   }
 

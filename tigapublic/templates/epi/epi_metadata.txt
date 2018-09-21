@@ -1,14 +1,27 @@
 ﻿Descripció
 ==========
 
+Observacions
+------------
+
+a) Les files que no continguin cap valor en alguna de les següents columnes no s'importaran.
+
+*lat*
+*lon*
+*data_arribada*
+*inici_simptomes*
+
+b) Totes les columnes de fitxer han de contenir les dades en un format concret. Si no es respecta aquest format es produirà un error durant el procés d'importació. El format de cada columna es detalla a continuació.
+
+
 Columnes requerides 
 -------------------
 
 Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació.
 
-*codi*: Codi de pacient
-    Format: Alfanumèric. Màxim 15 caracters.
-    Altres nom acceptats per aquesta columna son: codigo, code i id
+*Número*: Codi de pacient
+    Format: Numèric o alfanumèric.
+    Altres nom acceptats per aquesta columna son: code, codigo, codi, id
 
 *lat*: Coordenades Y (latitud) de la localització del pacient.
     Format: Valors decimals. Ex: 41.344343
@@ -30,23 +43,24 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: pais_visitado y visited_country.
     
-*estat*: Estat del pacient. Possibles valors: probable, sospitós (o sospitos, sense accent) y confirmat.
+*estat*: Estat del pacient. Possibles valors: probable, sospitós (o sospitos, sense accent) y confirmat. 
+    Observacions: Els valors d'aquesta cel·la que no es corresponguin amb els valors anteriors, es representaran en el mapa un interrogant (?).
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: estado y patient_state.  
     
-*centre*: Nom del centre d'atenció on s'ha atès al pacient.
+*centre_dia*: Nom del centre d'atenció on s'ha atès al pacient.
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: centro y center.
     
-*adreca*: Adreça de residència del pacient.
-    Format: Valors alfanumèrics. Màxim 255 caracters.
-    Altres nom acceptats per aquesta columna son: adreça, address y direccion.    
+*any*: Any de visita del pacient.
+    Format: Numèric
+    Altres nom acceptats per aquesta columna son: año, year
     
-*provincia*: Nom de la provincia on resideix el pacient.
+*prov*: Nom de la provincia on resideix el pacient.
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: province.
     
-*edat*: Edat del pacient
+*edatany*: Edat del pacient
     Format: Valor numèric enter.
     Altres nom acceptats per aquesta columna son: edad y age.
 
@@ -54,6 +68,6 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
 Columnes opcionals
 -------------------
 
-*comentaris*: Comentaris de cada pacient.
+*observacio*: Comentaris de cada pacient.
     Formato: Texte il·limitat.
-    Altres nom acceptats per aquesta columna son: comentarios y comments.
+    Altres nom acceptats per aquesta columna son: comentaris, comentarios y comments.

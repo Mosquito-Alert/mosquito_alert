@@ -74,6 +74,7 @@ var HeaderView = Backbone.View.extend({
             'async': true,
             url:  MOSQUITO.config.URL_API + 'ajax_is_logged/',
             success: function(response){
+                MOSQUITO.config.predictionmodels_available = response.models;
                 MOSQUITO.app.user=response.data;
                 MOSQUITO.app.trigger('app_logged', response.success);
             }

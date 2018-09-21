@@ -200,4 +200,7 @@ trans.ca = {
     'models.label.sd-4': 'Alta',
     'models.probability': 'Probabilitat',
     'models.uncertainty': 'Incertesa',
+
+    'general.year': 'Any',
+    'general.month': 'Mes',
  };

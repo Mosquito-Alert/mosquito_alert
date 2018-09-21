@@ -139,9 +139,6 @@ var MapView = MapView.extend({
           this.epidemiology_palette=epilayer.palettes[epilayer.default_palette]
           _this.epidemiology_palette_date = 'date_arribal'
           $('#epidemiology_palette_form').click(function(e){
-            var newPalette = $('select[name=epidemiology-palette]').val()
-            _this.epidemiology_palette = epilayer.palettes[newPalette]
-            _this.epidemiology_palette_date = $('select[name=epidemiology-date]').val()
             $('#epidemiology_form_setup').modal('hide');
             _this.addEpidemiologyLayer()
             $('#layer_P').addClass('active');
@@ -228,6 +225,7 @@ var MapView = MapView.extend({
           lowerValue = patientRow[field].toLowerCase()
           //Remove accents
           lowerValue = lowerValue.normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+          lowerValue = lowerValue.replace(' ','_')
           if (lowerValue in palette.images){
             return palette.images[lowerValue]
           }
@@ -294,7 +292,8 @@ var MapView = MapView.extend({
         var dict = {"indefinit":"undefined",
                    "probable": "likely",
                    "sospitos": "suspected",
-                   "confirmat": "confirmed"
+                   "confirmat": "confirmed",
+                   'no_cas': 'nocase'
                  }
 
         if (!'epidemiology_data' in this || typeof this.epidemiology_data === 'undefined') return;
@@ -321,8 +320,8 @@ var MapView = MapView.extend({
               //if date NOT in range jump to next
             if (_this.epidemiologyMarkerInMap(val,years, months, start_date, end_date)){
                   var key = val.patient_state.normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                  key = key.replace(' ', '_').toLowerCase();
                   var selected_states = $('select[name=epidemiology-state]').val()
-
                   if (selected_states.indexOf(dict[key])!==-1
                       || selected_states.indexOf('all')!==-1) {
                           //get icon style
@@ -448,13 +447,14 @@ var MapView = MapView.extend({
     },
 
     refreshForecastModel: function() {
-      let date = $('#forecast_date').val();
-      if (typeof date === 'undefined') {
-        date = new Date().toISOString().slice(0, 10)
+      let year = $('#forecast_year').val();
+      if (typeof year === 'undefined') {
+        year = new Date().toISOString().slice(0, 4)
       }
+      let month = $('#forecast_month').val();
       this.map.removeLayer(this.forecast_layer);
       $.ajax({
-        'url': MOSQUITO.config.URL_API + 'get/pred/data/' + date,
+        'url': MOSQUITO.config.URL_API + 'get/prediction/' + year + '/' + month,
         'context': this,
         'complete': function(resp) {
           let all_data = resp.responseJSON;
@@ -567,9 +567,16 @@ var MapView = MapView.extend({
     },
 
     getForecastRange: function(ranges, val) {
-      return ranges.find(function(range) {
+      let result = ranges.find(function(range) {
         return range.minValue <= val && range.maxValue > val;
       });
+      if (typeof result == 'undefined') {
+        if (val <= ranges[0].minValue)
+          result = {'color': ranges[0].color}
+        if (val >= ranges[ranges.length - 1].maxValue)
+          result = {'color': ranges[ranges.length - 1].color};
+      }
+      return result;
     },
 
     addDrainStormLayer: function() {
@@ -749,7 +756,7 @@ var MapView = MapView.extend({
             .params({ debug: false, padding: 5 })
             .drawing(drawingOnCanvas);
 
-        _this.coverage_layer.addTo(_this.map);
+        //_this.coverage_layer.addTo(_this.map);
     },
 
     refreshCoverageLayer: function() {

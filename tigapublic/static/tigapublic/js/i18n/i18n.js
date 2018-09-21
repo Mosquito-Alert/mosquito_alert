@@ -31,6 +31,8 @@ window.t = function(){
                         }
                     }
                 });
+                // update select picker labels
+                $('.selectpicker').selectpicker('refresh');
             },
             change: function(lng){
                 $('html').attr('lang', lng);

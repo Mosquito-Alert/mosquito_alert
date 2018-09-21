@@ -3,15 +3,15 @@ var MapView = MapView.extend({
     iconstype: {},
     epiIcon: L.Icon.extend({
         options: {
-          iconSize:    [20, 20],
-          iconAnchor:  [10, 10],
+          iconSize:    [34, 34],
+          iconAnchor:  [15, 15],
         }
     }),
 
     epiSelectedIcon: L.Icon.extend({
         options: {
-          iconSize:    [34, 34],
-          iconAnchor:  [15, 15],
+          iconSize:    [44, 44],
+          iconAnchor:  [20, 20],
         }
     }),
 
@@ -101,7 +101,6 @@ var MapView = MapView.extend({
     },
 
     markerSetSelected: function(marker){
-
         var _this = this;
         //observation marker
         if (marker._data.marker_type=='observation'){
@@ -119,8 +118,10 @@ var MapView = MapView.extend({
         }
         //epidemiology marker
         else{
+          iconImgUrl = _this.getEpidemiologyIcon(marker._data).split('.').slice(0, -1).join('.')
+          console.log(iconImgUrl +'_selected.svg')
           var selectedIcon = new this.epiSelectedIcon(
-            {iconUrl: 'img/epi_selected.svg'})
+            {iconUrl: iconImgUrl +'_selected.svg'})
         }
         marker.setIcon(selectedIcon);
         marker._bringToFront();

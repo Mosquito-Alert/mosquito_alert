@@ -10,13 +10,14 @@ class EpidemiologyData(BaseManager):
     def get(self):
         """Get epidemiology data."""
         # Return an Unauthorized 401 message if the user is not authenticated
-        if not self.request.user.is_authorized():
+
+        if (not self.request.user.is_epidemiologist_viewer()):
             return self._end_unauthorized()
 
         # get the data
         values = [
             'id', 'lat', 'lon', 'province', 'health_center', 'country',
-            'age', 'date_arribal', 'date_symptom', 'patient_state', 'address'
+            'age', 'date_arribal', 'date_symptom', 'patient_state', 'year'
         ]
 
         data = Epidemiology.objects.all().values(

@@ -130,6 +130,9 @@ class AuthUser(models.Model):
     date_joined = models.DateTimeField()
     province = models.ManyToManyField(Province, blank=True)
     municipalities = models.ManyToManyField(Municipalities, blank=True)
+    # stormdrain_users = models.ManyToManyField('self', blank=True,
+    #                                           verbose_name='Visible stormdrain'
+    #                                           )
 
     objects = AuthUserManager()
 
@@ -406,34 +409,22 @@ class StormDrainUserVersions(models.Model):
 class Epidemiology(models.Model):
     """Epidemiolgy model."""
 
-    UNDEFINED = 0
-    SUSPECTED = 1
-    PROBABLE = 2
-    CONFIRMED = 3
-
-    PATIENT_STATES_CHOICES = (
-        (UNDEFINED, 'undefined'),
-        (SUSPECTED, 'Suspected'),
-        (PROBABLE, 'Probable'),
-        (CONFIRMED, 'Confirmed')
-    )
-    patient_state = models.CharField(
-        max_length=1,
-        choices=PATIENT_STATES_CHOICES,
-        default=UNDEFINED
-    )
-
     id = models.CharField(max_length=15, primary_key=True)
-    address = models.CharField(max_length=225, blank=True, null=True)
+    year = models.IntegerField()
     lon = models.FloatField(null=False)
     lat = models.FloatField(null=False)
     health_center = models.CharField(max_length=225, blank=True, null=True)
     province = models.CharField(max_length=225, blank=True, null=True)
     age = models.IntegerField()
     country = models.CharField(max_length=225, blank=True, null=True)
-    date_arribal = models.DateTimeField(blank=True, null=True)
-    date_symptom = models.DateTimeField(blank=True, null=True)
+    date_arribal = models.DateTimeField(blank=True, null=True, default=None)
+    date_symptom = models.DateTimeField(blank=True, null=True, default=None)
     patient_state = models.CharField(max_length=225, blank=True, null=True)
     comments = models.TextField(help_text='Extra comments for patients',
                                 default=None, blank=True, null=True)
     user = models.ForeignKey(AuthUser, on_delete=models.CASCADE)
+
+    class Meta:
+        """Meta."""
+
+        db_table = 'tigapublic_epidemiology'

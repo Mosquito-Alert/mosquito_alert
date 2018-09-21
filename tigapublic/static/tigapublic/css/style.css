@@ -1126,7 +1126,7 @@ div.category-conditions{
   padding:5px;
   margin: 10px 0px
 }
-
+.t-note{background:rgba(255,221,24,0.7)}
 .t-center{ text-align:center;}
 .t-left{ text-align:left;}
 .t-right{ text-align:right;}
@@ -1151,6 +1151,7 @@ div.category-conditions{
 .v-pd-10{ padding:10px 0px;}
 .h-pd-10{ padding:0px 10px;}
 .h-pd-15{ padding:0px 15px;}
+.hv-pd-10{ padding:10px 10px;}
 
 .category-headers{margin-bottom:15px; text-align: center;font-weight: bolder}
 ul.users_versions,

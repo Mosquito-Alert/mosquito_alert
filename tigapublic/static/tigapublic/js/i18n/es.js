@@ -197,4 +197,7 @@ trans.es = {
     'models.label.sd-4': 'Alta',
     'models.probability': 'Probabilidad',
     'models.uncertainty': 'Incertidumbre',
+
+    'general.year': 'Año',
+    'general.month': 'Mes',
 };

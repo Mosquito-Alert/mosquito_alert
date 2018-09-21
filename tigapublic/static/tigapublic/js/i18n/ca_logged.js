@@ -141,7 +141,7 @@ add = {
   'epi.patient_state':'Estat',
   'epi.province':'Provincia',
   'epi.health_center':'Centre',
-  'epi.address':'Adreça',
+  'epi.year':'Any',
   'epidemiology.setup-title': 'Epidemiologia. Configuració de la visualització',
   'epidemiology.update': 'Actualitzar',
   'epidemiology.period': 'Per',
@@ -156,6 +156,9 @@ add = {
   'epidemiology.suspected': 'Sospitós',
   'epidemiology.confirmed': 'Confirmat',
   'epidemiology.undefined': 'Indefinit',
-  'epidemiology.all': 'Tots els estats'
+  'epidemiology.nocase': 'No hi ha cas',
+  'epidemiology.all': 'Tots els estats',
+  'epidemiology.filter-explanation':'Els filtres temporas del mapa també aplicaran a aquesta capa a partir del camp **data_arribada*',
+  'epidemiology.upload-explanation': 'ATENCIÓ!! Aquest procés d\'importació eliminarà totes les dades prèviament emmagatzemades de la capa d\'Epidemiologia',
 };
 _.extend(trans.ca, add);

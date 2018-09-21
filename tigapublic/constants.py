@@ -6,6 +6,8 @@ maxReports = 300
 maxDownloads = 300
 managers_group = 'gestors'
 superusers_group = 'supermosquito'
+epidemiologist_editor_group = 'epidemiologist'
+epidemiologist_viewer_group = 'epidemiologist_viewer'
 epidemiologist_group = 'epidemiologist'
 
 """
@@ -167,21 +169,21 @@ stormdrain_templates_path = (settings.BASE_DIR +
 """Required fields. Key should be the same as epidemiology fields."""
 
 compulsatory_epidemiology_fields = {
-    'id': ['code', 'codigo', 'codi', 'id'],
+    'id': ['code', 'codigo', 'codi', 'id', 'numero'],
     'lat': ['latitud', 'lat', 'latitude'],
     'lon': ['longitud', 'lon', 'longitude'],
     'date_arribal': ['date_arribal', 'fecha_llegada', 'data_arribada'],
     'date_symptom': ['date_symptoms', 'inicio_sintomas', 'inici_simptomes'],
     'country': ['visited_country', 'pais_visitado', 'pais_visitat'],
     'patient_state': ['patient_state', 'estado', 'estat'],
-    'health_center': ['center', 'centro', 'centre'],
-    'address': ['address', 'direcion', 'adreca', 'adreça'],
-    'province': ['province', 'provincia'],
-    'age': ['age', 'edad', 'edat'],
+    'health_center': ['center', 'centro', 'centre', 'centre_dia'],
+    'year': ['año', 'any', 'year'],
+    'province': ['province', 'provincia', 'prov'],
+    'age': ['age', 'edad', 'edat', 'edatany'],
 }
 
 optional_epidemiology_fields = {
-    'comments': ['comments', 'comentarios', 'comentaris']
+    'comments': ['comments', 'comentarios', 'comentaris', 'observacio']
 }
 
 epi_templates_path = settings.BASE_DIR + '/tigapublic/templates/epi'
@@ -204,10 +206,8 @@ gridsize = 0.05
 """Params for prediction models layer"""
 
 prediction_models_folder = (settings.BASE_DIR +
-                            '\\tigapublic\\files\\prediction_models\\')
+                            '/tigapublic/files/models/')
 
-prediction_file_head_name = 'MA_preds_cell_day_'
-prediction_file_tail_name = '.csv'
+prediction_file_name = 'mascp_monthly'
+prediction_file_ext = '.csv'
 prediction_days_ahead = 7
-prediction_models_url = ('http://sigserver3.udg.edu/mosquito/files/' +
-                         'prediction_files/')

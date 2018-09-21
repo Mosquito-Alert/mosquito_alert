@@ -63,6 +63,12 @@ re_years = re.compile(r"(?P<years>all|[,\d]+)\/?").pattern
 # MONTHS
 re_months = re.compile(r"(?P<months>all|[,\d]+)\/?").pattern
 
+# ONE YEAR
+re_year = re.compile(r"(?P<year>\d{4})\/?").pattern
+
+# ONE MONTH
+re_month = re.compile(r"(?P<month>\d{1,2})\/?").pattern
+
 # CATEGORIES (LAYERS)
 re_categories = re.compile(r"(?P<categories>[a-zA-Z,_]+)\/?").pattern
 
@@ -213,10 +219,8 @@ epi_urls = [
 re_model_date = re.compile(r"(?P<prediction_date>" + re_date + ")\/?").pattern
 prediction_models_urls = [
     # Manage StormDrain Data
-    url(r'^get/pred/data/' + re_model_date + '$',
-        views.predictionModelData),
-    url(r'^get/pred/nextdays\/?$',
-        views.predictionGetNextDays)
+    url(r'^get/prediction/' + re_year + '/' + re_month + '$',
+        views.predictionModelData)
 ]
 
 """Municipalities."""

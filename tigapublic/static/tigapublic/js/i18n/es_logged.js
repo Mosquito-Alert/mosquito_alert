@@ -131,12 +131,12 @@ add = {
     'epi.tpl-title': 'Datos epidemiologicos',
     'epi.date_symptom':'Fecha primeros síntomas',
     'epi.date_arribal': 'Fecha de llegada',
-    'epi.age': 'Edat',
+    'epi.age': 'Edad',
     'epi.country':'País visitado',
     'epi.patient_state':'Estado',
     'epi.province':'Provincia',
     'epi.health_center':'Centro',
-    'epi.address':'Dirección',
+    'epi.year':'Año',
     'epidemiology.setup-title': 'Epidemiología. Configuración de la visualización',
     'epidemiology.update': 'Actualizar',
     'epidemiology.period': 'Por',
@@ -151,6 +151,9 @@ add = {
     'epidemiology.suspected': 'Sospechoso',
     'epidemiology.confirmed': 'Confirmado',
     'epidemiology.undefined': 'Indefinido',
-    'epidemiology.all': 'Todos los estados'
+    'epidemiology.nocase': 'No hay caso',
+    'epidemiology.all': 'Todos los estados',
+    'epidemiology.filter-explanation':'Los filtros temporales del mapa también se aplicarán a esta capa a partir del campo *Fecha de llegada*',
+    'epidemiology.upload-explanation': 'ATENCIÓN!! Este proceso de importación eliminará todos los datos previamente almacenados de la capa de Epidemiología'
 };
 _.extend(trans.es, add);

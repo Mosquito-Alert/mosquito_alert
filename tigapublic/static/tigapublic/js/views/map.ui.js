@@ -335,7 +335,19 @@ var MapView = MapView.extend({
     },
 
     addNotificationFiltersTo: function(section) {
-      if (MOSQUITO.app.headerView.logged) {
+      //ONLY MANAGERS AND SUPERMOSQUITO
+      var isManager = false;
+      var isSuperUser = false;
+      MOSQUITO.app.user.groups.some(function (v, i, arr){
+        if  (MOSQUITO.config.logged.managers_group.indexOf(v) !== -1) {
+          isManager = true;
+        }
+        if  (MOSQUITO.config.logged.superusers_group.indexOf(v) !== -1) {
+          isSuperUser = true;
+        }
+      })
+
+      if (isManager || isSuperUser) {
           var div_notif = this.newFilterGroup({
             'id': 'notif_filters',
             'title': 'group.filters.notifications'
@@ -1563,50 +1575,27 @@ var MapView = MapView.extend({
 
     putEpidemiologyLegend: function(){
        var palette = this.epidemiology_palette
-       if (palette.type=='qualitative'){
-         var images = []
-         for (var name in palette.images){
+       var images = []
+       for (var name in palette.images){
            images.push({"name": name, "image": palette.images[name]})
-         }
-       }
-       else if (palette.type=='quantitative'){
-         var images = palette.rangs
-         var units = ' <span i18n="'+palette.units+'">'+t(palette.units)+'</span>'
        }
 
        var dict = {"indefinit":"undefined",
                   "probable": "likely",
                   "sospitos": "suspected",
-                  "confirmat": "confirmed"
+                  "confirmat": "confirmed",
+                  'no_cas': 'nocase'
                 }
       var selected_states = $('select[name=epidemiology-state]').val()
       var innerHTML=''
       images.forEach(function(val, ind, arr){
-        //if show patient_states, check for filters
-        if (palette.type=='qualitative'){
           if (selected_states.indexOf(dict[val.name])!==-1
               || selected_states.indexOf('all')!==-1) {
                   innerHTML +='<li class="epidemiology_legend">'+
                     '<img src = "' + val.image + '">'+
                     '<span i18n="epidemiology.'+dict[val.name]+'">' + t('epidemiology.'+dict[val.name]) + ' </span></li>';
             }
-        }
-        else{
-          //else do legend without checking filters
-          innerHTML +='<li class="epidemiology_legend">'+
-            '<img src = "' + val.image + '">'+
-            '<span i18n="epidemiology.'+val.name+'">' + val.name + ' </span>' +
-            units
-            '</li>';
-        }
        })
-       //Set legend footer
-       var textLegend = $('select[name="epidemiology-date"]').val()
-
-       innerHTML = '<div class="legend_header"><span i18n="epidemiology.period">'+
-              t('epidemiology.period') + '</span> ' +
-              '<span class="lowercase" i18n="epidemiology.'+textLegend+'">'+
-              t('epidemiology.'+textLegend)+ '</span></div>' + innerHTML
 
        $('#epidemiolgy_legend').html(innerHTML)
     },
