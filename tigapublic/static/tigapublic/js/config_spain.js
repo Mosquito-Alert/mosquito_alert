@@ -68,7 +68,7 @@ var MOSQUITO = (function (m, _) {
                   'site_dry': ['storm_drain_dry'],
                 }
             },
-            {
+            /*{
               'key': 'I',
               'group': 'none',
               'title': 'layer.predictionmodels',
@@ -85,7 +85,7 @@ var MOSQUITO = (function (m, _) {
                   {'minValue':0.50, 'maxValue':0.75, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
                   {'minValue':0.75, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
                 ]
-            },
+            },*/
             {
                 key: 'F',
                 group: 'none',
