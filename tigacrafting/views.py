@@ -526,20 +526,27 @@ def issue_notification(report_annotation,current_domain):
     notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en)
     notification_content.save()
     notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
-    notification.save()
-    recipient = report_annotation.report.user
-    if recipient.device_token is not None and recipient.device_token != '':
-        if (recipient.user_UUID.islower()):
-            json_notif = custom_render_notification(notification, 'es')
-            try:
-                send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-            except Exception as e:
-                pass
-        else:
-            try:
-                send_message_ios(recipient.device_token, notification_content.title_es, '')
-            except Exception as e:
-                pass
+    # if there is a similar notification issued for this user recently
+    if not notification_already_issued(report_annotation.report, report_annotation.report.user, report_annotation.user, notification_content.title_es):
+        notification.save()
+        recipient = report_annotation.report.user
+        if recipient.device_token is not None and recipient.device_token != '':
+            if (recipient.user_UUID.islower()):
+                json_notif = custom_render_notification(notification, 'es')
+                try:
+                    send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+                except Exception as e:
+                    pass
+            else:
+                try:
+                    send_message_ios(recipient.device_token, notification_content.title_es, '')
+                except Exception as e:
+                    pass
+
+#checks if a notification about this report, sent to user_sent_to, from expert_sent_from has been sent
+#this will hopefully avoid multi-sent notifications
+def notification_already_issued(report, user_sent_to, expert_sent_from, title_es):
+    return Notification.objects.filter(report=report,user=user_sent_to,expert=expert_sent_from,notification_content__title_es=title_es).exists()
 
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na'):
