@@ -73,22 +73,22 @@ var MapView = MapView.extend({
            }
 
           if (_this.map._zoom < 19) {
-                //a.layer.zoomToBounds();
-                var bounds = new L.LatLngBounds();
-                childs = a.layer.getAllChildMarkers();
+              //a.layer.zoomToBounds();
+              var bounds = new L.LatLngBounds();
+              childs = a.layer.getAllChildMarkers();
 
-                for (var i = 0; i < childs.length; i++){
-                        lat = childs[i]._data.lat;
-                        lng = childs[i]._data.lon;
+              for (var i = 0; i < childs.length; i++){
+                  lat = childs[i]._data.lat;
+                  lng = childs[i]._data.lon;
 
-                        n = _this.getCurrentGeohashLength();
-                        var geohashBounds = Geohash.bounds(Geohash.encode(lat, lng, n));
-                        //p = createPolygonFromBounds(geohashBounds);
-                        //_this.map.addLayer(p);
-                        bounds.extend(new L.LatLngBounds(geohashBounds.ne, geohashBounds.sw));
-                }
-                _this.map.fitBounds(bounds);
-                _this.map.panTo(a.latlng);
+                  n = _this.getCurrentGeohashLength();
+                  var geohashBounds = Geohash.bounds(Geohash.encode(lat, lng, n));
+                  //p = createPolygonFromBounds(geohashBounds);
+                  //_this.map.addLayer(p);
+                  bounds.extend(new L.LatLngBounds(geohashBounds.ne, geohashBounds.sw));
+              }
+              _this.map.fitBounds(bounds);
+              _this.map.panTo(a.latlng);
             }
             //avoid zoom to cluster, just zoom in
             //_this.map.setView(a.latlng, _this.map.getZoom()+1);
@@ -124,10 +124,26 @@ var MapView = MapView.extend({
 
         // User coverage (user fixes) layer
         userfixeslayer = this.getLayerPositionFromKey('F');
-        if (userfixeslayer) this.addCoverageLayer();
+        if (userfixeslayer) this.addCoverageLayer(userfixeslayer);
 
         stormdrainlayer = this.getLayerPositionFromKey('Q');
         if (stormdrainlayer) this.addDrainStormLayer();
+
+        forecastlayer = this.getLayerPositionFromKey('I');
+        if (forecastlayer) this.loadForecastModel();
+
+        //empty layergroup for epidemiology data
+        epilayer = this.LAYERS_CONF[this.getLayerPositionFromKey('P')];
+        if (epilayer){
+          this.epidemiology_layer = L.layerGroup()
+          this.epidemiology_palette=epilayer.palettes[epilayer.default_palette]
+          _this.epidemiology_palette_date = 'date_arribal'
+          $('#epidemiology_palette_form').click(function(e){
+            $('#epidemiology_form_setup').modal('hide');
+            _this.addEpidemiologyLayer()
+            $('#layer_P').addClass('active');
+          })
+        }
 
         var layer, key;
 
@@ -138,9 +154,10 @@ var MapView = MapView.extend({
             this.layers.layers[key] = layer;
             if(_.indexOf(this.options.layers, key) !== -1){
                 if (key == 'F') {
-                    //layer = this.coverage_layer;
-                }
-                this.map.addLayer(layer);
+                  this.refreshCoverageLayer();
+                } else if (key === 'I') {
+                  this.refreshForecastModel();
+                } else this.map.addLayer(layer);
             }else{
                 this.excludeLayerFromFilter(this.LAYERS_CONF[i]);
             }
@@ -189,7 +206,385 @@ var MapView = MapView.extend({
         return style;
     },
 
-    addDrainStormLayer: function(){
+    getEpidemiologyPatientStateIcon: function(patientRow){
+      epilayer = this.LAYERS_CONF[this.getLayerPositionFromKey('P')];
+      var palette = epilayer.palettes.patient_states
+      var field = palette.column
+      return this.getEpidemiologyIconUrl(patientRow, palette, field)
+    },
+
+    getEpidemiologyIcon: function (patientRow){
+      var palette = this.epidemiology_palette
+      var field = palette.column
+      return this.getEpidemiologyIconUrl(patientRow, palette, field)
+    },
+
+    getEpidemiologyIconUrl: function(patientRow, palette, field){
+        var found
+        if (palette.type=='qualitative'){
+          lowerValue = patientRow[field].toLowerCase()
+          //Remove accents
+          lowerValue = accentsTidy(lowerValue)
+          lowerValue = lowerValue.replace(' ','_')
+          if (lowerValue in palette.images){
+            return palette.images[lowerValue]
+          }
+          else{
+            return palette.images['indefinit']
+          }
+        }
+        else{
+          rangs = palette.rangs
+          value = parseFloat(patientRow[field])
+          found=null
+          rangs.forEach(function(rang, ind, arr){
+            if ((value >= rang.minValue) && (value <= rang.maxValue) ){
+              found = rang.image
+            }
+          })
+          return found;
+        }
+    },
+
+    epidemiologyMarkerInMap: function(val, year, month, s_d, e_d){
+       validDate = val[this.epidemiology_palette_date]
+       var markerDate = moment(validDate)
+       var isValid = false;
+       var str=''
+        if (s_d && e_d) {
+          var startDate = s_d
+          var endDate = e_d
+          isValid = ( (markerDate >= startDate) && (markerDate <= endDate) )
+        }
+        else{
+            //some months
+            if (month) {
+              if (month.indexOf((1+markerDate.month()))!==-1){
+                  //and some years
+                  if (year) {
+                    if (year.indexOf(markerDate.year())!==-1){
+                      //month OK , year OK
+                      isValid = true
+                    }
+                  }
+                  //this month all years
+                  else{
+                      isValid = true
+                  }
+                }
+            }
+            else{
+                //all months, some years
+                if (year) {
+                  if (year.indexOf(markerDate.year())!==-1){
+                    isValid = true
+                  }
+                }
+                else{
+                  isValid = true;
+                }
+            }
+        }
+      return isValid;
+    },
+
+    epidemiology_filter: function() {
+        var dict = {"indefinit":"undefined",
+                   "probable": "likely",
+                   "sospitos": "suspected",
+                   "confirmat": "confirmed",
+                   'no_cas': 'nocase'
+                 }
+
+        if (!'epidemiology_data' in this || typeof this.epidemiology_data === 'undefined') return;
+        _this = this
+        var start_date = 0, end_date = 0, years = 0, months = 0;
+
+        //Get time filters from MAP
+        if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
+          start_date = moment(this.filters.daterange.start);
+          end_date = moment(this.filters.daterange.end);
+        } else {
+          if(this.filters.years.length !== 0){
+              years = this.filters.years;
+          }
+
+          if(this.filters.months.length !== 0){
+              months = this.filters.months;
+          }
+        }
+
+        this.epidemiology_layer.clearLayers();
+
+        this.epidemiology_data.forEach(function(val, index, arr){
+              //if date NOT in range jump to next
+            if (_this.epidemiologyMarkerInMap(val,years, months, start_date, end_date)){
+                  var key = accentsTidy(val.patient_state)
+                  key = key.replace(' ', '_').toLowerCase();
+                  var selected_states = $('select[name=epidemiology-state]').val()
+                  if (selected_states.indexOf(dict[key])!==-1
+                      || selected_states.indexOf('all')!==-1) {
+                          //get icon style
+                          iconImage = _this.getEpidemiologyIcon(val)
+                          var epiMarker = L.marker([val['lat'], val['lon']],
+                               {icon: new _this.epiIcon(
+                                 {iconUrl: iconImage})
+                               })
+                          epiMarker._data = val
+                          epiMarker._data.marker_type='epidemiology'
+                          epiMarker.properties = val
+                          epiMarker.on('click',function(e){
+                                _this.show_epidemiology_report(e)
+                          })
+                          _this.epidemiology_layer.addLayer(epiMarker)
+                        }
+                }
+        })
+
+        this.epidemiology_layer.addTo(this.map);
+        this.putEpidemiologyLegend()
+    },
+
+    addEpidemiologyLayer: function(){
+      _this = this;
+
+      //Icon properties
+      $.ajax({
+          type: "GET",
+          url: MOSQUITO.config.URL_API + 'epi/data/', // + _this.dateParamsToString(),
+          dataType: 'json',
+          cache: true,
+          success: function (response) {
+              _this.epidemiology_data = response.rows;
+              if ('epidemiology_data' in _this &&
+                  typeof _this.epidemiology_data !== 'undefined')
+                  _this.epidemiology_filter()
+
+              if (response.rows.length==0){
+                alert(t('epidemiology.empty-layer'))
+                _this.map.removeLayer(_this.epidemiology_layer)
+              }
+          }
+      });
+    },
+
+    loadForecastVectorModel: function() {
+      let date = $('#forecast_date').val();
+      let layerpos = this.getLayerPositionFromKey('I');
+      let layer = MOSQUITO.config.layers[layerpos];
+      let ranges = layer.prob_ranges;
+
+      $.ajax({
+        'url': MOSQUITO.config.URL_API + 'get/pred/data/' + date,
+        'context': this,
+        'complete': function(resp) {
+          let all_data = resp.responseJSON;
+          let prob = all_data.prob;
+          let sd = all_data.sd;
+          // PROBABILTY
+          var probabilities = new L.geoJson(prob, {
+            'style': function(feature) {
+              let range = this.getForecastRange(layer.prob_ranges, feature.properties.prob);
+              return {
+                  fillColor: range.color,
+                  color: range.color,
+                  fillOpacity: 0.7,
+                  opacity:0.1,
+                  stroke:true,
+                  weight: 5
+              }
+            }
+          }).addTo(map);
+          // STANDRARD DEVIATION
+          stroke = {'14':0, '19':1}
+          MOSQUITO.app.mapView.layers.standard_deviation = new L.geoJson(sd, {
+            pointToLayer: function (feature, latlng) {
+              let range = this.getForecastRange(layer.sd_ranges, feature.properties.val);
+              //Get dots radius size
+              var y = map.getSize().y,
+                  x = map.getSize().x;
+              // calculate the distance the one side of the map to the other using the haversine formula
+              var maxMeters = map.containerPointToLatLng([0, y]).distanceTo( map.containerPointToLatLng([x,y]));
+              // calculate how many meters each pixel represents
+              var metresPerPixel = maxMeters/x;
+              radius = 1000 / metresPerPixel
+              return L.circle(latlng, 1000, {
+                  fillColor: range.color,
+                  color: '#000',
+                  fillOpacity: 0.7,
+                  opacity: 0.7,
+                  stroke: true,
+                  weight: 1,
+                  radius: radius
+              });
+            }
+          }).addTo(map);
+          // map.on('zoomend', function(ev) {
+          //   modelLayerPosition = this.getLayerPositionFromKey('I');
+          //   minDevZoom = MOSQUITO.config.layers[modelLayerPosition].deviation_min_zoom
+          //   if (map.getZoom() <= minDevZoom){
+          //     map.removeLayer(MOSQUITO.app.mapView.layers.standard_deviation);
+          //   }
+          //   else {
+          //     MOSQUITO.app.mapView.layers.standard_deviation.addTo(map);
+          //   }
+          // });
+        }
+      })
+    },
+
+    loadForecastModel: function() {
+      var zeroPoint ={"type": "Point", "coordinates": [0,0]};
+
+      this.tileIndex = geojsonvt(zeroPoint , this.userFixtileOptions);
+      this.forecast_layer_prob = L.canvasTiles()
+          .params({ debug: false, padding: 0 })
+          .drawing(this.prob_drawingOnCanvas);
+
+      this.forecast_layer_sd = L.canvasOverlay()
+        .params({'data': zeroPoint})
+        .drawing(this.sd_drawingOnCanvas);
+
+      this.forecast_layer = L.layerGroup([this.forecast_layer_prob, this.forecast_layer_sd]);
+
+      this.forecast_layer.addTo(this.map);
+
+    },
+
+    refreshForecastModel: function() {
+      let year = $('#forecast_year').val();
+      if (typeof year === 'undefined') {
+        year = new Date().toISOString().slice(0, 4)
+      }
+      let month = $('#forecast_month').val();
+      this.map.removeLayer(this.forecast_layer);
+      $.ajax({
+        'url': MOSQUITO.config.URL_API + 'get/prediction/' + year + '/' + month,
+        'context': this,
+        'complete': function(resp) {
+          let all_data = resp.responseJSON;
+          // PROBABILTY
+          MOSQUITO.app.tileIndex = geojsonvt(all_data.prob, this.userFixtileOptions);
+          // STANDRARD DEVIATION
+          this.forecast_layer_sd.params({'data': all_data.sd});
+          // RELOAD
+          this.map.addLayer(this.forecast_layer);
+        }
+      })
+    },
+
+    prob_drawingOnCanvas: function(canvasOverlay, params) {
+      let tileIndex = MOSQUITO.app.tileIndex;
+      var ctx = params.canvas.getContext('2d');
+      ctx.globalCompositeOperation = 'source-over';
+
+      if (!tileIndex){
+        return;
+      }
+      let layerpos = MOSQUITO.app.mapView.getLayerPositionFromKey('I');
+      let layer = MOSQUITO.config.layers[layerpos];
+      var bounds = params.bounds;
+      params.tilePoint.z = params.zoom;
+
+      var tile = tileIndex.getTile(params.tilePoint.z, params.tilePoint.x, params.tilePoint.y);
+      if (!tile) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
+      var features = tile.features;
+
+      for (var i = 0; i < features.length; i++) {
+        var feature = features[i],
+            type = feature.type;
+        if (typeof feature.tags.color === 'undefined') {
+          let range = _this.getForecastRange(layer.prob_ranges, feature.tags.prob);
+          feature.tags.color = range.color;
+        }
+
+        ctx.fillStyle = feature.tags.color;
+        ctx.strokeStyle = feature.tags.color;
+
+        ctx.beginPath();
+
+        for (var j = 0; j < feature.geometry.length; j++) {
+            var geom = feature.geometry[j];
+
+            for (var k = 0; k < geom.length; k++) {
+                var p = geom[k];
+                var extent = 4096;
+                var x = p[0] / extent * 256;
+                var y = p[1] / extent * 256;
+                if (k) ctx.lineTo(x  + params.options.padding, y   + params.options.padding);
+                else ctx.moveTo(x  + params.options.padding, y  + params.options.padding);
+            }
+        }
+        if (type === 3 || type === 1) ctx.fill('evenodd');
+        ctx.stroke();
+      }
+    },
+
+    sd_drawingOnCanvas: function(canvasOverlay, params) {
+      var ctx = params.canvas.getContext('2d');
+      ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
+
+      modelLayerPosition = _this.getLayerPositionFromKey('I');
+      isDeviationVisible = (map.getZoom() > MOSQUITO.config.layers[modelLayerPosition].deviation_min_zoom)
+
+      if (!isDeviationVisible) return true;
+
+      let tileIndex = MOSQUITO.app.tileIndex;
+      if (!tileIndex){
+        return;
+      }
+      let layerpos = MOSQUITO.app.mapView.getLayerPositionFromKey('I');
+      let layer = MOSQUITO.config.layers[layerpos];
+
+      //Get dots radius size
+      var y = map.getSize().y,
+          x = map.getSize().x;
+      // calculate the distance the one side of the map to the other using the haversine formula
+      var maxMeters = map.containerPointToLatLng([0, y]).distanceTo( map.containerPointToLatLng([x,y]));
+      // calculate how many meters each pixel represents
+      var metresPerPixel = maxMeters/x;
+
+      radius = 1000 / metresPerPixel
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.lineWidth   = 1;
+
+      data = params.options.data;
+
+      for (var i = 0; i < data.features.length; i+=1) {
+        if (typeof data.features[i].properties.color === 'undefined') {
+          let range = _this.getForecastRange(layer.sd_ranges, data.features[i].properties.val);
+          data.features[i].properties.color = range.color;
+        }
+        ctx.fillStyle = data.features[i].properties.color;
+        var d = data.features[i].geometry.coordinates;
+        dot = canvasOverlay._map.latLngToContainerPoint([d[1], d[0]]);
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+      }
+    },
+
+    getForecastRange: function(ranges, val) {
+      let result = ranges.filter(function(range) {
+        return range.minValue <= val && range.maxValue > val;
+      })[0];
+      if (typeof result == 'undefined') {
+        if (val <= ranges[0].minValue)
+          result = {'color': ranges[0].color}
+        if (val >= ranges[ranges.length - 1].maxValue)
+          result = {'color': ranges[ranges.length - 1].color};
+      }
+      return result;
+    },
+
+    addDrainStormLayer: function() {
         _this = this;
         this.drainstorm_layer = L.canvasOverlay()
             .drawing(drawingOnCanvas)
@@ -262,7 +657,7 @@ var MapView = MapView.extend({
         }
         _this = this;
         if (this.stormDrainData.length==0 || forced) {
-            url = MOSQUITO.config.URL_API + 'embornals/';
+            url = MOSQUITO.config.URL_API + 'stormdrain/data/';
             $.ajax({
                 "method": 'GET',
                 "async": true,
@@ -304,8 +699,9 @@ var MapView = MapView.extend({
         return true;
     },
 
-    addCoverageLayer: function() {
+    addCoverageLayer: function(layer) {
         _this = this;
+        var strokecolor = this.LAYERS_CONF[layer].style.strokecolor
         var pad = 0;
 
         function drawingOnCanvas(canvasOverlay, params) {
@@ -331,8 +727,9 @@ var MapView = MapView.extend({
                 var feature = features[i],
                     type = feature.type;
 
-                ctx.fillStyle = (feature.tags && feature.tags.color)? feature.tags.color : 'rgba(255,0,0,0.05)';
-                ctx.strokeStyle = 'rgba(255,0,0,0.1)';
+                ctx.fillStyle = (feature.tags && feature.tags.color)? feature.tags.color : strokecolor;
+                //ctx.strokeStyle = strokecolor;
+                ctx.strokeStyle = ctx.fillStyle;
                 ctx.beginPath();
 
                 for (var j = 0; j < feature.geometry.length; j++) {
@@ -364,16 +761,17 @@ var MapView = MapView.extend({
             .params({ debug: false, padding: 5 })
             .drawing(drawingOnCanvas);
 
-        _this.coverage_layer.addTo(_this.map);
+        //_this.coverage_layer.addTo(_this.map);
     },
 
     refreshCoverageLayer: function() {
         layerLI = $('label[i18n="layer.userfixes"]').parent();
-        MOSQUITO.app.mapView.loading.on(layerLI);
+        if (typeof MOSQUITO.app.mapView !== 'undefined') MOSQUITO.app.mapView.loading.on(layerLI);
         _this = this;
-        year = this.filters.year || 'all';
+        year = this.filters.years;
+        if (year.length === 0) year = 'all';
         months = (this.filters.months.length>0)?this.filters.months:'all';
-        if ('daterange' in this.filters && typeof this.filters.daterange !== 'undefined') {
+        if ('daterange' in this.filters && typeof this.filters.daterange !== 'undefined' && this.filters.daterange !== null) {
           daterange = this.filters.daterange;
           date_start = moment(daterange.start).format('YYYY-MM-DD');
           date_end = moment(daterange.end).format('YYYY-MM-DD');
@@ -385,6 +783,7 @@ var MapView = MapView.extend({
         $.ajax({
             "method": 'GET',
             "async": true,
+            "cache": true,
             "url": url
         }).done(function(data) {
             _this.colorizeFeatures(data.features);
@@ -413,26 +812,22 @@ var MapView = MapView.extend({
         notiftypes_value = this.getNotifTypesValue();
 
         if (
-            daterange_value.toUpperCase() != 'N/N'  ||
-            hashtag_value.toUpperCase() != 'N'  ||
-            municipalities_value != ['N']  ||
-            notif_value.toUpperCase() != 'N'  ||
-            notiftypes_value != ['N']
+            daterange_value.toUpperCase() !== 'N/N'  ||
+            hashtag_value.toUpperCase() !== 'N'  ||
+            municipalities_value !== 'N'  ||
+            notif_value.toUpperCase() !== 'N'  ||
+            notiftypes_value !== 'N'
           ) {
             url = MOSQUITO.config.URL_API +
-                'map_aux_reports_bounds/' + bbox + '/' + daterange_value + '/' +
+                'observations/' + bbox + '/' + daterange_value + '/' +
                 hashtag_value +'/'+ municipalities_value +'/'+notif_value +'/' +
                 notiftypes_value;
           }
 
-        else if( (zoom >= MOSQUITO.config.maxzoom_cluster) ) {
-            url = MOSQUITO.config.URL_API + 'map_aux_reports_bounds/' + bbox ;
-        }
         else{
-            url = MOSQUITO.config.URL_API + 'map_aux_reports_zoom_bounds/' +
+            url = MOSQUITO.config.URL_API + 'observations/' +
                   zoom + '/' + bbox;
         }
-
         $.ajax({
             method: 'GET',
             url: url
@@ -441,9 +836,10 @@ var MapView = MapView.extend({
             callback(resp);
         })
         .fail(function(error) {
-            if (console && console.error) console.error(error);
+            if (console && console.error) {
+              console.log('AJAX ERROR !!! '+error)
+            }
         });
-
     },
 
     fetch_item: function(id, callback){
@@ -455,7 +851,7 @@ var MapView = MapView.extend({
 
             $.ajax({
                 method: 'GET',
-                url: MOSQUITO.config.URL_API + 'map_aux_reports/' + id
+                url: MOSQUITO.config.URL_API + 'observations/' + id
             })
             .done(function(resp) {
                 callback(resp);
@@ -481,6 +877,16 @@ var MapView = MapView.extend({
         this.map.on('zoomstart',function(){
             _this.scope.markers = [];
             _this.layers.layers.mcg.clearLayers();
+        });
+
+        this.map.on('zoomend',function(){
+            modelLayerPosition = _this.getLayerPositionFromKey('I');
+            minDevZoom = MOSQUITO.config.layers[modelLayerPosition].deviation_min_zoom
+            if (map.getZoom() <= minDevZoom){
+              $('#forecast_sd').css('opacity', '.3');
+            } else {
+              $('#forecast_sd').css('opacity', '1');
+            }
         });
 
         this.map.on('movestart',function(){
@@ -519,17 +925,15 @@ var MapView = MapView.extend({
         var pos, marker;
         this.scope.markers = [];
         _this.isSelectedMarkerStillLoaded = false;
-        _.each(_this.scope.data, function(item){
-            var n = 1;
-            if(this.map.getZoom()<MOSQUITO.config.maxzoom_cluster){
-                n = item.c;
-            }
 
-            for(var i = 0; i < n; i++){
+        _.each(_this.scope.data, function(item){
+
+            for(var i = 0; i < item.c; i++){
                 pos = new L.LatLng(item.lat, item.lon);
                 marker = _this.getMarkerType(pos, item.category);
                 if (marker) {
                   marker._data = item;
+                  marker._data.marker_type='observation';
                   _this.scope.markers.push(marker);
                   if (_this.scope.selectedMarker){
                       if (marker._data.id == _this.scope.selectedMarker._data.id){
@@ -595,11 +999,6 @@ var MapView = MapView.extend({
                     || _.indexOf(this.filters.months, month) == -1){
                       return false;
                     };
-        }
-        //check notification filter
-        if('notif' in this.filters) {
-            if (this.filters.notif !== false) return notif == this.filters.notif;
-            else return true;
         }
 
         return true;

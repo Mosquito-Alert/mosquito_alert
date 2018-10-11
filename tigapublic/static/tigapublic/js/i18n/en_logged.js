@@ -15,6 +15,9 @@ add = {
     'map.controlshare_view_description': 'Share this private map view',
     'share.private_layer_warn': 'Attention! The private data and some of its layers of the current view will only be visible to registered users.',
 
+    //download
+    'map.text_description_download': '<p>Only observation citizen data displayed in the current map view will be downloaded. Verify your current active layers, temporal filters and zoom.</p><p>Once verified, press the download button.</p>',
+
     //Notification
   'usernotification.not-predefined':'Not predefined',
   'check_notifications': 'Notifications',
@@ -35,7 +38,7 @@ add = {
   'notif.saved': 'Notification successfully sent',
   'notif.notification_cancel': 'Cancel',
   'notif.observations_none': 'No observations selected',
-  
+  'notif.sendig_notifications': 'Data is being sent...',
 
   //modal
   'map.users_found_text': 'Users',
@@ -116,5 +119,44 @@ add = {
   'stormdrain.example-body-12': 'Each colour is associated with a category. Each category can have one or more conditions. Each condition refers to an attribute, an operator (equal to, not equal to, etc.) and a «value».',
   'stormdrain.example-body-13': 'Storm drains must have all the conditions of the categories in order to fit in each one (logical operator AND).',
   'stormdrain.example-body-14': 'When a storm drain fits in one category, it is not evaluated in the other categories. For example, when one storm drain has the column «water»= «Yes» and «treatment» = «Yes» is will be represented in Green, because it’s the first category that matches all the conditions (in this case there is only one).',
+
+  //configuración de la capa epidemiologia
+  'layer.epidemiology': 'Epidemiology',
+  'epidemiology.upload-title': 'Epidemiology upload',
+  'epidemiology.get-template': 'Epidemiology template',
+  'epidemiology.upload-button': 'Select file',
+  'epidemiology.import-started': 'Importing data. This could take a while.',
+  'epidemiology.import-finished': 'Import completed successfully',
+  'epidemiology.setup-now': 'Continue with data configuration',
+  'epidemiology.setup-later': 'Configure later',
+  'epi.tpl-title':'Epidemiology data',
+  'epi.date_symptom': 'Date first symptoms',
+  'epi.date_arribal': 'Arribal date',
+  'epi.age': 'Age',
+  'epi.country': 'Country',
+  'epi.patient_state':'State',
+  'epi.province':'Province',
+  'epi.health_center':'Center',
+  'epi.year':'Year',
+  'epidemiology.setup-title': 'Epidemiology. View setup',
+  'epidemiology.update': 'Update',
+  'epidemiology.period': 'By',
+  'epidemiology.field-map': 'Map type',
+  'epidemiology.patient_state': 'Patient state',
+  'epidemiology.age_band': 'Age ranges',
+  'epidemiology.date_symptom': 'Sympthoms date',
+  'epidemiology.date_arribal': 'Arribal date',
+  'epidemiology.years': 'years',
+  'epidemiology.patient-filter': 'Patient states',
+  'epidemiology.likely': 'Likely',
+  'epidemiology.suspected': 'Suspected',
+  'epidemiology.confirmed': 'Confirmed',
+  'epidemiology.undefined': 'Undefined',
+  'epidemiology.nocase': 'No case',
+  'epidemiology.all': 'All states',
+  'epidemiology.filter-explanation':'If a date filter is applied to the map, it will also be applied to this layer on *date_arribal* field',
+  'epidemiology.upload-explanation': 'WARNING!! The upload proces will delete all previouly stored data for the epidemiology layer',
+  'epidemiology.empty-layer': 'There is no epidemiology data available at the moment',
+  'epidemiology.upload-error': 'An error occurred while importing data',
 };
 _.extend(trans.en, add);

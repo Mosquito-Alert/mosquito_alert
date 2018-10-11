@@ -46,6 +46,7 @@ trans.ca = {
       '<br/>Per a més informació sobre les polítiques del lloc web, consulta la <a href="http://webserver.mosquitoalert.com/ca/privacy/">Política de privacitat</a> i <a href="http://webserver.mosquitoalert.com/ca/terms/">l\'Acord de l\'usuari</a>.',
     'map.cookie_accept': 'Tanca notificació',
 
+    'filters.description':'Els filtres del mapa no apliquen a la capa de models disponibles',
     'All years': 'Tots els anys',
     'All months': 'Tots els mesos',
     'January': 'Gener',
@@ -158,7 +159,6 @@ trans.ca = {
     'with_my_notifications': 'Amb les meves notificacions',
     'without_my_notifications': 'Sense les meves notificacions',
 
-    // NEW
     'notification.warning.municiaplities': 'Només és possible enviar notificacions a les observacions fetes en municipis vinculats a l\'usuari d\'aquesta sessió.',
     'group.filters.time': 'Filtres temporals',
     'group.filters.hashtag': 'Filtre per #hashtag',
@@ -185,5 +185,24 @@ trans.ca = {
 
     'filter.municipality.placeholder': 'Cerca municipis',
     'filter.municipalities.inputtooshort': 'Mínim 2 caracters',
-    'label.user-municipalities': 'Els meus municipis'
+    'label.user-municipalities': 'Els meus municipis',
+
+    // MODELS
+    'layer.predictionmodels': 'Models disponibles de probabilitat de mosquit tigre',
+    //HTML FORMAT
+    'layer.predictionmodels.description': 'El mapa mostra estimacions de la probabilitat d\'alerta de mosquits tigre, que representa la probabilitat que un participant enviï un informe de mosquit tigre fiable durant un període de dues setmanes, controlant l\'esforç de mostreig (és a dir, que el model representa el fet que hi hagi més participants en algunes àrees que en altres).<p>Aquestes estimacions es mostren en una graella de 0,05 graus de latitud per 0,05 graus de longitud i es promitgen per mes. La probabilitat d\'alerta depèn principalment de la distribució de la població del mosquit tigre i de l\'esforç de mostreig collectiu, que varia segons la ubicació i el mes. La probabilitat d\'alerta s\'ha demostrat que és un bon predictor de la presència de mosquits tigre mesurat pels mètodes tradicionals de vigilància (ovitraps), tal com s\'explica a Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Les estimacions s\'actualitzen setmanalment a mesura que apareixen noves dades.</p><p>Tingueu en compte que aquesta capa de probabilitat d\'alerta només es pot filtrar amb els selectors d\'any i mes que es mostren aquí (i no amb els filtres addicionals a continuació, que són per a altres capes).</p>',
+
+    'models.label.prob-1': 'Molt baixa',
+    'models.label.prob-2': 'Baixa',
+    'models.label.prob-3': 'Mitja',
+    'models.label.prob-4': 'Alta',
+    'models.label.sd-1': 'Molt baixa',
+    'models.label.sd-2': 'Baixa',
+    'models.label.sd-3': 'Mitja',
+    'models.label.sd-4': 'Alta',
+    'models.probability': 'Probabilitat',
+    'models.uncertainty': 'Incertesa',
+
+    'general.year': 'Any',
+    'general.month': 'Mes',
  };

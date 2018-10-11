@@ -165,7 +165,6 @@ var AppRouter = Backbone.Router.extend({
             $('#page-map').show();
         }
         var options = {};
-
         options.zoom = zoom;
         options.lat = lat;
         options.lon = lon;
@@ -173,6 +172,7 @@ var AppRouter = Backbone.Router.extend({
         if(!this.headerView){
             this.headerView = new HeaderView();
         }
+
         // Particular case. Enter spain.html but already logged
         if(layers === null || layers.length === 0){
             if (('mapView' in MOSQUITO.app) && ('options' in MOSQUITO.app.mapView)) {
@@ -186,7 +186,6 @@ var AppRouter = Backbone.Router.extend({
                 layers = this.getAllLayersFromConf();
             }
         }
-        options.layers = this.getSelectedLayersFromURL(layers);
 
         if(years !== 'all'){
             options.filters_years = years;
@@ -212,24 +211,37 @@ var AppRouter = Backbone.Router.extend({
           options.filters_municipalities = munis
         }
 
-        if(!this.mapView){
-            this.mapView = new MapView(options);
-        }else{
-            this.mapView.redraw(options);
+        //Keep drawing map after loggin response from ajax
+        var drawMapAfterLoggin = function(e){
+          //get layers based on logged status
+          options.layers = this.getSelectedLayersFromURL(layers);
+          if(!this.mapView){
+              this.mapView = new MapView(options);
+          }else{
+              this.mapView.redraw(options);
+          }
+
+          // IS EMBEDED?
+          if (!MOSQUITO.config.embeded) this.addCookieConsent();
+          else {
+            MOSQUITO.app.headerView.remove();
+            MOSQUITO.app.mapView.$el.css('top',0);
+            map.scrollWheelZoom.disable();
+          }
+
+          if(lng !== last_lang){
+              t().change(lng);
+          }
+          last_lang = lng;
         }
 
-        // IS EMBEDED?
-        if (!MOSQUITO.config.embeded) this.addCookieConsent();
-        else {
-          MOSQUITO.app.headerView.remove();
-          MOSQUITO.app.mapView.$el.css('top',0);
-          map.scrollWheelZoom.disable();
+        MOSQUITO.app.once('app_logged', drawMapAfterLoggin);
+        if (this.mapView){
+          if(lng !== last_lang){
+              t().change(lng);
+          }
+          last_lang = lng;
         }
-
-        if(lng !== last_lang){
-            t().change(lng);
-        }
-        last_lang = lng;
     },
 
     report: function(lng, zoom, lat, lon, layers, years, months, hashtag, munis, report_id){
@@ -248,54 +260,58 @@ var AppRouter = Backbone.Router.extend({
         //MOSQUITO.config.clusterize = false;
         var _this = this;
         var show_report;
-        show_report = function(){
-            _this.mapView.scope.report_id = report_id;
-            var found = _.find(_this.mapView.layers.layers.mcg.getLayers(), function(layer){
-                if(layer._data.id === parseInt(report_id) &&
-                    _this.mapView.map.hasLayer(layer)
-                ){
-                    return layer;
-                }
-            });
-
-            if(found !== undefined){
-                var icon  = $(found._icon);
-                var p = icon.offset();
-                var w = icon.width();
-                found.fire('click',
-                    {
-                        layer: found,
-                        latlng:[lat,lon],
-                        originalEvent: {
-                            pageX: p.left + w/2,
-                            pageY: p.top
-                        }
-                    }
-                );
-            }
-            else{
-                //search inside clusters
-                var cluster = _.find(_this.mapView.layers.layers.mcg._featureGroup._layers, function(layer){
-                    if ( '_group' in layer){
-                        // search marker inside clusters
-                        var marker = _.find(layer._markers, function(m){
-                            if ( m._data.id === parseInt(report_id) ) {
-                                return m;
-                            }
-                        })
-                        if(marker !== undefined){
-                            layer.spiderfy();
-                            marker.fireEvent('click',{latlng:[0,0]});//latlng required for fireEvent
-                            //return layer;
-                        }
-                    }
-                })
-            }
-            this.off('cluster_drawn', show_report);
-        };
 
         this.map_i18n(lng, zoom, lat, lon, layers, years, months, startDate, endDate, hashtag, munis);
-        this.on('cluster_drawn', show_report);
+        //After check login keep showing report
+        MOSQUITO.app.on('app_logged', function(e){
+          show_report = function(){
+              _this.mapView.scope.report_id = report_id;
+              var found = _.find(_this.mapView.layers.layers.mcg.getLayers(), function(layer){
+                  if(layer._data.id === parseInt(report_id) &&
+                      _this.mapView.map.hasLayer(layer)
+                  ){
+                      return layer;
+                  }
+              });
+
+              if(found !== undefined){
+                  var icon  = $(found._icon);
+                  var p = icon.offset();
+                  var w = icon.width();
+                  found.fire('click',
+                    {
+                      layer: found,
+                      latlng:[lat,lon],
+                      originalEvent: {
+                        pageX: p.left + w/2,
+                        pageY: p.top
+                      }
+                    }
+                  );
+              }
+              else{
+                  //search inside clusters
+                var cluster = _.find(_this.mapView.layers.layers.mcg._featureGroup._layers, function(layer){
+                  if ( '_group' in layer){
+                    // search marker inside clusters
+                    var marker = _.find(layer._markers, function(m){
+                      if ( m._data.id === parseInt(report_id) ) {
+                        return m;
+                      }
+                    })
+                    if(marker !== undefined){
+                      layer.spiderfy();
+                      marker.fireEvent('click',{latlng:[0,0]});//latlng required for fireEvent
+                      //return layer;
+                    }
+                  }
+                })
+              }
+              this.off('cluster_drawn', show_report);
+          };
+          this.on('cluster_drawn', show_report);
+        });
+
     },
 
     //REPORT DOCUMENTS FOR PUBLIC USERS
@@ -392,6 +408,7 @@ var AppRouter = Backbone.Router.extend({
 
       for (var i = 0; i < user_layers.length; i++){
           if (user_layers[i].key === 'F') continue; //do not consider userfixes
+          if (user_layers[i].key === 'I') continue; //do not consider userfixes
           layers.push(user_layers[i].key);
       }
       return layers.join(',');

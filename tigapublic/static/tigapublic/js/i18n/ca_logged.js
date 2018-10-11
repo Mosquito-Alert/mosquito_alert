@@ -20,6 +20,8 @@ add = {
   'notif.saved':'La notificació s\'ha enviat correctament',
   'notif.notification_cancel':'Cancel·la',
 
+  //Descarregar
+  'map.text_description_download': '<p>La descàrrega es realitzarà a partir dels elements que es visualitzen al mapa i només per a les dades relatives a les observacions ciutadanes. Comprova que tens actives les capes de la llegenda que desitges, els filtres temporals i el nivell de zoom.</p><p>Un cop definida la vista desitjada, fes clic al botó de descàrrega.</p>',
   //Notificacions
   'usernotification.not-predefined':'No predefinides',
   'all_notifications': 'Totes les notificacions',
@@ -43,6 +45,7 @@ add = {
   'notif.notification_cancel': 'Cancel·lar',
   'notif.observations_none': 'No hi ha cap observació seleccionada',
   'notif.saved': 'Notificació enviada correctament',
+  'notif.sendig_notifications': 'Les dades s\'estan enviant...',
 
 
   //Dibuix
@@ -123,5 +126,44 @@ add = {
   'stormdrain.example-body-12': 'És a dir, cada color s’associa a una categoria. Cada categoria pot tenir una o més condicions. I cada condició fa referència a un «atribut» un operador (igual ,diferent de, etc.) i un «valor». ',
   'stormdrain.example-body-13': 'Perquè un embornal pertanyi a una categoria, cal que es compleixen totes les condicions de la categoria (operador lògic AND).',
   'stormdrain.example-body-14': 'També cal tenir present que quan un embornal «cau» dins d’una categoria, aquest embornal ja no s’avalua amb la resta de categories que venen a continuació. És a dir, un embornal que tingui la columna «aigua» = «si» i «tractament» = «si» es representarà de color verd perquè és la primera categoria de la quan en compleix totes les condicions (en aquest cas només n’hi ha una).',
+
+  //configuración de la capa epidemiologia
+  'layer.epidemiology': 'Epidemiologia',
+  'epidemiology.upload-title': 'Carga de dades epidemiològiques',
+  'epidemiology.get-template': 'Descarregar plantilla',
+  'epidemiology.upload-button':'Selecciona un arxiu',
+  'epidemiology.import-started': 'Important dades. Aquest procés pot tardar una estona',
+  'epidemiology.import-finished': 'La importació ha finalitzat correctament',
+  'epidemiology.setup-now': 'Continuar amb la configuració',
+  'epidemiology.setup-later': 'Configurar més tard',
+  'epi.tpl-title': 'Dades epidemiològiques',
+  'epi.date_symptom':'Data primers simptomes',
+  'epi.date_arribal': 'Data d\'arribada',
+  'epi.age': 'Edat',
+  'epi.country':'País visitat',
+  'epi.patient_state':'Estat',
+  'epi.province':'Provincia',
+  'epi.health_center':'Centre',
+  'epi.year':'Any',
+  'epidemiology.setup-title': 'Epidemiologia. Configuració de la visualització',
+  'epidemiology.update': 'Actualitzar',
+  'epidemiology.period': 'Per',
+  'epidemiology.field-map': 'Tipus de mapa',
+  'epidemiology.patient_state': 'Estat del pacient',
+  'epidemiology.age_band': 'Franges d\'edat',
+  'epidemiology.date_symptom': 'Data dels primers simptomes',
+  'epidemiology.date_arribal': 'Data d\'arribada',
+  'epidemiology.years': 'anys',
+  'epidemiology.patient-filter': 'Estats dels pacients',
+  'epidemiology.likely': 'Probable',
+  'epidemiology.suspected': 'Sospitós',
+  'epidemiology.confirmed': 'Confirmat',
+  'epidemiology.undefined': 'Indefinit',
+  'epidemiology.nocase': 'No hi ha cas',
+  'epidemiology.all': 'Tots els estats',
+  'epidemiology.filter-explanation':'Els filtres temporas del mapa també aplicaran a aquesta capa a partir del camp *data_arribada*',
+  'epidemiology.upload-explanation': 'ATENCIÓ!! Aquest procés d\'importació eliminarà totes les dades prèviament emmagatzemades de la capa d\'Epidemiologia',
+  'epidemiology.empty-layer': 'En aquests moments no hi ha dades d\'epidemiologia',
+  'epidemiology.upload-error': 'S\'ha produït un error durant el procés d\'importació',
 };
 _.extend(trans.ca, add);

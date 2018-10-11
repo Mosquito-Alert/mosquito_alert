@@ -53,6 +53,7 @@ trans.en = {
       '<br/>For more information on the site policies, please see the <a href="http://webserver.mosquitoalert.com/en/privacy/">Privacy policy</a> and <a href="http://webserver.mosquitoalert.com/en/terms/">User agreement</a>.',
     'map.cookie_accept': 'Close notification',
 
+    'filters.description':'Map filters do not apply to available models layer',
     'All years': 'All years',
     'All months': 'All months',
     'January': 'January',
@@ -183,5 +184,24 @@ trans.en = {
 
     'filter.municipality.placeholder': 'Search municipalities',
     'filter.municipalities.inputtooshort': 'At least 2 characters',
-    'label.user-municipalities': 'My municipalities'
+    'label.user-municipalities': 'My municipalities',
+
+    // MODELS
+    'layer.predictionmodels': 'Available models for tiger mosquito probability',
+    //HTLM FORMAT
+    'layer.predictionmodels.description': 'The map shows estimates of the tiger mosquito alert probability, which represents the probability of a participant sending a reliable tiger mosquito report during any given two-week period, controlling for sampling effort (meaning that the model accounts for the fact that there are more participants in some areas than others).<p>These estimates are shown on a grid of 0.05 degrees latitude by 0.05 degrees longitude and are averaged by month. The alert probability mainly depends on the tiger mosquito’s population distribution, and this varies by location as well as month. The alert probability has been shown to be a good predictor of tiger mosquito presence measured by traditional surveillance methods (ovitraps), as explained in Nature Communications 8:916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. The estimates are updated weekly as new data comes in.</p><p>Note that this alert probability layer can be filtered only with the year and month selectors shown here (and not with the additional filters below, which are for other layers)</p>',
+
+    'models.label.prob-1': 'Very low',
+    'models.label.prob-2': 'Low',
+    'models.label.prob-3': 'Medium',
+    'models.label.prob-4': 'High',
+    'models.label.sd-1': 'Very low',
+    'models.label.sd-2': 'Low',
+    'models.label.sd-3': 'Medium',
+    'models.label.sd-4': 'High',
+    'models.probability': 'Probability',
+    'models.uncertainty': 'Uncertainty',
+
+    'general.year': 'Year',
+    'general.month': 'Month',
 };

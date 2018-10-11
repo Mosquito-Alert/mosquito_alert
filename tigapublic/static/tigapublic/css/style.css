@@ -13,6 +13,7 @@ body{
     display: none;
 }
 
+#download_text{padding-right:5px}
 #page-map{
     overflow: hidden;
 }
@@ -214,6 +215,9 @@ body{
   margin-bottom:5px;
 }
 
+.fa.fa-question.question-mark-toc.question-mark-filters.question-mark-filters{
+  right: 6px;
+}
 #legend_reports_map .section.filters,
 #legend_reports_map .section.filters .title{
   text-align: left;
@@ -756,15 +760,20 @@ h3.reports{
   .map-sidebar {
     width:50% !important;
   }
+  #map-ui li.list-group-only-item {
+    width:99% !important;
+  }
 }
 }
 
-li.tiger_mosquito {
-   background:url('../img/marker_albopictus_2.svg') 0 0 no-repeat no-repeat;
+ul li.tiger_mosquito {
+   background:url('../img/marker_albopictus_all.svg') 0 0 no-repeat no-repeat;
+   text-indent: 42px;
 }
 
-li.yellow_fever_mosquito {
-   background:url('../img/marker_aegypti_2.svg') 0 0 no-repeat no-repeat;
+ul li.yellow_fever_mosquito {
+   background:url('../img/marker_aegypti_all.svg') 0 0 no-repeat no-repeat;
+   text-indent: 42px;
 }
 
 li.other_species {
@@ -789,12 +798,27 @@ li.unclassified{
 li.userfixes{
     background:url('../img/userfixes_info_icon.png') 0 0 no-repeat no-repeat;
 }
+li.predictionmodels {
+    background:url('../img/predictionmodels_info_icon.png') 0 0 no-repeat no-repeat;
+}
+
+.popover{
+    max-width: 40%
+}
+
+.popover-content p{
+  margin-top:10px
+}
+
+ul.info_list li span p{
+    margin-top:10px
+}
 
 li.tiger_mosquito, li.mosquito_tiger_probable, li.mosquito_tiger_confirmed,
 li.yellow_fever_confirmed, li.yellow_fever_probable, li.unidentified,
 li.unclassified, li.not_yet_validated, li.trash_layer, li.site,
 li.other_species, li.userfixes, li.filtered, li.yellow_fever_mosquito,
-li.userfixes{
+li.userfixes, li.predictionmodels {
     text-indent: 20px;
 }
 body ul.info_list .private{
@@ -806,7 +830,7 @@ body.logged ul.info_list .private{
 
 body.logged ul.info_list img.private{
     display:inline;
-    margin-top:-7px;
+    margin-top:-3px;
 }
 
 #checkbox_notif{
@@ -913,10 +937,11 @@ div#div_none{
     color:red;
     border-radius:5px;
     padding:5px;
+    margin:5px;
     text-align:center;
     border: 1px solid red;
 }
-
+.b-yellow{border: 1px solid #ffe511;}
 .notif-msg.success {
   color:green;
   border-color:green;
@@ -1111,7 +1136,7 @@ div.category-conditions{
   padding:5px;
   margin: 10px 0px
 }
-
+.t-note{background:rgba(255,221,24,0.7)}
 .t-center{ text-align:center;}
 .t-left{ text-align:left;}
 .t-right{ text-align:right;}
@@ -1136,6 +1161,7 @@ div.category-conditions{
 .v-pd-10{ padding:10px 0px;}
 .h-pd-10{ padding:0px 10px;}
 .h-pd-15{ padding:0px 15px;}
+.hv-pd-10{ padding:10px 10px;}
 
 .category-headers{margin-bottom:15px; text-align: center;font-weight: bolder}
 ul.users_versions,
@@ -1256,4 +1282,38 @@ div#legend_reports_map ul#map_layers{
     background: #e6e6e6;
     border:none;
     margin:0;
+}
+
+/* epidemiology */
+#epidemiology-tpl-container {
+  padding:10px;
+}
+.epi-tpl-div {
+  margin-bottom:15px;
+  border-bottom:1px solid #ececec;
+}
+.epi-tpl-div span{
+		font-weight: bold;
+    display:block;
+}
+.epi-tpl-title {
+   margin-top:10px;
+}
+
+li.epidemiology_legend img{
+  margin-right:5px
+}
+
+img.epi-icon{
+  height:20px
+}
+
+.legend_header, .legend_footer{
+  font-size:0.8em;
+  font-weight:bold;
+  text-align:center;
+}
+
+.lowercase{
+  text-transform: lowercase;
 }

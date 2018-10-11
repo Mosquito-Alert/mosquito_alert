@@ -263,6 +263,7 @@ var MapView = MapView.extend({
         calendar_input.daterangepicker(lang_options);
       });
       calendar_input.daterangepicker(options);
+      calendar_input.prevRange = null;
       calendar_input.on('change', function() {
         var range = calendar_input.daterangepicker('getRange');
         if (range !== null) {
@@ -274,7 +275,9 @@ var MapView = MapView.extend({
         } else {
           $('.comiseo-daterangepicker-triggerbutton').removeClass('selected-filter-button');
         }
-        _this.filters.trigger('daterange_change', range);
+        if (calendar_input.prevRange !== range)
+            _this.filters.trigger('daterange_change', range);
+        calendar_input.prevRange = range;
       });
       //
       if(this.filters.daterange && typeof this.filters.daterange !== 'undefined'){
@@ -332,7 +335,19 @@ var MapView = MapView.extend({
     },
 
     addNotificationFiltersTo: function(section) {
-      if (MOSQUITO.app.headerView.logged) {
+      //ONLY MANAGERS AND SUPERMOSQUITO
+      var isManager = false;
+      var isSuperUser = false;
+      MOSQUITO.app.user.groups.some(function (v, i, arr){
+        if  (MOSQUITO.config.logged.managers_group.indexOf(v) !== -1) {
+          isManager = true;
+        }
+        if  (MOSQUITO.config.logged.superusers_group.indexOf(v) !== -1) {
+          isSuperUser = true;
+        }
+      })
+
+      if (isManager || isSuperUser) {
           var div_notif = this.newFilterGroup({
             'id': 'notif_filters',
             'title': 'group.filters.notifications'
@@ -432,7 +447,7 @@ var MapView = MapView.extend({
           });
           // populate the filter with values
           $.ajax({
-            "url": MOSQUITO.config.URL_API + 'getlistnotifications/',
+            "url": MOSQUITO.config.URL_API + 'notifications/predefined/',
             "complete": function(result, status) {
               if (status == 'success') {
                 $('<option>', {
@@ -449,7 +464,7 @@ var MapView = MapView.extend({
                     var label = t(type.content[lng].title);
                     //Add label in proper lng, and add i18n for future lang changes
                     $('<option>', {
-                        "value": type.notificationid,
+                        "value": type.id,
                         "i18n":type.content[lng].title,
                         "text":label,
                        }).appendTo(select_type_notifications);
@@ -457,7 +472,7 @@ var MapView = MapView.extend({
                   else{
                     var label = type.username.charAt(0).toUpperCase()+type.username.slice(1)+' / '+type.content[lng].title;
                     $('<option>', {
-                      'value': type.notificationid,
+                      'value': type.id,
                       'text': label
                     }).appendTo(select_type_notifications);
                   }
@@ -473,6 +488,37 @@ var MapView = MapView.extend({
       }
     },
 
+    addMunicipalitiesTokensLiteners: function (){
+      $('#tokenfield').on('change', function(e){
+          $('#municipalities-checkbox').prop('checked', false);
+          if ($('#tokenfield').val()){
+            var value = _this.getSelectedMunicipalitiesId();
+          }
+          else value = 'N';
+
+          _this.filters.trigger('municipalities_change', value);
+      });
+
+      $('#tokenfield').on('tokenfield:createdtoken', function (e) {
+          // Über-simplistic e-mail validation
+          $(e.relatedTarget).attr('data-value',e.attrs.id)
+          $(e.relatedTarget).find('.token-label').css('max-width', $(e.relatedTarget).parent().width() - 30);
+      })
+
+      $('#tokenfield').on('tokenfield:createtoken', function (event) {
+        if (typeof event.attrs.id==='undefined'){
+            event.preventDefault();
+        }
+
+        var existingTokens = $(this).tokenfield('getTokens');
+        $.each(existingTokens, function(index, token) {
+            if (token.label === event.attrs.label){
+                event.preventDefault();
+            }
+        });
+      });
+    },
+
     addMunicipalityFiltersTo: function(section) {
       var _this = this;
 
@@ -486,9 +532,9 @@ var MapView = MapView.extend({
         div_municipality.appendTo(section);
       }
 
-      //Registered users get input checkbox
-      if (MOSQUITO.app.headerView.logged){
-
+      //Some registered users get input checkbox
+      if (MOSQUITO.app.headerView.logged &&
+          this.userCan('notification') ) {
         var input_user_municipalities = $('<input>')
             .attr('type', 'checkbox')
             .attr('id', 'municipalities-checkbox')
@@ -516,6 +562,9 @@ var MapView = MapView.extend({
           .attr('class', 'form-control')
           .attr('id', 'tokenfield')
           .appendTo(div_municipality);
+
+      //Add events for municipalities tokenfield
+      this.addMunicipalitiesTokensLiteners();
 
       if (this.filterMunicipalitisIsEmpty()){
         this.initMunicipalitiesSelect();
@@ -545,6 +594,36 @@ var MapView = MapView.extend({
             .attr('class', 'layer-group list-group-item')
         .appendTo(toggleGrup);
 
+        // add QUESTION MARK
+        let question_mark = $('<a>', {
+          'href':'#',
+          'data-toggle':'popover-filters',
+          'data-placement':'left',
+          'i18n': 'filters.description|data-content',
+          'data-container': 'body',
+          'class':'fa fa-question question-mark-toc question-mark-filters'
+        })
+
+        question_mark.appendTo(parentDiv)
+        question_mark.on('click', function(event) {
+          // event.preventDefault();
+          event.stopPropagation();
+        });
+        $(question_mark).popover({
+          html: true,
+          content: function() {
+            return true;
+            }
+        });
+        // LISTEN ANY CLICK TO HIDE POPOVER
+        $(document).click(function(e) {
+          var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
+          if (isVisible){
+            question_mark.click()
+          }
+        });
+
+        //after question mark
         $('<div/>')
            .attr('i18n', 'group.filters')
            .attr('class','group-title')
@@ -577,6 +656,7 @@ var MapView = MapView.extend({
           setTimeout(function(){
               $('#select_years').selectpicker('refresh');
               $('#select_months').selectpicker('refresh');
+
               //reset municipalities select2
               _this.initMunicipalitiesSelect();
 
@@ -584,6 +664,7 @@ var MapView = MapView.extend({
               if (MOSQUITO.app.headerView.logged) {
                 $('#select_notifications').selectpicker('refresh');
                 $('#select_type_notifications').selectpicker('refresh');
+                $('.epi-select').selectpicker('refresh');
               }
           }, 0);
         });
@@ -659,34 +740,6 @@ var MapView = MapView.extend({
           showAutocompleteOnFocus: true
           })
 
-        $('#tokenfield').on('change', function(e){
-            $('#municipalities-checkbox').prop('checked', false);
-            if ($('#tokenfield').val()){
-              var value = _this.getSelectedMunicipalitiesId();
-            }
-            else value = 'N';
-
-            _this.filters.trigger('municipalities_change', value);
-          });
-
-      $('#tokenfield').on('tokenfield:createdtoken', function (e) {
-          // Über-simplistic e-mail validation
-          $(e.relatedTarget).attr('data-value',e.attrs.id)
-          $(e.relatedTarget).find('.token-label').css('max-width', $(e.relatedTarget).parent().width() - 30);
-      })
-
-      $('#tokenfield').on('tokenfield:createtoken', function (event) {
-        if (typeof event.attrs.id==='undefined'){
-            event.preventDefault();
-        }
-
-        var existingTokens = $(this).tokenfield('getTokens');
-        $.each(existingTokens, function(index, token) {
-            if (token.label === event.attrs.label){
-                event.preventDefault();
-            }
-        });
-      });
       $('#map-ui').scroll(function() {
         $('.ui-menu.ui-widget.ui-widget-content.ui-autocomplete.ui-front').css('display','none');
       });
@@ -733,6 +786,27 @@ var MapView = MapView.extend({
       else if ($(Elm).is('input')){
         $(Elm).removeClass('active');
       }
+    },
+
+    dateParamsToString: function (){
+        var url=''
+        if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
+          url += '/' + moment(this.filters.daterange.start).format('YYYY-MM-DD');
+          url += '/' + moment(this.filters.daterange.end).format('YYYY-MM-DD');
+        } else {
+          if(this.filters.years.length === 0){
+              url += '/all';
+          }else{
+              url += '/' + this.filters.years;
+          }
+
+          if(this.filters.months.length === 0){
+              url += '/all';
+          }else{
+              url += '/' + this.filters.months.join(',');
+          }
+        }
+        return url
     },
 
     anyFilterChecked: function() {
@@ -838,9 +912,9 @@ var MapView = MapView.extend({
         );
         this.controls.download_btn = btn;
         btn.on('download_btn_click', function(){
-            var url = MOSQUITO.config.URL_API + 'map_aux_reports_export.xls';
+            var url = MOSQUITO.config.URL_API + 'observations/export.xls';
             //prepare params based on filters
-            url += '?bbox=' + this._map.getBounds().toBBoxString();
+            url += '?bounds=' + this._map.getBounds().toBBoxString();
             if (_this.filters.daterange) {
               url += '&date_start=' + moment(_this.filters.daterange.start).format('YYYY-MM-DD');
               url += '&date_end=' + moment(_this.filters.daterange.end).format('YYYY-MM-DD');
@@ -875,7 +949,7 @@ var MapView = MapView.extend({
             url += '&categories=' + categories.join(',');
 
             //Add filters if exists and !=false(all selected), N otherwise
-            url += '&notifications='+(('notif' in _this.filters && _this.filters.notif!==false)?_this.filters.notif:'N');
+            url += '&mynotifs='+(('notif' in _this.filters && _this.filters.notif!==false)?_this.filters.notif:'N');
 
             //Check for notif_types filter
             notif_types='N'
@@ -1028,30 +1102,34 @@ var MapView = MapView.extend({
             {
                 position: 'topright',
                 text: '<i class="fa fa-share-alt" aria-hidden="true"></i>',
-                style: 'share-control',
+                style: 'control-button',
                 build_url: function(){
                   var layers = [];
                   //Get layers set to look for active layers
                   if (MOSQUITO.app.headerView.logged) {
                       //Accordion objects has list-group-item class
-                      layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-item');
+                      layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-item, .sidebar-control-layers #div_none ul > li.list-group-only-item');
                   }
                   else{
                       layersDiv = $('.sidebar-control-layers #div_none ul > li.list-group-only-item');
                   }
                   layersDiv.each(function(i, el){
+
                     if($(el).hasClass('active')){
                         //Get position of selected layers
                         id = $(el).attr('id').replace('layer_','');
-                        pos = _this.getLayerPositionFromKey(id);
-                        if (!MOSQUITO.app.headerView.logged) {
-                            layers.push(MOSQUITO.config.layers[pos].key);
-                            $('#control-share .warning').html('');
-                        }
-                        else{
-                            layers.push(MOSQUITO.config.logged.layers[pos].key);
-                            txt = t('share.private_layer_warn');
-                            $('#control-share .warning').html('<div>'+txt+'</div>');
+
+                        if (id !== 'I' && id !== 'Fa') {
+                          pos = _this.getLayerPositionFromKey(id);
+                          if (!MOSQUITO.app.headerView.logged) {
+                              layers.push(MOSQUITO.config.layers[pos].key);
+                              $('#control-share .warning').html('');
+                          }
+                          else{
+                              layers.push(MOSQUITO.config.logged.layers[pos].key);
+                              txt = t('share.private_layer_warn');
+                              $('#control-share .warning').html('<div>'+txt+'</div>');
+                          }
                         }
                         // layers.push(i+'');
                     }
@@ -1077,24 +1155,10 @@ var MapView = MapView.extend({
                       url += '/' + _this.map.getCenter().lng.toFixed(4);
                   }
 
+                  if (layers.length === 0) layers.push('N');
                   url += '/' + layers.join();
 
-                  if (_this.filters.daterange && typeof _this.filters.daterange !== 'undefined') {
-                    url += '/' + moment(_this.filters.daterange.start).format('YYYY-MM-DD');
-                    url += '/' + moment(_this.filters.daterange.end).format('YYYY-MM-DD');
-                  } else {
-                    if(_this.filters.years.length === 0){
-                        url += '/all';
-                    }else{
-                        url += '/' + _this.filters.years;
-                    }
-
-                    if(_this.filters.months.length === 0){
-                        url += '/all';
-                    }else{
-                        url += '/' + _this.filters.months.join(',');
-                    }
-                  }
+                  url += _this.dateParamsToString()
 
                   //hashtag
                   if(!'hashtag' in _this.filters || typeof _this.filters.hashtag === 'undefined' || _this.filters.hashtag === ''){
@@ -1115,7 +1179,6 @@ var MapView = MapView.extend({
                         _this.scope.selectedMarker !== null){
                         url += '/' + _this.scope.selectedMarker._data.id;
                     }
-
                   return url;
 
                 }
@@ -1162,6 +1225,7 @@ var MapView = MapView.extend({
         });
 
         MOSQUITO.app.on('cluster_drawn', function(){
+
             if(_this.scope.selectedMarker !== undefined &&
                 _this.scope.selectedMarker !== null){
                 var found = _.find(_this.layers.layers.mcg.getLayers(), function(layer){
@@ -1185,6 +1249,73 @@ var MapView = MapView.extend({
         });
     },
 
+    addPanelEpidemiology: function() {
+      var _this = this;
+      this.epi_panel = $('<div>')
+        .attr('class', 'sidebar-epi-report');
+
+      this.controls.sidebar.addPane(this.epi_panel);
+
+      this.epi_panel.on('show', function(){
+          if(_this.scope.selectedMarker !== undefined && _this.scope.selectedMarker !== null){
+              _this.markerSetSelected(_this.scope.selectedMarker);
+          }
+          else{
+              //hide panel
+          }
+      });
+
+      this.epi_panel.on('hide', function(){
+          if(_this.scope.selectedMarker !== undefined && _this.scope.selectedMarker !== null){
+              _this.markerUndoSelected(_this.scope.selectedMarker);
+          }
+      })
+    },
+
+    show_epidemiology_report: function(marker){
+      //out if not logged
+      if (!MOSQUITO.app.headerView.logged) return false;
+      var panel = this.epi_panel;
+      var epi_report = _.clone(marker).target.properties;
+      epi_report.icon_src = this.getEpidemiologyPatientStateIcon(epi_report)
+      epi_report.patient_state = epi_report.patient_state;
+      this.controls.sidebar.closePane();
+      if(!('epidemiology-tpl-content' in this.templates)){
+          this.templates[
+            'epidemiology-tpl-content'
+          ] = $('#epidemiology-tpl-content').html();
+      }
+
+      var arribalDate = new Date(epi_report.date_arribal);
+      //If not is date then do date
+      if (! (arribalDate instanceof Date && !isNaN(arribalDate.valueOf())) ){
+        epi_report.date_arribal = arribalDate.getDate() +
+                '-' + ( arribalDate.getMonth() + 1 ) +
+                '-' + arribalDate.getFullYear();
+      }
+
+      var symptomDate = new Date(epi_report.date_symptom);
+      //If not is date then do date
+      if (! (symptomDate instanceof Date && !isNaN(symptomDate.valueOf())) ){
+        epi_report.date_symptom = symptomDate.getDate() +
+                '-' + ( symptomDate.getMonth() + 1 ) +
+                '-' + symptomDate.getFullYear();
+      }
+
+      var tpl = _.template(this.templates['epidemiology-tpl-content']);
+      this.scope.selectedMarker = marker.target;
+
+      panel.html('');
+      a = new L.Control.SidebarButton();
+      a.getCloseButton().appendTo(panel);
+      panel.append(tpl(epi_report));
+      window.t().translate($('html').attr('lang'), panel);
+      this.controls.sidebar.togglePane(panel, $('<div>'));
+      if (!MOSQUITO.app.mapView.isMobile()){
+        this.moveMarkerIfNecessary(marker.target);
+      }
+    },
+
     //TODO: S'ha de posar en una vista
     show_report: function(marker){
         var nreport = _.clone(marker._data);
@@ -1203,6 +1334,7 @@ var MapView = MapView.extend({
         nreport.s_answers = null;
         nreport.questions = null;
         // only logged users. Queries & answers
+
         if (MOSQUITO.app.headerView.logged)  {
             if(nreport.t_q_1 != ''){
                 nreport.t_answers = [];
@@ -1254,11 +1386,10 @@ var MapView = MapView.extend({
                 'content-report-tpl'] = $('#content-report-tpl').html();
         }
         var tpl = _.template(this.templates['content-report-tpl']);
-
+        this.scope.selectedMarker = marker;
         this.report_panel.html('');
         a = new L.Control.SidebarButton();
         a.getCloseButton().appendTo(this.report_panel);
-
         this.report_panel.append(tpl(nreport));
 
         //New notification button if applies
@@ -1330,13 +1461,17 @@ var MapView = MapView.extend({
       //Check if dragging selected is required
       var x = _this.map.getSize().x ;
       var y = _this.map.getSize().y ;
-      var barWidth = parseInt($('.sidebar-report').css('width'));
+      var xMarker = _this.map.latLngToContainerPoint(marker.getLatLng()).x
+
       var mapIconsWidth = parseInt($('.leaflet-control-zoom-out').css('width')) + 40 //20px padding;
+      var barWidth = parseInt($('.sidebar-report').css('width')) + mapIconsWidth;
 
-      //if too righty, then move it
+      //if marker underneath future popup panel, then movie it
       var ne = _this.map.containerPointToLatLng([x - (barWidth + mapIconsWidth), 0]) ;
+      //if (ne.lng < marker.getLatLng().lng)
 
-      if (ne.lng < marker.getLatLng().lng){
+      //if marker underneath future popup panel, then movie it
+      if ( (x - xMarker) < barWidth){
         var sw = _this.map.containerPointToLatLng([0 , y]) ;
         var newBB = L.latLngBounds(sw, ne);
         var curCenter = _this.map.getCenter();
@@ -1398,7 +1533,6 @@ var MapView = MapView.extend({
 
     putStormDrainLegend: function(d){
       str='';
-
       //clusters same colors respecting user order definition
       d=d.categories;
       var rest = d.slice();
@@ -1457,7 +1591,6 @@ var MapView = MapView.extend({
               str+='<div class="tcel"><span class="ml">' + operator +' '+value + '</span></div>';
             }
 
-
             str+='</div>'
           })
 
@@ -1471,11 +1604,38 @@ var MapView = MapView.extend({
       trans.trigger('i18n_lang_changed', MOSQUITO.lng);
     },
 
+    putEpidemiologyLegend: function(){
+       var palette = this.epidemiology_palette
+       var images = []
+       for (var name in palette.images){
+           images.push({"name": name, "image": palette.images[name]})
+       }
+
+       var dict = {"indefinit":"undefined",
+                  "probable": "likely",
+                  "sospitos": "suspected",
+                  "confirmat": "confirmed",
+                  'no_cas': 'nocase'
+                }
+      var selected_states = $('select[name=epidemiology-state]').val()
+      var innerHTML=''
+      images.forEach(function(val, ind, arr){
+          if (selected_states.indexOf(dict[val.name])!==-1
+              || selected_states.indexOf('all')!==-1) {
+                  innerHTML +='<li class="epidemiology_legend">'+
+                    '<img src = "' + val.image + '">'+
+                    '<span i18n="epidemiology.'+dict[val.name]+'">' + t('epidemiology.'+dict[val.name]) + ' </span></li>';
+            }
+       })
+
+       $('#epidemiolgy_legend').html(innerHTML)
+    },
+
     //Make ajax call and prepare input, select and call stormDrainStyleUI to show style UI.
     stormDrainSetup:function(){
       //Ajax call to get params
 
-      url = MOSQUITO.config.URL_API + 'getStormDrainUserSetup/';
+      url = MOSQUITO.config.URL_API + 'stormdrain/setup/';
       $.ajax({
           "async": true,
           "url": url,
@@ -1804,7 +1964,7 @@ var MapView = MapView.extend({
           }
           //SAVE style Ajax
           $.ajax({
-              url:  MOSQUITO.config.URL_API + 'put/style/version/',
+              url:  MOSQUITO.config.URL_API + 'stormdrain/setup/',
               type: 'POST',
               //data: params,
               data: JSON.stringify(params),
@@ -2034,12 +2194,12 @@ var MapView = MapView.extend({
       this.stormdrain_setup.admin_values = distinctValues;
     },
 
-    stormDrainResetUpload: function(){
+    stormDrainResetFormUpload: function(){
+      $('.btn-st-template').show();
       $('#stormDrainUpload').find('.selected-file-name').val('');
       $('#stormDrainUpload').find('#stormdrain-upload-file').val('');
       $('input[name=stormdrain-title').val('');
-
-      $('.upload-step1').show();
+      $('.stormdrain-upload-step1').show();
       $('#stormDrainUpload').find('.st-upload-error').hide();
       $('#stormDrainUpload').find('.stormdrain-import-started').hide();
       $('#stormDrainUpload').find('.stormdrain-import-finished').hide();
@@ -2050,10 +2210,27 @@ var MapView = MapView.extend({
       $('#stormDrainUpload').find('.progress-bar-info').css('width','0%');
     },
 
+    epidemiologyResetFormUpload: function(){
+      $('.epi-upload-error').hide();
+      $('.epi-button-file').show();
+      $('#epiFormUpload').find('.selected-file-name').val('');
+      $('#epidemiology-upload-file').val('');
+      $('.epidemiology-modal-content').show();
+      $('#epiFormUpload').find('.st-upload-error').hide();
+      $('#epiFormUpload').find('.stormdrain-import-started').hide();
+      $('.epi-import-finished-btn').hide();
+      $('.epi-progress-bar-wrapper').hide();
+      $('#epiFormUpload').find('.epidemiology-upload-submit').show();
+      $('#epiFormUpload').find('.button-file').show();
+      $('#epiFormUpload').find('.upload-submit').show();
+      $('#epiFormUpload').find('.progress-bar-info').css('width','0%');
+    },
+
+    /* EVENTS ON STORMDRAIN MODAL WINDOW */
     stormDrainUploadEvents: function(){
       //Get template button
       $('.btn-st-template').on('click', function(){
-        var url = MOSQUITO.config.URL_API + 'stormdrain/get/template/';
+        var url = MOSQUITO.config.URL_API + 'stormdrain/data/template/';
         window.location = url;
       })
 
@@ -2101,7 +2278,7 @@ var MapView = MapView.extend({
           $.ajax({
               type: "POST",
               enctype: 'multipart/form-data',
-              url: MOSQUITO.config.URL_API +'fileupload/',
+              url: MOSQUITO.config.URL_API +'stormdrain/data/',
               data: formData,
               processData: false,
               //contentType: false,
@@ -2116,7 +2293,7 @@ var MapView = MapView.extend({
                           $(".progress-bar").html(percent+ "%");
                           $(".progress-bar").width(percent + "%");
                           if (evt.loaded == evt.total){
-                              $('.upload-step1').hide();
+                              $('.stormdrain-upload-step1').hide();
                               $('.stormdrain-import-started').show();
                           }
                       }, false);
@@ -2169,14 +2346,15 @@ var MapView = MapView.extend({
           $('.st-upload-error').show();
         }
       })
+
     },
 
     stormDrainUploadSetup: function(){
       _this = this;
       //Reset form just in case it was opened before
-      this.stormDrainResetUpload();
+      this.stormDrainResetFormUpload();
       if (! ('stormdrain_upload_events' in this)){
-          url = MOSQUITO.config.URL_API + 'getStormDrainUserSetup/';
+          url = MOSQUITO.config.URL_API + 'stormdrain/setup/';
           $.ajax({
               "async": true,
               "url": url,
@@ -2212,5 +2390,146 @@ var MapView = MapView.extend({
       }
 
       $('#stormdrain_upload').modal('show');
+    },
+
+    epidemiologyHasEvents: function(){
+        return ('epidemiology_upload_events' in this)
+    },
+
+    /* EVENTS ON EPIDEMIOLOGY MODAL WINDOW */
+    epidemiologyUploadEvents: function(){
+      _this = this
+      //Events only added once
+      if (this.epidemiologyHasEvents()) return;
+
+      //Get template
+      $('.btn-epi-template').on('click', function(){
+        var url = MOSQUITO.config.URL_API + 'epi/data/template/';
+        window.location = url;
+      })
+
+      //Customized input file button
+      $('#epidemiology-upload-file').on('change', function(){
+          $('.epi-upload-error').hide();
+          //$('.epi-progress-bar-wrapper').hide();
+          var input = $(this);
+          label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+
+          var input = $(this).parents('.input-group').find(':text'),
+              log = label;
+
+          if( input.length ) {
+              input.val(log);
+          } else {
+              if( log ) alert(log);
+          }
+      });
+
+      $('.btn-epi-setup-now').on('click', function(){
+          //close upload modal
+          $('#epidemiology_upload').modal('hide');
+          //trigger modal setup
+          $('.fa-cog.epidemiology').trigger('click');
+
+      })
+
+      $('.btn-epi-setup-later').on('click', function(){
+          $('#epidemiology_upload').modal('hide');
+          _this.addEpidemiologyLayer()
+          $('#layer_P').addClass('active');
+      })
+
+      $('.epidemiology-upload-submit').click(function(e){
+        //submit function
+        function epidemiologyUploadSubmit(callback){
+          var form = $('form#epiFormUpload')[0];
+          var formData = new FormData(form);
+          $('.epi-progress-bar-wrapper').show();
+
+          $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: MOSQUITO.config.URL_API +'epi/data/',
+              data: formData,
+              processData: false,
+              //contentType: false,
+              contentType: 'multipart/form-data',
+              cache: false,
+
+              xhr: function() {
+                  var xhr = $.ajaxSettings.xhr();
+                  if (xhr.upload) {
+                      xhr.upload.addEventListener('progress', function(evt) {
+                          var percent = ((evt.loaded / evt.total) * 100).toFixed(2);
+                          $(".epi-progress-bar").html(percent+ "%");
+                          $(".epi-progress-bar").width(percent + "%");
+                          if (evt.loaded == evt.total){
+                              $('.epidemiology-import-started-msg').show();
+                          }
+                      }, false);
+                  }
+                  return xhr;
+              },
+              success: function(data) {
+                //hide/show stuff
+                $('.epi-upload-error').html('').hide();
+                $('.epidemiology-import-started-msg').hide();
+                $('.epi-progress-bar-wrapper').hide();
+                $('.epi-import-finished-btn').hide();
+                if (data.success){
+                  $('.epidemiology-upload-submit').hide();
+                  $('.epidemiology-modal-content').hide();
+                  $('.epi-import-finished-btn').show();
+                }
+                else{
+                  txt_error = '<p class="st-upload-error">'+t('epidemiology.upload-error') + '</p>' + data.err;
+                  $('.epi-progress-bar-wrapper').hide();
+                  $('.epi-upload-error').html(txt_error);
+                  $('.epi-upload-error').show();
+                }
+              },
+
+              error: function() {
+                $('.epi-import-finished-btn').hide();
+                $('.epidemiology-import-started-msg').hide();
+                $('.epidemiology-import-finished').hide();
+                $('#epiFormUpload').find('.epidemiology-upload-submit').hide();
+                $('#epiFormUpload').find('.epi-progress-bar-wrapper').hide();
+                $('.epi-upload-error').html('Error')
+                $('.epi-upload-error').show();
+              },
+              data: formData,
+              cache: false,
+              contentType: false,
+              processData: false
+          }, 'json');
+        }
+
+        val = $('#epidemiology-upload-file').val();
+        if (val.length){
+          $('.epi-upload-error').hide();
+          epidemiologyUploadSubmit()
+        }
+        else{
+          $('.epi-upload-error').html(t('epidemiology.upload-required'));
+          $('.epi-upload-error').show();
+        }
+      })
+
+    },
+
+    epidemiologyUploadSetup: function(){
+      this.epidemiologyResetFormUpload();
+      this.epidemiologyUploadEvents();
+      this.epidemiology_upload_events = true;
+      $('#epidemiology_upload').modal('show');
+    },
+
+    epidemiologyFormSetup: function(){
+      $('.epi-select').selectpicker('refresh');
+      $('#select_epi-state').data('pre', $('#select_epi-state').val());
+      $('#epidemiology_form_setup').modal('show');
+      $('select[name=epidemiology-date]').val(this.epidemiology_palette_date)
+      $('select[name=epidemiology-palette]').val(this.epidemiology_palette.name)
     }
 });

@@ -38,7 +38,7 @@ Description of each field found in the downloadable data base
 
 *Type*: type of report. 'Adult' or 'site', depending on the app button that the participant selected to send the observation. Example: adult.
 
-*Adult/site question*: this field contains the responses the participant gave to the breeding site/taxonomic survey in the app when submitting the report. Note that survey questions have slightly changed in different periods of the project and can differ amongst devices (Android, iOS). Questions are formulated in their original language, depending on the language settings of the Mosquito Alert app participant. Some observations might not contain any question. Example:"¿Cómo es el abdomen de tu mosquito? Consulta el botón (i) y selecciona una respuesta:".
+*Adult/site question*: this field contains the responses the participant gave to the breeding site/taxonomic survey in the app when submitting the report. Note that survey questions have slightly changed in different periods of the project and can differ amongst devices (Android, iOS). Questions are formulated in their original language, depending on the language settings of the Mosquito Alert app participant. Some observations might not contain any question. Example:"�C�mo es el abdomen de tu mosquito? Consulta el bot�n (i) y selecciona una respuesta:".
 
 *Adult/site answers*: this field contains the responses the participant gave to the breeding site/taxonomic survey in the app when submitting the report. Note that survey questions have slightly changed in different periods of the project and can differ amongst devices (Android, iOS). Answers are formulated in their original language, depending on the language settings of the Mosquito Alert app participant. Some observations might not contain any answer. Example: "Abdomen como Ae. albopictus".
 
@@ -59,7 +59,7 @@ Description of each field found in the downloadable data base
 
     other_species - Report with photograph of other species. Therefore, the specimen is not a tiger or a yellow fever mosquito.
 
-    unidentified - Report without photographs and reports with photographs having a quality which do not allow choice of another category (blurry, overexposed, uninformative angle, etc.). Therefore, with available information the category is unknown.
+    unidentified - Report without photographs and reports with photographs having a quality which do not allow choice of another category (blurry, �burnt,� uninformative angle, etc.). Therefore, with available information the category is unknown.
 
     not_yet_validated - Adult reports with pictures that are sitting in the basic filter and not been yet expert validated by three experts, and therefore, there is no results available in the expert validation.
 

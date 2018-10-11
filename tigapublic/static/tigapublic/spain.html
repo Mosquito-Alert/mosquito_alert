@@ -107,7 +107,6 @@
             </div>
             <div class="modal-body content">
               <div id="form-login_" class="form-login" role="menu">
-
                 <div class="form-group">
                     <input i18n="header.username|placeholder" type="username" class="form-control" id="login_username" placeholder="Enter email" />
                 </div>
@@ -152,11 +151,17 @@
             <h4 class="modal-title" i18n="map.notification_add"></h4>
           </div>
           <div class="modal-body content">
+            <div class="form-group notif-msg hidden success" id="sendig_notifications">
+              <span i18n="notif.sendig_notifications"></span>
+            </div>
+            <div class="form-group notif-msg hidden success" id="notif_saved">
+                <span i18n='notif.saved'></span>
+            </div>
             <div class="warning"><div i18n="notification.warning.municiaplities"></div></div>
             <div id="form-notification" class="form-notification" role="menu">
               <!-- hidden for image upload functionality -->
               <iframe id="notification_form_target" name="form_target" style="display:none"></iframe>
-              <form id="notification_file_input" action="/tigapublic/imageupload/" target="form_target" method="post" enctype="multipart/form-data" style="width:0px;height:0;overflow:hidden">
+              <form id="notification_file_input" action="/tigapublic/notifications/imageupload/" target="form_target" method="post" enctype="multipart/form-data" style="width:0px;height:0;overflow:hidden">
                   <input name="image" type="file" onchange="$('#notification_file_input').submit();this.value='';">
               </form>
               <!-- end of hidden code -->
@@ -169,9 +174,6 @@
                   </div>
                   <div class="form-group notif-msg hidden" id="notif_all_field_requiered">
                       <span i18n='notif.all_field_requiered'></span>
-                  </div>
-                  <div class="form-group notif-msg hidden success" id="notif_saved">
-                      <span i18n='notif.saved'></span>
                   </div>
                   <div class="form-group">
                     <input type="text" disabled i18n="map.notification.notifier|placeholder" class="form-control" id="notification-notifier">
@@ -226,10 +228,7 @@
       </div>
     <!--form-->
       <div class="modal-body content">
-        <!--<div>
-            <span i18n="stormdrain.upload-newversion"></span>
-            <div class="new-version-value"></div>
-        </div>-->
+
         <form id="stormDrainUpload"
           onsubmit="return false" method="post" enctype="multipart/form-data">
 
@@ -248,7 +247,7 @@
            </div>
           </div>
 
-          <div class="upload-step1">
+          <div class="stormdrain-upload-step1">
               <div class="tt t-100 v-pd-10 button-file">
                 <div class="tcol t-100"></div>
                 <div class="tcel t-center">
@@ -378,6 +377,223 @@
   </div>
 </div>
 
+<!--MODAL FOR EPIDEMIOLOGY UPLOAD-->
+<div id="epidemiology_upload" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" i18n="epidemiology.upload-title"></h4>
+      </div>
+    <!--form-->
+      <div class="modal-body content">
+        <div class="tt t-100 v-pd-10">
+          <div class="tcol"></div>
+          <div class="tr">
+            <div class="hv-pd-10 tcel p-center t-border t-note">
+              <span i18n="epidemiology.upload-explanation"></span>
+            </div>
+
+          </div>
+        </div>
+
+        <form id="epiFormUpload"
+          onsubmit="return false" method="post" enctype="multipart/form-data">
+
+          <!-- Upload messages-->
+          <div class="tt t-100">
+
+            <div class="tcol t-10"></div>
+            <div class="tcol t-80"></div>
+            <div class="tcol t-10"></div>
+
+            <div class="tr">
+              <div class="tcel"></div>
+              <div class="tcel epi-upload-error" style="display:none">
+              </div>
+             <div class="tcel"></div>
+           </div>
+          </div>
+
+          <div class="epidemiology-modal-content">
+              <div class="tt t-100 v-pd-10 epi-button-file">
+                <div class="tcol t-100"></div>
+                <div class="tcel t-center">
+                  <button i18n='epidemiology.get-template' class="btn btn-success btn-epi-template"></button>
+                </div>
+              </div>
+              <!-- INSERT TITLE / COMMENT -->
+              <div class="tt t-100 v-pd-10 button-file">
+                <div class="tcol t-10"></div>
+                <div class="tcol t-80"></div>
+                <div class="tcol t-10"></div>
+
+              </div>
+
+              <!-- Choose file-->
+              <div class="tt t-100 v-pd-10 button-file">
+
+                <div class="tcol t-10"></div>
+                <div class="tcol t-80"></div>
+                <div class="tcol t-10"></div>
+
+                <div class="tr">
+                  <div class="tcel"></div>
+                  <div class="tcel">
+                    <div class="input-group">
+                      <label class="input-group-btn">
+                          <span class="btn btn-default">
+                              <span i18n="epidemiology.upload-button"></span>
+                              <input style="display: none;" id="epidemiology-upload-file" name="epidemiology-file" type="file">
+                          </span>
+                      </label>
+                      <input class="form-control selected-file-name" readonly="" type="text">
+                    </div>
+                  </div>
+                  <div class="tcel"></div>
+                </div>
+              </div>
+
+              <!--progress bar-->
+              <div class="tt t-100 v-pd-10 epi-progress-bar-wrapper">
+                <div class="tcol t-10"></div>
+                <div class="tcol t-80"></div>
+                <div class="tcol t-10"></div>
+                <div class="tr">
+                      <div class="tcel"></div>
+                      <div class="tcel">
+                        <div class="list-group-item">
+                            <div class="progress progress-striped active">
+                              <div class="epi-progress-bar progress-bar-info" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                       </div>
+                    <div class="tcel"></div>
+                 </div>
+               </div>
+
+               <!--SUBMIT-->
+               <div class="tt t-100 v-pd-10">
+                 <div class="tcol t-10"></div>
+                 <div class="tcol t-80"></div>
+                 <div class="tcol t-10"></div>
+                 <div class="tr">
+                       <div class="tcel"></div>
+                       <div class="tcel">
+                          <button class="btn btn-success btn-block epidemiology-upload-submit"><span i18n="stormdrain.send"></span></button>
+                        </div>
+                     <div class="tcel"></div>
+                  </div>
+                </div>
+          </div> <!--close upload-step1-->
+
+          <div>
+            <!--PROCESSING MESSAGES-->
+            <div class="tt t-100 v-pd-10 processing-messages">
+              <div class="tcol t-10"></div>
+              <div class="tcol t-80"></div>
+              <div class="tcol t-10"></div>
+              <div class="tr">
+                    <div class="tcel"></div>
+                    <div class="tcel t-center">
+                      <div class="epidemiology-import-started-msg msg-ok" i18n="epidemiology.import-started" style="display:none"></div>
+                      <div class="epidemiology-import-finished msg-ok" i18n="epidemiology.import-finished" style="display:none"></div>
+                     </div>
+                  <div class="tcel"></div>
+               </div>
+            </div>
+
+            <div class="tt t-100 v-pd-10">
+              <div class="tcol t-10"></div>
+              <div class="tcol t-80"></div>
+              <div class="tcol t-10 epi-"></div>
+               <!-- Setup button-->
+               <div class="tr">
+                     <div class="tcel"></div>
+                     <div class="tcel t-center epi-import-finished-btn" style="display:none">
+                       <button class="btn btn-success btn-epi-setup-now" i18n="epidemiology.setup-now"></button>
+                      </div>
+                   <div class="tcel"></div>
+                </div>
+                <div class="tr v-pd-10">
+                      <div class="tcel"></div>
+                      <div class="v-pd-10 tcel t-center epi-import-finished-btn" style="display:none">
+                        <button class="btn btn-success btn-epi-setup-later" i18n="epidemiology.setup-later"></button>
+                       </div>
+                    <div class="tcel"></div>
+                 </div>
+             </div>
+           </div>
+    </form>
+
+
+        <!-- Messages box-->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--EPIDEMIOLOGY VISUALITZATION SETUP-->
+<div id="epidemiology_form_setup" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" i18n="epidemiology.setup-title"></h4>
+      </div>
+      <div class="modal-body content">
+        <div class="tt t-100 v-pd-10">
+          <div class="tcol"></div>
+          <div class="tr">
+            <div class="hv-pd-10 tcel p-center t-border t-note">
+              <span i18n="epidemiology.filter-explanation"></span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="tt t-100 v-pd-10">
+          <div class="tcol t-30"></div>
+          <div class="tcol t-60"></div>
+          <div class="tr">
+                <div class="tcel t-right h-pd-10">
+                    <span i18n="epidemiology.patient-filter"></span>
+                </div>
+                <div class="tcel t-left h-pd-10" id="epi-patient-container">
+                  <!-- SELECT DATE -->
+                      <select name="epidemiology-state" class="epi-select" id="select_epi-state" multiple>
+                        <option value="all" i18n="epidemiology.all" selected="true"></option>
+                        <option value="likely" i18n="epidemiology.likely"></option>
+                        <option value="suspected" i18n="epidemiology.suspected"></option>
+                        <option value="confirmed" i18n="epidemiology.confirmed"></option>
+                        <option value="nocase" i18n="epidemiology.nocase"></option>
+                      </select>
+                </div>
+          </div>
+        </div>
+        <div class="tt t-100 v-pd-10">
+             <div class="tcol t-10"></div>
+             <div class="tcol t-80"></div>
+             <div class="tcol t-10"></div>
+             <div class="tr">
+                   <div class="tcel"></div>
+                   <div class="tcel">
+                      <button id="epidemiology_palette_form" class="btn btn-success btn-block stormdrain-upload-submit">
+                        <span i18n="epidemiology.update">Enviar</span>
+                      </button>
+                    </div>
+                 <div class="tcel"></div>
+              </div>
+            </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END EPIDEMIOLOGY SETUP-->
+
+
+<!--MODAL FOR STORMDRAIN SETUP-->
 <div id="stormdrain_setup" class="modal fade" role="dialog">
   <div class="modal-dialog">
     <!-- Modal content-->
@@ -445,7 +661,7 @@
             <div class="tt t-100 v-pd-10">
                 <div class="tcol"></div>
                 <div class="tr">
-                      <div class="tcel p-center t-border" style="background:rgba(255,221,24,0.7)">
+                      <div class="tcel p-center t-border t-note">
                         <div class="t-pd-5">
                           <p>
                             - <span i18n="stormdrain.categories-helper1"></span>
@@ -639,12 +855,10 @@
         <!--<span i18n="map.controlmoreinfo_desc_es"></span>-->
         <ul class="info_list">
             <li class="tiger_mosquito">
-                <img src="./img/marker_albopictus_1.svg" class="private">
                 <span i18n="layer.tiger" class="bold"></span>:
                 <span i18n="expertinfo.tiger_mosquito"></span>
             </li>
             <li class="yellow_fever_mosquito">
-                <img src="./img/marker_aegypti_1.svg" class="private">
                 <span i18n="layer.zika" class="bold"></span>:
                 <span i18n="expertinfo.yellow_fever_mosquito"></span>
             </li>
@@ -664,13 +878,17 @@
                 <span i18n="layer.site" class="bold"></span>:
                 <span i18n="expertinfo.site"></span>
             </li>
-            <li class="userfixes">
-                <span i18n="layer.userfixes" class="bold"></span>:
-                <span i18n="expertinfo.userfixes"></span>
-            </li>
             <li class="trash_layer private">
                 <span i18n="layer.trash_layer" class="bold"></span>:
                 <span i18n="expertinfo.trash_layer"></span>
+            </li>
+            <li class="predictionmodels">
+                <span i18n="layer.predictionmodels" class="bold"></span>:
+                <span i18n="layer.predictionmodels.description"></span>
+            </li>
+            <li class="userfixes">
+                <span i18n="layer.userfixes" class="bold"></span>:
+                <span i18n="expertinfo.userfixes"></span>
             </li>
         </ul>
         <p i18n="map.to_know_more"></p>
@@ -856,7 +1074,7 @@
               </div>
            <% } %>
            <!--notificacions-->
-           <% if (notifs[0].f1!=null) { %>
+           <% if (notifs.length) { %>
                <div class="notif_container">
                    <select id="notif_selectpicker">
                        <option value="0" i18n='info.notifications'></option>
@@ -864,9 +1082,9 @@
                        var num_n = 0;
                         _.each(notifs, function(notif) { %>
                            <option value="notif_<%=num_n%>">
-                               <%=notif.f1%> ( <%=notif.f3%>
-                               <% if (notif.f4) {%>
-                                 - <%=notif.f4%>
+                               <%=notif.notification_content__title_es%> ( <%=notif.date_comment%>
+                               <% if (notif.expert__username) {%>
+                                 - <%=notif.expert__username%>
                                <% } %>
                                )
                               <% if (notif.f5) {%>
@@ -882,12 +1100,13 @@
                var num_n = 0;
                 _.each(notifs, function(notif) { %>
                    <div class="detailed_notif" id="notif_<%=num_n%>" style="display: none;">
-                       <%=notif.f2%>
+                       <%=notif.notification_content__body_html_es%>
                    </div>
                    <% num_n += 1;
                }); %>
                </div>
            <% } %>
+
            <!-- fi notificcions-->
            <% if( ( version_uuid != null) && (version_uuid != "") ) { %>
                <div id="popup_id">
@@ -1074,7 +1293,86 @@
 
     </script>
 
+    <!-- EPIDEMIOLOGY DATA TEMPLATE-->
+    <script type = "text/template" id="epidemiology-tpl-content">
+        <!--<h3 i18n="map.report_title"></h3>-->
+        <div id="epidemiology-tpl-container" class="">
+            <!-- nom de la capa -->
+            <div class="epi-tpl-title">
+                <h3>
+                    <span i18n="epi.tpl-title"></span>
+                </h3>
+            </div>
 
+          <% if( ( patient_state != null) && (patient_state != "") ) { %>
+           <div class="epi-tpl-div">
+             <span i18n="epi.patient_state"></span>
+                <img class="epi-icon" src="<%= icon_src%>">
+             <%= patient_state %>
+           </div>
+          <% } %>
+
+          <% if( ( lon != null) && (lon != "") && ( lat != null) && (lat != "") ) { %>
+           <div class="epi-tpl-div">
+             <span i18n="map.coordenadas"></span>
+             <%= lat.toFixed(6) %>, <%= lon.toFixed(6) %>
+           </div>
+          <% } %>
+
+          <% if( ( year != null) && (year != "") ) { %>
+          <div class="epi-tpl-div">
+            <span i18n="epi.year"></span>
+            <%= year %>
+          </div>
+          <% } %>
+
+          <% if( ( province != null) && (province != "") ) { %>
+          <div class="epi-tpl-div">
+            <span i18n="epi.province"></span>
+            <%= province %>
+          </div>
+          <% } %>
+
+          <% if( ( country != null) && (country != "") ) { %>
+          <div class="epi-tpl-div">
+            <span i18n="epi.country"></span>
+            <%= country %>
+          </div>
+          <% } %>
+
+          <% if( ( health_center != null) && (health_center != "") ) { %>
+          <div class="epi-tpl-div">
+            <span i18n="epi.health_center"></span>
+            <%= health_center %>
+          </div>
+          <% } %>
+
+          <% if( ( date_symptom != null) && (date_symptom != "") ) { %>
+          <div class="epi-tpl-div">
+            <span i18n="epi.date_symptom"></span>
+            <%= moment(date_symptom).format('DD-MM-YYYY') %>
+          </div>
+          <% } %>
+
+          <% if( ( date_arribal != null) && (date_arribal != "") ) { %>
+          <div class="epi-tpl-div">
+            <span i18n="epi.date_arribal"></span>
+            <%= moment(date_arribal).format('DD-MM-YYYY') %>
+          </div>
+          <% } %>
+
+          <% if( ( age != null) && (age != "") ) { %>
+          <div class="epi-tpl-div">
+            <span i18n="epi.age"></span>
+            <%= age %>
+          </div>
+          <% } %>
+
+      </div>
+
+    </script>
+
+    <!-- END EPIDEMIOLOGY TEMPLATE-->
     <!-- build:js js/vendor.min.js -->
     <script src="lib/moment/moment.min.js"></script>
     <script src="lib/jquery/dist/jquery.min.js"></script>
@@ -1110,6 +1408,7 @@
      <!-- inject:js -->
      <script src="js/config.js"></script>
      <script src="js/config_spain.js"></script>
+     <script src="js/utils.js"></script>
      <script src="js/i18n/ca.js"></script>
      <script src="js/i18n/en.js"></script>
      <script src="js/i18n/es.js"></script>
@@ -1118,6 +1417,7 @@
      <script src="js/leaflet/control-div.js"></script>
      <script src="js/leaflet/geojson-vt-dev.js"></script>
      <script src="js/leaflet/L.CanvasTiles.js"></script>
+     
 
      <script src="js/leaflet/control-sidebar-button.js"></script>
      <script src="lib/L.CanvasOverlay.js"></script>

@@ -15,6 +15,8 @@ add = {
     'map.controlshare_view_description': 'Comparte esta vista privada',
     'share.private_layer_warn': '¡Atención! Los datos privados de la vista actual y algunas de las capas solo serán visibles para los usuarios registrados.',
 
+    //descargas
+    'map.text_description_download': '<p>La descarga se realizará a partir de los elementos que se visualizan en el mapa y solo para los datos relativos a las observaciones ciudadanas. Comprueba que estén activas las capas de la leyenda que deseas así como los filtros temporales y el nivel de zoom.</p><p>Una vez definida la vista deseada pulsa en el botón de descarga.</p>',
     //NOFIFICATIONS
     'map.notification_add':'Nueva notificación',
     'notif.observations_none':'No hay ninguna observación seleccionada',
@@ -37,7 +39,8 @@ add = {
     'map.notification.preset0.body': '<p>Esta es la notificación predefinida número 1</p><p>En el cuerpo del mensaje ponemos lo que convenga.</p>',
     'map.notification.preset1.title': 'Notificación predefinida 2',
     'map.notification.preset1.body': '<p>Esta es la notificación predefinida número 2</p><p>En el cuerpo de este mensaje hay un poco más de texto.</p>',
-    
+    'notif.sendig_notifications': 'Se está enviando la información...',
+
      //NOTIFICATIONS DRAW
     'leaflet.draw.toolbar.cancel.title': 'Cancelar edición',
 
@@ -97,7 +100,7 @@ add = {
     'stormdrain.upload-required':'Todos los campos son obligatorios',
     'stormdrain.setup-now':'Continuar con la configuración de imbornales',
     'stormdrain.setup-later':'Configurar imbornales más tarde',
-    'stormdrain.upload-button':'Selecciona un fichero',
+    'stormdrain.upload-button':'Selecciona un archivo',
     'stormdrain.get-template':'Descargar plantilla',
     'stormdrain.version-txt':'Versión',
     'stormdrain.user-txt':'Usuario',
@@ -119,5 +122,43 @@ add = {
     'stormdrain.example-body-13': 'Para que un imbornal pertenezca a una categoría es necesario que se cumplan todas las condiciones de la categoría (operador lógico AND).',
     'stormdrain.example-body-14': 'También hay que tener en cuenta que cuando un imbornal «cae» dentro de una categoría, éste ya no se evalúa con el resto de categorías que vienen a continuación. Es decir, un imbornal que tenga la columna «agua» = «sí» y «tratamiento» = «sí» se representará en color verde porque es la primera categoría de la que cumple todas las condiciones (en este caso sólo hay una).',
 
+    //configuración de la capa epidemiologia
+    'layer.epidemiology': 'Epidemiología',
+    'epidemiology.upload-title': 'Carga de datos epidemiológicos',
+    'epidemiology.get-template': 'Descargar plantilla',
+    'epidemiology.upload-button':'Selecciona un archivo',
+    'epidemiology.import-started': 'Importando datos. Este proceso puede tardar unos segundos',
+    'epidemiology.import-finished': 'La importación ha finalizado correctamente',
+    'epidemiology.setup-now':'Continuar con la configuración',
+    'epidemiology.setup-later':'Configurar más tarde',
+    'epi.tpl-title': 'Datos epidemiologicos',
+    'epi.date_symptom':'Fecha primeros síntomas',
+    'epi.date_arribal': 'Fecha de llegada',
+    'epi.age': 'Edad',
+    'epi.country':'País visitado',
+    'epi.patient_state':'Estado',
+    'epi.province':'Provincia',
+    'epi.health_center':'Centro',
+    'epi.year':'Año',
+    'epidemiology.setup-title': 'Epidemiología. Configuración de la visualización',
+    'epidemiology.update': 'Actualizar',
+    'epidemiology.period': 'Por',
+    'epidemiology.field-map': 'Tipo de mapa',
+    'epidemiology.patient_state': 'Estado del paciente',
+    'epidemiology.age_band': 'Franjas de edad',
+    'epidemiology.date_symptom': 'Fecha primeros síntomas',
+    'epidemiology.date_arribal': 'Fecha de llegada',
+    'epidemiology.years': 'años',
+    'epidemiology.patient-filter': 'Estado de los pacientes',
+    'epidemiology.likely': 'Probable',
+    'epidemiology.suspected': 'Sospechoso',
+    'epidemiology.confirmed': 'Confirmado',
+    'epidemiology.undefined': 'Indefinido',
+    'epidemiology.nocase': 'No hay caso',
+    'epidemiology.all': 'Todos los estados',
+    'epidemiology.filter-explanation':'Los filtros temporales del mapa también se aplicarán a esta capa a partir del campo *Fecha de llegada*',
+    'epidemiology.upload-explanation': 'ATENCIÓN!! Este proceso de importación eliminará todos los datos previamente almacenados de la capa de Epidemiología',
+    'epidemiology.empty-layer': 'En estos momentos la capa Epidemiología no contiene datos.',
+    'epidemiology.upload-error': 'Se ha producido un error durante el proceso de importación',
 };
 _.extend(trans.es, add);

@@ -73,6 +73,7 @@ trans.es = {
     'map.controlshare_view': 'Vista',
 
     //MAP FILTERS
+    'filters.description':'Los filtros del mapa no se aplican a la capa de modelos disponibles',
     'All years': 'Todos los años',
     'All months': 'Todos los meses',
     'January': 'Enero',
@@ -181,5 +182,23 @@ trans.es = {
 
     'filter.municipality.placeholder': 'Búsqueda de municipios',
     'filter.municipalities.inputtooshort': 'Mínimo 2 caracteres',
-    'label.user-municipalities': 'Mis municipios'
+    'label.user-municipalities': 'Mis municipios',
+
+    // MODELS
+    'layer.predictionmodels': 'Modelos disponibles de probabilidad de mosquito tigre',
+    //HTML FORMAT
+    'layer.predictionmodels.description': 'El mapa muestra estimaciones de la probabilidad de alerta de mosquito tigre, que representa la probabilidad de que un participante envíe un informe confiable de mosquito tigre durante un período de dos semanas, controlando el esfuerzo de muestreo (lo que significa que el modelo incorpora el hecho de que hay más participantes en algunas zonas que en otras).<p>Estas estimaciones se muestran en una cuadrícula de 0.05 grados de latitud por 0.05 grados de longitud y se promedian por mes. La probabilidad de alerta depende principalmente de la distribución de la población del mosquito tigre, que varia según la ubicación y el mes. Se ha demostrado que la probabilidad de alerta es un buen predictor de la presencia del mosquito tigre medida por los métodos tradicionales de vigilancia (ovitraps), como se explica en Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Las estimaciones se actualizan semanalmente a medida que ingresan nuevos datos.</p><p>Tenga en cuenta que esta capa de probabilidad de alerta solo se puede filtrar con los selectores de año y mes que se muestran aquí (y no con los filtros adicionales a continuación, que son para otras capas)</p>',
+    'models.label.prob-1': 'Muy baja',
+    'models.label.prob-2': 'Baja',
+    'models.label.prob-3': 'Media',
+    'models.label.prob-4': 'Alta',
+    'models.label.sd-1': 'Muy baja',
+    'models.label.sd-2': 'Baja',
+    'models.label.sd-3': 'Media',
+    'models.label.sd-4': 'Alta',
+    'models.probability': 'Probabilidad',
+    'models.uncertainty': 'Incertidumbre',
+
+    'general.year': 'Año',
+    'general.month': 'Mes',
 };

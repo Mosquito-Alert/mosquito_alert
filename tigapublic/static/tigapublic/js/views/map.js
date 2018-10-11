@@ -61,7 +61,6 @@
                 this.filters.municipalities = options.filters_municipalities;
             }
         }
-
         this.render();
     },
 
@@ -103,6 +102,7 @@
 
         this.addPanelMoreinfoControl();
         this.addPanelReport();
+        this.addPanelEpidemiology();
         this.addPanelShareControl();
 
         this.addNumReportsControl();
@@ -142,7 +142,6 @@
           this.load_data();
         }
 
-
         this.map.on('layerchange', function(layer){
             if (_this.map.hasLayer(layer.layer)) {
               this.options.layers.push(layer.layer._meta.key);
@@ -170,10 +169,9 @@
                 this.controls.notification.getNotificationClientIds();
             }
             this.drawCluster();
-
         }, this);
 
-        this.filters.on('years_change', function(years){
+        this.filters.on('years_change', function(years) {
             this.filters.years = years;
             this.filters.trigger('changed','year');
         }, this);
@@ -212,13 +210,22 @@
           this.filters.trigger('changed','municipalities');
         }, this)
 
-        this.filters.on('changed', function(filter){
+        this.filters.on('changed', function(filter) {
+          //filter epidata
+          if (this.hasDateFilterChanged(filter)
+              && (this.map.hasLayer(this.epidemiology_layer)) ) {
+              this.epidemiology_filter();
+          }
           var newCallFilters = [
-            'notif', 'hashtag', 'notif_types', 'municipalities','daterange'
+            'notif', 'hashtag', 'notif_types', 'municipalities', 'daterange'
           ];
-          if (newCallFilters.indexOf(filter) === -1){
-              if (MOSQUITO.app.mapView.options.layers.indexOf('F')>-1)
-                  this.refreshCoverageLayer();
+          var userfixCallFilters = ['year', 'years', 'months', 'daterange'];
+          if (userfixCallFilters.indexOf(filter) !== -1) {
+              if (this.map.hasLayer(this.coverage_layer)) {
+                this.refreshCoverageLayer();
+              }
+          }
+          if (newCallFilters.indexOf(filter) === -1) {
               this.drawCluster();
               // make an exception for daterange and load observations
           } else {
@@ -233,9 +240,7 @@
             this.deactivateFilterAcordion();
           }
         }, this);
-
         return this;
-
     },
 
     redraw: function(options) {
@@ -285,7 +290,6 @@
 
             this.drawCluster();
         }
-
     },
 
     excludeLayerFromFilter: function(layer) {
@@ -302,7 +306,6 @@
           this.filters.excluded_types.push(layer.key);
         }
       }
-
     },
     /**
      * @return {boolean} true if (lng, lat) is in bounds
@@ -343,5 +346,9 @@
 
     dataLoadingIsAllowed: function(){
       return (this.scope.allowDataLoading)
+    },
+
+    hasDateFilterChanged: function(filter){
+      return (['year','months','daterange'].indexOf(filter)!==-1)
     }
 });

@@ -71,12 +71,17 @@ var HeaderView = Backbone.View.extend({
       var _this = this;
         $.ajax({
             type: 'GET',
-            'async': false,
+            'async': true,
             url:  MOSQUITO.config.URL_API + 'ajax_is_logged/',
             success: function(response){
+                MOSQUITO.config.predictionmodels_available = response.models;
                 MOSQUITO.app.user=response.data;
                 MOSQUITO.app.trigger('app_logged', response.success);
             }
+        }).fail(function(error) {
+            console.log('no response from login')
+            MOSQUITO.app.trigger('app_logged', false);
+            MOSQUITO.config.predictionmodels_available = [];
         });
     },
 
@@ -98,16 +103,17 @@ var HeaderView = Backbone.View.extend({
                 } else {
                   alert(t('error.invalid_login'));
                 }
-                //MOSQUITO.app.trigger('app_logged', response.success);
             }
         });
       }
     },
+
     logout: function(){
         var _this = this;
         $.ajax({
             url:  MOSQUITO.config.URL_API + 'ajax_logout/',
             success: function(){
+                MOSQUITO.app.mapView.controls.share_btn.options.build_url();
                 _this.is_logged();
                 MOSQUITO.app.trigger('app_logged', false);
             }

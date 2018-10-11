@@ -1,18 +1,32 @@
+"""Admin."""
 from django.contrib import admin
-from django.contrib.admin import SimpleListFilter
 
 # Register your models here.
-from .models import Municipalities, UserMunicipalities
+from .models import AuthUser, Municipalities, PredefinedNotification
 
-class MunicipalitiesAdmin(admin.ModelAdmin):
 
-    def get_queryset(self, request):
-        qs = super(MunicipalitiesAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
-            return qs.filter(tipo='Municipio')
-        return qs.filter(tipo='Municipio')
+class AuthUserAdmin(admin.ModelAdmin):
+    """AuthUserAdmin."""
 
-class UserMunicipalitiesAdmin(admin.ModelAdmin):
-    list_filter = ('user', )
+    filter_horizontal = ('province', 'municipalities')
 
-admin.site.register(UserMunicipalities, UserMunicipalitiesAdmin)
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        """formfield_for_manytomany."""
+        if db_field.name == "municipalities":
+            editing_user_id = request.resolver_match.args[0]
+
+            qs_p = AuthUser.objects.filter(
+                id__exact=editing_user_id
+            ).values('province__id')
+
+            kwargs["queryset"] = Municipalities.objects.filter(
+                codprov__in=qs_p
+            )
+
+        return super(AuthUserAdmin, self).formfield_for_manytomany(db_field,
+                                                                   request,
+                                                                   **kwargs)
+
+
+admin.site.register(AuthUser, AuthUserAdmin)
+admin.site.register(PredefinedNotification)

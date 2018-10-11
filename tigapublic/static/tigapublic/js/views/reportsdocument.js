@@ -130,6 +130,8 @@ var ReportsdocumentView = MapView.extend({
 
             if (window.opener.document.getElementById("map_layers_list")){
               var stuff = $('<div>').html(window.opener.document.getElementById("map_layers_list").outerHTML).find('li.active');
+              //except models and background layers
+              stuff = $(stuff).not('#layer_I, #layer_F');
               stuff.removeClass('active');
             }
 
@@ -234,7 +236,7 @@ var ReportsdocumentView = MapView.extend({
     },
 
     fetch_data: function(options, callback){
-        url = MOSQUITO.config.URL_API + 'reports/' + options.bbox + '/';
+        url = MOSQUITO.config.URL_API + 'observations/report/' + options.bbox + '/';
 
         if (!this.isDaterangeEmpty(options)) {
           url += options.daterange.start + '/' + options.daterange.end;
