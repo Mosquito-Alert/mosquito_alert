@@ -13,7 +13,7 @@ from django.db import models
 # from django.db.models import CharField, Value as V
 
 class NotificationImageFormModel(models.Model):
-    image = models.ImageField(upload_to=settings.MEDIA_ROOT)
+    image = models.ImageField(upload_to='media')
     class Meta:
         db_table = 'tigapublic_notificationimageformmodel'
 

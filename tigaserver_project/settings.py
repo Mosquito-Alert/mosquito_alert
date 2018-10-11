@@ -37,9 +37,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 
-TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
-    'django.core.context_processors.request',
-)
+# DEPRECATED
+#TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
+    #'django.core.context_processors.request',
+#)
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -49,6 +50,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.sites',
     'rest_framework.authtoken',
     'tigaserver_app',
     'tigamap',
@@ -57,7 +59,7 @@ INSTALLED_APPS = (
     'tigapublic',
     'rest_framework',
     'leaflet',
-    'south',
+    #'south',
     'stats',
     'floppyforms',
     'taggit',
@@ -137,7 +139,8 @@ STATIC_ROOT = ''
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = ''
+#MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -152,7 +155,8 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ),
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    #DEPRECATED
+    #'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
 LEAFLET_CONFIG = {

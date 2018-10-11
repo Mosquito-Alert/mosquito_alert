@@ -16,7 +16,9 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from random import shuffle
-from django.core.context_processors import csrf
+#DEPRECATED
+#from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings

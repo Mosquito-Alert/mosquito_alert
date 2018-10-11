@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from rest_framework import routers
 from tigaserver_app import views
 from stats.views import workload_stats_per_user,workload_daily_report_input,workload_pending_per_user,workload_available_reports, speedmeter_api
@@ -19,7 +19,7 @@ router.register(r'hidden_reports', views.NonVisibleReportsMapViewSet, base_name=
 #router.register(r'cfs_reports', views.CoarseFilterSiteReports, base_name='cfs_reports')
 router.register(r'tags', views.TagViewSet, base_name='tags')
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^time_info/$', views.get_data_time_info),
     url(r'^photos/$', views.post_photo),
     url(r'^photos_user/$', views.get_photo),
@@ -43,4 +43,4 @@ urlpatterns = patterns('',
     url(r'^stats/workload_data/available/$', workload_available_reports),
     url(r'^stats/speedmeter/$', speedmeter_api),
     url(r'^', include(router.urls)),
-)
+]

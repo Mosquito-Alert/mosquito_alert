@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from . import views
 import re
 
@@ -52,7 +52,7 @@ re_years = re.compile(r"(?P<years>all|[,\d]+)\/?").pattern
 # MONTH
 re_months = re.compile(r"(?P<months>all|[,\d]+)\/?").pattern
 
-urlpatterns = patterns('',
+urlpatterns = [
     # Excel export
     url(r'(?i)map_aux_reports_export\.(?P<format>(xls)|(csv))$',
         views.MapAuxReportsExportView.as_view()),
@@ -145,4 +145,4 @@ urlpatterns = patterns('',
     #GetMunicipalities by Id
     url(r'^get/municipalities/id/$', views.getMunicipalitiesById),
 
-)
+]

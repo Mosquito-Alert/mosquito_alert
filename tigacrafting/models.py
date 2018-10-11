@@ -131,7 +131,7 @@ class CrowdcraftingResponse(models.Model):
     site_question_response = models.CharField(max_length=100)
     created = models.DateTimeField(blank=True, null=True)
     finish_time = models.DateTimeField(blank=True, null=True)
-    user_ip = models.IPAddressField(blank=True, null=True)
+    user_ip = models.GenericIPAddressField(blank=True, null=True)
 
     def __unicode__(self):
         return str(self.id)
@@ -143,8 +143,8 @@ class Annotation(models.Model):
     tiger_certainty_percent = models.IntegerField('Degree of belief', validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
     value_changed = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
-    last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
-    created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    last_modified = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
     working_on = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -158,8 +158,8 @@ class MoveLabAnnotation(models.Model):
     certainty_notes = models.TextField(blank=True)
     hide = models.BooleanField('Hide photo from public', default=False)
     edited_user_notes = models.TextField(blank=True)
-    last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
-    created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    last_modified = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
 
 TIGER_CATEGORIES = ((2, 'Definitely Aedes albopictus'), (1, 'Probably Aedes albopictus'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
 
@@ -187,12 +187,12 @@ class ExpertReportAnnotation(models.Model):
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
     message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
     status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
-    last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    last_modified = models.DateTimeField(auto_now=True)
     validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
-    created = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    created = models.DateTimeField(auto_now_add=True)
     simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
     tags = TaggableManager(blank=True)
 

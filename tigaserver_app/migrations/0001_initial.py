@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
-from south.db import db
-from south.v2 import SchemaMigration
+#from south.utils import datetime_utils as datetime
+#from south.db import db
+#from south.v2 import SchemaMigration
 from django.db import models
 
-
+'''
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
@@ -460,3 +460,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['tigaserver_app']
+'''

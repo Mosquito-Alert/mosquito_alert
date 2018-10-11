@@ -2,6 +2,7 @@ from django.conf.urls import *
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic.base import RedirectView
 from django.contrib.gis import admin
+from django.contrib import auth
 from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image
@@ -18,7 +19,7 @@ admin.autodiscover()
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browseable API.
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/', include('tigaserver_app.urls')),
@@ -26,7 +27,7 @@ urlpatterns = patterns('',
     url(r'^about/(?P<platform>\w+)/(?P<language>[-\w]+)/$', show_about),
     url(r'^credits/$', show_credit_image, name='show_credit_image'),
     url(r'^license/(?P<platform>\w+)/(?P<language>[-\w]+)/$', show_license),
-    (r'^i18n/', include('django.conf.urls.i18n')),
+    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^webmap/embedded/ca/$', RedirectView.as_view(url='/ca/webmap/embedded/', permanent=False)),
     url(r'^webmap/embedded/es/$', RedirectView.as_view(url='/es/webmap/embedded/', permanent=False)),
     url(r'^webmap/embedded/en/$', RedirectView.as_view(url='/en/webmap/embedded/', permanent=False)),
@@ -47,10 +48,10 @@ urlpatterns = patterns('',
     url(r'^privacy/zh-cn/$', RedirectView.as_view(url='/zh-cn/privacy/', permanent=False)),
     url(r'^tigapublic/', include('tigapublic.urls')),
     url(r'^get_photo/(?P<token>\w+)/(?P<photo_uuid>[\w{}.-]{36})/(?P<size>\w+)$', lookup_photo),
-) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
                                                                              document_root=settings.MEDIA_ROOT)
 
-urlpatterns += i18n_patterns('',
+urlpatterns += i18n_patterns(
     url(r'^policies/$', show_policies, name='help.show_policies'),
     url(r'^terms/$', show_terms, name='help.show_terms'),
     url(r'^privacy/$', show_privacy, name='help.show_privacy'),
@@ -97,9 +98,9 @@ urlpatterns += i18n_patterns('',
     ## should stay out
     #url(r'^coveragestats/$', show_fix_users),
 
-    url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
+    url(r'^accounts/login/$', auth.login, name='login'),
     #url(r'^processing/$', show_processing),
-    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/experts/'}, name='auth_logout'),
+    url(r'^logout/$', auth.logout, {'next_page': '/experts/'}, name='auth_logout'),
     # We do not include the message urls because two of the views (compose_w_data and reply_w_data) are slightly customized
     #url(r'^messages/', include('django_messages.urls')),
     #url(r'^$', RedirectView.as_view(permanent=True, url='inbox/'), name='messages_redirect'),

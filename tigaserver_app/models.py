@@ -1698,7 +1698,7 @@ class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
     user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
     expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
-    date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
     notification_content = models.ForeignKey(NotificationContent,blank=True, null=True,related_name="notification_content",help_text='Multi language content of the notification')
     #All this becomes obsolete, now all notification text is outside. This allows for re-use in massive notifications
