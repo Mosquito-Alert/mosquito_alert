@@ -3,15 +3,15 @@ var MapView = MapView.extend({
     iconstype: {},
     epiIcon: L.Icon.extend({
         options: {
-          iconSize:    [34, 34],
-          iconAnchor:  [15, 15],
+          iconSize:    [28, 28],
+          iconAnchor:  [14, 14],
         }
     }),
 
     epiSelectedIcon: L.Icon.extend({
         options: {
-          iconSize:    [44, 44],
-          iconAnchor:  [20, 20],
+          iconSize:    [38, 38],
+          iconAnchor:  [18, 18],
         }
     }),
 

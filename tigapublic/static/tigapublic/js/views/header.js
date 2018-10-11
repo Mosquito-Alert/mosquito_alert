@@ -81,6 +81,7 @@ var HeaderView = Backbone.View.extend({
         }).fail(function(error) {
             console.log('no response from login')
             MOSQUITO.app.trigger('app_logged', false);
+            MOSQUITO.config.predictionmodels_available = [];
         });
     },
 

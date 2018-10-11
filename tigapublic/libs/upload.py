@@ -148,17 +148,12 @@ class ExcelUploader(BaseManager):
         import_dataset.headers = self.read_dataset.headers
 
         for row in self.read_dataset.dict:
-            # Ignore rows with emtpy lat or lon
-            if (row['lon'] is not None and row['lat'] is not None and
-                    row['date_arribal'] is not None and
-                    row['date_symptom'] is not None):
+            row = self._check_fieldtypes(row, fieldtypes)
+            new = []
+            for key in row:
+                new.append(row[key])
 
-                row = self._check_fieldtypes(row, fieldtypes)
-                new = []
-                for key in row:
-                    new.append(row[key])
-
-                import_dataset.append(new)
+            import_dataset.append(new)
 
         db = connection.cursor()
         import_dataset.headers = None

@@ -4,17 +4,10 @@
 Observacions
 ------------
 
-a) Les files que no continguin cap valor en alguna de les següents columnes no s'importaran.
-
-*lat*
-*lon*
-*data_arribada*
-*inici_simptomes*
-
-b) Totes les columnes de fitxer han de contenir les dades en un format concret. Si no es respecta aquest format es produirà un error durant el procés d'importació. El format de cada columna es detalla a continuació.
+Totes les columnes de fitxer han de contenir les dades en un format concret. Si no es respecta aquest format es produirà un error durant el procés d'importació. El format de cada columna es detalla a continuació.
 
 
-Columnes requerides 
+Columnes requerides
 -------------------
 
 Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació.
@@ -26,7 +19,7 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
 *lat*: Coordenades Y (latitud) de la localització del pacient.
     Format: Valors decimals. Ex: 41.344343
     Altres nom acceptats per aquesta columna son: latitud y latitude.
-    
+
 *lon*: Coordenades X (longitud) de la localització del pacient.
     Format: Valors decimals. Ex: 2.344341
     Altres nom acceptats per aquesta columna son: longitud y longitude.
@@ -34,7 +27,7 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
 *data_arribada*: Data d'arribada a Catalunya del pacient.
     Format: dd/mm/yyyy (p. ej: 21/08/2016)
     Altres nom acceptats per aquesta columna son: date_arribal y fecha_llegada.
-    
+
 *inici_simptomes*: Data d'arribada a Catalunya del pacient.
     Format: dd/mm/yyyy (p. ej: 21/08/2016)
     Altres nom acceptats per aquesta columna son: inicio_sintomas y date_symptoms.
@@ -42,29 +35,29 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
 *pais_visitat*: Nom del pais visitat.
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: pais_visitado y visited_country.
-    
-*estat*: Estat del pacient. Possibles valors: probable, sospitós (o sospitos, sense accent) y confirmat. 
+
+*estat*: Estat del pacient. Possibles valors: probable, sospitós (o sospitos, sense accent) y confirmat.
     Observacions: Els valors d'aquesta cel·la que no es corresponguin amb els valors anteriors, es representaran en el mapa un interrogant (?).
     Format: Valors alfanumèrics. Màxim 255 caracters.
-    Altres nom acceptats per aquesta columna son: estado y patient_state.  
-    
+    Altres nom acceptats per aquesta columna son: estado y patient_state.
+
 *centre_dia*: Nom del centre d'atenció on s'ha atès al pacient.
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: centro y center.
-    
+
 *any*: Any de visita del pacient.
     Format: Numèric
     Altres nom acceptats per aquesta columna son: año, year
-    
+
 *prov*: Nom de la provincia on resideix el pacient.
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: province.
-    
+
 *edatany*: Edat del pacient
     Format: Valor numèric enter.
     Altres nom acceptats per aquesta columna son: edad y age.
 
-    
+
 Columnes opcionals
 -------------------
 

@@ -46,6 +46,7 @@ trans.ca = {
       '<br/>Per a més informació sobre les polítiques del lloc web, consulta la <a href="http://webserver.mosquitoalert.com/ca/privacy/">Política de privacitat</a> i <a href="http://webserver.mosquitoalert.com/ca/terms/">l\'Acord de l\'usuari</a>.',
     'map.cookie_accept': 'Tanca notificació',
 
+    'filters.description':'Els filtres del mapa no apliquen a la capa de models disponibles',
     'All years': 'Tots els anys',
     'All months': 'Tots els mesos',
     'January': 'Gener',
@@ -187,9 +188,10 @@ trans.ca = {
     'label.user-municipalities': 'Els meus municipis',
 
     // MODELS
-    'layer.predictionmodels': 'Probabilitat Mosquit Tigre',
+    'layer.predictionmodels': 'Models disponibles de probabilitat de mosquit tigre',
     //HTML FORMAT
-    'layer.predictionmodels.description': 'El mapa mostra la probabilitat mitjana d\'alerta de mosquit tigre (valors de 0 a 1), en una quadrícula de 4x4 km, classificats en 4 nivells d\'incertesa derivats de les desviacions estàndards associades a les nostres estimacions mitjanes. Aquests nivells d\'incertesa representen la probabilitat que un participant enviï almenys, una fotografia fiable d\'un mosquit tigre des d\'una determinada cel·la de la quadrícula de 4x4 km durant les dues setmanes precedents al dia en qüestió, controlant per l\'esforç de mostreig.<p>Aquestes probabilitats majoritàriament depenen de la distribució de les poblacions de mosquit tigre i de l\'època de l\'any (ja que aquestes espècies tenen un cicle estacional amb variacions en la seva abundància poblacional). El model, publicat a Nature Communications 8: 916 (2017), controla l\'esforç de mostreig i ha demostrat que produeix estimacions similars a les que es poden realitzar a partir de trampes d\'ovoposició de mosquit. Aquest model estacional, que encara no inclou dades climàtiques ni ambientals, s\'executa un cop a la setmana generant estimacions diàries.</p>',
+    'layer.predictionmodels.description': 'El mapa mostra estimacions de la probabilitat d\'alerta de mosquits tigre, que representa la probabilitat que un participant enviï un informe de mosquit tigre fiable durant un període de dues setmanes, controlant l\'esforç de mostreig (és a dir, que el model representa el fet que hi hagi més participants en algunes àrees que en altres).<p>Aquestes estimacions es mostren en una graella de 0,05 graus de latitud per 0,05 graus de longitud i es promitgen per mes. La probabilitat d\'alerta depèn principalment de la distribució de la població del mosquit tigre i de l\'esforç de mostreig collectiu, que varia segons la ubicació i el mes. La probabilitat d\'alerta s\'ha demostrat que és un bon predictor de la presència de mosquits tigre mesurat pels mètodes tradicionals de vigilància (ovitraps), tal com s\'explica a Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Les estimacions s\'actualitzen setmanalment a mesura que apareixen noves dades.</p><p>Tingueu en compte que aquesta capa de probabilitat d\'alerta només es pot filtrar amb els selectors d\'any i mes que es mostren aquí (i no amb els filtres addicionals a continuació, que són per a altres capes).</p>',
+
     'models.label.prob-1': 'Molt baixa',
     'models.label.prob-2': 'Baixa',
     'models.label.prob-3': 'Mitja',

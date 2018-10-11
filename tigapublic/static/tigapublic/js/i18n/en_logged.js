@@ -15,6 +15,9 @@ add = {
     'map.controlshare_view_description': 'Share this private map view',
     'share.private_layer_warn': 'Attention! The private data and some of its layers of the current view will only be visible to registered users.',
 
+    //download
+    'map.text_description_download': '<p>Only observation citizen data displayed in the current map view will be downloaded. Verify your current active layers, temporal filters and zoom.</p><p>Once verified, press the download button.</p>',
+
     //Notification
   'usernotification.not-predefined':'Not predefined',
   'check_notifications': 'Notifications',
@@ -35,7 +38,7 @@ add = {
   'notif.saved': 'Notification successfully sent',
   'notif.notification_cancel': 'Cancel',
   'notif.observations_none': 'No observations selected',
-
+  'notif.sendig_notifications': 'Data is being sent...',
 
   //modal
   'map.users_found_text': 'Users',
@@ -153,5 +156,7 @@ add = {
   'epidemiology.all': 'All states',
   'epidemiology.filter-explanation':'If a date filter is applied to the map, it will also be applied to this layer on *date_arribal* field',
   'epidemiology.upload-explanation': 'WARNING!! The upload proces will delete all previouly stored data for the epidemiology layer',
+  'epidemiology.empty-layer': 'There is no epidemiology data available at the moment',
+  'epidemiology.upload-error': 'An error occurred while importing data',
 };
 _.extend(trans.en, add);

@@ -1,7 +1,7 @@
 var MOSQUITO = (function (m, _) {
     m.config = _.extend(m.config || {}, {
         roles: {
-            "notification": ['superexpert','gestors','notifier']
+            "notification": ['superexpert','gestors','notifier','supermosquito']
         },
         lngs: ['es', 'ca', 'en'],
         lngs_admin: ['es'],
@@ -22,7 +22,6 @@ var MOSQUITO = (function (m, _) {
         printreports:true,
         maxPrintReports: 300,
         "groups":[
-
             {'name': 'none', 'icon':''}
         ]
         ,
@@ -74,17 +73,18 @@ var MOSQUITO = (function (m, _) {
               'title': 'layer.predictionmodels',
               'deviation_min_zoom': 7,
               'prob_ranges': [
-                  {'minValue':0, 'maxValue':0.25, 'color': 'rgba(255,255,178,0.5)', 'label': 'models.label.prob-1'},
-                  {'minValue':0.25, 'maxValue':0.50, 'color': 'rgba(254,204,92,0.5)', 'label': 'models.label.prob-2'},
-                  {'minValue':0.50, 'maxValue':0.75, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
-                  {'minValue':0.75, 'maxValue':1, 'color': 'rgba(227,26,28,0.5)', 'label': 'models.label.prob-4'}
-                ],
-                'sd_ranges': [
-                  {'minValue':0, 'maxValue':0.25, 'color': '#fff', 'label': 'models.label.sd-1'},
-                  {'minValue':0.25, 'maxValue':0.5, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
-                  {'minValue':0.50, 'maxValue':0.75, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
-                  {'minValue':0.75, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
-                ]
+                {'minValue':0, 'maxValue':0.1, 'color': 'rgba(255,255,178,0.5)', 'label': 'models.label.prob-1'},
+                {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(254,204,92,0.5)', 'label': 'models.label.prob-2'},
+                {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
+                {'minValue':0.3, 'maxValue':1, 'color': 'rgba(227,26,28,0.5)', 'label': 'models.label.prob-4'}
+              ],
+              'sd_ranges': [
+                {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
+                {'minValue':0.05, 'maxValue':0.1, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
+                {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
+                {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
+              ]
+
             },
             {
                 key: 'F',
@@ -256,16 +256,16 @@ var MOSQUITO = (function (m, _) {
                 'title': 'layer.predictionmodels',
                 'deviation_min_zoom': 7,
                 'prob_ranges': [
-                  {'minValue':0, 'maxValue':0.25, 'color': 'rgba(255,255,178,0.5)', 'label': 'models.label.prob-1'},
-                  {'minValue':0.25, 'maxValue':0.50, 'color': 'rgba(254,204,92,0.5)', 'label': 'models.label.prob-2'},
-                  {'minValue':0.50, 'maxValue':0.75, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
-                  {'minValue':0.75, 'maxValue':1, 'color': 'rgba(227,26,28,0.5)', 'label': 'models.label.prob-4'}
+                  {'minValue':0, 'maxValue':0.1, 'color': 'rgba(255,255,178,0.5)', 'label': 'models.label.prob-1'},
+                  {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(254,204,92,0.5)', 'label': 'models.label.prob-2'},
+                  {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
+                  {'minValue':0.3, 'maxValue':1, 'color': 'rgba(227,26,28,0.5)', 'label': 'models.label.prob-4'}
                 ],
                 'sd_ranges': [
-                  {'minValue':0, 'maxValue':0.25, 'color': '#fff', 'label': 'models.label.sd-1'},
-                  {'minValue':0.25, 'maxValue':0.5, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
-                  {'minValue':0.50, 'maxValue':0.75, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
-                  {'minValue':0.75, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
+                  {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
+                  {'minValue':0.05, 'maxValue':0.1, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
+                  {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
+                  {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
                 ]
               },
               {

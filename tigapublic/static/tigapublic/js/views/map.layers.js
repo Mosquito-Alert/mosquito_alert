@@ -18,7 +18,7 @@ var MapView = MapView.extend({
 
     addBaseLayer: function(){
         this.layers = this.layers || {};
-        this.layers.baselayer = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        this.layers.baselayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(this.map);
@@ -224,7 +224,7 @@ var MapView = MapView.extend({
         if (palette.type=='qualitative'){
           lowerValue = patientRow[field].toLowerCase()
           //Remove accents
-          lowerValue = lowerValue.normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+          lowerValue = accentsTidy(lowerValue)
           lowerValue = lowerValue.replace(' ','_')
           if (lowerValue in palette.images){
             return palette.images[lowerValue]
@@ -319,7 +319,7 @@ var MapView = MapView.extend({
         this.epidemiology_data.forEach(function(val, index, arr){
               //if date NOT in range jump to next
             if (_this.epidemiologyMarkerInMap(val,years, months, start_date, end_date)){
-                  var key = val.patient_state.normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                  var key = accentsTidy(val.patient_state)
                   key = key.replace(' ', '_').toLowerCase();
                   var selected_states = $('select[name=epidemiology-state]').val()
                   if (selected_states.indexOf(dict[key])!==-1
@@ -359,6 +359,11 @@ var MapView = MapView.extend({
               if ('epidemiology_data' in _this &&
                   typeof _this.epidemiology_data !== 'undefined')
                   _this.epidemiology_filter()
+
+              if (response.rows.length==0){
+                alert(t('epidemiology.empty-layer'))
+                _this.map.removeLayer(_this.epidemiology_layer)
+              }
           }
       });
     },
@@ -567,9 +572,9 @@ var MapView = MapView.extend({
     },
 
     getForecastRange: function(ranges, val) {
-      let result = ranges.find(function(range) {
+      let result = ranges.filter(function(range) {
         return range.minValue <= val && range.maxValue > val;
-      });
+      })[0];
       if (typeof result == 'undefined') {
         if (val <= ranges[0].minValue)
           result = {'color': ranges[0].color}
@@ -922,11 +927,8 @@ var MapView = MapView.extend({
         _this.isSelectedMarkerStillLoaded = false;
 
         _.each(_this.scope.data, function(item){
-            var n = 1;
-            if(this.map.getZoom()<MOSQUITO.config.maxzoom_cluster){
-                n = item.c;
-            }
-            for(var i = 0; i < n; i++){
+
+            for(var i = 0; i < item.c; i++){
                 pos = new L.LatLng(item.lat, item.lon);
                 marker = _this.getMarkerType(pos, item.category);
                 if (marker) {

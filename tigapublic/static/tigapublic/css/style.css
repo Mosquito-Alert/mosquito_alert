@@ -13,6 +13,7 @@ body{
     display: none;
 }
 
+#download_text{padding-right:5px}
 #page-map{
     overflow: hidden;
 }
@@ -214,6 +215,9 @@ body{
   margin-bottom:5px;
 }
 
+.fa.fa-question.question-mark-toc.question-mark-filters.question-mark-filters{
+  right: 6px;
+}
 #legend_reports_map .section.filters,
 #legend_reports_map .section.filters .title{
   text-align: left;
@@ -756,15 +760,20 @@ h3.reports{
   .map-sidebar {
     width:50% !important;
   }
+  #map-ui li.list-group-only-item {
+    width:99% !important;
+  }
 }
 }
 
-li.tiger_mosquito {
-   background:url('../img/marker_albopictus_2.svg') 0 0 no-repeat no-repeat;
+ul li.tiger_mosquito {
+   background:url('../img/marker_albopictus_all.svg') 0 0 no-repeat no-repeat;
+   text-indent: 42px;
 }
 
-li.yellow_fever_mosquito {
-   background:url('../img/marker_aegypti_2.svg') 0 0 no-repeat no-repeat;
+ul li.yellow_fever_mosquito {
+   background:url('../img/marker_aegypti_all.svg') 0 0 no-repeat no-repeat;
+   text-indent: 42px;
 }
 
 li.other_species {
@@ -821,7 +830,7 @@ body.logged ul.info_list .private{
 
 body.logged ul.info_list img.private{
     display:inline;
-    margin-top:-7px;
+    margin-top:-3px;
 }
 
 #checkbox_notif{
@@ -928,10 +937,11 @@ div#div_none{
     color:red;
     border-radius:5px;
     padding:5px;
+    margin:5px;
     text-align:center;
     border: 1px solid red;
 }
-
+.b-yellow{border: 1px solid #ffe511;}
 .notif-msg.success {
   color:green;
   border-color:green;

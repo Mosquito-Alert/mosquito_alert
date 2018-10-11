@@ -20,6 +20,8 @@ add = {
   'notif.saved':'La notificació s\'ha enviat correctament',
   'notif.notification_cancel':'Cancel·la',
 
+  //Descarregar
+  'map.text_description_download': '<p>La descàrrega es realitzarà a partir dels elements que es visualitzen al mapa i només per a les dades relatives a les observacions ciutadanes. Comprova que tens actives les capes de la llegenda que desitges, els filtres temporals i el nivell de zoom.</p><p>Un cop definida la vista desitjada, fes clic al botó de descàrrega.</p>',
   //Notificacions
   'usernotification.not-predefined':'No predefinides',
   'all_notifications': 'Totes les notificacions',
@@ -43,6 +45,7 @@ add = {
   'notif.notification_cancel': 'Cancel·lar',
   'notif.observations_none': 'No hi ha cap observació seleccionada',
   'notif.saved': 'Notificació enviada correctament',
+  'notif.sendig_notifications': 'Les dades s\'estan enviant...',
 
 
   //Dibuix
@@ -158,7 +161,9 @@ add = {
   'epidemiology.undefined': 'Indefinit',
   'epidemiology.nocase': 'No hi ha cas',
   'epidemiology.all': 'Tots els estats',
-  'epidemiology.filter-explanation':'Els filtres temporas del mapa també aplicaran a aquesta capa a partir del camp **data_arribada*',
+  'epidemiology.filter-explanation':'Els filtres temporas del mapa també aplicaran a aquesta capa a partir del camp *data_arribada*',
   'epidemiology.upload-explanation': 'ATENCIÓ!! Aquest procés d\'importació eliminarà totes les dades prèviament emmagatzemades de la capa d\'Epidemiologia',
+  'epidemiology.empty-layer': 'En aquests moments no hi ha dades d\'epidemiologia',
+  'epidemiology.upload-error': 'S\'ha produït un error durant el procés d\'importació',
 };
 _.extend(trans.ca, add);

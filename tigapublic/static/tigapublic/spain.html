@@ -5,7 +5,7 @@
     <meta name="author" content="@sigte_udg" />
     <title>Mosquito Alert</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	  <!--<link href="http://www.mosquitoalert.com/wp-content/themes/enfold-child/images/favicons/favicon.ico" rel="shortcut icon">-->
+	  <link href="http://www.mosquitoalert.com/wp-content/themes/enfold-child/images/favicons/favicon.ico" rel="shortcut icon">
 
     <link href="lib/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <link href="lib/bootstrap-select-1.10.0/dist/css/bootstrap-select.min.css" rel="stylesheet">
@@ -19,7 +19,7 @@
     <link rel="stylesheet" type="text/css" href="lib/jssocials-1.2.1/jssocials-theme-flat.css">
 
     <!--Font awesome-->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- build:css css/style.min.css -->
     <link href="css/style.css" rel="stylesheet">
@@ -151,6 +151,12 @@
             <h4 class="modal-title" i18n="map.notification_add"></h4>
           </div>
           <div class="modal-body content">
+            <div class="form-group notif-msg hidden success" id="sendig_notifications">
+              <span i18n="notif.sendig_notifications"></span>
+            </div>
+            <div class="form-group notif-msg hidden success" id="notif_saved">
+                <span i18n='notif.saved'></span>
+            </div>
             <div class="warning"><div i18n="notification.warning.municiaplities"></div></div>
             <div id="form-notification" class="form-notification" role="menu">
               <!-- hidden for image upload functionality -->
@@ -168,9 +174,6 @@
                   </div>
                   <div class="form-group notif-msg hidden" id="notif_all_field_requiered">
                       <span i18n='notif.all_field_requiered'></span>
-                  </div>
-                  <div class="form-group notif-msg hidden success" id="notif_saved">
-                      <span i18n='notif.saved'></span>
                   </div>
                   <div class="form-group">
                     <input type="text" disabled i18n="map.notification.notifier|placeholder" class="form-control" id="notification-notifier">
@@ -852,12 +855,10 @@
         <!--<span i18n="map.controlmoreinfo_desc_es"></span>-->
         <ul class="info_list">
             <li class="tiger_mosquito">
-                <img src="./img/marker_albopictus_1.svg" class="private">
                 <span i18n="layer.tiger" class="bold"></span>:
                 <span i18n="expertinfo.tiger_mosquito"></span>
             </li>
             <li class="yellow_fever_mosquito">
-                <img src="./img/marker_aegypti_1.svg" class="private">
                 <span i18n="layer.zika" class="bold"></span>:
                 <span i18n="expertinfo.yellow_fever_mosquito"></span>
             </li>
@@ -1407,6 +1408,7 @@
      <!-- inject:js -->
      <script src="js/config.js"></script>
      <script src="js/config_spain.js"></script>
+     <script src="js/utils.js"></script>
      <script src="js/i18n/ca.js"></script>
      <script src="js/i18n/en.js"></script>
      <script src="js/i18n/es.js"></script>
@@ -1415,6 +1417,7 @@
      <script src="js/leaflet/control-div.js"></script>
      <script src="js/leaflet/geojson-vt-dev.js"></script>
      <script src="js/leaflet/L.CanvasTiles.js"></script>
+     
 
      <script src="js/leaflet/control-sidebar-button.js"></script>
      <script src="lib/L.CanvasOverlay.js"></script>

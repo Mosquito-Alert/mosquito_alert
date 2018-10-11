@@ -594,6 +594,36 @@ var MapView = MapView.extend({
             .attr('class', 'layer-group list-group-item')
         .appendTo(toggleGrup);
 
+        // add QUESTION MARK
+        let question_mark = $('<a>', {
+          'href':'#',
+          'data-toggle':'popover-filters',
+          'data-placement':'left',
+          'i18n': 'filters.description|data-content',
+          'data-container': 'body',
+          'class':'fa fa-question question-mark-toc question-mark-filters'
+        })
+
+        question_mark.appendTo(parentDiv)
+        question_mark.on('click', function(event) {
+          // event.preventDefault();
+          event.stopPropagation();
+        });
+        $(question_mark).popover({
+          html: true,
+          content: function() {
+            return true;
+            }
+        });
+        // LISTEN ANY CLICK TO HIDE POPOVER
+        $(document).click(function(e) {
+          var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
+          if (isVisible){
+            question_mark.click()
+          }
+        });
+
+        //after question mark
         $('<div/>')
            .attr('i18n', 'group.filters')
            .attr('class','group-title')
@@ -884,7 +914,7 @@ var MapView = MapView.extend({
         btn.on('download_btn_click', function(){
             var url = MOSQUITO.config.URL_API + 'observations/export.xls';
             //prepare params based on filters
-            url += '?bbox=' + this._map.getBounds().toBBoxString();
+            url += '?bounds=' + this._map.getBounds().toBBoxString();
             if (_this.filters.daterange) {
               url += '&date_start=' + moment(_this.filters.daterange.start).format('YYYY-MM-DD');
               url += '&date_end=' + moment(_this.filters.daterange.end).format('YYYY-MM-DD');
@@ -919,7 +949,7 @@ var MapView = MapView.extend({
             url += '&categories=' + categories.join(',');
 
             //Add filters if exists and !=false(all selected), N otherwise
-            url += '&notifications='+(('notif' in _this.filters && _this.filters.notif!==false)?_this.filters.notif:'N');
+            url += '&mynotifs='+(('notif' in _this.filters && _this.filters.notif!==false)?_this.filters.notif:'N');
 
             //Check for notif_types filter
             notif_types='N'
@@ -1088,7 +1118,8 @@ var MapView = MapView.extend({
                     if($(el).hasClass('active')){
                         //Get position of selected layers
                         id = $(el).attr('id').replace('layer_','');
-                        if (id !== 'Ia' && id !== 'Fa') {
+
+                        if (id !== 'I' && id !== 'Fa') {
                           pos = _this.getLayerPositionFromKey(id);
                           if (!MOSQUITO.app.headerView.logged) {
                               layers.push(MOSQUITO.config.layers[pos].key);
@@ -2451,7 +2482,7 @@ var MapView = MapView.extend({
                   $('.epi-import-finished-btn').show();
                 }
                 else{
-                  txt_error = t('epidemiology.upload-error') + '<br/>' + data.err;
+                  txt_error = '<p class="st-upload-error">'+t('epidemiology.upload-error') + '</p>' + data.err;
                   $('.epi-progress-bar-wrapper').hide();
                   $('.epi-upload-error').html(txt_error);
                   $('.epi-upload-error').show();

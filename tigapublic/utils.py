@@ -6,7 +6,7 @@ import json
 import requests
 import os
 from django.contrib.auth.models import User
-
+import re
 from constants import (managers_group, superusers_group, user_roles,
                        epidemiologist_editor_group,
                        epidemiologist_viewer_group)
@@ -246,20 +246,25 @@ def get_directory_structure(rootdir):
     folders = []
     dictlist = []
     dict = {}
+
+    # models folder patterns yyyy/mm
+    pattern = re.compile("^(\d{4}\/0[1-9]|1[0-2])$")
+
     for root, dirs, files in os.walk(rootdir):
         if root[len(rootdir)+1:].count(os.sep) < 2:
             for f in files:
                 if f.endswith(tuple(valid_ext)):
                     root = root.replace(rootdir, '')
                     root = root.replace('\\', '/')
-                    # split
-                    folders = root.split('/')
-                    if not folders[0] in dict:
-                        # initialize all 12 months as disabled
-                        dict[folders[0]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    if (re.match(pattern, root)):
+                        # split
+                        folders = root.split('/')
+                        if not folders[0] in dict:
+                            # initialize all 12 months as disabled
+                            dict[folders[0]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-                    # Enable current month
-                    dict[folders[0]][int(folders[1]) - 1] = 1
+                        # Enable current month
+                        dict[folders[0]][int(folders[1]) - 1] = 1
 
     # Turn dict into array
     for key, value in dict.iteritems():

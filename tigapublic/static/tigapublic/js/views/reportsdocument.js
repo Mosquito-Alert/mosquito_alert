@@ -130,6 +130,8 @@ var ReportsdocumentView = MapView.extend({
 
             if (window.opener.document.getElementById("map_layers_list")){
               var stuff = $('<div>').html(window.opener.document.getElementById("map_layers_list").outerHTML).find('li.active');
+              //except models and background layers
+              stuff = $(stuff).not('#layer_I, #layer_F');
               stuff.removeClass('active');
             }
 
@@ -160,7 +162,7 @@ var ReportsdocumentView = MapView.extend({
             var theMap = L.map('reports_header_map', { zoomControl:false})
                 .setView(c,z);
 
-            L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                     minZoom: z, // prevent from zooming
                     maxZoom: z,
                     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -183,7 +185,7 @@ var ReportsdocumentView = MapView.extend({
                 map = L.map('map_report_' + row.id, { zoomControl:false}).
                     setView(center, 16);
 
-                L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                         maxZoom: 18,
                         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     }).addTo(map);

@@ -213,10 +213,9 @@ class ObservationManager(BaseManager):
         if self.model.__name__ == 'MapAuxReports':
             extra['select']['c'] = 1
             extra['select']['category'] = 'private_webmap_layer'
-
-        extra['select']['month'] = (
-            "to_Char(observation_date AT TIME ZONE 'UTC','YYYYMM')"
-        )
+            extra['select']['month'] = (
+                "to_Char(observation_date,'YYYYMM')"
+            )
 
         # Get all data
         self.filter.objects(self.model, extra=extra)

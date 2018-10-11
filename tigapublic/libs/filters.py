@@ -180,7 +180,7 @@ class ExcludeCategoriesFilter(Filter):
 
     # Name of the dictionary keys where the filtering values are stored inside
     # manager.filters
-    params = 'exclude_categories'
+    params = 'excluded_categories'
 
     def run(self, manager, qs):
         """Execute the ExcludeCategories filter."""

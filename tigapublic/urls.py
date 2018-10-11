@@ -72,6 +72,11 @@ re_month = re.compile(r"(?P<month>\d{1,2})\/?").pattern
 # CATEGORIES (LAYERS)
 re_categories = re.compile(r"(?P<categories>[a-zA-Z,_]+)\/?").pattern
 
+# EXCLUDED CATEGORIES (LAYERS)
+re_excluded_categories = (re.compile(
+        r"(?P<excluded_categories>[a-zA-Z,_]+)\/?"
+    ).pattern)
+
 """Observation's data."""
 observation_urls = [
     # Get unfiltered data to show on map
@@ -142,7 +147,7 @@ notif_urls = [
     # Get observations inside drawn polygon with YEARS+MONTHS
     # filter, to send notifications
     url(r'^notifications/intersect/' +
-        re_categories +
+        re_excluded_categories +
         re_years +
         re_months +
         re_hashtag +
@@ -154,7 +159,7 @@ notif_urls = [
     # Get observations inside drawn polygon with DATERANGE
     # filter, to send notifications
     url(r'^notifications/intersect/' +
-        re_categories +
+        re_excluded_categories +
         re_daterange +
         re_hashtag +
         re_municipalities +

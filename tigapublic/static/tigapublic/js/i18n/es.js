@@ -73,6 +73,7 @@ trans.es = {
     'map.controlshare_view': 'Vista',
 
     //MAP FILTERS
+    'filters.description':'Los filtros del mapa no se aplican a la capa de modelos disponibles',
     'All years': 'Todos los años',
     'All months': 'Todos los meses',
     'January': 'Enero',
@@ -184,9 +185,9 @@ trans.es = {
     'label.user-municipalities': 'Mis municipios',
 
     // MODELS
-    'layer.predictionmodels': 'Probabilidad Mosquito Tigre',
+    'layer.predictionmodels': 'Modelos disponibles de probabilidad de mosquito tigre',
     //HTML FORMAT
-    'layer.predictionmodels.description': 'El mapa muestra la probabilidad media de alerta de mosquito tigre (valores de 0 a 1), en una cuadrícula de 4x4 Km, clasificados en 4 niveles de incertidumbre derivados de las desviaciones estándares asociadas a nuestras estimaciones medias. Estos niveles de incertidumbre representan la probabilidad de que un participante envíe al menos, una fotografía confiable de un mosquito tigre desde una determinada celda de la cuadrícula de 4x4 Km durante las dos semanas precedentes al día en cuestión, controlando por el esfuerzo de muestreo.<p>Estas probabilidades en su mayoría dependen de la distribución de las poblaciones de mosquito tigre y de la época del año (ya que estas especies tienen un ciclo estacional con variaciones en su abundancia poblacional). El modelo, publicado en Nature Communications 8:916 (2017), controla el esfuerzo de muestreo y ha demostrado que produce estimaciones similares a las que se pueden realizar a partir de trampas de ovoposición de mosquito. Este modelo estacional que no incluye aún información climática ni ambiental se ejecuta una vez a la semana generando estimaciones diarias.</p>',
+    'layer.predictionmodels.description': 'El mapa muestra estimaciones de la probabilidad de alerta de mosquito tigre, que representa la probabilidad de que un participante envíe un informe confiable de mosquito tigre durante un período de dos semanas, controlando el esfuerzo de muestreo (lo que significa que el modelo incorpora el hecho de que hay más participantes en algunas zonas que en otras).<p>Estas estimaciones se muestran en una cuadrícula de 0.05 grados de latitud por 0.05 grados de longitud y se promedian por mes. La probabilidad de alerta depende principalmente de la distribución de la población del mosquito tigre, que varia según la ubicación y el mes. Se ha demostrado que la probabilidad de alerta es un buen predictor de la presencia del mosquito tigre medida por los métodos tradicionales de vigilancia (ovitraps), como se explica en Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Las estimaciones se actualizan semanalmente a medida que ingresan nuevos datos.</p><p>Tenga en cuenta que esta capa de probabilidad de alerta solo se puede filtrar con los selectores de año y mes que se muestran aquí (y no con los filtros adicionales a continuación, que son para otras capas)</p>',
     'models.label.prob-1': 'Muy baja',
     'models.label.prob-2': 'Baja',
     'models.label.prob-3': 'Media',

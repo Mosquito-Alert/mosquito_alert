@@ -312,6 +312,8 @@ var MOSQUITO = (function (m) {
                     "expert_html": tinyMCE.activeEditor.getContent(),
                     "preset_notification_id": $('#preset_notification_id').val()
                 };
+                //show sending message
+                $('#sendig_notifications').removeClass('hidden');
                 $.ajax({
                     type: 'POST',
                     context: this,
@@ -319,6 +321,8 @@ var MOSQUITO = (function (m) {
                     data: data,
                     cache: false,
                     success: function(response){
+                        //hide sending message
+                        $('#sendig_notifications').addClass('hidden');
                         if (response.success) {
                             $('.notif-msg').addClass('hidden');
                             $('#notif_saved').removeClass('hidden');

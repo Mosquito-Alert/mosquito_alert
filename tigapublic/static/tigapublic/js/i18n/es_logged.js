@@ -15,6 +15,8 @@ add = {
     'map.controlshare_view_description': 'Comparte esta vista privada',
     'share.private_layer_warn': '¡Atención! Los datos privados de la vista actual y algunas de las capas solo serán visibles para los usuarios registrados.',
 
+    //descargas
+    'map.text_description_download': '<p>La descarga se realizará a partir de los elementos que se visualizan en el mapa y solo para los datos relativos a las observaciones ciudadanas. Comprueba que estén activas las capas de la leyenda que deseas así como los filtros temporales y el nivel de zoom.</p><p>Una vez definida la vista deseada pulsa en el botón de descarga.</p>',
     //NOFIFICATIONS
     'map.notification_add':'Nueva notificación',
     'notif.observations_none':'No hay ninguna observación seleccionada',
@@ -37,6 +39,7 @@ add = {
     'map.notification.preset0.body': '<p>Esta es la notificación predefinida número 1</p><p>En el cuerpo del mensaje ponemos lo que convenga.</p>',
     'map.notification.preset1.title': 'Notificación predefinida 2',
     'map.notification.preset1.body': '<p>Esta es la notificación predefinida número 2</p><p>En el cuerpo de este mensaje hay un poco más de texto.</p>',
+    'notif.sendig_notifications': 'Se está enviando la información...',
 
      //NOTIFICATIONS DRAW
     'leaflet.draw.toolbar.cancel.title': 'Cancelar edición',
@@ -154,6 +157,8 @@ add = {
     'epidemiology.nocase': 'No hay caso',
     'epidemiology.all': 'Todos los estados',
     'epidemiology.filter-explanation':'Los filtros temporales del mapa también se aplicarán a esta capa a partir del campo *Fecha de llegada*',
-    'epidemiology.upload-explanation': 'ATENCIÓN!! Este proceso de importación eliminará todos los datos previamente almacenados de la capa de Epidemiología'
+    'epidemiology.upload-explanation': 'ATENCIÓN!! Este proceso de importación eliminará todos los datos previamente almacenados de la capa de Epidemiología',
+    'epidemiology.empty-layer': 'En estos momentos la capa Epidemiología no contiene datos.',
+    'epidemiology.upload-error': 'Se ha producido un error durante el proceso de importación',
 };
 _.extend(trans.es, add);
