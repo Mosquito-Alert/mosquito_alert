@@ -204,4 +204,15 @@ trans.en = {
 
     'general.year': 'Year',
     'general.month': 'Month',
+
+    'models.hover-prob-label0': 'Values from 0 to 0.1',
+    'models.hover-prob-label1': 'Values from 0.1 to 0.2',
+    'models.hover-prob-label2': 'Values from 0.2 to 0.3',
+    'models.hover-prob-label3': 'Values from 0.3 to 1',
+
+    'models.hover-sd-label0': 'Values from 0 to 0.05',
+    'models.hover-sd-label1': 'Values from 0.05 to 0.1',
+    'models.hover-sd-label2': 'Values from 0.1 to 0.15',
+    'models.hover-sd-label3': 'Values from 0.15 to 1',
+
 };

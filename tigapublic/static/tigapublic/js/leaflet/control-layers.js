@@ -287,8 +287,13 @@ var MOSQUITO = (function (m) {
                           // LEGEND PROBABILTY
                           var sublist = $('<ul>').attr('class', 'sub-sites').css('font-weight', 'bold').css('float', 'left').appendTo(item);
                           sublist.append($('<h5>', {'i18n': 'models.probability'}));
+                          ind=0
                           this.prob_ranges.forEach(function(range) {
-                            var subitem = $('<li>').attr('class', 'sublist-group-item').appendTo(sublist);
+                            hover_label = 'models.hover-prob-label'+ind
+                            var subitem = $('<li>')
+                              .attr('i18n', hover_label+'|title')
+                              .attr('class', 'sublist-group-item').appendTo(sublist);
+
                             $('<div>')
                               .css('width', 20)
                               .css('height', 20)
@@ -296,8 +301,10 @@ var MOSQUITO = (function (m) {
                               .css('border', '1px solid orange')
                               .css('float', 'left')
                               .css('margin-right', '10px')
+
                               .appendTo(subitem);
                             $('<label>', {'i18n': range.label}).appendTo(subitem);
+                            ind = ind + 1
                           });
                           // LEGEND ST. DEV.
                           sublist = $('<ul>', {'class': 'sub-sites', 'id': 'forecast_sd'})
@@ -305,8 +312,13 @@ var MOSQUITO = (function (m) {
                             .css('float', 'left')
                             .appendTo(item);
                           sublist.append($('<h5>', {'i18n': 'models.uncertainty'}));
+                          ind=0
                           this.sd_ranges.forEach(function(range) {
-                            var subitem = $('<li>').attr('class', 'sublist-group-item').appendTo(sublist);
+                            hover_label = 'models.hover-sd-label'+ind
+                            var subitem = $('<li>')
+                              .attr('i18n', hover_label+'|title')
+                              .attr('class', 'sublist-group-item').appendTo(sublist);
+                              
                             $('<div>')
                               .css('width', 10)
                               .css('height', 10)
@@ -318,6 +330,7 @@ var MOSQUITO = (function (m) {
                               .css('margin', '3px 10px 0 0px')
                               .appendTo(subitem);
                             $('<label>', {'i18n': range.label}).appendTo(subitem);
+                            ind = ind + 1
                           });
                           if (map.getZoom() <= 7) {
                             sublist.css('opacity', '.3');

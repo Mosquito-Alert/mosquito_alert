@@ -201,4 +201,15 @@ trans.es = {
 
     'general.year': 'Año',
     'general.month': 'Mes',
+
+    'models.hover-prob-label0': 'Valores entre 0 y 0.1',
+    'models.hover-prob-label1': 'Valores entre 0.1 y 0.2',
+    'models.hover-prob-label2': 'Valores entre 0.2 y 0.3',
+    'models.hover-prob-label3': 'Valores entre 0.3 y 1',
+
+    'models.hover-sd-label0': 'Valores entre 0 y 0.05',
+    'models.hover-sd-label1': 'Valores entre 0.05 y 0.1',
+    'models.hover-sd-label2': 'Valores entre 0.1 y 0.15',
+    'models.hover-sd-label3': 'Valores entre 0.15 y 1',
+
 };

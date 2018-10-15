@@ -205,4 +205,14 @@ trans.ca = {
 
     'general.year': 'Any',
     'general.month': 'Mes',
+
+    'models.hover-prob-label0': 'Valors entre 0 i 0.1',
+    'models.hover-prob-label1': 'Valors entre 0.1 i 0.2',
+    'models.hover-prob-label2': 'Valors entre 0.2 i 0.3',
+    'models.hover-prob-label3': 'Valors entre 0.3 i 1',
+
+    'models.hover-sd-label0': 'Valors entre 0 i 0.05',
+    'models.hover-sd-label1': 'Valors entre 0.05 i 0.1',
+    'models.hover-sd-label2': 'Valors entre 0.1 i 0.15',
+    'models.hover-sd-label3': 'Valors entre 0.15 i 1',
  };
