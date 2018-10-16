@@ -253,6 +253,17 @@ class Report(models.Model):
 
     hide = models.BooleanField(default=False, help_text='Hide this report from public views?')
 
+    # Several viewsets, especially those involving loading hidden/not hidden reports, are EXTREMELY slow. This happens because
+    # whether a report is or not visible delegates on show_on_map. This function performs a lot of database queries; so calling
+    # this function on all reports takes a lot of time. For unknown reasons, there are a few views which are executed when the
+    # app first starts. For example:
+    # AllReportsMapViewSetPaginated
+    # AllReportsMapViewSet
+    # NonVisibleReportsMapViewSet
+    # This causes the app to take forever to start and in several occasions leads to timeouts. The solution to avoid this
+    # is to create this cached_visible field, and populate with 1 if show_on_map is True, 0 on the contrary. If the value
+    # is undefined, show_on_map executes normally. This accelerates a great deal the application startup, but implies that
+    # there must be an external periodic task which populates this field
     cached_visible = models.IntegerField(blank=True, null=True, help_text='Precalculated value of show_on_map_function')
 
     point = models.PointField(blank=True,null=True,srid=4326)
