@@ -5,10 +5,16 @@ from __future__ import unicode_literals
 import datetime
 from django.conf import settings
 import django.contrib.auth.models
-from django.db import migrations, models
+#from django.db import migrations, models
 import django.db.models.deletion
+from south.v2 import SchemaMigration
 
+'''
+    These migrations are incompatible with South, and break all other migrations. Therefore, they are commented and there
+    only are skeleton empty migrations 
+'''
 
+'''
 class Migration(migrations.Migration):
 
     initial = True
@@ -306,5 +312,16 @@ class Migration(migrations.Migration):
             model_name='notification',
             name='report',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.MapAuxReports', to_field='version_uuid'),
-        ),
+        ),        
     ]
+'''
+
+class Migration(SchemaMigration):
+
+    def forwards(self, orm):
+        pass
+
+    def backwards(self, orm):
+        pass
+
+    complete_apps = ['tigapublic']
