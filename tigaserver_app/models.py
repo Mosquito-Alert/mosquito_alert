@@ -253,6 +253,8 @@ class Report(models.Model):
 
     hide = models.BooleanField(default=False, help_text='Hide this report from public views?')
 
+    cached_visible = models.IntegerField(blank=True, null=True, help_text='Precalculated value of show_on_map_function')
+
     point = models.PointField(blank=True,null=True,srid=4326)
 
     objects = models.GeoManager()
@@ -525,7 +527,10 @@ class Report(models.Model):
         if self.creation_time.year == 2014:
             return True
         else:
-            return (not self.photos.all().exists()) or ((ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists()) and self.get_final_expert_status() == 1)
+            if self.cached_visible is None:
+                return (not self.photos.all().exists()) or ((ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists()) and self.get_final_expert_status() == 1)
+            else:
+                return self.cached_visible == 1
 
     # note that I am making this really get movelab or expert annotation,
     # but keeping name for now to avoid refactoring templates
