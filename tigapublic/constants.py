@@ -45,7 +45,7 @@ fields_available = [
     ('lon', 'Longitude'),
     ('lat', 'Latitude'),
     ('ref_system', 'Ref. System'),
-    ('municipality', 'Municipality'),
+    ('municipality__nombre', 'Municipality'),
     ('type', 'Type'),
     ('t_q_1', {
         'label': 'Adult question 1',

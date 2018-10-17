@@ -57,7 +57,7 @@ class ObservationExporter(BaseManager):
         ),
         'anonymous': (
             'version_uuid', 'observation_date', 'lon', 'lat', 'ref_system',
-            'municipality', 'type', 'expert_validated', 'private_webmap_layer',
+            'municipality__nombre', 'type', 'expert_validated', 'private_webmap_layer',
             'single_report_map_url'
         )
     }
