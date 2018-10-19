@@ -248,7 +248,7 @@ def get_directory_structure(rootdir):
     dict = {}
 
     # models folder patterns yyyy/mm
-    pattern = re.compile("^(\d{4}\/0[1-9]|1[0-2])$")
+    pattern = re.compile("^(\d{4}\/0[1-9]|\d{4}\/1[0-2])$")
 
     for root, dirs, files in os.walk(rootdir):
         if root[len(rootdir)+1:].count(os.sep) < 2:
@@ -271,4 +271,4 @@ def get_directory_structure(rootdir):
         temp = [key, value]
         dictlist.append(temp)
     # Return properly ordered list
-    return sorted(dictlist, key=lambda l: l[1], reverse=True)
+    return sorted(dictlist, key=lambda l: l[0], reverse=True)
