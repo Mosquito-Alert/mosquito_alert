@@ -245,6 +245,7 @@ var MOSQUITO = (function (m) {
                                   months_availability = MOSQUITO.config.predictionmodels_available[i][1];
                                 } else ++i;
                               }
+                              previous_month = $(month_select).val() - 1
                               month_select.empty();
                               months.forEach(function(month, i) {
                                 let attrs = {'value': i + 1, 'i18n': month};
@@ -252,16 +253,21 @@ var MOSQUITO = (function (m) {
                                 month_select.append($('<option>', attrs));
                               });
                               t().translate(MOSQUITO.lng,month_select);
-                              // t(month_select);
+
+                              let option=''
                               if (first_time_loading) {
-                                let option = $('#forecast_month option')[this_month];
-                                // if current mont is disabled, check closest previous available month
-                                if ($(option).is(':disabled')){
-                                  $(option).siblings().not(':disabled').closest("option").attr('selected', 'selected')
-                                }else{
-                                  $(option).attr('selected', 'selected');
-                                }
+                                option = $('#forecast_month option')[this_month];
                               }
+                              else{
+                                option = $('#forecast_month option')[previous_month];
+                              }
+                              // if current month is disabled, check closest previous available month
+                              if ($(option).is(':disabled')){
+                                $(option).parent().find('option').not(':disabled')[0]
+                              }else{
+                                $(option).attr('selected', 'selected');
+                              }
+
                               month_select.selectpicker('refresh');
                               first_time_loading = false;
                             });
@@ -318,7 +324,7 @@ var MOSQUITO = (function (m) {
                             var subitem = $('<li>')
                               .attr('i18n', hover_label+'|title')
                               .attr('class', 'sublist-group-item').appendTo(sublist);
-                              
+
                             $('<div>')
                               .css('width', 10)
                               .css('height', 10)
