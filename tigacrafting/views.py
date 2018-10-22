@@ -18,7 +18,8 @@ from django.contrib.auth.decorators import login_required
 from random import shuffle
 #DEPRECATED
 #from django.core.context_processors import csrf
-from django.template.context_processors import csrf
+#from django.template.context_processors import csrf
+from django.views.decorators.csrf import csrf_protect
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -257,12 +258,12 @@ def show_validated_photos(request, type='tiger'):
     context = {'type': type, 'title': title_dic[type], 'n_tasks': len(validated_task_array), 'question': question_dic[type], 'validated_tasks': these_validated_tasks}
     return render(request, 'tigacrafting/validated_photos.html', context)
 
-
+@csrf_protect
 @login_required
 def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
     this_user = request.user
     args = {}
-    args.update(csrf(request))
+    #args.update(csrf(request))
     args['scroll_position'] = scroll_position
     AnnotationFormset = modelformset_factory(Annotation, form=AnnotationForm, extra=0)
     if request.method == 'POST':
@@ -310,12 +311,13 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
         return render(request, 'tigacrafting/expert_validation.html', args)
 
 
+@csrf_protect
 @login_required
 def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='all'):
     this_user = request.user
     if request.user.groups.filter(name='movelab').exists():
         args = {}
-        args.update(csrf(request))
+        #args.update(csrf(request))
         args['scroll_position'] = scroll_position
         AnnotationFormset = modelformset_factory(MoveLabAnnotation, form=MovelabAnnotationForm, extra=0)
         if request.method == 'POST':
@@ -362,12 +364,13 @@ def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='a
         return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
 
 
+@csrf_protect
 @login_required
 def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50', type='pending'):
     this_user = request.user
     if request.user.groups.filter(name='movelab').exists():
         args = {}
-        args.update(csrf(request))
+        #args.update(csrf(request))
         args['scroll_position'] = scroll_position
         AnnotationFormset = modelformset_factory(MoveLabAnnotation, form=MovelabAnnotationForm, extra=0)
         if request.method == 'POST':
@@ -550,6 +553,8 @@ def issue_notification(report_annotation,current_domain):
 def notification_already_issued(report, user_sent_to, expert_sent_from, title_es):
     return Notification.objects.filter(report=report,user=user_sent_to,expert=expert_sent_from,notification_content__title_es=title_es).exists()
 
+
+@csrf_protect
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na'):
     this_user = request.user
@@ -564,7 +569,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
     if this_user_is_expert or this_user_is_superexpert:
         args = {}
-        args.update(csrf(request))
+        #args.update(csrf(request))
         args['scroll_position'] = scroll_position
         if this_user_is_superexpert:
             AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=SuperExpertReportAnnotationForm, extra=0)
@@ -936,13 +941,14 @@ def get_reports_unfiltered_adults():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
     return new_reports_unfiltered_adults
 
+@csrf_protect
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
     this_user = request.user
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     if this_user_is_superexpert:
         args = {}
-        args.update(csrf(request))
+        #args.update(csrf(request))
         PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
         if request.method == 'POST':
             save_formset = request.POST.get('save_formset', "F")

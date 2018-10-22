@@ -12,7 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 #DEPRECATED
 #from django.core.context_processors import csrf
-from django.template.context_processors import csrf
+#from django.template.context_processors import csrf
+from django.views.decorators.csrf import csrf_protect
 from tigaserver_app.views import get_n_days, get_n_months
 from django.conf import settings
 import datetime
@@ -256,6 +257,7 @@ def get_current_domain(request):
         current_domain = 'tigaserver.atrapaeltigre.com'
     return current_domain
 
+@csrf_protect
 def show_adult_map(request, type='all'):
     current_domain = get_current_domain(request)
     if type == 'possible' or type == 'medium':
@@ -281,10 +283,11 @@ def show_adult_map(request, type='all'):
     except KeyError:
         endpoint = 'all_adults'
     context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs, 'end_day': get_n_days(), 'endpoint': endpoint}
-    context.update(csrf(request))
+    #context.update(csrf(request))
     return render(request, 'tigamap/validated_report_map_filterable.html', context)
 
 
+@csrf_protect
 def show_site_map(request, type='all'):
     current_domain = get_current_domain(request)
     title_dic = {'embornals_fonts': _('breeding-sites-storm-drains-and-fountains'), 'all': _('breeding-sites-all-reports'), 'other': _('breeding-sites-other'), 'buckets_wells':  _('breeding-sites-buckets-and-wells'), 'basins':  _('breeding-sites-basins')}
@@ -309,10 +312,11 @@ def show_site_map(request, type='all'):
     except KeyError:
         endpoint = 'all_sites'
     context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path,  'hrefs': hrefs, 'end_month': get_n_months(), 'endpoint': endpoint}
-    context.update(csrf(request))
+    #context.update(csrf(request))
     return render(request, 'tigamap/site_map.html', context)
 
 
+@csrf_protect
 def show_new_coverage_map(request):
     current_domain = get_current_domain(request)
     this_title = _('coverage-map')
@@ -332,10 +336,11 @@ def show_new_coverage_map(request):
     else:
         last_id = 0
     context = {'domain': current_domain, 'title': this_title, 'redirect_to': redirect_path,  'hrefs': hrefs, 'last_id': last_id}
-    context.update(csrf(request))
+    #context.update(csrf(request))
     return render(request, 'tigamap/coverage_map_new.html', context)
 
 
+@csrf_protect
 @xframe_options_exempt
 def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_type='adult', scroll_zoom='on', year='0', month='0', selected_validation='-2', center_lon=None, center_lat=None, legend='on', fullscreen='on', min_lat = -90, min_lon = -180, max_lat = 90, max_lon=180):
     current_domain = get_current_domain(request)
@@ -362,7 +367,7 @@ def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_
     endpoint ='all_reports'
     end_day = (pytz.utc.localize(datetime.datetime.now()) - settings.START_TIME).days + 1
     context = {'domain': current_domain, 'end_day': end_day, 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
-    context.update(csrf(request))
+    #context.update(csrf(request))
     if zoom:
         context['zoom'] = zoom
     if center_lon:
@@ -385,6 +390,7 @@ def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_
     return render(request, 'tigamap/validated_report_map_filterable.html', context)
 
 
+@csrf_protect
 @xframe_options_exempt
 def show_embedded_adult_map(request, legend=''):
     current_domain = get_current_domain(request)
@@ -394,7 +400,7 @@ def show_embedded_adult_map(request, legend=''):
         last_coverage_id = 0
     endpoint = 'all_reports'
     context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
-    context.update(csrf(request))
+    #context.update(csrf(request))
     context = {'domain': current_domain, 'end_day': get_n_days(), 'endpoint': endpoint}
     if legend == 'legend':
         return render(request, 'tigamap/embedded_2015.html', context)
