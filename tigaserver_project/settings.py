@@ -221,4 +221,4 @@ APNS_ADDRESS = 'gateway.push.apple.com'
 #APNS_ADDRESS = 'gateway.sandbox.push.apple.com'
 FCM_ADDRESS = 'https://fcm.googleapis.com/fcm/send'
 
-from settings_local import *
+from tigaserver_project.settings_local import *

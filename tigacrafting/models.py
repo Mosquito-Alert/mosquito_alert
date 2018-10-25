@@ -11,7 +11,7 @@ def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
 
 class CrowdcraftingTask(models.Model):
     task_id = models.IntegerField(unique=True, null=True, default=None)
-    photo = models.OneToOneField('tigaserver_app.Photo')
+    photo = models.OneToOneField('tigaserver_app.Photo', on_delete=models.CASCADE)
 
     def __unicode__(self):
         return str(self.task_id)
@@ -123,8 +123,8 @@ class CrowdcraftingUser(models.Model):
 
 class CrowdcraftingResponse(models.Model):
     response_id = models.IntegerField()
-    task = models.ForeignKey(CrowdcraftingTask, related_name="responses")
-    user = models.ForeignKey(CrowdcraftingUser, related_name="responses", blank=True, null=True)
+    task = models.ForeignKey(CrowdcraftingTask, related_name="responses", on_delete=models.CASCADE)
+    user = models.ForeignKey(CrowdcraftingUser, related_name="responses", blank=True, null=True, on_delete=models.CASCADE)
     user_lang = models.CharField(max_length=10, blank=True)
     mosquito_question_response = models.CharField(max_length=100)
     tiger_question_response = models.CharField(max_length=100)
@@ -138,8 +138,8 @@ class CrowdcraftingResponse(models.Model):
 
 
 class Annotation(models.Model):
-    user = models.ForeignKey(User, related_name='annotations')
-    task = models.ForeignKey(CrowdcraftingTask, related_name='annotations')
+    user = models.ForeignKey(User, related_name='annotations', on_delete=models.SET_NULL)
+    task = models.ForeignKey(CrowdcraftingTask, related_name='annotations', on_delete=models.SET_NULL)
     tiger_certainty_percent = models.IntegerField('Degree of belief', validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
     value_changed = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
@@ -152,7 +152,7 @@ class Annotation(models.Model):
 
 
 class MoveLabAnnotation(models.Model):
-    task = models.OneToOneField(CrowdcraftingTask, related_name='movelab_annotation')
+    task = models.OneToOneField(CrowdcraftingTask, related_name='movelab_annotation', on_delete=models.SET_NULL)
     CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
     tiger_certainty_category = models.IntegerField('Certainty', choices=CATEGORIES, blank=True, null=True)
     certainty_notes = models.TextField(blank=True)
@@ -177,8 +177,8 @@ STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
 
 
 class ExpertReportAnnotation(models.Model):
-    user = models.ForeignKey(User, related_name="expert_report_annotations")
-    report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations')
+    user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.SET_NULL)
+    report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.SET_NULL)
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
     tiger_certainty_notes = models.TextField('Internal Aedes Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
@@ -190,7 +190,7 @@ class ExpertReportAnnotation(models.Model):
     last_modified = models.DateTimeField(auto_now=True)
     validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
-    best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
+    best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL)
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True)
     simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
@@ -258,7 +258,7 @@ class ExpertReportAnnotation(models.Model):
 
 
 class UserStat(models.Model):
-    user = models.OneToOneField(User, primary_key=True)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
 
     def is_expert(self):
