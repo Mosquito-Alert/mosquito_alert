@@ -43,14 +43,14 @@ class ObservationExporter(BaseManager):
     order_of_fields = {
         superusers_group: (
             'version_uuid', 'user_id', 'observation_date', 'lon', 'lat',
-            'ref_system', 'municipality', 'type', 't_q_1', 't_a_1', 't_q_2',
+            'ref_system', 'municipality__nombre', 'type', 't_q_1', 't_a_1', 't_q_2',
             't_a_2', 't_q_3', 't_a_3', 's_q_1', 's_a_1', 's_q_2', 's_a_2',
             's_q_3', 's_a_3', 's_q_4', 's_a_4', 'expert_validated',
             'private_webmap_layer', 'single_report_map_url', 'note'
         ),
         managers_group: (
             'version_uuid', 'user_id', 'observation_date', 'lon', 'lat',
-            'ref_system', 'municipality', 'type', 't_q_1', 't_a_1', 't_q_2',
+            'ref_system', 'municipality__nombre', 'type', 't_q_1', 't_a_1', 't_q_2',
             't_a_2', 't_q_3', 't_a_3', 's_q_1', 's_a_1', 's_q_2', 's_a_2',
             's_q_3', 's_a_3', 's_q_4', 's_a_4', 'expert_validated',
             'private_webmap_layer', 'single_report_map_url'
