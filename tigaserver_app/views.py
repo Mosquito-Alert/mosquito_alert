@@ -14,8 +14,8 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -30,6 +30,7 @@ from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pic
 from tigascoring.maUsers import smmry
 from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
+import copy
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -787,14 +788,20 @@ def get_user_score(user_id):
     summary = smmry()
     return summary.getScore(user_id)
 
+
 def refresh_user_scores():
     summary = smmry()
     queryset = TigaUser.objects.all()
     for user in queryset:
         score = summary.getScore(user.user_UUID)
-        if user.score != score[0]:
-            user.score = score[0]
-            user.save()
+        if user.profile:
+            user.profile.score = score
+            user.profile.save()
+        else:
+            if user.score != score[0]:
+                user.score = score[0]
+                user.save()
+
 
 @api_view(['GET', 'POST'])
 def user_score(request):
@@ -804,18 +811,29 @@ def user_score(request):
     queryset = TigaUser.objects.all()
     user = get_object_or_404(queryset, pk=user_id)
     if request.method == 'GET':
-        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+        if user.profile:
+            content = {"user_id": user_id, "score": user.profile.score, "score_label": score_label(user.profile.score)}
+        else:
+            content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
     if request.method == 'POST':
         score = request.QUERY_PARAMS.get('score', -1)
         if score == -1:
             raise ParseError(detail='score is mandatory')
         try:
-            user.score = int(score)
-            user.save()
+            if user.profile:
+                p = user.profile
+                p.score = int(score)
+                p.save()
+            else:
+                user.score = int(score)
+                user.save()
         except ValueError:
             raise ParseError(detail='Invalid score integer value')
-        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+        if user.profile:
+            content = {"user_id": user_id, "score": user.profile.score, "score_label": score_label(user.profile.score)}
+        else:
+            content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
 
 '''
@@ -1119,3 +1137,67 @@ def nearby_reports(request):
             if radius > MAX_SEARCH_RADIUS:
                 keep_looping = False
         '''
+
+
+@api_view(['POST'])
+def profile_new(request):
+    if request.method == 'POST':
+        firebase_token = request.QUERY_PARAMS.get('fbt', -1)
+        user_id = request.QUERY_PARAMS.get('usr', -1)
+        if firebase_token == -1:
+            raise ParseError(detail='firebase token is mandatory')
+        if user_id == -1:
+            raise ParseError(detail='user is mandatory')
+        tigauser = get_object_or_404(TigaUser,pk=user_id)
+        if tigauser.profile is None:
+            #profile exists?
+            try:
+                p = TigaProfile.objects.get(firebase_token=firebase_token)
+            except TigaProfile.DoesNotExist:
+                p = TigaProfile(firebase_token=firebase_token,score=tigauser.score)
+                p.save()
+            tigauser.profile = p
+            tigauser.save()
+            serializer = TigaProfileSerializer(p)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            #profile exists?
+            try:
+                p = TigaProfile.objects.get(firebase_token=firebase_token)
+            except TigaProfile.DoesNotExist:
+                p = TigaProfile(firebase_token=firebase_token, score=tigauser.score)
+                p.save()
+            profile = p
+            devices = profile.profile_devices
+            # Get all devices for profile - if it existed there will already be devices registered
+            for device in devices.all():
+                if device.score > profile.score:
+                    profile.score = device.score
+                if device.user_UUID == user_id:
+                    raise ParseError(detail='this device is already associated with this profile')
+            profile.profile_devices.add(tigauser)
+            profile.save()
+            serializer = TigaProfileSerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def profile_detail(request):
+    if request.method == 'GET':
+        firebase_token = request.QUERY_PARAMS.get('fbt', -1)
+        if firebase_token == -1:
+            raise ParseError(detail='firebase token is mandatory')
+        profile = get_object_or_404(TigaProfile.objects,firebase_token=firebase_token)
+        serializer = DetailedTigaProfileSerializer(profile)
+
+        #This is probably very wrong. We filter a copy of the serialized data to exclude missions
+        copied_data = copy.deepcopy(serializer.data)
+        for device in copied_data['profile_devices']:
+            for idx, report in reversed(list(enumerate(device['user_reports']))):
+                if report['type'] == 'mission':
+                    del device['user_reports'][idx]
+                r = Report.objects.get(pk=report['version_UUID'])
+                if not r.latest_version:
+                    del device['user_reports'][idx]
+
+        return Response(copied_data, status=status.HTTP_200_OK)
