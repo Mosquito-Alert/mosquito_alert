@@ -1275,10 +1275,25 @@ var MapView = MapView.extend({
     show_epidemiology_report: function(marker){
       //out if not logged
       if (!MOSQUITO.app.headerView.logged) return false;
+      var dict = {
+          "indefinit":"undefined",
+          "probable": "likely",
+          "sospitos": "suspected",
+          "confirmat": "confirmed-not-specified",
+          "confirmat_den": "confirmed-den",
+          "confirmat_chk": "confirmed-chk",
+          "confirmat_yf": "confirmed-yf",
+          "confirmat_zk": "confirmed-zk",
+          "confirmat_wnv": "confirmed-wnv",
+          'no_cas': 'nocase'
+      }
       var panel = this.epi_panel;
       var epi_report = _.clone(marker).target.properties;
       epi_report.icon_src = this.getEpidemiologyPatientStateIcon(epi_report)
-      epi_report.patient_state = epi_report.patient_state;
+      lowerValue = epi_report.patient_state.toLowerCase()
+      lowerValue = accentsTidy(lowerValue)
+      lowerValue = lowerValue.replace(' ','_')
+      epi_report.patient_state = 'epidemiology.'+dict[lowerValue];
       this.controls.sidebar.closePane();
       if(!('epidemiology-tpl-content' in this.templates)){
           this.templates[
@@ -1605,30 +1620,94 @@ var MapView = MapView.extend({
     },
 
     putEpidemiologyLegend: function(){
-       var palette = this.epidemiology_palette
-       var images = []
-       for (var name in palette.images){
-           images.push({"name": name, "image": palette.images[name]})
-       }
-
-       var dict = {"indefinit":"undefined",
+      var palette = this.epidemiology_palette
+      var images = []
+      var subgroups={}
+      //dict for grouping legend elements
+      for (var name in palette.images){
+          if ('subgroup' in palette.images[name]) {
+            if ( ! (palette.images[name].subgroup in subgroups) ){
+                var obj = {'name': name, 'image': palette.images[name].img}
+                subgroups[palette.images[name].subgroup]=[obj]
+                images.push({"name": palette.images[name].subgroup, "image": palette.images[name].img})
+            }
+            else{
+                var obj = {'name': name, 'image': palette.images[name].img}
+                subgroups[palette.images[name].subgroup].push(obj)
+            }
+          }
+          else{
+                images.push({"name": name, "image": palette.images[name].img})
+          }
+      }
+      //check if all subgroups are present in images array
+      for (var group in subgroups){
+          if ( !(images.indexOf(group))) {
+            images.push({"name": group.name, "image": group.image})
+          }
+      }
+      //all images and legend names
+      var dict = {"indefinit":"undefined",
                   "probable": "likely",
                   "sospitos": "suspected",
-                  "confirmat": "confirmed",
+                  "confirmat": "confirmed-not-specified",
+                  "confirmat_den": "confirmed-den",
+                  "confirmat_chk": "confirmed-chk",
+                  "confirmat_yf": "confirmed-yf",
+                  "confirmat_zk": "confirmed-zk",
+                  "confirmat_wnv": "confirmed-wnv",
                   'no_cas': 'nocase'
-                }
+      }
+
       var selected_states = $('select[name=epidemiology-state]').val()
       var innerHTML=''
+
       images.forEach(function(val, ind, arr){
-          if (selected_states.indexOf(dict[val.name])!==-1
-              || selected_states.indexOf('all')!==-1) {
-                  innerHTML +='<li class="epidemiology_legend">'+
-                    '<img src = "' + val.image + '">'+
-                    '<span i18n="epidemiology.'+dict[val.name]+'">' + t('epidemiology.'+dict[val.name]) + ' </span></li>';
+          if (
+              (selected_states.indexOf(dict[val.name])!==-1)
+              || (selected_states.indexOf('all')!==-1)
+              || (val.name in subgroups)
+            ) {
+
+                  innerHTML += '<li class="epidemiology_legend">'
+                  //check for groups
+                  if (val.name in subgroups){
+                      innerHTML += '<span i18n="epidemiology.group-'+val.name+'">' + t('epidemiology.group-'+val.name) + ' </span>'
+                      innerHTML += '<span class="show-group-legend">-</span>'
+                      innerHTML += '<div class="legend-group legend-group-'+val.name+'">'
+                      innerHTML += '<ul>'
+
+                      subgroups[val.name].forEach(function(val, ind, arr){
+                        if (
+                            (selected_states.indexOf(dict[val.name])!==-1)
+                            ||
+                            (selected_states.indexOf('all')!==-1)
+                        ) {
+                          innerHTML += '<li class="epidemiology_legend"><img src = "' + val.image + '">'
+                          innerHTML += '<span i18n="epidemiology.'+val.name+'">' + t('epidemiology.'+dict[val.name]) + ' </span></li>';
+                        }
+                      })
+
+                      innerHTML += '</ul></div>'
+                  }
+                  else{
+                    innerHTML +=' <img src = "' + val.image + '">'
+                    innerHTML += '<span i18n="epidemiology.'+dict[val.name]+'">' + t('epidemiology.'+dict[val.name]) + ' </span>'
+                  }
+                  innerHTML += '</li>'
             }
        })
 
        $('#epidemiolgy_legend').html(innerHTML)
+       $('.show-group-legend').click(function(e){
+         e.stopPropagation();
+         $(e.target).siblings('div').toggleClass('hidden')
+         if ($(e.target).html()=='-'){
+            $(e.target).html('+')
+         }else{
+             $(e.target).html('-')
+         }
+       })
     },
 
     //Make ajax call and prepare input, select and call stormDrainStyleUI to show style UI.

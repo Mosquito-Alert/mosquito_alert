@@ -36,7 +36,13 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: pais_visitado y visited_country.
 
-*estat*: Estat del pacient. Possibles valors: probable, sospitós (o sospitos, sense accent) y confirmat.
+*estat*: Estat del pacient. Possibles valors: probable, sospitós (o sospitos, sense accent), confirmat, confirmat den, confirmat zk, confirmat wnv, confirmat chk i confirmat yf.
+    On:
+      confirmat den: Cas confirmat de dengue
+      confirmat zk: Cas confirmat de zika
+      confirmat wnv: Cas confirmat de virus de l'oest del nil (West Nile Virus)
+      confirmat chk: Cas confirmat de chikungunya 
+      confirmat yf: Cas confirmat de febre groga (yellow fever)
     Observacions: Els valors d'aquesta cel·la que no es corresponguin amb els valors anteriors, es representaran en el mapa un interrogant (?).
     Format: Valors alfanumèrics. Màxim 255 caracters.
     Altres nom acceptats per aquesta columna son: estado y patient_state.

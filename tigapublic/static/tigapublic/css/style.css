@@ -1288,6 +1288,20 @@ div#legend_reports_map ul#map_layers{
 #epidemiology-tpl-container {
   padding:10px;
 }
+
+div.epi-patient-state{
+  display:inline-block;
+}
+
+.epi-patient-state img{
+  display:inline;
+}
+
+.epi-patient-state span.not-bold-inline{
+  font-weight: normal;
+  display:inline;
+}
+
 .epi-tpl-div {
   margin-bottom:15px;
   border-bottom:1px solid #ececec;
@@ -1316,4 +1330,23 @@ img.epi-icon{
 
 .lowercase{
   text-transform: lowercase;
+}
+
+.legend-group ul{
+  list-style-type: none;
+  margin-left:15px;
+}
+
+.show-group-legend{
+  background: #fff;
+  color: black;
+  cursor: hand;
+  font-weight: bold;
+  padding:2px 4px;
+  border-radius:5px;
+  border: 1px solid #C0C0C0;
+}
+
+#epi-patient-container button span{
+  max-width: 300px;
 }

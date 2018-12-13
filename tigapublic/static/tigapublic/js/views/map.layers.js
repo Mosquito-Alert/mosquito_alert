@@ -227,23 +227,23 @@ var MapView = MapView.extend({
           lowerValue = accentsTidy(lowerValue)
           lowerValue = lowerValue.replace(' ','_')
           if (lowerValue in palette.images){
-            return palette.images[lowerValue]
+            return palette.images[lowerValue].img
           }
           else{
-            return palette.images['indefinit']
+            return palette.images['indefinit'].img
           }
         }
-        else{
-          rangs = palette.rangs
-          value = parseFloat(patientRow[field])
-          found=null
-          rangs.forEach(function(rang, ind, arr){
-            if ((value >= rang.minValue) && (value <= rang.maxValue) ){
-              found = rang.image
-            }
-          })
-          return found;
-        }
+        // else{
+        //   rangs = palette.rangs
+        //   value = parseFloat(patientRow[field])
+        //   found=null
+        //   rangs.forEach(function(rang, ind, arr){
+        //     if ((value >= rang.minValue) && (value <= rang.maxValue) ){
+        //       found = rang.image
+        //     }
+        //   })
+        //   return found;
+        // }
     },
 
     epidemiologyMarkerInMap: function(val, year, month, s_d, e_d){
@@ -292,7 +292,12 @@ var MapView = MapView.extend({
         var dict = {"indefinit":"undefined",
                    "probable": "likely",
                    "sospitos": "suspected",
-                   "confirmat": "confirmed",
+                   "confirmat": "confirmed-not-specified",
+                   "confirmat_den": "confirmed-den",
+                   "confirmat_chk": "confirmed-chk",
+                   "confirmat_zk": "confirmed-zk",
+                   "confirmat_yf": "confirmed-yf",
+                   "confirmat_wnv": "confirmed-wnv",
                    'no_cas': 'nocase'
                  }
 
@@ -322,6 +327,7 @@ var MapView = MapView.extend({
                   var key = accentsTidy(val.patient_state)
                   key = key.replace(' ', '_').toLowerCase();
                   var selected_states = $('select[name=epidemiology-state]').val()
+
                   if (selected_states.indexOf(dict[key])!==-1
                       || selected_states.indexOf('all')!==-1) {
                           //get icon style
