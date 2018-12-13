@@ -1293,7 +1293,7 @@ var MapView = MapView.extend({
       lowerValue = epi_report.patient_state.toLowerCase()
       lowerValue = accentsTidy(lowerValue)
       lowerValue = lowerValue.replace(' ','_')
-      epi_report.patient_state = 'epidemiology.'+dict[lowerValue];
+      epi_report.patient_state_shown = 'epidemiology.'+dict[lowerValue];
       this.controls.sidebar.closePane();
       if(!('epidemiology-tpl-content' in this.templates)){
           this.templates[
@@ -1647,16 +1647,17 @@ var MapView = MapView.extend({
           }
       }
       //all images and legend names
-      var dict = {"indefinit":"undefined",
-                  "probable": "likely",
-                  "sospitos": "suspected",
-                  "confirmat": "confirmed-not-specified",
-                  "confirmat_den": "confirmed-den",
-                  "confirmat_chk": "confirmed-chk",
-                  "confirmat_yf": "confirmed-yf",
-                  "confirmat_zk": "confirmed-zk",
-                  "confirmat_wnv": "confirmed-wnv",
-                  'no_cas': 'nocase'
+      var dict = {
+        "indefinit":"undefined",
+        "probable": "likely",
+        "sospitos": "suspected",
+        "confirmat": "confirmed-not-specified",
+        "confirmat_den": "confirmed-den",
+        "confirmat_chk": "confirmed-chk",
+        "confirmat_yf": "confirmed-yf",
+        "confirmat_zk": "confirmed-zk",
+        "confirmat_wnv": "confirmed-wnv",
+        'no_cas': 'nocase'
       }
 
       var selected_states = $('select[name=epidemiology-state]').val()

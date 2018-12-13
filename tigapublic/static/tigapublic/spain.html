@@ -1309,12 +1309,12 @@
                 </h3>
             </div>
 
-          <% if( ( patient_state != null) && (patient_state != "") ) { %>
+          <% if( ( patient_state_shown != null) && (patient_state_shown != "") ) { %>
            <div class="epi-tpl-div">
              <span i18n="epi.patient_state"></span>
                 <div class="epi-patient-state">
                   <img class="epi-icon" src="<%= icon_src%>">
-                  <span i18n="<%= patient_state%>" class="not-bold-inline"></span>
+                  <span i18n="<%= patient_state_shown%>" class="not-bold-inline"></span>
                 </div>
            </div>
           <% } %>
