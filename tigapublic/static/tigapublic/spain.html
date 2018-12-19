@@ -1361,12 +1361,21 @@
           </div>
           <% } %>
 
-          <% if( ( date_arribal != null) && (date_arribal != "") ) { %>
           <div class="epi-tpl-div">
-            <span i18n="epi.date_arribal"></span>
-            <%= moment(date_arribal).format('DD-MM-YYYY') %>
+            <%if ( date_type=='arribal') {%>
+              <span i18n="epi.date_arribal"></span>
+              <% if( ( date_arribal != null) && (date_arribal != "") ) { %>
+                  <%= moment(date_arribal).format('DD-MM-YYYY') %>
+              <% } %>
+            <% } else if ( date_type=='notification') {%>
+              <span i18n="epi.date_notification"></span>
+              <% if( ( date_notification != null) && (date_notification != "") ) { %>
+                  <%= moment(date_notification).format('DD-MM-YYYY') %>
+              <% } %>
+            <% } else { %>
+              <span i18n="epi.date_nodate"></span>
+            <% } %>
           </div>
-          <% } %>
 
           <% if( ( age != null) && (age != "") ) { %>
           <div class="epi-tpl-div">

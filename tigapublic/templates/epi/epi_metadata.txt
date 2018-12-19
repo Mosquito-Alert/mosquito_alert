@@ -14,29 +14,25 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
 
 *Número*: Codi de pacient
     Format: Numèric o alfanumèric.
-    Altres nom acceptats per aquesta columna son: code, codigo, codi, id
+    Altres nom acceptats per aquesta columna son: 'code', 'codigo', 'codi', 'id'
 
 *lat*: Coordenades Y (latitud) de la localització del pacient.
     Format: Valors decimals. Ex: 41.344343
-    Altres nom acceptats per aquesta columna son: latitud y latitude.
+    Altres nom acceptats per aquesta columna son: 'latitud' o 'latitude'.
 
 *lon*: Coordenades X (longitud) de la localització del pacient.
     Format: Valors decimals. Ex: 2.344341
-    Altres nom acceptats per aquesta columna son: longitud y longitude.
-
-*data_arribada*: Data d'arribada a Catalunya del pacient.
-    Format: dd/mm/yyyy (p. ej: 21/08/2016)
-    Altres nom acceptats per aquesta columna son: date_arribal y fecha_llegada.
+    Altres nom acceptats per aquesta columna son: 'longitud' o 'longitude'.
 
 *inici_simptomes*: Data d'arribada a Catalunya del pacient.
     Format: dd/mm/yyyy (p. ej: 21/08/2016)
-    Altres nom acceptats per aquesta columna son: inicio_sintomas y date_symptoms.
+    Altres nom acceptats per aquesta columna son: 'inicio_sintomas' o 'date_symptoms'.
 
 *pais_visitat*: Nom del pais visitat.
     Format: Valors alfanumèrics. Màxim 255 caracters.
-    Altres nom acceptats per aquesta columna son: pais_visitado y visited_country.
+    Altres nom acceptats per aquesta columna son: 'pais_visitado' o 'visited_country'.
 
-*estat*: Estat del pacient. Possibles valors: probable, sospitós (o sospitos, sense accent), confirmat, confirmat den, confirmat zk, confirmat wnv, confirmat chk i confirmat yf.
+*estat*: Estat del pacient. Possibles valors: 'probable', 'sospitós' (o 'sospitos', sense accent), 'confirmat', 'confirmat den', 'confirmat zk', 'confirmat wnv', 'confirmat chk' o 'confirmat yf'.
     On:
       confirmat den: Cas confirmat de dengue
       confirmat zk: Cas confirmat de zika
@@ -45,28 +41,36 @@ Les següents columnes han d'aparèixer obligatòriament a l'arxiu d'importació
       confirmat yf: Cas confirmat de febre groga (yellow fever)
     Observacions: Els valors d'aquesta cel·la que no es corresponguin amb els valors anteriors, es representaran en el mapa un interrogant (?).
     Format: Valors alfanumèrics. Màxim 255 caracters.
-    Altres nom acceptats per aquesta columna son: estado y patient_state.
+    Altres nom acceptats per aquesta columna son: 'estado' o 'patient_state'.
 
 *centre_dia*: Nom del centre d'atenció on s'ha atès al pacient.
     Format: Valors alfanumèrics. Màxim 255 caracters.
-    Altres nom acceptats per aquesta columna son: centro y center.
+    Altres nom acceptats per aquesta columna son: 'centro' o 'center'.
 
 *any*: Any de visita del pacient.
     Format: Numèric
-    Altres nom acceptats per aquesta columna son: año, year
+    Altres nom acceptats per aquesta columna son: 'año' o 'year'
 
 *prov*: Nom de la provincia on resideix el pacient.
     Format: Valors alfanumèrics. Màxim 255 caracters.
-    Altres nom acceptats per aquesta columna son: province.
+    Altres nom acceptats per aquesta columna son: 'province'.
 
 *edatany*: Edat del pacient
     Format: Valor numèric enter.
-    Altres nom acceptats per aquesta columna son: edad y age.
+    Altres nom acceptats per aquesta columna son: 'edad' o 'age'.
 
 
 Columnes opcionals
--------------------
+------------------
+
+*data_arribada*: Data d'arribada a Catalunya del pacient.
+    Format: dd/mm/yyyy (p. ej: 21/08/2016)
+    Altres nom acceptats per aquesta columna son: 'date_arribal' o 'fecha_llegada'.
+    
+*data_notificacio*: Data de notificació del pacient.
+    Format: dd/mm/yyyy (p. ej: 21/08/2016)
+    Altres nom acceptats per aquesta columna son: 'fecha_notificacion' o 'data_notificacio'.    
 
 *observacio*: Comentaris de cada pacient.
     Formato: Texte il·limitat.
-    Altres nom acceptats per aquesta columna son: comentaris, comentarios y comments.
+    Altres nom acceptats per aquesta columna son: 'comentaris', 'comentarios' o 'comments'.

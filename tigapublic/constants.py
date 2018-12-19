@@ -172,7 +172,6 @@ compulsatory_epidemiology_fields = {
     'id': ['code', 'codigo', 'codi', 'id', 'numero'],
     'lat': ['latitud', 'lat', 'latitude'],
     'lon': ['longitud', 'lon', 'longitude'],
-    'date_arribal': ['date_arribal', 'fecha_llegada', 'data_arribada'],
     'date_symptom': ['date_symptoms', 'inicio_sintomas', 'inici_simptomes'],
     'country': ['visited_country', 'pais_visitado', 'pais_visitat'],
     'patient_state': ['patient_state', 'estado', 'estat'],
@@ -183,6 +182,9 @@ compulsatory_epidemiology_fields = {
 }
 
 optional_epidemiology_fields = {
+    'date_arribal': ['date_arribal', 'fecha_llegada', 'data_arribada'],
+    'date_notification': ['date_notification', 'fecha_notificacion',
+                          'data_notificacio'],
     'comments': ['comments', 'comentarios', 'comentaris', 'observacio']
 }
 

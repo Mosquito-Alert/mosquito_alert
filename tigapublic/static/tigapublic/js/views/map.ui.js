@@ -1279,12 +1279,12 @@ var MapView = MapView.extend({
           "indefinit":"undefined",
           "probable": "likely",
           "sospitos": "suspected",
-          "confirmat": "confirmed-not-specified",
-          "confirmat_den": "confirmed-den",
-          "confirmat_chk": "confirmed-chk",
-          "confirmat_yf": "confirmed-yf",
-          "confirmat_zk": "confirmed-zk",
-          "confirmat_wnv": "confirmed-wnv",
+          "confirmat": "form.confirmed-not-specified",
+          "confirmat_den": "form.confirmed-den",
+          "confirmat_chk": "form.confirmed-chk",
+          "confirmat_yf": "form.confirmed-yf",
+          "confirmat_zk": "form.confirmed-zk",
+          "confirmat_wnv": "form.confirmed-wnv",
           'no_cas': 'nocase'
       }
       var panel = this.epi_panel;
@@ -1301,12 +1301,30 @@ var MapView = MapView.extend({
           ] = $('#epidemiology-tpl-content').html();
       }
 
+      //Check date
+      epi_report.date_type='undefined'
+      if (epi_report.date_arribal!==null){
+        epi_report.date_type='arribal'
+      }else{
+        if (epi_report.date_notification!==null){
+          epi_report.date_type='notification'
+        }
+      }
+      
       var arribalDate = new Date(epi_report.date_arribal);
       //If not is date then do date
       if (! (arribalDate instanceof Date && !isNaN(arribalDate.valueOf())) ){
         epi_report.date_arribal = arribalDate.getDate() +
                 '-' + ( arribalDate.getMonth() + 1 ) +
                 '-' + arribalDate.getFullYear();
+      }
+
+      var notificationDate = new Date(epi_report.date_notification);
+      //If not is date then do date
+      if (! (notificationDate instanceof Date && !isNaN(notificationDate.valueOf())) ){
+        epi_report.date_notification = notificationDate.getDate() +
+                '-' + ( notificationDate.getMonth() + 1 ) +
+                '-' + notificationDate.getFullYear();
       }
 
       var symptomDate = new Date(epi_report.date_symptom);
@@ -1673,7 +1691,7 @@ var MapView = MapView.extend({
                   innerHTML += '<li class="epidemiology_legend">'
                   //check for groups
                   if (val.name in subgroups){
-                      innerHTML += '<span i18n="epidemiology.group-'+val.name+'">' + t('epidemiology.group-'+val.name) + ' </span>'
+                      innerHTML += '<span i18n="epidemiology.group-'+val.name+'">' + t('epidemiology.group-'+val.name) + '</span>'
                       innerHTML += '<span class="show-group-legend">-</span>'
                       innerHTML += '<div class="legend-group legend-group-'+val.name+'">'
                       innerHTML += '<ul>'
@@ -1685,7 +1703,7 @@ var MapView = MapView.extend({
                             (selected_states.indexOf('all')!==-1)
                         ) {
                           innerHTML += '<li class="epidemiology_legend"><img src = "' + val.image + '">'
-                          innerHTML += '<span i18n="epidemiology.'+val.name+'">' + t('epidemiology.'+dict[val.name]) + ' </span></li>';
+                          innerHTML += '<span i18n="epidemiology.'+val.name+'">' + t('epidemiology.'+dict[val.name]) + '</span></li>';
                         }
                       })
 
@@ -1693,7 +1711,7 @@ var MapView = MapView.extend({
                   }
                   else{
                     innerHTML +=' <img src = "' + val.image + '">'
-                    innerHTML += '<span i18n="epidemiology.'+dict[val.name]+'">' + t('epidemiology.'+dict[val.name]) + ' </span>'
+                    innerHTML += '<span i18n="epidemiology.'+dict[val.name]+'">' + t('epidemiology.'+dict[val.name]) + '</span>'
                   }
                   innerHTML += '</li>'
             }

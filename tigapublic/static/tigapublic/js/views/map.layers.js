@@ -6,14 +6,14 @@ var MapView = MapView.extend({
     lastViewWasReload : true, //Tells if last map move reloaded
     userfixtileIndex : null,
     userFixtileOptions :  {
-                maxZoom: 20,  // max zoom to preserve detail on
-                tolerance: 5, // simplification tolerance (higher means simpler)
-                extent: 4096, // tile extent (both width and height)
-                buffer: 64,   // tile buffer on each side
-                debug: 0,      // logging level (0 to disable, 1 or 2)
+        maxZoom: 20,  // max zoom to preserve detail on
+        tolerance: 5, // simplification tolerance (higher means simpler)
+        extent: 4096, // tile extent (both width and height)
+        buffer: 64,   // tile buffer on each side
+        debug: 0,      // logging level (0 to disable, 1 or 2)
 
-                indexMaxZoom: 0,        // max zoom in the initial tile index
-                indexMaxPoints: 100000, // max number of points per tile in the index
+        indexMaxZoom: 0,        // max zoom in the initial tile index
+        indexMaxPoints: 100000, // max number of points per tile in the index
     },
 
     addBaseLayer: function(){
@@ -226,6 +226,7 @@ var MapView = MapView.extend({
           //Remove accents
           lowerValue = accentsTidy(lowerValue)
           lowerValue = lowerValue.replace(' ','_')
+
           if (lowerValue in palette.images){
             return palette.images[lowerValue].img
           }
@@ -248,6 +249,9 @@ var MapView = MapView.extend({
 
     epidemiologyMarkerInMap: function(val, year, month, s_d, e_d){
        validDate = val[this.epidemiology_palette_date]
+       if (validDate===null){
+         validDate = val.date_notification
+       }
        var markerDate = moment(validDate)
        var isValid = false;
        var str=''
@@ -322,7 +326,7 @@ var MapView = MapView.extend({
         this.epidemiology_layer.clearLayers();
 
         this.epidemiology_data.forEach(function(val, index, arr){
-              //if date NOT in range jump to next
+            //if date NOT in range jump to next
             if (_this.epidemiologyMarkerInMap(val,years, months, start_date, end_date)){
                   var key = accentsTidy(val.patient_state)
                   key = key.replace(' ', '_').toLowerCase();
