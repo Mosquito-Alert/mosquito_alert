@@ -1,1 +1,1 @@
-v1.0.3 - Corrected problem with map not showing data in general zooms
+v1.0.3b - Checking if branch epi_extension correctly checked out
