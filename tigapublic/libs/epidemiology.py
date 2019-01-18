@@ -17,7 +17,8 @@ class EpidemiologyData(BaseManager):
         # get the data
         values = [
             'id', 'lat', 'lon', 'province', 'health_center', 'country',
-            'age', 'date_arribal', 'date_symptom', 'patient_state', 'year'
+            'age', 'date_arribal', 'date_notification', 'date_symptom',
+            'patient_state', 'year'
         ]
 
         data = Epidemiology.objects.all().values(

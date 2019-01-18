@@ -419,6 +419,7 @@ class Epidemiology(models.Model):
     country = models.CharField(max_length=225, blank=True, null=True)
     date_arribal = models.DateTimeField(blank=True, null=True, default=None)
     date_symptom = models.DateTimeField(blank=True, null=True, default=None)
+    date_notification = models.DateTimeField(blank=True, null=True, default=None)
     patient_state = models.CharField(max_length=225, blank=True, null=True)
     comments = models.TextField(help_text='Extra comments for patients',
                                 default=None, blank=True, null=True)

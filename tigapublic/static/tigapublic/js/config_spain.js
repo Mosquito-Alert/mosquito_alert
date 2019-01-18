@@ -206,19 +206,26 @@ var MOSQUITO = (function (m, _) {
                   },
                   default_palette: 'patient_states',
                   palettes:{
-                      'patient_states':{'name': 'patient_states',//select value
-                                        'column': 'patient_state',
-                                        'type':'qualitative',
-                                        'images':{
-                                                //Key vaues Witout accents
-                                                'confirmat':'img/epi_confirmed.svg',
-                                                'sospitos': 'img/epi_suspected.svg',
-                                                'probable': 'img/epi_likely.svg',
-                                                'no_cas': 'img/epi_nocase.svg',
-                                                'indefinit': 'img/epi_none.svg',}
+                      'patient_states':{
+                          'name': 'patient_states',//select value
+                          'column': 'patient_state',
+                          'type':'qualitative',
+                          'images':{
+                              //Key vaues Witout accents
+                              //This order will show on the epi layer legend
+                              'confirmat_den': {'img':'img/epi_confirmed_den.svg', 'subgroup':'confirmat'},
+                              'confirmat_wnv':{'img':'img/epi_confirmed_wnv.svg','subgroup': 'confirmat'},
+                              'confirmat_yf':{'img':'img/epi_confirmed_yf.svg', 'subgroup': 'confirmat'},
+                              'confirmat_zk':{'img':'img/epi_confirmed_zk.svg', 'subgroup': 'confirmat'},
+                              'confirmat_chk':{'img':'img/epi_confirmed_chk.svg', 'subgroup': 'confirmat'},
+                              'confirmat':{'img':'img/epi_confirmed_undefined.svg', 'subgroup': 'confirmat'},
+                              'probable': {'img':'img/epi_likely.svg'},
+                              'sospitos': {'img':'img/epi_suspected.svg'},
+                              'no_cas': {'img':'img/epi_nocase.svg'},
+                              'indefinit': {'img':'img/epi_none.svg'},
+                          }
                       }
                   }
-
               },
               {
                   key: 'G',

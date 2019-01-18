@@ -159,6 +159,7 @@ class ExcelUploader(BaseManager):
         import_dataset.headers = None
 
         with tempfile.NamedTemporaryFile(delete=False) as f:
+                print f.name
                 f.write(import_dataset.get_csv(delimiter='\t'))
                 f.seek(0)
 
@@ -168,7 +169,7 @@ class ExcelUploader(BaseManager):
                     db.copy_from(f, self.model._meta.db_table,
                                  columns=(self.read_dataset.headers),
                                  sep="\t",
-                                 null='null')
+                                 null='')
                     self.response = {
                         'success': True,
                         'headers': self.read_dataset.headers

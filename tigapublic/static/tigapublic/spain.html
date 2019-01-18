@@ -564,9 +564,14 @@
                   <!-- SELECT DATE -->
                       <select name="epidemiology-state" class="epi-select" id="select_epi-state" multiple>
                         <option value="all" i18n="epidemiology.all" selected="true"></option>
+                        <option value="confirmed-not-specified" i18n="epidemiology.form.confirmed-not-specified"></option>
+                        <option value="confirmed-den" i18n="epidemiology.form.confirmed-den"></option>
+                        <option value="confirmed-chk" i18n="epidemiology.form.confirmed-chk"></option>
+                        <option value="confirmed-zk" i18n="epidemiology.form.confirmed-zk"></option>
+                        <option value="confirmed-wnv" i18n="epidemiology.form.confirmed-wnv"></option>
+                        <option value="confirmed-yf" i18n="epidemiology.form.confirmed-yf"></option>
                         <option value="likely" i18n="epidemiology.likely"></option>
                         <option value="suspected" i18n="epidemiology.suspected"></option>
-                        <option value="confirmed" i18n="epidemiology.confirmed"></option>
                         <option value="nocase" i18n="epidemiology.nocase"></option>
                       </select>
                 </div>
@@ -1304,11 +1309,13 @@
                 </h3>
             </div>
 
-          <% if( ( patient_state != null) && (patient_state != "") ) { %>
+          <% if( ( patient_state_shown != null) && (patient_state_shown != "") ) { %>
            <div class="epi-tpl-div">
              <span i18n="epi.patient_state"></span>
-                <img class="epi-icon" src="<%= icon_src%>">
-             <%= patient_state %>
+                <div class="epi-patient-state">
+                  <img class="epi-icon" src="<%= icon_src%>">
+                  <span i18n="<%= patient_state_shown%>" class="not-bold-inline"></span>
+                </div>
            </div>
           <% } %>
 
@@ -1354,12 +1361,21 @@
           </div>
           <% } %>
 
-          <% if( ( date_arribal != null) && (date_arribal != "") ) { %>
           <div class="epi-tpl-div">
-            <span i18n="epi.date_arribal"></span>
-            <%= moment(date_arribal).format('DD-MM-YYYY') %>
+            <%if ( date_type=='arribal') {%>
+              <span i18n="epi.date_arribal"></span>
+              <% if( ( date_arribal != null) && (date_arribal != "") ) { %>
+                  <%= moment(date_arribal).format('DD-MM-YYYY') %>
+              <% } %>
+            <% } else if ( date_type=='notification') {%>
+              <span i18n="epi.date_notification"></span>
+              <% if( ( date_notification != null) && (date_notification != "") ) { %>
+                  <%= moment(date_notification).format('DD-MM-YYYY') %>
+              <% } %>
+            <% } else { %>
+              <span i18n="epi.date_nodate"></span>
+            <% } %>
           </div>
-          <% } %>
 
           <% if( ( age != null) && (age != "") ) { %>
           <div class="epi-tpl-div">
@@ -1417,7 +1433,7 @@
      <script src="js/leaflet/control-div.js"></script>
      <script src="js/leaflet/geojson-vt-dev.js"></script>
      <script src="js/leaflet/L.CanvasTiles.js"></script>
-     
+
 
      <script src="js/leaflet/control-sidebar-button.js"></script>
      <script src="lib/L.CanvasOverlay.js"></script>
