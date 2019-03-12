@@ -37,10 +37,12 @@ $( document ).ready(function() {
             success: function( data, textStatus, jqXHR ) {
                 console.log(data.stats);
                 add_data_to_map(data.data);
-                var info_html = info_window_template.replace(/#n_points#/g, data.stats.n );
-                info_html = info_html.replace(/#earliest_date#/g, data.stats.earliest_date );
-                info_html = info_html.replace(/#latest_date#/g, data.stats.latest_date );
-                $('#info_window').html(info_html);
+                if(data.data.length > 0){
+                    var info_html = info_window_template.replace(/#n_points#/g, data.stats.n );
+                    info_html = info_html.replace(/#earliest_date#/g, data.stats.earliest_date );
+                    info_html = info_html.replace(/#latest_date#/g, data.stats.latest_date );
+                    $('#info_window').html(info_html);
+                }
             },
             error: function(jqXHR, textStatus, errorThrown){
                 console.log(errorThrown);
