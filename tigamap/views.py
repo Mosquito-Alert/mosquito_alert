@@ -15,6 +15,7 @@ from tigaserver_app.views import get_n_days, get_n_months
 from django.conf import settings
 import datetime
 import pytz
+from django.http import HttpResponseRedirect
 
 
 def show_grid_05(request):
@@ -336,51 +337,58 @@ def show_new_coverage_map(request):
 
 @xframe_options_exempt
 def show_filterable_report_map(request, zoom=None, min_zoom=0, max_zoom=18, map_type='adult', scroll_zoom='on', year='0', month='0', selected_validation='-2', center_lon=None, center_lat=None, legend='on', fullscreen='on', min_lat = -90, min_lon = -180, max_lat = 90, max_lon=180):
-    current_domain = get_current_domain(request)
-    if CoverageAreaMonth.objects.all().count() > 0:
-        last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
-    else:
-        last_coverage_id = 0
-    center_lon = request.GET.get('center_lon', center_lon)
-    center_lat = request.GET.get('center_lat', center_lat)
-    year = request.GET.get('year', year)
-    month = request.GET.get('month', month)
-    selected_validation = request.GET.get('selected_validation', selected_validation)
-    zoom = request.GET.get('zoom', zoom)
-    map_type = request.GET.get('map_type', map_type)
-    scroll_zoom = request.GET.get('scroll_zoom', scroll_zoom)
-    min_lat = request.GET.get('min_lat', min_lat)
-    min_lon = request.GET.get('min_lon', min_lon)
-    max_lat = request.GET.get('max_lat', max_lat)
-    max_lon = request.GET.get('max_lon', max_lon)
-    fullscreen = request.GET.get('fullscreen', fullscreen)
-    legend = request.GET.get('legend', legend)
-    min_zoom = request.GET.get('min_zoom', min_zoom)
-    max_zoom = request.GET.get('max_zoomo', max_zoom)
-    endpoint ='all_reports'
-    end_day = (pytz.utc.localize(datetime.datetime.now()) - settings.START_TIME).days + 1
-    context = {'domain': current_domain, 'end_day': end_day, 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
-    context.update(csrf(request))
-    if zoom:
-        context['zoom'] = zoom
-    if center_lon:
-        context['center_lon'] = center_lon
-    if center_lat:
-        context['center_lat'] = center_lat
-    context['map_type'] = map_type
-    context['scroll_zoom'] = scroll_zoom
-    context['year'] = year
-    context['month'] = month
-    context['selected_validation'] = selected_validation
-    context['min_lat'] = min_lat
-    context['min_lon'] = min_lon
-    context['max_lat'] = max_lat
-    context['max_lon'] = max_lon
-    context['fullscreen'] = fullscreen
-    context['legend'] = legend
-    context['min_zoom'] = min_zoom
-    context['max_zoom'] = max_zoom
-    return render(request, 'tigamap/validated_report_map_filterable.html', context)
+    #302 Redirect to new map
+    languages = [l[0] for l in settings.LANGUAGES]
+    current_lang = request.LANGUAGE_CODE
+    if current_lang in languages:
+        return HttpResponseRedirect('/static/tigapublic/spain.html#/' + current_lang + '/')
+    return HttpResponseRedirect('/static/tigapublic/spain.html#/es/')
+
+    # current_domain = get_current_domain(request)
+    # if CoverageAreaMonth.objects.all().count() > 0:
+    #     last_coverage_id = CoverageAreaMonth.objects.order_by('id').last().id
+    # else:
+    #     last_coverage_id = 0
+    # center_lon = request.GET.get('center_lon', center_lon)
+    # center_lat = request.GET.get('center_lat', center_lat)
+    # year = request.GET.get('year', year)
+    # month = request.GET.get('month', month)
+    # selected_validation = request.GET.get('selected_validation', selected_validation)
+    # zoom = request.GET.get('zoom', zoom)
+    # map_type = request.GET.get('map_type', map_type)
+    # scroll_zoom = request.GET.get('scroll_zoom', scroll_zoom)
+    # min_lat = request.GET.get('min_lat', min_lat)
+    # min_lon = request.GET.get('min_lon', min_lon)
+    # max_lat = request.GET.get('max_lat', max_lat)
+    # max_lon = request.GET.get('max_lon', max_lon)
+    # fullscreen = request.GET.get('fullscreen', fullscreen)
+    # legend = request.GET.get('legend', legend)
+    # min_zoom = request.GET.get('min_zoom', min_zoom)
+    # max_zoom = request.GET.get('max_zoomo', max_zoom)
+    # endpoint ='all_reports'
+    # end_day = (pytz.utc.localize(datetime.datetime.now()) - settings.START_TIME).days + 1
+    # context = {'domain': current_domain, 'end_day': end_day, 'endpoint': endpoint, 'last_coverage_id': last_coverage_id}
+    # context.update(csrf(request))
+    # if zoom:
+    #     context['zoom'] = zoom
+    # if center_lon:
+    #     context['center_lon'] = center_lon
+    # if center_lat:
+    #     context['center_lat'] = center_lat
+    # context['map_type'] = map_type
+    # context['scroll_zoom'] = scroll_zoom
+    # context['year'] = year
+    # context['month'] = month
+    # context['selected_validation'] = selected_validation
+    # context['min_lat'] = min_lat
+    # context['min_lon'] = min_lon
+    # context['max_lat'] = max_lat
+    # context['max_lon'] = max_lon
+    # context['fullscreen'] = fullscreen
+    # context['legend'] = legend
+    # context['min_zoom'] = min_zoom
+    # context['max_zoom'] = max_zoom
+    # return render(request, 'tigamap/validated_report_map_filterable.html', context)
 
 
 @xframe_options_exempt
