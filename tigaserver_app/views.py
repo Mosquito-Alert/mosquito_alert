@@ -812,9 +812,15 @@ def user_score(request):
     user = get_object_or_404(queryset, pk=user_id)
     if request.method == 'GET':
         if user.profile:
-            content = {"user_id": user_id, "score": user.profile.score, "score_label": score_label(user.profile.score)}
+            if user.profile.score == 0:
+                content = {"user_id": user_id, "score": 1, "score_label": score_label(1)}
+            else:
+                content = {"user_id": user_id, "score": user.profile.score, "score_label": score_label(user.profile.score)}
         else:
-            content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+            if user.score == 0:
+                content = {"user_id": user_id, "score": 1, "score_label": score_label(1)}
+            else:
+                content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
     if request.method == 'POST':
         score = request.QUERY_PARAMS.get('score', -1)
