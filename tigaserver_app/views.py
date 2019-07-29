@@ -795,7 +795,7 @@ def refresh_user_scores():
     for user in queryset:
         score = summary.getScore(user.user_UUID)
         if user.profile:
-            user.profile.score = score
+            user.profile.score = score[0]
             user.profile.save()
         else:
             if user.score != score[0]:
