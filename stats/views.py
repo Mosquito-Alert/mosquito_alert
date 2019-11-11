@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
 import json
-from sets import Set
 import datetime
 from django.utils import timezone
 
@@ -53,7 +52,7 @@ def get_most_recently_validated_report(slug):
 @api_view(['GET'])
 def workload_pending_per_user(request):
     if request.method == 'GET':
-        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        user_slug = request.query_params.get('user_slug', -1)
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=user_slug)
         current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult')
@@ -70,7 +69,7 @@ def workload_pending_per_user(request):
 @api_view(['GET'])
 def workload_stats_per_user(request):
     if request.method == 'GET':
-        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        user_slug = request.query_params.get('user_slug', -1)
         tz = get_localzone()
         queryset = User.objects.all()
         user = get_object_or_404(queryset,username=user_slug)
@@ -596,7 +595,7 @@ def report_stats_ccaa(request):
     """)
     data = cursor.fetchall()
 
-    years = Set()
+    years = set()
     for elem in data:
         years.add(int(elem[1]))
     years = list(years)
@@ -675,7 +674,7 @@ def hashtag_map(request):
 
 @api_view(['GET'])
 def get_hashtag_map_data(request):
-    hashtag = request.QUERY_PARAMS.get('ht', '')
+    hashtag = request.query_params.get('ht', '')
     data = []
     if hashtag.strip() == '':
         return Response({ 'stats': '', 'data': data})

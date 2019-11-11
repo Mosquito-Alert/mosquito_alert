@@ -10,7 +10,7 @@ from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
 from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
-from django.core.urlresolvers import reverse
+#from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
@@ -20,6 +20,9 @@ from collections import Counter
 from datetime import datetime
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Manager as GeoManager
+from django.urls import reverse
+from django.utils.deconstruct import deconstructible
 
 class TigaProfile(models.Model):
     firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
@@ -39,7 +42,7 @@ class TigaUser(models.Model):
 
     score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
 
-    profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True)
+    profile = models.ForeignKey('tigaserver_app.TigaProfile', related_name='profile_devices', null=True, blank=True, on_delete=models.DO_NOTHING, )
 
     def __unicode__(self):
         return self.user_UUID
@@ -120,7 +123,7 @@ class Mission(models.Model):
 
 
 class MissionTrigger(models.Model):
-    mission = models.ForeignKey(Mission, related_name='triggers')
+    mission = models.ForeignKey('tigaserver_app.Mission', related_name='triggers', on_delete=models.DO_NOTHING, )
     lat_lower_bound = models.FloatField(blank=True, null=True, help_text='Optional lower-bound latitude for '
                                                                          'triggering mission to appear to user. Given in decimal degrees.')
     lat_upper_bound = models.FloatField(blank=True, null=True, help_text='Optional upper-bound latitude for '
@@ -153,7 +156,7 @@ class MissionTrigger(models.Model):
 
 
 class MissionItem(models.Model):
-    mission = models.ForeignKey(Mission, related_name='items', help_text='Mission to which this item is associated.')
+    mission = models.ForeignKey('tigaserver_app.Mission', related_name='items', help_text='Mission to which this item is associated.', on_delete=models.DO_NOTHING, )
     question_catalan = models.CharField(max_length=1000, help_text='Question displayed to user in Catalan.')
     question_spanish = models.CharField(max_length=1000, help_text='Question displayed to user in Spanish.')
     question_english = models.CharField(max_length=1000, help_text='Question displayed to user in English.')
@@ -180,9 +183,9 @@ class Report(models.Model):
     version_number = models.IntegerField(db_index=True, help_text='The report version number. Should be an integer that increments '
                                                    'by 1 for each repor version. Note that the user keeps only the '
                                                    'most recent version on the device, but all versions are stored on the server.')
-    user = models.ForeignKey(TigaUser, help_text='user_UUID for the user sending this report. Must be exactly 36 '
+    user = models.ForeignKey('tigaserver_app.TigaUser', help_text='user_UUID for the user sending this report. Must be exactly 36 '
                                                  'characters (32 hex digits plus 4 hyphens) and user must have '
-                                                 'already registered this ID.', related_name="user_reports")
+                                                 'already registered this ID.', related_name="user_reports", on_delete=models.DO_NOTHING, )
     report_id = models.CharField(db_index=True, max_length=4, help_text='4-digit alpha-numeric code generated on user phone to '
                                                          'identify each unique report from that user. Digits should '
                                                          'lbe randomly drawn from the set of all lowercase and '
@@ -208,9 +211,9 @@ class Report(models.Model):
     TYPE_CHOICES = (('adult', 'Adult'), ('site', 'Breeding Site'), ('mission', 'Mission'),)
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, help_text="Type of report: 'adult', 'site', "
                                                                          "or 'mission'.", )
-    mission = models.ForeignKey(Mission, blank=True, null=True, help_text='If this report was a response to a '
+    mission = models.ForeignKey('tigaserver_app.Mission', blank=True, null=True, help_text='If this report was a response to a '
                                                                           'mission, the unique id field of that '
-                                                                          'mission.')
+                                                                          'mission.', on_delete=models.DO_NOTHING, )
     LOCATION_CHOICE_CHOICES = (('current', "Current location detected by user's device"), ('selected',
                                                                                            'Location selected by '
                                                                                            'user from map'),
@@ -275,7 +278,7 @@ class Report(models.Model):
 
     point = models.PointField(blank=True,null=True,srid=4326)
 
-    objects = models.GeoManager()
+    objects = GeoManager()
 
     def __unicode__(self):
         return self.version_UUID
@@ -670,35 +673,7 @@ class Report(models.Model):
             q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
             result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
         return result
-
-    # def get_tiger_responses(self):
-    #     if self.type != 'adult':
-    #         return None
-    #     these_responses = self.responses.all()
-    #     result = {}
-    #
-    #     if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
-    #         q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
-    #         result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q1r = these_responses.get(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q1_response'] = -2 if q1r in [u'Like Ae. albopictus', u'Com Ae. albopictus',u'Como Ae. albopictus'] else -3 if q1r in [u'Like Ae. aegypti', u'Com Ae. aegypti', u'Como Ae. aegypti'] else -4 if q1r in [u'Neither', u'Cap dels dos', u'None of them'] else -5
-    #
-    #     if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
-    #         q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
-    #         result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q2r = these_responses.get(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q2_response'] = -2 if q2r in [u'Thorax like Ae. albopictus', u'T\xf3rax com Ae. albopictus', u'T\xf3rax like Ae. albopictus'] else -3 if q2r in [u'Thorax like Ae. aegypti', u'T\xf3rax com Ae. aegypti', u'T\xf3rax como Ae. aegypti'] else -4 if q2r in [u'Neither', u'Cap dels dos', u'Ninguno de los dos'] else -5
-    #
-    #     if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
-    #         q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
-    #         result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q3r = these_responses.get(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q3_response'] = -2 if q3r in [u'Abdomen like a Ae. albopictus',u'Abdomen com Ae. albopictus',u'Abdomen como Ae. albopictus'] else -3 if q3r in [u'Abdomen like Ae. aegypti', u'Abdomen com Ae. aegypti',u'Abdomen como Ae. aegypti'] else -4 if q3r in [u'Neither', u'Cap dels dos',u'Ninguno de los dos'] else -5
-    #     return result
-
+    
     def get_site_responses_text(self):
         if self.type != 'site':
             return None
@@ -1478,21 +1453,36 @@ class Report(models.Model):
 
 
 class ReportResponse(models.Model):
-    report = models.ForeignKey(Report, related_name='responses', help_text='Report to which this response is ' \
-                                                                          'associated.')
+    report = models.ForeignKey('tigaserver_app.Report', related_name='responses', help_text='Report to which this response is ' \
+                                                                          'associated.', on_delete=models.DO_NOTHING, )
     question = models.CharField(max_length=1000, help_text='Question that the user responded to.')
     answer = models.CharField(max_length=1000, help_text='Answer that user selected.')
 
     def __unicode__(self):
         return str(self.id)
 
+@deconstructible
+class MakeImageUUID(object):
+    path = ''
 
+    def __init__(self, path):
+        self.path = path
+
+    def __call__(self,instance,filename):
+        extension = filename.split('.')[-1]
+        filename = "%s.%s" % (uuid.uuid4(), extension)
+        return os.path.join(self.path, filename)
+
+make_image_uuid = MakeImageUUID('tigapics')
+
+'''
 def make_image_uuid(path):
     def wrapper(instance, filename):
         extension = filename.split('.')[-1]
         filename = "%s.%s" % (uuid.uuid4(), extension)
         return os.path.join(path, filename)
     return wrapper
+'''
 
 
 def make_uuid():
@@ -1503,9 +1493,9 @@ class Photo(models.Model):
     """
     Photo uploaded by user.
     """
-    photo = models.ImageField(upload_to=make_image_uuid('tigapics'), help_text='Photo uploaded by user.')
-    report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
-                                                 'report_UUID).')
+    photo = models.ImageField(upload_to=make_image_uuid, help_text='Photo uploaded by user.')
+    report = models.ForeignKey('tigaserver_app.Report', related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
+                                                 'report_UUID).', on_delete=models.DO_NOTHING, )
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
     uuid = models.CharField(max_length=36, default=make_uuid)
 
@@ -1718,12 +1708,12 @@ class NotificationContent(models.Model):
             return self.body_html_es
 
 class Notification(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
-    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
-    expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
-    date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.DO_NOTHING, )
+    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent', on_delete=models.DO_NOTHING, )
+    expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification', on_delete=models.DO_NOTHING, )
+    date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
-    notification_content = models.ForeignKey(NotificationContent,blank=True, null=True,related_name="notification_content",help_text='Multi language content of the notification')
+    notification_content = models.ForeignKey('tigaserver_app.NotificationContent',blank=True, null=True,related_name="notification_content",help_text='Multi language content of the notification', on_delete=models.DO_NOTHING, )
     #All this becomes obsolete, now all notification text is outside. This allows for re-use in massive notifications
     expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')

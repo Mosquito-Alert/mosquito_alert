@@ -2,7 +2,7 @@
 """Storm Drain Libraries."""
 import os
 import tempfile
-from StringIO import StringIO
+from io import StringIO
 from zipfile import ZipFile
 
 from django.db import connection
@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from tablib import Dataset
 import csv
 
-from base import BaseManager
+from tigapublic.libs.base import BaseManager
 from tigapublic.utils import extendUser
 from tigapublic.constants import (true_values, false_values)
 from tigapublic.models import Epidemiology
@@ -159,7 +159,7 @@ class ExcelUploader(BaseManager):
         import_dataset.headers = None
 
         with tempfile.NamedTemporaryFile(delete=False) as f:
-                print f.name
+                print (f.name)
                 f.write(import_dataset.get_csv(delimiter='\t'))
                 f.seek(0)
 
@@ -180,7 +180,7 @@ class ExcelUploader(BaseManager):
 
     def put(self, *args, **kwargs):
         """Import a file."""
-        print self.model
+        print (self.model)
         if self.request.user.is_epidemiologist_editor():
             if self.request.method == 'POST':
                 # Prepare the input Dataset

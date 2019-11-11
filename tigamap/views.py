@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.db.models import Q
 from datetime import date
-from django.core.urlresolvers import reverse
+#from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from tigaserver_app.models import Fix, Report, CoverageArea, CoverageAreaMonth
 from tigacrafting.models import MoveLabAnnotation
@@ -10,7 +10,7 @@ from tigaserver_project.settings import LANGUAGES
 from operator import attrgetter
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from tigaserver_app.views import get_n_days, get_n_months
 from django.conf import settings
 import datetime

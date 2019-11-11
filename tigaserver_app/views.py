@@ -8,7 +8,7 @@ from rest_framework.exceptions import ParseError
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
-import django_filters
+from django_filters import rest_framework as filters
 from datetime import datetime, timedelta
 import pytz
 import calendar
@@ -142,21 +142,21 @@ missions with mission_version=1 or null.
 mission_version null. Defaults to 100.
     """
     if request.method == 'GET':
-        these_missions = Mission.objects.filter(Q(id__gt=request.QUERY_PARAMS.get('id_gt', 0)),
-                                                Q(platform__exact=request.QUERY_PARAMS.get('platform', 'all')) | Q(platform__isnull=True) | Q(platform__exact='all'),
-                                                Q(mission_version__lte=request.QUERY_PARAMS.get('version_lte',100)) | Q(mission_version__isnull=True)).order_by('id')
-        serializer = MissionSerializer(these_missions)
+        these_missions = Mission.objects.filter(Q(id__gt=request.query_params.get('id_gt', 0)),
+                                                Q(platform__exact=request.query_params.get('platform', 'all')) | Q(platform__isnull=True) | Q(platform__exact='all'),
+                                                Q(mission_version__lte=request.query_params.get('version_lte',100)) | Q(mission_version__isnull=True)).order_by('id')
+        serializer = MissionSerializer(these_missions, many=True)
         return Response(serializer.data)
 
 
 @api_view(['GET'])
 def get_photo(request):
     if request.method == 'GET':
-        user_id = request.QUERY_PARAMS.get('user_id', -1)
+        user_id = request.query_params.get('user_id', -1)
         #get user reports by user id
         these_reports = Report.objects.filter(user_id=user_id).values('version_UUID').distinct()
         these_photos = Photo.objects.filter(report_id__in=these_reports)
-        serializer = PhotoSerializer(these_photos)
+        serializer = PhotoSerializer(these_photos,many=True)
         return Response(serializer.data)
 
 
@@ -173,18 +173,21 @@ version_UUID linking this photo to a specific report version.
 * report: The version_UUID of the report to which this photo is attached.
     """
     if request.method == 'POST':
-        this_report = Report.objects.get(version_UUID=request.DATA['report'])
+        this_report = Report.objects.get(version_UUID=request.data['report'])
         instance = Photo(photo=request.FILES['photo'], report=this_report)
         instance.save()
         return Response('uploaded')
 
-def filter_partial_uuid(queryset, user_UUID):
-    if not user_UUID:
-        return queryset
-    return queryset.filter(user_UUID__startswith=user_UUID)
 
-class UserFilter(django_filters.FilterSet):
-    user_UUID = django_filters.Filter(action=filter_partial_uuid)
+class UserFilter(filters.FilterSet):
+    user_UUID = filters.Filter(method='filter_partial_uuid')
+
+    def filter_partial_uuid(self, qs, name, value):
+        user_UUID = value
+        if not user_UUID:
+            return qs
+        return qs.filter(user_UUID__startswith=user_UUID)
+
     class Meta:
         model = TigaUser
         fields = ['user_UUID']
@@ -203,7 +206,7 @@ through the API.)
     """
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
-    filter_class = UserFilter
+    filterset_class = UserFilter
 
 
 class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
@@ -264,6 +267,7 @@ the server map (although it will still be retained internally).
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     filter_fields = ('user', 'version_number', 'report_id', 'type')
+
 
 
 # For production version, substitute WriteOnlyModelViewSet
@@ -335,76 +339,76 @@ def get_n_months():
     # adding 1 to include the last dayin the set
     return ((end_time - start_time).days / 28) + 1
 
+class MapDataFilter(filters.FilterSet):
 
-def filter_creation_day(queryset, days_since_launch):
-    if not days_since_launch:
-        return queryset
-    try:
-        target_day_start = settings.START_TIME + timedelta(days=int(days_since_launch))
-        target_day_end = settings.START_TIME + timedelta(days=int(days_since_launch)+1)
-        result = queryset.filter(creation_time__range=(target_day_start, target_day_end))
-        return result
-    except ValueError:
-        return queryset
+    day = filters.Filter(method='filter_day')
+    week = filters.Filter(method='filter_week')
+    month = filters.Filter(method='filter_month')
+    year = filters.Filter(method='filter_year')
 
+    def filter_day(self, qs, name, value):
+        days_since_launch = value
+        if not days_since_launch:
+            return qs
+        try:
+            target_day_start = settings.START_TIME + timedelta(days=int(days_since_launch))
+            target_day_end = settings.START_TIME + timedelta(days=int(days_since_launch) + 1)
+            result = qs.filter(creation_time__range=(target_day_start, target_day_end))
+            return result
+        except ValueError:
+            return qs
 
-def filter_creation_week(queryset, weeks_since_launch):
-    if not weeks_since_launch:
-        return queryset
-    try:
-        target_week_start = settings.START_TIME + timedelta(weeks=int(weeks_since_launch))
-        target_week_end = settings.START_TIME + timedelta(weeks=int(weeks_since_launch)+1)
-        result = queryset.filter(creation_time__range=(target_week_start, target_week_end))
-        return result
-    except ValueError:
-        return queryset
+    def filter_week(self, qs, name, value):
+        weeks_since_launch = value
+        if not weeks_since_launch:
+            return qs
+        try:
+            target_week_start = settings.START_TIME + timedelta(weeks=int(weeks_since_launch))
+            target_week_end = settings.START_TIME + timedelta(weeks=int(weeks_since_launch) + 1)
+            result = qs.filter(creation_time__range=(target_week_start, target_week_end))
+            return result
+        except ValueError:
+            return qs
 
+    def filter_month(self, qs, name, value):
+        months_since_launch = value
+        if not months_since_launch:
+            return qs
+        try:
+            target_month_start = settings.START_TIME + timedelta(weeks=int(months_since_launch) * 4)
+            target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch) * 4) + 4)
+            result = qs.filter(creation_time__range=(target_month_start, target_month_end))
+            return result
+        except ValueError:
+            return qs
 
-def filter_creation_month(queryset, months_since_launch):
-    if not months_since_launch:
-        return queryset
-    try:
-        target_month_start = settings.START_TIME + timedelta(weeks=int(months_since_launch)*4)
-        target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch)*4)+4)
-        result = queryset.filter(creation_time__range=(target_month_start, target_month_end))
-        return result
-    except ValueError:
-        return queryset
-
-
-def filter_creation_year(queryset, year):
-    if not year:
-        return queryset
-    try:
-        result = queryset.filter(creation_time__year=year)
-        return result
-    except ValueError:
-        return queryset
-
-
-class MapDataFilter(django_filters.FilterSet):
-    day = django_filters.Filter(action=filter_creation_day)
-    week = django_filters.Filter(action=filter_creation_week)
-    month = django_filters.Filter(action=filter_creation_month)
-    year = django_filters.Filter(action=filter_creation_year)
+    def filter_year(self, qs, name, value):
+        year = value
+        if not year:
+            return qs
+        try:
+            result = qs.filter(creation_time__year=year)
+            return result
+        except ValueError:
+            return qs
 
     class Meta:
         model = Report
         fields = ['day', 'week', 'month', 'year']
 
 
-class CoverageMapFilter(django_filters.FilterSet):
-    id_range_start = django_filters.NumberFilter(name='id', lookup_type='gte')
-    id_range_end = django_filters.NumberFilter(name='id', lookup_type='lte')
+class CoverageMapFilter(filters.FilterSet):
+    id_range_start = filters.NumberFilter(name='id', lookup_type='gte')
+    id_range_end = filters.NumberFilter(name='id', lookup_type='lte')
 
     class Meta:
         model = CoverageArea
         fields = ['id_range_start', 'id_range_end']
 
 
-class CoverageMonthMapFilter(django_filters.FilterSet):
-    id_range_start = django_filters.NumberFilter(name='id', lookup_type='gte')
-    id_range_end = django_filters.NumberFilter(name='id', lookup_type='lte')
+class CoverageMonthMapFilter(filters.FilterSet):
+    id_range_start = filters.NumberFilter(field_name='id', lookup_expr='gte')
+    id_range_end = filters.NumberFilter(field_name='id', lookup_expr='lte')
 
     class Meta:
         model = CoverageAreaMonth
@@ -505,7 +509,7 @@ class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
     queryset = hidden_reports | unfiltered_clean_reports_query
 
     serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
+    filterset_class = MapDataFilter
 
 
 class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
@@ -515,7 +519,7 @@ class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
         non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
+    filterset_class = MapDataFilter
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
@@ -528,7 +532,7 @@ class AllReportsMapViewSet(ReadOnlyModelViewSet):
         non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
+    filterset_class = MapDataFilter
 
 
 def lon_function(this_lon, these_lons, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
@@ -632,24 +636,28 @@ def update_coverage_area_month_model_manual():
 class CoverageMonthMapViewSet(ReadOnlyModelViewSet):
     queryset = CoverageAreaMonth.objects.all()
     serializer_class = CoverageMonthMapSerializer
-    filter_class = CoverageMonthMapFilter
+    filterset_class = CoverageMonthMapFilter
 
-def filter_partial_name(queryset, name):
-    if not name:
-        return queryset
-    return queryset.filter(name__icontains=name)
 
-class TagFilter(django_filters.FilterSet):
-    name = django_filters.Filter(action=filter_partial_name)
+class TagFilter(filters.FilterSet):
+    name = filters.Filter(method='filter_partial_name')
+
+    def filter_partial_name(self, qs, name, value):
+        name = value
+        if not name:
+            return qs
+        return qs.filter(name__icontains=name)
 
     class Meta:
         model = Tag
         fields = ['name']
 
+
 class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    filter_class = TagFilter
+    filterset_class = TagFilter
+
 
 def string_par_to_bool(string_par):
     if string_par:
@@ -657,6 +665,7 @@ def string_par_to_bool(string_par):
         if string_lower == 'true':
             return True
     return False
+
 
 @api_view(['GET'])
 def force_refresh_cfa_reports(request):
@@ -670,6 +679,7 @@ def force_refresh_cfa_reports(request):
         for report in unfiltered_clean_reports_query:
             results.append({"version_UUID": report.version_UUID})
         return Response(results)
+
 
 @api_view(['GET'])
 def force_refresh_cfs_reports(request):
@@ -690,9 +700,9 @@ def force_refresh_cfs_reports(request):
 
 @api_view(['POST'])
 def msg_ios(request):
-    user_id = request.QUERY_PARAMS.get('user_id', -1)
-    alert_message = request.QUERY_PARAMS.get('alert_message', -1)
-    link_url = request.QUERY_PARAMS.get('link_url', -1)
+    user_id = request.query_params.get('user_id', -1)
+    alert_message = request.query_params.get('alert_message', -1)
+    link_url = request.query_params.get('link_url', -1)
     if user_id != -1 and alert_message != -1 and link_url != -1:
         queryset = TigaUser.objects.all()
         this_user = get_object_or_404(queryset, pk=user_id)
@@ -710,9 +720,9 @@ def msg_ios(request):
 
 @api_view(['POST'])
 def msg_android(request):
-    user_id = request.QUERY_PARAMS.get('user_id', -1)
-    message = request.QUERY_PARAMS.get('message', -1)
-    title = request.QUERY_PARAMS.get('title', -1)
+    user_id = request.query_params.get('user_id', -1)
+    message = request.query_params.get('message', -1)
+    title = request.query_params.get('title', -1)
     if user_id != -1 and message != -1 and title != -1:
         queryset = TigaUser.objects.all()
         this_user = get_object_or_404(queryset, pk=user_id)
@@ -730,8 +740,8 @@ def msg_android(request):
 
 @api_view(['POST'])
 def token(request):
-    token = request.QUERY_PARAMS.get('token', -1)
-    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    token = request.query_params.get('token', -1)
+    user_id = request.query_params.get('user_id', -1)
     if( user_id != -1 and token != -1 ):
         queryset = TigaUser.objects.all()
         this_user = get_object_or_404(queryset, pk=user_id)
@@ -744,7 +754,7 @@ def token(request):
 @api_view(['GET'])
 @cache_page(60 * 5)
 def report_stats(request):
-    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    user_id = request.query_params.get('user_id', -1)
     if user_id == -1:
         r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
     else:
@@ -756,7 +766,7 @@ def report_stats(request):
 @api_view(['GET'])
 @cache_page(60)
 def user_count(request):
-    filter_criteria = request.QUERY_PARAMS.get('filter_criteria', -1)
+    filter_criteria = request.query_params.get('filter_criteria', -1)
     if filter_criteria == -1:
         raise ParseError(detail="Invalid filter criteria")
     if filter_criteria == 'uploaded_pictures':
@@ -805,7 +815,7 @@ def refresh_user_scores():
 
 @api_view(['GET', 'POST'])
 def user_score(request):
-    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    user_id = request.query_params.get('user_id', -1)
     if user_id == -1:
         raise ParseError(detail='user_id is mandatory')
     queryset = TigaUser.objects.all()
@@ -823,7 +833,7 @@ def user_score(request):
                 content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
     if request.method == 'POST':
-        score = request.QUERY_PARAMS.get('score', -1)
+        score = request.query_params.get('score', -1)
         if score == -1:
             raise ParseError(detail='score is mandatory')
         try:
@@ -871,11 +881,11 @@ def custom_render_notification_queryset(queryset,locale):
 @api_view(['GET','POST','DELETE','PUT'])
 def user_notifications(request):
     if request.method == 'GET':
-        locale = request.QUERY_PARAMS.get('locale', 'es')
-        user_id = request.QUERY_PARAMS.get('user_id', -1)
+        locale = request.query_params.get('locale', 'es')
+        user_id = request.query_params.get('user_id', -1)
         acknowledged = 'ignore'
-        if request.QUERY_PARAMS.get('acknowledged') != None:
-            acknowledged = request.QUERY_PARAMS.get('acknowledged', False)
+        if request.query_params.get('acknowledged') != None:
+            acknowledged = request.query_params.get('acknowledged', False)
         all_notifications = Notification.objects.all()
         if user_id == -1:
             raise ParseError(detail='user_id is mandatory')
@@ -889,7 +899,7 @@ def user_notifications(request):
         #return Response(serializer.data)
         return Response(content)
     if request.method == 'POST':
-        id = request.QUERY_PARAMS.get('id', -1)
+        id = request.query_params.get('id', -1)
         try:
             int(id)
         except ValueError:
@@ -898,15 +908,15 @@ def user_notifications(request):
         this_notification = get_object_or_404(queryset,pk=id)
         notification_content = this_notification.notification_content
         ack = 'ignore'
-        if request.QUERY_PARAMS.get('acknowledged') is not None:
-            ack = request.QUERY_PARAMS.get('acknowledged', True)
-        body_html_es = request.QUERY_PARAMS.get('body_html_es', '-1')
-        title_es = request.QUERY_PARAMS.get('title_es', '-1')
-        body_html_ca = request.QUERY_PARAMS.get('body_html_ca', '-1')
-        title_ca = request.QUERY_PARAMS.get('title_ca', '-1')
-        body_html_en = request.QUERY_PARAMS.get('body_html_en', '-1')
-        title_en = request.QUERY_PARAMS.get('title_en', '-1')
-        public = request.QUERY_PARAMS.get('public', '-1')
+        if request.query_params.get('acknowledged') is not None:
+            ack = request.query_params.get('acknowledged', True)
+        body_html_es = request.query_params.get('body_html_es', '-1')
+        title_es = request.query_params.get('title_es', '-1')
+        body_html_ca = request.query_params.get('body_html_ca', '-1')
+        title_ca = request.query_params.get('title_ca', '-1')
+        body_html_en = request.query_params.get('body_html_en', '-1')
+        title_en = request.query_params.get('title_en', '-1')
+        public = request.query_params.get('public', '-1')
         if body_html_ca != '-1':
             notification_content.body_html_ca = body_html_ca
         if title_ca != '-1':
@@ -937,7 +947,7 @@ def user_notifications(request):
             return Response(serializer.data)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
-        id = request.QUERY_PARAMS.get('id', -1)
+        id = request.query_params.get('id', -1)
         try:
             int(id)
         except ValueError:
@@ -953,7 +963,7 @@ def user_notifications(request):
 def notification_content(request):
     if request.method == 'PUT':
         this_notification_content = NotificationContent()
-        serializer = NotificationContentSerializer(this_notification_content,data=request.DATA)
+        serializer = NotificationContentSerializer(this_notification_content,data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -963,7 +973,7 @@ def notification_content(request):
 @api_view(['PUT'])
 def send_notifications(request):
     if request.method == 'PUT':
-        data = request.DATA
+        data = request.data
         id = data['notification_content_id']
         sender = data['user_id']
         push = data['ppush']
@@ -1025,7 +1035,7 @@ def send_notifications(request):
 # @api_view(['GET'])
 # def nearby_reports(request):
 #     if request.method == 'GET':
-#         dwindow = request.QUERY_PARAMS.get('dwindow', 30)
+#         dwindow = request.query_params.get('dwindow', 30)
 #         try:
 #             int(dwindow)
 #         except ValueError:
@@ -1035,9 +1045,9 @@ def send_notifications(request):
 #
 #         date_N_days_ago = datetime.now() - timedelta(days=int(dwindow))
 #
-#         center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
-#         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
-#         radius = request.QUERY_PARAMS.get('radius', '2500')
+#         center_buffer_lat = request.query_params.get('lat', None)
+#         center_buffer_lon = request.query_params.get('lon', None)
+#         radius = request.query_params.get('radius', '2500')
 #         if center_buffer_lat is None or center_buffer_lon is None:
 #             return Response(status=400,data='invalid parameters')
 #
@@ -1069,13 +1079,14 @@ def send_notifications(request):
 #         return Response(serializer.data)
 
 
-def filter_partial_name_address(queryset, name):
-    if not name:
-        return queryset
-    return queryset.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
+class UserAddressFilter(filters.FilterSet):
+    name = filters.Filter(method='filter_partial_name_address')
 
-class UserAddressFilter(django_filters.FilterSet):
-    name = django_filters.Filter(action=filter_partial_name_address)
+    def filter_partial_name_address(self, qs, name, value):
+        name = value
+        if not name:
+            return qs
+        return qs.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
 
     class Meta:
         model = User
@@ -1084,7 +1095,7 @@ class UserAddressFilter(django_filters.FilterSet):
 class UserAddressViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.exclude(first_name='').filter(groups__name__in=['expert','superexpert'])
     serializer_class = UserAddressSerializer
-    filter_class = UserAddressFilter
+    filterset_class = UserAddressFilter
 
 def report_to_point(report):
     return GEOSGeometry('SRID=4326;POINT(' + str(report.point.x) + ' ' + str(report.point.y) + ')')
@@ -1106,7 +1117,7 @@ def distance_matrix(center_point, all_points):
 def nearby_reports(request):
     if request.method == 'GET':
         MAX_SEARCH_RADIUS = 100000
-        dwindow = request.QUERY_PARAMS.get('dwindow', 90)
+        dwindow = request.query_params.get('dwindow', 90)
         try:
             int(dwindow)
         except ValueError:
@@ -1116,9 +1127,9 @@ def nearby_reports(request):
 
         date_N_days_ago = datetime.now() - timedelta(days=int(dwindow))
 
-        center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
-        center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
-        radius = request.QUERY_PARAMS.get('radius', 5000)
+        center_buffer_lat = request.query_params.get('lat', None)
+        center_buffer_lon = request.query_params.get('lon', None)
+        radius = request.query_params.get('radius', 5000)
         if center_buffer_lat is None or center_buffer_lon is None:
             return Response(status=400,data='invalid parameters')
 
@@ -1130,9 +1141,9 @@ def nearby_reports(request):
         dst = distance_matrix(center_point_4326,classified_reports_in_max_radius)
         reports_sorted_by_distance = [dst[i][0] for i in range(0,len(dst))]
         if(len(reports_sorted_by_distance) < 10):
-            serializer = NearbyReportSerializer(reports_sorted_by_distance)
+            serializer = NearbyReportSerializer(reports_sorted_by_distance, many=True)
         else:
-            serializer = NearbyReportSerializer(reports_sorted_by_distance[:10])
+            serializer = NearbyReportSerializer(reports_sorted_by_distance[:10], many=True)
         return Response(serializer.data)
         '''
         keep_looping = True
@@ -1148,8 +1159,8 @@ def nearby_reports(request):
 @api_view(['POST'])
 def profile_new(request):
     if request.method == 'POST':
-        firebase_token = request.QUERY_PARAMS.get('fbt', -1)
-        user_id = request.QUERY_PARAMS.get('usr', -1)
+        firebase_token = request.query_params.get('fbt', -1)
+        user_id = request.query_params.get('usr', -1)
         if firebase_token == -1:
             raise ParseError(detail='firebase token is mandatory')
         if user_id == -1:
@@ -1190,7 +1201,7 @@ def profile_new(request):
 @api_view(['GET'])
 def profile_detail(request):
     if request.method == 'GET':
-        firebase_token = request.QUERY_PARAMS.get('fbt', -1)
+        firebase_token = request.query_params.get('fbt', -1)
         if firebase_token == -1:
             raise ParseError(detail='firebase token is mandatory')
         profile = get_object_or_404(TigaProfile.objects,firebase_token=firebase_token)

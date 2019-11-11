@@ -99,11 +99,11 @@ observation_urls = [
         views.observation),
 
     # Excel export
-    url(r'(?i)export\.(?P<format>(xls)|(csv))$',
+    url(r'export\.(?P<format>(xls)|(csv))$',
         views.ObservationsExportView.as_view()),
 
     # Report based on YEARS & MONTHS
-    url(r'(?i)report/' +
+    url(r'report/' +
         re_bounds +
         re_years +
         re_months +
@@ -115,7 +115,7 @@ observation_urls = [
         views.observations_report),
 
     # Report based on DATERANGE
-    url(r'(?i)report/' +
+    url(r'report/' +
         re_bounds +
         re_daterange +
         re_categories +
@@ -129,13 +129,16 @@ observation_urls = [
 """User management."""
 user_urls = [
     # Do login
-    url(r'^(?i)ajax_login/$', views.ajax_login),
+    #url(r'^(?i)ajax_login/$', views.ajax_login),
+    url('ajax_login/', views.ajax_login),
 
     # Check if user is logged in
-    url(r'^(?i)ajax_is_logged/$', views.ajax_is_logged),
+    #url(r'^(?i)ajax_is_logged/$', views.ajax_is_logged),
+    url('ajax_is_logged/', views.ajax_is_logged),
 
     # Do logout
-    url(r'^(?i)ajax_logout/$', views.ajax_logout),
+    #url(r'^(?i)ajax_logout/$', views.ajax_logout),
+    url('ajax_logout/', views.ajax_logout),
 ]
 
 """Notifications."""

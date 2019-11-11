@@ -7,7 +7,7 @@ from operator import __or__ as OR
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from base import BaseManager
+from tigapublic.libs.base import BaseManager
 from tigapublic.models import (AuthUser, MapAuxReports, Municipalities,
                                ObservationNotifications)
 
@@ -444,7 +444,7 @@ class FilterManager(BaseManager):
                 del filters['notifications']['notif_types']
 
         cleaned_filters = {}
-        for key, value in filters.iteritems():
+        for key, value in filters.items():
             if type(value).__name__ == 'dict':
                 hasvalue = False
                 inner_filter = {}
@@ -465,10 +465,10 @@ class FilterManager(BaseManager):
         result = {}
         structure = {'time': ['years', 'months', 'date_start', 'date_end'],
                      'notifications': ['mynotifs', 'notif_types']}
-        for key, value in filters.iteritems():
+        for key, value in filters.items():
             if type(value).__name__ == 'unicode':
                 found = False
-                for cat, items in structure.iteritems():
+                for cat, items in structure.items():
                     if key in items:
                         found = True
                         if cat not in result:
@@ -487,7 +487,7 @@ class FilterManager(BaseManager):
         # print
         # self.model = model
         qs = model.objects.all()
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key == 'extra':
                 if 'select' in value:
                     qs = qs.extra(select=value['select'])
@@ -507,7 +507,7 @@ class FilterManager(BaseManager):
         """Run all filters."""
         # If we didn't get the list of filter_names, get it from the data
         filter_names = tuple(
-            {key for key, value in self.filters.iteritems()}
+            {key for key, value in self.filters.items()}
         ) if not filter_names else filter_names
 
         # If we got a string convert it to tuple

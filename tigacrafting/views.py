@@ -1,5 +1,4 @@
 # coding=utf-8
-from ihooks import _Verbose
 from pydoc import visiblename
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,9 +15,9 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from random import shuffle
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -37,6 +36,7 @@ from itertools import chain
 from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification
 from django.contrib.gis.geos import GEOSGeometry
+from urllib.parse import quote_plus
 
 
 def get_current_domain(request):
@@ -122,8 +122,8 @@ def import_tasks():
         if len(warnings) > 0:
             ef.write('<h1>tigacrafting.views.import_tasks warnings</h1><p>' + barcelona.localize(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S UTC%z') + '</p><p>' + '</p><p>'.join(warnings) + '</p>')
         ef.close()
-        print '\n'.join(errors)
-        print '\n'.join(warnings)
+        print ('\n'.join(errors))
+        print ('\n'.join(warnings))
     return {'errors': errors, 'warnings': warnings}
 
 
@@ -165,7 +165,7 @@ def import_task_responses():
             response_model.user_lang = info_dic['user_lang']
             existing_task = CrowdcraftingTask.objects.filter(task_id=response['task_id'])
             if existing_task:
-                print 'existing task'
+                print ('existing task')
                 this_task = CrowdcraftingTask.objects.get(task_id=response['task_id'])
                 response_model.task = this_task
             else:
@@ -216,7 +216,8 @@ def filter_false_validated(reports, sort=True):
         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports),key=attrgetter('n_annotations'), reverse=True)
     else:
         reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
-    return reports_filtered
+    retval = [l for l in reports_filtered]
+    return retval
 
 
 def filter_reports(reports, sort=True):
@@ -224,12 +225,14 @@ def filter_reports(reports, sort=True):
         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports), key=attrgetter('n_annotations'), reverse=True)
     else:
         reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-    return reports_filtered
+    retval = [ l for l in reports_filtered ]
+    return retval
 
 
 def filter_reports_for_superexpert(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))>=3, reports)
-    return reports_filtered
+    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(list(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all())))>=3, reports)
+    retval = [ l for l in reports_filtered ]
+    return retval
 
 
 @xframe_options_exempt
@@ -620,7 +623,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             page = request.POST.get('page')
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.quote_plus(tags_filter)) if tags_filter else ''))
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + quote_plus(tags_filter)) if tags_filter else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             note_language = request.GET.get('note_language', note_language)
@@ -752,7 +755,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
             # any expert has put on the report
             # these are all (not only yours, but also) the reports that contain the filtered tag
-            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
+            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct()
             # we want the annotations of the reports which contain the tag(s)
             all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
         if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter or tags_filter == 'na' or tags_filter==''):
@@ -835,8 +838,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['version_uuid'] = version_uuid
         args['linked_id'] = linked_id
         args['tags_filter'] = tags_filter
-        args['my_version_uuids'] = my_version_uuids
-        args['my_linked_ids'] = my_linked_ids
+        my_version_uuids_list = [ l['report__version_UUID'] for l in  my_version_uuids ]
+        args['my_version_uuids'] = my_version_uuids_list
+        my_linked_ids_list = [ l['linked_id'] for l in my_linked_ids ]
+        args['my_linked_ids'] = my_linked_ids_list
         args['tasks_per_page'] = tasks_per_page
         args['note_language'] = note_language
         args['scroll_position'] = scroll_position
@@ -895,7 +900,8 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             objects = paginator.page(paginator.num_pages)
         paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
         reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
-        context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
+        all_reports_version_uuids_list = [ l['version_UUID'] for l in  all_reports_version_uuids]
+        context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids_list, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
         context['objects'] = objects
         context['pages'] = range(1, objects.paginator.num_pages+1)
 
@@ -977,7 +983,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             type = request.POST.get('type', type)
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
+            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + quote_plus(usr_note) + '&type=' + type)
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             type = request.GET.get('type', type)

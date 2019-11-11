@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from StringIO import StringIO
+from io import StringIO
 from zipfile import ZipFile
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
-from base import BaseManager
-from filters import FilterManager
-from notifications import NotificationManager
+from tigapublic.libs.base import BaseManager
+from tigapublic.libs.filters import FilterManager
+from tigapublic.libs.notifications import NotificationManager
 from tigapublic.constants import (fields_available, managers_group,
                                   superusers_group)
 from tigapublic.models import AuthUser, MapAuxReports, ReportsMapData
 from tigapublic.resources import GetObservationResource, NotificationResource
-from predictionmodels import predictionModels
+from tigapublic.libs.predictionmodels import predictionModels
 
 
 def coordinateListToWKTPolygon(coordinates):
@@ -223,7 +223,7 @@ class ObservationManager(BaseManager):
         # Run filters
         try:
             self.filter.run()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             self.response['error'] = str(e)
 
         return self.filter.queryset
@@ -321,6 +321,8 @@ class ObservationManager(BaseManager):
         ).values(*fields)
 
         self.response = qs[0]
+        self.response['notifs'] = sorted(list(notifications.values('expert__username','notification_content__body_html_es','notification_content__title_es','date_comment')),key=lambda k:(k['expert__username'],k['notification_content__body_html_es'],k['notification_content__title_es'],k['date_comment']))
+        '''
         self.response['notifs'] = sorted(
             list(notifications.values(
                 'expert__username',
@@ -328,6 +330,7 @@ class ObservationManager(BaseManager):
                 'notification_content__title_es',
                 'date_comment')
                 ), reverse=True)
+        '''
 
         return self._end()
 

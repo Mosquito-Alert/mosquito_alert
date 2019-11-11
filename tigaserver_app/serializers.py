@@ -32,11 +32,11 @@ def custom_render_notification(notification,locale):
 
 class UserSerializer(serializers.ModelSerializer):
 
-    def validate_user_UUID(self, attrs, source):
+    def validate_user_UUID(self, attrs):
         """
         Check that the user_UUID has exactly 36 characters.
         """
-        value = attrs[source]
+        value = attrs
         if len(str(value)) != 36:
             raise serializers.ValidationError("Make sure user_UUID is EXACTLY 36 characters.")
         return attrs
@@ -81,6 +81,7 @@ class MissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Mission
+        fields = '__all__'
 
 
 class UserListingField(serializers.RelatedField):
@@ -131,27 +132,35 @@ class ReportSerializer(serializers.ModelSerializer):
     app_language = serializers.CharField(required=False)
     responses = ReportResponseSerializer(many=True)
 
-    def validate_report_UUID(self, attrs, source):
+    def validate_report_UUID(self, attrs):
         """
         Check that the user_UUID has exactly 36 characters.
         """
-        value = attrs[source]
+        value = attrs
         if len(str(value)) != 36:
             raise serializers.ValidationError("Make sure report_UUID is EXACTLY 36 characters.")
         return attrs
 
-    def validate_type(self, attrs, source):
+    def validate_type(self, attrs):
         """
         Check that the report type is either 'adult', 'site', or 'mission'.
         """
-        value = attrs[source]
+        value = attrs
         if value not in ['adult', 'site', 'mission']:
             raise serializers.ValidationError("Make sure type is 'adult', 'site', or 'mission'.")
         return attrs
 
+    def create(self,validated_data):
+        responses_data = validated_data.pop('responses')
+        report = Report.objects.create(**validated_data)
+        for response in responses_data:
+            ReportResponse.objects.create(report=report, **response)
+        return report
+
     class Meta:
         model = Report
         depth = 0
+        fields = '__all__'
 
 
 class PhotoSerializer(serializers.ModelSerializer):
@@ -176,12 +185,13 @@ class ConfigurationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Configuration
+        fields = '__all__'
 
 class NearbyReportSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
-    lon = serializers.Field()
-    lat = serializers.Field()
-    simplified_annotation = serializers.Field()
+    lon = serializers.ReadOnlyField()
+    lat = serializers.ReadOnlyField()
+    simplified_annotation = serializers.ReadOnlyField()
     class Meta:
         model = Report
         exclude = ('version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time',
@@ -201,25 +211,27 @@ class ReportIdSerializer(serializers.ModelSerializer):
 
 class MapDataSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
-    creation_time = serializers.DateTimeField()
-    creation_date = serializers.DateTimeField()
-    creation_day_since_launch = serializers.Field()
-    creation_year = serializers.Field()
-    creation_month = serializers.Field()
-    site_cat = serializers.Field()
+    #creation_time = serializers.DateTimeField()
+    creation_time = serializers.ReadOnlyField()
+    #creation_date = serializers.DateTimeField()
+    creation_date = serializers.ReadOnlyField()
+    creation_day_since_launch = serializers.ReadOnlyField()
+    creation_year = serializers.ReadOnlyField()
+    creation_month = serializers.ReadOnlyField()
+    site_cat = serializers.ReadOnlyField()
     type = serializers.CharField()
-    lon = serializers.Field()
-    lat = serializers.Field()
-    movelab_annotation = serializers.Field()
-    tiger_responses = serializers.Field()
-    tiger_responses_text = serializers.Field()
-    site_responses = serializers.Field()
-    site_responses_text = serializers.Field()
-    tigaprob_cat = serializers.Field()
-    visible = serializers.Field()
-    latest_version = serializers.Field()
-    n_photos = serializers.Field()
-    final_expert_status_text = serializers.Field()
+    lon = serializers.ReadOnlyField()
+    lat = serializers.ReadOnlyField()
+    movelab_annotation = serializers.ReadOnlyField()
+    tiger_responses = serializers.ReadOnlyField()
+    tiger_responses_text = serializers.ReadOnlyField()
+    site_responses = serializers.ReadOnlyField()
+    site_responses_text = serializers.ReadOnlyField()
+    tigaprob_cat = serializers.ReadOnlyField()
+    visible = serializers.ReadOnlyField()
+    latest_version = serializers.ReadOnlyField()
+    n_photos = serializers.ReadOnlyField()
+    final_expert_status_text = serializers.ReadOnlyField()
 
     class Meta:
         model = Report
@@ -345,8 +357,9 @@ class DetailedReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
+        fields = '__all__'
 
-    def get_point(self,obj):
+    def get_point(self, obj):
         if obj.point is not None:
             return { "lat": obj.point.y, "long": obj.point.x}
         else:

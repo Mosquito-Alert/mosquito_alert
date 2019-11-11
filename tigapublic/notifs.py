@@ -9,7 +9,7 @@ import sys
 import tempfile
 import urllib
 from datetime import date
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 from operator import __or__ as OR
 from StringIO import StringIO
 from zipfile import ZipFile
