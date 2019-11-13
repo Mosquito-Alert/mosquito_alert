@@ -115,7 +115,7 @@ class ObservationsExportView(View):
         """Export data to Excel/CSV."""
         # Get filters from the request.GET
         filters = {key: value[0] for key, value in
-                   dict(self.request.GET).iteritems()}
+                   dict(self.request.GET).items()}
         return ObservationManager(request, **filters).export(*args, **kwargs)
 
 

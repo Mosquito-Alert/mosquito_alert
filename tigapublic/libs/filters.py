@@ -448,7 +448,7 @@ class FilterManager(BaseManager):
             if type(value).__name__ == 'dict':
                 hasvalue = False
                 inner_filter = {}
-                for key2, value2 in value.iteritems():
+                for key2, value2 in value.items():
                     if (value2 != 'all' and value2 != 'N'
                             and value2 is not None):
                         hasvalue = True

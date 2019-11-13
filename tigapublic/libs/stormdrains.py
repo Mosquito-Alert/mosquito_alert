@@ -508,7 +508,7 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
         # has_missing = False
         missing_headers = []
         for key, fieldVariants in (
-                compulsatory_stormdrain_fields.iteritems()
+                compulsatory_stormdrain_fields.items()
                 ):
             if not bool(set(fieldVariants) & set(file_headers)):
                 missing_headers.append(key)
@@ -522,7 +522,7 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
         return missing_headers
 
     def _get_optional_fields(self, file_headers):
-        for key, fieldVariants in optional_stormdrain_fields.iteritems():
+        for key, fieldVariants in optional_stormdrain_fields.items():
             # find out the match between column name and model field
             self._match_column_to_field(
                 fieldVariants,

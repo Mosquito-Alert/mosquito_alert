@@ -1542,7 +1542,7 @@ def stormDrainUpload(request, **kwargs):
             # headers to lowercase
             fileHeaders = [x.lower() for x in readDataset.headers]
             for key, compulsatoryVariants in (
-                    compulsatory_stormdrain_fields.iteritems()):
+                    compulsatory_stormdrain_fields.items()):
 
                 if not bool(set(compulsatoryVariants) & set(fileHeaders)):
                     missingCompulsatoryHeader = True
@@ -1559,7 +1559,7 @@ def stormDrainUpload(request, **kwargs):
 
             # Check optional fields and match column names with model fields
             for key, optionalVariants in (
-                    optional_stormdrain_fields.iteritems()):
+                    optional_stormdrain_fields.items()):
 
                 for optional in optionalVariants:
                     headerposition = 0

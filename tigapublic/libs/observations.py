@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from io import StringIO
+#from io import StringIO
+from io import BytesIO
 from zipfile import ZipFile
 
 from django.conf import settings
@@ -73,13 +74,13 @@ class ObservationExporter(BaseManager):
         # All fields available
         fields = OrderedDict(fields_available)
         # Get and store the fields available to this role
-        self.fields = [key for key, value in fields.iteritems()
+        self.fields = [key for key, value in fields.items()
                        if type(value).__name__ == 'str'
                        or 'permissions' not in value
                        or role in value['permissions']]
         # Get and store the headers available to this role
         self.headers = []
-        for key, value in fields.iteritems():
+        for key, value in fields.items():
             if type(value).__name__ == 'str':
                 self.headers.append(value)
             elif 'permissions' not in value or role in value['permissions']:
@@ -105,7 +106,7 @@ class ObservationExporter(BaseManager):
                 "/tigapublic/files/observations_public_metadata.txt"
             )
 
-        in_memory = StringIO()
+        in_memory = BytesIO()
         zip = ZipFile(in_memory, "a")
         zip.writestr("license.txt", license_file.read())
         zip.writestr("obs_metadata.txt",

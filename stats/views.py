@@ -633,11 +633,11 @@ def show_fix_users(request):
     while ref_date <= end_date:
         these_fixes = real_fixes.filter(fix_time__lte=ref_date, user_coverage_uuid__isnull=False)
         c = Counter(f.user_coverage_uuid for f in these_fixes)
-        fix20_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 20])})
-        fix15_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 15])})
-        fix10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 10])})
-        fix5_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 5])})
-        fix1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v >= 1])})
+        fix20_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 20])})
+        fix15_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 15])})
+        fix10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 10])})
+        fix5_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 5])})
+        fix1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v >= 1])})
         ref_date += timedelta(hours=24)
     context = {'fix20_users': fix20_users, 'fix15_users': fix15_users,'fix10_users': fix10_users, 'fix5_users': fix5_users, 'fix1_users': fix1_users}
     return render(request, 'stats/fix_user_chart.html', context)
@@ -656,11 +656,11 @@ def show_report_users(request):
     while ref_date <= end_date:
         these_reports = [r for r in real_reports if r.creation_time <= ref_date]
         c = Counter(r.user for r in these_reports)
-        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 0])})
-        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 1])})
-        r2_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 2])})
-        r3_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 3])})
-        r4_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 4])})
+        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 0])})
+        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 1])})
+        r2_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 2])})
+        r3_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 3])})
+        r4_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 4])})
         ref_date += timedelta(days=1)
     context = {'r0_users': r0_users, 'r1_users': r1_users, 'r2_users': r2_users, 'r3_users': r3_users, 'r4_users': r4_users}
     return render(request, 'stats/report_user_chart.html', context)
