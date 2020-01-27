@@ -1896,6 +1896,7 @@
         $("#search_tag_submit_button").on('click', submit_search_tag);
 
         grab_reports_button.on('click', function () {
+            $("#grab_reports_button").attr("disabled", true);
             gear.show();
             $("#load_new_reports_input").val("T");
             var qp = query_selectors();

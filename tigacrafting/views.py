@@ -37,6 +37,7 @@ from itertools import chain
 from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification
 from django.contrib.gis.geos import GEOSGeometry
+from django.db import transaction
 
 
 def get_current_domain(request):
@@ -564,7 +565,7 @@ def issue_notification(report_annotation,current_domain):
     def notification_already_issued(report, user_sent_to, expert_sent_from, title_es):
         return Notification.objects.filter(report=report,user=user_sent_to,expert=expert_sent_from,notification_content__title_es=title_es).exists()
     '''
-
+@transaction.atomic
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na'):
     this_user = request.user
