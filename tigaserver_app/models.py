@@ -20,6 +20,10 @@ from collections import Counter
 from datetime import datetime
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
+from django.db import connection
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TigaProfile(models.Model):
     firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
@@ -172,6 +176,22 @@ class MissionItem(models.Model):
     attached_image = models.ImageField(upload_to='tigaserver_mission_images', blank=True, null=True,
                                        help_text='Optional Image displayed to user within the help message. File.')
 
+class EuropeCountry(models.Model):
+    gid = models.IntegerField(primary_key=True)
+    cntr_id = models.CharField(max_length=2, blank=True)
+    name_engl = models.CharField(max_length=44, blank=True)
+    iso3_code = models.CharField(max_length=3, blank=True)
+    fid = models.CharField(max_length=2, blank=True)
+    geom = models.MultiPolygonField(blank=True, null=True)
+    x_min = models.FloatField(blank=True, null=True)
+    x_max = models.FloatField(blank=True, null=True)
+    y_min = models.FloatField(blank=True, null=True)
+    y_max = models.FloatField(blank=True, null=True)
+    objects = models.GeoManager()
+    class Meta:
+        managed = False
+        db_table = 'europe_countries'
+
 
 class Report(models.Model):
     version_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
@@ -275,6 +295,8 @@ class Report(models.Model):
 
     point = models.PointField(blank=True,null=True,srid=4326)
 
+    country = models.ForeignKey(EuropeCountry, blank=True, null=True)
+
     objects = models.GeoManager()
 
     def __unicode__(self):
@@ -289,6 +311,30 @@ class Report(models.Model):
         wkt_point = 'POINT( {0} {1} )'
         p = GEOSGeometry(wkt_point.format(self.get_lon(), self.get_lat()), srid=4326)
         return p
+
+    def get_country_is_in(self):
+        if self.point is not None:
+            countries = EuropeCountry.objects.filter(geom__contains=self.point)
+            if len(countries) == 0:
+                cursor = connection.cursor()
+                # K nearest neighbours,
+                # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
+                cursor.execute("""
+                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d,name_engl,gid
+                    FROM europe_countries
+                    ORDER BY geom <-> 'SRID=4326;POINT(%s %s)'::geometry limit 1
+                """, ( self.point.x, self.point.y, self.point.x, self.point.y, ) )
+                row = cursor.fetchone()
+                if row[0] < 0.1:
+                    return EuropeCountry.objects.get(pk=row[2])
+                return None
+            elif len(countries) == 1:
+                return countries[0]
+            else: #more than 1 country
+                logger.warning( 'report with id {0} is inside more than 1 country ({1} countries)'.format( self.version_UUID,countries[0].name_engl ) )
+                return countries[0]
+        return None
+
 
     def get_lat(self):
         if self.location_choice == 'selected' and self.selected_location_lat is not None:
@@ -1429,6 +1475,8 @@ class Report(models.Model):
     def save(self, *args, **kwargs):
         if not self.point:
             self.point = self.get_point()
+        c = self.get_country_is_in()
+        self.country = c
         super(Report, self).save(*args, **kwargs)
 
     lon = property(get_lon)
