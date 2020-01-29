@@ -1,6 +1,0 @@
-tigaserver_project/settings_local.py
-tigaserver_project/settings_local*
-tigaserver_project/settings/local.pyc
-*pyc
-*.egg-info
-.idea/*
