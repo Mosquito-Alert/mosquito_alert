@@ -177,6 +177,7 @@ class Migration(SchemaMigration):
         u'tigaserver_app.report': {
             'Meta': {'unique_together': "(('user', 'version_UUID'),)", 'object_name': 'Report'},
             'app_language': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
+            'cached_visible': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'creation_time': ('django.db.models.fields.DateTimeField', [], {}),
             'current_location_lat': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             'current_location_lon': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
