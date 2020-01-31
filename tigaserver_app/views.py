@@ -1134,6 +1134,14 @@ def nearby_reports(request):
         else:
             serializer = NearbyReportSerializer(reports_sorted_by_distance[:10])
         return Response(serializer.data)
+
+        '''
+        -- All points within a given distance from given coordinate - this is FAST
+        SELECT st_distance(point::geography, 'SRID=4326;POINT(2.06999 41.62729)'::geography) as d
+        FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(2.06999 41.62729)'::geography) <= 5000
+        ORDER BY point::geography <-> 'SRID=4326;POINT(2.06999 41.62729)'::geography;
+        '''
+
         '''
         keep_looping = True
         while( (len(classified_reports) < minimum_points) and keep_looping ):
