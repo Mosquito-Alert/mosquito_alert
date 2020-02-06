@@ -23,7 +23,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 import logging
 
-logger = logging.getLogger(__name__)
+logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
 class TigaProfile(models.Model):
     firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
@@ -1476,6 +1476,10 @@ class Report(models.Model):
         if not self.point:
             self.point = self.get_point()
         c = self.get_country_is_in()
+        if c is None:
+            logger_report_geolocation.debug('report with id {0} assigned to no country'.format(self.version_UUID,))
+        else:
+            logger_report_geolocation.debug('report with id {0} assigned to country {1} with code {2}'.format(self.version_UUID,c.name_engl,c.iso3_code,))
         self.country = c
         super(Report, self).save(*args, **kwargs)
 
