@@ -333,7 +333,7 @@ class Report(models.Model):
                     logger_report_geolocation.debug('report with id {0} assigned to NEARBY country {1} with code {2}'.format(self.version_UUID,c.name_engl, c.iso3_code, ))
                     return c
                 else:
-                    logger_report_geolocation.debug('report with id {0} found no NEARBY countries setting country as none'.format(self.version_UUID))
+                    logger_report_geolocation.debug('report with id {0} found no NEARBY countries, setting country as none'.format(self.version_UUID))
                 return None
             elif len(countries) == 1:
                 logger_report_geolocation.debug('report with id {0} has SINGLE candidate, country {1} with code {2}'.format(self.version_UUID, countries[0].name_engl, countries[0].iso3_code, ))
