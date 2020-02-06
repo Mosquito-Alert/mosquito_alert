@@ -313,9 +313,12 @@ class Report(models.Model):
         return p
 
     def get_country_is_in(self):
+        logger_report_geolocation.debug('retrieving country for report with id {0}'.format(self.version_UUID, ))
         if self.point is not None:
             countries = EuropeCountry.objects.filter(geom__contains=self.point)
+            logger_report_geolocation.debug('report with id {0} has {1} country candidates'.format(self.version_UUID, len(countries)))
             if len(countries) == 0:
+                logger_report_geolocation.debug('report with id {0} has no candidates, assigning to NEARBY country (within 0.1 degrees)'.format(self.version_UUID))
                 cursor = connection.cursor()
                 # K nearest neighbours,
                 # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
@@ -326,13 +329,20 @@ class Report(models.Model):
                 """, ( self.point.x, self.point.y, self.point.x, self.point.y, ) )
                 row = cursor.fetchone()
                 if row[0] < 0.1:
-                    return EuropeCountry.objects.get(pk=row[2])
+                    c = EuropeCountry.objects.get(pk=row[2])
+                    logger_report_geolocation.debug('report with id {0} assigned to NEARBY country {1} with code {2}'.format(self.version_UUID,c.name_engl, c.iso3_code, ))
+                    return c
+                else:
+                    logger_report_geolocation.debug('report with id {0} found no NEARBY countries setting country as none'.format(self.version_UUID))
                 return None
             elif len(countries) == 1:
+                logger_report_geolocation.debug('report with id {0} has SINGLE candidate, country {1} with code {2}'.format(self.version_UUID, countries[0].name_engl, countries[0].iso3_code, ))
                 return countries[0]
             else: #more than 1 country
-                logger.warning( 'report with id {0} is inside more than 1 country ({1} countries)'.format( self.version_UUID,countries[0].name_engl ) )
+                logger_report_geolocation.debug( 'report with id {0} is inside MULTIPLE countries ({1} countries), using country {2} with code {3}'.format( self.version_UUID, countries[0].name_engl, countries[0].name_engl, countries[0].iso3_code, ) )
                 return countries[0]
+
+        logger_report_geolocation.debug('report with id {0} has no associated geolocation'.format(self.version_UUID, ))
         return None
 
 
