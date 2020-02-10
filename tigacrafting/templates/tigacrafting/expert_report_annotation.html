@@ -298,9 +298,14 @@
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
             <div class="col-md-10">
-                <h4><strong>{{ form.instance.report.type|capfirst }}
-                    Report {{ form.instance.report.version_UUID }}</strong>
-                    {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+                <h4>
+                    <strong>
+                        {{ form.instance.report.type|capfirst }}
+                    Report {{ form.instance.report.version_UUID }}
+                    </strong>
+                    {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC
+                    - {{ form.instance.report.country.name_engl }}
+                </h4>
             </div>
             <div class="col-md-1">
                 <h4>

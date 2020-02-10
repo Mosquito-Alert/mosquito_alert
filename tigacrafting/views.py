@@ -567,15 +567,15 @@ def issue_notification(report_annotation,current_domain):
     '''
 @transaction.atomic
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na',loc='na'):
     this_user = request.user
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-    this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
-    this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
+    #this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
+    #this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
     this_user_is_reritja = (this_user.id == 25)
 
     if this_user_is_expert or this_user_is_superexpert:
@@ -598,6 +598,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             linked_id = request.POST.get('linked_id', linked_id)
             tags_filter = request.POST.get('tags_filter', tags_filter)
             checked = request.POST.get('checked', checked)
+            loc = request.POST.get('checked', loc)
             tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
             note_language = request.GET.get('note_language', "es")
             load_new_reports = request.POST.get('load_new_reports', load_new_reports)
@@ -636,18 +637,23 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             linked_id = request.GET.get('linked_id', linked_id)
             tags_filter = request.GET.get('tags_filter', tags_filter)
             checked = request.GET.get('checked', checked)
+            loc = request.GET.get('loc', loc)
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             edit_mode = request.GET.get('edit_mode', edit_mode)
+
         #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
         current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
         #my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
+
         hidden_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=-1).values_list('report', flat=True))
         flagged_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=0).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True))
         public_final_reports_superexpert = set(ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True, revise=True, status=1).exclude(report__version_UUID__in=hidden_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True))
+
         hidden_final_reports = set(list(hidden_final_reports_superexpert) + list(ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True, status=-1).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True)))
         flagged_final_reports = set(list(flagged_final_reports_superexpert) + list(ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True, status=0).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True)))
         public_final_reports = set(list(public_final_reports_superexpert) + list(ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True, status=1).exclude(report__version_UUID__in=flagged_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True)))
+
         if this_user_is_expert and load_new_reports == 'T':
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
@@ -661,14 +667,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-                if new_reports_unfiltered and this_user_is_team_italy:
-                    new_reports_unfiltered = new_reports_unfiltered.filter(point__within=ITALY_GEOMETRY)
-                if new_reports_unfiltered and this_user_is_team_not_italy:
-                    new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
-                if new_reports_unfiltered_and_false_validated and this_user_is_team_italy:
-                    new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.filter(point__within=ITALY_GEOMETRY)
-                if new_reports_unfiltered_and_false_validated and this_user_is_team_not_italy:
-                    new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.exclude(point__within=ITALY_GEOMETRY)
+                #if new_reports_unfiltered and this_user_is_team_italy:
+                    #new_reports_unfiltered = new_reports_unfiltered.filter(point__within=ITALY_GEOMETRY)
+                #if new_reports_unfiltered and this_user_is_team_not_italy:
+                    #new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
+                #if new_reports_unfiltered_and_false_validated and this_user_is_team_italy:
+                    #new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.filter(point__within=ITALY_GEOMETRY)
+                #if new_reports_unfiltered_and_false_validated and this_user_is_team_not_italy:
+                    #new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.exclude(point__within=ITALY_GEOMETRY)
 
                 if new_reports_unfiltered:
                     new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
@@ -704,10 +710,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
             if new_reports_unfiltered and this_user_is_team_not_bcn:
                 new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-            if new_reports_unfiltered and this_user_is_team_italy:
-                new_reports_unfiltered = new_reports_unfiltered.filter(point__within=ITALY_GEOMETRY)
-            if new_reports_unfiltered and this_user_is_team_not_italy:
-                    new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
+            #if new_reports_unfiltered and this_user_is_team_italy:
+                #new_reports_unfiltered = new_reports_unfiltered.filter(point__within=ITALY_GEOMETRY)
+            #if new_reports_unfiltered and this_user_is_team_not_italy:
+                    #new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
             if this_user.id == 25: #it's roger, don't assign reports from barcelona prior to 03/10/2017
                 new_reports_unfiltered = new_reports_unfiltered.exclude(Q(
                     Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),
@@ -738,12 +744,20 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             n_unchecked = all_annotations.filter(validation_complete=False).count()
             n_confirmed = all_annotations.filter(validation_complete=True, revise=False).count()
             n_revised = all_annotations.filter(validation_complete=True, revise=True).count()
+
+            n_spain = all_annotations.filter( Q(report__country__isnull=True) | Q(report__country__gid=17) ).count()
+            n_europe = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17) ).count()
+
             args['n_flagged'] = n_flagged
             args['n_hidden'] = n_hidden
             args['n_public'] = n_public
             args['n_unchecked'] = n_unchecked
             args['n_confirmed'] = n_confirmed
             args['n_revised'] = n_revised
+            args['n_loc_spain'] = n_spain
+            args['n_loc_europe'] = n_europe
+            args['n_loc_all'] = n_spain + n_europe
+
         if version_uuid and version_uuid != 'na':
             all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
         if linked_id and linked_id != 'na':
@@ -787,18 +801,28 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             elif status == "public":
                 all_annotations = all_annotations.filter(status=1)
             if this_user_is_superexpert:
+
                 if checked == "unchecked":
                     all_annotations = all_annotations.filter(validation_complete=False)
                 elif checked == "confirmed":
                     all_annotations = all_annotations.filter(validation_complete=True, revise=False)
                 elif checked == "revised":
                     all_annotations = all_annotations.filter(validation_complete=True, revise=True)
+
                 if final_status == "flagged":
                     all_annotations = all_annotations.filter(report__in=flagged_final_reports)
                 elif final_status == "hidden":
                     all_annotations = all_annotations.filter(report__in=hidden_final_reports)
                 elif final_status == "public":
                     all_annotations = all_annotations.filter(report__in=public_final_reports).exclude(report__in=flagged_final_reports).exclude(report__in=hidden_final_reports)
+
+                if loc == 'spain':
+                    all_annotations = all_annotations.filter( Q(report__country__isnull=True) | Q(report__country__gid=17) )
+                elif loc == 'europe':
+                    all_annotations = all_annotations.filter( Q(report__country__isnull=False) & ~Q(report__country__gid=17) )
+                else:
+                    pass
+
         if all_annotations:
             all_annotations = all_annotations.order_by('report__creation_time')
             if orderby == "site_score":
@@ -831,6 +855,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['site_certainty'] = site_certainty
         args['pending'] = pending
         args['checked'] = checked
+        args['loc'] = loc
         args['status'] = status
         args['final_status'] = final_status
         args['version_uuid'] = version_uuid
