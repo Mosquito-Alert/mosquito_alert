@@ -3,6 +3,7 @@ tigaserver_project/settings_local*
 tigaserver_project/settings/local.pyc
 tigapublic/static/tigapublic/files/
 tigapublic/files/models/
+*.log.*
 *.log
 *pyc
 *.egg-info

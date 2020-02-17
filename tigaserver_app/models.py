@@ -189,7 +189,7 @@ class EuropeCountry(models.Model):
     y_max = models.FloatField(blank=True, null=True)
     objects = models.GeoManager()
     class Meta:
-        managed = False
+        managed = True
         db_table = 'europe_countries'
 
 
@@ -344,7 +344,6 @@ class Report(models.Model):
 
         logger_report_geolocation.debug('report with id {0} has no associated geolocation'.format(self.version_UUID, ))
         return None
-
 
     def get_lat(self):
         if self.location_choice == 'selected' and self.selected_location_lat is not None:

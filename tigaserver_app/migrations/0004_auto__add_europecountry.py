@@ -8,15 +8,25 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Report.country'
-        db.add_column(u'tigaserver_app_report', 'country',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tigaserver_app.EuropeCountry'], null=True, blank=True),
-                      keep_default=False)
+        # Adding model 'EuropeCountry'
+        db.create_table('europe_countries', (
+            ('gid', self.gf('django.db.models.fields.IntegerField')(primary_key=True)),
+            ('cntr_id', self.gf('django.db.models.fields.CharField')(max_length=2, blank=True)),
+            ('name_engl', self.gf('django.db.models.fields.CharField')(max_length=44, blank=True)),
+            ('iso3_code', self.gf('django.db.models.fields.CharField')(max_length=3, blank=True)),
+            ('fid', self.gf('django.db.models.fields.CharField')(max_length=2, blank=True)),
+            ('geom', self.gf('django.contrib.gis.db.models.fields.MultiPolygonField')(null=True, blank=True)),
+            ('x_min', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
+            ('x_max', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
+            ('y_min', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
+            ('y_max', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
+        ))
+        db.send_create_signal(u'tigaserver_app', ['EuropeCountry'])
 
 
     def backwards(self, orm):
-        # Deleting field 'Report.country'
-        db.delete_column(u'tigaserver_app_report', 'country_id')
+        # Deleting model 'EuropeCountry'
+        db.delete_table('europe_countries')
 
 
     models = {
@@ -85,7 +95,7 @@ class Migration(SchemaMigration):
             'year': ('django.db.models.fields.IntegerField', [], {})
         },
         u'tigaserver_app.europecountry': {
-            'Meta': {'object_name': 'EuropeCountry', 'db_table': "'europe_countries'", 'managed': 'False'},
+            'Meta': {'object_name': 'EuropeCountry', 'db_table': "'europe_countries'"},
             'cntr_id': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'}),
             'fid': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'}),
             'geom': ('django.contrib.gis.db.models.fields.MultiPolygonField', [], {'null': 'True', 'blank': 'True'}),
@@ -160,7 +170,7 @@ class Migration(SchemaMigration):
         u'tigaserver_app.notification': {
             'Meta': {'object_name': 'Notification'},
             'acknowledged': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'date_comment': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 1, 29, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
+            'date_comment': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 2, 17, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
             'expert': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'expert_notifications'", 'blank': 'True', 'to': u"orm['auth.User']"}),
             'expert_comment': ('django.db.models.fields.TextField', [], {}),
             'expert_html': ('django.db.models.fields.TextField', [], {}),
@@ -187,13 +197,12 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'photo': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
             'report': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'photos'", 'to': u"orm['tigaserver_app.Report']"}),
-            'uuid': ('django.db.models.fields.CharField', [], {'default': "'478f418d-53cd-4bb0-a961-6d6fece63267'", 'max_length': '36'})
+            'uuid': ('django.db.models.fields.CharField', [], {'default': "'001315b1-adf9-43f3-85e7-94d0f7ea3718'", 'max_length': '36'})
         },
         u'tigaserver_app.report': {
             'Meta': {'unique_together': "(('user', 'version_UUID'),)", 'object_name': 'Report'},
             'app_language': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
             'cached_visible': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'country': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['tigaserver_app.EuropeCountry']", 'null': 'True', 'blank': 'True'}),
             'creation_time': ('django.db.models.fields.DateTimeField', [], {}),
             'current_location_lat': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             'current_location_lon': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
