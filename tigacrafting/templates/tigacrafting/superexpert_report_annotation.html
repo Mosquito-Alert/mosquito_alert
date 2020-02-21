@@ -30,6 +30,26 @@
 
 {% block navbar_left_items %}
     <li>
+        <div class="btn-group" id="location_grp" data-toggle="buttons" style="margin-right:5px;">
+            <label class="btn btn-danger btn-sm navbar-btn active" data-toggle="tooltip" data-placement="bottom" title="Entolab-All" id="ento-all">
+                <input type="radio" name="loc_all" autocomplete="off">
+                <span>ALL</span>
+                <span class="badge">{{ n_loc_all }}</span>
+            </label>
+            <label class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Entolab-Spain" id="ento-es">
+                <input type="radio" name="loc_spain" autocomplete="off">
+                <span>ES</span>
+                <span class="badge">{{ n_loc_spain }}</span>
+            </label>
+            <label class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Entolab-Europe" id="ento-eu">
+                <input type="radio" name="loc_europe" autocomplete="off">
+                    <span>EU</span>
+                    <span class="badge">{{ n_loc_europe }}</span>
+            </label>
+        </div>
+    </li>
+
+    <li>
         <div class="btn-group" id="type_grp" data-toggle="buttons" style="margin-right:5px;">
             <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Public"
                    id="public_btn">
@@ -73,25 +93,6 @@
         </div>
     </li>
 
-    <li>
-        <div class="btn-group" id="location_grp" data-toggle="buttons">
-            <label class="btn btn-primary btn-sm navbar-btn active" data-toggle="tooltip" data-placement="bottom" title="Entolab-All" id="ento-all">
-                <input type="radio" name="loc_all" autocomplete="off">
-                <span>ALL</span>
-                <span class="badge">{{ n_loc_all }}</span>
-            </label>
-            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Entolab-Spain" id="ento-es">
-                <input type="radio" name="loc_spain" autocomplete="off">
-                <span>ES</span>
-                <span class="badge">{{ n_loc_spain }}</span>
-            </label>
-            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Entolab-Europe" id="ento-eu">
-                <input type="radio" name="loc_europe" autocomplete="off">
-                    <span>EU</span>
-                    <span class="badge">{{ n_loc_europe }}</span>
-            </label>
-        </div>
-    </li>
 
 {% endblock %}
 
@@ -311,10 +312,13 @@
             }
 
             if( loc_spain_btn.hasClass("active") ){
+                $("#loc_input").val("spain");
                 qp += '&loc=spain';
             } else if ( loc_europe_btn.hasClass("active") ){
+                $("#loc_input").val("europe");
                 qp += '&loc=europe';
             } else {
+                $("#loc_input").val("na");
                 qp += '&loc=na';
             }
 
