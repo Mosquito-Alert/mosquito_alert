@@ -755,7 +755,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     new_annotation.save()
         #all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
-        my_version_uuids = all_annotations.values('report__version_UUID').distinct()
+
+        if loc == 'spain':
+            my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        elif loc == 'europe':
+            my_version_uuids = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        else:
+            my_version_uuids = all_annotations.values('report__version_UUID').distinct()
+
         my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not pending or pending == 'na'):
@@ -838,8 +845,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 all_annotations = all_annotations.filter(status=-1)
             elif status == "public":
                 all_annotations = all_annotations.filter(status=1)
-            if this_user_is_superexpert:
 
+            if this_user_is_superexpert:
                 if checked == "unchecked":
                     all_annotations = all_annotations.filter(validation_complete=False)
                 elif checked == "confirmed":
