@@ -345,6 +345,15 @@ class Report(models.Model):
         logger_report_geolocation.debug('report with id {0} has no associated geolocation'.format(self.version_UUID, ))
         return None
 
+    def is_spain(self):
+        return self.country is None or self.country.gid == 17
+
+    def get_country_label(self):
+        if self.is_spain():
+            return "Spain/Other"
+        else:
+            return "Europe/" + self.country.name_engl
+
     def get_lat(self):
         if self.location_choice == 'selected' and self.selected_location_lat is not None:
             return self.selected_location_lat
@@ -1484,12 +1493,13 @@ class Report(models.Model):
     def save(self, *args, **kwargs):
         if not self.point:
             self.point = self.get_point()
-        c = self.get_country_is_in()
-        if c is None:
-            logger_report_geolocation.debug('report with id {0} assigned to no country'.format(self.version_UUID,))
-        else:
-            logger_report_geolocation.debug('report with id {0} assigned to country {1} with code {2}'.format(self.version_UUID,c.name_engl,c.iso3_code,))
-        self.country = c
+        if not self.country:
+            c = self.get_country_is_in()
+            if c is None:
+                logger_report_geolocation.debug('report with id {0} assigned to no country'.format(self.version_UUID,))
+            else:
+                logger_report_geolocation.debug('report with id {0} assigned to country {1} with code {2}'.format(self.version_UUID,c.name_engl,c.iso3_code,))
+            self.country = c
         super(Report, self).save(*args, **kwargs)
 
     lon = property(get_lon)
@@ -1533,6 +1543,7 @@ class Report(models.Model):
     n_photos = property(get_n_photos)
     final_expert_status_text = property(get_final_expert_status)
     is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
+    country_label = property(get_country_label)
 
     class Meta:
         unique_together = ("user", "version_UUID")
