@@ -68,6 +68,7 @@ class SuperExpertReportAnnotationForm(forms.ModelForm):
         }
 
 class PhotoGrid(forms.ModelForm):
+    fastUpload = forms.BooleanField(required=False, initial=False)
     class Meta:
         model = Report
         fields = ('hide',)

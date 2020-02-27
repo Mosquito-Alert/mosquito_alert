@@ -959,7 +959,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     if this_user_is_superexpert:
         args = {}
         args.update(csrf(request))
-        PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
+        PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0, can_order=True)
         if request.method == 'POST':
             save_formset = request.POST.get('save_formset', "F")
             tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
@@ -972,10 +972,34 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
                         who_has = report.get_who_has()
                         if who_has == '':
                             report.save()
+
+
+                        print(f.fields['fastUpload'])
+
+                        # AQUEST VA PERFECT !!!!!
+                        print(f.cleaned_data)
+
+
+
+
+
             page = request.POST.get('page')
             visibility = request.POST.get('visibility')
             usr_note = request.POST.get('usr_note')
             type = request.POST.get('type', type)
+
+            test = request.POST.get('fastUpload')
+
+            #for t in formset:
+                #print(t.data.tasks_per_page)
+                #if test:
+                    #print(t.data.tasks_per_page)
+                    #print(t.fastUpload)
+
+                #else:
+                    #print(t.version_UUID)
+                    #print('NO')'''
+
             if not page:
                 page = '1'
             return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
