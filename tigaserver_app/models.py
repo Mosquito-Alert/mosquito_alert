@@ -192,6 +192,9 @@ class EuropeCountry(models.Model):
         managed = True
         db_table = 'europe_countries'
 
+    def __unicode__(self):
+        return self.name_engl
+
 
 class Report(models.Model):
     version_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '

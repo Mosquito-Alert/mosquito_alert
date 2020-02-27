@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
@@ -260,6 +262,7 @@ class ExpertReportAnnotation(models.Model):
 class UserStat(models.Model):
     user = models.OneToOneField(User, primary_key=True)
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
+    national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True)
 
     def is_expert(self):
         return self.user.groups.filter(name="expert").exists()
@@ -284,3 +287,18 @@ class UserStat(models.Model):
 
     def n_pending_annotations(self):
         return self.user.expert_report_annotations.filter(validation_complete=False).count()
+
+    def is_national_supervisor(self):
+        return self.national_supervisor_of is not None
+
+    def is_national_supervisor_for_country(self, country):
+        return self.is_national_supervisor() and self.national_supervisor_of.gid == country.gid
+
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            UserStat.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        instance.userstat.save()

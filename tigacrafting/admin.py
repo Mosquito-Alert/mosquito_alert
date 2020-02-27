@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import MoveLabAnnotation, ExpertReportAnnotation
+from models import MoveLabAnnotation, ExpertReportAnnotation, UserStat
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
@@ -73,3 +73,4 @@ class ExpertReportAnnotationAdmin(admin.ModelAdmin):
 
 admin.site.register(MoveLabAnnotation, MoveLabAnnotationAdmin)
 admin.site.register(ExpertReportAnnotation, ExpertReportAnnotationAdmin)
+admin.site.register(UserStat)
