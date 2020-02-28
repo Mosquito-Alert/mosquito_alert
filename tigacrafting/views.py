@@ -565,6 +565,92 @@ def issue_notification(report_annotation,current_domain):
     def notification_already_issued(report, user_sent_to, expert_sent_from, title_es):
         return Notification.objects.filter(report=report,user=user_sent_to,expert=expert_sent_from,notification_content__title_es=title_es).exists()
     '''
+
+def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given):
+    """
+    :param this_user: user to which the reports will be assigned
+    :param national_supervisor_ids: list of national supervisor ids in dict format [{'user__id':id}...{}]
+    :param current_pending: number of current pending reports for this_user
+    :param country_with_supervisor_set: set of id_country which have supervisor
+    :param max_pending: maximum number of pending reports per user
+    :param max_given: number of users to which a report is given (excluding superexpert)
+    """
+
+    # dictionary or reports assigned to some supervisor
+    report_assigned_to_supervisor = ExpertReportAnnotation.objects.filter(user__id__in=national_supervisor_ids).values('report').distinct()
+    # set of these report ids
+    report_assigned_to_supervisor_set = set([d['report'] for d in report_assigned_to_supervisor])
+    this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
+    this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
+    this_user_is_supervisor = this_user.userstat.is_national_supervisor()
+    my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
+    if current_pending < max_pending:
+        n_to_get = max_pending - current_pending
+        new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+        if new_reports_unfiltered and this_user_is_team_bcn:
+            new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
+        if new_reports_unfiltered and this_user_is_team_not_bcn:
+            new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
+        if this_user_is_supervisor:
+            reports_supervised_country = new_reports_unfiltered.filter(country__gid=this_user.userstat.national_supervisor_of.gid)
+            reports_non_supervised_country = new_reports_unfiltered.exclude(version_UUID__in=reports_supervised_country.values('version_UUID'))
+            reports_supervised_country_filtered = filter_reports(reports_supervised_country.order_by('creation_time'))
+            reports_non_supervised_country_filtered = filter_reports(reports_non_supervised_country.order_by('creation_time'))
+            new_filtered_reports = reports_supervised_country_filtered + reports_non_supervised_country_filtered
+        else:
+            new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+        new_reports = new_filtered_reports
+
+        grabbed_reports = -1
+        reports_taken = 0
+        for this_report in new_reports:
+            new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+            who_has_count = this_report.get_who_has_count()
+            if this_user_is_supervisor:
+                if this_user.userstat.is_national_supervisor_for_country(this_report.country):
+                    new_annotation.simplified_annotation = False
+                    grabbed_reports += 1
+                    reports_taken += 1
+                    new_annotation.save()
+                else:
+                    if who_has_count == 0 or who_has_count == 1:
+                        new_annotation.simplified_annotation = True
+                    grabbed_reports += 1
+                    reports_taken += 1
+                    new_annotation.save()
+            else:
+                if this_report.country is None:
+                    if who_has_count == 0 or who_has_count == 1:
+                        new_annotation.simplified_annotation = True
+                    else:
+                        new_annotation.simplified_annotation = False
+                    grabbed_reports += 1
+                    reports_taken += 1
+                    new_annotation.save()
+                else:
+                    if this_report.country.gid in country_with_supervisor_set:
+                        if this_report.version_UUID in report_assigned_to_supervisor_set:
+                            # if who_has_count <= 1:
+                            if who_has_count == 0 or who_has_count == 1:
+                                new_annotation.simplified_annotation = True
+                            else:
+                                new_annotation.simplified_annotation = False
+                            grabbed_reports += 1
+                            reports_taken += 1
+                            new_annotation.save()
+                    else:
+                        if who_has_count == 0 or who_has_count == 1:
+                            new_annotation.simplified_annotation = True
+                        else:
+                            new_annotation.simplified_annotation = False
+                        grabbed_reports += 1
+                        reports_taken += 1
+                        new_annotation.save()
+            if reports_taken == n_to_get:
+                break
+        this_user.userstat.grabbed_reports = grabbed_reports
+        this_user.userstat.save()
+
 @transaction.atomic
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na',loc='na'):
@@ -682,27 +768,22 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         public_final_reports = set(list(public_final_reports_superexpert) + list(public_final_reports_expert))
 
         if this_user_is_expert and load_new_reports == 'T':
+            national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
+            country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
+            country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
+            assign_reports_to_user(this_user,national_supervisor_ids,current_pending,country_with_supervisor_set,max_pending,max_given)
+            '''
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
 
                 new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
                 new_reports_unfiltered_and_false_validated = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given+1)
-                #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-                #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-
+                
                 if new_reports_unfiltered and this_user_is_team_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']), current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
                 if new_reports_unfiltered and this_user_is_team_not_bcn:
                     new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-                #if new_reports_unfiltered and this_user_is_team_italy:
-                    #new_reports_unfiltered = new_reports_unfiltered.filter(point__within=ITALY_GEOMETRY)
-                #if new_reports_unfiltered and this_user_is_team_not_italy:
-                    #new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
-                #if new_reports_unfiltered_and_false_validated and this_user_is_team_italy:
-                    #new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.filter(point__within=ITALY_GEOMETRY)
-                #if new_reports_unfiltered_and_false_validated and this_user_is_team_not_italy:
-                    #new_reports_unfiltered_and_false_validated = new_reports_unfiltered_and_false_validated.exclude(point__within=ITALY_GEOMETRY)
-
+                
                 if new_reports_unfiltered:
                     new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
                     new_filtered_false_validated_reports = filter_false_validated(new_reports_unfiltered_and_false_validated.order_by('creation_time'))
@@ -728,6 +809,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     if grabbed_reports != -1 and user_stats:
                         user_stats.grabbed_reports = grabbed_reports
                         user_stats.save()
+            '''
         elif this_user_is_superexpert:
             new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
@@ -742,12 +824,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             #if new_reports_unfiltered and this_user_is_team_not_italy:
                     #new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
             if this_user.id == 25: #it's roger, don't assign reports from barcelona prior to 03/10/2017
-                new_reports_unfiltered = new_reports_unfiltered.exclude(Q(
-                    Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),
-                      selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(
-                        location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),
-                        current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(
-                    creation_time__lte=datetime.date(2017, 3, 10)))
+                new_reports_unfiltered = new_reports_unfiltered.exclude(Q(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(creation_time__lte=datetime.date(2017, 3, 10)))
             if new_reports_unfiltered:
                 new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
                 for this_report in new_reports:

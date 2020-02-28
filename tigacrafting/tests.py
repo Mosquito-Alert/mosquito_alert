@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from django.core.exceptions import ObjectDoesNotExist
 from operator import attrgetter
+from tigacrafting.views import assign_reports_to_user
 import pytz
 
 ###                 HELPER STUFF                ########################################################################
@@ -99,8 +100,16 @@ class UserTestCase(TestCase):
         u6 = User.objects.create(pk=6)
         u6.username = 'expert_6_es'
         u6.save()
+        u7 = User.objects.create(pk=7)
+        u7.username = 'expert_7_eu'
+        c = EuropeCountry.objects.get(pk=2)  # Belgium
+        u7.userstat.national_supervisor_of = c
+        u7.save()
+        u8 = User.objects.create(pk=8)
+        u8.username = 'expert_8_es'
+        u8.save()
 
-    #tests that user creation triggers userstat creation
+    # tests that user creation triggers userstat creation
     def test_create_user_and_userstat(self):
         u = User.objects.create(pk=1)
         u.username = 'test_user_1'
@@ -109,7 +118,7 @@ class UserTestCase(TestCase):
         self.assertNotEqual(u.userstat, None)
         u.delete()
 
-    #tests that u.save() also saves state of u.userstat
+    # tests that u.save() also saves state of u.userstat
     def test_user_save_causes_userstat_save(self):
         u = User.objects.create(pk=2)
         u.username = 'test_user_2'
@@ -125,8 +134,8 @@ class UserTestCase(TestCase):
         self.assertNotEqual(saved_initial_grabbed_reports, saved_final_grabbed_reports)
         u.delete()
 
-    #tests that national_supervisor_of is correctly assigned and control methods is_national_supervisor and is_national_supervisor_for_country
-    #work correctly
+    # tests that national_supervisor_of is correctly assigned and control methods is_national_supervisor and
+    # is_national_supervisor_for_country work correctly
     def test_make_user_national_supervisor(self):
         u = User.objects.create(pk=3)
         u.username = 'test_user_3'
@@ -139,18 +148,9 @@ class UserTestCase(TestCase):
         self.assertEqual( u.userstat.is_national_supervisor_for_country( c ), True)
         u.delete()
 
-    # available reports
-    # separate in available reports own country / available reports other
-    # if user is national supervisor
-    #   if available reports belong to supervised country
-    #       assign to user
-    # else if not national supervisor
-    #   if there is supervisor for country report belongs to
-    #       if is assigned to supervisor
-    #           assign to user
-    #   else if there is no supervisor
-    #       assign to user
-
+    # tests that all users are:
+    # - assigned max_pending reports
+    # - if users are supervisors, they are assigned the report(s) for the country they supervise
     def test_assign_reports(self):
         self.create_team()
         self.create_report_pool()
@@ -161,78 +161,19 @@ class UserTestCase(TestCase):
         country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
         country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
         for this_user in User.objects.all():
-            report_assigned_to_supervisor = ExpertReportAnnotation.objects.filter(user__id__in=national_supervisor_ids).values('report').distinct()
-            report_assigned_to_supervisor_set = set([d['report'] for d in report_assigned_to_supervisor])
-            this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
-            this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-            this_user_is_supervisor = this_user.userstat.is_national_supervisor()
-            my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
-            if current_pending < max_pending:
-                n_to_get = max_pending - current_pending
-                new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-                if new_reports_unfiltered and this_user_is_team_bcn:
-                    new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected',selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-                if new_reports_unfiltered and this_user_is_team_not_bcn:
-                    new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected',selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-                if this_user_is_supervisor:
-                    reports_supervised_country = new_reports_unfiltered.filter( country__gid=this_user.userstat.national_supervisor_of.gid )
-                    reports_non_supervised_country = new_reports_unfiltered.exclude( version_UUID__in=reports_supervised_country.values('version_UUID') )
-                    reports_supervised_country_filtered = filter_reports(reports_supervised_country.order_by('creation_time'))
-                    reports_non_supervised_country_filtered = filter_reports(reports_non_supervised_country.order_by('creation_time'))
-                    new_filtered_reports = reports_supervised_country_filtered + reports_non_supervised_country_filtered
-                else:
-                    new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
-                new_reports = new_filtered_reports
-
-                grabbed_reports = -1
-                reports_taken = 0
-                for this_report in new_reports:
-                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                    who_has_count = this_report.get_who_has_count()
-                    if this_user_is_supervisor:
-                        if this_user.userstat.is_national_supervisor_for_country( this_report.country ):
-                            new_annotation.simplified_annotation = False
-                            grabbed_reports += 1
-                            reports_taken += 1
-                            new_annotation.save()
-                        else:
-                            if who_has_count == 0 or who_has_count == 1:
-                                new_annotation.simplified_annotation = True
-                            grabbed_reports += 1
-                            reports_taken += 1
-                            new_annotation.save()
-                    else:
-                        if this_report.country is None:
-                            if who_has_count == 0 or who_has_count == 1:
-                                new_annotation.simplified_annotation = True
-                            else:
-                                new_annotation.simplified_annotation = False
-                            grabbed_reports += 1
-                            reports_taken += 1
-                            new_annotation.save()
-                        else:
-                            if this_report.country.gid in country_with_supervisor_set:
-                                if this_report.version_UUID in report_assigned_to_supervisor_set:
-                                    #if who_has_count <= 1:
-                                    if who_has_count == 0 or who_has_count == 1:
-                                        new_annotation.simplified_annotation = True
-                                    else:
-                                        new_annotation.simplified_annotation = False
-                                    grabbed_reports += 1
-                                    reports_taken += 1
-                                    new_annotation.save()
-                            else:
-                                if who_has_count == 0 or who_has_count == 1:
-                                    new_annotation.simplified_annotation = True
-                                else:
-                                    new_annotation.simplified_annotation = False
-                                grabbed_reports += 1
-                                reports_taken += 1
-                                new_annotation.save()
-                    if reports_taken == n_to_get:
-                        break
-                this_user.userstat.grabbed_reports = grabbed_reports
-                this_user.userstat.save()
+            assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
 
         for usr in User.objects.all():
+            n = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').values('report').distinct().count()
+            if usr.userstat.is_national_supervisor():
+                assigned_supervised = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').filter(report__country__gid=usr.userstat.national_supervisor_of.gid).exists()
+                self.assertEqual(n, max_pending)
+                self.assertEqual(assigned_supervised, True)
+            else:
+                self.assertEqual(n, max_pending)
+
+        '''
+        # Enable this for extra verbose info
+        for usr in User.objects.all():
             user_summary(usr)
+        '''
