@@ -225,7 +225,7 @@ class Report(models.Model):
                                                        'as ECMA '
                                                        '262 date time string (e.g. "2014-05-17T12:34:56'
                                                        '.123+01:00".')
-    TYPE_CHOICES = (('adult', 'Adult'), ('site', 'Breeding Site'), ('mission', 'Mission'),)
+    TYPE_CHOICES = (('bite', 'Bite'), ('adult', 'Adult'), ('site', 'Breeding Site'), ('mission', 'Mission'),)
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, help_text="Type of report: 'adult', 'site', "
                                                                          "or 'mission'.", )
     mission = models.ForeignKey(Mission, blank=True, null=True, help_text='If this report was a response to a '
@@ -1552,6 +1552,7 @@ class Report(models.Model):
 class ReportResponse(models.Model):
     report = models.ForeignKey(Report, related_name='responses', help_text='Report to which this response is ' \
                                                                           'associated.')
+    question_id = models.IntegerField(help_text='Numeric identifier of the question.')
     question = models.CharField(max_length=1000, help_text='Question that the user responded to.')
     answer = models.CharField(max_length=1000, help_text='Answer that user selected.')
 
@@ -1689,6 +1690,7 @@ class Fix(models.Model):
     masked_lon = models.FloatField(help_text='Longitude rounded down to nearest 0.5 decimal degree (floor(lon/.5)*.5)'
                                              '.')
     masked_lat = models.FloatField(help_text='Latitude rounded down to nearest 0.5 decimal degree (floor(lat/.5)*.5).')
+    mask_size = models.FloatField(null=True, blank=True, help_text='size of location mask used')
     power = models.FloatField(null=True, blank=True, help_text='Power level of phone at time fix recorded, '
                                                                'expressed as proportion of full charge. Range: 0-1.')
 
