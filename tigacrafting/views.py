@@ -973,32 +973,24 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
                         if who_has == '':
                             report.save()
 
+###############-------------------------------- FastUpload --------------------------------###############
 
-                        print(f.fields['fastUpload'])
+                            #print(f.cleaned_data)
+                            if f.cleaned_data['fastUpload']:
+                                photo = report.photos.first()
+                                new_annotation = ExpertReportAnnotation(report=report, user=this_user)
+                                new_annotation.site_certainty_notes = 'auto'
+                                new_annotation.best_photo_id = photo.id
+                                new_annotation.validation_complete = True
+                                new_annotation.revise = True
+                                new_annotation.save()
 
-                        # AQUEST VA PERFECT !!!!!
-                        print(f.cleaned_data)
-
-
-
-
+###############------------------------------ FI FastUpload --------------------------------###############
 
             page = request.POST.get('page')
             visibility = request.POST.get('visibility')
             usr_note = request.POST.get('usr_note')
             type = request.POST.get('type', type)
-
-            test = request.POST.get('fastUpload')
-
-            #for t in formset:
-                #print(t.data.tasks_per_page)
-                #if test:
-                    #print(t.data.tasks_per_page)
-                    #print(t.fastUpload)
-
-                #else:
-                    #print(t.version_UUID)
-                    #print('NO')'''
 
             if not page:
                 page = '1'

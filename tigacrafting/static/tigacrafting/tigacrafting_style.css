@@ -158,3 +158,37 @@ ul {
     margin-right: 15px;
     float: right;
 }
+
+.popupInstrucciones .ui-dialog-titlebar-close {
+    display: none;
+}
+
+.popupInstrucciones .ui-widget-header{
+    border: 1px solid #9ac635;
+    background: #9ac635;
+    color: white;
+    font-weight: bold;
+}
+
+.popupInstrucciones {
+    position: fixed !important;
+    z-index: 1500 !important;
+    width: 400px !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%,-50%);
+}
+
+.infoPopup{
+    text-align: justify;
+    padding: 2%;
+}
+
+#instruc{
+    display: none;
+}
+
+.asyncload-big {
+    background-image: url(/static/redbosques_main/css/loader_128.gif);
+    background-repeat: no-repeat;background-position: center;
+}

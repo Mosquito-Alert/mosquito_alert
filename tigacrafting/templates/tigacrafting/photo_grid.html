@@ -1,11 +1,12 @@
 {% load staticfiles %}
 <!DOCTYPE html>
-<html lang={% block language %}"en"{% endblock %}>
+<html lang="{% block language %}'en'{% endblock %}">
 <head>
-    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/tigacrafting_style.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.css' %}">
     <style>
         .grid-item { background-color: grey; height: 120px; width: 120px; float: left; margin-top: 5px;margin-bottom: 5px;}
         .grid-item-large { background-color: grey; height: 180px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px; overflow:auto; padding: 10px 10px 10px 10px;}
@@ -21,10 +22,11 @@
         .adult { background-color: orange; }
         .fastUpload { position: absolute; left: 1025px; top: 154px; }
     </style>
-    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
-    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
-    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
-    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
     <script src="https://unpkg.com/isotope-layout@3.0/dist/isotope.pkgd.min.js"></script>
 </head>
 <body>
@@ -81,7 +83,7 @@
                                 </li>
                                 {% endif %}
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
-                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            <li><a href="{% url 'auth_logout' %}">logout</a>
                             </li>
                         </ul>
 
@@ -160,6 +162,15 @@
                 </ul>
             </p>
         </div>
+    </div>
+    <div class="row">
+        <div id="instruc" title="Requisitos del archivo de límites (Shapefiles)">
+            <p class="infoPopup">Ahora mismo, este control solamente acepta Shapefiles con una <b>proyección WGS84</b>.
+                Un fichero shapefile consta de <b>múltiples ficheros con extensiones
+                diferentes (*.shp, *.dbf, *.shx) : estos ficheros deben comprimirse en un solo fichero
+                zip</b> y el control aceptará el shapefile comprimido.</p>
+        </div>
+
     </div>
 
     <form id="formset_forms" class="form-vertical" method="post">
@@ -240,6 +251,7 @@
     {% endif %}
 </div>
 
+<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}"></script>
 </body>
 <script>
         function background_save(qp) {
@@ -260,10 +272,6 @@
 
             $("#gear").hide();
 
-            var save_button = $("#save_button").click(function () {
-                $("#save_formset").val('T');
-                $("#formset_forms").submit();
-            });
 
             function go_to_page(){
                 var qp = query_selectors();
@@ -300,7 +308,16 @@
             {% else %}
                 nb.hide();
             {% endif %}
+
+
+            $("#save_button").click(function(){
+
+
             });
+
+
+
+        });
 
             var pb = $("#previous_page_button");
             {% if objects.has_previous %}
@@ -337,5 +354,8 @@
             $("#visibility_select").val("{{ visibility }}");
             $("#usernote_filter").val("{{ usr_note }}");
             $("#type_select").val("{{ type }}");
+
+
 </script>
+
 </html>
