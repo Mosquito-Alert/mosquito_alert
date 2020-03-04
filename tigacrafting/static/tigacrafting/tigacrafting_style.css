@@ -159,18 +159,18 @@ ul {
     float: right;
 }
 
-.popupInstrucciones .ui-dialog-titlebar-close {
+.confirmUpPhoto .ui-dialog-titlebar-close {
     display: none;
 }
 
-.popupInstrucciones .ui-widget-header{
+.confirmUpPhoto .ui-widget-header{
     border: 1px solid #9ac635;
     background: #9ac635;
     color: white;
     font-weight: bold;
 }
 
-.popupInstrucciones {
+.confirmUpPhoto {
     position: fixed !important;
     z-index: 1500 !important;
     width: 400px !important;
@@ -184,11 +184,6 @@ ul {
     padding: 2%;
 }
 
-#instruc{
+#dialogConfirmUpPhoto{
     display: none;
-}
-
-.asyncload-big {
-    background-image: url(/static/redbosques_main/css/loader_128.gif);
-    background-repeat: no-repeat;background-position: center;
 }

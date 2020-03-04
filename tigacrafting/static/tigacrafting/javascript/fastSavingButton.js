@@ -7,7 +7,7 @@ var save_button = $("#save_button").click(function () {
     });
 
     if(cont>0){
-        $("#instruc").dialog({
+        $("#dialogConfirmUpPhoto").dialog({
             modal: true,
             buttons: {
                 "Acceptar": function() {
@@ -21,13 +21,15 @@ var save_button = $("#save_button").click(function () {
             },
             draggable: false,
             classes: {
-                "ui-dialog": "popupInstrucciones"
+                "ui-dialog": "confirmUpPhoto"
             }
         });
 
-        $(".ui-dialog").addClass("popupInstrucciones");
+        $(".ui-dialog").addClass("confirmUpPhoto");
 
     }else{
-        alert("No ventana");
+        $("#save_formset").val('T');
+        $("#formset_forms").submit();
+
     }
 });
