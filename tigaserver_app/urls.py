@@ -7,6 +7,7 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'addresses', views.UserAddressViewSet)
 router.register(r'reports', views.ReportViewSet)
+router.register(r'sessions', views.SessionViewSet)
 router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
 router.register(r'coverage_month', views.CoverageMonthMapViewSet, base_name='coverage_month')
@@ -39,6 +40,7 @@ urlpatterns = patterns('',
     url(r'^cfa_reports/$', views.force_refresh_cfa_reports),
     url(r'^profile/new/$', views.profile_new),
     url(r'^profile/$', views.profile_detail),
+    url(r'^session_update/(?P<pk>\d+)/$', views.SessionPartialUpdateView.as_view(), name="session_update"),
     url(r'^stats/workload_data/user/$', workload_stats_per_user),
     url(r'^stats/workload_data/report_input/$', workload_daily_report_input),
     url(r'^stats/workload_data/pending/$', workload_pending_per_user),

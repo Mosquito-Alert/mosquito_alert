@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session
 from django.contrib.auth.models import User
 
 def score_label(score):
@@ -102,7 +102,7 @@ class ReportListingField(serializers.RelatedField):
 class ReportResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportResponse
-        fields = ['question', 'answer']
+        fields = ['question', 'answer', 'question_id', 'answer_id']
 
 class ReportSerializer(serializers.ModelSerializer):
 
@@ -163,11 +163,18 @@ class PhotoSerializer(serializers.ModelSerializer):
         fields = ['photo', 'report']
 
 
+class SessionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Session
+        fields = ['id', 'session_ID', 'user', 'session_start_time', 'session_end_time']
+
+
 class FixSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Fix
-        fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power']
+        fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power', 'mask_size']
 
 
 class ConfigurationSerializer(serializers.ModelSerializer):

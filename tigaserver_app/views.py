@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.generics import mixins
+from rest_framework.generics import mixins, GenericAPIView
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.exceptions import ParseError
 from django.db.models import Q
@@ -14,8 +14,8 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -295,6 +295,28 @@ API endpoint for getting and posting masked location fixes.
     queryset = Fix.objects.all()
     serializer_class = FixSerializer
     filter_fields = ('user_coverage_uuid', )
+
+
+class SessionPartialUpdateView(GenericAPIView, mixins.UpdateModelMixin):
+    '''
+    You just need to provide the field which is to be modified.
+    '''
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
+
+    def put(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+
+class SessionViewSet(viewsets.ModelViewSet):
+    """
+API endpoint for sessions
+A session is the full set of information uploaded by a user, usually in form of several reports
+    """
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
+    filter_fields = ('id', 'user' )
+
 
 
 def lookup_photo(request, token, photo_uuid, size):
