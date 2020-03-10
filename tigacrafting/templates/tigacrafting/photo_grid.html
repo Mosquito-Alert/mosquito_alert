@@ -164,8 +164,12 @@
         </div>
     </div>
     <div class="row">
-        <div id="dialogConfirmUpPhoto" title="Confirmación">
-            <p class="infoPopup">Si deseas que los datos seleccionados aparezcan en el mapa haz clic en "Aceptar".</p>
+        <div id="dialogConfirmUpPhoto" title="Warning">
+            <p class="infoPopup">
+                <span>The following reports have been marked as 'fast upload':</span><br>
+                <span class="reportIDs"></span><br>
+                <span>and will be published on the map this same day at around midnight. Are you sure you want to proceed?</span>
+            </p>
         </div>
 
     </div>
@@ -205,10 +209,15 @@
             {% endfor %}
 
         </div>
-        <div class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
-            <label>Fast Upload</label>
-            {{ form.fastUpload }}
-        </div>
+        <div class="reportID" style="display:none;">{{ form.instance.version_UUID }}</div>
+        {% if form.instance.type == 'site' and form.instance.hide == False %}
+            <div id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
+                <label>Fast Upload</label>
+                {{ form.fastUpload }}
+            </div>
+        {% endif %}
+
+
     {% endfor %}
         <input id="save_formset" type="text" name="save_formset" style="display: none;" value="F">
         <input id="next_page_input" type="text" name="page" style="display: none;" value="">

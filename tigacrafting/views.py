@@ -1065,6 +1065,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         return render(request, 'tigacrafting/photo_grid.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+
 @login_required
 def notifications(request,user_uuid=None):
     this_user = request.user
