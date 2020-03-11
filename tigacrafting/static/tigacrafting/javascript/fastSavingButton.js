@@ -7,10 +7,19 @@ var save_button = $("#save_button").click(function () {
     $(".fastUploadClass").each(function (index, element) {
         if ($(this).prop("checked")) {
             cont = cont + 1;
-
-            ref.push($("#id_form-"+ i +"-version_UUID").val());
-            i++;
         }
+
+        console.log(i);
+        console.log($("#id_form-" + i + "-fastUpload.fastUploadClass").prop('checked'));
+        console.log("id_form-" + i + "-fastUpload.fastUploadClass");
+        console.log($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent().attr('id'));
+        if($("#id_form-" + i + "-fastUpload.fastUploadClass").prop('checked')){
+            ref.push($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent().attr('id'));
+        }
+        i++;
+
+        //ref.push($("#id_form-"+ i +"-version_UUID").val());
+        //console.log($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent());
     });
 
 
@@ -45,15 +54,15 @@ var save_button = $("#save_button").click(function () {
         var str;
 
         for (z=0; z<ref.length; z++){
-            console.log(ref[z]);
+            //console.log(ref[z]);
             str = document.createElement("li");
             str.innerText = ref[z];
-            console.log(str)
+            //console.log(str)
             list.appendChild(str);
         }
 
         //list.appendChild(str);
-        console.log(list)
+        //console.log(list)
         document.getElementsByClassName("reportIDs")[0].appendChild(list);
 
         $(".ui-dialog").addClass("confirmUpPhoto");
