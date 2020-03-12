@@ -139,3 +139,51 @@ ul {
     margin-top: 5px;
     margin-bottom: 5px;
 }
+
+.fastCheck label{
+    display: inline-grid;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+    float: right;
+    padding-right: 25px;
+}
+
+.fastCheck input{
+    -ms-transform: scale(2);
+    -moz-transform: scale(2);
+    -webkit-transform: scale(2);
+    -o-transform: scale(2);
+    padding: 10px;
+    margin-right: 15px;
+    float: right;
+}
+
+.confirmUpPhoto .ui-dialog-titlebar-close {
+    display: none;
+}
+
+.confirmUpPhoto .ui-widget-header{
+    border: 1px solid #101010;
+    background: #101010;
+    color: white;
+    font-weight: bold;
+}
+
+.confirmUpPhoto {
+    position: fixed !important;
+    z-index: 1500 !important;
+    width: 400px !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%,-50%);
+}
+
+.infoPopup{
+    text-align: justify;
+    padding: 2%;
+}
+
+#dialogConfirmUpPhoto{
+    display: none;
+}

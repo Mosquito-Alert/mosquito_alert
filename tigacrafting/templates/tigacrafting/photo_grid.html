@@ -1,26 +1,32 @@
 {% load staticfiles %}
 <!DOCTYPE html>
-<html lang={% block language %}"en"{% endblock %}>
+<html lang="{% block language %}'en'{% endblock %}">
 <head>
-    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/tigacrafting_style.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.css' %}">
     <style>
         .grid-item { background-color: grey; height: 120px; width: 120px; float: left; margin-top: 5px;margin-bottom: 5px;}
         .grid-item-large { background-color: grey; height: 180px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px; overflow:auto; padding: 10px 10px 10px 10px;}
-        .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px; margin-bottom: 10px;}
+
+        .fastCheck {background-color: lightgray; margin-bottom: 10px; height: 40px;}
+
+        .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px;}
         .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
         .p-small { font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 12px; color: #fff;}
         .site { background-color: #4169E1; }
         .site.storm_drain { background-color: #4169E1; }
         .site.other { background-color: #a7b9f1; }
         .adult { background-color: orange; }
+        .fastUpload { position: absolute; left: 1025px; top: 154px; }
     </style>
-    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
-    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
-    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
-    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
     <script src="https://unpkg.com/isotope-layout@3.0/dist/isotope.pkgd.min.js"></script>
 </head>
 <body>
@@ -77,7 +83,7 @@
                                 </li>
                                 {% endif %}
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
-                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            <li><a href="{% url 'auth_logout' %}">logout</a>
                             </li>
                         </ul>
 
@@ -157,6 +163,16 @@
             </p>
         </div>
     </div>
+    <div class="row">
+        <div id="dialogConfirmUpPhoto" title="Warning">
+            <p class="infoPopup">
+                <span>The following reports have been marked as 'fast upload':</span><br>
+                <span class="reportIDs"></span>
+                <span>and will be published on the map this same day at around midnight. Are you sure you want to proceed?</span>
+            </p>
+        </div>
+
+    </div>
 
     <form id="formset_forms" class="form-vertical" method="post">
     {% csrf_token %}
@@ -184,14 +200,24 @@
                     </div>
                 {% endif %}
                 {% if photo.hide == False %}
-                <div class="grid-item valid">
-                    <a href="/media/{{ photo.photo }}" target="_blank">
-                        <img class="frame" src="{{ photo.get_small_url }}">
-                    </a>
-                </div>
+                    <div class="grid-item valid">
+                        <a href="/media/{{ photo.photo }}" target="_blank">
+                            <img class="frame" src="{{ photo.get_small_url }}">
+                        </a>
+                    </div>
                 {% endif %}
             {% endfor %}
+
         </div>
+        <div class="reportID" style="display:none;">{{ form.instance.version_UUID }}</div>
+        {% if form.instance.type == 'site' and form.instance.hide == False %}
+            <div id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
+                <label>Fast Upload</label>
+                {{ form.fastUpload }}
+            </div>
+        {% endif %}
+
+
     {% endfor %}
         <input id="save_formset" type="text" name="save_formset" style="display: none;" value="F">
         <input id="next_page_input" type="text" name="page" style="display: none;" value="">
@@ -231,6 +257,7 @@
     {% endif %}
 </div>
 
+<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}"></script>
 </body>
 <script>
         function background_save(qp) {
@@ -251,10 +278,6 @@
 
             $("#gear").hide();
 
-            var save_button = $("#save_button").click(function () {
-                $("#save_formset").val('T');
-                $("#formset_forms").submit();
-            });
 
             function go_to_page(){
                 var qp = query_selectors();
@@ -291,7 +314,13 @@
             {% else %}
                 nb.hide();
             {% endif %}
-            });
+
+
+
+
+
+
+        });
 
             var pb = $("#previous_page_button");
             {% if objects.has_previous %}
@@ -328,5 +357,8 @@
             $("#visibility_select").val("{{ visibility }}");
             $("#usernote_filter").val("{{ usr_note }}");
             $("#type_select").val("{{ type }}");
+
+
 </script>
+
 </html>
