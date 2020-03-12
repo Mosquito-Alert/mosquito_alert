@@ -499,6 +499,12 @@
                         {{ form.instance.report.photo_html_for_report_validation | safe }}
 
                     </div>
+
+
+                <button class="btn btn-default infoPhoto">Info. Photo</button>
+
+
+
                 {% else %}
 
                     <div style="overflow: auto;">
@@ -509,6 +515,15 @@
 
                 {% endif %}
             </div>
+
+            <div id="infoPhotoDialog" title="Photo's Metadata">
+                <p class="infoPopup">
+                    <span>Lat:</span>
+                    <span>Long:</span>
+
+                </p>
+            </div>
+
 
             <div class="col-md-4">
                 <br>
@@ -989,11 +1004,13 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
 
-    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js' %}"></script>
 
-    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+
+    <script src="{% static 'tigacrafting/javascript/experts.js' %}"></script>
 
     <script type="text/javascript">
         (function () {

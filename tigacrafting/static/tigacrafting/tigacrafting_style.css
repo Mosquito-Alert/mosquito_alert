@@ -187,3 +187,7 @@ ul {
 #dialogConfirmUpPhoto{
     display: none;
 }
+
+#infoPhotoDialog{
+    display: none;
+}
