@@ -298,9 +298,14 @@
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
             <div class="col-md-10">
-                <h4><strong>{{ form.instance.report.type|capfirst }}
-                    Report {{ form.instance.report.version_UUID }}</strong>
-                    {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+                <h4>
+                    <strong>
+                        {{ form.instance.report.type|capfirst }}
+                    Report {{ form.instance.report.version_UUID }}
+                    </strong>
+                    {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC
+                    - {{ form.instance.report.country_label }}
+                </h4>
             </div>
             <div class="col-md-1">
                 <h4>
@@ -676,6 +681,7 @@
     <input id="scroll_position" type="text" name="scroll_position" style="display: none;" value="0">
     <input id="pending_input" type="text" name="pending" style="display: none;" value="{{ pending }}">
     <input id="checked_input" type="text" name="checked" style="display: none;" value="{{ checked }}">
+    <input id="loc_input" type="text" name="loc" style="display: none;" value="{{ loc }}">
     <input id="orderby_input" type="text" name="orderby" style="display: none;" value="{{ orderby }}">
     <input id="tiger_certainty_input" type="text" name="tiger_certainty" style="display: none;"
            value="{{ tiger_certainty }}">
@@ -1692,6 +1698,7 @@
             $("#scroll_position").val(0);
             $("#pending_input").val('na');
             $("#checked_input").val('na');
+            $("#loc_input").val('na');
             $("#orderby_input").val('date');
             $("#tiger_certainty_input").val('all');
             $("#site_certainty_input").val('all');
