@@ -5,6 +5,9 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
+
+from rest_framework.decorators import api_view
+
 from tigacrafting.models import *
 from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
@@ -38,6 +41,7 @@ from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
+
 
 
 def get_current_domain(request):
@@ -1143,3 +1147,12 @@ def notifications(request,user_uuid=None):
     user_uuid = request.GET.get('user_uuid',None)
     total_users = TigaUser.objects.all().count()
     return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
+
+@api_view(['GET'])
+def metadataPhoto(request):
+    idReport = request.QUERY_PARAMS.get('id', None)
+
+    print(idReport)
+
+    return HttpResponse("Hola")
+

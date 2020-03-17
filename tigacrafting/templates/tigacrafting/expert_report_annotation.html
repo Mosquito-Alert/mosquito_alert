@@ -506,7 +506,7 @@
                     </div>
 
 
-                <button class="btn btn-default infoPhoto">Info. Photo</button>
+                <a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>
 
 
 
@@ -535,10 +535,7 @@
                 <strong>Location</strong>
 
                 <div id="map{{ form.instance.id }}" class="report_annotation_map-container">
-
-                    <div style="z-index:100; position:absolute; top:0; right:0;"
-                         id="qrcode{{ form.instance.id }}"></div>
-
+                    <div style="z-index:100; position:absolute; top:0; right:0;" id="qrcode{{ form.instance.id }}"></div>
                 </div>
 
 
