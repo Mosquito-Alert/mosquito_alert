@@ -31,6 +31,8 @@ from tigascoring.maUsers import smmry
 from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
+from django.db import connection
+import time
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -1122,6 +1124,60 @@ def distance_matrix(center_point, all_points):
         points_by_distance.append(this_point_by_distance)
     sorted_list = sorted(points_by_distance, key=lambda x: x[1])
     return sorted_list
+
+
+@api_view(['GET'])
+def nearby_reports_fast(request):
+    if request.method == 'GET':
+        dwindow = request.QUERY_PARAMS.get('dwindow', 90)
+        try:
+            int(dwindow)
+        except ValueError:
+            raise ParseError(detail='Invalid dwindow integer value')
+        if int(dwindow) > 365:
+            raise ParseError(detail='Values above 365 not allowed for dwindow')
+
+        date_n_days_ago = datetime.now() - timedelta(days=int(dwindow))
+
+        center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
+        center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
+
+        radius = request.QUERY_PARAMS.get('radius', 5000)
+        if radius >= 10000:
+            raise ParseError(detail='Values above 10000 not allowed for radius')
+
+        if center_buffer_lat is None or center_buffer_lon is None:
+            return Response(status=400,data='invalid parameters')
+
+        sql = "SELECT \"version_UUID\"  " + \
+            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
+            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
+
+        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+
+        cursor = connection.cursor()
+        cursor.execute(sql_formatted)
+        data = cursor.fetchall()
+        flattened_data = [element for tupl in data for element in tupl]
+
+        reports = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True)\
+            .exclude(photos__isnull=True)\
+            .filter(type='adult')\
+            .annotate(n_annotations=Count('expert_report_annotations'))\
+            .filter(n_annotations__gte=3)\
+            .exclude(creation_time__lte=date_n_days_ago)
+
+        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
+
+        if len(classified_reports_in_max_radius) < 10:
+            serializer = NearbyReportSerializer(classified_reports_in_max_radius)
+        else:
+            serializer = NearbyReportSerializer(classified_reports_in_max_radius[:10])
+        return Response(serializer.data)
 
 
 @api_view(['GET'])
