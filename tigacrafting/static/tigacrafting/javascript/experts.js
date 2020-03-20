@@ -1,10 +1,9 @@
 $(".infoPhoto").click(function () {
-    console.log($(this).attr("value"));
-
-    var id = $(this).attr("value").toLowerCase();
-
+    //var id = $(this).attr("value").toLowerCase();
+    var photoData = [];
+    var id = $(this).attr("value");
     url = '/metadataPhotoInfo/?id=' + id
-    console.log(url);
+
     //var csrftoken = $.cookie('csrftoken');
     $.ajax({
             url: url,
@@ -12,9 +11,45 @@ $(".infoPhoto").click(function () {
             /*beforeSend: function (xhr, settings) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
             },*/
-
+            dataType: 'json',
+            headers: {
+                'Authorization': 'Token 7UWSnsNsRBdIgYwfEPeJYWEdeZmRzlh1shlQ'
+            },
             success: function( data, textStatus, jqXHR ) {
                 console.log("OKAY")
+                datos = data.photoData;
+
+                var listacampos = document.createElement("ul");
+                var z;
+                var str;
+
+                Object.keys(datos).forEach(function(key) {
+                    elem = "<li><b>"+ key + "</b>: " + datos[key] +"</li>";
+                    listacampos.innerHTML += elem;
+
+                    document.getElementsByClassName("infoPopup")[0].appendChild(listacampos);
+
+                });
+
+                $("#infoPhotoDialog").dialog({
+                    modal: true,
+                    buttons: {
+                        "Close": function() {
+                            $(this).dialog("close");
+                        },
+                        /*"No": function() {
+                            $(this).dialog("close");
+                        }*/
+                    },
+                    draggable: false,
+                    classes: {
+                        "ui-dialog": "confirmUpPhoto"
+                    }
+                });
+
+                $(".ui-dialog").addClass("popupInfoPhoto");
+
+
             },
             error: function(jqXHR, textStatus, errorThrown){
                 console.log(errorThrown);
@@ -23,11 +58,40 @@ $(".infoPhoto").click(function () {
 
 
 
+        /*photoData.forEach(function(key){
+            str = document.createElement("li");
+            str.innerText = photoData;
+
+            list.appendChild(str);
+
+        });*/
+
+        /*for (z=0; z<photoData.length; z++){
+            str = document.createElement("li");
+            str.innerText = photoData[z];
+            //console.log(str)
+            list.appendChild(str);
+
+        }*/
+
+        //
 
 
 
 
-            /*$.ajax({
+
+
+
+
+});
+
+
+
+
+
+
+/*
+/*$.ajax({
                 url: 'http://{{ domain }}/api/coverage/?id_range_start=' + id_start + '&id_range_end=' + id_stop,
                 contentType: 'application/json',
                 dataType: 'json',
@@ -64,32 +128,5 @@ $(".infoPhoto").click(function () {
                         progress_bar_container.fadeOut(2000);
                     }
                 }
-            });*/
-
-
-
-
-    /*$("#infoPhotoDialog").dialog({
-        modal: true,
-        buttons: {
-            "Yes": function() {
-                //$("#save_formset").val('T');
-                //$("#formset_forms").submit();
-                $(this).dialog("close");
-                alert("yes");
-            },
-            "No": function() {
-                $(this).dialog("close");
-                //$(".reportIDs li").remove();
-                alert("no");
-            }
-        },
-        draggable: false,
-        classes: {
-            "ui-dialog": "confirmUpPhoto"
-        }
-    });*/
-
-
-
-});
+            });
+            */

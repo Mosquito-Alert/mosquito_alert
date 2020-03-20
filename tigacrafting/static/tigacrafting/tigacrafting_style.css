@@ -191,3 +191,20 @@ ul {
 #infoPhotoDialog{
     display: none;
 }
+
+.popupInfoPhoto .ui-widget-header{
+    border: 1px solid #101010;
+    background: #101010;
+    color: white;
+    font-weight: bold;
+}
+
+.popupInfoPhoto {
+    position: fixed !important;
+    z-index: 1500 !important;
+    width: 400px !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%,-50%);
+}
+

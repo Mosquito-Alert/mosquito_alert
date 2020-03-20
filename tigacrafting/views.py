@@ -42,6 +42,15 @@ from tigaserver_app.serializers import custom_render_notification
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 
+#----------Metadades fotos----------#
+from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
+from decimal import *
+from tigaserver_project.settings import *
+from rest_framework.response import Response
+
+#-----------------------------------#
+
 
 
 def get_current_domain(request):
@@ -1151,8 +1160,66 @@ def notifications(request,user_uuid=None):
 @api_view(['GET'])
 def metadataPhoto(request):
     idReport = request.QUERY_PARAMS.get('id', None)
+    utf8string = idReport.encode("utf-8")
+    photoData = []
+    photoCoord = []
+    photo = Photo.objects.filter(report=utf8string)
+    for t in photo:
+        urlPhoto = t.photo.url
 
-    print(idReport)
+    print(urlPhoto)
+    urlPhoto = BASE_DIR + urlPhoto
 
-    return HttpResponse("Hola")
+    exif = get_exif(urlPhoto)
+
+    if 'GPSInfo' in exif:
+        lat, lon = get_decimal_coordinates(exif['GPSInfo'])
+        print(lat)
+        print(lon)
+        photoCoord.append({'lat': lat, 'lon': lon})
+        context = {'photoData': exif, 'photoCoord': photoCoord}
+
+    else:
+        context = {'photoData': exif}
+
+    return Response(context)
+
+
+def get_decimal_coordinates(info):
+    try:
+        for key in ['Latitude', 'Longitude']:
+            if 'GPS' + key in info and 'GPS' + key + 'Ref' in info:
+                e = info['GPS' + key]
+                ref = info['GPS' + key + 'Ref']
+                info[key] = (Decimal(e[0][0] / e[0][1]) + Decimal(e[1][0] / e[1][1]) / 60 + Decimal(e[2][0] / e[2][1]) / 3600) * (-1 if ref in ['S', 'W'] else 1)
+        if 'Latitude' in info and 'Longitude' in info:
+            return [float(info['Latitude']), float(info['Longitude'])]
+        else:
+            return [0.0, 0.0]
+    except:
+        #debug.print_exception()
+        return None
+
+
+def get_exif(filename):
+    try:
+        exif = Image.open(filename)._getexif()
+        if exif is not None:
+            for key, value in exif.items():
+                name = TAGS.get(key, key)
+                exif[name] = exif.pop(key)
+
+            if 'GPSInfo' in exif:
+                for key in exif['GPSInfo'].keys():
+                    name = GPSTAGS.get(key, key)
+                    exif['GPSInfo'][name] = exif['GPSInfo'].pop(key)
+
+            if 'DateTime' in exif:
+                for key in exif['DateTime'].keys():
+                    exif['DateTime'] = exif['DateTime'].pop(key)
+        print(exif)
+        return exif
+    except:
+        #debug.print_exception()
+        return None
 
