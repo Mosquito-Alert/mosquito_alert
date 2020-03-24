@@ -31,6 +31,29 @@ $(".infoPhoto").click(function () {
 
                 });
 
+                datosCoord = data.photoCoord
+                var listacamposTop = document.createElement("ul");
+
+
+
+                elem2 = "<li><b>Latitude</b>: " + datosCoord[0]["lat"] +"</li><li><b>Longitude</b>: " + datosCoord[0]["lon"] +"</li>";
+                listacamposTop.innerHTML += elem2;
+                document.getElementsByClassName("infoPopupTop")[0].appendChild(listacamposTop);
+
+
+
+
+                Object.keys(datosCoord).forEach(function(key) {
+                    console.log(key);
+                    console.log(datosCoord[key]);
+                    elem2 = "<li><b>"+ key + "</b>: " + datosCoord[key] +"</li>";
+                    listacamposTop.innerHTML += elem2;
+
+                    document.getElementsByClassName("infoPopupTop")[0].appendChild(listacamposTop);
+
+                });
+
+
                 $("#infoPhotoDialog").dialog({
                     modal: true,
                     buttons: {

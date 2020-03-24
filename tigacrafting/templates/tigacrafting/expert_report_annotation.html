@@ -519,11 +519,20 @@
             </div>
 
             <div id="infoPhotoDialog" title="Photo's Metadata">
-                {{ photoData }}
+                <!--{{ photoData }}-->
+
+                <span class="infoPopupTop">
+                {% if photoCoord %}
+
+                    <ul>
+                        <li>{{ photoCoord.lat }}</li>
+                        <li>{{ photoCoord.lan }}</li>
+                    </ul>
+
+                {% endif %}
+                    </span>
+
                 <span class="infoPopup">
-
-
-
                     <ul>
                         {% for pD in photoData %}
                             <li>{{ pD.ColorSpace }}</li>

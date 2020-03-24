@@ -43,11 +43,13 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 
 #----------Metadades fotos----------#
-from PIL import Image
+
+import PIL.Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from decimal import *
 from tigaserver_project.settings import *
 from rest_framework.response import Response
+import re
 
 #-----------------------------------#
 
@@ -1163,6 +1165,7 @@ def metadataPhoto(request):
     utf8string = idReport.encode("utf-8")
     photoData = []
     photoCoord = []
+    exifgpsInfoDict = {}
     photo = Photo.objects.filter(report=utf8string)
     for t in photo:
         urlPhoto = t.photo.url
@@ -1173,9 +1176,15 @@ def metadataPhoto(request):
     exif = get_exif(urlPhoto)
 
     if 'GPSInfo' in exif:
-        lat, lon = get_decimal_coordinates(exif['GPSInfo'])
-        print(lat)
-        print(lon)
+        _TAGS_r = dict(((v, k) for k, v in TAGS.items()))
+        _GPSTAGS_r = dict(((v, k) for k, v in GPSTAGS.items()))
+
+        exifgpsInfo = exif["GPSInfo"]
+        for k in exifgpsInfo.keys():
+            exifgpsInfoDict[str(GPSTAGS[k])] = exifgpsInfo[k]
+        lat, lon = get_decimal_coordinates(exifgpsInfoDict)
+
+        #lat, lon = get_decimal_coordinates(exif['GPSInfo'])
         photoCoord.append({'lat': lat, 'lon': lon})
         context = {'photoData': exif, 'photoCoord': photoCoord}
 
@@ -1188,38 +1197,36 @@ def metadataPhoto(request):
 def get_decimal_coordinates(info):
     try:
         for key in ['Latitude', 'Longitude']:
-            if 'GPS' + key in info and 'GPS' + key + 'Ref' in info:
+            v1 = str('GPS' + key)
+            v2 = str('GPS' + key + 'Ref')
+
+            if v1 in info.keys() and v2 in info.keys():
                 e = info['GPS' + key]
                 ref = info['GPS' + key + 'Ref']
-                info[key] = (Decimal(e[0][0] / e[0][1]) + Decimal(e[1][0] / e[1][1]) / 60 + Decimal(e[2][0] / e[2][1]) / 3600) * (-1 if ref in ['S', 'W'] else 1)
-        if 'Latitude' in info and 'Longitude' in info:
-            return [float(info['Latitude']), float(info['Longitude'])]
+                info[v1] = (Decimal(e[0][0] / e[0][1]) + Decimal(e[1][0] / e[1][1]) / 60 + Decimal(e[2][0] / e[2][1]) / 3600) * (-1 if ref in ['S', 'W'] else 1)
+        if 'GPSLatitude' in info and 'GPSLongitude' in info:
+            return [float(info['GPSLatitude']), float(info['GPSLongitude'])]
         else:
             return [0.0, 0.0]
     except:
-        #debug.print_exception()
+        # debug.print_exception()
         return None
-
 
 def get_exif(filename):
     try:
-        exif = Image.open(filename)._getexif()
-        if exif is not None:
-            for key, value in exif.items():
-                name = TAGS.get(key, key)
-                exif[name] = exif.pop(key)
+        print(filename)
+        img = PIL.Image.open(filename)
 
-            if 'GPSInfo' in exif:
-                for key in exif['GPSInfo'].keys():
-                    name = GPSTAGS.get(key, key)
-                    exif['GPSInfo'][name] = exif['GPSInfo'].pop(key)
+        if img is not None:
+            exif = {
+                PIL.ExifTags.TAGS[key]: value
+                for key, value in img._getexif().items()
+                if key in PIL.ExifTags.TAGS or key in PIL.ExifTags.GPSTAGS
+            }
 
-            if 'DateTime' in exif:
-                for key in exif['DateTime'].keys():
-                    exif['DateTime'] = exif['DateTime'].pop(key)
-        print(exif)
+        print exif
         return exif
+
     except:
         #debug.print_exception()
         return None
-
