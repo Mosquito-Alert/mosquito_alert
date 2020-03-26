@@ -1,17 +1,14 @@
 var save_button = $("#save_button").click(function () {
-    var cont = 0;
-    var ref = new Array();
-    var i = 0;
+    var ref = [];
 
     $(".fastUploadClass").each(function (index, element) {
         if ($(this).prop("checked")) {
-            cont = cont + 1;
             ref.push($(this).parent().attr('id'));
         }
     });
 
 
-    if(cont>0){
+    if(ref.length>0){
         $("#dialogConfirmUpPhoto").dialog({
             modal: true,
             buttons: {
@@ -36,10 +33,8 @@ var save_button = $("#save_button").click(function () {
         var str;
 
         for (z=0; z<ref.length; z++){
-            //console.log(ref[z]);
             str = document.createElement("li");
             str.innerText = ref[z];
-            //console.log(str)
             list.appendChild(str);
         }
 
