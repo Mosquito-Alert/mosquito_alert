@@ -366,6 +366,9 @@ class Report(models.Model):
         else:
             return self.current_location_lon
 
+    def has_location(self):
+        return self.get_lat() is not None and self.get_lon() is not None
+
     def get_tigaprob(self):
         these_responses = self.responses.only('answer').values('answer').iterator()
         response_score = 0
@@ -1544,6 +1547,7 @@ class Report(models.Model):
     final_expert_status_text = property(get_final_expert_status)
     is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
     country_label = property(get_country_label)
+    located = property(has_location)
 
     class Meta:
         unique_together = ("user", "version_UUID")
