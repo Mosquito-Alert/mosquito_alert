@@ -2,24 +2,12 @@ var save_button = $("#save_button").click(function () {
     var cont = 0;
     var ref = new Array();
     var i = 0;
-    //console.log($(".reportID").text());
 
     $(".fastUploadClass").each(function (index, element) {
         if ($(this).prop("checked")) {
             cont = cont + 1;
+            ref.push($(this).parent().attr('id'));
         }
-
-        console.log(i);
-        console.log($("#id_form-" + i + "-fastUpload.fastUploadClass").prop('checked'));
-        console.log("id_form-" + i + "-fastUpload.fastUploadClass");
-        console.log($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent().attr('id'));
-        if($("#id_form-" + i + "-fastUpload.fastUploadClass").prop('checked')){
-            ref.push($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent().attr('id'));
-        }
-        i++;
-
-        //ref.push($("#id_form-"+ i +"-version_UUID").val());
-        //console.log($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent());
     });
 
 
@@ -43,12 +31,6 @@ var save_button = $("#save_button").click(function () {
             }
         });
 
-        /*for (i=0; i<=ref.length; i++){
-            $('.reportIDs').html(ref[i]);
-            $('.reportIDs').createElement("br");
-        }*/
-
-
         var list = document.createElement("ul");
         var z;
         var str;
@@ -61,8 +43,6 @@ var save_button = $("#save_button").click(function () {
             list.appendChild(str);
         }
 
-        //list.appendChild(str);
-        //console.log(list)
         document.getElementsByClassName("reportIDs")[0].appendChild(list);
 
         $(".ui-dialog").addClass("confirmUpPhoto");
