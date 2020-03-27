@@ -1162,11 +1162,16 @@ def notifications(request,user_uuid=None):
 @api_view(['GET'])
 def metadataPhoto(request):
     idReport = request.QUERY_PARAMS.get('id', None)
+    idPhoto = request.QUERY_PARAMS.get('id_photo', None)
     utf8string = idReport.encode("utf-8")
+    idPhotoUTF8 = idPhoto.encode("utf-8")
     photoData = []
     photoCoord = []
+    photoDateTime = []
     exifgpsInfoDict = {}
-    photo = Photo.objects.filter(report=utf8string)
+    exifDateTime = {}
+    gpsData = {}
+    photo = Photo.objects.filter(report=utf8string).filter(id=idPhotoUTF8)
     for t in photo:
         urlPhoto = t.photo.url
 
@@ -1174,22 +1179,40 @@ def metadataPhoto(request):
     urlPhoto = BASE_DIR + urlPhoto
 
     exif = get_exif(urlPhoto)
+    print(exif)
 
-    if 'GPSInfo' in exif:
-        _TAGS_r = dict(((v, k) for k, v in TAGS.items()))
-        _GPSTAGS_r = dict(((v, k) for k, v in GPSTAGS.items()))
-
-        exifgpsInfo = exif["GPSInfo"]
-        for k in exifgpsInfo.keys():
-            exifgpsInfoDict[str(GPSTAGS[k])] = exifgpsInfo[k]
-        lat, lon = get_decimal_coordinates(exifgpsInfoDict)
-
-        #lat, lon = get_decimal_coordinates(exif['GPSInfo'])
-        photoCoord.append({'lat': lat, 'lon': lon})
-        context = {'photoData': exif, 'photoCoord': photoCoord}
-
+    if exif is None:
+        context = {'noData': 'No data available.'}
     else:
-        context = {'photoData': exif}
+        if 'GPSInfo' in exif:
+            _TAGS_r = dict(((v, k) for k, v in TAGS.items()))
+            _GPSTAGS_r = dict(((v, k) for k, v in GPSTAGS.items()))
+
+            exifgpsInfo = exif["GPSInfo"]
+            for k in exifgpsInfo.keys():
+                exifgpsInfoDict[str(GPSTAGS[k])] = exifgpsInfo[k]
+                gpsData[str(GPSTAGS[k])] = str(exifgpsInfo[k])
+            lat, lon = get_decimal_coordinates(exifgpsInfoDict)
+
+            # lat, lon = get_decimal_coordinates(exif['GPSInfo'])
+            photoCoord.append({'lat': lat, 'lon': lon})
+            #gpsData.append({'gpsData': exifgpsInfoDict})
+
+            del exif["GPSInfo"]
+
+        if 'DateTime' in exif.keys():
+            # for d in exif:
+                # exifDateTime[str(TAGS[d])] = exif[d]
+            photoDateTime.append({'DateTime': exif['DateTime']})
+
+        if not photoCoord and not photoDateTime:
+            context = {'photoData': exif}
+        elif not photoDateTime:
+            context = {'photoData': exif, 'photoCoord': photoCoord}
+        elif not photoCoord:
+            context = {'photoData': exif, 'photoDateTime': photoDateTime}
+        else:
+            context = {'photoData': exif, 'photoDateTime': photoDateTime, 'photoCoord': photoCoord}
 
     return Response(context)
 

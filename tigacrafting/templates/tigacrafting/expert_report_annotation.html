@@ -503,9 +503,11 @@
 
                         {{ form.instance.report.photo_html_for_report_validation | safe }}
 
+                            <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
+
                     </div>
 
-                    <a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>
+                    <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>-->
 
                 {% else %}
 
@@ -518,20 +520,15 @@
                 {% endif %}
             </div>
 
-            <div id="infoPhotoDialog" title="Photo's Metadata">
-                <!--{{ photoData }}-->
-
+            <div id="infoPhotoDialog" title="Photo's Metadata" style="height: 350px;">
                 <span class="infoPopupTop">
-                {% if photoCoord %}
-
-                    <ul>
-                        <li>{{ photoCoord.lat }}</li>
-                        <li>{{ photoCoord.lan }}</li>
-                    </ul>
-
-                {% endif %}
-                    </span>
-
+                    {% if photoCoord %}
+                        <ul>
+                            <li>{{ photoCoord.lat }}</li>
+                            <li>{{ photoCoord.lan }}</li>
+                        </ul>
+                    {% endif %}
+                </span>
                 <span class="infoPopup">
                     <ul>
                         {% for pD in photoData %}
@@ -539,8 +536,13 @@
                         {% endfor %}
                     </ul>
                 </span>
+                <span class="infoPopupGPS"></span>
             </div>
+            <div id="noDataAvailable" title="Photo's Metadata">
+                <span class="infoNoData">
 
+                </span>
+            </div>
 
             <div class="col-md-4">
                 <br>
