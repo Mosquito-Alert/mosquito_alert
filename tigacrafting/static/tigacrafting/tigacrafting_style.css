@@ -203,12 +203,10 @@ ul {
 
 .popupInfoPhoto {
     position: fixed !important;
-    z-index: 1500 !important;
-    /*width: 400px !important;*/
+    z-index: 1502 !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%,-50%);
-    /*height: 450px !important;*/
 }
 
 #noDataAvailable{

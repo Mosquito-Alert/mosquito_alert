@@ -1179,7 +1179,7 @@ def metadataPhoto(request):
     urlPhoto = BASE_DIR + urlPhoto
 
     exif = get_exif(urlPhoto)
-    print(exif)
+
 
     if exif is None:
         context = {'noData': 'No data available.'}
@@ -1232,8 +1232,8 @@ def get_decimal_coordinates(info):
         else:
             return [0.0, 0.0]
     except:
-        # debug.print_exception()
         return None
+
 
 def get_exif(filename):
     try:
@@ -1246,10 +1246,6 @@ def get_exif(filename):
                 for key, value in img._getexif().items()
                 if key in PIL.ExifTags.TAGS or key in PIL.ExifTags.GPSTAGS
             }
-
-        print exif
         return exif
-
     except:
-        #debug.print_exception()
         return None

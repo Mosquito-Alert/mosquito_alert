@@ -24,7 +24,7 @@ $(".infoPhoto").click(function () {
 
                 if(data.noData){
                     var warningNoData = document.createElement("p");
-                    elemNoData = "<p>"+ data.noData +"</p>";
+                    elemNoData = "<p><br>"+ data.noData +"</p>";
                     warningNoData.innerHTML += elemNoData;
 
                     document.getElementsByClassName("infoNoData")[0].appendChild(warningNoData);
@@ -32,7 +32,7 @@ $(".infoPhoto").click(function () {
                     $("#noDataAvailable").dialog({
                         modal: true,
                         height: 200,
-                        width: 450,
+                        width: 200,
 
                         buttons: {
                             "Close": function() {
@@ -47,6 +47,7 @@ $(".infoPhoto").click(function () {
                             "ui-dialog": "confirmUpPhoto"
                         }
                     });
+                    $(".ui-dialog").addClass("popupInfoPhoto");
 
                 }else{
                     datos = data.photoData;
