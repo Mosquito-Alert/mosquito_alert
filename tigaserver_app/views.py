@@ -1157,9 +1157,16 @@ def nearby_reports_no_dwindow(request):
         if center_buffer_lat is None or center_buffer_lon is None:
             raise ParseError(detail='invalid parameters')
 
+        '''
         sql = "SELECT \"version_UUID\"  " + \
             "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
             "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
+        '''
+
+        #Older postgis versions didn't like the second ::geography cast
+        sql = "SELECT \"version_UUID\"  " + \
+              "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
+              "ORDER BY point <-> 'SRID=4326;POINT({3} {4})'"
 
         sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
 
