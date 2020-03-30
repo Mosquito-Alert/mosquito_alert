@@ -14,7 +14,7 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session
 from math import ceil
 from taggit.models import Tag
@@ -32,6 +32,7 @@ from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
 from django.db import connection
+from django.core.paginator import Paginator, EmptyPage
 import time
 
 from celery.task.schedules import crontab
@@ -1124,6 +1125,78 @@ def distance_matrix(center_point, all_points):
         points_by_distance.append(this_point_by_distance)
     sorted_list = sorted(points_by_distance, key=lambda x: x[1])
     return sorted_list
+
+
+@api_view(['GET'])
+def nearby_reports_no_dwindow(request):
+    if request.method == 'GET':
+
+        page = request.QUERY_PARAMS.get('page', 1)
+        page_size = request.QUERY_PARAMS.get('page_size', 10)
+
+        center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
+        center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
+
+        radius = request.QUERY_PARAMS.get('radius', 5000)
+        try:
+            int(radius)
+            if int(radius) > 10000:
+                raise ParseError(detail='Values above 10000 not allowed for radius')
+        except ValueError:
+            raise ParseError(detail='invalid radius number must be integer')
+
+        try:
+            int(page_size)
+            if int(page_size) > 200:
+                raise ParseError(detail='page size can\'t be greater than 200')
+            if int(page_size) < 1:
+                raise ParseError(detail='page size can\'t be lower than 1')
+        except ValueError:
+            raise ParseError(detail='invalid radius number must be integer')
+
+        if center_buffer_lat is None or center_buffer_lon is None:
+            raise ParseError(detail='invalid parameters')
+
+        sql = "SELECT \"version_UUID\"  " + \
+            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
+            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
+
+        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+
+        cursor = connection.cursor()
+        cursor.execute(sql_formatted)
+        data = cursor.fetchall()
+        flattened_data = [element for tupl in data for element in tupl]
+
+        reports = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True)\
+            .exclude(photos__isnull=True)\
+            .filter(type='adult')\
+            .annotate(n_annotations=Count('expert_report_annotations'))\
+            .filter(n_annotations__gte=3)\
+            .order_by('-creation_time')
+
+        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
+
+        paginator = Paginator( classified_reports_in_max_radius, int(page_size) )
+
+        try:
+            current_page = paginator.page(page)
+        except EmptyPage:
+            raise ParseError(detail='Empty page')
+
+        serializer = NearbyReportSerializer(current_page.object_list, many=True)
+
+        next = current_page.next_page_number() if current_page.has_next() else None
+
+        previous = current_page.previous_page_number() if current_page.has_previous() else None
+
+        response = { "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+
+        return Response(response)
 
 
 @api_view(['GET'])
