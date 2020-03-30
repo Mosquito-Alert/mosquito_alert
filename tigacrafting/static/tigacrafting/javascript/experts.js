@@ -33,10 +33,13 @@ $(".infoPhoto").click(function () {
                         modal: true,
                         height: 200,
                         width: 200,
-
+                        close: function(){
+                            //.ui-dialog-titlebar-close.ui-corner-all
+                            $(this).dialog("destroy").remove();
+                        },
                         buttons: {
                             "Close": function() {
-                                $(this).dialog("close");
+                                $(this).dialog("destroy").remove();
                             },
                             /*"No": function() {
                                 $(this).dialog("close");
@@ -48,6 +51,8 @@ $(".infoPhoto").click(function () {
                         }
                     });
                     $(".ui-dialog").addClass("popupInfoPhoto");
+                    $(".ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-resizable.popupInfoPhoto").css( "zIndex", 1004 )
+                    $(".ui-widget-overlay").css("zIndex", 1002);
 
                 }else{
                     datos = data.photoData;
@@ -101,10 +106,13 @@ $(".infoPhoto").click(function () {
                         modal: true,
                         height: 700,
                         width: 450,
-
+                        close: function(){
+                            //.ui-dialog-titlebar-close.ui-corner-all
+                            $(this).dialog("destroy").remove();
+                        },
                         buttons: {
                             "Close": function() {
-                                $(this).dialog("close");
+                                $(this).dialog("destroy").remove();
                             },
                             /*"No": function() {
                                 $(this).dialog("close");
@@ -117,6 +125,8 @@ $(".infoPhoto").click(function () {
                     });
 
                     $(".ui-dialog").addClass("popupInfoPhoto");
+                    $(".ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-resizable.popupInfoPhoto").css( "zIndex", 1004 )
+                    $(".ui-widget-overlay").css("zIndex", 1002);
                 }
             },
             error: function(jqXHR, textStatus, errorThrown){

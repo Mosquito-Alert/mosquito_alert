@@ -203,7 +203,7 @@ ul {
 
 .popupInfoPhoto {
     position: fixed !important;
-    z-index: 1502 !important;
+    /*z-index: 1502 !important;*/
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%,-50%);
@@ -211,5 +211,11 @@ ul {
 
 #noDataAvailable{
     display: none;
+}
+
+.btn.btn-default.infoPhoto.bottom-right {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
 }
 
