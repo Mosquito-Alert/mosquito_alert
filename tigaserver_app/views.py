@@ -1168,7 +1168,7 @@ def nearby_reports_no_dwindow(request):
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
-        reports = Report.objects.exclude(cached_visible=0)\
+        reports_adult = Report.objects.exclude(cached_visible=0)\
             .filter(version_UUID__in=flattened_data)\
             .exclude(creation_time__year=2014)\
             .exclude(note__icontains="#345")\
@@ -1177,11 +1177,28 @@ def nearby_reports_no_dwindow(request):
             .filter(type='adult')\
             .annotate(n_annotations=Count('expert_report_annotations'))\
             .filter(n_annotations__gte=3)\
-            .order_by('-creation_time')
 
-        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
+        reports_bite = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True) \
+            .filter(type='bite')
 
-        paginator = Paginator( classified_reports_in_max_radius, int(page_size) )
+        reports_site = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True) \
+            .filter(type='site')
+
+        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports_adult)
+
+        all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site)
+
+        all_reports_sorted = sorted(all_reports, key=lambda x: x.creation_time, reverse=True)
+
+        paginator = Paginator( all_reports_sorted, int(page_size) )
 
         try:
             current_page = paginator.page(page)
