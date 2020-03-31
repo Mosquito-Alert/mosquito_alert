@@ -10,7 +10,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto
 from tigaserver_messages.views import compose_w_data, reply_w_data
 from django_messages.views import *
 
@@ -115,4 +115,5 @@ urlpatterns += i18n_patterns('',
     url(r'^messages/trash/$', trash, name='messages_trash'),
     url(r'^messages/compose_w_data/$', compose_w_data, name='compose_w_data'),
     url(r'^messages/reply/(?P<message_id>[\d]+)/$', reply_w_data, name='messages_reply'),
+    url('metadataPhotoInfo', metadataPhoto, name='metadataPhotoInfo'),
 )

@@ -526,7 +526,15 @@ class Report(models.Model):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         result = ''
         for photo in these_photos:
-            result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '"><input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:</div><br><div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div><br>'
+            result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
+                    '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:</div>' \
+                     '<br>' \
+                    '<div style="border: 1px solid #333333;margin:1px;position: relative;">' + photo.medium_image_for_validation_() + '' \
+                   '<a class="btn btn-default infoPhoto bottom-right" value="' + str(self.version_UUID) + '__' + str(photo.id) + '">' \
+                        '<i aria-hidden="true" title="Image EXIF metadata" class="glyphicon glyphicon-info-sign"></i>' \
+                    '</a>' \
+                    '</div><br>'
+
         return result
 
     def get_photo_html_for_report_validation_completed(self):

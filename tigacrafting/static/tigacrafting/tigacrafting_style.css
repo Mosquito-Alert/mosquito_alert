@@ -187,3 +187,35 @@ ul {
 #dialogConfirmUpPhoto{
     display: none;
 }
+
+#infoPhotoDialog{
+    display: none;
+    height: 450x !important;
+
+}
+
+.popupInfoPhoto .ui-widget-header{
+    border: 1px solid #101010;
+    background: #101010;
+    color: white;
+    font-weight: bold;
+}
+
+.popupInfoPhoto {
+    position: fixed !important;
+    /*z-index: 1502 !important;*/
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%,-50%);
+}
+
+#noDataAvailable{
+    display: none;
+}
+
+.btn.btn-default.infoPhoto.bottom-right {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+}
+
