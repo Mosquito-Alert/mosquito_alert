@@ -1175,7 +1175,6 @@ def metadataPhoto(request):
     for t in photo:
         urlPhoto = t.photo.url
 
-    print(urlPhoto)
     urlPhoto = BASE_DIR + urlPhoto
 
     exif = get_exif(urlPhoto)
@@ -1237,7 +1236,6 @@ def get_decimal_coordinates(info):
 
 def get_exif(filename):
     try:
-        print(filename)
         img = PIL.Image.open(filename)
 
         if img is not None:
