@@ -1584,6 +1584,7 @@ class ReportResponse(models.Model):
     question = models.CharField(max_length=1000, help_text='Question that the user responded to.')
     answer_id = models.IntegerField(blank=True, null=True, help_text='Numeric identifier of the answer.')
     answer = models.CharField(max_length=1000, help_text='Answer that user selected.')
+    answer_value = models.CharField(max_length=1000, blank=True, null=True, help_text='The value right now can contain 2 things: an integer representing the number or bites, or either a WKT representation of a point for a location answer. In all other cases, it will be blank')
 
     def __unicode__(self):
         return str(self.id)

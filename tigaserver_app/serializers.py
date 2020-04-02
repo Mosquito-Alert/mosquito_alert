@@ -102,7 +102,7 @@ class ReportListingField(serializers.RelatedField):
 class ReportResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportResponse
-        fields = ['question', 'answer', 'question_id', 'answer_id']
+        fields = ['question', 'answer', 'question_id', 'answer_id', 'answer_value']
 
 class ReportSerializer(serializers.ModelSerializer):
 
