@@ -3,7 +3,8 @@ import json
 import socket
 import struct
 import binascii
-import urllib2
+#import urllib2
+import urllib
 import json
 from tigaserver_project import settings_local
 from tigaserver_project import settings
@@ -110,8 +111,9 @@ def send_message_android(token,title, message, notification=None):
                 }
 
             values = json.dumps(values)
-            req = urllib2.Request(url, values, headers)
-            resp = urllib2.urlopen(req)
+            #req = urllib2.Request(url, values, headers)
+            req = urllib.request.Request(url, data=values, headers=headers)
+            resp = urllib.urlopen(req)
             resp_txt = resp.read()
             return resp_txt
 

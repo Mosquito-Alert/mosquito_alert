@@ -7,7 +7,7 @@ import requests
 import os
 from django.contrib.auth.models import User
 import re
-from constants import (managers_group, superusers_group, user_roles,
+from tigapublic.constants import (managers_group, superusers_group, user_roles,
                        epidemiologist_editor_group,
                        epidemiologist_viewer_group)
 
@@ -34,7 +34,7 @@ class ExtendedUser(User):
 
         A valid user is an authenticated and active user.
         """
-        return self.is_authenticated() and self.is_active
+        return self.is_authenticated and self.is_active
 
     def is_manager(self):
         """Return True if user is manager.
@@ -267,7 +267,7 @@ def get_directory_structure(rootdir):
                         dict[folders[0]][int(folders[1]) - 1] = 1
 
     # Turn dict into array
-    for key, value in dict.iteritems():
+    for key, value in dict.items():
         temp = [key, value]
         dictlist.append(temp)
     # Return properly ordered list

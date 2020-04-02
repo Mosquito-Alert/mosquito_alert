@@ -2,21 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from StringIO import StringIO
+#from io import StringIO
+from io import BytesIO
 from zipfile import ZipFile
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
-from base import BaseManager
-from filters import FilterManager
-from notifications import NotificationManager
+from tigapublic.libs.base import BaseManager
+from tigapublic.libs.filters import FilterManager
+from tigapublic.libs.notifications import NotificationManager
 from tigapublic.constants import (fields_available, managers_group,
                                   superusers_group)
 from tigapublic.models import AuthUser, MapAuxReports, ReportsMapData
 from tigapublic.resources import GetObservationResource, NotificationResource
-from predictionmodels import predictionModels
+from tigapublic.libs.predictionmodels import predictionModels
 
 
 def coordinateListToWKTPolygon(coordinates):
@@ -73,13 +74,13 @@ class ObservationExporter(BaseManager):
         # All fields available
         fields = OrderedDict(fields_available)
         # Get and store the fields available to this role
-        self.fields = [key for key, value in fields.iteritems()
+        self.fields = [key for key, value in fields.items()
                        if type(value).__name__ == 'str'
                        or 'permissions' not in value
                        or role in value['permissions']]
         # Get and store the headers available to this role
         self.headers = []
-        for key, value in fields.iteritems():
+        for key, value in fields.items():
             if type(value).__name__ == 'str':
                 self.headers.append(value)
             elif 'permissions' not in value or role in value['permissions']:
@@ -105,7 +106,7 @@ class ObservationExporter(BaseManager):
                 "/tigapublic/files/observations_public_metadata.txt"
             )
 
-        in_memory = StringIO()
+        in_memory = BytesIO()
         zip = ZipFile(in_memory, "a")
         zip.writestr("license.txt", license_file.read())
         zip.writestr("obs_metadata.txt",
@@ -223,7 +224,7 @@ class ObservationManager(BaseManager):
         # Run filters
         try:
             self.filter.run()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             self.response['error'] = str(e)
 
         return self.filter.queryset
@@ -321,6 +322,8 @@ class ObservationManager(BaseManager):
         ).values(*fields)
 
         self.response = qs[0]
+        self.response['notifs'] = sorted(list(notifications.values('expert__username','notification_content__body_html_es','notification_content__title_es','date_comment')),key=lambda k:(k['expert__username'],k['notification_content__body_html_es'],k['notification_content__title_es'],k['date_comment']))
+        '''
         self.response['notifs'] = sorted(
             list(notifications.values(
                 'expert__username',
@@ -328,6 +331,7 @@ class ObservationManager(BaseManager):
                 'notification_content__title_es',
                 'date_comment')
                 ), reverse=True)
+        '''
 
         return self._end()
 

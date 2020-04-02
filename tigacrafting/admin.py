@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import MoveLabAnnotation, ExpertReportAnnotation
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse

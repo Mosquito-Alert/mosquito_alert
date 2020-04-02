@@ -10,7 +10,7 @@ from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
 from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
-from django.core.urlresolvers import reverse
+#from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
@@ -20,8 +20,11 @@ from collections import Counter
 from datetime import datetime
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Manager as GeoManager
+from django.urls import reverse
 from django.db import connection
 import logging
+from django.utils.deconstruct import deconstructible
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -43,7 +46,7 @@ class TigaUser(models.Model):
 
     score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
 
-    profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True)
+    profile = models.ForeignKey('tigaserver_app.TigaProfile', related_name='profile_devices', null=True, blank=True, on_delete=models.DO_NOTHING, )
 
     def __unicode__(self):
         return self.user_UUID
@@ -124,7 +127,7 @@ class Mission(models.Model):
 
 
 class MissionTrigger(models.Model):
-    mission = models.ForeignKey(Mission, related_name='triggers')
+    mission = models.ForeignKey('tigaserver_app.Mission', related_name='triggers', on_delete=models.DO_NOTHING, )
     lat_lower_bound = models.FloatField(blank=True, null=True, help_text='Optional lower-bound latitude for '
                                                                          'triggering mission to appear to user. Given in decimal degrees.')
     lat_upper_bound = models.FloatField(blank=True, null=True, help_text='Optional upper-bound latitude for '
@@ -157,7 +160,7 @@ class MissionTrigger(models.Model):
 
 
 class MissionItem(models.Model):
-    mission = models.ForeignKey(Mission, related_name='items', help_text='Mission to which this item is associated.')
+    mission = models.ForeignKey('tigaserver_app.Mission', related_name='items', help_text='Mission to which this item is associated.', on_delete=models.DO_NOTHING, )
     question_catalan = models.CharField(max_length=1000, help_text='Question displayed to user in Catalan.')
     question_spanish = models.CharField(max_length=1000, help_text='Question displayed to user in Spanish.')
     question_english = models.CharField(max_length=1000, help_text='Question displayed to user in English.')
@@ -187,7 +190,7 @@ class EuropeCountry(models.Model):
     x_max = models.FloatField(blank=True, null=True)
     y_min = models.FloatField(blank=True, null=True)
     y_max = models.FloatField(blank=True, null=True)
-    objects = models.GeoManager()
+    objects = GeoManager()
     class Meta:
         managed = True
         db_table = 'europe_countries'
@@ -202,7 +205,7 @@ class Report(models.Model):
                                                    'most recent version on the device, but all versions are stored on the server.')
     user = models.ForeignKey(TigaUser, help_text='user_UUID for the user sending this report. Must be exactly 36 '
                                                  'characters (32 hex digits plus 4 hyphens) and user must have '
-                                                 'already registered this ID.', related_name="user_reports")
+                                                 'already registered this ID.', related_name="user_reports", on_delete=models.DO_NOTHING, )
     report_id = models.CharField(db_index=True, max_length=4, help_text='4-digit alpha-numeric code generated on user phone to '
                                                          'identify each unique report from that user. Digits should '
                                                          'lbe randomly drawn from the set of all lowercase and '
@@ -230,7 +233,7 @@ class Report(models.Model):
                                                                          "or 'mission'.", )
     mission = models.ForeignKey(Mission, blank=True, null=True, help_text='If this report was a response to a '
                                                                           'mission, the unique id field of that '
-                                                                          'mission.')
+                                                                          'mission.', on_delete=models.DO_NOTHING, )
     LOCATION_CHOICE_CHOICES = (('current', "Current location detected by user's device"), ('selected',
                                                                                            'Location selected by '
                                                                                            'user from map'),
@@ -295,9 +298,9 @@ class Report(models.Model):
 
     point = models.PointField(blank=True,null=True,srid=4326)
 
-    country = models.ForeignKey(EuropeCountry, blank=True, null=True)
+    country = models.ForeignKey(EuropeCountry, blank=True, null=True, on_delete=models.DO_NOTHING, )
 
-    objects = models.GeoManager()
+    objects = GeoManager()
 
     def __unicode__(self):
         return self.version_UUID
@@ -1559,21 +1562,35 @@ class Report(models.Model):
 
 class ReportResponse(models.Model):
     report = models.ForeignKey(Report, related_name='responses', help_text='Report to which this response is ' \
-                                                                          'associated.')
+                                                                          'associated.', on_delete=models.DO_NOTHING, )
     question = models.CharField(max_length=1000, help_text='Question that the user responded to.')
     answer = models.CharField(max_length=1000, help_text='Answer that user selected.')
 
     def __unicode__(self):
         return str(self.id)
 
+@deconstructible
+class MakeImageUUID(object):
+    path = ''
 
+    def __init__(self, path):
+        self.path = path
+
+    def __call__(self,instance,filename):
+        extension = filename.split('.')[-1]
+        filename = "%s.%s" % (uuid.uuid4(), extension)
+        return os.path.join(self.path, filename)
+
+make_image_uuid = MakeImageUUID('tigapics')
+
+'''
 def make_image_uuid(path):
     def wrapper(instance, filename):
         extension = filename.split('.')[-1]
         filename = "%s.%s" % (uuid.uuid4(), extension)
         return os.path.join(path, filename)
     return wrapper
-
+'''
 
 def make_uuid():
     return str(uuid.uuid4())
@@ -1583,9 +1600,9 @@ class Photo(models.Model):
     """
     Photo uploaded by user.
     """
-    photo = models.ImageField(upload_to=make_image_uuid('tigapics'), help_text='Photo uploaded by user.')
+    photo = models.ImageField(upload_to=make_image_uuid, help_text='Photo uploaded by user.')
     report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
-                                                 'report_UUID).')
+                                                 'report_UUID).', on_delete=models.DO_NOTHING, )
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
     uuid = models.CharField(max_length=36, default=make_uuid)
 
@@ -1798,12 +1815,12 @@ class NotificationContent(models.Model):
             return self.body_html_es
 
 class Notification(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
-    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
-    expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
-    date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.DO_NOTHING, )
+    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent', on_delete=models.DO_NOTHING, )
+    expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification', on_delete=models.DO_NOTHING, )
+    date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
-    notification_content = models.ForeignKey(NotificationContent,blank=True, null=True,related_name="notification_content",help_text='Multi language content of the notification')
+    notification_content = models.ForeignKey(NotificationContent,blank=True, null=True,related_name="notification_content",help_text='Multi language content of the notification', on_delete=models.DO_NOTHING, )
     #All this becomes obsolete, now all notification text is outside. This allows for re-use in massive notifications
     expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')

@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
 import json
-from sets import Set
 import datetime
 from django.utils import timezone
 
@@ -53,7 +52,7 @@ def get_most_recently_validated_report(slug):
 @api_view(['GET'])
 def workload_pending_per_user(request):
     if request.method == 'GET':
-        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        user_slug = request.query_params.get('user_slug', -1)
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=user_slug)
         current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult')
@@ -70,7 +69,7 @@ def workload_pending_per_user(request):
 @api_view(['GET'])
 def workload_stats_per_user(request):
     if request.method == 'GET':
-        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        user_slug = request.query_params.get('user_slug', -1)
         tz = get_localzone()
         queryset = User.objects.all()
         user = get_object_or_404(queryset,username=user_slug)
@@ -596,7 +595,7 @@ def report_stats_ccaa(request):
     """)
     data = cursor.fetchall()
 
-    years = Set()
+    years = set()
     for elem in data:
         years.add(int(elem[1]))
     years = list(years)
@@ -634,11 +633,11 @@ def show_fix_users(request):
     while ref_date <= end_date:
         these_fixes = real_fixes.filter(fix_time__lte=ref_date, user_coverage_uuid__isnull=False)
         c = Counter(f.user_coverage_uuid for f in these_fixes)
-        fix20_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 20])})
-        fix15_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 15])})
-        fix10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 10])})
-        fix5_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 5])})
-        fix1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v >= 1])})
+        fix20_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 20])})
+        fix15_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 15])})
+        fix10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 10])})
+        fix5_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 5])})
+        fix1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v >= 1])})
         ref_date += timedelta(hours=24)
     context = {'fix20_users': fix20_users, 'fix15_users': fix15_users,'fix10_users': fix10_users, 'fix5_users': fix5_users, 'fix1_users': fix1_users}
     return render(request, 'stats/fix_user_chart.html', context)
@@ -657,11 +656,11 @@ def show_report_users(request):
     while ref_date <= end_date:
         these_reports = [r for r in real_reports if r.creation_time <= ref_date]
         c = Counter(r.user for r in these_reports)
-        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 0])})
-        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 1])})
-        r2_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 2])})
-        r3_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 3])})
-        r4_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 4])})
+        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 0])})
+        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 1])})
+        r2_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 2])})
+        r3_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 3])})
+        r4_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.items() if v > 4])})
         ref_date += timedelta(days=1)
     context = {'r0_users': r0_users, 'r1_users': r1_users, 'r2_users': r2_users, 'r3_users': r3_users, 'r4_users': r4_users}
     return render(request, 'stats/report_user_chart.html', context)
@@ -675,7 +674,7 @@ def hashtag_map(request):
 
 @api_view(['GET'])
 def get_hashtag_map_data(request):
-    hashtag = request.QUERY_PARAMS.get('ht', '')
+    hashtag = request.query_params.get('ht', '')
     data = []
     if hashtag.strip() == '':
         return Response({ 'stats': '', 'data': data})
