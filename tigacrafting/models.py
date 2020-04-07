@@ -302,3 +302,16 @@ class UserStat(models.Model):
     @receiver(post_save, sender=User)
     def save_user_profile(sender, instance, **kwargs):
         instance.userstat.save()
+
+
+class Species(models.Model):
+    species_name = models.TextField('Scientific name of the objective species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
+
+
+VALIDATION_CATEGORIES = ((2, 'Definitely'), (1, 'Probably'), (0, 'Unidentifiable'))
+class SpeciesValidation(models.Model):
+    report = models.ForeignKey('tigaserver_app.Report', related_name='report_speciesvalidations')
+    user = models.ForeignKey(User, related_name="user_speciesvalidations")
+    validation_time = models.DateTimeField()
+    species = models.ForeignKey(Species, related_name='validations')
+    validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure')
