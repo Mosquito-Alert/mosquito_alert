@@ -349,20 +349,36 @@ class DetailedReportSerializer(serializers.ModelSerializer):
 
 
 class NearbyReportSerializer(serializers.ModelSerializer):
+    user = UserListingField
     version_UUID = serializers.CharField()
-    lon = serializers.Field()
-    lat = serializers.Field()
+    version_number = serializers.IntegerField()
+    report_id = serializers.CharField()
     server_upload_time = serializers.Field()
+    phone_upload_time = serializers.DateTimeField()
+    creation_time = serializers.DateTimeField()
+    version_time = serializers.DateTimeField()
+    type = serializers.CharField()
+    mission = MissionListingField
+    location_choice = serializers.CharField()
+    current_location_lon = serializers.FloatField(required=False)
+    current_location_lat = serializers.FloatField(required=False)
+    selected_location_lon = serializers.FloatField(required=False)
+    selected_location_lat = serializers.FloatField(required=False)
+    note = serializers.CharField(required=False)
+    package_name = serializers.CharField(required=False)
+    package_version = serializers.IntegerField(required=False)
+    device_manufacturer = serializers.CharField(required=False)
+    device_model = serializers.CharField(required=False)
+    os = serializers.CharField(required=False)
+    os_version = serializers.CharField(required=False)
+    os_language = serializers.CharField(required=False)
+    app_language = serializers.CharField(required=False)
+    responses = ReportResponseSerializer(many=True)
     simplified_annotation = serializers.Field()
     photos = DetailedPhotoSerializer(many=True)
-    type = serializers.Field()
 
     class Meta:
         model = Report
-        exclude = ('version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time',
-                   'location_choice', 'current_location_lon', 'current_location_lat', 'mission',
-                   'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
-                   'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide')
 
 
 class DetailedTigaUserSerializer(serializers.ModelSerializer):

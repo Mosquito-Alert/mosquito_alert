@@ -1137,6 +1137,8 @@ def nearby_reports_no_dwindow(request):
         center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
 
+        user = request.QUERY_PARAMS.get('user', None)
+
         radius = request.QUERY_PARAMS.get('radius', 5000)
         try:
             int(radius)
@@ -1183,7 +1185,9 @@ def nearby_reports_no_dwindow(request):
             .exclude(photos__isnull=True)\
             .filter(type='adult')\
             .annotate(n_annotations=Count('expert_report_annotations'))\
-            .filter(n_annotations__gte=3)\
+            .filter(n_annotations__gte=3)
+        if user is not None:
+            reports_adult = reports_adult.exclude(user=user)
 
         reports_bite = Report.objects.exclude(cached_visible=0)\
             .filter(version_UUID__in=flattened_data)\
@@ -1191,6 +1195,8 @@ def nearby_reports_no_dwindow(request):
             .exclude(note__icontains="#345")\
             .exclude(hide=True) \
             .filter(type='bite')
+        if user is not None:
+            reports_bite = reports_bite.exclude(user=user)
 
         reports_site = Report.objects.exclude(cached_visible=0)\
             .filter(version_UUID__in=flattened_data)\
@@ -1198,10 +1204,16 @@ def nearby_reports_no_dwindow(request):
             .exclude(note__icontains="#345")\
             .exclude(hide=True) \
             .filter(type='site')
+        if user is not None:
+            reports_site = reports_site.exclude(user=user)
 
         classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports_adult)
 
-        all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site)
+        if user is not None:
+            user_reports = Report.objects.filter(user=user)
+            all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site) + list(user_reports)
+        else:
+            all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site)
 
         all_reports_sorted = sorted(all_reports, key=lambda x: x.creation_time, reverse=True)
 
