@@ -354,7 +354,7 @@
         {% endblock %}
 
         <div class="row">
-            <div class="col-md-3" id="{{ form.instance.report.version_UUID }}">
+            <div class="col-md-4" id="{{ form.instance.report.version_UUID }}">
                 <br>
 
                 {% block view_others_annotations %}
@@ -377,6 +377,41 @@
                                 <option value="-1">Probably neither albopictus nor aegypti</option>
                                 <option value="-2">Definitely not albopictus or aegypti</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-6">
+                            <strong>Species classification:</strong><br>
+                            <select id="species_value_{{ form.instance.id }}">
+                                <option value="">--------------</option>
+                                {% for sp in species_list %}
+                                <option value="{{ sp.id }}">{{ sp.species_name }}</option>
+                                {% endfor %}
+                                <option class="red" value="0">Mix/Combo</option>
+                                <option class="red" value="-1">Others</option>
+                                <option class="red" value="-2">Not sure</option>
+                            </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="container_cert" style="display:none;">
+                                    <strong>Species certainty:</strong><br>
+                                    <select id="species_cert_{{ form.instance.id }}">
+                                        <option value="">--------------</option>
+                                        <option value="2">Definitely</option>
+                                        <option value="1">Probably</option>
+                                    </select>
+                                </div>
+                                <div class="container_mix">
+                                    <strong>Species combo:</strong><br>
+                                    <select id="species_combo_{{ form.instance.id }}">
+                                        <option value="">--------------</option>
+                                        {% for sp in species_combo %}
+                                        <option value="{{ sp.id }}">{{ sp.species_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {% if form.instance.simplified_annotation == False %}
@@ -491,7 +526,7 @@
 {% endif %}
             </div>
 
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <br>
                 <strong>Photos</strong>
                 {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
