@@ -12,27 +12,28 @@ class Migration(SchemaMigration):
         db.create_table(u'tigacrafting_species', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('species_name', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('composite', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'tigacrafting', ['Species'])
 
-        # Adding model 'SpeciesValidation'
-        db.create_table(u'tigacrafting_speciesvalidation', (
+        # Adding model 'Validation'
+        db.create_table(u'tigacrafting_validation', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('report', self.gf('django.db.models.fields.related.ForeignKey')(related_name='report_speciesvalidations', to=orm['tigaserver_app.Report'])),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='user_speciesvalidations', to=orm['auth.User'])),
-            ('validation_time', self.gf('django.db.models.fields.DateTimeField')()),
-            ('species', self.gf('django.db.models.fields.related.ForeignKey')(related_name='validations', to=orm['tigacrafting.Species'])),
+            ('validation_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
+            ('species', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='validations', null=True, to=orm['tigacrafting.Species'])),
             ('validation_value', self.gf('django.db.models.fields.IntegerField')(default=None, null=True, blank=True)),
         ))
-        db.send_create_signal(u'tigacrafting', ['SpeciesValidation'])
+        db.send_create_signal(u'tigacrafting', ['Validation'])
 
 
     def backwards(self, orm):
         # Deleting model 'Species'
         db.delete_table(u'tigacrafting_species')
 
-        # Deleting model 'SpeciesValidation'
-        db.delete_table(u'tigacrafting_speciesvalidation')
+        # Deleting model 'Validation'
+        db.delete_table(u'tigacrafting_validation')
 
 
     models = {
@@ -74,9 +75,9 @@ class Migration(SchemaMigration):
         },
         u'tigacrafting.annotation': {
             'Meta': {'object_name': 'Annotation'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 7, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 14, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 7, 0, 0)', 'auto_now': 'True', 'blank': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 14, 0, 0)', 'auto_now': 'True', 'blank': 'True'}),
             'notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'task': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'annotations'", 'to': u"orm['tigacrafting.CrowdcraftingTask']"}),
             'tiger_certainty_percent': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
@@ -113,10 +114,10 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'ExpertReportAnnotation'},
             'aegypti_certainty_category': ('django.db.models.fields.IntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'best_photo': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'expert_report_annotations'", 'null': 'True', 'to': u"orm['tigaserver_app.Photo']"}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 7, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 14, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
             'edited_user_notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 7, 0, 0)', 'auto_now': 'True', 'blank': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 14, 0, 0)', 'auto_now': 'True', 'blank': 'True'}),
             'linked_id': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
             'message_for_user': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'report': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'expert_report_annotations'", 'to': u"orm['tigaserver_app.Report']"}),
@@ -133,33 +134,34 @@ class Migration(SchemaMigration):
         u'tigacrafting.movelabannotation': {
             'Meta': {'object_name': 'MoveLabAnnotation'},
             'certainty_notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 7, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 14, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
             'edited_user_notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'hide': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 7, 0, 0)', 'auto_now': 'True', 'blank': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2020, 4, 14, 0, 0)', 'auto_now': 'True', 'blank': 'True'}),
             'task': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'movelab_annotation'", 'unique': 'True', 'to': u"orm['tigacrafting.CrowdcraftingTask']"}),
             'tiger_certainty_category': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         u'tigacrafting.species': {
             'Meta': {'object_name': 'Species'},
+            'composite': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'species_name': ('django.db.models.fields.TextField', [], {'blank': 'True'})
-        },
-        u'tigacrafting.speciesvalidation': {
-            'Meta': {'object_name': 'SpeciesValidation'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'report': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'report_speciesvalidations'", 'to': u"orm['tigaserver_app.Report']"}),
-            'species': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'validations'", 'to': u"orm['tigacrafting.Species']"}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'user_speciesvalidations'", 'to': u"orm['auth.User']"}),
-            'validation_time': ('django.db.models.fields.DateTimeField', [], {}),
-            'validation_value': ('django.db.models.fields.IntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
         },
         u'tigacrafting.userstat': {
             'Meta': {'object_name': 'UserStat'},
             'grabbed_reports': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'national_supervisor_of': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['tigaserver_app.EuropeCountry']", 'null': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'primary_key': 'True'})
+        },
+        u'tigacrafting.validation': {
+            'Meta': {'object_name': 'Validation'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'report': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'report_speciesvalidations'", 'to': u"orm['tigaserver_app.Report']"}),
+            'species': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'validations'", 'null': 'True', 'to': u"orm['tigacrafting.Species']"}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'user_speciesvalidations'", 'to': u"orm['auth.User']"}),
+            'validation_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'validation_value': ('django.db.models.fields.IntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
         },
         u'tigaserver_app.europecountry': {
             'Meta': {'object_name': 'EuropeCountry', 'db_table': "'europe_countries'"},
@@ -202,7 +204,7 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'photo': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
             'report': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'photos'", 'to': u"orm['tigaserver_app.Report']"}),
-            'uuid': ('django.db.models.fields.CharField', [], {'default': "'45d3d77b-8830-49bf-93be-c037810df729'", 'max_length': '36'})
+            'uuid': ('django.db.models.fields.CharField', [], {'default': "'0608db15-567f-4914-9f5b-c5e77f4e7f42'", 'max_length': '36'})
         },
         u'tigaserver_app.report': {
             'Meta': {'unique_together': "(('user', 'version_UUID'),)", 'object_name': 'Report'},
