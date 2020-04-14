@@ -1133,6 +1133,7 @@ def nearby_reports_no_dwindow(request):
 
         page = request.QUERY_PARAMS.get('page', 1)
         page_size = request.QUERY_PARAMS.get('page_size', 10)
+        show_hidden = request.QUERY_PARAMS.get('show_hidden', 0)
 
         center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
@@ -1188,6 +1189,8 @@ def nearby_reports_no_dwindow(request):
             .filter(n_annotations__gte=3)
         if user is not None:
             reports_adult = reports_adult.exclude(user=user)
+        if show_hidden == 0:
+            reports_adult = reports_adult.exclude(version_number=-1)
 
         reports_bite = Report.objects.exclude(cached_visible=0)\
             .filter(version_UUID__in=flattened_data)\
@@ -1197,6 +1200,8 @@ def nearby_reports_no_dwindow(request):
             .filter(type='bite')
         if user is not None:
             reports_bite = reports_bite.exclude(user=user)
+        if show_hidden == 0:
+            reports_bite = reports_bite.exclude(version_number=-1)
 
         reports_site = Report.objects.exclude(cached_visible=0)\
             .filter(version_UUID__in=flattened_data)\
@@ -1206,6 +1211,8 @@ def nearby_reports_no_dwindow(request):
             .filter(type='site')
         if user is not None:
             reports_site = reports_site.exclude(user=user)
+        if show_hidden == 0:
+            reports_site = reports_site.exclude(version_number=-1)
 
         classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports_adult)
 
