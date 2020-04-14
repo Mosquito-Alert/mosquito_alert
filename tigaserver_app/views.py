@@ -320,6 +320,10 @@ A session is the full set of information uploaded by a user, usually in form of 
     serializer_class = SessionSerializer
     filter_fields = ('id', 'user' )
 
+    def filter_queryset(self, queryset):
+        queryset = super(SessionViewSet, self).filter_queryset(queryset)
+        return queryset.order_by('-session_ID')
+
 
 
 def lookup_photo(request, token, photo_uuid, size):
