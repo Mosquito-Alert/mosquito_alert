@@ -177,7 +177,7 @@ SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding s
 
 STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
 
-VALIDATION_CATEGORIES = ((2, 'Definitely'), (1, 'Probably'), (0, 'Unidentifiable'))
+VALIDATION_CATEGORIES = ((2, 'Sure'), (1, 'Probably'), (0, 'None'))
 class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotations")
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations')
@@ -197,8 +197,9 @@ class ExpertReportAnnotation(models.Model):
     created = models.DateTimeField(auto_now_add=True, default=datetime.now())
     simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
     tags = TaggableManager(blank=True)
-    species = models.ForeignKey('tigacrafting.Species', related_name='validations', blank=True, null=True)
-    validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure')
+    category = models.ForeignKey('tigacrafting.Categories', related_name='expert_report_annotations', null=True, blank=True, help_text='Simple category assigned by expert or superexpert. Mutually exclusive with complex. If this field has value, then probably there is a validation value')
+    complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value')
+    validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
 
     def is_superexpert(self):
         return 'superexpert' in self.user.groups.values_list('name', flat=True)
@@ -306,12 +307,19 @@ class UserStat(models.Model):
         instance.userstat.save()
 
 
-class Species(models.Model):
-    species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
-    composite = models.BooleanField(default=False, help_text='Indicates if this row is a single species or a combination')
+class Categories(models.Model):
+    name = models.TextField('Name of the classification category', help_text='Usually a species category. Can also be other/special case values')
+    specify_certainty_level = models.BooleanField(default=False, help_text='Indicates if for this row a certainty level must be supplied')
+
+class Complex(models.Model):
+    description = models.TextField('Name of the complex categiry', help_text='This table is reserved for species combinations')
+
+# class Species(models.Model):
+#     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
+#     composite = models.BooleanField(default=False, help_text='Indicates if this row is a single species or a combination')
 
 
-# VALIDATION_CATEGORIES = ((2, 'Definitely'), (1, 'Probably'), (0, 'Unidentifiable'))
+# VALIDATION_CATEGORIES = ((2, 'Sure'), (1, 'Probably'), (0, 'None'))
 # class Validation(models.Model):
 #     report = models.ForeignKey('tigaserver_app.Report', related_name='report_speciesvalidations')
 #     user = models.ForeignKey(User, related_name="user_speciesvalidations")
