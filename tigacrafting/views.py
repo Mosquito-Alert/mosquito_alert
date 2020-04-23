@@ -902,7 +902,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if tiger_certainty and tiger_certainty != 'all':
                 try:
                     this_certainty = int(tiger_certainty)
-                    all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
+                    #all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
+                    all_annotations = all_annotations.filter(category__id=this_certainty)
                 except ValueError:
                     pass
             if site_certainty and site_certainty != 'all':
@@ -947,10 +948,12 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
         if all_annotations:
             all_annotations = all_annotations.order_by('report__creation_time')
-            if orderby == "site_score":
-                all_annotations = all_annotations.order_by('site_certainty_category')
-            elif orderby == "tiger_score":
-                all_annotations = all_annotations.order_by('tiger_certainty_category')
+            if orderby == "tiger_score":
+                all_annotations = all_annotations.order_by('category__name')
+            # if orderby == "site_score":
+            #     all_annotations = all_annotations.order_by('site_certainty_category')
+            # elif orderby == "tiger_score":
+            #     all_annotations = all_annotations.order_by('tiger_certainty_category')
         paginator = Paginator(all_annotations, int(tasks_per_page))
         page = request.GET.get('page', 1)
         try:

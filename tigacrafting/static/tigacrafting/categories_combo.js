@@ -72,6 +72,7 @@ $(document).ready(function () {
         }else{
             $('#id_form-' + form_index + '-category').val($(this).find(':selected').val());
         }
+        do_translate_classification(form_id);
     });
 
     $( "select[id^='categoryvalue_']" ).change(function(e){
@@ -79,6 +80,7 @@ $(document).ready(function () {
         var form_index = id_to_index[form_id];
         var selected_value = $(this).find(':selected').val();
         $('#id_form-' + form_index + '-validation_value').val(selected_value);
+        do_translate_classification(form_id);
     });
 
     $( "select[id^='complex_']" ).change(function(e){

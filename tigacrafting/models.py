@@ -5,6 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import tigacrafting.html_utils as html_utils
 
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
@@ -177,7 +178,7 @@ SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding s
 
 STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
 
-VALIDATION_CATEGORIES = ((2, 'Sure'), (1, 'Probably'), (0, 'None'))
+VALIDATION_CATEGORIES = ((2, 'Definitely'), (1, 'Probably'))
 class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotations")
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations')
@@ -243,6 +244,24 @@ class ExpertReportAnnotation(models.Model):
             return score
         else:
             return -3
+
+    def get_html_color_for_label(self):
+        label = self.get_category_euro()
+        return html_utils.get_html_color_for_label(label)
+
+    def get_category_euro(self):
+        if self.report.type == 'site':
+            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
+        elif self.report.type == 'adult':
+            if self.category is None:
+                # This should not happen, but safety first
+                return "Unclassified"
+            if self.category.specify_certainty_level:
+                return dict(list(VALIDATION_CATEGORIES))[self.validation_value] + " " + self.category.name
+            elif self.category.id == 8:
+                return self.complex.description
+            else:
+                return self.category.name
 
     def get_category(self):
         if self.report.type == 'site':
@@ -310,6 +329,10 @@ class UserStat(models.Model):
 class Categories(models.Model):
     name = models.TextField('Name of the classification category', help_text='Usually a species category. Can also be other/special case values')
     specify_certainty_level = models.BooleanField(default=False, help_text='Indicates if for this row a certainty level must be supplied')
+
+    def __str__(self):
+        return self.name
+
 
 class Complex(models.Model):
     description = models.TextField('Name of the complex categiry', help_text='This table is reserved for species combinations')

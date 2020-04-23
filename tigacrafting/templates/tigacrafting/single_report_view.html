@@ -262,7 +262,9 @@
                                                         {% endif %}
                                                     </td>
                                                     <td>
-                                                        {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}
+                                                        <!-- $EURO_SWITCH -->
+                                                        <!-- {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %} -->
+                                                        {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}
                                                     </td>
                                                 </tr>
                                                 <tr>

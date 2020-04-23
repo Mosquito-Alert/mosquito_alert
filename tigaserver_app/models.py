@@ -22,6 +22,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 import logging
+import tigacrafting.html_utils as html_utils
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -996,6 +997,118 @@ class Report(models.Model):
             elif score == -1 or score == -2:
                 return labels[locale]['other']
 
+    def get_most_voted_category(self,expert_annotations):
+        score_table = {}
+        most_frequent_item, most_frequent_count = None, 0
+        for anno in expert_annotations:
+            item = anno.category if anno.complex is None else anno.complex
+            score_table[item] = score_table.get(item,0) + 1
+            if score_table[item] >= most_frequent_count:
+                most_frequent_count, most_frequent_item = score_table[item], item
+        #check for ties
+        for key in score_table:
+            score = score_table[key]
+            if key != most_frequent_item and score >= most_frequent_count:
+                return None #conflict
+        return most_frequent_item
+
+    def get_score_for_category_or_complex(self, category):
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category=category)
+        mean_score = -1
+        if superexpert_annotations.count() > 0:
+            cumulative_score = 0
+            for ano in superexpert_annotations:
+                cumulative_score += ano.validation_value
+            mean_score = cumulative_score/float(superexpert_annotations.count())
+        else:
+            cumulative_score = 0
+            for ano in expert_annotations:
+                cumulative_score += ano.validation_value
+            mean_score = cumulative_score / float(expert_annotations.count())
+        if mean_score > 1.5:
+            return 2
+        else:
+            return 1
+        #return mean_score
+
+
+    def get_html_color_for_label(self):
+        label = self.get_final_combined_expert_category_euro()
+        return html_utils.get_html_color_for_label(label)
+
+    def get_selector_data(self):
+        retVal = {
+            'id_category' : '',
+            'id_complex' : '',
+            'validation_value': ''
+        }
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True,category__isnull=False)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category__isnull=False)
+
+        most_voted = None
+        if superexpert_annotations.count() > 1:
+            most_voted = self.get_most_voted_category(superexpert_annotations)
+        elif superexpert_annotations.count() == 1:
+            most_voted = superexpert_annotations[0].category
+        elif expert_annotations.count() >= 3:
+            most_voted = self.get_most_voted_category(expert_annotations)
+        else:
+            retVal['id_category'] = None
+
+        if most_voted is None:
+            retVal['id_category'] = -1
+        else:
+            retVal['id_category'] = most_voted.id
+            if most_voted.__class__.__name__ == 'Categories':
+                if most_voted.specify_certainty_level == True:
+                    score = self.get_score_for_category_or_complex(most_voted)
+                    retVal['validation_value'] = score
+            elif most_voted.__class__.__name__ == 'Complex':
+                retVal['id_complex'] = most_voted.id
+        return retVal
+
+    # if superexpert has opinion then
+    #   if more than 1 superexpert has opinion then
+    #       consensuate superexpert opinion
+    #       return consensuate opinion
+    #   else just one expert has opinion then
+    #       return superexpert opinion
+    # else, check if more than 3 experts said something then
+    #   if at least 3 experts have opinion then
+    #       consensuate expert opinion
+    #       return consensuate opinion
+    #   else not yet validated
+    #       return not yet validated
+    # else no one has opinion then
+    #   return not yet validated
+    def get_final_combined_expert_category_euro(self):
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True,revise=True, category__isnull=False)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, category__isnull=False)
+        most_voted = None
+        if superexpert_annotations.count() > 1:
+            most_voted = self.get_most_voted_category(superexpert_annotations)
+        elif superexpert_annotations.count() == 1:
+            most_voted = superexpert_annotations[0].category
+        elif expert_annotations.count() >= 3:
+            most_voted = self.get_most_voted_category(expert_annotations)
+        else:
+            return "Unclassified"
+        if most_voted is None:
+            return "Conflict"
+        else:
+            if most_voted.__class__.__name__ == 'Categories':
+                if most_voted.specify_certainty_level == True:
+                    score = self.get_score_for_category_or_complex(most_voted)
+                    if score == 2:
+                        return "Definitely " + most_voted.name
+                    else:
+                        return "Probably " + most_voted.name
+                else:
+                    return most_voted.name
+            elif most_voted.__class__.__name__ == 'Complex':
+                return most_voted.description
+
     def get_final_combined_expert_category(self):
         # if self.type == 'site':
         #      return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
@@ -1014,6 +1127,11 @@ class Report(models.Model):
                 return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[score]
             else:
                 return "Conflict"
+
+
+    def get_mean_combined_expert_adult_score_euro(self):
+        status = self.get_mean_expert_adult_classification_data_euro()
+        pass
 
 
     def get_mean_combined_expert_adult_score(self):
@@ -1168,6 +1286,18 @@ class Report(models.Model):
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
 
+    def get_final_combined_expert_score_euro(self):
+        score = -3
+        if self.type == 'site':
+            score = self.get_mean_expert_site_score()
+        elif self.type == 'adult':
+            classification = self.get_mean_combined_expert_adult_score_euro()
+            score = classification['score']
+        if score is not None:
+            return int(round(score))
+        else:
+            return -3
+
     def get_final_combined_expert_score(self):
         score = -3
         if self.type == 'site':
@@ -1175,7 +1305,6 @@ class Report(models.Model):
         elif self.type == 'adult':
             classification = self.get_mean_combined_expert_adult_score()
             score = classification['score']
-            #score = self.get_mean_combined_expert_adult_score()
         if score is not None:
             return int(round(score))
         else:
