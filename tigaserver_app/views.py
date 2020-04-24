@@ -1226,6 +1226,10 @@ def nearby_reports_no_dwindow(request):
 
         if user is not None:
             user_reports = Report.objects.filter(user=user)
+            if show_hidden == 0:
+                user_reports = user_reports.exclude(version_number=-1)
+            if show_versions == 0:
+                user_reports = filter(lambda x: x.latest_version, user_reports)
             all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site) + list(user_reports)
         else:
             all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site)
