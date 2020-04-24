@@ -69,12 +69,22 @@ var macro_messages = {
     },
     koreicus:{
         yes_thorax_pattern:{
-            es: "¡Muy buena foto! Has conseguido que Aedes koreicus sea fácilmente identificable ya que se ve muy bien la forma característica del tórax, además de las rayas blancas en las patas. ¡Gracias por participar!",
+            es: "¡Muy buena foto! Has conseguido que este Aedes koreicus sea fácilmente identificable ya que se ve muy bien la forma característica del tórax, además de las rayas blancas en las patas. ¡Gracias por participar!",
             en: "Very good picture! You have managed to make Aedes koreicus easy to identify because you can spot clearly the characteristic shape in the thorax, plus the leg white stripes. Thanks for participating!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un Aedes koreicus. No se ve bien la forma característica del tórax y las rayas blancas en las patas, pero se aprecian otras características típicas del Aedes koreicus. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
             en: "With this picture, we can't be completely sure that it's an Aedes koreicus mosquito. You can't simultaneously see the thorax pattern and the leg stripes, but you can see other typical traits of Aedes koreicus.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+        }
+    },
+    culex:{
+        yes_thorax_pattern:{
+            es: "¡Muy buena foto! Has conseguido que este mosquito doméstico común sea fácilmente identificable. ¡Gracias por participar!",
+            en: "Very good picture! You have managed to make the common house mosquito quite easy to identify. Thanks for participating!"
+        },
+        no_thorax_pattern:{
+            es: "Con esta foto no podemos asegurar totalmente que sea un Culex. No pueden verse simultáneamente suficientes características, aunque algunas características típicas del mosquito doméstico común están presentes. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+            en: "With this picture, we can't be completely sure that it's a Culex mosquito. You can't simultaneously see enough features, though other typical traits of the common house mosquito are present.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         }
     }
 };

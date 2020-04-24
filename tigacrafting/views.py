@@ -977,6 +977,16 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['year'] = year
         args['orderby'] = orderby
         args['tiger_certainty'] = tiger_certainty
+        if tiger_certainty:
+            if tiger_certainty != 'all':
+                try:
+                    this_certainty = int(tiger_certainty)
+                    c = Categories.objects.get(pk=this_certainty)
+                    args['tiger_certainty_label'] = c.name
+                except ValueError:
+                    pass
+            else:
+                args['tiger_certainty_label'] = 'all'
         args['site_certainty'] = site_certainty
         args['pending'] = pending
         args['checked'] = checked

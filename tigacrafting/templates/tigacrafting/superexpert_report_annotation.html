@@ -10,7 +10,7 @@
 
     {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
     <strong>Ordered by:</strong> {{ orderby }}<br>
-    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}
+    <strong>Filters:</strong> Species classification - {{ tiger_certainty_label }}, Status - {{ status }}
     {% endif %}
 {% endblock %}
 

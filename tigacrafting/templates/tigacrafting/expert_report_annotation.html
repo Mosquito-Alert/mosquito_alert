@@ -237,7 +237,7 @@
 
             {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
                 <strong>Ordered by:</strong> {{ orderby }}<br>
-                <strong>Filters:</strong> Species classification - {{ tiger_certainty }}, Status - {{ status }}
+                <strong>Filters:</strong> Species classification - {{ tiger_certainty_label }}, Status - {{ status }}
             {% endif %}
         {% endblock %}
             <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
@@ -1407,6 +1407,8 @@
                 return 'japonicus';
             }else if(control.val()=='7'){ //koreicus
                 return 'koreicus';
+            }else if(control.val()=='10'){ //culex
+                return 'culex';
             }else{
                 return 'all';
             }
