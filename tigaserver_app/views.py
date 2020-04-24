@@ -1138,6 +1138,7 @@ def nearby_reports_no_dwindow(request):
         page = request.QUERY_PARAMS.get('page', 1)
         page_size = request.QUERY_PARAMS.get('page_size', 10)
         show_hidden = request.QUERY_PARAMS.get('show_hidden', 0)
+        show_versions = request.QUERY_PARAMS.get('show_versions', 0)
 
         center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
@@ -1218,7 +1219,10 @@ def nearby_reports_no_dwindow(request):
         if show_hidden == 0:
             reports_site = reports_site.exclude(version_number=-1)
 
-        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports_adult)
+        if show_versions == 0:
+            classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 and x.latest_version, reports_adult)
+        else:
+            classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports_adult)
 
         if user is not None:
             user_reports = Report.objects.filter(user=user)
