@@ -1445,70 +1445,6 @@
                     user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
                 };
 
-                /*
-                macro_messages = {
-                    albopictus:{
-                        nice_picture: {
-                            es: "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!",
-                            en: "The picture is spectacular and you can see a lot of details of the mosquito's body. Thanks for participating. Great job!"
-                        },
-                        yes_thorax_pattern:{
-                            es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!",
-                            en: "Very good picture! You have managed to make the tiger mosquito easily to identify because you can spot clearly the characteristic white stripe in the thorax, apart from other traits. Thanks for participating!"
-                        },
-                        no_thorax_pattern:{
-                            es: "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture, we can't be completely sure that it's a tiger mosquito. You can't see the typical white stripe in the thorax, but you can see other typical traits of the mosquito tiger.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        not_sure_photo:{
-                            es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture we can't identify any species, because it's blurry and you can't recognize the typical traits of the tiger mosquito. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        other_species:{
-                            es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "This picture seems to be of another mosquito species, because it doesn't look like a tiger mosquito or a yellow fever mosquito. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        discovery:{
-                            es: "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!",
-                            en: "Congratulations! Your picture is very important, because you have probably found a tiger mosquito in a zone with little information about this species distribution. If you find more, please send more observations and pictures. Thanks for participating!"
-                        },
-                        contact:{
-                            es: "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!",
-                            en: "We are very interested in your observation, because it could be an exceptional discovery. If you can, please send us more pictures. To supply more detailed information, please contact us via e-mail info@mosquitoalert.com. Thanks for participating, great work!"
-                        }
-                    },
-                    aegypti:{
-                        nice_picture: {
-                            es: "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!",
-                            en: "The picture is spectacular and you can see a lot of details of the mosquito's body. Thanks for participating. Great job!"
-                        },
-                        yes_thorax_pattern:{
-                            es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito de la fiebre amarilla ya que se ve muy bien su dibujo en forma de lira en el tórax, además de otras características. ¡Gracias por participar!",
-                            en: "Very good picture! You have managed to make the yellow fever mosquito easily to identify because you can spot clearly the characteristic lyre shape in the thorax, apart from other traits. Thanks for participating!"
-                        },
-                        no_thorax_pattern:{
-                            es: "Con esta foto no podemos asegurar totalmente que sea un mosquito de la fiebre amarilla. No se ve bien el típico dibujo en forma de lira en el tórax, aunque sí que se ven otras características del mosquito de la fiebre amarilla. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture, we can't be completely sure that it's a tiger mosquito. You can't see the typical lyre shape in the thorax, but you can see other typical traits of the yellow fever mosquito.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        not_sure_photo:{
-                            es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito de la fiebre amarilla ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture we can't identify any species, because it's blurry and you can't recognize the typical traits of yellow fever mosquito or any other species. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        other_species:{
-                            es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "This picture seems to be of another mosquito species, because it doesn't look like a tiger mosquito or a yellow fever mosquito. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        discovery:{
-                            es: "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito de la fiebre amarilla en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!",
-                            en: "Congratulations! Your picture is very important, because you have probably found a yellow fever mosquito in a zone with little information about this species distribution. If you find more, please send more observations and pictures. Thanks for participating!"
-                        },
-                        contact:{
-                            es: "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!",
-                            en: "We are very interested in your observation, because it could be an exceptional discovery. If you can, please send us more pictures. To supply more detailed information, please contact us via e-mail info@mosquitoalert.com. Thanks for participating, great work!"
-                        }
-                    }
-                };*/
-
                 $('#note_language_select').val($('#note_language').val());
 
                 final_status_table[{{ form.instance.id }}] = final_status;
@@ -1773,7 +1709,7 @@
                 //var flag_title = $('button[data-id="id_form-' + form_id + '-status"]').attr('title');
                 var report_id = $(this).parent().parent().parent().attr('id');
                 if ( title == '--------------' ){
-                    reports_list.append('<li>' + report_id + ' <span style="color:red">Validated without selecting Aedes certainty</span></li>');
+                    reports_list.append('<li>' + report_id + ' <span style="color:red">Validated without selecting species certainty</span></li>');
                 }else{
                     if( title == 'Complex' ){
                         if( $('#complex_' + form_id).val() == "" ){
@@ -1893,16 +1829,12 @@
                             public_unclassified = true;
                         }
                     }
-                    {% if request.user.userstat.is_expert %}
-                        if(validated_without_aedes_input || complex_without_class || simple_without_value || flagged_without_comment || hidden_without_comment || public_unclassified){
-                            //launch ok dialog and not save
-                            setup_and_launch_mustfix_dialog();
-                        }else{
-                            setup_and_launch_save_warning();
-                        }
-                    {% else %}
+                    if(validated_without_aedes_input || complex_without_class || simple_without_value || flagged_without_comment || hidden_without_comment || public_unclassified){
+                        //launch ok dialog and not save
+                        setup_and_launch_mustfix_dialog();
+                    }else{
                         setup_and_launch_save_warning();
-                    {% endif %}
+                    }
                 } else {
                     gear.show();
                     toggle_grab_reports_button();
