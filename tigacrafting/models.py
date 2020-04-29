@@ -323,7 +323,10 @@ class UserStat(models.Model):
 
     @receiver(post_save, sender=User)
     def save_user_profile(sender, instance, **kwargs):
-        instance.userstat.save()
+        if instance.userstat is None:
+            UserStat.objects.create(user=instance)
+        else:
+            instance.userstat.save()
 
 
 class Categories(models.Model):
