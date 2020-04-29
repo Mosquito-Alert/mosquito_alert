@@ -15,7 +15,7 @@ from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES
+from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES, Categories
 from collections import Counter
 from datetime import datetime
 from django.contrib.gis.db import models
@@ -1108,6 +1108,37 @@ class Report(models.Model):
                     return most_voted.name
             elif most_voted.__class__.__name__ == 'Complex':
                 return most_voted.description
+
+    def get_final_combined_expert_category_euro_struct(self):
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category__isnull=False)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, category__isnull=False)
+        retval = {
+            'category' : None,
+            'complex': None,
+            'value': None,
+            'conflict': False
+        }
+        most_voted = None
+        if superexpert_annotations.count() > 1:
+            most_voted = self.get_most_voted_category(superexpert_annotations)
+        elif superexpert_annotations.count() == 1:
+            most_voted = superexpert_annotations[0].category
+        elif expert_annotations.count() >= 3:
+            most_voted = self.get_most_voted_category(expert_annotations)
+        else:
+            most_voted = Categories.objects.get(name='Unclassified')
+
+        if most_voted is None:
+            retval['conflict'] = True
+        else:
+            if most_voted.__class__.__name__ == 'Categories':
+                retval['category'] = most_voted
+                if most_voted.specify_certainty_level == True:
+                    score = self.get_score_for_category_or_complex(most_voted)
+                    retval['value'] = score
+            elif most_voted.__class__.__name__ == 'Complex':
+                retval['complex'] = most_voted
+        return retval
 
     def get_final_combined_expert_category(self):
         # if self.type == 'site':
