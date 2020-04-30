@@ -44,6 +44,8 @@ class TigaUser(models.Model):
 
     score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
 
+    score_v2 = models.IntegerField(help_text='XP Score. This field is updated whenever the user asks for the score, and is only stored here', default=0)
+
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True)
 
     def __unicode__(self):
@@ -369,6 +371,9 @@ class Report(models.Model):
             return self.selected_location_lon
         else:
             return self.current_location_lon
+
+    def has_location(self):
+        return self.get_lat() is not None and self.get_lon() is not None
 
     def get_tigaprob(self):
         these_responses = self.responses.only('answer').values('answer').iterator()
@@ -1707,6 +1712,7 @@ class Report(models.Model):
     final_expert_status_text = property(get_final_expert_status)
     is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
     country_label = property(get_country_label)
+    located = property(has_location)
 
     class Meta:
         unique_together = ("user", "version_UUID")

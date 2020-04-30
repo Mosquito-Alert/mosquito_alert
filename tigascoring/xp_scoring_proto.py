@@ -1,5 +1,6 @@
 from tigaserver_app.models import Report, TigaUser
 import csv
+import time
 
 XP = 12
 XP_REPORT_WITH_PICTURE = XP
@@ -18,6 +19,35 @@ MOSQUITO_ABDOMEN_ANSWER_IDS = [721, 722, 723, 724]
 MOSQUITO_LEG_ANSWER_IDS = [731, 732, 733, 734]
 CULEX_CATEGORY_ID = 10
 AEDES_CATEGORY_IDS = [4, 5, 6, 7]
+
+
+'''
+score metadata structure - json
+{
+    "total_score": x,
+    "score_detail":{
+        "adult":{
+            "score": x,
+            "score_items": [
+                {
+                    "report": xxxxx,
+                    "report_score": xxxx,
+                    "awards": [
+                        "reason":,
+                        "xp_awarded":
+                    ],
+                }
+            ]
+        },
+        "bite":{
+        },
+        "site":{
+        },
+        "awards":{
+        }
+    }
+}
+'''
 
 
 def is_thorax_answered(report):
@@ -61,26 +91,39 @@ def is_aedes(validation_result):
     return False
 
 
-def get_adult_report_score(report):
-    score = 0
+def get_adult_report_score(report, result):
     validation_result = report.get_final_combined_expert_category_euro_struct()
+    local_result = {}
+    local_result['report'] = report.version_UUID
+    local_result['report_date'] = report.server_upload_time
+    local_result['report_score'] = 0
+    local_result['awards'] = []
     if is_culex(validation_result) or is_aedes(validation_result):
         if report.n_photos > 0:
-            score += PICTURE_REWARD
+            local_result['awards'].append({ "reason": "picture", "xp_awarded": PICTURE_REWARD })
+            local_result['report_score'] += PICTURE_REWARD
         if report.located:
-            score += LOCATION_REWARD
+            local_result['awards'].append({"reason": "location", "xp_awarded": LOCATION_REWARD })
+            local_result['report_score'] += LOCATION_REWARD
     elif is_aedes(validation_result):
         if is_thorax_answered(report):
-            score += MOSQUITO_THORAX_QUESTION_REWARD
+            local_result['awards'].append({"reason": "thorax_question", "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
+            local_result['report_score'] += MOSQUITO_THORAX_QUESTION_REWARD
         if is_abdomen_answered(report):
-            score += MOSQUITO_ABDOMEN_QUESTION_REWARD
+            local_result['awards'].append({"reason": "abdomen_question", "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
+            local_result['report_score'] += MOSQUITO_ABDOMEN_QUESTION_REWARD
         if is_leg_answered(report):
-            score += MOSQUITO_LEG_QUESTION_REWARD
-    return score
+            local_result['awards'].append({"reason": "leg_question", "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
+            local_result['report_score'] += MOSQUITO_LEG_QUESTION_REWARD
+    result['score_detail']['adult']['score_items'].append(local_result)
+    return result
 
 
 def compute_user_score_in_xp_v2(user_uuid):
-    user_reports = Report.objects.filter(user__user_UUID=user_uuid)
+    result = {}
+    result['total_score'] = 0
+    result['score_detail'] = {}
+    user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
 
     adults = user_reports.filter(type='adult')
     bites = user_reports.filter(type='bite')
@@ -88,50 +131,40 @@ def compute_user_score_in_xp_v2(user_uuid):
 
     adult_last_versions = filter(lambda x: x.latest_version, adults)
 
+    results_adult = {}
+    results_adult['score'] = 0
+    results_adult['score_items'] = []
+    result['score_detail']['adult'] = results_adult
+
+    total_score = 0
     for report in adult_last_versions:
-        print( "{0} - {1}".format( report.version_UUID, get_adult_report_score(report) ) )
+        result = get_adult_report_score(report, result)
+        index = len(result['score_detail']['adult']['score_items']) - 1
+        result['score_detail']['adult']['score'] += result['score_detail']['adult']['score_items'][index]['report_score']
+        total_score += result['score_detail']['adult']['score_items'][index]['report_score']
+    result['total_score'] = total_score
+    return result
 
 
+def compute_all_user_scores():
+    all_users = TigaUser.objects.all()
+    for user in all_users:
+        score = compute_user_score_in_xp_v2( user.user_UUID )
+        user.score_v2 = score
+        user.save()
 
-'''
-def compute_user_score_in_xp(user_uuid):
-    user_reports = Report.objects.filter(user__user_UUID=user_uuid)
-    user_reports_last_versions = filter(lambda x: x.latest_version, user_reports)
-    user_reports_last_versions_photo = filter(lambda x: x.n_photos > 0, user_reports_last_versions)
-    user_reports_last_versions_photo_located = filter(lambda x: x.located, user_reports_last_versions_photo)
-    user_xp_reports_validation = 0
-    for report in user_reports_last_versions_photo_located:
-        report_classification = report.get_mean_combined_expert_adult_score()
-        if report_classification['is_none'] == True and report_classification['score'] == -3.0:
-            pass
-        else:
-            if report_classification['is_aegypti'] == True:
-                user_xp_reports_validation += XP / 4
-            else:
-                user_xp_reports_validation += XP / 6
-
-    user_xp_reports_picture = len(user_reports_last_versions_photo) * XP_REPORT_WITH_PICTURE
-    user_xp_reports_picture_location = len(user_reports_last_versions_photo_located) * XP_LOCATION
-    
-    #print( " XP for reports with picture - {0}".format( str(user_xp_reports_picture) ) )
-    #print( " XP for reports with picture and location - {0}".format( str( user_xp_reports_picture_location ) ) )
-    #print( " XP for validation - {0}".format(str(user_xp_reports_validation)))
-    #print( " Total XP - {0}".format(str(user_xp_reports_picture + user_xp_reports_picture_location + user_xp_reports_validation)))
-    
-    return user_xp_reports_picture + user_xp_reports_picture_location + user_xp_reports_validation
-'''
-
-'''
-def score_comparison():
-    with open('user_scores.csv', mode='w') as csvfile:
-        users = TigaUser.objects.all()
-        for user in users:
-            xp_score = compute_user_score_in_xp(user.user_UUID)
-            old_score = 0
-            if user.profile:
-                old_score = user.profile.score
-            else:
-                old_score = user.score
-            csvfile_writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-            csvfile_writer.writerow([user.user_UUID, xp_score, old_score])
-'''
+def compute_all_scores():
+    all_users = TigaUser.objects.all()
+    result_table = []
+    max_score = 0
+    max_user = -1
+    start_time = time.time()
+    print("Starting...")
+    for user in all_users:
+        score = compute_user_score_in_xp_v2(user.user_UUID)
+        if score >= max_score:
+            max_score = score
+            max_user = user.user_UUID
+        result_table.append([user.user_UUID, score])
+    elapsed_time = time.time() - start_time
+    print("Finished in {0}".format(elapsed_time))

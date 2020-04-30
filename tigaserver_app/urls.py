@@ -21,6 +21,7 @@ router.register(r'tags', views.TagViewSet, base_name='tags')
 
 urlpatterns = patterns('',
     url(r'^time_info/$', views.get_data_time_info),
+    url(r'^score_v2/$', views.user_score_v2),
     url(r'^photos/$', views.post_photo),
     url(r'^photos_user/$', views.get_photo),
     url(r'^configuration/$', views.get_current_configuration),
