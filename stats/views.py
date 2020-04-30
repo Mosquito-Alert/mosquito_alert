@@ -19,6 +19,8 @@ import json
 from sets import Set
 import datetime
 from django.utils import timezone
+from tigapublic.models import MapAuxReports
+
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -233,6 +235,24 @@ def mosquito_ccaa_rich_iframetest(request):
     return render(request, 'stats/mosquito_ccaa_rich_iframetest.html', context)
 
 
+def oldActYear():
+    cursor2 = connection.cursor()
+
+    sql_template_years = """SELECT extract(year from observation_date) y 
+                                FROM public.map_aux_reports
+                                group by y
+                            """
+
+    cursor2.execute(sql_template_years)
+    years = cursor2.fetchall()
+    maxVal = int(max(years)[0])
+    minVal = int(min(years)[0])
+    yearsMaxMin = []
+    yearsMaxMin.append({'max': maxVal, 'min': minVal})
+
+    return yearsMaxMin
+
+
 @login_required
 @xframe_options_exempt
 def mosquito_ccaa_rich(request, category='confirmed'):
@@ -255,6 +275,8 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         group by nomprov, extract(year from observation_date), code_hc order by 3, 2
     """
 
+    t = oldActYear()
+
     categories = ()
 
     if category == 'confirmedpossible':
@@ -262,9 +284,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable',)
         #sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\'')
 
-        title_linechart = 'Number of confirmed and possible mosquito tiger observations, 2014-2018'
-        title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
-        series_title = 'Confirmed and possible mosquito tiger observations, 2014-2018'
+        title_linechart = 'Number of confirmed and possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Confirmed and possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Confirmed and possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         minColor = '#fef0d9'
         maxColor = '#b30000'
 
@@ -274,8 +296,8 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         #sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\',\'unidentified\'')
 
         title_linechart = 'Number of confirmed, possible and unidentifiable mosquito tiger observations'
-        title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
-        series_title = 'Confirmed, possible and unidentifiable mosquito tiger observations, 2014-2018'
+        title = 'Confirmed, possible and unidentifiable mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Confirmed, possible and unidentifiable mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#fef0d9'
         maxColor = '#b30000'
@@ -285,9 +307,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         categories = ('mosquito_tiger_confirmed',)
         #sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
 
-        title_linechart = 'Number of confirmed mosquito tiger observations, 2014-2018'
-        title = 'Confirmed mosquito tiger observations, 2014-2018'
-        series_title = 'Confirmed mosquito tiger observations, 2014-2018'
+        title_linechart = 'Number of confirmed mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Confirmed mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Confirmed mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#fef0d9'
         maxColor = '#b30000'
@@ -297,9 +319,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         categories = ('mosquito_tiger_probable',)
         #sql_template = sql_template.format('\'mosquito_tiger_probable\'')
 
-        title_linechart = 'Number of possible mosquito tiger observations, 2014-2018'
-        title = 'Possible mosquito tiger observations, 2014-2018'
-        series_title = 'Possible mosquito tiger observations, 2014-2018'
+        title_linechart = 'Number of possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#fef0d9'
         maxColor = '#b30000'
@@ -309,9 +331,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         categories = ('other_species',)
         #sql_template = sql_template.format('\'other_species\'')
 
-        title_linechart = 'Number of other species observations, 2014-2018'
-        title = 'Other species observations, 2014-2018'
-        series_title = 'Other species observations, 2014-2018'
+        title_linechart = 'Number of other species observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Other species observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Other species observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#fef0d9'
         maxColor = '#b30000'
@@ -321,9 +343,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         categories = ('unidentified',)
         #sql_template = sql_template.format('\'unidentified\'')
 
-        title_linechart = 'Number of unidentifiable observations, 2014-2018'
-        title = 'Unidentifiable observations, 2014-2018'
-        series_title = 'Unidentifiable observations, 2014-2018'
+        title_linechart = 'Number of unidentifiable observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Unidentifiable observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Unidentifiable observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#fef0d9'
         maxColor = '#b30000'
@@ -333,9 +355,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'unidentified', 'other_species',)
         #sql_template = sql_template.format('\'unidentified\'')
 
-        title_linechart = 'All categories, 2014-2018'
-        title = 'All categories, 2014-2018'
-        series_title = 'All categories, 2014-2018'
+        title_linechart = 'All categories, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'All categories, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'All categories, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#fef0d9'
         maxColor = '#b30000'
@@ -345,9 +367,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
         categories = ('storm_drain_water', )
         # sql_template = sql_template.format('\'unidentified\'')
 
-        title_linechart = 'Breeding sites with water, 2014-2018'
-        title = 'Breeding sites with water, 2014-2018'
-        series_title = 'Breeding sites with water, 2014-2018'
+        title_linechart = 'Breeding sites with water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Breeding sites with water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Breeding sites with water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#ece7f2'
         maxColor = '#2b8cbe'
@@ -356,9 +378,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
 
         categories = ('storm_drain_dry', )
 
-        title_linechart = 'Breeding sites without water, 2014-2018'
-        title = 'Breeding sites without water, 2014-2018'
-        series_title = 'Breeding sites without water, 2014-2018'
+        title_linechart = 'Breeding sites without water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Breeding sites without water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Breeding sites without water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#ece7f2'
         maxColor = '#2b8cbe'
@@ -367,9 +389,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
 
         categories = ('storm_drain_dry', 'storm_drain_water',)
 
-        title_linechart = 'Breeding sites with and without water, 2014-2018'
-        title = 'Breeding sites with and without water, 2014-2018'
-        series_title = 'Breeding sites with and without water, 2014-2018'
+        title_linechart = 'Breeding sites with and without water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Breeding sites with and without water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Breeding sites with and without water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#ece7f2'
         maxColor = '#2b8cbe'
@@ -378,9 +400,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
 
         categories = ('breeding_site_other', )
 
-        title_linechart = 'Other breeding sites, 2014-2018'
-        title = 'Other breeding sites, 2014-2018'
-        series_title = 'Other breeding sites, 2014-2018'
+        title_linechart = 'Other breeding sites, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'Other breeding sites, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'Other breeding sites, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#ece7f2'
         maxColor = '#2b8cbe'
@@ -389,9 +411,9 @@ def mosquito_ccaa_rich(request, category='confirmed'):
 
         categories = ('storm_drain_dry','storm_drain_water','breeding_site_other',)
 
-        title_linechart = 'All breeding sites, 2014-2018'
-        title = 'All breeding sites, 2014-2018'
-        series_title = 'All breeding sites, 2014-2018'
+        title_linechart = 'All breeding sites, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        title = 'All breeding sites, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
+        series_title = 'All breeding sites, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
 
         minColor = '#ece7f2'
         maxColor = '#2b8cbe'
@@ -418,14 +440,16 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     for i in range(2014, current_year + 1):
         years.append(i)
 
+
+
     context = {
         'map_data': json.dumps(map_data),
         'years': json.dumps(years),
-        'title_linechart' : title_linechart,
-        'title' : title,
-        'series_title' : series_title,
-        'minColor' : minColor,
-        'maxColor' : maxColor
+        'title_linechart': title_linechart,
+        'title': title,
+        'series_title': series_title,
+        'minColor': minColor,
+        'maxColor': maxColor
     }
     return render(request, 'stats/mosquito_ccaa_rich.html', context)
 

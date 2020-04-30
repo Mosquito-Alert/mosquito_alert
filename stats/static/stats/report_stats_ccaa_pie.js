@@ -7,6 +7,13 @@ var $grid;
 
 var year_map_data = {};
 
+$(document).ready(function() {
+    years_data.forEach(function(key,index){
+        console.log(years_data[index]);
+        $(".graphCont").append('<div class="grid-item" id="container_' + years_data[index] + '"></div>');
+    });
+});
+
 var getCheckedYears = function(){
     var checked_list = [];
     for(var i = 0; i < years_data.length; i++){
@@ -496,7 +503,14 @@ $(function () {
     var interval_4_log = getIntervalNum(Math.log10(maxAcum), 4, 3);
     var interval_4 = [ Math.round(getReverseLog(interval_4_log[0])), Math.round(getReverseLog(interval_4_log[1])) ];
 
-    if(year_map_data[2014]){
+    years_data.forEach(function(key,index){
+        var chart = spawn_chart('container_'+key , year_map_data[key], 'Year '+key, 'Year '+key, maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
+
+        chart.redraw();
+    });
+
+
+    /*if(year_map_data[2014]){
         //var chart_2014 = spawn_chart('container_2014', year_map_data[2014], 'Year 2014', 'Year 2014', max_per_year[2014]);
         var chart_2014 = spawn_chart('container_2014', year_map_data[2014], 'Year 2014', 'Year 2014', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
         chart_2014.redraw();
@@ -521,7 +535,25 @@ $(function () {
         var chart_2018 = spawn_chart('container_2018', year_map_data[2018], 'Year 2018', 'Year 2018', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
         chart_2018.redraw();
     }
-    var chart_acum = spawn_chart('container_acum', map_parsed_acum, 'All years', 'Years 2014-2018', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
+
+    if(year_map_data[2019]){
+        //var chart_2018 = spawn_chart('container_2018', year_map_data[2018], 'Year 2018', 'Year 2018', max_per_year[2018]);
+        var chart_2019 = spawn_chart('container_2019', year_map_data[2019], 'Year 2019', 'Year 2019', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
+        chart_2019.redraw();
+    }
+
+    if(year_map_data[2020]){
+        //var chart_2020 = spawn_chart('container_2020', year_map_data[2020], 'Year 2020', 'Year 2020', max_per_year[2020]);
+        var chart_2020 = spawn_chart('container_2020', year_map_data[2020], 'Year 2020', 'Year 2020', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
+        chart_2020.redraw();
+    }*/
+
+    var oldestYear = Math.min.apply(null, years_data);
+    var actualYear = Math.max.apply(null, years_data);
+    var yearsOldAct = 'Years '+ oldestYear + '-' + actualYear;
+
+    var chart_acum = spawn_chart('container_acum', map_parsed_acum, 'All years', yearsOldAct, maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);
+
     chart_acum.redraw();
 
     spawn_size_legend('#size_legend', maxAcum, interval_1_log, interval_2_log, interval_3_log, interval_4_log);

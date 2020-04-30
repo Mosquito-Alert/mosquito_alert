@@ -931,11 +931,11 @@ def user_notifications(request):
         return Response(serializer.data)
     if request.method == 'PUT':
         this_notification = Notification()
-        serializer = NotificationSerializer(this_notification,data=request.DATA)
+        serializer = NotificationSerializer(this_notification, data=request.DATA)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
         id = request.QUERY_PARAMS.get('id', -1)
         try:
