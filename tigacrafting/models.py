@@ -201,6 +201,7 @@ class ExpertReportAnnotation(models.Model):
     category = models.ForeignKey('tigacrafting.Categories', related_name='expert_report_annotations', null=True, blank=True, help_text='Simple category assigned by expert or superexpert. Mutually exclusive with complex. If this field has value, then probably there is a validation value')
     complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value')
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
+    other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category')
 
     def is_superexpert(self):
         return 'superexpert' in self.user.groups.values_list('name', flat=True)
@@ -339,7 +340,14 @@ class Categories(models.Model):
 
 
 class Complex(models.Model):
-    description = models.TextField('Name of the complex categiry', help_text='This table is reserved for species combinations')
+    description = models.TextField('Name of the complex category', help_text='This table is reserved for species combinations')
+
+
+class OtherSpecies(models.Model):
+    name = models.TextField('Name of other species', help_text='List of other, not controlled species')
+
+    def __str__(self):
+        return self.name
 
 # class Species(models.Model):
 #     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')

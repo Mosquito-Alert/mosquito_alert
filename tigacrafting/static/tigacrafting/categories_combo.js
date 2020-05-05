@@ -53,19 +53,24 @@ $(document).ready(function () {
         //reset everything
         $('#id_form-' + form_index + '-validation_value').val("");
         $('#id_form-' + form_index + '-complex').val("");
-        $('#complex_' + form_id).selectpicker("val","");
         $('#id_form-' + form_index + '-category').val("");
+        $('#id_form-' + form_index + '-other_species').val("");
+        $('#complex_' + form_id).selectpicker("val","");
         $('#categoryvalue_' + form_id ).selectpicker("val","");
+        $('#other_' + form_id ).selectpicker("val","");
 
         if( needs_value == 1 ){
             $('#container_mix_' + form_id).hide();
             $('#container_value_' + form_id).show();
-        }else{
-            $('#container_value_' + form_id).hide();
+            $('#container_other_' + form_id).hide();
+        }else if( $(this).find(':selected').val() == "2" ){
             $('#container_mix_' + form_id).hide();
-            if( $(this).find(':selected').val() == "8"){
-                $('#container_mix_' + form_id).show();
-            }
+            $('#container_value_' + form_id).hide();
+            $('#container_other_' + form_id).show();
+        }else if ( $(this).find(':selected').val() == "8" ) {
+            $('#container_mix_' + form_id).show();
+            $('#container_value_' + form_id).hide();
+            $('#container_other_' + form_id).hide();
         }
         if( $(this).find(':selected').val() == "8"){
             $('#id_form-' + form_index + '-category').val("");
@@ -88,5 +93,12 @@ $(document).ready(function () {
         var form_index = id_to_index[form_id];
         var selected_value = $(this).find(':selected').val();
         $('#id_form-' + form_index + '-complex').val(selected_value);
+    });
+
+    $( "select[id^='other_']" ).change(function(e){
+        var form_id = e.target.id.split('_')[1];
+        var form_index = id_to_index[form_id];
+        var selected_value = $(this).find(':selected').val();
+        $('#id_form-' + form_index + '-other_species').val(selected_value);
     });
 });

@@ -1029,6 +1029,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['tasks_per_page_choices'] = range(5, min(100, n_query_records)+1, 5)
         args['category_list'] = Categories.objects.order_by('name')
         args['complex_list'] = Complex.objects.order_by('description')
+        args['other_species'] = OtherSpecies.objects.order_by('name')
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
@@ -1233,6 +1234,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         return render(request, 'tigacrafting/photo_grid.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+
 @login_required
 def notifications(request,user_uuid=None):
     this_user = request.user

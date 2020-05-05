@@ -39,6 +39,10 @@
             background: #BABABA;
         }
 
+        .container_value, .container_mix, .container_other, .container_category{
+            font-size: 14px;
+        }
+
     </style>
 
     {% block fa_css %}
@@ -379,8 +383,8 @@
                     -->
                     <div class="form-group">
                         <div class="row">
-                            <div class="col-md-6">
-                            <strong>Species classification:</strong><br>
+                            <div class="col-md-5 container_category">
+                            <strong>Species classif.:</strong><br>
                             <select id="category_{{ form.instance.id }}">
                                 <option value="">--------------</option>
                                 {% for cat in category_list %}
@@ -388,7 +392,7 @@
                                 {% endfor %}
                             </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-7">
                                 <div id="container_value_{{ form.instance.id }}" class="container_value"  style="display:none;">
                                     <strong>Species certainty:</strong><br>
                                     <select id="categoryvalue_{{ form.instance.id }}">
@@ -403,6 +407,15 @@
                                         <option value="">--------------</option>
                                         {% for complex in complex_list %}
                                         <option value="{{ complex.id }}">{{ complex.description }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div id="container_other_{{ form.instance.id }}" class="container_other" style="display:none;">
+                                    <strong>Other species:</strong><br>
+                                    <select id="other_{{ form.instance.id }}">
+                                        <option value="">Not in the list</option>
+                                        {% for species in other_species %}
+                                        <option value="{{ species.id }}">{{ species.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -566,12 +579,14 @@
 
 
                 <br>
+                <!--
                 <strong>User Responses</strong><br>
 
                 <div style="overflow: auto;height: 120px;border:1px solid #333333;padding:2px;">
                     {{ form.instance.report.response_html  | safe }}
                 </div>
                 <br>
+                -->
                 <strong>User Notes</strong><br>
                 {% if form.instance.simplified_annotation == False %}
                 <button type="button" id="btn_copynote_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Copy user note to public note"><span class="glyphicon glyphicon-file" aria-hidden="true"></span></button>
@@ -883,7 +898,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="tiger_certainty_select" class="col-sm-4 control-label">Species classification:</label>
+                                <label for="tiger_certainty_select" class="col-sm-4 control-label">Species classif.:</label>
 
                                 <div class="col-sm-8">
                                     <select id="tiger_certainty_select" class="selectpicker show-tick form-control">
@@ -1209,6 +1224,7 @@
             var category = $('#id_form-' + id_to_index[input_id] + '-category').val();
             var value = $('#id_form-' + id_to_index[input_id] + '-validation_value').val();
             var complex = $('#id_form-' + id_to_index[input_id] + '-complex').val();
+            var other = $('#id_form-' + id_to_index[input_id] + '-other_species').val();
             var species_categories = [];
             {% for cat in category_list %}
                 {% if cat.specify_certainty_level %}
@@ -1220,7 +1236,13 @@
             if( category == "8" ){ //complex
                 $('#container_mix_' + input_id).show();
                 $('#container_value_' + input_id).hide();
+                $('#container_other_' + input_id).hide();
                 $('#complex_' + input_id).val(complex);
+            }else if ( category == "2" ){ //other species
+                $('#container_mix_' + input_id).hide();
+                $('#container_value_' + input_id).hide();
+                $('#container_other_' + input_id).show();
+                $('#other_' + input_id).val(other);
             }else if ( species_categories.indexOf(category) >= 0 ){
                 $('#container_value_' + input_id).show();
                 $('#container_mix_' + input_id).hide();
