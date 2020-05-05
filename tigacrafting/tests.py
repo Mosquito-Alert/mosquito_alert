@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.test import TestCase
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation
 from tigacrafting.models import UserStat
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from django.db.models import Count, Q
 from django.core.exceptions import ObjectDoesNotExist
@@ -22,6 +22,10 @@ def user_summary(user):
     print("#### USER - {0} \t\t####".format(user.username,))
     assigned_reports = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').values('report').distinct()
     assigned_reports_count = assigned_reports.count()
+    if user.groups.filter(name='eu_group_europe').exists():
+        print("#### Group - europe \t\t####")
+    elif user.groups.filter(name='eu_group_spain').exists:
+        print("#### Group - spain \t\t####")
     print("#### National supervisor - {0} \t\t####".format( 'Yes' if user.userstat.is_national_supervisor() else 'No', ))
     if user.userstat.is_national_supervisor():
         print("#### Supervised country - {0} \t\t####".format(user.userstat.national_supervisor_of.name_engl))
@@ -78,11 +82,17 @@ class UserTestCase(TestCase):
             a = a + 1
 
     def create_team(self):
+
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+
         u1 = User.objects.create(pk=1)
         u1.username = 'expert_1_es'
         u1.save()
         u2 = User.objects.create(pk=2)
-        u2.username = 'expert_2_es'
+        u2.username = 'expert_2_eu'
         u2.save()
         u3 = User.objects.create(pk=3)
         u3.username = 'expert_3_eu'
@@ -108,6 +118,19 @@ class UserTestCase(TestCase):
         u8 = User.objects.create(pk=8)
         u8.username = 'expert_8_es'
         u8.save()
+        u9 = User.objects.create(pk=9)
+        u9.username = 'expert_9_eu'
+        u9.save()
+        u10 = User.objects.create(pk=10)
+        u10.username = 'expert_10_eu'
+        u10.save()
+
+        europe_group.user_set.add(u2)
+        europe_group.user_set.add(u3)
+        europe_group.user_set.add(u5)
+        europe_group.user_set.add(u7)
+        europe_group.user_set.add(u9)
+        europe_group.user_set.add(u10)
 
     # tests that user creation triggers userstat creation
     def test_create_user_and_userstat(self):
@@ -162,7 +185,9 @@ class UserTestCase(TestCase):
         country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
         for this_user in User.objects.all():
             assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
+            user_summary(this_user)
 
+        '''
         for usr in User.objects.all():
             n = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').values('report').distinct().count()
             if usr.userstat.is_national_supervisor():
@@ -170,10 +195,14 @@ class UserTestCase(TestCase):
                 self.assertEqual(n, max_pending)
                 self.assertEqual(assigned_supervised, True)
             else:
-                self.assertEqual(n, max_pending)
-
+                if usr.groups.filter(name='eu_group_europe').exists():
+                    self.assertEqual(n, max_pending)
+                elif usr.groups.filter(name='eu_group_spain').exists():
+                    self.assertTrue(n == 1 or n == 0)
         '''
+
         # Enable this for extra verbose info
-        for usr in User.objects.all():
+        '''
+        for usr in User.objects.all():           
             user_summary(usr)
         '''

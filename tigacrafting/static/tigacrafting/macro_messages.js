@@ -2,23 +2,23 @@ var macro_messages = {
     all: {
         nice_picture: {
             es: "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!",
-            en: "The picture is spectacular and you can see a lot of details of the mosquito's body. Thanks for participating. Great job!"
+            en: "The picture is spectacular as you can see a lot of details of the mosquito body. Thanks for participating. Great job!"
         },
         not_sure_photo:{
             es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas de ninguna de ellas. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
             en: "With this picture we can't identify any mosquito species, because it's blurry and you can't recognize the typical traits of any of them. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         },
         other_species:{
-            es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las 5 especies que controlamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-            en: "This picture seems to be of another mosquito species, because it doesn't look like any of our 5 targeted species. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+            es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las que buscamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+            en: "This picture doesn't look like any of our targeted mosquitoes, as it seems to be of another species. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         },
         other_insect: {
-            es: "Esta foto muestra un insecto que no es un mosquito de verdad de la familia Culicidae. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-            en: "This picture shows an insect which is not a real mosquito from the Culicidae family. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!."
+            es: "Esta foto muestra un insecto que no es un mosquito verdadero, es decir, no pertenece a la familia de los Culícidos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+            en: "This picture shows an insect which is not a real mosquito from the Culicidae family. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         },
         conflict: {
-            es: "Estamos seguros que este mosquito pertenece a una de dos de nuestras especies. Sin embargo, no nos es posible decir a cuál.",
-            en: "We are certain this mosquito belongs to one of two species. However, it is not possible to tell which one."
+            es: "Estamos seguros que este mosquito pertenece a una de las dos especies. Sin embargo, no nos es posible afirmar a cuál de ellas.",
+            en: "We are certain this mosquito belongs to one of the two species. However, it is not possible to tell which one."
         },
         yes_thorax_pattern:{
             es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente al mosquito ya que se ven muy bien sus características típicas. ¡Gracias por participar!",
@@ -40,7 +40,7 @@ var macro_messages = {
     albopictus:{        
         yes_thorax_pattern:{
             es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!",
-            en: "Very good picture! You have managed to make the tiger mosquito easily to identify because you can spot clearly the characteristic white stripe in the thorax, apart from other traits. Thanks for participating!"
+            en: "Very good picture! You have managed to make the Tiger mosquito easy to identify because you can spot clearly the characteristic white strip in the thorax, apart from other traits. Thanks for participating!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -49,42 +49,42 @@ var macro_messages = {
     },
     aegypti:{
         yes_thorax_pattern:{
-            es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito de la fiebre amarilla ya que se ve muy bien su dibujo en forma de lira en el tórax, además de otras características. ¡Gracias por participar!",
-            en: "Very good picture! You have managed to make the yellow fever mosquito easily to identify because you can spot clearly the characteristic lyre shape in the thorax, apart from other traits. Thanks for participating!"
+            es: "Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito de la fiebre amarilla ya que se ve muy bien su dibujo en forma de lira en el tórax, además de otras características. ¡Gracias por participar!",
+            en: "Very good picture! You have managed to make the yellow fever mosquito easy to identify because you can spot clearly the characteristic lyre shape in the thorax, apart from other traits. Thanks for participating!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un mosquito de la fiebre amarilla. No se ve bien el típico dibujo en forma de lira en el tórax, aunque sí que se ven otras características del mosquito de la fiebre amarilla. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-            en: "With this picture, we can't be completely sure that it's a tiger mosquito. You can't see the typical lyre shape in the thorax, but you can see other typical traits of the yellow fever mosquito.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+            en: "With this picture, we can't be completely sure that it's a yellow fever mosquito. You can't see the typical lyre shape in the thorax, but you can see other typical traits of the yellow fever mosquito.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         }
     },
     japonicus:{
         yes_thorax_pattern:{
-            es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente un Aedes japonicus ya que se ve muy bien la forma característica del tórax, además de las rayas blancas en las patas. ¡Gracias por participar!",
+            es: "¡Muy buena foto! Has conseguido que se pueda identificar el Aedes japonicus ya que se ve muy bien la forma característica del tórax, además de las rayas blancas en las patas. ¡Gracias por participar!",
             en: "Very good picture! You have managed to make Aedes japonicus easy to identify because you can spot clearly the characteristic shape in the thorax, plus the leg white stripes. Thanks for participating!"
         },
         no_thorax_pattern:{
-            es: "Con esta foto no podemos asegurar totalmente que sea un Aedes japonicus. No se ve bien la forma característica del tórax y las rayas blancas en las patas, pero se aprecian otras características típicas del Aedes japonicus. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+            es: "Con esta foto no podemos asegurar totalmente que sea un Aedes japonicus. No se ve bien la forma característica del tórax y las rayas blancas en las patas, aunque se aprecian otras características típicas del Aedes japonicus. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
             en: "With this picture, we can't be completely sure that it's an Aedes japonicus mosquito. You can't simultaneously see the thorax pattern and the leg stripes, but you can see other typical traits of Aedes japonicus.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         }
     },
     koreicus:{
         yes_thorax_pattern:{
-            es: "¡Muy buena foto! Has conseguido que este Aedes koreicus sea fácilmente identificable ya que se ve muy bien la forma característica del tórax, además de las rayas blancas en las patas. ¡Gracias por participar!",
+            es: "¡Muy buena foto! Has conseguido que este Aedes koreicus sea identificable ya que se ve muy bien la forma característica del tórax, además de las rayas blancas en las patas. ¡Gracias por participar!",
             en: "Very good picture! You have managed to make Aedes koreicus easy to identify because you can spot clearly the characteristic shape in the thorax, plus the leg white stripes. Thanks for participating!"
         },
         no_thorax_pattern:{
-            es: "Con esta foto no podemos asegurar totalmente que sea un Aedes koreicus. No se ve bien la forma característica del tórax y las rayas blancas en las patas, pero se aprecian otras características típicas del Aedes koreicus. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+            es: "Con esta foto no podemos asegurar totalmente que sea un Aedes koreicus. No se ve bien la forma característica del tórax y las rayas blancas en las patas, aunque se aprecian otras características típicas del Aedes koreicus. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
             en: "With this picture, we can't be completely sure that it's an Aedes koreicus mosquito. You can't simultaneously see the thorax pattern and the leg stripes, but you can see other typical traits of Aedes koreicus.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         }
     },
     culex:{
         yes_thorax_pattern:{
-            es: "¡Muy buena foto! Has conseguido que este mosquito doméstico común sea fácilmente identificable. ¡Gracias por participar!",
+            es: "Muy buena foto! Has conseguido que este mosquito común sea fácilmente identificable. ¡Gracias por participar!",
             en: "Very good picture! You have managed to make the common house mosquito quite easy to identify. Thanks for participating!"
         },
         no_thorax_pattern:{
-            es: "Con esta foto no podemos asegurar totalmente que sea un Culex. No pueden verse simultáneamente suficientes características, aunque algunas características típicas del mosquito doméstico común están presentes. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-            en: "With this picture, we can't be completely sure that it's a Culex mosquito. You can't simultaneously see enough features, though other typical traits of the common house mosquito are present.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
+            es: "Con esta foto no podemos asegurar totalmente que sea un Culex. No pueden verse simultáneamente suficientes rasgos, aunque algunas características del mosquito común están presentes. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+            en: "With this picture, we can't be completely sure that it's an Culex mosquito. You can't simultaneously see enough features, though other typical traits of the common house mosquito are present.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
         }
     }
 };

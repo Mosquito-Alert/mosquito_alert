@@ -1713,6 +1713,7 @@ class Report(models.Model):
     is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
     country_label = property(get_country_label)
     located = property(has_location)
+    is_spain = property(is_spain)
 
     class Meta:
         unique_together = ("user", "version_UUID")

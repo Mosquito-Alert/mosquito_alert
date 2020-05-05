@@ -228,6 +228,14 @@ def filter_reports(reports, sort=True):
     return reports_filtered
 
 
+def filter_spain_reports(reports):
+    return filter(lambda x: x.is_spain, reports)
+
+
+def filter_eu_reports(reports):
+    return filter(lambda x: not x.is_spain, reports)
+
+
 def filter_reports_for_superexpert(reports):
     reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))>=3, reports)
     return reports_filtered
@@ -583,14 +591,19 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
     this_user_is_supervisor = this_user.userstat.is_national_supervisor()
+    this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
+    #this_user_is_spain = this_user.groups.filter(name='eu_group_spain').exists()
+    this_user_is_spain = not this_user_is_europe
     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
     if current_pending < max_pending:
         n_to_get = max_pending - current_pending
         new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+        '''
         if new_reports_unfiltered and this_user_is_team_bcn:
             new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
         if new_reports_unfiltered and this_user_is_team_not_bcn:
             new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
+        '''
         if this_user_is_supervisor:
             reports_supervised_country = new_reports_unfiltered.filter(country__gid=this_user.userstat.national_supervisor_of.gid)
             reports_non_supervised_country = new_reports_unfiltered.exclude(version_UUID__in=reports_supervised_country.values('version_UUID'))
@@ -599,7 +612,13 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
             new_filtered_reports = reports_supervised_country_filtered + reports_non_supervised_country_filtered
         else:
             new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
-        new_reports = new_filtered_reports
+
+        if this_user_is_spain:
+            new_reports = filter_spain_reports(new_filtered_reports)
+        elif this_user_is_europe:
+            new_reports = filter_eu_reports(new_filtered_reports)
+        else:
+            new_reports = new_filtered_reports
 
         grabbed_reports = -1
         reports_taken = 0
@@ -608,10 +627,11 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
             who_has_count = this_report.get_who_has_count()
             if this_user_is_supervisor:
                 if this_user.userstat.is_national_supervisor_for_country(this_report.country):
-                    new_annotation.simplified_annotation = False
-                    grabbed_reports += 1
-                    reports_taken += 1
-                    new_annotation.save()
+                    if who_has_count == 2:
+                        new_annotation.simplified_annotation = False
+                        grabbed_reports += 1
+                        reports_taken += 1
+                        new_annotation.save()
                 else:
                     if who_has_count == 0 or who_has_count == 1:
                         new_annotation.simplified_annotation = True
@@ -629,15 +649,17 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
                     new_annotation.save()
                 else:
                     if this_report.country.gid in country_with_supervisor_set:
-                        if this_report.version_UUID in report_assigned_to_supervisor_set:
-                            # if who_has_count <= 1:
-                            if who_has_count == 0 or who_has_count == 1:
-                                new_annotation.simplified_annotation = True
-                            else:
-                                new_annotation.simplified_annotation = False
-                            grabbed_reports += 1
-                            reports_taken += 1
-                            new_annotation.save()
+                        #Assign only if only 1 other user or nobody is assigned
+                        if who_has_count <= 1:
+                            if this_report.version_UUID in report_assigned_to_supervisor_set:
+                                # if who_has_count <= 1:
+                                if who_has_count == 0 or who_has_count == 1:
+                                    new_annotation.simplified_annotation = True
+                                else:
+                                    new_annotation.simplified_annotation = False
+                                grabbed_reports += 1
+                                reports_taken += 1
+                                new_annotation.save()
                     else:
                         if who_has_count == 0 or who_has_count == 1:
                             new_annotation.simplified_annotation = True
