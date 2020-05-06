@@ -287,6 +287,33 @@
         </div>
     </div>
 
+    {% if objects.has_next or objects.has_previous %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if objects.has_previous %}
+                        <button class="btn btn-default btn-sm active previous_page_button" type="button">Previous</button>
+                        {% endif %}
+                        <span class="current">
+                        Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                        </span>
+                        {% if objects.has_next %}
+                        <button class="btn btn-default btn-sm active next_page_button" type="button">Next</button>
+                        {% endif %}
+                        <br>
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <input id="page_input_top" type="number" min="1" max="{{ objects.paginator.num_pages }}" class="form-control input-sm" placeholder="Go to page" style="width:100px;">
+                                <button id="page_button_top" class="btn btn-default btn-sm active" type="button">Go</button>
+                            </div>
+                        </form>
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% if objects %}
 
         {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
@@ -414,9 +441,16 @@
                                     <strong>Other species:</strong><br>
                                     <select id="other_{{ form.instance.id }}">
                                         <option value="">Not in the list</option>
-                                        {% for species in other_species %}
+                                        <optgroup label="Other insects">
+                                        {% for species in other_species_insects %}
                                         <option value="{{ species.id }}">{{ species.name }}</option>
                                         {% endfor %}
+                                        </optgroup>
+                                        <optgroup label="Culicidae">
+                                        {% for species in other_species_culicidae %}
+                                        <option value="{{ species.id }}">{{ species.name }}</option>
+                                        {% endfor %}
+                                        </optgroup>
                                     </select>
                                 </div>
                             </div>
@@ -747,46 +781,30 @@
 
 
         {% if objects.has_next or objects.has_previous %}
-
-
-            <div class="row">
-
-                <div class="col-md-12">
-
-                    <div class="pagination">
-        <span class="step-links">
-            {% if objects.has_previous %}
-                <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
-
-            {% endif %}
-
-            <span class="current">
-                Page {{ objects.number }} of {{ objects.paginator.num_pages }}
-            </span>
-
-            {% if objects.has_next %}
-
-                <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
-            {% endif %}
-
-            <br>
-                <form role="form" class="form-inline">
-                    <div class="form-group">
-                        <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
-                               class="form-control input-sm" id="page_input" placeholder="Go to page"
-                               style="width:100px;">
-                        <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
-                    </div>
-
-                </form>
-
-        </span>
-                    </div>
-
-
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if objects.has_previous %}
+                        <button class="btn btn-default btn-sm active previous_page_button" type="button">Previous</button>
+                        {% endif %}
+                        <span class="current">
+                        Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                        </span>
+                        {% if objects.has_next %}
+                        <button class="btn btn-default btn-sm active next_page_button" type="button">Next</button>
+                        {% endif %}
+                        <br>
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <input id="page_input_bottom" type="number" min="1" max="{{ objects.paginator.num_pages }}" class="form-control input-sm" placeholder="Go to page" style="width:100px;">
+                                <button id="page_button_bottom" class="btn btn-default btn-sm active" type="button">Go</button>
+                            </div>
+                        </form>
+                    </span>
                 </div>
             </div>
-
+        </div>
         {% endif %}
     {% else %}
         <div class="row">
@@ -1998,31 +2016,46 @@
             background_save(qp);
         });
 
-        function go_to_page(){
+        function go_to_page(top_or_bottom){
             gear.show();
             var qp = query_selectors();
-            var selected_page = $("#page_input").val();
+            var selected_page = $("#page_input_" + top_or_bottom ).val();
             qp += '&page=' + selected_page;
             $("#next_page_input").val(selected_page);
             background_save(qp);
         }
 
-        $("#page_button").on('click', function () {
-            go_to_page();
+        $("#page_button_top").on('click', function () {
+            go_to_page('top');
         });
 
-        $('#page_input').bind("enterKey",function(e){
-                go_to_page();
-            });
+        $("#page_button_bottom").on('click', function () {
+            go_to_page('bottom');
+        });
 
-        $('#page_input').keyup(function(e){
+        $('#page_input_top').bind("enterKey",function(e){
+                go_to_page('top');
+        });
+
+        $('#page_input_bottom').bind("enterKey",function(e){
+                go_to_page('bottom');
+        });
+
+        $('#page_input_top').keyup(function(e){
             if(e.keyCode == 13)
             {
                 $(this).trigger("enterKey");
             }
         });
 
-        var nb = $("#next_page_button");
+        $('#page_input_bottom').keyup(function(e){
+            if(e.keyCode == 13)
+            {
+                $(this).trigger("enterKey");
+            }
+        });
+
+        var nb = $(".next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
                 gear.show();
@@ -2036,7 +2069,7 @@
             nb.hide();
         {% endif %}
 
-        var pb = $("#previous_page_button");
+        var pb = $(".previous_page_button");
         {% if objects.has_previous %}
             pb.show().on('click', function () {
                 gear.show();
