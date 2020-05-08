@@ -114,7 +114,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12 report_container">
+                <div class="col-xs-12 report_container" onclick="javascript:create_dialog('{{ item.report }}');">
                     {% for item in score_data.score_detail.site.score_items %}
                     <div class="report_box breeding_site">
                         {{ item.report_score }} XP
@@ -163,7 +163,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12 report_container">
+                <div class="col-xs-12 report_container" onclick="javascript:create_dialog('{{ item.report }}');">
                     {% for item in score_data.score_detail.bite.score_items %}
                     <div class="report_box bite">
                         {{ item.report_score }} XP
