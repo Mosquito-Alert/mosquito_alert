@@ -8,9 +8,12 @@
 
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
         <link rel="stylesheet" href={% static "stats/css/user_score.css" %}>
 
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+        <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
+        <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+        <script src={% static "stats/user_score.js" %}></script>
     </head>
     <body>
         <div class="container">
@@ -63,13 +66,32 @@
             <div class="row">
                 <div class="col-xs-12 report_container">
                     {% for item in score_data.score_detail.adult.score_items %}
-                    <div class="report_box {% if item.report_score == 0 %}expert_rejected{%else%}expert_approved{%endif%}">
+                    <div class="report_box {% if item.report_score == 0 %}expert_rejected{%else%}expert_approved{%endif%}" onclick="javascript:create_dialog('{{ item.report }}');">
                         <!--<img url="http://webserver.mosquitoalert.com{{ item.report_photo }}" width="20" height="20">-->
                         {{ item.report_score }} XP
                     </div>
                     {% endfor %}
                 </div>
             </div>
+            {% for item in score_data.score_detail.adult.score_items %}
+            <div id="{{ item.report }}" class="row" style="display:none;">
+                <div class="col-xs-4">
+                    <img url="{{ item.report_photo }}" width="100%">
+                    <p>{{ item.report_date }}</p>
+                </div>
+                <div class="col-xs-8">
+                    {%if item.awards %}
+                        <ul>
+                        {% for award in item.awards %}
+                            <li>{{ award.xp_awarded }} xp awarded for {{ award.reason }}!</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        No awards for this report!
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
             <hr class="thick">
             <!-- End Mosquito block --->
             <!-- Breeding site block --->
