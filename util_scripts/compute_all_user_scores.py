@@ -12,12 +12,18 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from tigaserver_app.models import TigaUser
+from tigaserver_app.models import TigaUser, Report
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2_fast
 
 
 def compute_all_scores():
-    all_users = TigaUser.objects.all()
+    users_with_reports = Report.objects.all().values('user').distinct()
+    all_users = TigaUser.objects.filter(user_UUID__in=users_with_reports)
+    print("Cleaning up...")
+    TigaUser.objects.all().update(score_v2=0)
+    TigaUser.objects.all().update(score_v2_adult=0)
+    TigaUser.objects.all().update(score_v2_site=0)
+    TigaUser.objects.all().update(score_v2_bite=0)
     print("Starting...")
     goal = len(all_users)
     start = 1
