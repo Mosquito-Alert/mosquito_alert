@@ -114,9 +114,9 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12 report_container" onclick="javascript:create_dialog('{{ item.report }}');">
+                <div class="col-xs-12 report_container">
                     {% for item in score_data.score_detail.site.score_items %}
-                    <div class="report_box breeding_site">
+                    <div class="report_box breeding_site" onclick="javascript:create_dialog('{{ item.report }}');">
                         {{ item.report_score }} XP
                     </div>
                     {% endfor %}
@@ -163,9 +163,9 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12 report_container" onclick="javascript:create_dialog('{{ item.report }}');">
+                <div class="col-xs-12 report_container">
                     {% for item in score_data.score_detail.bite.score_items %}
-                    <div class="report_box bite">
+                    <div class="report_box bite" onclick="javascript:create_dialog('{{ item.report }}');">
                         {{ item.report_score }} XP
                     </div>
                     {% endfor %}
@@ -174,8 +174,6 @@
             {% for item in score_data.score_detail.bite.score_items %}
             <div id="{{ item.report }}" class="row" style="display:none;">
                 <div class="col-xs-12">
-                    <img src="{{ item.report_photo }}" height="120px">
-                    <p>{{ item.report_date }}</p>
                     {%if item.awards %}
                         <ul>
                         {% for award in item.awards %}
