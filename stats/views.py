@@ -19,6 +19,7 @@ import json
 from sets import Set
 import datetime
 from django.utils import timezone
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -571,6 +572,12 @@ def report_stats_ccaa_pie_sites(request):
 def report_stats_ccaa_pie(request):
     categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'other_species', 'unidentified',)
     return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie.html')
+
+
+def stats_user_score(request, user_uuid=None):
+    user_score = compute_user_score_in_xp_v2(user_uuid)
+    context = { "score_data": user_score }
+    return render(request, 'stats/user_score.html', context)
 
 
 @login_required

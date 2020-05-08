@@ -1,0 +1,140 @@
+{% load staticfiles %}
+{% load i18n %}
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <title>MosquitoAlert Stats</title>
+
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        <link rel="stylesheet" href={% static "stats/css/user_score.css" %}>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Summary row --->
+            <div class="row">
+                <!--
+                <div class="col-xs-1">
+                    <img src="{% static "stats/icon/tigatrapp_logo_crop_s.png"%}">
+                </div>
+                -->
+                <div class="col-xs-9 text_box">
+                    <h4>Citizen Scientist - <b>{{ score_data.overall_class_label }}</b></h4>
+                    <p>User ID - {{ score_data.user_uuid }}</p>
+                    <p><i>Joined {{ score_data.joined_label }} | Last active {% if score_data.active_label %}{{ score_data.active_label }}{%else%}Never{%endif%}</i></p>
+                    {% if score_data.overall_rank_value == 0 %}
+                        <p class="score_label">Overall rank - Unranked</p>
+                    {% else %}
+                        <p class="score_label">Overall rank - #{{ score_data.overall_rank_value }}</p>
+                        <p><i>Top {{ score_data.overall_top_perc |floatformat:3 }} % of {{ score_data.overall_ranked_users }}</i></p>
+                    {% endif %}
+                </div>
+                <div class="col-xs-3 class_image">
+                    <img src="{% static "stats/icon/" %}L{{ score_data.overall_class_value }}_75.png">
+                    <p class="score_label">{{ score_data.total_score }} XP</p>
+                </div>
+            </div>
+            <hr class="thick">
+            <!-- End Summary row --->
+            <!-- Mosquito block --->
+            <div class="row info_block">
+                <!--
+                <div class="col-xs-1">
+                    <img src="{% static "stats/icon/tigatrapp_logo_crop_s.png" %}">
+                </div>
+                -->
+                <div class="col-xs-9">
+                    <h4>Mosquito - <b>{{ score_data.score_detail.adult.class_label }}</b></h4>
+                    {% if score_data.score_detail.adult.rank_value == 0%}
+                        <p class="score_label_smaller">Mosquito rank - Unranked</p>
+                    {% else %}
+                        <p class="score_label_smaller">Mosquito rank - #{{ score_data.score_detail.adult.rank_value }}</p>
+                        <p><i>Top {{ score_data.score_detail.adult.top_perc |floatformat:3 }} % of {{ score_data.score_detail.adult.ranked_users }}</i></p>
+                    {% endif %}
+                </div>
+                <div class="col-xs-3 class_image">
+                    <img src="{% static "stats/icon/" %}L{{ score_data.score_detail.adult.class_value }}_75.png">
+                    <p class="score_label">{{ score_data.score_detail.adult.score }} XP</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 report_container">
+                    {% for item in score_data.score_detail.adult.score_items %}
+                    <div class="report_box {% if item.report_score == 0 %}expert_rejected{%else%}expert_approved{%endif%}">
+                        <!--<img url="http://webserver.mosquitoalert.com{{ item.report_photo }}" width="20" height="20">-->
+                        {{ item.report_score }} XP
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr class="thick">
+            <!-- End Mosquito block --->
+            <!-- Breeding site block --->
+            <div class="row info_block">
+                <!--
+                <div class="col-xs-1">
+                    <img src="{% static "stats/icon/tigatrapp_logo_crop_s.png" %}">
+                </div>
+                -->
+                <div class="col-xs-9">
+                    <h4>Breeding site - <b>{{ score_data.score_detail.site.class_label }}</b></h4>
+                    {% if score_data.score_detail.site.rank_value == 0%}
+                        <p class="score_label_smaller">Breeding site rank - Unranked</p>
+                    {% else %}
+                        <p class="score_label_smaller">Breeding site rank - #{{ score_data.score_detail.site.rank_value }}</p>
+                        <p><i>Top {{ score_data.score_detail.site.top_perc |floatformat:3 }} % of {{ score_data.score_detail.site.ranked_users }}</i></p>
+                    {% endif %}
+                </div>
+                <div class="col-xs-3 class_image">
+                    <img src="{% static "stats/icon/" %}L{{ score_data.score_detail.site.class_value }}_75.png">
+                    <p class="score_label">{{ score_data.score_detail.site.score }}  XP</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 report_container">
+                    {% for item in score_data.score_detail.site.score_items %}
+                    <div class="report_box breeding_site">
+                        {{ item.report_score }} XP
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr class="thick">
+            <!-- End Breeding site block --->
+            <!-- Bite block --->
+            <div class="row info_block">
+                <!--
+                <div class="col-xs-1">
+                    <img src="{% static "stats/icon/tigatrapp_logo_crop_s.png" %}">
+                </div>
+                -->
+                <div class="col-xs-9">
+                    <h4>Bite - <b>{{ score_data.score_detail.bite.class_label }}</b></h4>
+                    {% if score_data.score_detail.bite.rank_value == 0%}
+                        <p class="score_label_smaller">Breeding site rank - Unranked</p>
+                    {% else %}
+                        <p class="score_label_smaller">Breeding site rank - #{{ score_data.score_detail.bite.rank_value }}</p>
+                        <p><i>Top {{ score_data.score_detail.bite.top_perc |floatformat:3 }} % of {{ score_data.score_detail.bite.ranked_users }}</i></p>
+                    {% endif %}
+                </div>
+                <div class="col-xs-3 class_image">
+                    <img src="{% static "stats/icon/" %}L{{ score_data.score_detail.bite.class_value }}_75.png">
+                    <p class="score_label">{{ score_data.score_detail.bite.score }}  XP</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 report_container">
+                    {% for item in score_data.score_detail.bite.score_items %}
+                    <div class="report_box bite">
+                        {{ item.report_score }} XP
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- End Bite block --->
+        </div>
+    </body>
+</html>

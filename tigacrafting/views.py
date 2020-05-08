@@ -440,6 +440,22 @@ def must_be_autoflagged(this_annotation, is_current_validated):
     if this_annotation is not None:
         the_report = this_annotation.report
         if the_report is not None:
+            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID,user__groups__name='expert',validation_complete=True).exclude(id=this_annotation.id)
+            anno_count = 0
+            classifications = []
+            for anno in annotations:
+                item = anno.category if anno.complex is None else anno.complex
+                classifications.append(item)
+                anno_count += 1
+            this_annotation_item = this_annotation.category if anno.complex is None else anno.complex
+            classifications.append(this_annotation_item)
+            if is_current_validated and len(classifications) == 3 and ( len(set(classifications)) == len(classifications) ):
+                return True
+    return False
+    '''
+    if this_annotation is not None:
+        the_report = this_annotation.report
+        if the_report is not None:
             annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID, user__groups__name='expert').exclude(id=this_annotation.id)
             anno_count = 0
             one_positive_albopictus = False
@@ -473,6 +489,7 @@ def must_be_autoflagged(this_annotation, is_current_validated):
             if one_positive_albopictus and one_positive_aegypti and one_unclassified_or_inconclusive and (anno_count + 1) == 3:
                 return True
     return False
+    '''
 
 def get_sigte_map_info(report):
     cursor = connection.cursor()

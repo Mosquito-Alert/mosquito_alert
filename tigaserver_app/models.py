@@ -44,7 +44,13 @@ class TigaUser(models.Model):
 
     score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
 
-    score_v2 = models.IntegerField(help_text='XP Score. This field is updated whenever the user asks for the score, and is only stored here', default=0)
+    score_v2 = models.IntegerField(help_text='Global XP Score. This field is updated whenever the user asks for the score, and is only stored here. The content must equal score_v2_adult + score_v2_bite + score_v2_site', default=0)
+
+    score_v2_adult = models.IntegerField(help_text='Adult reports XP Score.', default=0)
+
+    score_v2_bite = models.IntegerField(help_text='Bite reports XP Score.', default=0)
+
+    score_v2_site = models.IntegerField(help_text='Site reports XP Score.',default=0)
 
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True)
 
