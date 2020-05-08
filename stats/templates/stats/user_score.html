@@ -75,11 +75,9 @@
             </div>
             {% for item in score_data.score_detail.adult.score_items %}
             <div id="{{ item.report }}" class="row" style="display:none;">
-                <div class="col-xs-4">
+                <div class="col-xs-12">
                     <img src="{{ item.report_photo }}" height="120px">
                     <p>{{ item.report_date }}</p>
-                </div>
-                <div class="col-xs-8">
                     {%if item.awards %}
                         <ul>
                         {% for award in item.awards %}
@@ -124,6 +122,23 @@
                     {% endfor %}
                 </div>
             </div>
+            {% for item in score_data.score_detail.site.score_items %}
+            <div id="{{ item.report }}" class="row" style="display:none;">
+                <div class="col-xs-12">
+                    <img src="{{ item.report_photo }}" height="120px">
+                    <p>{{ item.report_date }}</p>
+                    {%if item.awards %}
+                        <ul>
+                        {% for award in item.awards %}
+                            <li>{{ award.xp_awarded }} xp awarded for {{ award.reason }}!</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        No awards for this report!
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
             <hr class="thick">
             <!-- End Breeding site block --->
             <!-- Bite block --->
@@ -156,6 +171,23 @@
                     {% endfor %}
                 </div>
             </div>
+            {% for item in score_data.score_detail.bite.score_items %}
+            <div id="{{ item.report }}" class="row" style="display:none;">
+                <div class="col-xs-12">
+                    <img src="{{ item.report_photo }}" height="120px">
+                    <p>{{ item.report_date }}</p>
+                    {%if item.awards %}
+                        <ul>
+                        {% for award in item.awards %}
+                            <li>{{ award.xp_awarded }} xp awarded for {{ award.reason }}!</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        No awards for this report!
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
             <!-- End Bite block --->
         </div>
     </body>
