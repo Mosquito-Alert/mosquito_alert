@@ -71,6 +71,10 @@ $(document).ready(function () {
             $('#container_mix_' + form_id).show();
             $('#container_value_' + form_id).hide();
             $('#container_other_' + form_id).hide();
+        }else {
+            $('#container_mix_' + form_id).hide();
+            $('#container_value_' + form_id).hide();
+            $('#container_other_' + form_id).hide();
         }
         if( $(this).find(':selected').val() == "8"){
             $('#id_form-' + form_index + '-category').val("");

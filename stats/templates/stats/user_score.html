@@ -76,7 +76,9 @@
             {% for item in score_data.score_detail.adult.score_items %}
             <div id="{{ item.report }}" class="row" style="display:none;">
                 <div class="col-xs-12">
+                    {% if item.report_photo %}
                     <img src="{{ item.report_photo }}" height="120px">
+                    {% endif %}
                     <p>{{ item.report_date }}</p>
                     {%if item.awards %}
                         <ul>
@@ -125,7 +127,9 @@
             {% for item in score_data.score_detail.site.score_items %}
             <div id="{{ item.report }}" class="row" style="display:none;">
                 <div class="col-xs-12">
+                    {% if item.report_photo %}
                     <img src="{{ item.report_photo }}" height="120px">
+                    {% endif %}
                     <p>{{ item.report_date }}</p>
                     {%if item.awards %}
                         <ul>

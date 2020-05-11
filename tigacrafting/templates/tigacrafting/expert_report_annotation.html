@@ -254,29 +254,56 @@
                 <option value="es">Spanish</option>
             </select>-->
 
-            <h4> Instructions</h4>
+            <h4> Instructions <button data-toggle="tooltip" id="details" type="button" class="btn btn-primary">Show</button></h4>
 
             {% block instructions %}
 
                 {% if pending == 'pending' %}
-
+                    <div class="persiana" style="display: none;">
                     <p>
-                        For each report: (1) Select a species classification. If you choose any of the current Aedes,
-                        choose also the degree of certainty matching your degree of belief that the picture contains the
-                        species. If you choose 'Complex', select also the species combo.
-                        (2) add any internal notes for yourself or other experts regarding your reasons for each selection,
-                        (3) add any note you want to see displayed on the public map along with the report
-                        (e.g. an edited version of the user's original note), (4) add any notes that you want to be
-                        shown directly to the user (citizen scientist) who created the report, (5) flag the report if
-                        you want to bring it to the attention of other experts
-                        (because it is an especially interesting report or because you have doubts), (6) indicate if the
-                        report should be hidden from public view (this will automatically
-                        remove it from the public map), and (7) select which (if any) of the reports photos should be
-                        displayed on the public map (only one photo will be displayed). You can save your work as you go
-                        using the "save" button at the top of the screen. When you are done with a given report, check
-                        the
+                        You can be assigned a simplified report or a full report. In case of the simplified report, the steps
+                        in <span style="color:blue;">blue</span> are ommitted.
+                        For each report:
+                        <ul>
+                        <li>
+                            (1) Select a species classification. If you choose any of the current Aedes or Culex,
+                            choose also the degree of certainty matching your degree of belief that the picture contains the
+                            species. If you choose 'Complex', select also the species combo. If you choose 'Other', please specify the other
+                            species you have identified.
+                        </li>
+                        <li>
+                            (2) add any note you want to see displayed on the public map along with the report
+                            (e.g. an edited version of the user's original note),
+                        </li>
+                        <li style="color:blue;">
+                            (3) add any internal tags for this report, which can help you locate it later,
+                        </li>
+                        <li>
+                            (4) add any internal notes for yourself or other experts regarding your reasons for each selection,
+                        </li>
+                        <li style="color:blue;">
+                            (4) add any notes that you want to be
+                            shown directly to the user (citizen scientist) who created the report,
+                        </li>
+                        <li>
+                            (5) flag the report if you want to bring it to the attention of other experts
+                            (because it is an especially interesting report or because you have doubts),
+                        </li>
+                        <li>
+                        (6) indicate if the report should be hidden from public view (this will automatically
+                        remove it from the public map), and
+                        </li>
+                        <li style="color:blue;">
+                            (7) select which (if any) of the reports photos should be
+                        displayed on the public map (only one photo will be displayed).
+                        </li>
+                        </ul>
+                        You can save your work as you go using the "save" button at the top of the screen. When you are
+                        done with a given report, check  the
                         "validation complete" box. You will not be able to modify your responses once you have saved a
-                        report marked with "validation complete."</p>
+                        report marked with "validation complete."
+                    </p>
+                    </div>
 
                 {% else %}
                     <p>You are currently viewing your completed reports. To validate new reports, click the blue
@@ -1464,6 +1491,17 @@
         }
 
         $( document ).ready(function() {
+
+            $('#details').click(function(){
+                if( $('.persiana').attr("style") == 'display: none;' ){
+                    $('.persiana').fadeIn( "slow", function(){});
+                    $('#details').html('Hide');
+                }else{
+                    $('.persiana').fadeOut( "slow", function(){});
+                    $('#details').html('Show');
+                }
+            });
+
             var total_forms = $("#id_form-TOTAL_FORMS").val();
             index_to_id = {};
             id_to_index = {};
