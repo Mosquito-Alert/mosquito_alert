@@ -38,7 +38,9 @@ from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
+import logging
 
+logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 
 def get_current_domain(request):
     if request.META['HTTP_HOST'] != '':
@@ -600,7 +602,8 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
     :param max_pending: maximum number of pending reports per user
     :param max_given: number of users to which a report is given (excluding superexpert)
     """
-
+    logger_report_assignment.debug('Begin ASSIGN REPORT for User {0}'.format(this_user,))
+    logger_report_assignment.debug('Assigning reports to user {0}'.format(this_user, ))
     # dictionary or reports assigned to some supervisor
     report_assigned_to_supervisor = ExpertReportAnnotation.objects.filter(user__id__in=national_supervisor_ids).values('report').distinct()
     # set of these report ids
@@ -611,9 +614,12 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
     this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
     #this_user_is_spain = this_user.groups.filter(name='eu_group_spain').exists()
     this_user_is_spain = not this_user_is_europe
+
     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
     if current_pending < max_pending:
+        logger_report_assignment.debug('User {0} has less than {1} reports assigned (currently {2})'.format(this_user, max_pending, current_pending))
         n_to_get = max_pending - current_pending
+        logger_report_assignment.debug('User {0} trying to get {1} reports'.format(this_user, n_to_get))
         new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
         '''
         if new_reports_unfiltered and this_user_is_team_bcn:
@@ -622,65 +628,97 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
             new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
         '''
         if this_user_is_supervisor:
+            #logger_report_assignment.debug('User {0} is supervisor'.format(this_user,))
             reports_supervised_country = new_reports_unfiltered.filter(country__gid=this_user.userstat.national_supervisor_of.gid)
             reports_non_supervised_country = new_reports_unfiltered.exclude(version_UUID__in=reports_supervised_country.values('version_UUID'))
             reports_supervised_country_filtered = filter_reports(reports_supervised_country.order_by('creation_time'))
             reports_non_supervised_country_filtered = filter_reports(reports_non_supervised_country.order_by('creation_time'))
             new_filtered_reports = reports_supervised_country_filtered + reports_non_supervised_country_filtered
         else:
+            #logger_report_assignment.debug('User {0} is not supervisor'.format(this_user, ))
             new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+        logger_report_assignment.debug('User {0} has {1} potentially assignable reports'.format(this_user, len(new_filtered_reports)))
 
         if this_user_is_spain:
+            logger_report_assignment.debug('User {0} is in spanish group'.format(this_user, ))
             new_reports = filter_spain_reports(new_filtered_reports)
+            logger_report_assignment.debug('User {0} has {1} of {2} reports located in Spain/Other area'.format(this_user, len(new_reports), len(new_filtered_reports), ))
         elif this_user_is_europe:
+            logger_report_assignment.debug('User {0} is in european group'.format(this_user, ))
             new_reports = filter_eu_reports(new_filtered_reports)
+            logger_report_assignment.debug('User {0} has {1} of {2} reports located in Europe area'.format(this_user, len(new_reports),len(new_filtered_reports), ))
         else:
             new_reports = new_filtered_reports
 
         grabbed_reports = -1
         reports_taken = 0
+        logger_report_assignment.debug('Looping reports for User {0}'.format(this_user,))
         for this_report in new_reports:
             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
             who_has_count = this_report.get_who_has_count()
+            logger_report_assignment.debug('Report {0} assigned to {1} people'.format(this_report, who_has_count, ))
             if this_user_is_supervisor:
+                logger_report_assignment.debug('User {0} is supervisor for {1}'.format(this_user, this_user.userstat.national_supervisor_of.name_engl))
                 if this_user.userstat.is_national_supervisor_for_country(this_report.country):
+                    logger_report_assignment.debug('User {0} is supervisor for country of report {1} which is {2}'.format(this_user, this_report, this_report.country, ))
                     if who_has_count == 2:
+                        logger_report_assignment.debug('Assigning full report {0} to supervisor User {1} because it has been assigned to 2 other users'.format(this_report, this_user,))
                         new_annotation.simplified_annotation = False
                         grabbed_reports += 1
                         reports_taken += 1
                         new_annotation.save()
+                    else:
+                        logger_report_assignment.debug('NOT assigning report to supervisor User {0} because it has not yet been assigned to 2 other users (assigned to {1} other users)'.format(this_user, who_has_count,))
                 else:
+                    logger_report_assignment.debug('User {0} is NOT supervisor for country of report {1} which is {2}'.format(this_user, this_report,this_report.country, ))
+                    logger_report_assignment.debug('Assigning report {0} to supervisor User {1} because it is available'.format(this_report, this_user, ))
                     if who_has_count == 0 or who_has_count == 1:
+                        logger_report_assignment.debug('Report assigned to supervisor User {0} as simplified'.format(this_user, ))
                         new_annotation.simplified_annotation = True
+                    else:
+                        logger_report_assignment.debug('Report assigned to supervisor User {0} as extended'.format(this_user, ))
                     grabbed_reports += 1
                     reports_taken += 1
                     new_annotation.save()
             else:
+                logger_report_assignment.debug('User {0} is NOT supervisor'.format(this_user, ))
                 if this_report.country is None:
+                    logger_report_assignment.debug('Report {0} has no country'.format(this_report, ))
                     if who_has_count == 0 or who_has_count == 1:
+                        logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
                         new_annotation.simplified_annotation = True
                     else:
+                        logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
                         new_annotation.simplified_annotation = False
                     grabbed_reports += 1
                     reports_taken += 1
                     new_annotation.save()
                 else:
+                    logger_report_assignment.debug('Report {0} is in country {1}'.format(this_report, this_report.country))
                     if this_report.country.gid in country_with_supervisor_set:
+                        logger_report_assignment.debug('Report {0} is in country {1} which has a supervisor'.format(this_report, this_report.country))
                         #Assign only if only 1 other user or nobody is assigned
                         if who_has_count <= 1:
-                            if this_report.version_UUID in report_assigned_to_supervisor_set:
-                                # if who_has_count <= 1:
-                                if who_has_count == 0 or who_has_count == 1:
-                                    new_annotation.simplified_annotation = True
-                                else:
-                                    new_annotation.simplified_annotation = False
-                                grabbed_reports += 1
-                                reports_taken += 1
-                                new_annotation.save()
+                            logger_report_assignment.debug('Report {0} is assigned to less or equal than 1 people ({1})'.format(this_report, who_has_count))
+                            #if this_report.version_UUID in report_assigned_to_supervisor_set:
+                            if who_has_count == 0 or who_has_count == 1:
+                                logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
+                                new_annotation.simplified_annotation = True
+                            else:
+                                logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
+                                new_annotation.simplified_annotation = False
+                            grabbed_reports += 1
+                            reports_taken += 1
+                            new_annotation.save()
+                            #else:
+                                #logger_report_assignment.debug('Report {0} not yet assigned to supervisor, not assigning'.format(this_report, ))
                     else:
+                        logger_report_assignment.debug('Report {0} is in country {1} which has NO supervisor'.format(this_report,this_report.country))
                         if who_has_count == 0 or who_has_count == 1:
+                            logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
                             new_annotation.simplified_annotation = True
                         else:
+                            logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
                             new_annotation.simplified_annotation = False
                         grabbed_reports += 1
                         reports_taken += 1
@@ -689,6 +727,8 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
                 break
         this_user.userstat.grabbed_reports = grabbed_reports
         this_user.userstat.save()
+        logger_report_assignment.debug('End ASSIGN REPORT for User {0}'.format(this_user, ))
+        logger_report_assignment.debug(' ')
 
 @transaction.atomic
 @login_required
