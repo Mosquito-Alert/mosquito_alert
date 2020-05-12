@@ -3,7 +3,8 @@ from django.test import TestCase
 # Create your tests here.
 from django.test import TestCase
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation
-from tigacrafting.models import UserStat
+from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex
+from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from django.db.models import Count, Q
@@ -87,6 +88,8 @@ class UserTestCase(TestCase):
         europe_group.save()
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
 
         u1 = User.objects.create(pk=1)
         u1.username = 'expert_1_es'
@@ -132,6 +135,17 @@ class UserTestCase(TestCase):
         europe_group.user_set.add(u9)
         europe_group.user_set.add(u10)
 
+        experts.user_set.add(u1)
+        experts.user_set.add(u2)
+        experts.user_set.add(u3)
+        experts.user_set.add(u4)
+        experts.user_set.add(u5)
+        experts.user_set.add(u6)
+        experts.user_set.add(u7)
+        experts.user_set.add(u8)
+        experts.user_set.add(u9)
+        experts.user_set.add(u10)
+
     # tests that user creation triggers userstat creation
     def test_create_user_and_userstat(self):
         u = User.objects.create(pk=1)
@@ -174,35 +188,82 @@ class UserTestCase(TestCase):
     # tests that all users are:
     # - assigned max_pending reports
     # - if users are supervisors, they are assigned the report(s) for the country they supervise
-    def test_assign_reports(self):
+    # def test_assign_reports(self):
+    #     self.create_team()
+    #     self.create_report_pool()
+    #     current_pending = 0
+    #     max_pending = 5
+    #     max_given = 3
+    #     national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
+    #     country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
+    #     country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
+    #     for this_user in User.objects.all():
+    #         assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
+    #         user_summary(this_user)
+    #
+    #     '''
+    #     for usr in User.objects.all():
+    #         n = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').values('report').distinct().count()
+    #         if usr.userstat.is_national_supervisor():
+    #             assigned_supervised = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').filter(report__country__gid=usr.userstat.national_supervisor_of.gid).exists()
+    #             self.assertEqual(n, max_pending)
+    #             self.assertEqual(assigned_supervised, True)
+    #         else:
+    #             if usr.groups.filter(name='eu_group_europe').exists():
+    #                 self.assertEqual(n, max_pending)
+    #             elif usr.groups.filter(name='eu_group_spain').exists():
+    #                 self.assertTrue(n == 1 or n == 0)
+    #     '''
+    #
+    #     # Enable this for extra verbose info
+    #     '''
+    #     for usr in User.objects.all():
+    #         user_summary(usr)
+    #     '''
+
+    def test_autoflag_report(self):
         self.create_team()
         self.create_report_pool()
-        current_pending = 0
-        max_pending = 5
-        max_given = 3
-        national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-        country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-        country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-        for this_user in User.objects.all():
-            assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
-            user_summary(this_user)
+        r = Report.objects.get(pk='1')
+        self.assertEqual(r.version_UUID,'1')
 
-        '''
-        for usr in User.objects.all():
-            n = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').values('report').distinct().count()
-            if usr.userstat.is_national_supervisor():
-                assigned_supervised = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').filter(report__country__gid=usr.userstat.national_supervisor_of.gid).exists()
-                self.assertEqual(n, max_pending)
-                self.assertEqual(assigned_supervised, True)
-            else:
-                if usr.groups.filter(name='eu_group_europe').exists():
-                    self.assertEqual(n, max_pending)
-                elif usr.groups.filter(name='eu_group_spain').exists():
-                    self.assertTrue(n == 1 or n == 0)
-        '''
+        user_spain_1 = User.objects.get(username='expert_1_es')
+        user_spain_4 = User.objects.get(username='expert_4_es')
+        user_spain_6 = User.objects.get(username='expert_6_es')
 
-        # Enable this for extra verbose info
-        '''
-        for usr in User.objects.all():           
-            user_summary(usr)
-        '''
+        c_1 = Categories.objects.create(pk=1,name='Red',specify_certainty_level=False)
+        c_1.save()
+        c_2 = Categories.objects.create(pk=2, name='Orange', specify_certainty_level=False)
+        c_2.save()
+        c_3 = Categories.objects.create(pk=3, name='Blue', specify_certainty_level=False)
+        c_3.save()
+
+        cp_1 = Complex.objects.create(pk=1, description="Green/Teal")
+        cp_1.save()
+
+        anno_u1 = ExpertReportAnnotation.objects.create(user=user_spain_1, report=r, category=c_1, validation_complete=True)
+        anno_u1.save()
+        anno_u4 = ExpertReportAnnotation.objects.create(user=user_spain_4, report=r, category=c_2,validation_complete=True)
+        anno_u4.save()
+        anno_u6 = ExpertReportAnnotation.objects.create(user=user_spain_6, report=r, category=c_3,validation_complete=True)
+        anno_u6.save()
+
+        #Three different categories -> Conflict
+        autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
+        self.assertEqual( autoflag_question_mark, True )
+
+        anno_u6.category = None
+        anno_u6.complex = cp_1
+        anno_u6.save()
+
+        # Two categories, one conflict -> Conflict
+        autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
+        self.assertEqual(autoflag_question_mark, True)
+
+        anno_u6.category = c_1
+        anno_u6.complex = None
+        anno_u6.save()
+
+        # Two equal categories, one different -> No Conflict
+        autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
+        self.assertEqual(autoflag_question_mark, False)

@@ -8,7 +8,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
-    adult_sunburst, site_sunburst, hashtag_map, stats_user_score
+    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
 from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view
 from tigaserver_messages.views import compose_w_data, reply_w_data
@@ -81,6 +81,7 @@ urlpatterns += i18n_patterns('',
     url(r'^stats/hashtag_map/$', hashtag_map, name='hashtag_map'),
     url(r'^stats/directory/$', stats_directory, name='stats_directory'),
     url(r'^stats/user_score/(?P<user_uuid>[\w{}.-]{36})$', stats_user_score, name='stats_user_score'),
+    url(r'^stats/user_ranking/$', stats_user_ranking, name='stats_user_ranking'),
     #url(r'^reportstats/$', show_report_users),
     #url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
     #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),

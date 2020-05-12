@@ -319,16 +319,16 @@ def compute_user_score_in_xp_v2(user_uuid):
     bite_df = pd.DataFrame(list(qs_bite.values_list('score_v2_bite', 'user_UUID')), columns=['score_v2_bite', 'user_UUID'])
 
     overall_sorted_df = overall_df.sort_values('score_v2', inplace=False)
-    overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(ascending=False)
+    overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(method='dense', ascending=False)
 
     adult_sorted_df = adult_df.sort_values('score_v2_adult', inplace=False)
-    adult_sorted_df["rank"] = adult_sorted_df['score_v2_adult'].rank(ascending=False)
+    adult_sorted_df["rank"] = adult_sorted_df['score_v2_adult'].rank(method='dense', ascending=False)
 
     site_sorted_df = site_df.sort_values('score_v2_site', inplace=False)
-    site_sorted_df["rank"] = site_sorted_df['score_v2_site'].rank(ascending=False)
+    site_sorted_df["rank"] = site_sorted_df['score_v2_site'].rank(method='dense', ascending=False)
 
     bite_sorted_df = bite_df.sort_values('score_v2_bite', inplace=False)
-    bite_sorted_df["rank"] = bite_sorted_df['score_v2_bite'].rank(ascending=False)
+    bite_sorted_df["rank"] = bite_sorted_df['score_v2_bite'].rank(method='dense', ascending=False)
 
     result = {}
     result['total_score'] = 0
@@ -463,6 +463,23 @@ def compute_user_score_in_xp_v2(user_uuid):
     result['score_detail']['bite']['ranked_users'] = bite_number_total
 
     return result
+
+
+def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
+    retval = {}
+    qs_reports = Report.objects.filter(creation_time__lte=datetime.datetime.today())
+    if date_ini is not None:
+        qs_reports = qs_reports.filter( creation_time__gte=date_ini )
+    users_for_reports = qs_reports.values('user').distinct()
+    qs_overall = TigaUser.objects.exclude(score_v2=0)
+    overall_df = pd.DataFrame(list(qs_overall.values_list('score_v2', 'user_UUID')), columns=['score_v2', 'user_UUID'])
+    overall_sorted_df = overall_df.sort_values('score_v2', inplace=False)
+    overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(method='dense', ascending=False)
+    overall_sorted_df.sort_values('rank', inplace=True)
+    retval['data'] = []
+    for index, row in overall_sorted_df.iterrows():
+        retval['data'].append( { "score_v2": row['score_v2'],"user_uuid":row['user_UUID'],"rank":row['rank']} )
+    return retval
 
 
 def compute_all_user_scores():

@@ -449,7 +449,7 @@ def must_be_autoflagged(this_annotation, is_current_validated):
                 item = anno.category if anno.complex is None else anno.complex
                 classifications.append(item)
                 anno_count += 1
-            this_annotation_item = this_annotation.category if anno.complex is None else anno.complex
+            this_annotation_item = this_annotation.category if this_annotation.complex is None else this_annotation.complex
             classifications.append(this_annotation_item)
             if is_current_validated and len(classifications) == 3 and ( len(set(classifications)) == len(classifications) ):
                 return True

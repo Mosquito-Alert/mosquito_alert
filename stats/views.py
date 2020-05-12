@@ -19,7 +19,7 @@ import json
 from sets import Set
 import datetime
 from django.utils import timezone
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -579,6 +579,11 @@ def stats_user_score(request, user_uuid=None):
     context = { "score_data": user_score }
     return render(request, 'stats/user_score.html', context)
 
+
+def stats_user_ranking(request):
+    ranking = get_ranking_data()
+    context = ranking
+    return render(request, 'stats/user_ranking.html', context)
 
 @login_required
 def report_stats_ccaa(request):
