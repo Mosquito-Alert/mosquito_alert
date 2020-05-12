@@ -1144,6 +1144,12 @@ def nearby_reports_no_dwindow(request):
         center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
 
         user = request.QUERY_PARAMS.get('user', None)
+        tigauser = None
+        user_uuids = None
+        if user is not None:
+            tigauser = get_object_or_404(TigaUser.objects.all(), pk=user)
+            if tigauser.profile is not None:
+                user_uuids = TigaUser.objects.filter(profile=tigauser.profile).values('user_UUID')
 
         radius = request.QUERY_PARAMS.get('radius', 5000)
         try:
@@ -1193,7 +1199,10 @@ def nearby_reports_no_dwindow(request):
             .annotate(n_annotations=Count('expert_report_annotations'))\
             .filter(n_annotations__gte=3)
         if user is not None:
-            reports_adult = reports_adult.exclude(user=user)
+            if tigauser.profile is None:
+                reports_adult = reports_adult.exclude(user=user)
+            else:
+                reports_adult = reports_adult.exclude(user__user_UUID__in=user_uuids)
         if show_hidden == 0:
             reports_adult = reports_adult.exclude(version_number=-1)
 
@@ -1204,7 +1213,10 @@ def nearby_reports_no_dwindow(request):
             .exclude(hide=True) \
             .filter(type='bite')
         if user is not None:
-            reports_bite = reports_bite.exclude(user=user)
+            if tigauser.profile is None:
+                reports_bite = reports_bite.exclude(user=user)
+            else:
+                reports_bite = reports_bite.exclude(user__user_UUID__in=user_uuids)
         if show_hidden == 0:
             reports_bite = reports_bite.exclude(version_number=-1)
 
@@ -1215,7 +1227,10 @@ def nearby_reports_no_dwindow(request):
             .exclude(hide=True) \
             .filter(type='site')
         if user is not None:
-            reports_site = reports_site.exclude(user=user)
+            if tigauser.profile is None:
+                reports_site = reports_site.exclude(user=user)
+            else:
+                reports_site = reports_site.exclude(user__user_UUID__in=user_uuids)
         if show_hidden == 0:
             reports_site = reports_site.exclude(version_number=-1)
 
@@ -1225,7 +1240,10 @@ def nearby_reports_no_dwindow(request):
             classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports_adult)
 
         if user is not None:
-            user_reports = Report.objects.filter(user=user)
+            if tigauser.profile is None:
+                user_reports = Report.objects.filter(user=user)
+            else:
+                user_reports = Report.objects.filter(user__user_UUID__in=user_uuids)
             if show_hidden == 0:
                 user_reports = user_reports.exclude(version_number=-1)
             if show_versions == 0:
@@ -1249,7 +1267,11 @@ def nearby_reports_no_dwindow(request):
 
         previous = current_page.previous_page_number() if current_page.has_previous() else None
 
-        response = { "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+        if user_uuids is None:
+            response = { "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+        else:
+            user_uuids_flat = [x['user_UUID'] for x in user_uuids]
+            response = { "user_uuids": user_uuids_flat, "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
 
         return Response(response)
 
