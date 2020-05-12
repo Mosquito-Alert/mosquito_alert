@@ -20,6 +20,7 @@ from sets import Set
 import datetime
 from django.utils import timezone
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from rest_framework.exceptions import ParseError
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -683,6 +684,18 @@ def show_report_users(request):
 def hashtag_map(request):
     context = {}
     return render(request, 'stats/hashtag_map.html', context)
+
+
+@api_view(['GET'])
+def get_user_xp_data(request):
+    user_id = request.QUERY_PARAMS.get('user_id', '-1')
+    try:
+        u = TigaUser.objects.get(pk=user_id)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='user does not exist')
+
+    retval = compute_user_score_in_xp_v2(user_id)
+    return Response(retval)
 
 
 @api_view(['GET'])
