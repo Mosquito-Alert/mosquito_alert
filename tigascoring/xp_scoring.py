@@ -1,4 +1,4 @@
-from tigaserver_app.models import Report, TigaUser
+from tigaserver_app.models import Report, TigaUser, TigaProfile
 import csv
 import time
 import pandas as pd
@@ -250,12 +250,21 @@ def get_elapsed_label( date_now, date_before ):
 
 def compute_user_score_in_xp_v2_fast(user_uuid):
 
+    user = TigaUser.objects.get(pk=user_uuid)
+    user_profile = None
+    user_uuids = None
+    if user.profile is not None:
+        user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
+
     result = {}
     result['total_score'] = 0
     result['user_uuid'] = user_uuid
     result['score_detail'] = {}
 
-    user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
+    if user_uuids is None:
+        user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
+    else:
+        user_reports = Report.objects.filter(user__user_UUID__in=user_uuids).order_by('-creation_time')
 
     adults = user_reports.filter(type='adult')
     bites = user_reports.filter(type='bite')
@@ -306,12 +315,32 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
     return result
 
 
+def get_uuid_replicas():
+    profiles = TigaProfile.objects.all()
+    exclude = []
+    for p in profiles:
+        if p.profile_devices.count() > 1:
+            i = 0
+            for d in p.profile_devices.all().order_by('user_UUID'):
+                if i > 0:
+                    exclude.append(d.user_UUID)
+                i+=1
+    return exclude
+
+
 def compute_user_score_in_xp_v2(user_uuid):
 
-    qs_overall = TigaUser.objects.exclude(score_v2=0)
-    qs_adult = TigaUser.objects.exclude(score_v2_adult=0)
-    qs_site = TigaUser.objects.exclude(score_v2_site=0)
-    qs_bite = TigaUser.objects.exclude(score_v2_bite=0)
+    user = TigaUser.objects.get(pk=user_uuid)
+    user_uuids = None
+    if user.profile is not None:
+        user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
+
+    uuid_replicas = get_uuid_replicas()
+
+    qs_overall = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
+    qs_adult = TigaUser.objects.exclude(score_v2_adult=0).exclude(user_UUID__in=uuid_replicas)
+    qs_site = TigaUser.objects.exclude(score_v2_site=0).exclude(user_UUID__in=uuid_replicas)
+    qs_bite = TigaUser.objects.exclude(score_v2_bite=0).exclude(user_UUID__in=uuid_replicas)
 
     overall_df = pd.DataFrame(list(qs_overall.values_list('score_v2', 'user_UUID')), columns=['score_v2', 'user_UUID'])
     adult_df = pd.DataFrame(list(qs_adult.values_list('score_v2_adult', 'user_UUID')), columns=['score_v2_adult', 'user_UUID'])
@@ -349,13 +378,16 @@ def compute_user_score_in_xp_v2(user_uuid):
     min_max_bite = get_min_max(bite_sorted_df, 'score_v2_bite')
 
     current_date = datetime.date.today()
-    try:
-        user = TigaUser.objects.get(pk=user_uuid)
+    if user is not None:
         result['joined_value'] = user.registration_time.strftime("%d/%m/%Y")
         result['joined_label'] = get_elapsed_label(current_date, user.registration_time.date())
-    except TigaUser.DoesNotExist:
+    else:
         result['joined_value'] = None
-    user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
+
+    if user_uuids is None:
+        user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
+    else:
+        user_reports = Report.objects.filter(user__user_UUID__in=user_uuids).order_by('-creation_time')
 
     if user_reports:
         result['active_value'] = user_reports[0].creation_time.strftime("%d/%m/%Y")
@@ -471,7 +503,10 @@ def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
     if date_ini is not None:
         qs_reports = qs_reports.filter( creation_time__gte=date_ini )
     users_for_reports = qs_reports.values('user').distinct()
-    qs_overall = TigaUser.objects.exclude(score_v2=0)
+
+    uuid_replicas = get_uuid_replicas()
+    qs_overall = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
+
     overall_df = pd.DataFrame(list(qs_overall.values_list('score_v2', 'user_UUID')), columns=['score_v2', 'user_UUID'])
     overall_sorted_df = overall_df.sort_values('score_v2', inplace=False)
     overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(method='dense', ascending=False)

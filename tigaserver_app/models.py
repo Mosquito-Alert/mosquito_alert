@@ -1170,12 +1170,6 @@ class Report(models.Model):
             else:
                 return "Conflict"
 
-
-    def get_mean_combined_expert_adult_score_euro(self):
-        status = self.get_mean_expert_adult_classification_data_euro()
-        pass
-
-
     def get_mean_combined_expert_adult_score(self):
         status = self.get_mean_expert_adult_classification_data()
         albopictus_score = status['albopictus_final_score']

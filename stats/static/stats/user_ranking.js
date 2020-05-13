@@ -11,16 +11,16 @@ var detail_template = '<div class="row">' +
                              '</div>' +
                              '<div class="col-md-6 summary">' +
                                  '<div class="row">' +
-                                     '<div class="col-xs-3">Adult reports</div><div class="col-xs-3"><span class="badge badge-success">#n_adult#</span></div>' +
-                                     '<div class="col-xs-3">Adult XP</div><div class="col-xs-3"><span class="badge badge-success">#xp_adult#</span></div>' +
+                                     '<div class="col-xs-3">Adult reports</div><div class="col-xs-3 text-center"><span class="badge badge-success">#n_adult#</span></div>' +
+                                     '<div class="col-xs-3">Adult XP</div><div class="col-xs-3 text-center"><span class="badge badge-success">#xp_adult#</span></div>' +
                                  '</div>' +
                                  '<div class="row">' +
-                                     '<div class="col-xs-3">Bite reports</div><div class="col-xs-3"><span class="badge badge-success">#n_bite#</span></div>' +
-                                     '<div class="col-xs-3">Bite XP</div><div class="col-xs-3"><span class="badge badge-success">#xp_bite#</span></div>' +
+                                     '<div class="col-xs-3">Bite reports</div><div class="col-xs-3 text-center"><span class="badge badge-success">#n_bite#</span></div>' +
+                                     '<div class="col-xs-3">Bite XP</div><div class="col-xs-3 text-center"><span class="badge badge-success">#xp_bite#</span></div>' +
                                  '</div>' +
                                  '<div class="row">' +
-                                     '<div class="col-xs-3">Site reports</div><div class="col-xs-3"><span class="badge badge-success">#n_site#</span></div>' +
-                                     '<div class="col-xs-3">Site XP</div><div class="col-xs-3"><span class="badge badge-success">#xp_site#</span></div>' +
+                                     '<div class="col-xs-3">Site reports</div><div class="col-xs-3 text-center"><span class="badge badge-success">#n_site#</span></div>' +
+                                     '<div class="col-xs-3">Site XP</div><div class="col-xs-3 text-center"><span class="badge badge-success">#xp_site#</span></div>' +
                                  '</div>' +
                              '</div>' +
                          '</div>';

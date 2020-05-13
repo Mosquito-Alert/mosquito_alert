@@ -248,17 +248,11 @@
 
 
         <div style="text-align: left">
-            <!--<p>Public note message language:</p>
-            <select id="note_language_select">
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-            </select>-->
-
-            <h4> Instructions <button data-toggle="tooltip" id="details" type="button" class="btn btn-primary">Show</button></h4>
 
             {% block instructions %}
 
                 {% if pending == 'pending' %}
+                    <h4> Instructions <button data-toggle="tooltip" id="details" type="button" class="btn btn-primary">Show</button></h4>
                     <div class="persiana" style="display: none;">
                     <p>
                         You can be assigned a simplified report or a full report. In case of the simplified report, the steps
@@ -269,39 +263,43 @@
                             (1) Select a species classification. If you choose any of the current Aedes or Culex,
                             choose also the degree of certainty matching your degree of belief that the picture contains the
                             species. If you choose 'Complex', select also the species combo. If you choose 'Other', please specify the other
-                            species you have identified.
-                        </li>
-                        <li>
-                            (2) add any note you want to see displayed on the public map along with the report
-                            (e.g. an edited version of the user's original note),
+                            species that you are sure it is.
                         </li>
                         <li style="color:blue;">
-                            (3) add any internal tags for this report, which can help you locate it later,
+                            (2) add any note you want to see displayed on the public map along with the report. Please be careful not to write
+                            any sensitive information here such as names, e-mail addresses, telephone numbers or anything which can be considered
+                            personal/sensitive data.
+                        </li>
+                        <li style="color:blue;">
+                            (3) add any internal tags for this report, which can help you locate it later.
                         </li>
                         <li>
-                            (4) add any internal notes for yourself or other experts regarding your reasons for each selection,
+                            (4) add any internal notes for yourself or other experts regarding your reasons for each selection. These notes will be
+                            used only internally and will be never visible anywhere public.
                         </li>
                         <li>
                             (5) flag the report if you want to bring it to the attention of other experts
-                            (because it is an especially interesting report or because you have doubts),
+                            (because it is an especially interesting report or because you have doubts).
                         </li>
                         <li>
-                        (6) indicate if the report should be hidden from public view (this will automatically
-                        remove it from the public map), and
+                            (6) indicate if the report should be hidden from public view (this will automatically
+                            remove it from the public map). If you select to hide or flag the report, you need to specify why you have chosen to
+                            do so. Do this by writing an internal comment.
                         </li>
                         <li style="color:blue;">
-                            (7) select which (if any) of the reports photos should be
-                        displayed on the public map (only one photo will be displayed).
+                            (7) select which (if any) of the reports photos should be displayed on the public map (only one photo will be displayed).
+                            Please be careful not to mark any picture which may contain sensitive data such as faces, addresses or anything which can
+                            be considered personal/sensitive data.
                         </li>
                         </ul>
-                        You can save your work as you go using the "save" button at the top of the screen. When you are
-                        done with a given report, check  the
-                        "validation complete" box. You will not be able to modify your responses once you have saved a
-                        report marked with "validation complete."
+                        You can save your work as you go using the "save" button at the top of the screen.
+                        When you are done with a given report, check  the "validation complete" box. You will not be
+                        able to modify your responses once you have saved a report marked with "validation complete."
                     </p>
                     </div>
 
                 {% else %}
+                    <h4> Instructions </h4>
                     <p>You are currently viewing your completed reports. To validate new reports, click the blue
                         'Pending' button at the top of the screen.</p>
                 {% endif %}
@@ -1737,12 +1735,13 @@
             reports_list_div.append('<ul></ul>');
             var reports_list = $("#reports_being_saved_list ul");
             $("[id*='validation_complete']:checked").each(function () {
-
+                /*var report_id = $(this).parent().parent().parent().attr('id');
+                var n_pictures = $('input[name ="photo_to_display_report_' + report_id + '"]').length;*/
                 {% if request.user.userstat.is_superexpert %}
                     if ($(this).siblings("[id*='revise']").val() == "false") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:green">Confirming Experts</span></li>');
                     }
-                    else if ($(this).siblings("[name*='photo']").val() == "") {
+                    else if ($(this).siblings("[name*='photo']").val() == ""  ) {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Revising without photo</span></li>');
                     }
                     else {
