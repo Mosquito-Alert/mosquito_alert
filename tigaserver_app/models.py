@@ -1579,7 +1579,7 @@ def make_uuid():
     return str(uuid.uuid4())
 
 
-class Photo(models.Model):
+clasPhoto(models.Model):
     """
     Photo uploaded by user.
     """
@@ -1604,7 +1604,7 @@ class Photo(models.Model):
     def get_popup_path(self):
         return self.photo.path.replace('tigapics/', 'tigapics_popups/')
 
-    def get_small_url(self):
+    def get_small_url(self):.get
         if os.path.isfile(self.photo.path):
             if not os.path.isfile(self.get_small_path()):
                 try:
