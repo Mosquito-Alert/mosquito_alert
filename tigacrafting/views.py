@@ -231,11 +231,11 @@ def filter_reports(reports, sort=True):
 
 
 def filter_spain_reports(reports):
-    return filter(lambda x: x.is_spain, reports)
+    return filter(lambda x: x.is_spain_p, reports)
 
 
 def filter_eu_reports(reports):
-    return filter(lambda x: not x.is_spain, reports)
+    return filter(lambda x: not x.is_spain_p, reports)
 
 
 def filter_reports_for_superexpert(reports):
