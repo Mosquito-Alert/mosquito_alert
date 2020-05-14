@@ -1008,20 +1008,52 @@ class Report(models.Model):
             elif score == -1 or score == -2:
                 return labels[locale]['other']
 
+
+    def get_most_voted_category(self, expert_annotations):
+        most_frequent_item, most_frequent_count = None, 0
+        n_blanks = 0
+        blank_category = None
+        score_table = {}
+        for anno in expert_annotations:
+            item = anno.category if anno.complex is None else anno.complex
+            if item.__class__.__name__ == 'Categories' and item.id == 9:
+                blank_category = item
+                n_blanks += 1
+                pass
+            else:
+                score_table[item] = score_table.get(item,0) + 1
+                if score_table[item] >= most_frequent_count:
+                    most_frequent_count, most_frequent_item = score_table[item], item
+        if n_blanks == len(expert_annotations):
+            return blank_category
+        else:
+            for key in score_table:
+                score = score_table[key]
+                if key != most_frequent_item and score >= most_frequent_count:
+                    return None  # conflict
+        return most_frequent_item
+
+    '''
     def get_most_voted_category(self,expert_annotations):
         score_table = {}
         most_frequent_item, most_frequent_count = None, 0
-        for anno in expert_annotations:
+        for anno in expert_annotations:                            
             item = anno.category if anno.complex is None else anno.complex
             score_table[item] = score_table.get(item,0) + 1
             if score_table[item] >= most_frequent_count:
                 most_frequent_count, most_frequent_item = score_table[item], item
-        #check for ties
-        for key in score_table:
+        # if there's a single key and it's Not sure, then not sure
+        if len(score_table.keys()) == 1:
+            for key in score_table:
+                if key.id == 9:
+                    return score_table[key]
+        # check for ties
+        for key in score_table:            
             score = score_table[key]
             if key != most_frequent_item and score >= most_frequent_count:
                 return None #conflict
         return most_frequent_item
+    '''
 
     def get_score_for_category_or_complex(self, category):
         superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)
