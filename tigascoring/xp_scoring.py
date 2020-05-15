@@ -50,6 +50,7 @@ score metadata structure - json
     "active_label": x,
     "active_value": x,
     "total_score": x,
+    "identicon": x,
     "overall_rank_value": x,
     "overall_class_value": x,
     "overall_class_label": x,
@@ -251,7 +252,6 @@ def get_elapsed_label( date_now, date_before ):
 def compute_user_score_in_xp_v2_fast(user_uuid):
 
     user = TigaUser.objects.get(pk=user_uuid)
-    user_profile = None
     user_uuids = None
     if user.profile is not None:
         user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
@@ -362,6 +362,7 @@ def compute_user_score_in_xp_v2(user_uuid):
     result = {}
     result['total_score'] = 0
     result['user_uuid'] = user_uuid
+    result['identicon'] = "/media/identicons/" + user_uuid + ".png"
     result['score_detail'] = {}
 
     rank_value_overall = get_user_rank_value(overall_sorted_df, user_uuid)
@@ -502,7 +503,6 @@ def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
     qs_reports = Report.objects.filter(creation_time__lte=datetime.datetime.today())
     if date_ini is not None:
         qs_reports = qs_reports.filter( creation_time__gte=date_ini )
-    users_for_reports = qs_reports.values('user').distinct()
 
     uuid_replicas = get_uuid_replicas()
     qs_overall = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
@@ -511,9 +511,22 @@ def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
     overall_sorted_df = overall_df.sort_values('score_v2', inplace=False)
     overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(method='dense', ascending=False)
     overall_sorted_df.sort_values('rank', inplace=True)
+    min_max_overall = get_min_max(overall_sorted_df, 'score_v2')
+    min = min_max_overall['min']
+    max = min_max_overall['max']
     retval['data'] = []
     for index, row in overall_sorted_df.iterrows():
-        retval['data'].append( { "score_v2": row['score_v2'],"user_uuid":row['user_UUID'],"rank":row['rank']} )
+        score = row['score_v2']
+        user_class = get_user_class( max, min, score)
+        retval['data'].append(
+            {
+                "score_v2": score,
+                "user_uuid":row['user_UUID'],
+                "identicon": '/media/identicons/' + row['user_UUID'] + '.png',
+                "class": user_class,
+                "rank":row['rank']
+            }
+        )
     return retval
 
 

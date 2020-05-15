@@ -218,3 +218,11 @@ APNS_ADDRESS = 'gateway.push.apple.com'
 FCM_ADDRESS = 'https://fcm.googleapis.com/fcm/send'
 
 from settings_local import *
+
+IDENTICON_FOREGROUNDS = [ "rgb(45,79,255)",
+               "rgb(254,180,44)",
+               "rgb(226,121,234)",
+               "rgb(30,179,253)",
+               "rgb(232,77,65)",
+               "rgb(49,203,115)",
+               "rgb(141,69,170)" ]

@@ -1,26 +1,37 @@
-
+var cached_data = {};
 
 var detail_template = '<div class="row">' +
-                             '<div class="col-md-6 stats">' +
-                                 '<div class="row">' +
-                                     '<div class="col-xs-6">Joined</div><div class="col-xs-6"><span class="badge badge-success">#joined#</span></div>' +
-                                 '</div>' +
-                                 '<div class="row">' +
-                                     '<div class="col-xs-6">Last active</div><div class="col-xs-6"><span class="badge badge-success">#active#</span></div>' +
+                            '<div class="row">' +
+                                 '<div class="col-md-12 stats">' +
+                                     '<div class="row">' +
+                                         '<div class="col-xs-2">Joined</div><div class="col-xs-2"><span class="badge badge-success">#joined#</span></div>' +
+                                     '</div>' +
+                                     '<div class="row">' +
+                                         '<div class="col-xs-2">Last active</div><div class="col-xs-2"><span class="badge badge-success">#active#</span></div>' +
+                                     '</div>' +
                                  '</div>' +
                              '</div>' +
-                             '<div class="col-md-6 summary">' +
-                                 '<div class="row">' +
-                                     '<div class="col-xs-3">Adult reports</div><div class="col-xs-3 text-center"><span class="badge badge-success">#n_adult#</span></div>' +
-                                     '<div class="col-xs-3">Adult XP</div><div class="col-xs-3 text-center"><span class="badge badge-success">#xp_adult#</span></div>' +
-                                 '</div>' +
-                                 '<div class="row">' +
-                                     '<div class="col-xs-3">Bite reports</div><div class="col-xs-3 text-center"><span class="badge badge-success">#n_bite#</span></div>' +
-                                     '<div class="col-xs-3">Bite XP</div><div class="col-xs-3 text-center"><span class="badge badge-success">#xp_bite#</span></div>' +
-                                 '</div>' +
-                                 '<div class="row">' +
-                                     '<div class="col-xs-3">Site reports</div><div class="col-xs-3 text-center"><span class="badge badge-success">#n_site#</span></div>' +
-                                     '<div class="col-xs-3">Site XP</div><div class="col-xs-3 text-center"><span class="badge badge-success">#xp_site#</span></div>' +
+                             '<hr>' +
+                             '<div class="row">' +
+                                 '<div class="col-md-12 summary">' +
+                                    '<div class="row">' +
+                                        '<div class="col-xs-2"><b>Overall title</b></div><div class="col-xs-2"><span class="badge badge-success"><b>#title_overall#</b></span></div>' +
+                                     '</div>' +
+                                     '<div class="row">' +
+                                        '<div class="col-xs-2">Adult title</div><div class="col-xs-2"><span class="badge badge-success">#title_adult#</span></div>' +
+                                         '<div class="col-xs-2">Adult reports</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
+                                         '<div class="col-xs-2">Adult XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_adult#</span></div>' +
+                                     '</div>' +
+                                     '<div class="row">' +
+                                        '<div class="col-xs-2">Bite title</div><div class="col-xs-2"><span class="badge badge-success">#title_bite#</span></div>' +
+                                         '<div class="col-xs-2">Bite reports</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
+                                         '<div class="col-xs-2">Bite XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_bite#</span></div>' +
+                                     '</div>' +
+                                     '<div class="row">' +
+                                        '<div class="col-xs-2">Site title</div><div class="col-xs-2"><span class="badge badge-success">#title_site#</span></div>' +
+                                         '<div class="col-xs-2">Site reports</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
+                                         '<div class="col-xs-2">Site XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_site#</span></div>' +
+                                     '</div>' +
                                  '</div>' +
                              '</div>' +
                          '</div>';
@@ -49,31 +60,39 @@ $(document).ready(function() {
         html = html.replace(/#n_adult#/g, data.score_detail.adult.score_items.length);
         html = html.replace(/#n_bite#/g, data.score_detail.bite.score_items.length);
         html = html.replace(/#n_site#/g, data.score_detail.site.score_items.length);
+        html = html.replace(/#title_adult#/g, data.score_detail.adult.class_label);
+        html = html.replace(/#title_bite#/g, data.score_detail.bite.class_label);
+        html = html.replace(/#title_site#/g, data.score_detail.site.class_label);
+        html = html.replace(/#title_overall#/g, data.overall_class_label);
         html = html.replace(/#xp_adult#/g, data.score_detail.adult.score);
         html = html.replace(/#xp_bite#/g, data.score_detail.bite.score);
         html = html.replace(/#xp_site#/g, data.score_detail.site.score);
         $('#detail_' + user_uuid).html(html);
+        cached_data[user_uuid] = data;
     }
 
     var load_user_data = function(user_uuid){
         $('#progress_' + user_uuid).show();
-        $.ajax({
-            url: '/api/stats/user_xp_data/?user_id=' + user_uuid,
-            method: 'GET',
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type)) {
-                    var csrftoken = getCookie('csrftoken');
-                    xhr.setRequestHeader('X-CSRFToken', csrftoken);
+        if( cached_data[user_uuid] == null ){
+            $.ajax({
+                url: '/api/stats/user_xp_data/?user_id=' + user_uuid,
+                method: 'GET',
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type)) {
+                        var csrftoken = getCookie('csrftoken');
+                        xhr.setRequestHeader('X-CSRFToken', csrftoken);
+                    }
+                },
+                success: function( data, textStatus, jqXHR ) {
+                    create_info_div(user_uuid, data);
+                },
+                error: function(jqXHR, textStatus, errorThrown){
+                    console.log(jqXHR.responseJSON);
                 }
-            },
-            success: function( data, textStatus, jqXHR ) {
-                console.log(data);
-                create_info_div(user_uuid, data);
-            },
-            error: function(jqXHR, textStatus, errorThrown){
-                console.log(jqXHR.responseJSON);
-            }
-        });
+            });
+        }else{
+            create_info_div(user_uuid, cached_data[user_uuid]);
+        }
     }
 
 } );

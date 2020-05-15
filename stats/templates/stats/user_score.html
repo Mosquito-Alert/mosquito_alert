@@ -26,7 +26,8 @@
                 -->
                 <div class="col-xs-9 text_box">
                     <h4>Citizen Scientist - <b>{{ score_data.overall_class_label }}</b></h4>
-                    <p>User ID - {{ score_data.user_uuid }}</p>
+                    <!--<p>User ID - {{ score_data.user_uuid }}</p>-->
+                    <p><img src="{{ score_data.identicon | safe }}" height="75px"></p>
                     <p><i>Joined {{ score_data.joined_label }} | Last active {% if score_data.active_label %}{{ score_data.active_label }}{%else%}Never{%endif%}</i></p>
                     {% if score_data.overall_rank_value == 0 %}
                         <p class="score_label">Overall rank - Unranked</p>

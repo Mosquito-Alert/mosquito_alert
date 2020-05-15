@@ -23,6 +23,8 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 import logging
 import tigacrafting.html_utils as html_utils
+import pydenticon
+import os.path
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -62,6 +64,16 @@ class TigaUser(models.Model):
 
     def is_ios(self):
         return self.user_UUID.isupper()
+
+    def get_identicon(self):
+        file_path = settings.MEDIA_ROOT + "/identicons/" + self.user_UUID + ".png"
+        if not os.path.exists(file_path):
+            generator = pydenticon.Generator(5, 5, foreground=settings.IDENTICON_FOREGROUNDS)
+            identicon_png = generator.generate(self.user_UUID, 200, 200, output_format="png")
+            f = open(file_path, "w")
+            f.write(identicon_png)
+            f.close()
+        return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"
 
     n_reports = property(number_of_reports_uploaded)
     ios_user = property(is_ios)
