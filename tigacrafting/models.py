@@ -184,7 +184,7 @@ class ExpertReportAnnotation(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations')
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
-    tiger_certainty_notes = models.TextField('Internal Aedes Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
+    tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
     site_certainty_notes = models.TextField('Internal Site Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')

@@ -862,8 +862,8 @@
                     <p>
                         The following reports have been marked as validated, but either:</p>
                         <ul>
-                        <li>you haven't chosen any value from the 'Aedes certainty' dropbox.</li>
-                        <li>you have chosen 'Unclassified' from the 'Aedes certainty' dropbox and made the report status 'public'.</li>
+                        <li>you haven't chosen any value from the 'Species certainty' dropbox.</li>
+                        <li>you have chosen 'Unclassified' from the 'Species certainty' dropbox and made the report status 'public'.</li>
                         <li>you have flagged the report without internal comment (unexplained flag)</li>
                         <li>you have hidden the report without internal comment (unexplained hidden)</li>
                         </ul>
@@ -1796,11 +1796,11 @@
                 }
                 if ( flag_title == 'flagged' ){
                     if( $("#id_form-" + id_string + "-tiger_certainty_notes").val() == "" ) {
-                        reports_list.append('<li>' + report_id + ' <span style="color:red">Flagged without internal Aedes certainty comments</span></li>');
+                        reports_list.append('<li>' + report_id + ' <span style="color:red">Flagged without internal species certainty comments</span></li>');
                     }
                 }
                 if($("#id_form-" + index + "-status").val() == "-1" && $("#id_form-" + index + "-tiger_certainty_notes").val() == ''){
-                    reports_list.append('<li>' + report_id + ' <span style="color:red">Hidden without internal Aedes certainty comments</span></li>');
+                    reports_list.append('<li>' + report_id + ' <span style="color:red">Hidden without internal species certainty comments</span></li>');
                 }
                 if($("#id_form-" + index + "-status").val() == "1" && $("#aedes_certainty_value_" + form_id).val() == '-3'){
                     reports_list.append('<li>' + report_id + ' <span style="color:red">Status public and unclassified</span></li>');
