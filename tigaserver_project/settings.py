@@ -226,3 +226,10 @@ IDENTICON_FOREGROUNDS = [ "rgb(45,79,255)",
                "rgb(232,77,65)",
                "rgb(49,203,115)",
                "rgb(141,69,170)" ]
+
+# Awards stuff
+# Starting year - awards are given from this year onward
+AWARD_START_YEAR = 2020
+# Season start - These mark the beginning of the season (Diada de Sant Jordi)
+SEASON_START_MONTH = 4
+SEASON_START_DAY = 23

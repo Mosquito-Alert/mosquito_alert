@@ -2016,3 +2016,19 @@ class Notification(models.Model):
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
     acknowledged = models.BooleanField(default=False,help_text='This is set to True through the public API, when the user signals that the message has been received')
     public = models.BooleanField(default=False,help_text='Whether the notification is shown in the public map or not')
+
+
+class AwardCategory(models.Model):
+    category_label = models.TextField(help_text='Coded label for the translated version of the award. For instance award_good_picture. This code refers to strings in several languages')
+    xp_points = models.IntegerField(help_text='Number of xp points associated to this kind of award')
+    category_long_description = models.TextField(default=None, blank=True, null=True, help_text='Long description specifying conditions in which the award should be conceded')
+
+
+class Award(models.Model):
+    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_award', help_text='Report which the award refers to. Can be blank for arbitrary awards')
+    date_given = models.DateTimeField(default=datetime.now(), help_text='Date in which the award was given')
+    given_to = models.ForeignKey(TigaUser, blank=True, null=True, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards')
+    expert = models.ForeignKey(User, blank=True, related_name="expert_awards", help_text='Expert that gave the award')
+    category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards')
+    special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
+    special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')

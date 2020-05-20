@@ -1,4 +1,5 @@
 from tigaserver_app.models import Report, TigaUser, TigaProfile
+from tigaserver_project import settings as conf
 import csv
 import time
 import pandas as pd
@@ -537,3 +538,53 @@ def compute_all_user_scores():
         user.score_v2 = score
         user.save()
 
+
+def get_all_user_reports(user_uuid):
+    user = TigaUser.objects.get(pk=user_uuid)
+    user_uuids = None
+    if user.profile is not None:
+        user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
+
+    user_reports = None
+    if user_uuids is None:
+        user_reports = Report.objects.filter(user__user_UUID=user_uuid)
+    else:
+        user_reports = Report.objects.filter(user__user_UUID__in=user_uuids)
+    return user_reports
+
+
+def get_first_report_of_season(user_uuid, current_year=None):
+    reports = get_all_user_reports(user_uuid)
+    if current_year is None:
+        current_year = datetime.datetime.now().year
+    return reports.filter(creation_time__gte=datetime.date(current_year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY)).order_by('creation_time').first()
+
+
+def awards_for_first_report_of_day(user_uuid, current_year=None):
+    reports = get_all_user_reports(user_uuid)
+    if current_year is None:
+        current_year = datetime.datetime.now().year
+    reports = reports.filter(creation_time__year=current_year).order_by('creation_time')
+    current_day = -1
+    current_month = -1
+    for r in reports:
+        if r.creation_time.day != current_day:
+            current_day = r.creation_time.day
+            current_month = r.creation_time.month
+            print("Award for new day, day {0} month {1}".format( current_day, current_month ))
+        else:
+            if r.creation_time.month != current_month:
+                print("Award for first for same day, different month, day {0} month {1}".format(current_day, current_month))
+                current_day = r.creation_time.day
+                current_month = r.creation_time.month
+            else:
+                print("No award, day {0} month {1}".format( current_day, current_month ))
+
+
+
+def check_user_awards(user_uuid):
+    first_of_season = get_first_report_of_season(user_uuid)
+    if first_of_season is None:
+        print("No reports this season")
+    else:
+        print("First report of season is {0}".format(first_of_season))
