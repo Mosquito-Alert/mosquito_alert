@@ -18,6 +18,7 @@ from tigascoring.awards import grant_first_of_day, grant_first_of_season, grant_
 from django.contrib.auth.models import User
 import tigaserver_project.settings as conf
 from datetime import datetime, timedelta, date
+import pytz
 
 
 def get_uuid_replicas():
@@ -80,7 +81,12 @@ def same_day(r1_date_less_recent, r2_date_most_recent):
 
 
 def can_be_first_of_season( report, year ):
-    return report.creation_time.year == year and report.creation_time.day >= conf.SEASON_START_DAY and report.creation_time.month >= conf.SEASON_START_MONTH
+    utc = pytz.UTC
+    #naive datetime
+    d = datetime(year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY)
+    #localized datetime
+    ld = utc.localize(d)
+    return report.creation_time >= ld
 
 
 def get_all_user_reports(user):
@@ -94,64 +100,81 @@ def get_all_user_reports(user):
     return Report.objects.filter(user__user_UUID__in=user_uuids)
 
 
+def give_retroactive_awards_to_user(user, granter):
+    print("Starting new user")
+    user_reports = get_all_user_reports(user).order_by('creation_time')
+    first_of_season_awarded_for_year = []
+    last_versions = filter(lambda x: not x.deleted and x.latest_version, user_reports)
+    if len(last_versions) > 0:
+        if len(last_versions) > 1:
+            two_consecutives = False
+            last_awarded_was_three = False
+            last_report = None
+            current_day = None
+            for report in last_versions:
+                if not report.creation_time.year in first_of_season_awarded_for_year:
+                    if can_be_first_of_season(report, report.creation_time.year):
+                        # Award first of season
+                        print("Awarded first of season to {0} for year {1}".format(report.creation_time,
+                                                                                   report.creation_time.year))
+                        grant_first_of_season(report, granter)
+                        first_of_season_awarded_for_year.append(report.creation_time.year)
+
+                if current_day is None:
+                    # is first of day
+                    print("Awarded first of day for report {0}".format(report.creation_time))
+                    grant_first_of_day(report, granter)
+                else:
+                    if not same_day(current_day, report.creation_time):
+                        print("Awarded first of day for report {0}".format(report.creation_time))
+                        grant_first_of_day(report, granter)
+
+                if last_report:
+                    if one_day_between_and_same_week(last_report.creation_time,
+                                                     report.creation_time) and last_awarded_was_three == False:
+                        if two_consecutives == True:
+                            print("Three consecutive reports {0} {1}".format(last_report.creation_time,
+                                                                             report.creation_time))
+                            grant_three_consecutive_days_sending(report, granter)
+                            last_awarded_was_three = True
+                            two_consecutives = False
+                        else:
+                            print("Two consecutive reports {0} {1}".format(last_report.creation_time,
+                                                                           report.creation_time))
+                            grant_two_consecutive_days_sending(report, granter)
+                            last_awarded_was_three = False
+                            two_consecutives = True
+                    else:
+                        print("Non consecutive reports {0} {1}".format(last_report.creation_time, report.creation_time))
+                        if not same_day(last_report.creation_time, report.creation_time):
+                            last_awarded_was_three = False
+                            two_consecutives = False
+                last_report = report
+                current_day = date(report.creation_time.year, report.creation_time.month, report.creation_time.day)
+        else:
+            print("Awarded first of season to {0} for year {1}".format(last_versions[0].creation_time,
+                                                                       last_versions[0].creation_time.year))
+            grant_first_of_season(last_versions[0], granter)
+            grant_first_of_day(last_versions[0], granter)
+        # print("User {0} - {1} n reports, date_ini {2} date_end {3}".format( user.user_UUID, len(last_versions), date_ini, date_end))
+
+
+def test_awards_for_grandmaster():
+    u = TigaUser.objects.get(pk='7f913feb-715c-4d46-ab8f-617678b56406')
+    granter = User.objects.get(pk=24)  # super_movelab
+    give_retroactive_awards_to_user(u, granter)
+
 def crunch():
     uuid_replicas = get_uuid_replicas()
     users = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
     granter = User.objects.get(pk=24) #super_movelab
 
     for user in users:
-        print("Starting new user")
-        user_reports = get_all_user_reports(user).order_by('creation_time')
-        first_of_season_awarded_for_year = []
-        last_versions = filter(lambda x: x.latest_version, user_reports)
-        if len(last_versions) > 0:
-            if len(last_versions) > 1:
-                two_consecutives = False
-                last_awarded_was_three = False
-                last_report = None
-                current_day = None
-                for report in last_versions:
-                    if not report.creation_time.year in first_of_season_awarded_for_year:
-                        if can_be_first_of_season( report, report.creation_time.year ):
-                            #Award first of season
-                            print("Awarded first of season to {0} for year {1}".format(report.creation_time, report.creation_time.year))
-                            grant_first_of_season( report, granter)
-                            first_of_season_awarded_for_year.append(report.creation_time.year)
-
-                    if current_day is None:
-                        # is first of day
-                        print("Awarded first of day for report {0}".format(report.creation_time))
-                        grant_first_of_day( report, granter )
-                    else:
-                        if not same_day( current_day, report.creation_time ):
-                            print("Awarded first of day for report {0}".format(report.creation_time))
-                            grant_first_of_day(report, granter)
-
-                    if last_report:
-                        if one_day_between_and_same_week( last_report.creation_time, report.creation_time ) and last_awarded_was_three == False:
-                            if two_consecutives == True:
-                                print("Three consecutive reports {0} {1}".format(last_report.creation_time, report.creation_time))
-                                grant_three_consecutive_days_sending( report, granter )
-                                last_awarded_was_three = True
-                                two_consecutives = False
-                            else:
-                                print("Two consecutive reports {0} {1}".format(last_report.creation_time, report.creation_time))
-                                grant_two_consecutive_days_sending(report, granter)
-                                last_awarded_was_three = False
-                                two_consecutives = True
-                        else:
-                            print("Non consecutive reports {0} {1}".format(last_report.creation_time, report.creation_time))
-                            last_awarded_was_three = False
-                            two_consecutives = False
-                    last_report = report
-                    current_day = date( report.creation_time.year, report.creation_time.month, report.creation_time.day )
-            else:
-                print("Awarded first of season to {0} for year {1}".format(last_versions[0].creation_time, last_versions[0].creation_time.year))
-                grant_first_of_season(last_versions[0], granter)
-                grant_first_of_day(last_versions[0], granter)
-            #print("User {0} - {1} n reports, date_ini {2} date_end {3}".format( user.user_UUID, len(last_versions), date_ini, date_end))
+        give_retroactive_awards_to_user( user, granter )
 
 
+
+#test_awards_for_grandmaster()
 crunch()
 
 

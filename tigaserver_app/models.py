@@ -538,6 +538,9 @@ class Report(models.Model):
         else:
             return None
 
+    def get_n_visible_photos(self):
+        return Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True).count()
+
     def get_n_photos(self):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
         return len(these_photos)
@@ -1731,6 +1734,7 @@ class Report(models.Model):
     masked_lat = property(get_masked_lat)
     masked_lon = property(get_masked_lon)
     n_photos = property(get_n_photos)
+    n_visible_photos = property(get_n_visible_photos)
     photo_html = property(get_photo_html)
     photo_html_for_report_validation= property(get_photo_html_for_report_validation)
     formatted_date = property(get_formatted_date)
@@ -2025,7 +2029,7 @@ class AwardCategory(models.Model):
 
 
 class Award(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_award', help_text='Report which the award refers to. Can be blank for arbitrary awards')
+    report = models.ForeignKey('tigaserver_app.Report', default=None, blank=True, null=True, related_name='report_award', help_text='Report which the award refers to. Can be blank for arbitrary awards')
     date_given = models.DateTimeField(default=datetime.now(), help_text='Date in which the award was given')
     given_to = models.ForeignKey(TigaUser, blank=True, null=True, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards')
     expert = models.ForeignKey(User, blank=True, related_name="expert_awards", help_text='Expert that gave the award')

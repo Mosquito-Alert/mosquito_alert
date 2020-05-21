@@ -11,7 +11,7 @@ from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
@@ -21,6 +21,7 @@ import datetime
 from django.utils import timezone
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
 from rest_framework.exceptions import ParseError
+from django.core.paginator import Paginator
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -581,9 +582,34 @@ def stats_user_score(request, user_uuid=None):
     return render(request, 'stats/user_score.html', context)
 
 
-def stats_user_ranking(request):
+def stats_user_ranking(request, page=1):
     ranking = get_ranking_data()
-    context = ranking
+    objects = ranking['data']
+    page_length = 5
+    p = Paginator(objects, page_length )
+    current_page = p.page(int(page))
+    previous = None
+    nextp = None
+    if current_page.has_previous():
+        previous = current_page.previous_page_number()
+    if current_page.has_next():
+        nextp = current_page.next_page_number()
+    objects = current_page.object_list
+    context = {
+              'data': objects,
+                  'pagination':
+                      {
+                          'page': int(page),
+                          'total': p.num_pages,
+                          'start': current_page.start_index(),
+                          'end': current_page.end_index(),
+                          'total': p.count,
+                          'previous': previous,
+                          'next': nextp,
+                          'first': 1,
+                          'last': p.num_pages
+                      }
+              }
     return render(request, 'stats/user_ranking.html', context)
 
 @login_required
@@ -687,6 +713,7 @@ def hashtag_map(request):
 
 
 @api_view(['GET'])
+@permission_classes([])
 def get_user_xp_data(request):
     user_id = request.QUERY_PARAMS.get('user_id', '-1')
     try:

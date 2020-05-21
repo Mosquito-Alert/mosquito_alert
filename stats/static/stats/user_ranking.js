@@ -1,8 +1,8 @@
 var cached_data = {};
 
-var detail_template = '<div class="row">' +
-                            '<div class="row">' +
-                                 '<div class="col-md-12 stats">' +
+var detail_template = '<div class="row panel panel-default">' +
+                            '<div class="row panel panel-heading">' +
+                                 '<div class="col-xs-12 stats">' +
                                      '<div class="row">' +
                                          '<div class="col-xs-2">Joined</div><div class="col-xs-2"><span class="badge badge-success">#joined#</span></div>' +
                                      '</div>' +
@@ -11,26 +11,28 @@ var detail_template = '<div class="row">' +
                                      '</div>' +
                                  '</div>' +
                              '</div>' +
-                             '<hr>' +
-                             '<div class="row">' +
-                                 '<div class="col-md-12 summary">' +
+                             '<div class="row panel panel-body">' +
+                                 '<div class="col-xs-12 summary">' +
                                     '<div class="row">' +
-                                        '<div class="col-xs-2"><b>Overall title</b></div><div class="col-xs-2"><span class="badge badge-success"><b>#title_overall#</b></span></div>' +
+                                        '<div class="col-xs-2"><b>Overall</b></div><div class="col-xs-2"><span class="badge badge-success"><b>#title_overall#</b></span></div>' +
                                      '</div>' +
                                      '<div class="row">' +
-                                        '<div class="col-xs-2">Adult title</div><div class="col-xs-2"><span class="badge badge-success">#title_adult#</span></div>' +
-                                         '<div class="col-xs-2">Adult reports</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
-                                         '<div class="col-xs-2">Adult XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_adult#</span></div>' +
+                                        '<div class="col-xs-2">Adult</div><div class="col-xs-3"><span class="badge badge-success">#title_adult#</span></div>' +
+                                         '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
+                                         '<div class="col-xs-2"><span class="badge badge-success">#xp_adult# XP</span></div>' +
                                      '</div>' +
                                      '<div class="row">' +
-                                        '<div class="col-xs-2">Bite title</div><div class="col-xs-2"><span class="badge badge-success">#title_bite#</span></div>' +
-                                         '<div class="col-xs-2">Bite reports</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
-                                         '<div class="col-xs-2">Bite XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_bite#</span></div>' +
+                                        '<div class="col-xs-2">Bite</div><div class="col-xs-3"><span class="badge badge-success">#title_bite#</span></div>' +
+                                         '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
+                                         '<div class="col-xs-2"><span class="badge badge-success">#xp_bite# XP</span></div>' +
                                      '</div>' +
                                      '<div class="row">' +
-                                        '<div class="col-xs-2">Site title</div><div class="col-xs-2"><span class="badge badge-success">#title_site#</span></div>' +
-                                         '<div class="col-xs-2">Site reports</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
-                                         '<div class="col-xs-2">Site XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_site#</span></div>' +
+                                         '<div class="col-xs-2">Site</div><div class="col-xs-3"><span class="badge badge-success">#title_site#</span></div>' +
+                                         '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
+                                         '<div class="col-xs-2"><span class="badge badge-success">#xp_site# XP</span></div>' +
+                                     '</div>' +
+                                     '<div class="row">' +
+                                         '<div class="col-xs-2 col-xs-offset-7">Other XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_unrelated#</span></div>' +
                                      '</div>' +
                                  '</div>' +
                              '</div>' +
@@ -67,6 +69,12 @@ $(document).ready(function() {
         html = html.replace(/#xp_adult#/g, data.score_detail.adult.score);
         html = html.replace(/#xp_bite#/g, data.score_detail.bite.score);
         html = html.replace(/#xp_site#/g, data.score_detail.site.score);
+        if(data.unrelated_awards.score != null){
+            html = html.replace(/#xp_unrelated#/g, data.unrelated_awards.score);
+        }else{
+            html = html.replace(/#xp_unrelated#/g, "0");
+        }
+
         $('#detail_' + user_uuid).html(html);
         cached_data[user_uuid] = data;
     }

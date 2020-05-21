@@ -1,4 +1,4 @@
-from tigaserver_app.models import Report, TigaUser, TigaProfile
+from tigaserver_app.models import Report, TigaUser, TigaProfile, Award, AwardCategory
 from tigaserver_project import settings as conf
 import csv
 import time
@@ -56,6 +56,10 @@ score metadata structure - json
     "overall_class_value": x,
     "overall_class_label": x,
     "overall_perc": x,
+    "unrelated_awards":{
+        "score":x,
+        "awards":[]
+    }
     "score_detail":{
         "adult":{
             "score": x,
@@ -76,9 +80,7 @@ score metadata structure - json
         "bite":{
         },
         "site":{
-        },
-        "awards":{
-        }
+        },        
     }
 }
 '''
@@ -165,14 +167,18 @@ def get_user_rank_value(sorted_dataframe, user_UUID):
         return 0
     return int(subdf.iloc[0])
 
+
 def get_bite_report_score(report, result):
     local_result = {}
     local_result['report'] = report.version_UUID
-    local_result['report_date'] = report.server_upload_time.strftime("%d/%m/%Y")
+    local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
     local_result['report_score'] = 0
     local_result['awards'] = []
     local_result['awards'].append({"reason": "bite_report", "xp_awarded": BITE_REWARD})
     local_result['report_score'] = BITE_REWARD
+    for award in report.report_award.all():
+        local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
+        local_result['report_score'] += award.category.xp_points
     result['score_detail']['bite']['score_items'].append(local_result)
     return result
 
@@ -180,7 +186,7 @@ def get_bite_report_score(report, result):
 def get_site_report_score(report, result):
     local_result = {}
     local_result['report'] = report.version_UUID
-    local_result['report_date'] = report.server_upload_time.strftime("%d/%m/%Y")
+    local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
     picture = report.get_final_photo_html()
     if picture:
         local_result['report_photo'] = picture.photo.url.replace('tigapics/', 'tigapics_small/')
@@ -188,7 +194,7 @@ def get_site_report_score(report, result):
         local_result['report_photo'] = None
     local_result['report_score'] = 0
     local_result['awards'] = []
-    if report.n_photos > 0:
+    if report.n_visible_photos > 0:
         local_result['awards'].append({"reason": "picture", "xp_awarded": PICTURE_REWARD})
         local_result['report_score'] += PICTURE_REWARD
     if report.located:
@@ -197,6 +203,9 @@ def get_site_report_score(report, result):
     if is_water_answered(report):
         local_result['awards'].append({"reason": "water_question", "xp_awarded": SITE_WATER_QUESTION_REWARD})
         local_result['report_score'] += SITE_WATER_QUESTION_REWARD
+    for award in report.report_award.all():
+        local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
+        local_result['report_score'] += award.category.xp_points
     result['score_detail']['site']['score_items'].append(local_result)
     return result
 
@@ -205,7 +214,7 @@ def get_adult_report_score(report, result):
     validation_result = report.get_final_combined_expert_category_euro_struct()
     local_result = {}
     local_result['report'] = report.version_UUID
-    local_result['report_date'] = report.server_upload_time.strftime("%d/%m/%Y")
+    local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
     picture = report.get_final_photo_html()
     if picture:
         local_result['report_photo'] = picture.photo.url.replace('tigapics/', 'tigapics_small/')
@@ -214,7 +223,7 @@ def get_adult_report_score(report, result):
     local_result['report_score'] = 0
     local_result['awards'] = []
     if is_culex(validation_result) or is_aedes(validation_result):
-        if report.n_photos > 0:
+        if report.n_visible_photos > 0:
             local_result['awards'].append({ "reason": "picture", "xp_awarded": PICTURE_REWARD })
             local_result['report_score'] += PICTURE_REWARD
         if report.located:
@@ -230,8 +239,31 @@ def get_adult_report_score(report, result):
         if is_leg_answered(report):
             local_result['awards'].append({"reason": "leg_question", "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_LEG_QUESTION_REWARD
+    for award in report.report_award.all():
+        local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
+        local_result['report_score'] += award.category.xp_points
+
     result['score_detail']['adult']['score_items'].append(local_result)
     return result
+
+def get_unrelated_awards_score( user_uuid, user_uuids ):
+    retval = {}
+    unrelated_awards_score = 0
+    awards = []
+    if user_uuids is None:
+        special_awards = Award.objects.filter(report__isnull=True).filter(given_to=user_uuid)
+    else:
+        special_awards = Award.objects.filter(report__isnull=True).filter(given_to__in=user_uuids)
+    for award in special_awards:
+        if award.category is None:
+            awards.append({"reason": award.special_award_text, "xp_awarded": award.special_award_xp, "awarded_on": award.date_given.strftime("%d/%m/%Y") })
+            unrelated_awards_score += award.special_award_xp
+        else:
+            awards.append({"reason": award.category, "xp_awarded": award.category.xp_points, "awarded_on": award.date_given.strftime("%d/%m/%Y")})
+            unrelated_awards_score += award.category.xp_points
+    retval['score'] = unrelated_awards_score
+    retval['awards'] = awards
+    return retval
 
 
 def diff_month( date_now, date_before ):
@@ -271,7 +303,9 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
     bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
-    adult_last_versions = filter(lambda x: x.latest_version, adults)
+    adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
+    bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
+    site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
 
     results_adult = {}
     results_adult['score'] = 0
@@ -293,7 +327,7 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
     result['score_detail']['bite'] = results_bite
 
     bite_score = 0
-    for report in bites:
+    for report in bite_last_versions:
         result = get_bite_report_score(report, result)
         index = len(result['score_detail']['bite']['score_items']) - 1
         result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
@@ -306,12 +340,16 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
     result['score_detail']['site'] = results_site
 
     site_score = 0
-    for report in sites:
+    for report in site_last_versions:
         result = get_site_report_score(report, result)
         index = len(result['score_detail']['site']['score_items']) - 1
         result['score_detail']['site']['score'] += result['score_detail']['site']['score_items'][index]['report_score']
         site_score += result['score_detail']['site']['score_items'][index]['report_score']
     result['total_score'] += site_score
+
+    unrelated_score = get_unrelated_awards_score(user_uuid, user_uuids)
+
+    result['total_score'] += unrelated_score['score']
 
     return result
 
@@ -402,7 +440,9 @@ def compute_user_score_in_xp_v2(user_uuid):
     bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
-    adult_last_versions = filter(lambda x: x.latest_version, adults)
+    adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
+    bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
+    site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
 
     results_adult = {}
     results_adult['score'] = 0
@@ -423,7 +463,7 @@ def compute_user_score_in_xp_v2(user_uuid):
     result['score_detail']['bite'] = results_bite
 
     bite_score = 0
-    for report in bites:
+    for report in bite_last_versions:
         result = get_bite_report_score(report, result)
         index = len(result['score_detail']['bite']['score_items']) - 1
         result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
@@ -436,13 +476,18 @@ def compute_user_score_in_xp_v2(user_uuid):
     result['score_detail']['site'] = results_site
 
     site_score = 0
-    for report in sites:
+    for report in site_last_versions:
         result = get_site_report_score(report, result)
         index = len(result['score_detail']['site']['score_items']) - 1
         result['score_detail']['site']['score'] += result['score_detail']['site']['score_items'][index]['report_score']
         site_score += result['score_detail']['site']['score_items'][index]['report_score']
     result['total_score'] += site_score
 
+    unrelated_score = get_unrelated_awards_score(user_uuid, user_uuids)
+
+    result['total_score'] += unrelated_score['score']
+
+    result['unrelated_awards'] = unrelated_score
 
     overall_class = get_user_class(min_max_overall['max'], min_max_overall['min'], result['total_score'])
     result['overall_class_value'] = overall_class['value']

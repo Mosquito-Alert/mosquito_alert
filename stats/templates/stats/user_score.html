@@ -41,6 +41,21 @@
                     <p class="score_label">{{ score_data.total_score }} XP</p>
                 </div>
             </div>
+            {% if score_data.unrelated_awards.awards %}
+            <div class="row">
+                <div class="col-xs-9">
+                    <p class="score_label_smaller">Other awards</p>
+                    <ul>
+                    {% for item in score_data.unrelated_awards.awards %}
+                        <li>{{ item.reason }} - {{ item.xp_awarded }} XP, awarded on {{ item.awarded_on }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-xs-3 class_image">
+                    <p class="score_label">{{ score_data.unrelated_awards.score }} XP</p>
+                </div>
+            </div>
+            {% endif %}
             <hr class="thick">
             <!-- End Summary row --->
             <!-- Mosquito block --->
