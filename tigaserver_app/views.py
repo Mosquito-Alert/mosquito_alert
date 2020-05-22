@@ -1268,7 +1268,10 @@ def nearby_reports_no_dwindow(request):
         previous = current_page.previous_page_number() if current_page.has_previous() else None
 
         if user_uuids is None:
-            response = { "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+            if user is not None:
+                response = { "user_uuids": [user], "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+            else:
+                response = {"count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
         else:
             user_uuids_flat = [x['user_UUID'] for x in user_uuids]
             response = { "user_uuids": user_uuids_flat, "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
