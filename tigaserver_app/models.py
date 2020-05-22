@@ -17,7 +17,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User, Group
 from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES, Categories
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
@@ -25,6 +25,11 @@ import logging
 import tigacrafting.html_utils as html_utils
 import pydenticon
 import os.path
+import tigaserver_project.settings as conf
+import pytz
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -1703,6 +1708,14 @@ class Report(models.Model):
         else:
             return ''
 
+    def can_be_first_of_season(self, year):
+        utc = pytz.UTC
+        # naive datetime
+        d = datetime(year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY)
+        # localized datetime
+        ld = utc.localize(d)
+        return self.creation_time >= ld
+
     # save is overriden to initialize the point spatial field with the coordinates supplied
     # to the Report object. See method get_point
     def save(self, *args, **kwargs):
@@ -1715,6 +1728,7 @@ class Report(models.Model):
             else:
                 logger_report_geolocation.debug('report with id {0} assigned to country {1} with code {2}'.format(self.version_UUID,c.name_engl,c.iso3_code,))
             self.country = c
+
         super(Report, self).save(*args, **kwargs)
 
     lon = property(get_lon)
@@ -1765,6 +1779,86 @@ class Report(models.Model):
 
     class Meta:
         unique_together = ("user", "version_UUID")
+
+
+def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
+    day_before = r2_date_most_recent - timedelta(days=1)
+    week_less_recent = r1_date_less_recent.isocalendar()[1]
+    week_most_recent = r2_date_most_recent.isocalendar()[1]
+    return day_before.year == r1_date_less_recent.year and day_before.month == r1_date_less_recent.month and day_before.day == r1_date_less_recent.day and week_less_recent == week_most_recent
+
+
+@receiver(post_save, sender=Report)
+def maybe_give_awards(sender, instance, **kwargs):
+    # check award for first of season
+    current_year = instance.creation_time.year
+    awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
+    if awards.count() == 0:  # not yet awarded
+        if instance.can_be_first_of_season(current_year):  # can be first of season?
+            super_movelab = User.objects.get(pk=24)
+            c = AwardCategory.objects.get(category_label='start_of_season')
+            a = Award()
+            a.report = instance
+            a.date_given = datetime.now()
+            a.given_to = instance.user
+            a.expert = super_movelab
+            a.category = c
+            a.save()
+    else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
+        if instance.latest_version: #this report is the last version
+            version_of_previous = instance.version_number - 1
+            if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
+                #if yes, transfer award to current version
+                award = awards.filter(report__version_number=version_of_previous).first()
+                award.report = instance
+                award.save()
+
+    report_day = instance.creation_time.day
+    report_month = instance.creation_time.month
+    report_year = instance.creation_time.year
+    awards = Award.objects\
+        .filter(report__creation_time__year=report_year)\
+        .filter(report__creation_time__month=report_month)\
+        .filter(report__creation_time__day=report_day)\
+        .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
+    if awards.count() == 0: # not yet awarded
+        super_movelab = User.objects.get(pk=24)
+        c = AwardCategory.objects.get(category_label='daily_participation')
+        a = Award()
+        a.report = instance
+        a.date_given = datetime.now()
+        a.given_to = instance.user
+        a.expert = super_movelab
+        a.category = c
+        a.save()
+
+    date_1_day_before_report = instance.creation_time - timedelta(days=1)
+    report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report).order_by('-creation_time').first() #first is most recent
+    if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
+        #report before this one has not been awarded neither 2nd nor 3rd day streak
+        if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
+            super_movelab = User.objects.get(pk=24)
+            c = AwardCategory.objects.get(category_label='fidelity_day_2')
+            a = Award()
+            a.report = instance
+            a.date_given = datetime.now()
+            a.given_to = instance.user
+            a.expert = super_movelab
+            a.category = c
+            a.save()
+        else:
+            if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
+                super_movelab = User.objects.get(pk=24)
+                c = AwardCategory.objects.get(category_label='fidelity_day_3')
+                a = Award()
+                a.report = instance
+                a.date_given = datetime.now()
+                a.given_to = instance.user
+                a.expert = super_movelab
+                a.category = c
+                a.save()
+
+
 
 
 class ReportResponse(models.Model):
