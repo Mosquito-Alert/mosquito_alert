@@ -57,7 +57,7 @@ def filter_reports(reports, sort=True):
 
 
 class UserTestCase(TestCase):
-    fixtures = ['europe_countries.json',]
+    fixtures = ['europe_countries.json','granter_user.json','awardcategory.json']
 
     def create_report_pool(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
