@@ -56,6 +56,10 @@ def make_user_regional_manager(user, country):
     user.userstat.national_supervisor_of = country
     user.save()
 
+def assign_user_to_country(user, country):
+    user.userstat.native_of = country
+    user.save()
+
 
 def perform_checks():
     with open('/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy.csv') as csv_file:
@@ -98,15 +102,17 @@ def create_users():
             sp = split_name(name)
             username = get_username(name)
             password = row[4]
+            country_iso = row[7]
             user = User.objects.create_user(username=username,first_name=sp['name'],last_name=sp['last_name'],email=email,password=password)
             regional_group = Group.objects.get(name=row[5])
             experts_group.user_set.add(user)
             regional_group.user_set.add(user)
+            country = EuropeCountry.objects.get(iso3_code=country_iso)
+            assign_user_to_country(user,country)
             if row[6] == '1':
                 print("Making user regional manager")
-                country_iso = row[7]
-                country = EuropeCountry.objects.get(iso3_code=country_iso)
                 make_user_regional_manager(user, country)
+
             print("{0} {1} {2}".format( username, email, password ))
 
 create_users()

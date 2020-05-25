@@ -1819,7 +1819,8 @@ def maybe_give_awards(sender, instance, **kwargs):
     awards = Award.objects\
         .filter(report__creation_time__year=report_year)\
         .filter(report__creation_time__month=report_month)\
-        .filter(report__creation_time__day=report_day)\
+        .filter(report__creation_time__day=report_day) \
+        .filter(report__user=instance.user) \
         .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
     if awards.count() == 0: # not yet awarded
         super_movelab = User.objects.get(pk=24)
@@ -1833,7 +1834,8 @@ def maybe_give_awards(sender, instance, **kwargs):
         a.save()
 
     date_1_day_before_report = instance.creation_time - timedelta(days=1)
-    report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report).order_by('-creation_time').first() #first is most recent
+    date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
+    report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
     if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
         #report before this one has not been awarded neither 2nd nor 3rd day streak
         if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
@@ -2130,3 +2132,9 @@ class Award(models.Model):
     category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards')
     special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
     special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')
+
+    def __unicode__(self):
+        if self.category:
+            return str(self.category.category_label)
+        else:
+            return self.special_award_text

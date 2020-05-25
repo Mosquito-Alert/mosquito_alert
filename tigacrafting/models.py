@@ -285,7 +285,8 @@ class ExpertReportAnnotation(models.Model):
 class UserStat(models.Model):
     user = models.OneToOneField(User, primary_key=True)
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
-    national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True)
+    national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country')
+    native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes')
 
     def is_expert(self):
         return self.user.groups.filter(name="expert").exists()

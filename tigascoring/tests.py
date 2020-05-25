@@ -160,13 +160,14 @@ class ScoringTestCase(TestCase):
     def test_three_and_two_combined(self):
         user_id = '00000000-0000-0000-0000-000000000000'
         user = TigaUser.objects.get(pk=user_id)
-        day_1 = 1
-        day_2 = 2 # --> 2 streak
-        day_3 = 3 # --> 3 streak
-        day_4 = 4
-        day_5 = 5 # --> 2 streak
-        day_6 = 6 # --> 3 streak
-        day_7 = 7
+        #All days are in the same week
+        day_1 = 5
+        day_2 = 6 # --> 2 streak
+        day_3 = 7 # --> 3 streak
+        day_4 = 8
+        day_5 = 9 # --> 2 streak
+        day_6 = 10 # --> 3 streak
+        day_7 = 11
         month = 1
         year = 2015
         report_of_day_1 = self.create_single_report(day_1, month, year, user, '00000000-0000-0000-0000-000000000001')
@@ -189,10 +190,76 @@ class ScoringTestCase(TestCase):
 
         report_of_day_7 = self.create_single_report(day_7, month, year, user, '00000000-0000-0000-0000-000000000007')
         report_of_day_7.save()
-        
+
         self.assertEqual(Award.objects.filter(category__id=4).count(), 2)
         self.assertEqual(Award.objects.filter(category__id=4).filter(report__version_UUID=report_of_day_3.version_UUID).count(), 1)
         self.assertEqual(Award.objects.filter(category__id=4).filter(report__version_UUID=report_of_day_6.version_UUID).count(), 1)
         self.assertEqual(Award.objects.filter(category__id=3).count(), 2)
         self.assertEqual(Award.objects.filter(category__id=3).filter(report__version_UUID=report_of_day_2.version_UUID).count(), 1)
         self.assertEqual(Award.objects.filter(category__id=3).filter(report__version_UUID=report_of_day_5.version_UUID).count(), 1)
+
+    def test_corner_cases_daily_participation_midnight(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+
+        day_1 = 5  # --> Daily participation
+        day_2 = 6  # --> Daily participation, 2 streak
+        month = 1
+        hour_1 = 23
+        hour_2 = 0
+        year = 2015
+
+        report_of_day_1 = self.create_single_report(day_1, month, year, user, '00000000-0000-0000-0000-000000000001', hour_1)
+        report_of_day_1.save()
+
+        report_of_day_2 = self.create_single_report(day_2, month, year, user, '00000000-0000-0000-0000-000000000002', hour_2)
+        report_of_day_2.save()
+
+        self.assertEqual(Award.objects.filter(category__id=2).count(), 2) #Daily participation given to each of the reports
+        self.assertEqual(Award.objects.filter(category__id=3).count(), 1)  #Two day streak given to one of the reports
+        self.assertEqual(Award.objects.filter(category__id=2).filter(report__version_UUID=report_of_day_1.version_UUID).count(), 1) #Check each of the reports has first day
+        self.assertEqual(Award.objects.filter(category__id=2).filter(report__version_UUID=report_of_day_2.version_UUID).count(), 1)
+        self.assertEqual(Award.objects.filter(category__id=3).filter(report__version_UUID=report_of_day_2.version_UUID).count(), 1) #Check second report has 2 day streak
+
+    def test_corner_cases_daily_participation_different_months(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+
+        day_1 = 30  # --> Daily participation
+        day_2 = 1  # --> Daily participation, 2 streak
+        month_1 = 4
+        month_2 = 5
+        year = 2020
+
+        report_of_day_1 = self.create_single_report(day_1, month_1, year, user, '00000000-0000-0000-0000-000000000001')
+        report_of_day_1.save()
+
+        report_of_day_2 = self.create_single_report(day_2, month_2, year, user, '00000000-0000-0000-0000-000000000002')
+        report_of_day_2.save()
+
+        self.assertEqual(Award.objects.filter(category__id=2).count(),2)  # Daily participation given to each of the reports
+        self.assertEqual(Award.objects.filter(category__id=3).count(), 1)  # Two day streak given to one of the reports
+        self.assertEqual(Award.objects.filter(category__id=2).filter(report__version_UUID=report_of_day_1.version_UUID).count(),1)  # Check each of the reports has first day
+        self.assertEqual(Award.objects.filter(category__id=2).filter(report__version_UUID=report_of_day_2.version_UUID).count(), 1)
+        self.assertEqual(Award.objects.filter(category__id=3).filter(report__version_UUID=report_of_day_2.version_UUID).count(),1)  # Check second report has 2 day streak
+
+    def test_corner_cases_first_of_season_different_users(self):
+        user_id_1 = '00000000-0000-0000-0000-000000000000'
+        user_id_2 = '00000000-0000-0000-0000-000000000001'
+
+        day_1 = 30  # --> Daily participation, first of season
+        month_1 = 4
+        year = 2020
+
+        user_1 = TigaUser.objects.get(pk=user_id_1)
+        user_2 = TigaUser.objects.get(pk=user_id_2)
+
+        report_1_user_1 = self.create_single_report(day_1, month_1, year, user_1, '00000000-0000-0000-0000-000000000001')
+        report_1_user_1.save()
+        report_1_user_2 = self.create_single_report(day_1, month_1, year, user_2, '00000000-0000-0000-0000-000000000002')
+        report_1_user_2.save()
+
+        self.assertEqual(Award.objects.filter(category__id=1).count(),2)  # Daily participation given to each of the reports
+        self.assertEqual(Award.objects.filter(category__id=1).count(),2)  # First of season given to each of the reports
+        self.assertEqual(Award.objects.filter(category__id=1).filter(report__version_UUID=report_1_user_1.version_UUID).count(), 1)
+        self.assertEqual(Award.objects.filter(category__id=1).filter(report__version_UUID=report_1_user_2.version_UUID).count(), 1)
