@@ -500,9 +500,11 @@
                     </button><br>
 
                     <div style="overflow: auto;">
-
-                        {{ form.instance.report.photo_html_for_report_validation | safe }}
-
+                        {% if request.user.userstat.is_superexpert %}
+                            {{ form.instance.report.photo_html_for_report_validation_superexpert | safe }}
+                        {% else %}
+                            {{ form.instance.report.photo_html_for_report_validation | safe }}
+                        {% endif %}
                             <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
 
                     </div>

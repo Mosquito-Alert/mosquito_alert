@@ -525,6 +525,19 @@ class Report(models.Model):
     def get_photo_html_for_report_validation(self):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         result = ''
+
+        for photo in these_photos:
+            result += '<div id="div_for_photo_to_display_report_' + str(
+                self.version_UUID) + '"><input type="radio" name="photo_to_display_report_' + str(
+                self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(
+                photo.id) + '"/>Display this photo on public map:</div><br><div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div><br>'
+
+        return result
+
+    def get_photo_html_for_report_validation_superexpert(self):
+        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
+        result = ''
+
         for photo in these_photos:
             result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
                     '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:</div>' \
@@ -1528,7 +1541,8 @@ class Report(models.Model):
     masked_lon = property(get_masked_lon)
     n_photos = property(get_n_photos)
     photo_html = property(get_photo_html)
-    photo_html_for_report_validation= property(get_photo_html_for_report_validation)
+    photo_html_for_report_validation = property(get_photo_html_for_report_validation)
+    photo_html_for_report_validation_superexpert = property(get_photo_html_for_report_validation_superexpert)
     formatted_date = property(get_formatted_date)
     response_html = property(get_response_html)
     response_string = property(get_response_string)
