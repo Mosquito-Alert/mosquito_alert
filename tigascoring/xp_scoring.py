@@ -4,6 +4,8 @@ import csv
 import time
 import pandas as pd
 import datetime
+from django.utils import translation
+from django.utils.translation import gettext as _
 
 XP = 12
 XP_REPORT_WITH_PICTURE = XP
@@ -138,20 +140,20 @@ def is_aedes(validation_result):
 
 def get_user_class(max, min, user_score):
     if max == min:
-        return {"value": 1, "label": "Novice"}
+        return {"value": 1, "label": _("Novice")}
     if user_score == 0:
-        return {"value": 1, "label": "Novice"}
+        return {"value": 1, "label": _("Novice")}
     interval = (max - min)/5
     if min <= user_score <= interval * 1:
-        return { "value": 1, "label": "Novice"}
+        return { "value": 1, "label": _("Novice")}
     elif interval * 1 < user_score <= interval * 2:
-        return { "value": 2, "label": "Contributor"}
+        return { "value": 2, "label": _("Contributor")}
     elif interval * 2 < user_score <= interval * 3:
-        return { "value": 3, "label": "Expert"}
+        return { "value": 3, "label": _("Expert")}
     elif interval * 3 < user_score <= interval * 4:
-        return { "value": 4, "label": "Master"}
+        return { "value": 4, "label": _("Master")}
     else:
-        return { "value": 5, "label": "Grandmaster"}
+        return { "value": 5, "label": _("Grandmaster")}
 
 def get_min_max(sorted_dataframe, score_field_name):
     max_score = sorted_dataframe[score_field_name].max()
@@ -174,7 +176,7 @@ def get_bite_report_score(report, result):
     local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
     local_result['report_score'] = 0
     local_result['awards'] = []
-    local_result['awards'].append({"reason": "bite_report", "xp_awarded": BITE_REWARD})
+    local_result['awards'].append({"reason": _("bite_report"), "xp_awarded": BITE_REWARD})
     local_result['report_score'] = BITE_REWARD
     for award in report.report_award.all():
         local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
@@ -195,13 +197,13 @@ def get_site_report_score(report, result):
     local_result['report_score'] = 0
     local_result['awards'] = []
     if report.n_visible_photos > 0:
-        local_result['awards'].append({"reason": "picture", "xp_awarded": PICTURE_REWARD})
+        local_result['awards'].append({"reason": _("picture"), "xp_awarded": PICTURE_REWARD})
         local_result['report_score'] += PICTURE_REWARD
     if report.located:
-        local_result['awards'].append({"reason": "location", "xp_awarded": LOCATION_REWARD})
+        local_result['awards'].append({"reason": _("location"), "xp_awarded": LOCATION_REWARD})
         local_result['report_score'] += LOCATION_REWARD
     if is_water_answered(report):
-        local_result['awards'].append({"reason": "water_question", "xp_awarded": SITE_WATER_QUESTION_REWARD})
+        local_result['awards'].append({"reason": _("water_question"), "xp_awarded": SITE_WATER_QUESTION_REWARD})
         local_result['report_score'] += SITE_WATER_QUESTION_REWARD
     for award in report.report_award.all():
         local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
@@ -224,20 +226,20 @@ def get_adult_report_score(report, result):
     local_result['awards'] = []
     if is_culex(validation_result) or is_aedes(validation_result):
         if report.n_visible_photos > 0:
-            local_result['awards'].append({ "reason": "picture", "xp_awarded": PICTURE_REWARD })
+            local_result['awards'].append({ "reason": _("picture"), "xp_awarded": PICTURE_REWARD })
             local_result['report_score'] += PICTURE_REWARD
         if report.located:
-            local_result['awards'].append({"reason": "location", "xp_awarded": LOCATION_REWARD })
+            local_result['awards'].append({"reason": _("location"), "xp_awarded": LOCATION_REWARD })
             local_result['report_score'] += LOCATION_REWARD
     elif is_aedes(validation_result):
         if is_thorax_answered(report):
-            local_result['awards'].append({"reason": "thorax_question", "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
+            local_result['awards'].append({"reason": _("thorax_question"), "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_THORAX_QUESTION_REWARD
         if is_abdomen_answered(report):
-            local_result['awards'].append({"reason": "abdomen_question", "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
+            local_result['awards'].append({"reason": _("abdomen_question"), "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_ABDOMEN_QUESTION_REWARD
         if is_leg_answered(report):
-            local_result['awards'].append({"reason": "leg_question", "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
+            local_result['awards'].append({"reason": _("leg_question"), "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_LEG_QUESTION_REWARD
     for award in report.report_award.all():
         local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
@@ -275,11 +277,11 @@ def get_elapsed_label( date_now, date_before ):
     if diff.days >= 30:
         diff_months = diff_month( date_now, date_before )
         if diff_months > 12:
-            return str( diff_months / 12 ) + " years ago"
+            return str( diff_months / 12 ) + _(" years ago")
         else:
-            return str( diff_months ) + " months ago"
+            return str( diff_months ) + _(" months ago")
     else:
-        return str(diff.days) + " days ago"
+        return str(diff.days) + _(" days ago")
 
 
 def compute_user_score_in_xp_v2_fast(user_uuid):
