@@ -1,42 +1,46 @@
 var cached_data = {};
 
-var detail_template = '<div class="row panel panel-default">' +
-                            '<div class="row panel panel-heading">' +
-                                 '<div class="col-xs-12 stats">' +
-                                     '<div class="row">' +
-                                         '<div class="col-xs-2">Joined</div><div class="col-xs-2"><span class="badge badge-success">#joined#</span></div>' +
-                                     '</div>' +
-                                     '<div class="row">' +
-                                         '<div class="col-xs-2">Last active</div><div class="col-xs-2"><span class="badge badge-success">#active#</span></div>' +
-                                     '</div>' +
-                                 '</div>' +
-                             '</div>' +
-                             '<div class="row panel panel-body">' +
-                                 '<div class="col-xs-12 summary">' +
-                                    '<div class="row">' +
-                                        '<div class="col-xs-2"><b>Overall</b></div><div class="col-xs-2"><span class="badge badge-success"><b>#title_overall#</b></span></div>' +
-                                     '</div>' +
-                                     '<div class="row">' +
-                                        '<div class="col-xs-2">Adult</div><div class="col-xs-3"><span class="badge badge-success">#title_adult#</span></div>' +
-                                         '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
-                                         '<div class="col-xs-2"><span class="badge badge-success">#xp_adult# XP</span></div>' +
-                                     '</div>' +
-                                     '<div class="row">' +
-                                        '<div class="col-xs-2">Bite</div><div class="col-xs-3"><span class="badge badge-success">#title_bite#</span></div>' +
-                                         '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
-                                         '<div class="col-xs-2"><span class="badge badge-success">#xp_bite# XP</span></div>' +
-                                     '</div>' +
-                                     '<div class="row">' +
-                                         '<div class="col-xs-2">Site</div><div class="col-xs-3"><span class="badge badge-success">#title_site#</span></div>' +
-                                         '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
-                                         '<div class="col-xs-2"><span class="badge badge-success">#xp_site# XP</span></div>' +
-                                     '</div>' +
-                                     '<div class="row">' +
-                                         '<div class="col-xs-2 col-xs-offset-7">Other XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_unrelated#</span></div>' +
-                                     '</div>' +
-                                 '</div>' +
-                             '</div>' +
-                         '</div>';
+var detail_template = '<div class="panel panel-default">' +
+    '<div class="panel panel-heading">' +
+        '<div class="row">' +
+            '<div class="col-xs-12 stats">' +
+                '<div class="row">' +
+                    '<div class="col-xs-2">Joined</div><div class="col-xs-2"><span class="badge badge-success">#joined#</span></div>' +
+                '</div>' +
+                '<div class="row">' +
+                    '<div class="col-xs-2">Last active</div><div class="col-xs-2"><span class="badge badge-success">#active#</span></div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>' +
+    '<div class="panel panel-body">' +
+        '<div class="row">' +
+            '<div class="col-xs-12 summary">' +
+            '<div class="row">' +
+                '<div class="col-xs-2"><b>Overall</b></div><div class="col-xs-2"><span class="badge badge-success"><b>#title_overall#</b></span></div>' +
+            '</div>' +
+             '<div class="row">' +
+                '<div class="col-xs-2">Adult</div><div class="col-xs-3"><span class="badge badge-success">#title_adult#</span></div>' +
+                 '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
+                 '<div class="col-xs-2"><span class="badge badge-success">#xp_adult# XP</span></div>' +
+             '</div>' +
+             '<div class="row">' +
+                '<div class="col-xs-2">Bite</div><div class="col-xs-3"><span class="badge badge-success">#title_bite#</span></div>' +
+                 '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
+                 '<div class="col-xs-2"><span class="badge badge-success">#xp_bite# XP</span></div>' +
+             '</div>' +
+             '<div class="row">' +
+                 '<div class="col-xs-2">Site</div><div class="col-xs-3"><span class="badge badge-success">#title_site#</span></div>' +
+                 '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
+                 '<div class="col-xs-2"><span class="badge badge-success">#xp_site# XP</span></div>' +
+             '</div>' +
+             '<div class="row">' +
+                 '<div class="col-xs-2 col-xs-offset-7">Other XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_unrelated#</span></div>' +
+             '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>' +
+'</div>';
 
 
 $(document).ready(function() {
