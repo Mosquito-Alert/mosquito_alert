@@ -1131,7 +1131,7 @@ def distance_matrix(center_point, all_points):
     sorted_list = sorted(points_by_distance, key=lambda x: x[1])
     return sorted_list
 
-@profile("paginated_reports.prof")
+#@profile("paginated_reports.prof")
 @api_view(['GET'])
 def nearby_reports_no_dwindow(request):
     if request.method == 'GET':
