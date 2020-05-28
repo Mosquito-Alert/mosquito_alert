@@ -13,7 +13,8 @@ from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
 from django.db.models import Count
 import pytz
-import datetime
+#import datetime
+from datetime import datetime, date
 from django.db.models import Max
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -762,7 +763,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                       selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(
                         location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),
                         current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(
-                    creation_time__lte=datetime.date(2017, 3, 10)))
+                    creation_time__lte=date(2017, 3, 10)))
             if new_reports_unfiltered:
                 new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
                 for this_report in new_reports:
