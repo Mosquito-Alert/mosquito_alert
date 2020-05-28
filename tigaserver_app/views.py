@@ -34,6 +34,7 @@ import copy
 from django.db import connection
 from django.core.paginator import Paginator, EmptyPage
 import time
+from decorators import profile
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -1130,7 +1131,7 @@ def distance_matrix(center_point, all_points):
     sorted_list = sorted(points_by_distance, key=lambda x: x[1])
     return sorted_list
 
-
+@profile("paginated_reports.prof")
 @api_view(['GET'])
 def nearby_reports_no_dwindow(request):
     if request.method == 'GET':
@@ -1235,9 +1236,12 @@ def nearby_reports_no_dwindow(request):
             reports_site = reports_site.exclude(version_number=-1)
 
         if show_versions == 0:
-            classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 and x.latest_version, reports_adult)
+            #classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 and x.latest_version, reports_adult)
+            classified_reports_in_max_radius = filter(lambda x: x.latest_version and x.show_on_map, reports_adult)
         else:
-            classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports_adult)
+            # classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 , reports_adult)
+            classified_reports_in_max_radius = filter(lambda x: x.show_on_map, reports_adult)
+
 
         if user is not None:
             if tigauser.profile is None:
