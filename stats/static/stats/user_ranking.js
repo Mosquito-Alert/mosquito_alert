@@ -52,13 +52,6 @@ $(document).ready(function() {
         load_user_data(id);
     });
 
-    $('#scroll_to_me').click(function(event) {
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $("#830424E9-3924-4D1C-849F-F5E62F4A14A8").offset().top
-        }, 2000);
-        $('#830424E9-3924-4D1C-849F-F5E62F4A14A8').addClass('pulse');
-    });
-
     var create_info_div = function(user_uuid, data){
         $('#progress_' + user_uuid).hide();
         var html = detail_template.replace(/#joined#/g, data.joined_label);

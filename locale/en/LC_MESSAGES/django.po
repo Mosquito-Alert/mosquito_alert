@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-27 14:47+0000\n"
+"POT-Creation-Date: 2020-05-28 08:17+0000\n"
 "PO-Revision-Date: 2015-07-16 13:40+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -104,13 +104,13 @@ msgstr ""
 
 #: stats/templates/stats/user_score.html:36
 #: stats/templates/stats/user_score.html:74
-#: stats/templates/stats/user_score.html:126
+#: stats/templates/stats/user_score.html:130
 msgid "Top"
 msgstr ""
 
 #: stats/templates/stats/user_score.html:36
 #: stats/templates/stats/user_score.html:74
-#: stats/templates/stats/user_score.html:126
+#: stats/templates/stats/user_score.html:130
 msgid "of"
 msgstr ""
 
@@ -135,40 +135,44 @@ msgid "Mosquito rank"
 msgstr ""
 
 #: stats/templates/stats/user_score.html:102
-#: stats/templates/stats/user_score.html:153
-#: stats/templates/stats/user_score.html:200
+#: stats/templates/stats/user_score.html:157
+#: stats/templates/stats/user_score.html:204
 msgid "xp awarded for"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:106
-#: stats/templates/stats/user_score.html:157
-#: stats/templates/stats/user_score.html:204
-msgid "No awards for this report!"
+#: stats/templates/stats/user_score.html:107
+msgid "No awards because"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:121
-#, fuzzy
-msgid "Breeding site"
-msgstr "Breeding sites"
-
-#: stats/templates/stats/user_score.html:123
-msgid "Breeding site rank - Unranked"
+#: stats/templates/stats/user_score.html:110
+#: stats/templates/stats/user_score.html:161
+#: stats/templates/stats/user_score.html:208
+msgid "No awards for this report!"
 msgstr ""
 
 #: stats/templates/stats/user_score.html:125
 #, fuzzy
+msgid "Breeding site"
+msgstr "Breeding sites"
+
+#: stats/templates/stats/user_score.html:127
+msgid "Breeding site rank - Unranked"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:129
+#, fuzzy
 msgid "Breeding site rank"
 msgstr "Breeding sites: Basins"
 
-#: stats/templates/stats/user_score.html:172
+#: stats/templates/stats/user_score.html:176
 msgid "Bite"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:174
+#: stats/templates/stats/user_score.html:178
 msgid "Bite rank - Unranked"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:176
+#: stats/templates/stats/user_score.html:180
 msgid "Bite rank"
 msgstr ""
 
@@ -923,65 +927,89 @@ msgstr "All reports"
 msgid "site_report_legend_main_title"
 msgstr "Markers"
 
-#: tigascoring/xp_scoring.py:143 tigascoring/xp_scoring.py:145
-#: tigascoring/xp_scoring.py:148
+#: tigascoring/xp_scoring.py:144 tigascoring/xp_scoring.py:146
+#: tigascoring/xp_scoring.py:149
 msgid "Novice"
 msgstr ""
 
-#: tigascoring/xp_scoring.py:150
+#: tigascoring/xp_scoring.py:151
 msgid "Contributor"
 msgstr ""
 
-#: tigascoring/xp_scoring.py:152
+#: tigascoring/xp_scoring.py:153
 msgid "Expert"
 msgstr ""
 
-#: tigascoring/xp_scoring.py:154
+#: tigascoring/xp_scoring.py:155
 msgid "Master"
 msgstr ""
 
-#: tigascoring/xp_scoring.py:156
+#: tigascoring/xp_scoring.py:157
 msgid "Grandmaster"
 msgstr ""
 
+#: tigascoring/xp_scoring.py:176
+msgid "start_of_season"
+msgstr "Start of season"
+
+#: tigascoring/xp_scoring.py:177
+msgid "daily_participation"
+msgstr "First report of day"
+
+#: tigascoring/xp_scoring.py:178
+msgid "fidelity_day_2"
+msgstr "Two consecutive days sending reports"
+
 #: tigascoring/xp_scoring.py:179
+msgid "fidelity_day_3"
+msgstr "Three consecutive days sending reports"
+
+#: tigascoring/xp_scoring.py:194
 #, fuzzy
 msgid "bite_report"
 msgstr "Breeding site reports"
 
-#: tigascoring/xp_scoring.py:200 tigascoring/xp_scoring.py:229
+#: tigascoring/xp_scoring.py:215 tigascoring/xp_scoring.py:246
 msgid "picture"
 msgstr "the picture"
 
-#: tigascoring/xp_scoring.py:203 tigascoring/xp_scoring.py:232
+#: tigascoring/xp_scoring.py:218 tigascoring/xp_scoring.py:249
 msgid "location"
 msgstr "the report is geolocated"
 
-#: tigascoring/xp_scoring.py:206
+#: tigascoring/xp_scoring.py:221
 msgid "water_question"
 msgstr "answering the water question in the breeding site report"
 
-#: tigascoring/xp_scoring.py:236
+#: tigascoring/xp_scoring.py:242
+msgid "no_picture"
+msgstr "no picture"
+
+#: tigascoring/xp_scoring.py:253
 msgid "thorax_question"
 msgstr "answering the thorax question in the mosquito report"
 
-#: tigascoring/xp_scoring.py:239
+#: tigascoring/xp_scoring.py:256
 msgid "abdomen_question"
 msgstr "answering the abdomen question in the mosquito report"
 
-#: tigascoring/xp_scoring.py:242
+#: tigascoring/xp_scoring.py:259
 msgid "leg_question"
 msgstr "answering the leg question in the mosquito report"
 
-#: tigascoring/xp_scoring.py:280
+#: tigascoring/xp_scoring.py:262
+msgid "other_species"
+msgstr "experts say it's not a mosquito (other species or can't say)"
+
+#: tigascoring/xp_scoring.py:299
 msgid " years ago"
 msgstr ""
 
-#: tigascoring/xp_scoring.py:282
+#: tigascoring/xp_scoring.py:301
 msgid " months ago"
 msgstr ""
 
-#: tigascoring/xp_scoring.py:284
+#: tigascoring/xp_scoring.py:303
 msgid " days ago"
 msgstr ""
 

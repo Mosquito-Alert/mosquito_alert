@@ -31,6 +31,7 @@ SITE_WATER_ANSWER_IDS = [81, 101]
 CULEX_CATEGORY_ID = 10
 AEDES_CATEGORY_IDS = [4, 5, 6, 7]
 
+
 '''
 from tigaserver_app.models import TigaUser
 #queryset to dataframe
@@ -169,6 +170,20 @@ def get_user_rank_value(sorted_dataframe, user_UUID):
         return 0
     return int(subdf.iloc[0])
 
+def get_translated_category_label(label):
+    retVal = label
+    translations = {
+        'start_of_season': _('start_of_season'),
+        'daily_participation': _('daily_participation'),
+        'fidelity_day_2': _('fidelity_day_2'),
+        'fidelity_day_3': _('fidelity_day_3')
+    }
+    try:
+        retVal = translations[label]
+    except KeyError:
+        pass
+    return retVal
+
 
 def get_bite_report_score(report, result):
     local_result = {}
@@ -179,7 +194,7 @@ def get_bite_report_score(report, result):
     local_result['awards'].append({"reason": _("bite_report"), "xp_awarded": BITE_REWARD})
     local_result['report_score'] = BITE_REWARD
     for award in report.report_award.all():
-        local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
+        local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
         local_result['report_score'] += award.category.xp_points
     result['score_detail']['bite']['score_items'].append(local_result)
     return result
@@ -206,7 +221,7 @@ def get_site_report_score(report, result):
         local_result['awards'].append({"reason": _("water_question"), "xp_awarded": SITE_WATER_QUESTION_REWARD})
         local_result['report_score'] += SITE_WATER_QUESTION_REWARD
     for award in report.report_award.all():
-        local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
+        local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
         local_result['report_score'] += award.category.xp_points
     result['score_detail']['site']['score_items'].append(local_result)
     return result
@@ -218,14 +233,18 @@ def get_adult_report_score(report, result):
     local_result['report'] = report.version_UUID
     local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
     picture = report.get_final_photo_html()
+    if picture is None:
+        picture = report.get_first_visible_photo()
+    local_result['report_score'] = 0
+    local_result['awards'] = []
+    local_result['penalties'] = []
     if picture:
         local_result['report_photo'] = picture.photo.url.replace('tigapics/', 'tigapics_small/')
     else:
+        local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
         local_result['report_photo'] = None
-    local_result['report_score'] = 0
-    local_result['awards'] = []
     if is_culex(validation_result) or is_aedes(validation_result):
-        if report.n_visible_photos > 0:
+        if picture:
             local_result['awards'].append({ "reason": _("picture"), "xp_awarded": PICTURE_REWARD })
             local_result['report_score'] += PICTURE_REWARD
         if report.located:
@@ -241,8 +260,10 @@ def get_adult_report_score(report, result):
         if is_leg_answered(report):
             local_result['awards'].append({"reason": _("leg_question"), "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_LEG_QUESTION_REWARD
+    else:
+        local_result['penalties'].append( {"reason": _("other_species"), "xp_awarded": 0 } )
     for award in report.report_award.all():
-        local_result['awards'].append({"reason": award.category.category_label, "xp_awarded": award.category.xp_points})
+        local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
         local_result['report_score'] += award.category.xp_points
 
     result['score_detail']['adult']['score_items'].append(local_result)

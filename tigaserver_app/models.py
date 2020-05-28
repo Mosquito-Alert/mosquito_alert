@@ -1643,6 +1643,13 @@ class Report(models.Model):
                         return Photo.objects.get(pk=winning_photo_id).get_medium_url()
             return None
 
+    def get_first_visible_photo(self):
+        photos = Photo.objects.filter(report=self)
+        for photo in photos:
+            if not photo.hide:
+                return photo
+        return None
+
     def get_final_photo_html(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
             super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)

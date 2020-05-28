@@ -2,7 +2,7 @@ var create_dialog = function( report ){
     $(".ui-dialog-content").dialog("close");
     $('#' + report).dialog(
         {
-            title:"Report details",
+            title:"Info",
             position: { my: 'top', at: 'top+50' }
         }
     );

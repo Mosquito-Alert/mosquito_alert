@@ -102,6 +102,10 @@
                             <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}!</li>
                         {% endfor %}
                         </ul>
+                    {% elif item.penalties %}
+                        {% for penalty in item.penalties %}
+                            <li>{% trans 'No awards because' %} {{ penalty.reason }}</li>
+                        {% endfor %}
                     {% else %}
                         {% trans 'No awards for this report!' %}
                     {% endif %}
