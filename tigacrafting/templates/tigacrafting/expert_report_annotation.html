@@ -39,6 +39,10 @@
             background: #BABABA;
         }
 
+        .container_value, .container_mix, .container_other, .container_category{
+            font-size: 14px;
+        }
+
     </style>
 
     {% block fa_css %}
@@ -237,48 +241,65 @@
 
             {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
                 <strong>Ordered by:</strong> {{ orderby }}<br>
-                <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}
+                <strong>Filters:</strong> Species classification - {{ tiger_certainty_label }}, Status - {{ status }}
             {% endif %}
         {% endblock %}
             <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
 
 
         <div style="text-align: left">
-            <!--<p>Public note message language:</p>
-            <select id="note_language_select">
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-            </select>-->
-
-            <h4> Instructions</h4>
 
             {% block instructions %}
 
                 {% if pending == 'pending' %}
-
-                    <p>For each report: (1) select a category for your degree of belief that the report contains at
-                        least
-                        one photo showing an adult tiger mosquito, (2) select a category for your degree of belief that
-                        the
-                        report contains at least one photo showing a tiger mosquito breeding site, (4) add any internal
-                        notes for yourself or other experts regarding your reasons for each selection, (4) add any note
-                        you
-                        want
-                        to see displayed on the public map along with the report (e.g. an edited version of the user's
-                        original note), (5) add any notes that you want to be shown directly to the user (citizen
-                        scientist)
-                        who created the report, (6) flag the report if you want to bring it to the attention of other
-                        experts
-                        (because it is an especially interesting report or because you have doubts), (7) indicate if the
-                        report should be hidden from public view (this will automatically
-                        remove it from the public map), and (8) select which (if any) of the reports photos should be
-                        displayed on the public map (only one photo will be displayed). You can save your work as you go
-                        using the "save" button at the top of the screen. When you are done with a given report, check
-                        the
-                        "validation complete" box. You will not be able to modify your responses once you have saved a
-                        report marked with "validation complete."</p>
+                    <h4> Instructions <button data-toggle="tooltip" id="details" type="button" class="btn btn-primary">Show</button></h4>
+                    <div class="persiana" style="display: none;">
+                    <p>
+                        You can be assigned a simplified report or a full report. In case of the simplified report, the steps
+                        in <span style="color:blue;">blue</span> are ommitted.
+                        For each report:
+                        <ul>
+                        <li>
+                            (1) Select a species classification. If you choose any of the current Aedes or Culex,
+                            choose also the degree of certainty matching your degree of belief that the picture contains the
+                            species. If you choose 'Complex', select also the species combo. If you choose 'Other', please specify the other
+                            species that you are sure it is.
+                        </li>
+                        <li style="color:blue;">
+                            (2) add any note you want to see displayed on the public map along with the report. Please be careful not to write
+                            any sensitive information here such as names, e-mail addresses, telephone numbers or anything which can be considered
+                            personal/sensitive data.
+                        </li>
+                        <li style="color:blue;">
+                            (3) add any internal tags for this report, which can help you locate it later.
+                        </li>
+                        <li>
+                            (4) add any internal notes for yourself or other experts regarding your reasons for each selection. These notes will be
+                            used only internally and will be never visible anywhere public.
+                        </li>
+                        <li>
+                            (5) flag the report if you want to bring it to the attention of other experts
+                            (because it is an especially interesting report or because you have doubts).
+                        </li>
+                        <li>
+                            (6) indicate if the report should be hidden from public view (this will automatically
+                            remove it from the public map). If you select to hide or flag the report, you need to specify why you have chosen to
+                            do so. Do this by writing an internal comment.
+                        </li>
+                        <li style="color:blue;">
+                            (7) select which (if any) of the reports photos should be displayed on the public map (only one photo will be displayed).
+                            Please be careful not to mark any picture which may contain sensitive data such as faces, addresses or anything which can
+                            be considered personal/sensitive data.
+                        </li>
+                        </ul>
+                        You can save your work as you go using the "save" button at the top of the screen.
+                        When you are done with a given report, check  the "validation complete" box. You will not be
+                        able to modify your responses once you have saved a report marked with "validation complete."
+                    </p>
+                    </div>
 
                 {% else %}
+                    <h4> Instructions </h4>
                     <p>You are currently viewing your completed reports. To validate new reports, click the blue
                         'Pending' button at the top of the screen.</p>
                 {% endif %}
@@ -286,6 +307,33 @@
             {% endblock %}
         </div>
     </div>
+
+    {% if objects.has_next or objects.has_previous %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if objects.has_previous %}
+                        <button class="btn btn-default btn-sm active previous_page_button" type="button">Previous</button>
+                        {% endif %}
+                        <span class="current">
+                        Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                        </span>
+                        {% if objects.has_next %}
+                        <button class="btn btn-default btn-sm active next_page_button" type="button">Next</button>
+                        {% endif %}
+                        <br>
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <input id="page_input_top" type="number" min="1" max="{{ objects.paginator.num_pages }}" class="form-control input-sm" placeholder="Go to page" style="width:100px;">
+                                <button id="page_button_top" class="btn btn-default btn-sm active" type="button">Go</button>
+                            </div>
+                        </form>
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
     {% if objects %}
 
@@ -354,7 +402,7 @@
         {% endblock %}
 
         <div class="row">
-            <div class="col-md-3" id="{{ form.instance.report.version_UUID }}">
+            <div class="col-md-4" id="{{ form.instance.report.version_UUID }}">
                 <br>
 
                 {% block view_others_annotations %}
@@ -363,6 +411,7 @@
 
 
                 {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
+                    <!--
                     <div class="form-group">
                         <div>
                             <strong>Aedes certainty:</strong><br>
@@ -379,6 +428,55 @@
                             </select>
                         </div>
                     </div>
+                    -->
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5 container_category">
+                            <strong>Species classif.:</strong><br>
+                            <select id="category_{{ form.instance.id }}">
+                                <option value="">--------------</option>
+                                {% for cat in category_list %}
+                                <option data-needs-value="{% if cat.specify_certainty_level %}1{% else %}0{% endif %}" value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                            </div>
+                            <div class="col-md-7">
+                                <div id="container_value_{{ form.instance.id }}" class="container_value"  style="display:none;">
+                                    <strong>Species certainty:</strong><br>
+                                    <select id="categoryvalue_{{ form.instance.id }}">
+                                        <option value="">--------------</option>
+                                        <option value="2">Definitely</option>
+                                        <option value="1">Probably</option>
+                                    </select>
+                                </div>
+                                <div id="container_mix_{{ form.instance.id }}" class="container_mix" style="display:none;">
+                                    <strong>Species combo:</strong><br>
+                                    <select id="complex_{{ form.instance.id }}">
+                                        <option value="">--------------</option>
+                                        {% for complex in complex_list %}
+                                        <option value="{{ complex.id }}">{{ complex.description }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div id="container_other_{{ form.instance.id }}" class="container_other" style="display:none;">
+                                    <strong>Other species:</strong><br>
+                                    <select id="other_{{ form.instance.id }}">
+                                        <option value="">Not in the list</option>
+                                        <optgroup label="Other insects">
+                                        {% for species in other_species_insects %}
+                                        <option value="{{ species.id }}">{{ species.name }}</option>
+                                        {% endfor %}
+                                        </optgroup>
+                                        <optgroup label="Culicidae">
+                                        {% for species in other_species_culicidae %}
+                                        <option value="{{ species.id }}">{{ species.name }}</option>
+                                        {% endfor %}
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% if form.instance.simplified_annotation == False %}
                     <div class="form-group">
                         <label>Public Note (webmap):</label>
@@ -388,6 +486,8 @@
                             <button type="button" id="btn_no_thorax_pattern_{{ form.instance.id }}" class="btn btn-success btn-sm" title="No thorax pattern"><span class="glyphicon glyphicon-thumbs-down"></span></button>
                             <button type="button" id="btn_not_sure_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Not sure photo"><span class="glyphicon glyphicon-camera"></span></button>
                             <button type="button" id="btn_other_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Other species"><span class="glyphicon glyphicon-remove"></span></button>
+                            <button type="button" id="btn_other_insect_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Other insect"><span class="glyphicon glyphicon-arrow-right"></span></button>
+                            <button type="button" id="btn_conflict_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Conflict"><span class="glyphicon glyphicon-resize-small"></span></button>
                         </div>
                         <div class="controls field-public_note" data-placement="top" title="" data-toggle="tooltip" data-original-title="Notes to display on public map">
                             <textarea id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
@@ -447,11 +547,17 @@
                         {% else %}
 
                     {% if form.instance.report.type == 'adult' %}
-                        <strong>Aedes Certainty:</strong><br>
+                        <strong>Expert classification:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
-                            {{ form.instance.report.get_final_combined_expert_category }}
+                            <!-- $EURO_SWITCH$ -->
+                            {{ form.instance.report.get_final_combined_expert_category_euro }}
                         </div>
-                        <strong>Internal Aedes Certainty Comments:</strong><br>
+                        <strong>My classification:</strong><br>
+                        <div style="border:1px solid #333333;padding:2px;">
+                            <!-- $EURO_SWITCH$ -->
+                            {{ form.instance.get_category_euro }}
+                        </div>
+                        <strong>Internal Certainty Comments:</strong><br>
                         <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
                             {{ form.instance.tiger_certainty_notes }}</div><br>
                     {% else %}
@@ -491,7 +597,7 @@
 {% endif %}
             </div>
 
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <br>
                 <strong>Photos</strong>
                 {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
@@ -556,12 +662,14 @@
 
 
                 <br>
+                <!--
                 <strong>User Responses</strong><br>
 
                 <div style="overflow: auto;height: 120px;border:1px solid #333333;padding:2px;">
                     {{ form.instance.report.response_html  | safe }}
                 </div>
                 <br>
+                -->
                 <strong>User Notes</strong><br>
                 {% if form.instance.simplified_annotation == False %}
                 <button type="button" id="btn_copynote_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Copy user note to public note"><span class="glyphicon glyphicon-file" aria-hidden="true"></span></button>
@@ -639,7 +747,8 @@
 
                 //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "{{ form.tiger_certainty_category.auto_id }}, #" + "{{ form.aegypti_certainty_category.auto_id }}, #" + validation_complete_id_{{ form.instance.id }});
                 //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
-                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + "message_to_user_{{ form.instance.id }}, #" + "tags_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
+                //var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + "message_to_user_{{ form.instance.id }}, #" + "tags_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
+                var hidden_form_fields{{ form.instance.id }} = $("#{{ form.edited_user_notes.auto_id }}, #" + "{{ form.message_for_user.auto_id }}, #" + "{{ form.linked_id.auto_id }}, #" + "{{ form.status.auto_id }}, #" + "{{ form.site_certainty_notes.auto_id }}, #" + "{{ form.site_certainty_category.auto_id }}, #" + "{{ form.tiger_certainty_notes.auto_id }}, #" + "aedes_certainty_value_{{ form.instance.id }}, #" + "category_{{ form.instance.id }}, #" + "public_note_{{ form.instance.id }}, #" + "message_to_user_{{ form.instance.id }}, #" + "tags_{{ form.instance.id }}, #" + validation_complete_id_{{ form.instance.id }});
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
 
@@ -721,46 +830,30 @@
 
 
         {% if objects.has_next or objects.has_previous %}
-
-
-            <div class="row">
-
-                <div class="col-md-12">
-
-                    <div class="pagination">
-        <span class="step-links">
-            {% if objects.has_previous %}
-                <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
-
-            {% endif %}
-
-            <span class="current">
-                Page {{ objects.number }} of {{ objects.paginator.num_pages }}
-            </span>
-
-            {% if objects.has_next %}
-
-                <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
-            {% endif %}
-
-            <br>
-                <form role="form" class="form-inline">
-                    <div class="form-group">
-                        <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
-                               class="form-control input-sm" id="page_input" placeholder="Go to page"
-                               style="width:100px;">
-                        <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
-                    </div>
-
-                </form>
-
-        </span>
-                    </div>
-
-
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if objects.has_previous %}
+                        <button class="btn btn-default btn-sm active previous_page_button" type="button">Previous</button>
+                        {% endif %}
+                        <span class="current">
+                        Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                        </span>
+                        {% if objects.has_next %}
+                        <button class="btn btn-default btn-sm active next_page_button" type="button">Next</button>
+                        {% endif %}
+                        <br>
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <input id="page_input_bottom" type="number" min="1" max="{{ objects.paginator.num_pages }}" class="form-control input-sm" placeholder="Go to page" style="width:100px;">
+                                <button id="page_button_bottom" class="btn btn-default btn-sm active" type="button">Go</button>
+                            </div>
+                        </form>
+                    </span>
                 </div>
             </div>
-
+        </div>
         {% endif %}
     {% else %}
         <div class="row">
@@ -797,8 +890,8 @@
                     <p>
                         The following reports have been marked as validated, but either:</p>
                         <ul>
-                        <li>you haven't chosen any value from the 'Aedes certainty' dropbox.</li>
-                        <li>you have chosen 'Unclassified' from the 'Aedes certainty' dropbox and made the report status 'public'.</li>
+                        <li>you haven't chosen any value from the 'Species certainty' dropbox.</li>
+                        <li>you have chosen 'Unclassified' from the 'Species certainty' dropbox and made the report status 'public'.</li>
                         <li>you have flagged the report without internal comment (unexplained flag)</li>
                         <li>you have hidden the report without internal comment (unexplained hidden)</li>
                         </ul>
@@ -866,26 +959,29 @@
                                 <div class="col-sm-8">
                                     <select id="orderby_select" class="selectpicker show-tick form-control">
                                         <option value="date">Report Date</option>
-                                        <option value="tiger_score">Tiger Certainty Score</option>
-                                        <option value="site_score">Site Certainty Score</option>
+                                        <option value="tiger_score">Species classification (alphabetical)</option>
+                                        <!--<option value="site_score">Site Certainty Score</option>-->
                                     </select>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="tiger_certainty_select" class="col-sm-4 control-label">Tiger Certainty
-                                    Category:</label>
+                                <label for="tiger_certainty_select" class="col-sm-4 control-label">Species classif.:</label>
 
                                 <div class="col-sm-8">
                                     <select id="tiger_certainty_select" class="selectpicker show-tick form-control">
                                         <option value="all">All</option>
-                                        <option value="-2">Definitely not a tiger mosquito</option>
+                                        {% for cat in category_list %}
+                                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                        {% endfor %}
+                                        <!--<option value="-2">Definitely not a tiger mosquito</option>
                                         <option value="-1">Probably not a tiger mosquito</option>
                                         <option value="0">Not sure</option>
                                         <option value="1">Probably a tiger mosquito</option>
-                                        <option value="2">Definitely a tiger mosquito</option>
+                                        <option value="2">Definitely a tiger mosquito</option>-->
                                     </select>
                                 </div>
                             </div>
+                            <!--
                             <div class="form-group">
                                 <label for="site_certainty_select" class="col-sm-4 control-label">Site Certainty
                                     Category:</label>
@@ -901,6 +997,7 @@
                                     </select>
                                 </div>
                             </div>
+                            -->
                             <div class="form-group">
                                 <label for="status_select" class="col-sm-4 control-label">Status:</label>
 
@@ -1108,6 +1205,7 @@
 
         function copy_revise_form_fields(form_id){
             var data = final_status_table[form_id];
+            /*
             if( data.score <= 0){
                 $("#aedes_certainty_value_" + form_id).selectpicker('val',data.score);
                 if( data.score == -3 || data.score == -4) {
@@ -1136,6 +1234,7 @@
                     }
                 }
             }
+            */
 
             $("#id_form-" + id_to_index[form_id] + "-status").selectpicker('val',data.status);
 
@@ -1189,6 +1288,39 @@
         function inputToUserMessageValue(input_id){
             var message = getUserMessage(input_id);
             $("#message_to_user_" + input_id).val(message);
+        }
+
+        function inputToCategorySelection(input_id){
+            var category = $('#id_form-' + id_to_index[input_id] + '-category').val();
+            var value = $('#id_form-' + id_to_index[input_id] + '-validation_value').val();
+            var complex = $('#id_form-' + id_to_index[input_id] + '-complex').val();
+            var other = $('#id_form-' + id_to_index[input_id] + '-other_species').val();
+            var species_categories = [];
+            {% for cat in category_list %}
+                {% if cat.specify_certainty_level %}
+                    species_categories.push('{{ cat.id }}');
+                {% endif %}
+            {% endfor %}
+            //$('#category_' + input_id).selectpicker("val",category);
+            $('#category_' + input_id).val(category);
+            if( category == "8" ){ //complex
+                $('#container_mix_' + input_id).show();
+                $('#container_value_' + input_id).hide();
+                $('#container_other_' + input_id).hide();
+                $('#complex_' + input_id).val(complex);
+            }else if ( category == "2" ){ //other species
+                $('#container_mix_' + input_id).hide();
+                $('#container_value_' + input_id).hide();
+                $('#container_other_' + input_id).show();
+                $('#other_' + input_id).val(other);
+            }else if ( species_categories.indexOf(category) >= 0 ){
+                $('#container_value_' + input_id).show();
+                $('#container_mix_' + input_id).hide();
+                $('#categoryvalue_' + input_id).val(value);
+            }else{
+                $('#container_mix_' + input_id).hide();
+                $('#container_value_' + input_id).hide();
+            }
         }
 
         function inputToAedesValue(input_id){
@@ -1359,6 +1491,20 @@
         }
 
         function getMacroMessageLabelForSpecies(control){
+            if(control.val()=='4'){ //albopictus
+                return 'albopictus';
+            }else if(control.val()=='5'){ //aegypti
+                return 'aegypti';
+            }else if(control.val()=='6'){ //japonicus
+                return 'japonicus';
+            }else if(control.val()=='7'){ //koreicus
+                return 'koreicus';
+            }else if(control.val()=='10'){ //culex
+                return 'culex';
+            }else{
+                return 'all';
+            }
+            /*
             if(control.val()=='4' || control.val()=='3'){ //aegypti
                 return 'aegypti';
             }else if(control.val()=='2' || control.val()=='1'){ //albopictus
@@ -1366,9 +1512,21 @@
             }else{ //Other
                 return 'albopictus';
             }
+            */
         }
 
         $( document ).ready(function() {
+
+            $('#details').click(function(){
+                if( $('.persiana').attr("style") == 'display: none;' ){
+                    $('.persiana').fadeIn( "slow", function(){});
+                    $('#details').html('Hide');
+                }else{
+                    $('.persiana').fadeOut( "slow", function(){});
+                    $('#details').html('Show');
+                }
+            });
+
             var total_forms = $("#id_form-TOTAL_FORMS").val();
             index_to_id = {};
             id_to_index = {};
@@ -1381,74 +1539,13 @@
 
                 final_status = {
                     score: {{form.instance.report.get_final_combined_expert_score}},
-                    category: '{{form.instance.report.get_final_combined_expert_category}}',
+                    //category: '{{form.instance.report.get_final_combined_expert_category}}',
+                    category: '{{form.instance.report.get_final_combined_expert_category_euro}}',
+                    //selector_data : {{ form.instance.report.get_selector_data | safe }},
                     status: {{form.instance.report.get_final_expert_status }},
                     photo: '{{form.instance.report.get_final_photo_html.id}}',
                     public_note: '{{form.instance.report.get_final_public_note | linebreaksbr }}',
                     user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
-                };
-
-                macro_messages = {
-                    albopictus:{
-                        nice_picture: {
-                            es: "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!",
-                            en: "The picture is spectacular and you can see a lot of details of the mosquito's body. Thanks for participating. Great job!"
-                        },
-                        yes_thorax_pattern:{
-                            es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!",
-                            en: "Very good picture! You have managed to make the tiger mosquito easily to identify because you can spot clearly the characteristic white stripe in the thorax, apart from other traits. Thanks for participating!"
-                        },
-                        no_thorax_pattern:{
-                            es: "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture, we can't be completely sure that it's a tiger mosquito. You can't see the typical white stripe in the thorax, but you can see other typical traits of the mosquito tiger.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        not_sure_photo:{
-                            es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture we can't identify any species, because it's blurry and you can't recognize the typical traits of the tiger mosquito. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        other_species:{
-                            es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "This picture seems to be of another mosquito species, because it doesn't look like a tiger mosquito or a yellow fever mosquito. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        discovery:{
-                            es: "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!",
-                            en: "Congratulations! Your picture is very important, because you have probably found a tiger mosquito in a zone with little information about this species distribution. If you find more, please send more observations and pictures. Thanks for participating!"
-                        },
-                        contact:{
-                            es: "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!",
-                            en: "We are very interested in your observation, because it could be an exceptional discovery. If you can, please send us more pictures. To supply more detailed information, please contact us via e-mail info@mosquitoalert.com. Thanks for participating, great work!"
-                        }
-                    },
-                    aegypti:{
-                        nice_picture: {
-                            es: "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!",
-                            en: "The picture is spectacular and you can see a lot of details of the mosquito's body. Thanks for participating. Great job!"
-                        },
-                        yes_thorax_pattern:{
-                            es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito de la fiebre amarilla ya que se ve muy bien su dibujo en forma de lira en el tórax, además de otras características. ¡Gracias por participar!",
-                            en: "Very good picture! You have managed to make the yellow fever mosquito easily to identify because you can spot clearly the characteristic lyre shape in the thorax, apart from other traits. Thanks for participating!"
-                        },
-                        no_thorax_pattern:{
-                            es: "Con esta foto no podemos asegurar totalmente que sea un mosquito de la fiebre amarilla. No se ve bien el típico dibujo en forma de lira en el tórax, aunque sí que se ven otras características del mosquito de la fiebre amarilla. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture, we can't be completely sure that it's a tiger mosquito. You can't see the typical lyre shape in the thorax, but you can see other typical traits of the yellow fever mosquito.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        not_sure_photo:{
-                            es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito de la fiebre amarilla ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "With this picture we can't identify any species, because it's blurry and you can't recognize the typical traits of yellow fever mosquito or any other species. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        other_species:{
-                            es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-                            en: "This picture seems to be of another mosquito species, because it doesn't look like a tiger mosquito or a yellow fever mosquito. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!"
-                        },
-                        discovery:{
-                            es: "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito de la fiebre amarilla en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!",
-                            en: "Congratulations! Your picture is very important, because you have probably found a yellow fever mosquito in a zone with little information about this species distribution. If you find more, please send more observations and pictures. Thanks for participating!"
-                        },
-                        contact:{
-                            es: "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!",
-                            en: "We are very interested in your observation, because it could be an exceptional discovery. If you can, please send us more pictures. To supply more detailed information, please contact us via e-mail info@mosquitoalert.com. Thanks for participating, great work!"
-                        }
-                    }
                 };
 
                 $('#note_language_select').val($('#note_language').val());
@@ -1460,6 +1557,7 @@
                     hidden_photo_fields{{ form.instance.id }}.hide();
                 {% endif %}
 
+                inputToCategorySelection('{{ form.instance.id }}');
                 inputToAedesValue('{{ form.instance.id }}');
                 $("#aedes_certainty_value_{{ form.instance.id }}").change(function(){
                     aedesValueToInput($(this).val(),'{{ form.instance.id }}');
@@ -1478,49 +1576,67 @@
 
                 $("#btn_gp_{{ form.instance.id }}").click(function() {
                     //var message = "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!";
-                    var species_label = getMacroMessageLabelForSpecies($('#aedes_certainty_value_{{ form.instance.id }}'));
+                    //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
+                    var species_label = 'all';
                     var message = macro_messages[species_label]["nice_picture"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_yes_thorax_pattern_{{ form.instance.id }}").click(function() {
                     //var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!";
-                    var species_label = getMacroMessageLabelForSpecies($('#aedes_certainty_value_{{ form.instance.id }}'));
+                    var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
                     var message = macro_messages[species_label]["yes_thorax_pattern"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_no_thorax_pattern_{{ form.instance.id }}").click(function() {
                     //var message = "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
-                    var species_label = getMacroMessageLabelForSpecies($('#aedes_certainty_value_{{ form.instance.id }}'));
+                    var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
                     var message = macro_messages[species_label]["no_thorax_pattern"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_not_sure_{{ form.instance.id }}").click(function() {
                     //var message = "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
-                    var species_label = getMacroMessageLabelForSpecies($('#aedes_certainty_value_{{ form.instance.id }}'));
+                    //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
+                    var species_label = 'all';
                     var message = macro_messages[species_label]["not_sure_photo"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_other_{{ form.instance.id }}").click(function() {
                     //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
-                    var species_label = getMacroMessageLabelForSpecies($('#aedes_certainty_value_{{ form.instance.id }}'));
+                    var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
                     var message = macro_messages[species_label]["other_species"][$('#note_language').val()];
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_other_insect_{{ form.instance.id }}").click(function() {
+                    //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var species_label = 'all';
+                    var message = macro_messages[species_label]["other_insect"][$('#note_language').val()];
+                    $("#public_note_{{ form.instance.id }}").val(message);
+                    $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
+                });
+                $("#btn_conflict_{{ form.instance.id }}").click(function() {
+                    //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
+                    var species_label = 'all';
+                    var message = macro_messages[species_label]["conflict"][$('#note_language').val()];
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_pm_discovery_{{ form.instance.id }}").click(function() {
                     //var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
-                    var species_label = getMacroMessageLabelForSpecies($('#aedes_certainty_value_{{ form.instance.id }}'));
+                    //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
+                    var species_label = 'all';
                     var message = macro_messages[species_label]["discovery"][$('#note_language').val()];
                     $("#message_to_user_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
                 });
                 $("#btn_pm_contact_{{ form.instance.id }}").click(function() {
                     //var message = "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!";
-                    var species_label = getMacroMessageLabelForSpecies($('#aedes_certainty_value_{{ form.instance.id }}'));
+                    //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
+                    var species_label = 'all';
                     var message = macro_messages[species_label]["contact"][$('#note_language').val()];
                     $("#message_to_user_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
@@ -1650,12 +1766,13 @@
             reports_list_div.append('<ul></ul>');
             var reports_list = $("#reports_being_saved_list ul");
             $("[id*='validation_complete']:checked").each(function () {
-
+                /*var report_id = $(this).parent().parent().parent().attr('id');
+                var n_pictures = $('input[name ="photo_to_display_report_' + report_id + '"]').length;*/
                 {% if request.user.userstat.is_superexpert %}
                     if ($(this).siblings("[id*='revise']").val() == "false") {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:green">Confirming Experts</span></li>');
                     }
-                    else if ($(this).siblings("[name*='photo']").val() == "") {
+                    else if ($(this).siblings("[name*='photo']").val() == ""  ) {
                         reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Revising without photo</span></li>');
                     }
                     else {
@@ -1675,6 +1792,12 @@
 
         function setup_and_launch_mustfix_dialog() {
             $(".modal").modal("hide");
+            var species_with_value = [];
+            {% for cat in category_list %}
+                {% if cat.specify_certainty_level %}
+                    species_with_value.push('{{ cat.name }}');
+                {% endif %}
+            {% endfor %}
             var reports_list_div = $("#reports_validated_without_input_list").empty();
             reports_list_div.append('<ul></ul>');
             var reports_list = $("#reports_validated_without_input_list ul");
@@ -1684,22 +1807,34 @@
                 var index = id_to_index[form_id];
                 var id_string = $(this).siblings("[id*='-id']").attr('id');
                 id_string = id_string.replace("id_form-","").replace("-id","");
-                var title = $('button[data-id="aedes_certainty_value_' + form_id + '"]').attr('title');
+                //var title = $('button[data-id="aedes_certainty_value_' + form_id + '"]').attr('title');
+                var title = $('button[data-id="category_' + form_id + '"]').attr('title');
                 var flag_title = $('button[data-id="id_form-' + id_string + '-status"]').attr('title');
                 //var flag_title = $('button[data-id="id_form-' + form_id + '-status"]').attr('title');
+                var report_id = $(this).parent().parent().parent().attr('id');
                 if ( title == '--------------' ){
-                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Validated without selecting Aedes certainty</span></li>');
+                    reports_list.append('<li>' + report_id + ' <span style="color:red">Validated without selecting species certainty</span></li>');
+                }else{
+                    if( title == 'Complex' ){
+                        if( $('#complex_' + form_id).val() == "" ){
+                            reports_list.append('<li>' + report_id + ' <span style="color:red">Selected complex category and not specified which species combo</span></li>');
+                        }
+                    }else if ( species_with_value.indexOf(title) >= 0 ){
+                        if( $('#categoryvalue_' + form_id).val() == "" ){
+                            reports_list.append('<li>' + report_id + ' <span style="color:red">Selected species and not specified species certainty</span></li>');
+                        }
+                    }
                 }
                 if ( flag_title == 'flagged' ){
                     if( $("#id_form-" + id_string + "-tiger_certainty_notes").val() == "" ) {
-                        reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Flagged without internal Aedes certainty comments</span></li>');
+                        reports_list.append('<li>' + report_id + ' <span style="color:red">Flagged without internal species certainty comments</span></li>');
                     }
                 }
                 if($("#id_form-" + index + "-status").val() == "-1" && $("#id_form-" + index + "-tiger_certainty_notes").val() == ''){
-                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Hidden without internal Aedes certainty comments</span></li>');
+                    reports_list.append('<li>' + report_id + ' <span style="color:red">Hidden without internal species certainty comments</span></li>');
                 }
                 if($("#id_form-" + index + "-status").val() == "1" && $("#aedes_certainty_value_" + form_id).val() == '-3'){
-                    reports_list.append('<li>' + $(this).parent().parent().parent().attr('id') + ' <span style="color:red">Status public and unclassified</span></li>');
+                    reports_list.append('<li>' + report_id + ' <span style="color:red">Status public and unclassified</span></li>');
                 }
 
             });
@@ -1753,16 +1888,30 @@
                 var flagged_without_comment = false;
                 var hidden_without_comment = false;
                 var validated_without_aedes_input = false;
+                var complex_without_class = false;
+                var simple_without_value = false;
                 var unclassified = false;
                 var public_unclassified = false;
                 if ($("[id*='validation_complete']").is(":checked")) {
-                    var buttons = $('button[data-id*="aedes_certainty_value"]');
+                    //var buttons = $('button[data-id*="aedes_certainty_value"]');
+                    var buttons = $('button[data-id*="category_"]');
                     for(var index = 0; index < buttons.size(); index++){
                         var button_title = buttons[index].attributes["title"].value;
                         var status = $('#id_form-' + index + '-status').val();
                         var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
                         if(button_title == '--------------' && checked){
                             var validated_without_aedes_input = true;
+                        }else{
+                            if( $('#container_mix_' + index_to_id[index] ).is(':visible') ){
+                                if ( $('button[data-id="complex_' + index_to_id[index] + '"]')[0].attributes["title"].value == '--------------' ){
+                                    complex_without_class = true;
+                                }
+                            }
+                            if( $('#container_value_' + index_to_id[index] ).is(':visible') ){
+                                if ( $('button[data-id="categoryvalue_' + index_to_id[index] + '"]')[0].attributes["title"].value == '--------------' ){
+                                    simple_without_value = true;
+                                }
+                            }
                         }
                         if(button_title == 'Unclassified' && checked){
                             unclassified = true;
@@ -1784,16 +1933,12 @@
                             public_unclassified = true;
                         }
                     }
-                    {% if request.user.userstat.is_expert %}
-                        if(validated_without_aedes_input || flagged_without_comment || hidden_without_comment || public_unclassified){
-                            //launch ok dialog and not save
-                            setup_and_launch_mustfix_dialog();
-                        }else{
-                            setup_and_launch_save_warning();
-                        }
-                    {% else %}
+                    if(validated_without_aedes_input || complex_without_class || simple_without_value || flagged_without_comment || hidden_without_comment || public_unclassified){
+                        //launch ok dialog and not save
+                        setup_and_launch_mustfix_dialog();
+                    }else{
                         setup_and_launch_save_warning();
-                    {% endif %}
+                    }
                 } else {
                     gear.show();
                     toggle_grab_reports_button();
@@ -1841,23 +1986,16 @@
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
                 var this_status = $("#status_select").val();
-                //var filter_tags = $("#tags_filter").tagit("assignedTags");
-                //var str_tags = '';
-                //if(filter_tags){
-                    //str_tags = filter_tags.join(",");
-                //}
                 $("#orderby_input").val(this_orderby);
                 $("#tiger_certainty_input").val(this_tiger_certainty);
                 $("#site_certainty_input").val(this_site_certainty);
                 $("#status_input").val(this_status);
                 $("#pending_input").val(pending);
-                //$("#tags_filter_input").val(str_tags);
                 var qp = '?orderby=' + this_orderby;
                 qp += '&tiger_certainty=' + this_tiger_certainty;
                 qp += '&site_certainty=' + this_site_certainty;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;
-                //qp += '&tags_filter=' + str_tags;
                 return(qp)
             }
 
@@ -1942,31 +2080,46 @@
             background_save(qp);
         });
 
-        function go_to_page(){
+        function go_to_page(top_or_bottom){
             gear.show();
             var qp = query_selectors();
-            var selected_page = $("#page_input").val();
+            var selected_page = $("#page_input_" + top_or_bottom ).val();
             qp += '&page=' + selected_page;
             $("#next_page_input").val(selected_page);
             background_save(qp);
         }
 
-        $("#page_button").on('click', function () {
-            go_to_page();
+        $("#page_button_top").on('click', function () {
+            go_to_page('top');
         });
 
-        $('#page_input').bind("enterKey",function(e){
-                go_to_page();
-            });
+        $("#page_button_bottom").on('click', function () {
+            go_to_page('bottom');
+        });
 
-        $('#page_input').keyup(function(e){
+        $('#page_input_top').bind("enterKey",function(e){
+                go_to_page('top');
+        });
+
+        $('#page_input_bottom').bind("enterKey",function(e){
+                go_to_page('bottom');
+        });
+
+        $('#page_input_top').keyup(function(e){
             if(e.keyCode == 13)
             {
                 $(this).trigger("enterKey");
             }
         });
 
-        var nb = $("#next_page_button");
+        $('#page_input_bottom').keyup(function(e){
+            if(e.keyCode == 13)
+            {
+                $(this).trigger("enterKey");
+            }
+        });
+
+        var nb = $(".next_page_button");
         {% if objects.has_next %}
             nb.show().on('click', function () {
                 gear.show();
@@ -1980,7 +2133,7 @@
             nb.hide();
         {% endif %}
 
-        var pb = $("#previous_page_button");
+        var pb = $(".previous_page_button");
         {% if objects.has_previous %}
             pb.show().on('click', function () {
                 gear.show();
@@ -1998,7 +2151,8 @@
 
     </script>
 
-
+    <script src={% static "tigacrafting/categories_combo.js" %}></script>
+    <script src={% static "tigacrafting/macro_messages.js" %}></script>
 
 
 {% endblock %}

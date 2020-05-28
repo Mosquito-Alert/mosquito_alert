@@ -1,0 +1,74 @@
+.score_band {
+    background-color: #fff2cc
+}
+
+.report_container{
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.expert_approved{
+    background-color: green;
+    color: white;
+}
+
+.expert_rejected{
+    background-color: gray;
+    color: white;
+}
+
+.expert_in_progress{
+    background-color: gray;
+    color: black;
+}
+
+.bite{
+    background-color: ffc000;
+    color: white;
+}
+
+.breeding_site{
+    background-color: 5baac0;
+    color: white;
+}
+
+.info_block {
+    margin-top: 10px;
+}
+
+.report_box {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
+    border-radius: 10px;
+}
+
+hr.thick {
+  border-top: 1px solid black;
+}
+
+.score_label{
+    font-size: 22px;
+    color: red;
+    font-weight: bold;
+}
+
+.score_label_smaller{
+    font-size: 18px;
+    color: red;
+    font-weight: bold;
+}
+
+.center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+
+.class_image {
+    text-align: center;
+}
