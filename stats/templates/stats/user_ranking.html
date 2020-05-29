@@ -135,7 +135,7 @@
                 </div>
             {% else %}
                 <div class="row content controls">
-                    {{ pagination.start }} - {{ pagination.end }} of {{ pagination.total }}
+                    {{ pagination.start }} - {{ pagination.end }} {% trans 'of' %} {{ pagination.total }}
                     <a href="{% url 'stats_user_ranking' page=pagination.first %}" class="btn btn-primary btn-sm {% if pagination.page == 1 %}disabled{% endif %}">|<</a>
                     {% if pagination.previous %}
                         <a href="{% url 'stats_user_ranking' page=pagination.previous %}" class="btn btn-primary btn-sm"><</a>
@@ -151,10 +151,10 @@
                 </div>
             {% endif %}
             <div class="row content size-5">
-                <div class="col-xs-2">Rank#</div>
-                <div class="col-xs-3">User</div>
-                <div class="col-xs-5">Overall class</div>
-                <div class="col-xs-2">Score</div>
+                <div class="col-xs-2">{% trans 'Rank' %}</div>
+                <div class="col-xs-3">{% trans 'User' %}</div>
+                <div class="col-xs-5">{% trans 'Overall class' %}</div>
+                <div class="col-xs-2">{% trans 'Score' %}</div>
             </div>
             <hr>
             {% for row in data %}

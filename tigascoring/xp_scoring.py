@@ -290,7 +290,7 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
 
 
 def diff_month( date_now, date_before ):
-    return ( date_now.year - date_before.year ) * 12 + date_now.month - date_now.month
+    return (( date_now.year - date_before.year ) * 12 ) + (date_now.month - date_before.month)
 
 
 def get_elapsed_label( date_now, date_before ):
