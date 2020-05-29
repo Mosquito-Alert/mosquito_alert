@@ -13,6 +13,7 @@ from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view
 from tigaserver_messages.views import compose_w_data, reply_w_data
 from django_messages.views import *
+from django.views.i18n import javascript_catalog
 
 admin.autodiscover()
 
@@ -118,4 +119,5 @@ urlpatterns += i18n_patterns('',
     url(r'^messages/trash/$', trash, name='messages_trash'),
     url(r'^messages/compose_w_data/$', compose_w_data, name='compose_w_data'),
     url(r'^messages/reply/(?P<message_id>[\d]+)/$', reply_w_data, name='messages_reply'),
+    url(r'^jsi18n/$', javascript_catalog, name='javascript-catalog'),
 )

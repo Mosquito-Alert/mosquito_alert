@@ -24,6 +24,7 @@ from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
+from django.utils import translation
 
 @xframe_options_exempt
 @cache_page(60 * 15)
@@ -745,10 +746,14 @@ def hashtag_map(request):
 @permission_classes([])
 def get_user_xp_data(request):
     user_id = request.QUERY_PARAMS.get('user_id', '-1')
+    locale = request.QUERY_PARAMS.get('locale', 'en')
     try:
         u = TigaUser.objects.get(pk=user_id)
     except TigaUser.DoesNotExist:
         raise ParseError(detail='user does not exist')
+
+    #language = translation.get_language_from_request(request)
+    translation.activate(locale)
 
     retval = compute_user_score_in_xp_v2(user_id)
     return Response(retval)

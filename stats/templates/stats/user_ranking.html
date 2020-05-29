@@ -1,5 +1,6 @@
 {% load staticfiles %}
 {% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <html>
     <head>
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
@@ -11,6 +12,7 @@
         <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
         <link rel="stylesheet" href={% static "stats/css/user_ranking.css" %}>
         <link rel="stylesheet" href={% static "stats/datatables.min.css" %}>
+        <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
         <style>
             .content{
                 padding: 5px;
@@ -104,7 +106,9 @@
                 margin: 10px;
             }
         </style>
-
+        <script>
+            var current_locale = '{{ LANGUAGE_CODE }}';
+        </script>
         <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
         <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
         <script src={% static "stats/user_ranking.js" %}></script>

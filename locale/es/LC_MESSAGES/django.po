@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-28 08:17+0000\n"
+"POT-Creation-Date: 2020-05-29 07:39+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -77,6 +77,29 @@ msgstr ""
 msgid "Participants with over 4 reports"
 msgstr ""
 
+#: stats/templates/stats/user_ranking.html:139
+#: stats/templates/stats/user_score.html:36
+#: stats/templates/stats/user_score.html:74
+#: stats/templates/stats/user_score.html:130
+msgid "of"
+msgstr "de"
+
+#: stats/templates/stats/user_ranking.html:155
+msgid "Rank"
+msgstr "Posición"
+
+#: stats/templates/stats/user_ranking.html:156
+msgid "User"
+msgstr "Usuario"
+
+#: stats/templates/stats/user_ranking.html:157
+msgid "Overall class"
+msgstr "Rango general"
+
+#: stats/templates/stats/user_ranking.html:158
+msgid "Score"
+msgstr "Puntuación"
+
 #: stats/templates/stats/user_score.html:28
 msgid "Citizen Scientist"
 msgstr "Ciudadano científico"
@@ -106,12 +129,6 @@ msgstr "Rango general"
 #: stats/templates/stats/user_score.html:130
 msgid "Top"
 msgstr "Top"
-
-#: stats/templates/stats/user_score.html:36
-#: stats/templates/stats/user_score.html:74
-#: stats/templates/stats/user_score.html:130
-msgid "of"
-msgstr "de"
 
 #: stats/templates/stats/user_score.html:47
 msgid "Other awards"
@@ -977,11 +994,11 @@ msgstr "Tres días seguidos mandando informes"
 msgid "bite_report"
 msgstr "Lugares de cría"
 
-#: tigascoring/xp_scoring.py:215 tigascoring/xp_scoring.py:246
+#: tigascoring/xp_scoring.py:215 tigascoring/xp_scoring.py:248
 msgid "picture"
 msgstr "la foto del informe"
 
-#: tigascoring/xp_scoring.py:218 tigascoring/xp_scoring.py:249
+#: tigascoring/xp_scoring.py:218 tigascoring/xp_scoring.py:251
 msgid "location"
 msgstr "que el informe está geolocalizado"
 
@@ -989,36 +1006,36 @@ msgstr "que el informe está geolocalizado"
 msgid "water_question"
 msgstr "haber respondido la pregunta del agua del lugar de cría"
 
-#: tigascoring/xp_scoring.py:242
+#: tigascoring/xp_scoring.py:244
 msgid "no_picture"
 msgstr "no hay foto"
 
-#: tigascoring/xp_scoring.py:253
+#: tigascoring/xp_scoring.py:255
 msgid "thorax_question"
 msgstr "haber respondido el formulario del tórax del mosquito"
 
-#: tigascoring/xp_scoring.py:256
+#: tigascoring/xp_scoring.py:258
 msgid "abdomen_question"
 msgstr "haber respondido el formulario del abdomen del mosquito"
 
-#: tigascoring/xp_scoring.py:259
+#: tigascoring/xp_scoring.py:261
 msgid "leg_question"
 msgstr "haber respondido el formulario de las patas del mosquito"
 
-#: tigascoring/xp_scoring.py:262
+#: tigascoring/xp_scoring.py:264
 msgid "other_species"
 msgstr ""
 "los expertos dicen que no es un mosquito (otra especie o no identificable)"
 
-#: tigascoring/xp_scoring.py:299
+#: tigascoring/xp_scoring.py:301
 msgid " years ago"
 msgstr " años"
 
-#: tigascoring/xp_scoring.py:301
+#: tigascoring/xp_scoring.py:303
 msgid " months ago"
 msgstr " meses"
 
-#: tigascoring/xp_scoring.py:303
+#: tigascoring/xp_scoring.py:305
 msgid " days ago"
 msgstr " días"
 

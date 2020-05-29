@@ -5,10 +5,10 @@ var detail_template = '<div class="panel panel-default">' +
         '<div class="row">' +
             '<div class="col-xs-12 stats">' +
                 '<div class="row">' +
-                    '<div class="col-xs-2">Joined</div><div class="col-xs-2"><span class="badge badge-success">#joined#</span></div>' +
+                    '<div class="col-xs-2">' + gettext('Joined') + '</div><div class="col-xs-2"><span class="badge badge-success">#joined#</span></div>' +
                 '</div>' +
                 '<div class="row">' +
-                    '<div class="col-xs-2">Last active</div><div class="col-xs-2"><span class="badge badge-success">#active#</span></div>' +
+                    '<div class="col-xs-2">' + gettext('Last active') + '</div><div class="col-xs-2"><span class="badge badge-success">#active#</span></div>' +
                 '</div>' +
             '</div>' +
         '</div>' +
@@ -17,25 +17,25 @@ var detail_template = '<div class="panel panel-default">' +
         '<div class="row">' +
             '<div class="col-xs-12 summary">' +
             '<div class="row">' +
-                '<div class="col-xs-2"><b>Overall</b></div><div class="col-xs-2"><span class="badge badge-success"><b>#title_overall#</b></span></div>' +
+                '<div class="col-xs-2"><b>' + gettext('Overall') + '</b></div><div class="col-xs-2"><span class="badge badge-success"><b>#title_overall#</b></span></div>' +
             '</div>' +
              '<div class="row">' +
-                '<div class="col-xs-2">Adult</div><div class="col-xs-3"><span class="badge badge-success">#title_adult#</span></div>' +
-                 '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
+                '<div class="col-xs-2">' + gettext('Adult') + '</div><div class="col-xs-3"><span class="badge badge-success">#title_adult#</span></div>' +
+                 '<div class="col-xs-2">' + gettext('Reports') + '</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
                  '<div class="col-xs-2"><span class="badge badge-success">#xp_adult# XP</span></div>' +
              '</div>' +
              '<div class="row">' +
-                '<div class="col-xs-2">Bite</div><div class="col-xs-3"><span class="badge badge-success">#title_bite#</span></div>' +
-                 '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
+                '<div class="col-xs-2">' + gettext('Bite') + '</div><div class="col-xs-3"><span class="badge badge-success">#title_bite#</span></div>' +
+                 '<div class="col-xs-2">' + gettext('Reports') + '</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
                  '<div class="col-xs-2"><span class="badge badge-success">#xp_bite# XP</span></div>' +
              '</div>' +
              '<div class="row">' +
-                 '<div class="col-xs-2">Site</div><div class="col-xs-3"><span class="badge badge-success">#title_site#</span></div>' +
-                 '<div class="col-xs-2">Reports</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
+                 '<div class="col-xs-2">' + gettext('Site') + '</div><div class="col-xs-3"><span class="badge badge-success">#title_site#</span></div>' +
+                 '<div class="col-xs-2">' + gettext('Reports') + '</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
                  '<div class="col-xs-2"><span class="badge badge-success">#xp_site# XP</span></div>' +
              '</div>' +
              '<div class="row">' +
-                 '<div class="col-xs-2 col-xs-offset-7">Other XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_unrelated#</span></div>' +
+                 '<div class="col-xs-2 col-xs-offset-7">' + gettext('Other') + ' XP</div><div class="col-xs-2"><span class="badge badge-success">#xp_unrelated#</span></div>' +
              '</div>' +
             '</div>' +
         '</div>' +
@@ -80,7 +80,12 @@ $(document).ready(function() {
         $('#progress_' + user_uuid).show();
         if( cached_data[user_uuid] == null ){
             $.ajax({
-                url: '/api/stats/user_xp_data/?user_id=' + user_uuid,
+                //url: '/api/stats/user_xp_data/?user_id=' + user_uuid,
+                url: '/api/stats/user_xp_data/',
+                data:{
+                    "user_id" : user_uuid,
+                    "locale" : current_locale
+                },
                 method: 'GET',
                 beforeSend: function(xhr, settings) {
                     if (!csrfSafeMethod(settings.type)) {

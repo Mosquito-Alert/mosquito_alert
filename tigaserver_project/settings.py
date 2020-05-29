@@ -122,6 +122,15 @@ LANGUAGES = (
     ('zh-cn', _('Chinese')),
 )
 
+# generate locale files
+# ./manage.py makemessages -l en
+# ./manage.py makemessages -l ca
+# ./manage.py makemessages -l es
+# ./manage.py makemessages -d djangojs -l en
+# ./manage.py makemessages -d djangojs -l ca
+# ./manage.py makemessages -d djangojs -l es
+# ./manage.py compilemessages
+
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
