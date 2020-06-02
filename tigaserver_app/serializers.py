@@ -211,6 +211,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     lon = serializers.Field()
     lat = serializers.Field()
     movelab_annotation = serializers.Field()
+    movelab_annotation_euro = serializers.Field()
     tiger_responses = serializers.Field()
     tiger_responses_text = serializers.Field()
     site_responses = serializers.Field()

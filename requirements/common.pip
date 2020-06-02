@@ -43,6 +43,7 @@ pyparsing==2.2.0
 pyproj==1.9.5.1
 python-dateutil==2.6.0
 python-memcached==1.57
+python-slugify==4.0.0
 pytz==2017.2
 redis==2.10.3
 requests==2.18.1
@@ -56,6 +57,7 @@ South==1.0.2
 sqlparse==0.2.2
 subprocess32==3.2.7
 tablib==0.11.2
+text-unidecode==1.3
 traitlets==4.3.2
 tzlocal==1.1.1
 Unidecode==1.1.1

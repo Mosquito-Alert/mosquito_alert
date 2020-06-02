@@ -29,6 +29,7 @@ import tigaserver_project.settings as conf
 import pytz
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from slugify import slugify
 
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -648,6 +649,51 @@ class Report(models.Model):
                 return (not self.photos.all().exists()) or ((ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists()) and self.get_final_expert_status() == 1)
             else:
                 return self.cached_visible == 1
+
+    def get_movelab_annotation_euro(self):
+        expert_validated = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True)
+        if self.creation_time.year == 2014 and not expert_validated:
+            if self.type == 'adult':
+                max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
+                if max_movelab_annotation is not None:
+                    return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category,
+                            'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat,
+                            'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses,
+                            'edited_user_notes': max_movelab_annotation.edited_user_notes,
+                            'photo_html': max_movelab_annotation.task.photo.popup_image()}
+        else:
+            if expert_validated:
+                result = {'edited_user_notes': self.get_final_public_note()}
+                if self.get_final_photo_html():
+                    result['photo_html'] = self.get_final_photo_html().popup_image()
+                if self.type == 'adult':
+                    classification = self.get_final_combined_expert_category_euro_struct()
+                    if classification['conflict'] is True:
+                        result['class_name'] = 'Conflict'
+                        result['class_label'] = 'conflict'
+                    else:
+                        if classification['category'] is not None:
+                            result['class_name'] = classification['category'].name
+                            result['class_label'] = slugify(classification['category'].name)
+                            result['class_id'] = classification['category'].id
+                            result['class_value'] = classification['value']
+                        elif classification['complex'] is not None:
+                            result['class_name'] = classification['complex'].description
+                            result['class_label'] = slugify(classification['category'].description)
+                            result['class_id'] = classification['category'].id
+                            result['class_value'] = classification['value']
+                    '''
+                    retval = {
+                        'category': None,
+                        'complex': None,
+                        'value': None,
+                        'conflict': False
+                    }
+                    '''
+                elif self.type == 'site':
+                    result['class_name'] = "site"
+                return result
+        return None
 
     # note that I am making this really get movelab or expert annotation,
     # but keeping name for now to avoid refactoring templates
@@ -1766,6 +1812,7 @@ class Report(models.Model):
     latest_version = property(get_is_latest)
     visible = property(show_on_map)
     movelab_annotation = property(get_movelab_annotation)
+    movelab_annotation_euro = property(get_movelab_annotation_euro)
     simplified_annotation = property(get_simplified_adult_movelab_annotation)
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)
