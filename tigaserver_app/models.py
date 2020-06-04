@@ -30,6 +30,7 @@ import pytz
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from slugify import slugify
+from django.utils import translation
 
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -619,6 +620,13 @@ class Report(models.Model):
             return None
         else:
             return max(scores)
+
+    def get_report_language(self):
+        app_language = self.app_language
+        if app_language is not None and app_language != '':
+            trans_info = translation.get_language_info(app_language)
+            return trans_info['name']
+        return 'English'
 
     def get_is_crowd_validated(self):
         if self.get_crowdcrafting_score():
@@ -1830,6 +1838,7 @@ class Report(models.Model):
     final_expert_status_text = property(get_final_expert_status)
     is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
     country_label = property(get_country_label)
+    language = property(get_report_language)
     located = property(has_location)
     is_spain_p = property(is_spain)
 
