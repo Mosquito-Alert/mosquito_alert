@@ -692,6 +692,8 @@ class Report(models.Model):
                     '''
                 elif self.type == 'site':
                     result['class_name'] = "site"
+                    result['class_label'] = "site"
+                    result['site_certainty_category'] = self.get_final_expert_score()
                 return result
         return None
 
