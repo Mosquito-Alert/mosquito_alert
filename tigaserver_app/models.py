@@ -1235,7 +1235,8 @@ class Report(models.Model):
             'category' : None,
             'complex': None,
             'value': None,
-            'conflict': False
+            'conflict': False,
+            'in_progress': False
         }
         most_voted = None
         if superexpert_annotations.count() > 1:
@@ -1246,6 +1247,7 @@ class Report(models.Model):
             most_voted = self.get_most_voted_category(expert_annotations)
         else:
             most_voted = Categories.objects.get(name='Unclassified')
+            retval['in_progress'] = True
 
         if most_voted is None:
             retval['conflict'] = True

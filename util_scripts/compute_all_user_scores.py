@@ -32,7 +32,7 @@ def compute_all_scores():
         user.score_v2 = score['total_score']
         user.score_v2_adult = score['score_detail']['adult']['score']
         user.score_v2_site = score['score_detail']['site']['score']
-        user.score_v2_bite = score['score_detail']['bite']['score']
+        #user.score_v2_bite = score['score_detail']['bite']['score']
         user.save()
         print("Done {0} of {1}".format( start, goal ))
         start += 1

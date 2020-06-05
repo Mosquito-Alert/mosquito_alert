@@ -11,22 +11,36 @@ XP = 12
 XP_REPORT_WITH_PICTURE = XP
 XP_LOCATION = XP / 2
 
-PICTURE_REWARD = 6
-LOCATION_REWARD = 6
-BITE_REWARD = 2
+MOSQUITO_PICTURE_REWARD = 6
+BREEDING_SITE_PICTURE_REWARD = 5
+MOSQUITO_LOCATION_REWARD = 6
+BREEDING_SITE_LOCATION_REWARD = 5
+#BITE_REWARD = 2
 
 MOSQUITO_THORAX_QUESTION_REWARD = 2
 MOSQUITO_ABDOMEN_QUESTION_REWARD = 2
 MOSQUITO_LEG_QUESTION_REWARD = 2
-SITE_WATER_QUESTION_REWARD = 4
+MOSQUITO_BITE_ANSWER_REWARD = 2
+SITE_WATER_QUESTION_REWARD = 3
+SITE_STORM_DRAIN_REWARD = 4
+BREEDING_SITE_MOSQUITO_REWARD = 3
 
 MOSQUITO_HOW_LOOKS_QUESTION_ID = 7
 MOSQUITO_THORAX_ANSWER_IDS = [711, 712, 713, 714]
 MOSQUITO_ABDOMEN_ANSWER_IDS = [721, 722, 723, 724]
 MOSQUITO_LEG_ANSWER_IDS = [731, 732, 733, 734]
 
+MOSQUITO_BITE_QUESTION_ID = 8
+MOSQUITO_BITE_ANSWER_ID = 101
+
+BREEDING_SITE_MOSQUITO_QUESTION_ID = 11
+BREEDING_SITE_MOSQUITO_ANSWER_ID = 101
+
 SITE_WATER_QUESTION_ID = 10
 SITE_WATER_ANSWER_IDS = [81, 101]
+
+STORM_DRAIN_QUESTION_ID = 12
+STORM_DRAIN_ANSWER_ID = 121
 
 CULEX_CATEGORY_ID = 10
 AEDES_CATEGORY_IDS = [4, 5, 6, 7]
@@ -125,6 +139,33 @@ def is_water_answered(report):
     return False
 
 
+def is_bite_report_followed(report):
+    '''
+    for response in report.responses:
+        if response.question_id == MOSQUITO_BITE_QUESTION_ID and response.answer_id == MOSQUITO_BITE_ANSWER_ID:
+            return True
+    '''
+    return False
+
+
+def is_mosquito_report_followed(report):
+    '''
+    for response in report.responses:
+        if response.question_id == BREEDING_SITE_MOSQUITO_QUESTION_ID and response.answer_id == BREEDING_SITE_MOSQUITO_ANSWER_ID:
+            return True
+    '''
+    return False
+
+
+def is_storm_drain(report):
+    '''
+    for response in report.responses:
+        if response.question_id == STORM_DRAIN_QUESTION_ID and response.answer_id == STORM_DRAIN_ANSWER_ID:
+            return True
+    '''
+    return False
+
+
 def is_culex(validation_result):
     if validation_result['category'] is not None:
         if validation_result['category'].id == CULEX_CATEGORY_ID:
@@ -184,7 +225,7 @@ def get_translated_category_label(label):
         pass
     return retVal
 
-
+'''
 def get_bite_report_score(report, result):
     local_result = {}
     local_result['report'] = report.version_UUID
@@ -198,7 +239,7 @@ def get_bite_report_score(report, result):
         local_result['report_score'] += award.category.xp_points
     result['score_detail']['bite']['score_items'].append(local_result)
     return result
-
+'''
 
 def get_site_report_score(report, result):
     local_result = {}
@@ -212,17 +253,29 @@ def get_site_report_score(report, result):
     local_result['report_score'] = 0
     local_result['awards'] = []
     if report.n_visible_photos > 0:
-        local_result['awards'].append({"reason": _("picture"), "xp_awarded": PICTURE_REWARD})
-        local_result['report_score'] += PICTURE_REWARD
+        local_result['awards'].append({"reason": _("picture"), "xp_awarded": BREEDING_SITE_PICTURE_REWARD})
+        local_result['report_score'] += BREEDING_SITE_PICTURE_REWARD
+
     if report.located:
-        local_result['awards'].append({"reason": _("location"), "xp_awarded": LOCATION_REWARD})
-        local_result['report_score'] += LOCATION_REWARD
+        local_result['awards'].append({"reason": _("location"), "xp_awarded": BREEDING_SITE_LOCATION_REWARD})
+        local_result['report_score'] += BREEDING_SITE_LOCATION_REWARD
+
+    if is_storm_drain(report):
+        local_result['awards'].append({"reason": _("storm_drain"), "xp_awarded": SITE_STORM_DRAIN_REWARD})
+        local_result['report_score'] += SITE_STORM_DRAIN_REWARD
+
     if is_water_answered(report):
         local_result['awards'].append({"reason": _("water_question"), "xp_awarded": SITE_WATER_QUESTION_REWARD})
         local_result['report_score'] += SITE_WATER_QUESTION_REWARD
+
+    if is_mosquito_report_followed(report):
+        local_result['awards'].append({"reason": _("mosquito_report_follows_breeding_site"), "xp_awarded": BREEDING_SITE_MOSQUITO_REWARD})
+        local_result['report_score'] += BREEDING_SITE_MOSQUITO_REWARD
+
     for award in report.report_award.all():
         local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
         local_result['report_score'] += award.category.xp_points
+
     result['score_detail']['site']['score_items'].append(local_result)
     return result
 
@@ -238,19 +291,22 @@ def get_adult_report_score(report, result):
     local_result['report_score'] = 0
     local_result['awards'] = []
     local_result['penalties'] = []
-    if picture:
-        local_result['report_photo'] = picture.photo.url.replace('tigapics/', 'tigapics_small/')
-    else:
-        local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
-        local_result['report_photo'] = None
-    if is_culex(validation_result) or is_aedes(validation_result):
+
+    if is_aedes(validation_result) or is_culex(validation_result):
         if picture:
-            local_result['awards'].append({ "reason": _("picture"), "xp_awarded": PICTURE_REWARD })
-            local_result['report_score'] += PICTURE_REWARD
+            local_result['report_photo'] = picture.photo.url.replace('tigapics/', 'tigapics_small/')
+            local_result['awards'].append({"reason": _("picture"), "xp_awarded": MOSQUITO_PICTURE_REWARD})
+            local_result['report_score'] += MOSQUITO_PICTURE_REWARD
+        else:
+            local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
+            local_result['report_photo'] = None
+
         if report.located:
-            local_result['awards'].append({"reason": _("location"), "xp_awarded": LOCATION_REWARD })
-            local_result['report_score'] += LOCATION_REWARD
-    elif is_aedes(validation_result):
+            local_result['awards'].append({"reason": _("location"), "xp_awarded": MOSQUITO_LOCATION_REWARD})
+            local_result['report_score'] += MOSQUITO_LOCATION_REWARD
+        else:
+            local_result['penalties'].append({"reason": _("no_location"), "xp_awarded": 0})
+
         if is_thorax_answered(report):
             local_result['awards'].append({"reason": _("thorax_question"), "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_THORAX_QUESTION_REWARD
@@ -261,7 +317,16 @@ def get_adult_report_score(report, result):
             local_result['awards'].append({"reason": _("leg_question"), "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_LEG_QUESTION_REWARD
     else:
-        local_result['penalties'].append( {"reason": _("other_species"), "xp_awarded": 0 } )
+        local_result['penalties'].append({"reason": _("other_species"), "xp_awarded": 0})
+        # if validation_result['in_progress'] == True:
+        #     local_result['penalties'].append({"reason": _("not_yet_validated"), "xp_awarded": 0})
+        # else:
+        #     local_result['penalties'].append( {"reason": _("other_species"), "xp_awarded": 0 } )
+
+    if is_bite_report_followed(report):
+        local_result['awards'].append({"reason": _("bite report follow"), "xp_awarded": MOSQUITO_BITE_ANSWER_REWARD})
+        local_result['report_score'] += MOSQUITO_BITE_ANSWER_REWARD
+
     for award in report.report_award.all():
         local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
         local_result['report_score'] += award.category.xp_points
@@ -323,11 +388,11 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
         user_reports = Report.objects.filter(user__user_UUID__in=user_uuids).order_by('-creation_time')
 
     adults = user_reports.filter(type='adult')
-    bites = user_reports.filter(type='bite')
+    #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
     adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
+    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
     site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
 
     results_adult = {}
@@ -344,6 +409,7 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
         adult_score += result['score_detail']['adult']['score_items'][index]['report_score']
     result['total_score'] += adult_score
 
+    '''
     results_bite = {}
     results_bite['score'] = 0
     results_bite['score_items'] = []
@@ -356,6 +422,7 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
         result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
         bite_score += result['score_detail']['bite']['score_items'][index]['report_score']
     result['total_score'] += bite_score
+    '''
 
     results_site = {}
     results_site['score'] = 0
@@ -402,12 +469,12 @@ def compute_user_score_in_xp_v2(user_uuid):
     qs_overall = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
     qs_adult = TigaUser.objects.exclude(score_v2_adult=0).exclude(user_UUID__in=uuid_replicas)
     qs_site = TigaUser.objects.exclude(score_v2_site=0).exclude(user_UUID__in=uuid_replicas)
-    qs_bite = TigaUser.objects.exclude(score_v2_bite=0).exclude(user_UUID__in=uuid_replicas)
+    #qs_bite = TigaUser.objects.exclude(score_v2_bite=0).exclude(user_UUID__in=uuid_replicas)
 
     overall_df = pd.DataFrame(list(qs_overall.values_list('score_v2', 'user_UUID')), columns=['score_v2', 'user_UUID'])
     adult_df = pd.DataFrame(list(qs_adult.values_list('score_v2_adult', 'user_UUID')), columns=['score_v2_adult', 'user_UUID'])
     site_df = pd.DataFrame(list(qs_site.values_list('score_v2_site', 'user_UUID')), columns=['score_v2_site', 'user_UUID'])
-    bite_df = pd.DataFrame(list(qs_bite.values_list('score_v2_bite', 'user_UUID')), columns=['score_v2_bite', 'user_UUID'])
+    #bite_df = pd.DataFrame(list(qs_bite.values_list('score_v2_bite', 'user_UUID')), columns=['score_v2_bite', 'user_UUID'])
 
     overall_sorted_df = overall_df.sort_values('score_v2', inplace=False)
     overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(method='dense', ascending=False)
@@ -418,8 +485,8 @@ def compute_user_score_in_xp_v2(user_uuid):
     site_sorted_df = site_df.sort_values('score_v2_site', inplace=False)
     site_sorted_df["rank"] = site_sorted_df['score_v2_site'].rank(method='dense', ascending=False)
 
-    bite_sorted_df = bite_df.sort_values('score_v2_bite', inplace=False)
-    bite_sorted_df["rank"] = bite_sorted_df['score_v2_bite'].rank(method='dense', ascending=False)
+    #bite_sorted_df = bite_df.sort_values('score_v2_bite', inplace=False)
+    #bite_sorted_df["rank"] = bite_sorted_df['score_v2_bite'].rank(method='dense', ascending=False)
 
     result = {}
     result['total_score'] = 0
@@ -437,8 +504,8 @@ def compute_user_score_in_xp_v2(user_uuid):
     rank_value_site = get_user_rank_value(site_sorted_df, user_uuid)
     min_max_site = get_min_max(site_sorted_df, 'score_v2_site')
 
-    rank_value_bite = get_user_rank_value(bite_sorted_df, user_uuid)
-    min_max_bite = get_min_max(bite_sorted_df, 'score_v2_bite')
+    #rank_value_bite = get_user_rank_value(bite_sorted_df, user_uuid)
+    #min_max_bite = get_min_max(bite_sorted_df, 'score_v2_bite')
 
     current_date = datetime.date.today()
     if user is not None:
@@ -460,11 +527,11 @@ def compute_user_score_in_xp_v2(user_uuid):
         result['active_label'] = None
 
     adults = user_reports.filter(type='adult')
-    bites = user_reports.filter(type='bite')
+    #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
     adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
+    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
     site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
 
     results_adult = {}
@@ -485,6 +552,7 @@ def compute_user_score_in_xp_v2(user_uuid):
     results_bite['score_items'] = []
     result['score_detail']['bite'] = results_bite
 
+    '''
     bite_score = 0
     for report in bite_last_versions:
         result = get_bite_report_score(report, result)
@@ -492,6 +560,7 @@ def compute_user_score_in_xp_v2(user_uuid):
         result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
         bite_score += result['score_detail']['bite']['score_items'][index]['report_score']
     result['total_score'] += bite_score
+    '''
 
     results_site = {}
     results_site['score'] = 0
@@ -526,10 +595,12 @@ def compute_user_score_in_xp_v2(user_uuid):
     result['score_detail']['site']['class_label'] = site_class['label']
     result['score_detail']['site']['rank_value'] = rank_value_site
 
+    '''
     bite_class = get_user_class(min_max_bite['max'], min_max_bite['min'], result['score_detail']['bite']['score'])
     result['score_detail']['bite']['class_value'] = bite_class['value']
     result['score_detail']['bite']['class_label'] = bite_class['label']
     result['score_detail']['bite']['rank_value'] = rank_value_bite
+    '''
 
     overall_number_below_rank = overall_sorted_df[ overall_sorted_df['rank'] <= result['overall_rank_value'] ].count()['rank']
     overall_number_total = overall_sorted_df.count()['rank']
@@ -540,8 +611,10 @@ def compute_user_score_in_xp_v2(user_uuid):
     site_number_below_rank = site_sorted_df[site_sorted_df['rank'] <= result['score_detail']['site']['rank_value']].count()['rank']
     site_number_total = site_sorted_df.count()['rank']
 
+    '''
     bite_number_below_rank = bite_sorted_df[bite_sorted_df['rank'] <= result['score_detail']['bite']['rank_value']].count()['rank']
     bite_number_total = bite_sorted_df.count()['rank']
+    '''
 
     result['overall_top_perc'] = (float(overall_number_below_rank)/float(overall_number_total)) * 100.0
     result['overall_ranked_users'] = overall_number_total
@@ -558,11 +631,13 @@ def compute_user_score_in_xp_v2(user_uuid):
         result['score_detail']['site']['top_perc'] = (float(site_number_below_rank) / float(site_number_total)) * 100.0
     result['score_detail']['site']['ranked_users'] = site_number_total
 
+    '''
     if bite_number_below_rank == 0 and bite_number_total == 0:
         result['score_detail']['bite']['top_perc'] = 100.0
     else:
         result['score_detail']['bite']['top_perc'] = (float(bite_number_below_rank) / float(bite_number_total)) * 100.0
     result['score_detail']['bite']['ranked_users'] = bite_number_total
+    '''
 
     return result
 

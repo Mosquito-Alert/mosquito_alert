@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-29 07:39+0000\n"
+"POT-Creation-Date: 2020-06-05 08:34+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -77,26 +77,26 @@ msgstr ""
 msgid "Participants with over 4 reports"
 msgstr ""
 
-#: stats/templates/stats/user_ranking.html:139
+#: stats/templates/stats/user_ranking.html:142
 #: stats/templates/stats/user_score.html:36
 #: stats/templates/stats/user_score.html:74
 #: stats/templates/stats/user_score.html:130
 msgid "of"
 msgstr "de"
 
-#: stats/templates/stats/user_ranking.html:155
+#: stats/templates/stats/user_ranking.html:158
 msgid "Rank"
 msgstr "Posició"
 
-#: stats/templates/stats/user_ranking.html:156
+#: stats/templates/stats/user_ranking.html:159
 msgid "User"
 msgstr "Usuari"
 
-#: stats/templates/stats/user_ranking.html:157
+#: stats/templates/stats/user_ranking.html:160
 msgid "Overall class"
 msgstr "Rang general"
 
-#: stats/templates/stats/user_ranking.html:158
+#: stats/templates/stats/user_ranking.html:161
 msgid "Score"
 msgstr "Puntuació"
 
@@ -152,7 +152,6 @@ msgstr "Rang mosquit"
 
 #: stats/templates/stats/user_score.html:102
 #: stats/templates/stats/user_score.html:157
-#: stats/templates/stats/user_score.html:204
 msgid "xp awarded for"
 msgstr "xp concedits per"
 
@@ -162,7 +161,6 @@ msgstr ""
 
 #: stats/templates/stats/user_score.html:110
 #: stats/templates/stats/user_score.html:161
-#: stats/templates/stats/user_score.html:208
 msgid "No awards for this report!"
 msgstr "Cap premi per aquest informe"
 
@@ -177,18 +175,6 @@ msgstr "Rang llocs de cria - sense rang"
 #: stats/templates/stats/user_score.html:129
 msgid "Breeding site rank"
 msgstr "Rang llocs de cria"
-
-#: stats/templates/stats/user_score.html:176
-msgid "Bite"
-msgstr "Picades"
-
-#: stats/templates/stats/user_score.html:178
-msgid "Bite rank - Unranked"
-msgstr "Rang picades - Sense rang"
-
-#: stats/templates/stats/user_score.html:180
-msgid "Bite rank"
-msgstr "Rang picades"
 
 #: templates/admin/base_site.html:4
 #, fuzzy
@@ -458,7 +444,7 @@ msgstr "Bidons i pous"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:459
+#: tigaserver_app/models.py:461
 msgid "Other"
 msgstr "Altres"
 
@@ -561,19 +547,19 @@ msgstr "Punts"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:451
+#: tigaserver_app/models.py:453
 msgid "storm-drain"
 msgstr "Embornal"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:453
+#: tigaserver_app/models.py:455
 msgid "Fountain"
 msgstr "Font"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:455
+#: tigaserver_app/models.py:457
 msgid "Basin"
 msgstr "Basse artificial petit"
 
@@ -584,7 +570,7 @@ msgstr "Bidó"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:457
+#: tigaserver_app/models.py:459
 msgid "Well"
 msgstr "Pou"
 
@@ -952,103 +938,115 @@ msgstr "Tots els informes"
 msgid "site_report_legend_main_title"
 msgstr "Marcadors"
 
-#: tigascoring/xp_scoring.py:144 tigascoring/xp_scoring.py:146
-#: tigascoring/xp_scoring.py:149
+#: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
+#: tigascoring/xp_scoring.py:190
 msgid "Novice"
 msgstr "Novell"
 
-#: tigascoring/xp_scoring.py:151
+#: tigascoring/xp_scoring.py:192
 msgid "Contributor"
 msgstr "Col·laborador"
 
-#: tigascoring/xp_scoring.py:153
+#: tigascoring/xp_scoring.py:194
 msgid "Expert"
 msgstr "Expert"
 
-#: tigascoring/xp_scoring.py:155
+#: tigascoring/xp_scoring.py:196
 msgid "Master"
 msgstr "Mestre"
 
-#: tigascoring/xp_scoring.py:157
+#: tigascoring/xp_scoring.py:198
 msgid "Grandmaster"
 msgstr "Gran mestre"
 
-#: tigascoring/xp_scoring.py:176
+#: tigascoring/xp_scoring.py:217
 msgid "start_of_season"
 msgstr "Primer informe de la temporada"
 
-#: tigascoring/xp_scoring.py:177
+#: tigascoring/xp_scoring.py:218
 msgid "daily_participation"
 msgstr "Primer informe del dia"
 
-#: tigascoring/xp_scoring.py:178
+#: tigascoring/xp_scoring.py:219
 msgid "fidelity_day_2"
 msgstr "Dos dies seguits enviant informes"
 
-#: tigascoring/xp_scoring.py:179
+#: tigascoring/xp_scoring.py:220
 msgid "fidelity_day_3"
 msgstr "Tres dies seguits enviant informes"
 
-#: tigascoring/xp_scoring.py:194
-#, fuzzy
-msgid "bite_report"
-msgstr "Llocs de cria"
-
-#: tigascoring/xp_scoring.py:215 tigascoring/xp_scoring.py:248
+#: tigascoring/xp_scoring.py:256 tigascoring/xp_scoring.py:296
 msgid "picture"
 msgstr "la foto de l'informe"
 
-#: tigascoring/xp_scoring.py:218 tigascoring/xp_scoring.py:251
+#: tigascoring/xp_scoring.py:260 tigascoring/xp_scoring.py:303
 msgid "location"
 msgstr "que l'informe està geolocalitzat"
 
-#: tigascoring/xp_scoring.py:221
+#: tigascoring/xp_scoring.py:264
+msgid "storm_drain"
+msgstr "És un embornal"
+
+#: tigascoring/xp_scoring.py:268
 msgid "water_question"
 msgstr "haver respost el formulari d'aigua al lloc de cria"
 
-#: tigascoring/xp_scoring.py:244
+#: tigascoring/xp_scoring.py:272
+msgid "mosquito_report_follows_breeding_site"
+msgstr "haver afegit un informe de mosquit al final"
+
+#: tigascoring/xp_scoring.py:299
 msgid "no_picture"
 msgstr "no hi ha foto"
 
-#: tigascoring/xp_scoring.py:255
+#: tigascoring/xp_scoring.py:306
+msgid "no_location"
+msgstr "l'informe no està geolocalitzat"
+
+#: tigascoring/xp_scoring.py:310
 msgid "thorax_question"
 msgstr "haver respost el formulari del tòrax del mosquit"
 
-#: tigascoring/xp_scoring.py:258
+#: tigascoring/xp_scoring.py:313
 msgid "abdomen_question"
 msgstr "haver respost el formulari de l'abdomen del mosquit"
 
-#: tigascoring/xp_scoring.py:261
+#: tigascoring/xp_scoring.py:316
 msgid "leg_question"
 msgstr "haver respost el formulari de les potes del mosquit"
 
-#: tigascoring/xp_scoring.py:264
+#: tigascoring/xp_scoring.py:319
 msgid "other_species"
 msgstr ""
 "els experts diuen que no és un mosquit (una altra espècie, o no "
 "identificable)"
 
-#: tigascoring/xp_scoring.py:301
+#: tigascoring/xp_scoring.py:322
+#, fuzzy
+msgid "bite report follow"
+msgstr "Llocs de cria"
+
+#: tigascoring/xp_scoring.py:361
 msgid " years ago"
 msgstr " anys"
 
-#: tigascoring/xp_scoring.py:303
+#: tigascoring/xp_scoring.py:363
 msgid " months ago"
 msgstr " mesos"
 
-#: tigascoring/xp_scoring.py:305
+#: tigascoring/xp_scoring.py:365
 msgid " days ago"
 msgstr " dies"
 
-#: tigaserver_app/models.py:434
+#: tigaserver_app/models.py:436
 msgid "High"
 msgstr "Alta"
 
-#: tigaserver_app/models.py:436
+#: tigaserver_app/models.py:438
 msgid "Medium"
 msgstr "Mitjana"
 
-#: tigaserver_app/models.py:438
+#: tigaserver_app/models.py:440
 msgid "Low"
 msgstr "Baixa "
 
@@ -1076,6 +1074,15 @@ msgstr "Anglès"
 #: tigaserver_project/settings.py:122
 msgid "Chinese"
 msgstr ""
+
+#~ msgid "Bite"
+#~ msgstr "Picades"
+
+#~ msgid "Bite rank - Unranked"
+#~ msgstr "Rang picades - Sense rang"
+
+#~ msgid "Bite rank"
+#~ msgstr "Rang picades"
 
 #~ msgid "Reports per page"
 #~ msgstr "Informes per pàgina"

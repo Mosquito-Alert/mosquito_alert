@@ -52,11 +52,15 @@ def read_classification_data_from_db():
 
 
 def crunch():
-    classif = read_classification_data_from_file()
-    for k in classif.keys():
-        n = ExpertReportAnnotation.objects.filter(report__version_UUID=k, user__groups__name='superexpert', validation_complete=True).count()
-        if n > 1:
-            print("Superexpert validations for report {0} - {1}".format(k,n))
+
+    classif = read_classification_data_from_db()
+    write_classif_data_to_disk(classif)
+
+    # classif = read_classification_data_from_file()
+    # for k in classif.keys():
+    #     n = ExpertReportAnnotation.objects.filter(report__version_UUID=k, user__groups__name='superexpert', validation_complete=True).count()
+    #     if n > 1:
+    #         print("Superexpert validations for report {0} - {1}".format(k,n))
 
     # classif = read_classification_data_from_db()
     # for k in classif.keys():

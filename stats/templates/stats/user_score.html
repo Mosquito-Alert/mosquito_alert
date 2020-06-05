@@ -163,54 +163,7 @@
                 </div>
             </div>
             {% endfor %}
-            <hr class="thick">
             <!-- End Breeding site block --->
-            <!-- Bite block --->
-            <div class="row info_block">
-                <!--
-                <div class="col-xs-1">
-                    <img src="{% static "stats/icon/tigatrapp_logo_crop_s.png" %}">
-                </div>
-                -->
-                <div class="col-xs-9">
-                    <h4>{% trans 'Bite' %} - <b>{{ score_data.score_detail.bite.class_label }}</b></h4>
-                    {% if score_data.score_detail.bite.rank_value == 0%}
-                        <p class="score_label_smaller">{% trans 'Bite rank - Unranked' %}</p>
-                    {% else %}
-                        <p class="score_label_smaller">{% trans 'Bite rank' %} - #{{ score_data.score_detail.bite.rank_value }}</p>
-                        <p><i>Top {{ score_data.score_detail.bite.top_perc |floatformat:3 }} % of {{ score_data.score_detail.bite.ranked_users }}</i></p>
-                    {% endif %}
-                </div>
-                <div class="col-xs-3 class_image">
-                    <img src="{% static "stats/icon/" %}L{{ score_data.score_detail.bite.class_value }}_75.png">
-                    <p class="score_label">{{ score_data.score_detail.bite.score }}  XP</p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-12 report_container">
-                    {% for item in score_data.score_detail.bite.score_items %}
-                    <div class="report_box bite" onclick="javascript:create_dialog('{{ item.report }}');">
-                        {{ item.report_score }} XP
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% for item in score_data.score_detail.bite.score_items %}
-            <div id="{{ item.report }}" class="row" style="display:none;">
-                <div class="col-xs-12">
-                    {%if item.awards %}
-                        <ul>
-                        {% for award in item.awards %}
-                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}!</li>
-                        {% endfor %}
-                        </ul>
-                    {% else %}
-                        {% trans 'No awards for this report!' %}
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-            <!-- End Bite block --->
         </div>
     </body>
 </html>

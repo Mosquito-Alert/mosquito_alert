@@ -14,7 +14,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from tigaserver_app.models import Report, TigaUser, TigaProfile
-from tigascoring.awards import grant_first_of_day, grant_first_of_season, grant_three_consecutive_days_sending, grant_two_consecutive_days_sending
+from tigascoring.awards import grant_first_of_day, grant_first_of_season, grant_three_consecutive_days_sending, grant_two_consecutive_days_sending, Award
 from django.contrib.auth.models import User
 import tigaserver_project.settings as conf
 from datetime import datetime, timedelta, date
@@ -165,6 +165,8 @@ def test_awards_for_grandmaster():
     give_retroactive_awards_to_user(u, granter)
 
 def crunch():
+    #cleanup
+    Award.objects.all().delete()
     uuid_replicas = get_uuid_replicas()
     users = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
     granter = User.objects.get(pk=24) #super_movelab

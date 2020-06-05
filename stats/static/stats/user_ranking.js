@@ -24,11 +24,13 @@ var detail_template = '<div class="panel panel-default">' +
                  '<div class="col-xs-2">' + gettext('Reports') + '</div><div class="col-xs-2"><span class="badge badge-success">#n_adult#</span></div>' +
                  '<div class="col-xs-2"><span class="badge badge-success">#xp_adult# XP</span></div>' +
              '</div>' +
+             /*
              '<div class="row">' +
                 '<div class="col-xs-2">' + gettext('Bite') + '</div><div class="col-xs-3"><span class="badge badge-success">#title_bite#</span></div>' +
                  '<div class="col-xs-2">' + gettext('Reports') + '</div><div class="col-xs-2"><span class="badge badge-success">#n_bite#</span></div>' +
                  '<div class="col-xs-2"><span class="badge badge-success">#xp_bite# XP</span></div>' +
              '</div>' +
+             */
              '<div class="row">' +
                  '<div class="col-xs-2">' + gettext('Site') + '</div><div class="col-xs-3"><span class="badge badge-success">#title_site#</span></div>' +
                  '<div class="col-xs-2">' + gettext('Reports') + '</div><div class="col-xs-2"><span class="badge badge-success">#n_site#</span></div>' +
