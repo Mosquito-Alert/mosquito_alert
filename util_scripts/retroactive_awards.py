@@ -97,7 +97,7 @@ def get_all_user_reports(user):
             user_uuids.append(p.user_UUID)
     else:
         user_uuids.append(user.user_UUID)
-    return Report.objects.filter(user__user_UUID__in=user_uuids)
+    return Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type='bite')
 
 
 def give_retroactive_awards_to_user(user, granter):

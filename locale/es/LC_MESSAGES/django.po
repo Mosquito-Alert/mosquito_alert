@@ -157,7 +157,7 @@ msgstr "xp concedidos por"
 
 #: stats/templates/stats/user_score.html:107
 msgid "No awards because"
-msgstr ""
+msgstr "No se han concedido premios porque"
 
 #: stats/templates/stats/user_score.html:110
 #: stats/templates/stats/user_score.html:161

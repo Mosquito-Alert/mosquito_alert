@@ -1857,68 +1857,15 @@ def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
 
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, **kwargs):
-    # check award for first of season
-    current_year = instance.creation_time.year
-    awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
-    if awards.count() == 0:  # not yet awarded
-        if instance.can_be_first_of_season(current_year):  # can be first of season?
-            super_movelab = User.objects.get(pk=24)
-            c = AwardCategory.objects.get(category_label='start_of_season')
-            a = Award()
-            a.report = instance
-            a.date_given = datetime.now()
-            a.given_to = instance.user
-            a.expert = super_movelab
-            a.category = c
-            a.save()
-    else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
-        if instance.latest_version: #this report is the last version
-            version_of_previous = instance.version_number - 1
-            if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
-                #if yes, transfer award to current version
-                award = awards.filter(report__version_number=version_of_previous).first()
-                award.report = instance
-                award.save()
-
-    report_day = instance.creation_time.day
-    report_month = instance.creation_time.month
-    report_year = instance.creation_time.year
-    awards = Award.objects\
-        .filter(report__creation_time__year=report_year)\
-        .filter(report__creation_time__month=report_month)\
-        .filter(report__creation_time__day=report_day) \
-        .filter(report__user=instance.user) \
-        .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
-    if awards.count() == 0: # not yet awarded
-        super_movelab = User.objects.get(pk=24)
-        c = AwardCategory.objects.get(category_label='daily_participation')
-        a = Award()
-        a.report = instance
-        a.date_given = datetime.now()
-        a.given_to = instance.user
-        a.expert = super_movelab
-        a.category = c
-        a.save()
-
-    date_1_day_before_report = instance.creation_time - timedelta(days=1)
-    date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
-    report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
-    if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
-        #report before this one has not been awarded neither 2nd nor 3rd day streak
-        if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
-            super_movelab = User.objects.get(pk=24)
-            c = AwardCategory.objects.get(category_label='fidelity_day_2')
-            a = Award()
-            a.report = instance
-            a.date_given = datetime.now()
-            a.given_to = instance.user
-            a.expert = super_movelab
-            a.category = c
-            a.save()
-        else:
-            if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
+    #only for adults and sites
+    if instance.type == 'adult' or instance.type == 'site':
+        # check award for first of season
+        current_year = instance.creation_time.year
+        awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
+        if awards.count() == 0:  # not yet awarded
+            if instance.can_be_first_of_season(current_year):  # can be first of season?
                 super_movelab = User.objects.get(pk=24)
-                c = AwardCategory.objects.get(category_label='fidelity_day_3')
+                c = AwardCategory.objects.get(category_label='start_of_season')
                 a = Award()
                 a.report = instance
                 a.date_given = datetime.now()
@@ -1926,8 +1873,61 @@ def maybe_give_awards(sender, instance, **kwargs):
                 a.expert = super_movelab
                 a.category = c
                 a.save()
+        else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
+            if instance.latest_version: #this report is the last version
+                version_of_previous = instance.version_number - 1
+                if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
+                    #if yes, transfer award to current version
+                    award = awards.filter(report__version_number=version_of_previous).first()
+                    award.report = instance
+                    award.save()
 
+        report_day = instance.creation_time.day
+        report_month = instance.creation_time.month
+        report_year = instance.creation_time.year
+        awards = Award.objects\
+            .filter(report__creation_time__year=report_year)\
+            .filter(report__creation_time__month=report_month)\
+            .filter(report__creation_time__day=report_day) \
+            .filter(report__user=instance.user) \
+            .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
+        if awards.count() == 0: # not yet awarded
+            super_movelab = User.objects.get(pk=24)
+            c = AwardCategory.objects.get(category_label='daily_participation')
+            a = Award()
+            a.report = instance
+            a.date_given = datetime.now()
+            a.given_to = instance.user
+            a.expert = super_movelab
+            a.category = c
+            a.save()
 
+        date_1_day_before_report = instance.creation_time - timedelta(days=1)
+        date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
+        report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
+        if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
+            #report before this one has not been awarded neither 2nd nor 3rd day streak
+            if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
+                super_movelab = User.objects.get(pk=24)
+                c = AwardCategory.objects.get(category_label='fidelity_day_2')
+                a = Award()
+                a.report = instance
+                a.date_given = datetime.now()
+                a.given_to = instance.user
+                a.expert = super_movelab
+                a.category = c
+                a.save()
+            else:
+                if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
+                    super_movelab = User.objects.get(pk=24)
+                    c = AwardCategory.objects.get(category_label='fidelity_day_3')
+                    a = Award()
+                    a.report = instance
+                    a.date_given = datetime.now()
+                    a.given_to = instance.user
+                    a.expert = super_movelab
+                    a.category = c
+                    a.save()
 
 
 class ReportResponse(models.Model):
