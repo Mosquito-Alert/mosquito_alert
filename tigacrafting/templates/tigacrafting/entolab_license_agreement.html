@@ -1,0 +1,34 @@
+{% load staticfiles %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+    <head>
+        {% block encoding %}<meta charset="utf-8">{% endblock %}
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+        <meta name="description" content="MosquitoAlert">
+        <meta name="author" content="Movement Ecology Laboratory">
+        <title>{% block page_title %}EntoLab license agreement{% endblock %}</title>
+
+        {% block bootstrap_css %}
+            <!-- Bootstrap core CSS -->
+            <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+            <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        {% endblock %}
+        <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
+        <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
+        <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    </head>
+    <body>
+        <div class="container">
+            <h1>EntoLab license agreement</h1>
+            <p>Here goes the license text</p>
+            <form action="{% url 'entolab_license_agreement' %}" method="post">
+                {% csrf_token %}
+                {{ form }}
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+    </body>
+</html>

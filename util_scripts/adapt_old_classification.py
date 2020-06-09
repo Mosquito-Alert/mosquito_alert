@@ -116,7 +116,7 @@ def revise_multiple_ack(report_id, old_class):
 def crunch():
 
     classif = read_classification_data_from_db()
-    write_classif_data_to_disk(classif,'classif_data_v2.csv')
+    #write_classif_data_to_disk(classif,'classif_data_v2.csv')
 
     '''
     classif = read_classification_data_from_file('classif_data.csv')

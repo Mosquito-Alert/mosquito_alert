@@ -242,3 +242,5 @@ AWARD_START_YEAR = 2020
 # Season start - These mark the beginning of the season (Diada de Sant Jordi)
 SEASON_START_MONTH = 4
 SEASON_START_DAY = 23
+
+ENTOLAB_ADMIN = 'a.escobar@creaf.uab.cat'

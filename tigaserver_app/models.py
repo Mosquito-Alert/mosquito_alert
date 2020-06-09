@@ -32,8 +32,88 @@ from django.dispatch import receiver
 from slugify import slugify
 from django.utils import translation
 
-
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
+
+
+ACHIEVEMENT_10_REPORTS = 'achievement_10_reports'
+ACHIEVEMENT_20_REPORTS = 'achievement_20_reports'
+ACHIEVEMENT_50_REPORTS = 'achievement_50_reports'
+ACHIEVEMENT_10_REPORTS_XP = 10
+ACHIEVEMENT_20_REPORTS_XP = 20
+ACHIEVEMENT_50_REPORTS_XP = 50
+
+
+def grant_10_reports_achievement( report, granter ):
+    grant_special_award(report, report.creation_time, report.user, granter, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP )
+
+
+def grant_20_reports_achievement( report, granter ):
+    grant_special_award(report, report.creation_time, report.user, granter, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+
+
+def grant_50_reports_achievement( report, granter ):
+    grant_special_award(report, report.creation_time, report.user, granter, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
+
+
+def grant_first_of_season( report, granter ):
+    c = AwardCategory.objects.get(category_label='start_of_season')
+    grant_award( report, report.creation_time, report.user, granter, c )
+
+
+def grant_first_of_day( report, granter ):
+    c = AwardCategory.objects.get(category_label='daily_participation')
+    grant_award( report, report.creation_time, report.user, granter, c )
+
+
+def grant_two_consecutive_days_sending( report, granter ):
+    c = AwardCategory.objects.get(category_label='fidelity_day_2')
+    grant_award( report, report.creation_time, report.user, granter, c )
+
+
+def grant_three_consecutive_days_sending(report, granter):
+        c = AwardCategory.objects.get(category_label='fidelity_day_3')
+        grant_award(report, report.creation_time, report.user, granter, c)
+
+
+def grant_special_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, special_award_label, special_award_xp):
+    '''
+    :param for_report: Optional
+    :param awarded_on_date: Mandatory
+    :param awarded_to_tigauser: Mandatory
+    :param awarded_by_expert: Mandatory
+    :param special_award_label: Mandatory
+    :param special_award_xp: Mandatory
+    :return:
+    '''
+    a = Award()
+    a.report = for_report
+    a.date_given = awarded_on_date
+    a.given_to = awarded_to_tigauser
+    if awarded_by_expert is not None:
+        a.expert = awarded_by_expert
+    a.special_award_text = special_award_label
+    a.special_award_xp = special_award_xp
+    a.save()
+
+def grant_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, award_category):
+    '''
+
+    :param for_report: Report for which the award is given
+    :param awarded_on_date: Date on which the award was granted (usually same as report_creation)
+    :param awarded_to_tigauser: User to which it was awarded (usually report owner)
+    :param awarded_by_expert: Expert which awarded the report
+    :param award_category: Category of the award
+    :return:
+    '''
+    a = Award()
+    a.report = for_report
+    a.date_given = awarded_on_date
+    a.given_to = awarded_to_tigauser
+    if awarded_by_expert is not None:
+        a.expert = awarded_by_expert
+    if award_category is not None:
+        a.category = award_category
+    a.save()
 
 class TigaProfile(models.Model):
     firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
@@ -1855,24 +1935,37 @@ def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
     return day_before.year == r1_date_less_recent.year and day_before.month == r1_date_less_recent.month and day_before.day == r1_date_less_recent.day and week_less_recent == week_most_recent
 
 
+def get_user_reports_count(user):
+    user_uuids = []
+    if user.profile:
+        ps = user.profile.profile_devices.all()
+        for p in ps:
+            user_uuids.append(p.user_UUID)
+    else:
+        user_uuids.append(user.user_UUID)
+    reports = Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type='bite')
+    last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
+    return len(last_versions)
+
+
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, **kwargs):
     #only for adults and sites
+    super_movelab = User.objects.get(pk=24)
+    n_reports = get_user_reports_count(instance.user)
+    if n_reports == 10:
+        grant_10_reports_achievement(instance, super_movelab)
+    if n_reports == 20:
+        grant_20_reports_achievement(instance, super_movelab)
+    if n_reports == 50:
+        grant_50_reports_achievement(instance, super_movelab)
     if instance.type == 'adult' or instance.type == 'site':
         # check award for first of season
         current_year = instance.creation_time.year
         awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
         if awards.count() == 0:  # not yet awarded
             if instance.can_be_first_of_season(current_year):  # can be first of season?
-                super_movelab = User.objects.get(pk=24)
-                c = AwardCategory.objects.get(category_label='start_of_season')
-                a = Award()
-                a.report = instance
-                a.date_given = datetime.now()
-                a.given_to = instance.user
-                a.expert = super_movelab
-                a.category = c
-                a.save()
+                grant_first_of_season(instance, super_movelab)
         else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
             if instance.latest_version: #this report is the last version
                 version_of_previous = instance.version_number - 1
@@ -1892,15 +1985,7 @@ def maybe_give_awards(sender, instance, **kwargs):
             .filter(report__user=instance.user) \
             .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
         if awards.count() == 0: # not yet awarded
-            super_movelab = User.objects.get(pk=24)
-            c = AwardCategory.objects.get(category_label='daily_participation')
-            a = Award()
-            a.report = instance
-            a.date_given = datetime.now()
-            a.given_to = instance.user
-            a.expert = super_movelab
-            a.category = c
-            a.save()
+            grant_first_of_day(instance, super_movelab)
 
         date_1_day_before_report = instance.creation_time - timedelta(days=1)
         date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
@@ -1908,26 +1993,10 @@ def maybe_give_awards(sender, instance, **kwargs):
         if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
             #report before this one has not been awarded neither 2nd nor 3rd day streak
             if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
-                super_movelab = User.objects.get(pk=24)
-                c = AwardCategory.objects.get(category_label='fidelity_day_2')
-                a = Award()
-                a.report = instance
-                a.date_given = datetime.now()
-                a.given_to = instance.user
-                a.expert = super_movelab
-                a.category = c
-                a.save()
+                grant_two_consecutive_days_sending(instance, super_movelab)
             else:
                 if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
-                    super_movelab = User.objects.get(pk=24)
-                    c = AwardCategory.objects.get(category_label='fidelity_day_3')
-                    a = Award()
-                    a.report = instance
-                    a.date_given = datetime.now()
-                    a.given_to = instance.user
-                    a.expert = super_movelab
-                    a.category = c
-                    a.save()
+                    grant_three_consecutive_days_sending(instance, super_movelab)
 
 
 class ReportResponse(models.Model):

@@ -79,3 +79,12 @@ class PhotoGrid(forms.ModelForm):
     class Meta:
         model = Report
         fields = ('hide',)
+
+class LicenseAgreementForm(forms.Form):
+    agreed = forms.BooleanField(label="Yes, I have read and agree to the user agreement terms above")
+
+    def clean_agreed(self):
+        agreed = self.cleaned_data['agreed']
+        if not agreed:
+            raise forms.ValidationError("Sorry, you must agree to the terms before proceeding to the EntoLab")
+        return agreed

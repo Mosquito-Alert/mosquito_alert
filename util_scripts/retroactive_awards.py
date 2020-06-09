@@ -13,8 +13,10 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
+from tigaserver_app.awards_helper import grant_first_of_day, grant_first_of_season, grant_three_consecutive_days_sending, \
+    grant_two_consecutive_days_sending, Award, grant_10_reports_achievement, grant_20_reports_achievement, \
+    grant_50_reports_achievement
 from tigaserver_app.models import Report, TigaUser, TigaProfile
-from tigascoring.awards import grant_first_of_day, grant_first_of_season, grant_three_consecutive_days_sending, grant_two_consecutive_days_sending, Award
 from django.contrib.auth.models import User
 import tigaserver_project.settings as conf
 from datetime import datetime, timedelta, date
@@ -111,7 +113,16 @@ def give_retroactive_awards_to_user(user, granter):
             last_awarded_was_three = False
             last_report = None
             current_day = None
+            report_counter = 0
             for report in last_versions:
+                report_counter += 1
+                if report_counter == 10:
+                    grant_10_reports_achievement(report, granter)
+                if report_counter == 20:
+                    grant_20_reports_achievement(report, granter)
+                if report_counter == 50:
+                    grant_50_reports_achievement(report, granter)
+
                 if not report.creation_time.year in first_of_season_awarded_for_year:
                     if can_be_first_of_season(report, report.creation_time.year):
                         # Award first of season

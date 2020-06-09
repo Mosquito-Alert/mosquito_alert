@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-05 08:33+0000\n"
+"POT-Creation-Date: 2020-06-09 07:51+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -99,6 +99,10 @@ msgstr "Rango general"
 #: stats/templates/stats/user_ranking.html:161
 msgid "Score"
 msgstr "Puntuación"
+
+#: stats/templates/stats/user_ranking.html:226
+msgid "My position"
+msgstr "Mi posición"
 
 #: stats/templates/stats/user_score.html:28
 msgid "Citizen Scientist"
@@ -975,11 +979,11 @@ msgstr "Dos días seguidos mandando informes"
 msgid "fidelity_day_3"
 msgstr "Tres días seguidos mandando informes"
 
-#: tigascoring/xp_scoring.py:256 tigascoring/xp_scoring.py:296
+#: tigascoring/xp_scoring.py:256 tigascoring/xp_scoring.py:298
 msgid "picture"
 msgstr "la foto del informe"
 
-#: tigascoring/xp_scoring.py:260 tigascoring/xp_scoring.py:303
+#: tigascoring/xp_scoring.py:260 tigascoring/xp_scoring.py:305
 msgid "location"
 msgstr "que el informe está geolocalizado"
 
@@ -996,45 +1000,45 @@ msgstr "haber respondido la pregunta del agua del lugar de cría"
 msgid "mosquito_report_follows_breeding_site"
 msgstr "haber añadido un informe de mosquito al final"
 
-#: tigascoring/xp_scoring.py:299
+#: tigascoring/xp_scoring.py:301
 msgid "no_picture"
 msgstr "no hay foto"
 
-#: tigascoring/xp_scoring.py:306
+#: tigascoring/xp_scoring.py:308
 msgid "no_location"
 msgstr "el informe no está geolocalizado"
 
-#: tigascoring/xp_scoring.py:310
+#: tigascoring/xp_scoring.py:311
 msgid "thorax_question"
 msgstr "haber respondido el formulario del tórax del mosquito"
 
-#: tigascoring/xp_scoring.py:313
+#: tigascoring/xp_scoring.py:314
 msgid "abdomen_question"
 msgstr "haber respondido el formulario del abdomen del mosquito"
 
-#: tigascoring/xp_scoring.py:316
+#: tigascoring/xp_scoring.py:317
 msgid "leg_question"
 msgstr "haber respondido el formulario de las patas del mosquito"
 
-#: tigascoring/xp_scoring.py:319
+#: tigascoring/xp_scoring.py:320
 msgid "other_species"
 msgstr ""
 "los expertos dicen que no es un mosquito (otra especie o no identificable)"
 
-#: tigascoring/xp_scoring.py:322
+#: tigascoring/xp_scoring.py:327
 #, fuzzy
 msgid "bite report follow"
 msgstr "Lugares de cría"
 
-#: tigascoring/xp_scoring.py:361
+#: tigascoring/xp_scoring.py:366
 msgid " years ago"
 msgstr " años"
 
-#: tigascoring/xp_scoring.py:363
+#: tigascoring/xp_scoring.py:368
 msgid " months ago"
 msgstr " meses"
 
-#: tigascoring/xp_scoring.py:365
+#: tigascoring/xp_scoring.py:370
 msgid " days ago"
 msgstr " días"
 

@@ -10,7 +10,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement
 from tigaserver_messages.views import compose_w_data, reply_w_data
 from django_messages.views import *
 from django.views.i18n import javascript_catalog
@@ -93,6 +93,7 @@ urlpatterns += i18n_patterns('',
     #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
 
     url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
+    url(r'^entolab_license_agreement/$', entolab_license_agreement, name='entolab_license_agreement'),
     url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
     url(r'^experts/status/reports/single/(?P<version_uuid>[-\w]+)/$', single_report_view, name='single_report_view'),
     url(r'^experts/status/people/$', expert_status, name='expert_status'),

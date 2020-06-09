@@ -243,6 +243,32 @@ class ScoringTestCase(TestCase):
         self.assertEqual(Award.objects.filter(category__id=2).filter(report__version_UUID=report_of_day_2.version_UUID).count(), 1)
         self.assertEqual(Award.objects.filter(category__id=3).filter(report__version_UUID=report_of_day_2.version_UUID).count(),1)  # Check second report has 2 day streak
 
+    def test_10_day_achievement(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+
+        month_1 = 1
+        year = 2020
+
+        for i in range(1,11,1):
+            r = self.create_single_report(i, month_1, year, user, '00000000-0000-0000-0000-0000000000' + str(i))
+            r.save()
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+
+    def test_20_day_achievement(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+
+        month_1 = 1
+        year = 2020
+
+        for i in range(1,21,1):
+            r = self.create_single_report(i, month_1, year, user, '00000000-0000-0000-0000-0000000000' + str(i))
+            r.save()
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_20_reports').count(), 1)  # Ten report achievement granted
+
+
     def test_corner_cases_first_of_season_different_users(self):
         user_id_1 = '00000000-0000-0000-0000-000000000000'
         user_id_2 = '00000000-0000-0000-0000-000000000001'

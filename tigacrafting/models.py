@@ -287,6 +287,10 @@ class UserStat(models.Model):
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
     national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country')
     native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes')
+    license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
+
+    def has_accepted_license(self):
+        return self.license_accepted
 
     def is_expert(self):
         return self.user.groups.filter(name="expert").exists()

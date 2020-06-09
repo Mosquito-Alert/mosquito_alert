@@ -38,6 +38,7 @@ from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
+from tigacrafting.forms import LicenseAgreementForm
 import logging
 
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
@@ -730,10 +731,29 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
         logger_report_assignment.debug('End ASSIGN REPORT for User {0}'.format(this_user, ))
         logger_report_assignment.debug(' ')
 
+
+@login_required
+def entolab_license_agreement(request):
+    if request.method == 'POST':
+        form = LicenseAgreementForm(request.POST)
+        if form.is_valid():
+            request.user.userstat.license_accepted = True
+            request.user.userstat.save()
+            return HttpResponseRedirect('/experts')
+    else:
+        form = LicenseAgreementForm()
+    return render(request, 'tigacrafting/entolab_license_agreement.html', {'form': form})
+
+
 @transaction.atomic
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na',loc='na'):
     this_user = request.user
+    if this_user.userstat:
+        if not this_user.userstat.has_accepted_license():
+            return HttpResponseRedirect(reverse('entolab_license_agreement'))
+    else:
+        return HttpResponse("There is a problem with your current user. Please contact the EntoLab admin at " + settings.ENTOLAB_ADMIN)
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
