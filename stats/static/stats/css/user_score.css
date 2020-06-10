@@ -8,6 +8,22 @@
     margin-top: 10px;
 }
 
+.award_container{
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.award_box {
+    width: 100px;
+    display: flex;
+    font-size: small;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+}
+
 .expert_approved{
     background-color: green;
     color: white;
@@ -63,6 +79,12 @@ hr.thick {
     font-weight: bold;
 }
 
+.score_label_smallest{
+    font-size: 14px;
+    color: red;
+    font-weight: bold;
+}
+
 .center {
   margin: auto;
   width: 50%;
@@ -71,4 +93,8 @@ hr.thick {
 
 .class_image {
     text-align: center;
+}
+
+ul{
+    list-style-type: none;
 }

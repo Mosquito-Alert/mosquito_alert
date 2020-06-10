@@ -42,14 +42,25 @@
                 </div>
             </div>
             {% if score_data.unrelated_awards.awards %}
+            <hr class="thick">
             <div class="row">
                 <div class="col-xs-9">
                     <p class="score_label_smaller">{% trans 'Other awards' %}</p>
-                    <ul>
+                    <div class="award_container">
+                        {% for item in score_data.unrelated_awards.awards %}
+                        <div class="award_box">
+                            <img src="{% static "stats/icon/" %}{{ item.media_label }}.png">
+                            <p>{{ item.reason }}</p>
+                            <p>{{ item.awarded_on }}</p>
+                            <p class="score_label_smallest">{{ item.xp_awarded }} XP</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!--<ul>
                     {% for item in score_data.unrelated_awards.awards %}
-                        <li>{{ item.reason }} - {{ item.xp_awarded }} {% trans 'XP, awarded on' %} {{ item.awarded_on }}</li>
+                        <li><img src="{% static "stats/icon/" %}{{ item.media_label }}.png"> {{ item.reason }} - {{ item.xp_awarded }} {% trans 'XP, awarded on' %} {{ item.awarded_on }}</li>
                     {% endfor %}
-                    </ul>
+                    </ul>-->
                 </div>
                 <div class="col-xs-3 class_image">
                     <p class="score_label">{{ score_data.unrelated_awards.score }} XP</p>

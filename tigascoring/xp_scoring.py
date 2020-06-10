@@ -185,14 +185,14 @@ def get_user_class(max, min, user_score):
         return {"value": 1, "label": _("Novice")}
     if user_score == 0:
         return {"value": 1, "label": _("Novice")}
-    interval = (max - min)/5
+    interval = (max - min)/10
     if min <= user_score <= interval * 1:
         return { "value": 1, "label": _("Novice")}
     elif interval * 1 < user_score <= interval * 2:
         return { "value": 2, "label": _("Contributor")}
-    elif interval * 2 < user_score <= interval * 3:
+    elif interval * 2 < user_score <= interval * 4:
         return { "value": 3, "label": _("Expert")}
-    elif interval * 3 < user_score <= interval * 4:
+    elif interval * 4 < user_score <= interval * 7:
         return { "value": 4, "label": _("Master")}
     else:
         return { "value": 5, "label": _("Grandmaster")}
@@ -217,7 +217,10 @@ def get_translated_category_label(label):
         'start_of_season': _('start_of_season'),
         'daily_participation': _('daily_participation'),
         'fidelity_day_2': _('fidelity_day_2'),
-        'fidelity_day_3': _('fidelity_day_3')
+        'fidelity_day_3': _('fidelity_day_3'),
+        'achievement_10_reports': _('achievement_10_reports'),
+        'achievement_20_reports': _('achievement_20_reports'),
+        'achievement_50_reports': _('achievement_50_reports')
     }
     try:
         retVal = translations[label]
@@ -273,8 +276,9 @@ def get_site_report_score(report, result):
         local_result['report_score'] += BREEDING_SITE_MOSQUITO_REWARD
 
     for award in report.report_award.all():
-        local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
-        local_result['report_score'] += award.category.xp_points
+        if award.category:
+            local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
+            local_result['report_score'] += award.category.xp_points
 
     result['score_detail']['site']['score_items'].append(local_result)
     return result
@@ -328,8 +332,9 @@ def get_adult_report_score(report, result):
         local_result['report_score'] += MOSQUITO_BITE_ANSWER_REWARD
 
     for award in report.report_award.all():
-        local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
-        local_result['report_score'] += award.category.xp_points
+        if award.category:
+            local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
+            local_result['report_score'] += award.category.xp_points
 
     result['score_detail']['adult']['score_items'].append(local_result)
     return result
@@ -344,10 +349,10 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
         special_awards = Award.objects.filter(report__isnull=True).filter(given_to__in=user_uuids)
     for award in special_awards:
         if award.category is None:
-            awards.append({"reason": award.special_award_text, "xp_awarded": award.special_award_xp, "awarded_on": award.date_given.strftime("%d/%m/%Y") })
+            awards.append({"reason": get_translated_category_label(award.special_award_text), "xp_awarded": award.special_award_xp, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
             unrelated_awards_score += award.special_award_xp
         else:
-            awards.append({"reason": award.category, "xp_awarded": award.category.xp_points, "awarded_on": award.date_given.strftime("%d/%m/%Y")})
+            awards.append({"reason": get_translated_category_label(award.category), "xp_awarded": award.category.xp_points, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
             unrelated_awards_score += award.category.xp_points
     retval['score'] = unrelated_awards_score
     retval['awards'] = awards
@@ -668,7 +673,7 @@ def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
                 "user_uuid":row['user_UUID'],
                 "identicon": '/media/identicons/' + row['user_UUID'] + '.png',
                 "class": user_class,
-                "rank":row['rank']
+                "rank": int(row['rank'])
             }
         )
     return retval

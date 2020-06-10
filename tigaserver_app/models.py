@@ -44,15 +44,15 @@ ACHIEVEMENT_50_REPORTS_XP = 50
 
 
 def grant_10_reports_achievement( report, granter ):
-    grant_special_award(report, report.creation_time, report.user, granter, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP )
+    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP )
 
 
 def grant_20_reports_achievement( report, granter ):
-    grant_special_award(report, report.creation_time, report.user, granter, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
 
 
 def grant_50_reports_achievement( report, granter ):
-    grant_special_award(report, report.creation_time, report.user, granter, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
+    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
 
 
 def grant_first_of_season( report, granter ):
