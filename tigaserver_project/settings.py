@@ -244,3 +244,5 @@ SEASON_START_MONTH = 4
 SEASON_START_DAY = 23
 
 ENTOLAB_ADMIN = 'a.escobar@creaf.uab.cat'
+
+HOST_NAME = 'webserver.mosquitoalert.com'

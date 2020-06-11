@@ -78,10 +78,12 @@ def send_message_ios(tokens,alert_message,link_url):
     priority = 10
     apns = APNs(use_sandbox=True, cert_file=cert)
     for single_token in tokens:
-        try:
+        '''
+        try:            
             unread_notifications = get_pending_messages(single_token)
         except:
-            unread_notifications = 0
+        '''
+        unread_notifications = 0
         payload = Payload(alert=alert_message, sound="default", badge=unread_notifications)
         frame.add_item(single_token, payload, identifier, expiry, priority)
     apns.gateway_server.send_notification_multiple(frame)

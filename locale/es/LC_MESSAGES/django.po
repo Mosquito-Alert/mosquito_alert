@@ -982,15 +982,15 @@ msgstr "Tres días seguidos mandando informes"
 
 #: tigascoring/xp_scoring.py:221
 msgid "achievement_10_reports"
-msgstr "10 informes"
+msgstr "10 informes subidos"
 
 #: tigascoring/xp_scoring.py:222
 msgid "achievement_20_reports"
-msgstr "20 informes"
+msgstr "20 informes subidos"
 
 #: tigascoring/xp_scoring.py:223
 msgid "achievement_50_reports"
-msgstr "50 informes"
+msgstr "50 informes subidos"
 
 #: tigascoring/xp_scoring.py:259 tigascoring/xp_scoring.py:302
 msgid "picture"

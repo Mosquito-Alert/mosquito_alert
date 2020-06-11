@@ -580,7 +580,7 @@ def report_stats_ccaa_pie(request):
 
 
 def stats_user_score(request, user_uuid=None):
-    user_score = compute_user_score_in_xp_v2(user_uuid)
+    user_score = compute_user_score_in_xp_v2(user_uuid,update=True)
     context = { "score_data": user_score }
     return render(request, 'stats/user_score.html', context)
 

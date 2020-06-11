@@ -809,7 +809,7 @@ def user_score_v2(request):
     user_id = request.QUERY_PARAMS.get('user_id', -1)
     if user_id == -1:
         raise ParseError(detail='user_id is mandatory')
-    result = compute_user_score_in_xp_v2(user_id)
+    result = compute_user_score_in_xp_v2(user_id, update=True)
     return Response(result)
 
 @api_view(['GET', 'POST'])

@@ -31,6 +31,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from slugify import slugify
 from django.utils import translation
+from django.template.loader import render_to_string
+from tigacrafting.messaging import send_message_android,send_message_ios
+from django.utils import translation
+from django.utils.translation import ugettext
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -38,6 +42,10 @@ logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_loc
 ACHIEVEMENT_10_REPORTS = 'achievement_10_reports'
 ACHIEVEMENT_20_REPORTS = 'achievement_20_reports'
 ACHIEVEMENT_50_REPORTS = 'achievement_50_reports'
+DAILY_PARTICIPATION = 'daily_participation'
+START_OF_SEASON = 'start_of_season'
+FIDELITY_DAY_2 = 'fidelity_day_2'
+FIDELITY_DAY_3 = 'fidelity_day_3'
 ACHIEVEMENT_10_REPORTS_XP = 10
 ACHIEVEMENT_20_REPORTS_XP = 20
 ACHIEVEMENT_50_REPORTS_XP = 50
@@ -56,24 +64,27 @@ def grant_50_reports_achievement( report, granter ):
 
 
 def grant_first_of_season( report, granter ):
-    c = AwardCategory.objects.get(category_label='start_of_season')
+    c = AwardCategory.objects.get(category_label=START_OF_SEASON)
     grant_award( report, report.creation_time, report.user, granter, c )
 
 
 def grant_first_of_day( report, granter ):
-    c = AwardCategory.objects.get(category_label='daily_participation')
+    c = AwardCategory.objects.get(category_label=DAILY_PARTICIPATION)
     grant_award( report, report.creation_time, report.user, granter, c )
 
 
 def grant_two_consecutive_days_sending( report, granter ):
-    c = AwardCategory.objects.get(category_label='fidelity_day_2')
+    c = AwardCategory.objects.get(category_label=FIDELITY_DAY_2)
     grant_award( report, report.creation_time, report.user, granter, c )
 
 
 def grant_three_consecutive_days_sending(report, granter):
-        c = AwardCategory.objects.get(category_label='fidelity_day_3')
+        c = AwardCategory.objects.get(category_label=FIDELITY_DAY_3)
         grant_award(report, report.creation_time, report.user, granter, c)
 
+def get_xp_value_of_category(category_label):
+    c = AwardCategory.objects.get(category_label=category_label)
+    return c.xp_points
 
 def grant_special_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, special_award_label, special_award_xp):
     '''
@@ -1947,56 +1958,119 @@ def get_user_reports_count(user):
     last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
     return len(last_versions)
 
+def get_translation_in(string, locale):
+    translation.activate(locale)
+    val = ugettext(string)
+    translation.deactivate()
+    return val
+
+def issue_notification(report, reason_label, xp_amount, current_domain):
+    notification_content = NotificationContent()
+    context_es = {}
+    context_ca = {}
+    context_en = {}
+    super_movelab = User.objects.get(pk=24)
+    notification_content.title_es = "Acabas de recibir una recompensa de XP!"
+    notification_content.title_ca = "Acabes de rebre una recompensa d'XP!"
+    notification_content.title_en = "You just received an XP award!"
+    if report is not None and report.get_final_photo_url_for_notification():
+        context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+        context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+        context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+
+    context_es['amount_awarded'] = xp_amount
+    context_en['amount_awarded'] = xp_amount
+    context_ca['amount_awarded'] = xp_amount
+
+    context_es['reason_awarded'] = get_translation_in(reason_label,'es')
+    context_en['reason_awarded'] = get_translation_in(reason_label,'en')
+    context_ca['reason_awarded'] = get_translation_in(reason_label,'ca')
+
+    notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
+    notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
+    notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
+    '''
+    if conf.DEBUG == True:
+        print(notification_content.body_html_es)
+        print(notification_content.body_html_ca)
+        print(notification_content.body_html_en)
+    '''
+    notification_content.save()
+    notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
+    notification.save()
+    recipient = report.user
+    if recipient.device_token is not None and recipient.device_token != '':
+        if (recipient.user_UUID.islower()):
+            try:
+                #print(recipient.user_UUID)
+                send_message_android(recipient.device_token, notification_content.title_es, '')
+            except Exception as e:
+                pass
+        else:
+            try:
+                #print(recipient.user_UUID)
+                send_message_ios(recipient.device_token, notification_content.title_es, '')
+            except Exception as e:
+                pass
 
 @receiver(post_save, sender=Report)
-def maybe_give_awards(sender, instance, **kwargs):
+def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
-    super_movelab = User.objects.get(pk=24)
-    n_reports = get_user_reports_count(instance.user)
-    if n_reports == 10:
-        grant_10_reports_achievement(instance, super_movelab)
-    if n_reports == 20:
-        grant_20_reports_achievement(instance, super_movelab)
-    if n_reports == 50:
-        grant_50_reports_achievement(instance, super_movelab)
-    if instance.type == 'adult' or instance.type == 'site':
-        # check award for first of season
-        current_year = instance.creation_time.year
-        awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
-        if awards.count() == 0:  # not yet awarded
-            if instance.can_be_first_of_season(current_year):  # can be first of season?
-                grant_first_of_season(instance, super_movelab)
-        else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
-            if instance.latest_version: #this report is the last version
-                version_of_previous = instance.version_number - 1
-                if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
-                    #if yes, transfer award to current version
-                    award = awards.filter(report__version_number=version_of_previous).first()
-                    award.report = instance
-                    award.save()
+    if created:
+        super_movelab = User.objects.get(pk=24)
+        n_reports = get_user_reports_count(instance.user)
+        if n_reports == 10:
+            grant_10_reports_achievement(instance, super_movelab)
+            issue_notification(instance, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, conf.HOST_NAME)
+        if n_reports == 20:
+            grant_20_reports_achievement(instance, super_movelab)
+            issue_notification(instance, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, conf.HOST_NAME)
+        if n_reports == 50:
+            grant_50_reports_achievement(instance, super_movelab)
+            issue_notification(instance, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP, conf.HOST_NAME)
+        if instance.type == 'adult' or instance.type == 'site':
+            # check award for first of season
+            current_year = instance.creation_time.year
+            awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
+            if awards.count() == 0:  # not yet awarded
+                if instance.can_be_first_of_season(current_year):  # can be first of season?
+                    grant_first_of_season(instance, super_movelab)
+                    issue_notification(instance, START_OF_SEASON, get_xp_value_of_category(START_OF_SEASON), conf.HOST_NAME)
+            else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
+                if instance.latest_version: #this report is the last version
+                    version_of_previous = instance.version_number - 1
+                    if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
+                        #if yes, transfer award to current version
+                        award = awards.filter(report__version_number=version_of_previous).first()
+                        award.report = instance
+                        award.save()
 
-        report_day = instance.creation_time.day
-        report_month = instance.creation_time.month
-        report_year = instance.creation_time.year
-        awards = Award.objects\
-            .filter(report__creation_time__year=report_year)\
-            .filter(report__creation_time__month=report_month)\
-            .filter(report__creation_time__day=report_day) \
-            .filter(report__user=instance.user) \
-            .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
-        if awards.count() == 0: # not yet awarded
-            grant_first_of_day(instance, super_movelab)
+            report_day = instance.creation_time.day
+            report_month = instance.creation_time.month
+            report_year = instance.creation_time.year
+            awards = Award.objects\
+                .filter(report__creation_time__year=report_year)\
+                .filter(report__creation_time__month=report_month)\
+                .filter(report__creation_time__day=report_day) \
+                .filter(report__user=instance.user) \
+                .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
+            if awards.count() == 0: # not yet awarded
+                grant_first_of_day(instance, super_movelab)
+                issue_notification(instance, DAILY_PARTICIPATION, get_xp_value_of_category(DAILY_PARTICIPATION), conf.HOST_NAME)
 
-        date_1_day_before_report = instance.creation_time - timedelta(days=1)
-        date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
-        report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
-        if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
-            #report before this one has not been awarded neither 2nd nor 3rd day streak
-            if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
-                grant_two_consecutive_days_sending(instance, super_movelab)
-            else:
-                if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
-                    grant_three_consecutive_days_sending(instance, super_movelab)
+            date_1_day_before_report = instance.creation_time - timedelta(days=1)
+            date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
+            report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
+            if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
+                #report before this one has not been awarded neither 2nd nor 3rd day streak
+                if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
+                    grant_two_consecutive_days_sending(instance, super_movelab)
+                    issue_notification(instance, FIDELITY_DAY_2, get_xp_value_of_category(FIDELITY_DAY_2), conf.HOST_NAME)
+                else:
+                    if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
+                        grant_three_consecutive_days_sending(instance, super_movelab)
+                        issue_notification(instance, FIDELITY_DAY_3, get_xp_value_of_category(FIDELITY_DAY_3), conf.HOST_NAME)
+
 
 
 class ReportResponse(models.Model):

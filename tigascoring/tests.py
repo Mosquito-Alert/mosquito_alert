@@ -1,10 +1,13 @@
 from django.test import TestCase
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Award, AwardCategory
+from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Award, AwardCategory, \
+    Notification, NotificationContent, get_translation_in, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
+    ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
 from tigaserver_project import settings as conf
 from django.utils import timezone
 from datetime import datetime, timedelta, date
 import pytz
 from random import seed, random
+from django.template.loader import render_to_string
 
 
 class ScoringTestCase(TestCase):
@@ -243,6 +246,13 @@ class ScoringTestCase(TestCase):
         self.assertEqual(Award.objects.filter(category__id=2).filter(report__version_UUID=report_of_day_2.version_UUID).count(), 1)
         self.assertEqual(Award.objects.filter(category__id=3).filter(report__version_UUID=report_of_day_2.version_UUID).count(),1)  # Check second report has 2 day streak
 
+    @staticmethod
+    def get_notification_body_es(category_label, xp):
+        context_es = {}
+        context_es['amount_awarded'] = xp
+        context_es['reason_awarded'] = get_translation_in(category_label, 'es')
+        return render_to_string('tigaserver_app/award_notification_es.html', context_es)
+
     def test_10_day_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
         user = TigaUser.objects.get(pk=user_id)
@@ -254,6 +264,9 @@ class ScoringTestCase(TestCase):
             r = self.create_single_report(i, month_1, year, user, '00000000-0000-0000-0000-0000000000' + str(i))
             r.save()
         self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        # emulate notifications
+        notification_body = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+        self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body).count(), 1)
 
     def test_20_day_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
@@ -267,6 +280,34 @@ class ScoringTestCase(TestCase):
             r.save()
         self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
         self.assertEqual(Award.objects.filter(special_award_text='achievement_20_reports').count(), 1)  # Ten report achievement granted
+
+        # emulate notifications
+        notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+        notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+        self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
+        self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
+
+    def test_50_day_achievement(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+
+        year = 2020
+
+        for i in range(1, 3, 1):
+            for j in range(1, 27 , 1):
+                r = self.create_single_report(j, i, year, user, '00000000-0000-0000-0000-000000000' + str(j) + str(i))
+                r.save()
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_20_reports').count(), 1)  # Ten report achievement granted
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_50_reports').count(), 1)  # Ten report achievement granted
+
+        # emulate notifications
+        notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+        notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+        notification_body_50 = self.get_notification_body_es(ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
+        self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
+        self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
+        self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_50).count(), 1)
 
 
     def test_corner_cases_first_of_season_different_users(self):

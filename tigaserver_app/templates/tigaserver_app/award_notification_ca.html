@@ -1,0 +1,26 @@
+{% extends "tigaserver_app/award_notification.html" %}
+
+{% block title_block %}
+    <title>Acabes de rebre una recompensa d'XP!</title>
+{% endblock %}
+
+{% block title_header_block %}
+    <h2>Acabes de rebre una recompensa d'XP!</h2>
+{% endblock %}
+
+{% block amount_xp_awarded %}
+    <p>Has rebut <b style="color:red;">{{ amount_awarded }} XP!</b></p>
+{% endblock %}
+
+{% block reason_awarded %}
+    <p>Motiu: {{ reason_awarded }}</p>
+{% endblock %}
+
+{% block report_related %}
+    {% if report %}
+    {% endif %}
+{% endblock %}
+
+{% block congratulations %}
+    <p>Moltes felicitats!</p>
+{% endblock %}

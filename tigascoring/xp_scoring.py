@@ -462,7 +462,7 @@ def get_uuid_replicas():
     return exclude
 
 
-def compute_user_score_in_xp_v2(user_uuid):
+def compute_user_score_in_xp_v2(user_uuid, update=False):
 
     user = TigaUser.objects.get(pk=user_uuid)
     user_uuids = None
@@ -635,6 +635,12 @@ def compute_user_score_in_xp_v2(user_uuid):
     else:
         result['score_detail']['site']['top_perc'] = (float(site_number_below_rank) / float(site_number_total)) * 100.0
     result['score_detail']['site']['ranked_users'] = site_number_total
+
+    if update:
+        user.score_v2 = result['total_score']
+        user.score_v2_adult = result['score_detail']['adult']['score']
+        user.score_v2_site = result['score_detail']['site']['score']
+        user.save()
 
     '''
     if bite_number_below_rank == 0 and bite_number_total == 0:
