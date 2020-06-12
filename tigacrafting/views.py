@@ -27,7 +27,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -1102,6 +1102,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['complex_list'] = Complex.objects.order_by('description')
         args['other_species_insects'] = OtherSpecies.objects.filter(category='Other insects').order_by('name')
         args['other_species_culicidae'] = OtherSpecies.objects.filter(category='Culicidae').order_by('name')
+
+        expert_users = User.objects.filter(groups__name='expert').order_by('first_name', 'last_name')
+        expert_users_w_country = UserStat.objects.filter(user_id__in=expert_users).filter(national_supervisor_of_id__isnull=False).values('national_supervisor_of').distinct()
+        args['country_name'] = EuropeCountry.objects.filter(gid__in=expert_users_w_country).values('name_engl', 'iso3_code')
+
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

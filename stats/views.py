@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from django.db import connection
 from tigaserver_app.models import *
+from tigacrafting.models import UserStat
 from datetime import date, timedelta, datetime
 import time
 import pytz
@@ -82,7 +83,7 @@ def workload_stats_per_user(request):
         user_slug = request.QUERY_PARAMS.get('user_slug', -1)
         tz = get_localzone()
         queryset = User.objects.all()
-        user = get_object_or_404(queryset,username=user_slug)
+        user = get_object_or_404(queryset, username=user_slug)
         single_user_work_output = []
         annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
         ref_date = datetime.datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
@@ -701,15 +702,23 @@ def report_stats_ccaa(request):
     context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa), 'years': years}
     return render(request, 'stats/report_stats_ccaa.html', context)
 
+
+@api_view(['GET'])
 @login_required
-def workload_stats(request):
+def workload_stats(request, country_id=None):
     this_user = request.user
     user_id_filter = settings.USERS_IN_STATS
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     if this_user_is_superexpert:
-        users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name','last_name')
-        context = {'users': users, 'load_everything_on_start': True}
-        return render(request, 'stats/workload.html', context)
+        if country_id is None:
+            users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name','last_name')
+            context = {'users': users, 'load_everything_on_start': True}
+            return render(request, 'stats/workload.html', context)
+        else:
+            user_id_filter = UserStat.objects.filter(native_of__iso3_code=country_id).values('user__id')
+            users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name', 'last_name')
+            context = {'users': users, 'load_everything_on_start': True}
+            return render(request, 'stats/workload.html', context)
     else:
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 

@@ -99,10 +99,19 @@
 {% block navbar_right_items %}
 <li class="dropdown">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Monitor <span class="caret"></span></a>
-    <ul class="dropdown-menu" role="menu">
+    <ul class="dropdown-menu" role="menu" style="width: 280px">
         <li><a href="{% url 'expert_report_status' %}">Reports</a></li>
         <li><a href="{% url 'expert_status' %}">People</a></li>
-        <li><a href="{% url 'workload_stats' %}">Workload Stats</a></li>
+        <li>
+            <a href="{% url 'workload_stats' %}">Workload Stats</a>
+        </li>
+
+        {% for t in country_name %}
+            <li>
+                <a href="/stats/workload/{{ t.iso3_code }}/">Workload stats {{ t.name_engl }}</a>
+            </li>
+        {% endfor %}
+
     </ul>
 </li>
 {% endblock %}
@@ -371,6 +380,9 @@
         loc_all_btn.on('click', {extr: 'na'}, submit_queries_loc);
         loc_spain_btn.on('click', {extr: 'spain'}, submit_queries_loc);
         loc_europe_btn.on('click', {extr: 'europe'}, submit_queries_loc);
+
+        var country_name = "{{ country_name | safe }}";
+        console.log(country_name);
 
     </script>
 

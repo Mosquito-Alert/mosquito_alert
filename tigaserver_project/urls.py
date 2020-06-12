@@ -8,7 +8,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
-    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
+    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, workload_stats_filtered_countries
 from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto
 from tigaserver_messages.views import compose_w_data, reply_w_data
@@ -67,6 +67,7 @@ urlpatterns += i18n_patterns('',
     url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', show_single_report_map, name='webmap.single_report'),
     url(r'^stats/$', show_usage, name='show_usage'),
     url(r'^stats/workload/$', workload_stats, name='workload_stats'),
+    url(r'^stats/workload/(?P<country_id>\w+)/$', workload_stats, name='workload_stats'),
     url(r'^stats/report_stats_ccaa/$', report_stats_ccaa, name='report_stats_ccaa'),
     url(r'^stats/report_stats_ccaa_pie/$', report_stats_ccaa_pie, name='report_stats_ccaa_pie'),
     url(r'^stats/report_stats_ccaa_pie_sites/$', report_stats_ccaa_pie_sites, name='report_stats_ccaa_pie_sites'),
