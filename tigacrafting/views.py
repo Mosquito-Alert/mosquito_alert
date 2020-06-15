@@ -1104,7 +1104,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['other_species_culicidae'] = OtherSpecies.objects.filter(category='Culicidae').order_by('name')
 
         expert_users = User.objects.filter(groups__name='expert').order_by('first_name', 'last_name')
-        expert_users_w_country = UserStat.objects.filter(user_id__in=expert_users).filter(national_supervisor_of_id__isnull=False).values('national_supervisor_of').distinct()
+        expert_users_w_country = UserStat.objects.filter(user_id__in=expert_users).filter(native_of_id__isnull=False).exclude(native_of_id=17).values('native_of_id').distinct()
         args['country_name'] = EuropeCountry.objects.filter(gid__in=expert_users_w_country).values('name_engl', 'iso3_code')
 
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
