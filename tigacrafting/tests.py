@@ -107,7 +107,7 @@ class UserTestCase(TestCase):
         u4.save()
         u5 = User.objects.create(pk=5)
         u5.username = 'expert_5_eu'
-        c = EuropeCountry.objects.get(pk=1)  # Bosnia Herzegovina
+        c = EuropeCountry.objects.get(pk=22)  # Faroes
         u5.userstat.national_supervisor_of = c
         u5.save()
         u6 = User.objects.create(pk=6)
@@ -115,7 +115,7 @@ class UserTestCase(TestCase):
         u6.save()
         u7 = User.objects.create(pk=7)
         u7.username = 'expert_7_eu'
-        c = EuropeCountry.objects.get(pk=2)  # Belgium
+        c = EuropeCountry.objects.get(pk=8)  # Norway
         u7.userstat.national_supervisor_of = c
         u7.save()
         u8 = User.objects.create(pk=8)
@@ -185,41 +185,64 @@ class UserTestCase(TestCase):
         self.assertEqual( u.userstat.is_national_supervisor_for_country( c ), True)
         u.delete()
 
+
+    @staticmethod
+    def has_national_supervisor_assigned(annotations, country):
+        for anno in annotations:
+            if anno.user.userstat.is_national_supervisor_for_country(country):
+                return True
+        return False
+
+    @staticmethod
+    def national_supervisor_assigned_last(annotations, country):
+        last_annotation = annotations.order_by('-created').first()
+        return last_annotation.user.userstat.is_national_supervisor() and last_annotation.user.userstat.is_national_supervisor_for_country(country)
+        #return True
+
     # tests that all users are:
     # - assigned max_pending reports
     # - if users are supervisors, they are assigned the report(s) for the country they supervise
-    # def test_assign_reports(self):
-    #     self.create_team()
-    #     self.create_report_pool()
-    #     current_pending = 0
-    #     max_pending = 5
-    #     max_given = 3
-    #     national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-    #     country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-    #     country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-    #     for this_user in User.objects.all():
-    #         assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
-    #         user_summary(this_user)
-    #
-    #     '''
-    #     for usr in User.objects.all():
-    #         n = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').values('report').distinct().count()
-    #         if usr.userstat.is_national_supervisor():
-    #             assigned_supervised = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').filter(report__country__gid=usr.userstat.national_supervisor_of.gid).exists()
-    #             self.assertEqual(n, max_pending)
-    #             self.assertEqual(assigned_supervised, True)
-    #         else:
-    #             if usr.groups.filter(name='eu_group_europe').exists():
-    #                 self.assertEqual(n, max_pending)
-    #             elif usr.groups.filter(name='eu_group_spain').exists():
-    #                 self.assertTrue(n == 1 or n == 0)
-    #     '''
-    #
-    #     # Enable this for extra verbose info
-    #     '''
-    #     for usr in User.objects.all():
-    #         user_summary(usr)
-    #     '''
+    def test_assign_reports(self):
+        self.create_team()
+        self.create_report_pool()
+        current_pending = 0
+        max_pending = 5
+        max_given = 3
+        national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
+        country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
+        country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
+        for this_user in User.objects.all():
+            assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
+            user_summary(this_user)
+
+        for report in Report.objects.all():
+            annotations = ExpertReportAnnotation.objects.filter(report=report).filter(user__groups__name='expert')
+            assigned_to = annotations.count()
+            self.assertLessEqual(assigned_to, 3, msg="Report {0} assigned to more than 3 experts!".format(report.version_UUID))
+            if assigned_to == 3:
+                #check if there is regional manager for country of report
+                if self.has_national_supervisor_assigned(annotations.all(), report.country):
+                    #if there is regional manager, it should be assigned last
+                    self.assertEqual(self.national_supervisor_assigned_last(annotations, report.country), True, msg="Report {0} not assigned last to national supervisor".format(report.version_UUID))
+
+        # for usr in User.objects.all():
+        #     n = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').values('report').distinct().count()
+        #     if usr.userstat.is_national_supervisor():
+        #         assigned_supervised = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').filter(report__country__gid=usr.userstat.national_supervisor_of.gid).exists()
+        #         if assigned_supervised == False:
+        #             print("User " + usr.username + " has not been assigned supervised")
+        #         self.assertEqual(n, max_pending)
+        #         self.assertEqual(assigned_supervised, True)
+        #     else:
+        #         if usr.groups.filter(name='eu_group_europe').exists():
+        #             self.assertEqual(n, max_pending)
+        #         elif usr.groups.filter(name='eu_group_spain').exists():
+        #             self.assertTrue(n == 1 or n == 0)
+
+        # Enable this for extra verbose info
+        # for usr in User.objects.all():
+        #     user_summary(usr)
+
 
     def test_autoflag_report(self):
         self.create_team()

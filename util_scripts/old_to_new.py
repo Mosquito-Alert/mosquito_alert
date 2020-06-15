@@ -54,7 +54,7 @@ c2 = Categories.objects.get(pk=2)
 
 for r in ExpertReportAnnotation.objects.filter(validation_complete=True):
     r.category = None
-    r.save()
+    r.save(skip_lastmodified=True)
     print("Cleared {0} of {1}".format(current, n_annotations))
     current = current + 1
 
@@ -65,36 +65,36 @@ for r in ExpertReportAnnotation.objects.filter(validation_complete=True):
         if r.aegypti_certainty_category is None and r.tiger_certainty_category is None:
             if r.user.groups.filter(name='expert').exists():
                 r.category = c1
-                r.save()
+                r.save(skip_lastmodified=True)
             elif r.user.groups.filter(name='superexpert').exists():
                 if r.revise:
                     r.category = c1
-                    r.save()
+                    r.save(skip_lastmodified=True)
         elif r.aegypti_certainty_category == 2 and r.tiger_certainty_category is None:
             r.category = c5
             r.validation_value = 2
-            r.save()
+            r.save(skip_lastmodified=True)
         elif r.aegypti_certainty_category == 1 and r.tiger_certainty_category is None:
             r.category = c5
             r.validation_value = 1
-            r.save()
+            r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == 2 and  r.aegypti_certainty_category is None:
             r.category = c4
             r.validation_value = 2
-            r.save()
+            r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == 1 and r.aegypti_certainty_category is None:
             r.category = c4
             r.validation_value = 1
-            r.save()
+            r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == 0 and r.aegypti_certainty_category == 0:
             r.category = c9
-            r.save()
+            r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == -1 and r.aegypti_certainty_category == -1:
             r.category = c2
-            r.save()
+            r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == -2 and r.aegypti_certainty_category == -2:
             r.category = c2
-            r.save()
+            r.save(skip_lastmodified=True)
     print("Done {0} of {1}".format( current, n_annotations ))
     current = current + 1
 

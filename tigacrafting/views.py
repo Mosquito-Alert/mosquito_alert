@@ -231,12 +231,20 @@ def filter_reports(reports, sort=True):
     return reports_filtered
 
 
-def filter_spain_reports(reports):
-    return filter(lambda x: x.is_spain_p, reports)
+def filter_spain_reports(reports, sort=True):
+    if sort:
+        reports_filtered = sorted( filter(lambda x: x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
+    else:
+        reports_filtered = filter(lambda x: x.is_spain_p, reports)
+    return reports_filtered
 
 
-def filter_eu_reports(reports):
-    return filter(lambda x: not x.is_spain_p, reports)
+def filter_eu_reports(reports, sort=True):
+    if sort:
+        reports_filtered = sorted(filter(lambda x: not x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
+    else:
+        reports_filtered = filter(lambda x: not x.is_spain_p, reports)
+    return reports_filtered
 
 
 def filter_reports_for_superexpert(reports):
@@ -621,7 +629,7 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
         logger_report_assignment.debug('User {0} has less than {1} reports assigned (currently {2})'.format(this_user, max_pending, current_pending))
         n_to_get = max_pending - current_pending
         logger_report_assignment.debug('User {0} trying to get {1} reports'.format(this_user, n_to_get))
-        new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+        new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
         '''
         if new_reports_unfiltered and this_user_is_team_bcn:
             new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
@@ -631,13 +639,27 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
         if this_user_is_supervisor:
             #logger_report_assignment.debug('User {0} is supervisor'.format(this_user,))
             reports_supervised_country = new_reports_unfiltered.filter(country__gid=this_user.userstat.national_supervisor_of.gid)
-            reports_non_supervised_country = new_reports_unfiltered.exclude(version_UUID__in=reports_supervised_country.values('version_UUID'))
+            # list of countries with supervisor (excluding present)
+            country_with_supervisor_other_than_this = UserStat.objects.filter(national_supervisor_of__isnull=False).exclude(national_supervisor_of__gid=this_user.userstat.national_supervisor_of.gid).values('national_supervisor_of__gid').distinct()
+            # list of reports with supervisor and two annotations -> these reports are meant for the supervisor and should not be assigned
+            reports_other_supervised_country_expecting_supervisor = Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=2).filter(country__gid__in=country_with_supervisor_other_than_this)
+            # so we remove them from the available reports for this expert
+            reports_non_supervised_country = new_reports_unfiltered.exclude(version_UUID__in=reports_supervised_country.values('version_UUID')).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
             reports_supervised_country_filtered = filter_reports(reports_supervised_country.order_by('creation_time'))
             reports_non_supervised_country_filtered = filter_reports(reports_non_supervised_country.order_by('creation_time'))
             new_filtered_reports = reports_supervised_country_filtered + reports_non_supervised_country_filtered
         else:
             #logger_report_assignment.debug('User {0} is not supervisor'.format(this_user, ))
-            new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+            country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
+            # these are the reports in supervised countries, already assigned to two experts, so they should be assigned to supervisor and no one else
+            reports_other_supervised_country_expecting_supervisor = Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=2).filter(country__gid__in=country_with_supervisor)
+            # we put the countries with supervisor first on the list. This aims to reduce the amount of time the regional supervisor has to wait to be assigned last report
+            # we EXCLUDE the reports_other_supervised_country_expecting_supervisor from both lists -- these are reserved reports for the supervisor
+            reports_in_any_country_with_supervisor = new_reports_unfiltered.filter(country__gid__in=country_with_supervisor).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
+            reports_in_country_without_supervisor = new_reports_unfiltered.exclude(country__gid__in=country_with_supervisor).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
+            reports_in_any_country_with_supervisor_filtered = filter_reports(reports_in_any_country_with_supervisor.order_by('creation_time'))
+            reports_in_country_without_supervisor_filtered = filter_reports(reports_in_country_without_supervisor.order_by('creation_time'))
+            new_filtered_reports = reports_in_any_country_with_supervisor_filtered + reports_in_country_without_supervisor_filtered
         logger_report_assignment.debug('User {0} has {1} potentially assignable reports'.format(this_user, len(new_filtered_reports)))
 
         if this_user_is_spain:
@@ -910,7 +932,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                         user_stats.save()
             '''
         elif this_user_is_superexpert:
-            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
+            new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
             #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site']).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
 

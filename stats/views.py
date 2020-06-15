@@ -747,6 +747,7 @@ def hashtag_map(request):
 def get_user_xp_data(request):
     user_id = request.QUERY_PARAMS.get('user_id', '-1')
     locale = request.QUERY_PARAMS.get('locale', 'en')
+    update = request.QUERY_PARAMS.get('update', False)
     try:
         u = TigaUser.objects.get(pk=user_id)
     except TigaUser.DoesNotExist:
@@ -755,7 +756,10 @@ def get_user_xp_data(request):
     #language = translation.get_language_from_request(request)
     translation.activate(locale)
 
-    retval = compute_user_score_in_xp_v2(user_id)
+    if update == False:
+        retval = compute_user_score_in_xp_v2(user_id)
+    else:
+        retval = compute_user_score_in_xp_v2(user_id, True)
     return Response(retval)
 
 

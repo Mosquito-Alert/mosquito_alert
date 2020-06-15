@@ -190,7 +190,8 @@ class ExpertReportAnnotation(models.Model):
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
     message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
     status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
-    last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    #last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    last_modified = models.DateTimeField(default=datetime.now())
     validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True)
@@ -280,6 +281,12 @@ class ExpertReportAnnotation(models.Model):
     def get_score_bootstrap(self):
         result = '<span class="label label-default" style="background-color:' + ('red' if self.get_score() == 2 else ('orange' if self.get_score() == 1 else ('white' if self.get_score() == 0 else ('grey' if self.get_score() == -1 else 'black')))) + ';">' + self.get_category() + '</span>'
         return result
+
+    def save(self, *args, **kwargs):
+        if not kwargs.pop('skip_lastmodified', False):
+            self.last_modified = datetime.now()
+
+        super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
 
 class UserStat(models.Model):
