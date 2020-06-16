@@ -556,8 +556,9 @@ $(function () {
     if(load_on_start){
         for(var i = 0; i < users.length; i++){
             var slug = users[i]['username'];
-            $('#'+slug).click();
-            $('#pending_'+slug).click();
+            var escaped_slug = slug.replace('.','\\.');
+            $('#'+escaped_slug).click();
+            $('#pending_'+escaped_slug).click();
             ajaxload(slug);
             load_pending_report_ajax(slug);
         }

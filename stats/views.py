@@ -717,12 +717,17 @@ def workload_stats(request, country_id=None):
     if this_user_is_superexpert:
         if country_id is None:
             users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name','last_name')
-            context = {'users': users, 'load_everything_on_start': True}
+            context = {'users': users, 'load_everything_on_start': True, 'country_name': 'Spain'}
             return render(request, 'stats/workload.html', context)
         else:
             user_id_filter = UserStat.objects.filter(native_of__iso3_code=country_id).values('user__id')
+            country_name = 'Unknown country??'
+            try:
+                country_name = EuropeCountry.objects.get(iso3_code=country_id).name_engl
+            except:
+                pass
             users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name', 'last_name')
-            context = {'users': users, 'load_everything_on_start': True}
+            context = {'users': users, 'load_everything_on_start': True, 'country_name': country_name}
             return render(request, 'stats/workload.html', context)
     else:
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

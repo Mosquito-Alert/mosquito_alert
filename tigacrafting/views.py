@@ -13,7 +13,7 @@ from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
 from django.db.models import Count
 import pytz
-import datetime
+from datetime import datetime, date
 from django.db.models import Max
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -27,7 +27,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -959,7 +959,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             #if new_reports_unfiltered and this_user_is_team_not_italy:
                     #new_reports_unfiltered = new_reports_unfiltered.exclude(point__within=ITALY_GEOMETRY)
             if this_user.id == 25: #it's roger, don't assign reports from barcelona prior to 03/10/2017
-                new_reports_unfiltered = new_reports_unfiltered.exclude(Q(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(creation_time__lte=datetime.date(2017, 3, 10)))
+                new_reports_unfiltered = new_reports_unfiltered.exclude(Q(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(creation_time__lte=date(2017, 3, 10)))
             if new_reports_unfiltered:
                 new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
                 for this_report in new_reports:
@@ -1144,6 +1144,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['complex_list'] = Complex.objects.order_by('description')
         args['other_species_insects'] = OtherSpecies.objects.filter(category='Other insects').order_by('name')
         args['other_species_culicidae'] = OtherSpecies.objects.filter(category='Culicidae').order_by('name')
+
+        expert_users = User.objects.filter(groups__name='expert').order_by('first_name', 'last_name')
+        expert_users_w_country = UserStat.objects.filter(user_id__in=expert_users).filter(native_of_id__isnull=False).exclude(native_of_id=17).values('native_of_id').distinct()
+        args['country_name'] = EuropeCountry.objects.filter(gid__in=expert_users_w_country).order_by('name_engl').values('name_engl','iso3_code')
+
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
