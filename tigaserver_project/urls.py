@@ -10,7 +10,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto
 from tigaserver_messages.views import compose_w_data, reply_w_data
 from django_messages.views import *
 from django.views.i18n import javascript_catalog
@@ -68,6 +68,7 @@ urlpatterns += i18n_patterns('',
     url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', show_single_report_map, name='webmap.single_report'),
     url(r'^stats/$', show_usage, name='show_usage'),
     url(r'^stats/workload/$', workload_stats, name='workload_stats'),
+    url(r'^stats/workload/(?P<country_id>\w+)/$', workload_stats, name='workload_stats'),
     url(r'^stats/report_stats_ccaa/$', report_stats_ccaa, name='report_stats_ccaa'),
     url(r'^stats/report_stats_ccaa_pie/$', report_stats_ccaa_pie, name='report_stats_ccaa_pie'),
     url(r'^stats/report_stats_ccaa_pie_sites/$', report_stats_ccaa_pie_sites, name='report_stats_ccaa_pie_sites'),
@@ -121,4 +122,5 @@ urlpatterns += i18n_patterns('',
     url(r'^messages/compose_w_data/$', compose_w_data, name='compose_w_data'),
     url(r'^messages/reply/(?P<message_id>[\d]+)/$', reply_w_data, name='messages_reply'),
     url(r'^jsi18n/$', javascript_catalog, name='javascript-catalog'),
+    url('metadataPhotoInfo', metadataPhoto, name='metadataPhotoInfo'),
 )

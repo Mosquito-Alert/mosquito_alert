@@ -6,6 +6,10 @@ var cache_data = function(expert_slug,data){
     user_data[expert_slug].data = data;
 };
 
+function jq(myid) {
+    return myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+}
+
 
 $(function () {
 
@@ -85,7 +89,15 @@ $(function () {
     };
 
     load_pending_report_ajax = function(key){
-        var checked = $('#pending_' + key).prop('checked');
+        var checked;
+        if(key.includes(".")){
+            keyNoDot = jq(key);
+            checked = $('#pending_' + keyNoDot).prop('checked');
+        }else{
+            checked = $('#pending_' + key).prop('checked');
+        }
+
+
         if(checked){
             if (user_data[key].data_pending){
                 pendingChart.addSeries({
@@ -141,7 +153,16 @@ $(function () {
 
 
     ajaxload = function(key){
-        var checked = $('#' + key).prop('checked');
+        var checked;
+        if(key.includes(".")){
+            keyNoDot = jq(key);
+            checked = $('#' + keyNoDot).prop('checked');
+        }else{
+            checked = $('#' + key).prop('checked');
+        }
+
+        //var checked = $('#' + keyNoDot).prop('checked');
+
         if(checked){
             if (user_data[key].data){
                 userChart.addSeries({
@@ -156,16 +177,30 @@ $(function () {
                     }
                 });
             }else{
-                $('#' + key).attr("disabled", true);
+                if(key.includes(".")){
+                    keyNoDot = jq(key);
+                    $('#' + keyNoDot).attr("disabled", true);
+                }else{
+                    $('#' + key).attr("disabled", true);
+                }
+
                 userChart.showLoading();
+
                 $.ajax({
                     url: '/api/stats/workload_data/user/',
                     type: "GET",
                     dataType: "json",
                     data : {user_slug : key},
                     success: function(data) {
-                        $('#' + key).removeAttr("disabled");
+
+                        if(key.includes(".")){
+                            keyNoDot = jq(key);
+                            $('#' + keyNoDot).removeAttr("disabled");
+                        }else{
+                             $('#' + key).removeAttr("disabled");
+                        }
                         userChart.hideLoading();
+
                         userChart.addSeries({
                             name: user_data[key].name,
                             data: data,
@@ -177,6 +212,7 @@ $(function () {
                                 lineWidth: 0.5
                             }
                         });
+
                         user_data[key].data = data;
                     },
                     cache: false

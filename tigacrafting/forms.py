@@ -76,6 +76,9 @@ class SuperExpertReportAnnotationForm(forms.ModelForm):
         }
 
 class PhotoGrid(forms.ModelForm):
+    fastUpload = forms.BooleanField(widget=forms.CheckboxInput(attrs={'class': 'fastUploadClass'}), required=False, initial=False)
+
+    #rodalref = forms.BooleanField(widget=forms.CheckboxInput(attrs={'class': 'boolRodRef'}), required=False)
     class Meta:
         model = Report
         fields = ('hide',)

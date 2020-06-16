@@ -16,3 +16,7 @@ celerybeat-schedule
 celerybeat.pid
 dump.rdb
 CertificatMosquito.pem
+tigatrapp-server/media
+/media
+tigatrapp-server/media
+/media

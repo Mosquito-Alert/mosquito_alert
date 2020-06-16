@@ -5,6 +5,9 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
+
+from rest_framework.decorators import api_view
+
 from tigacrafting.models import *
 from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
@@ -40,6 +43,17 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
 import logging
+
+#----------Metadades fotos----------#
+
+import PIL.Image
+from PIL.ExifTags import TAGS, GPSTAGS
+from decimal import *
+from tigaserver_project.settings import *
+from rest_framework.response import Response
+import re
+
+#-----------------------------------#
 
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 
@@ -1342,3 +1356,93 @@ def notifications(request,user_uuid=None):
     user_uuid = request.GET.get('user_uuid',None)
     total_users = TigaUser.objects.all().count()
     return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
+
+
+@api_view(['GET'])
+def metadataPhoto(request):
+    idReport = request.QUERY_PARAMS.get('id', None)
+    idPhoto = request.QUERY_PARAMS.get('id_photo', None)
+    utf8string = idReport.encode("utf-8")
+    idPhotoUTF8 = idPhoto.encode("utf-8")
+    photoData = []
+    photoCoord = []
+    photoDateTime = []
+    exifgpsInfoDict = {}
+    exifDateTime = {}
+    gpsData = {}
+    photo = Photo.objects.filter(report=utf8string).filter(id=idPhotoUTF8)
+    for t in photo:
+        urlPhoto = t.photo.url
+
+    urlPhoto = BASE_DIR + urlPhoto
+
+    exif = get_exif(urlPhoto)
+
+
+    if exif is None:
+        context = {'noData': 'No data available.'}
+    else:
+        if 'GPSInfo' in exif:
+            _TAGS_r = dict(((v, k) for k, v in TAGS.items()))
+            _GPSTAGS_r = dict(((v, k) for k, v in GPSTAGS.items()))
+
+            exifgpsInfo = exif["GPSInfo"]
+            for k in exifgpsInfo.keys():
+                exifgpsInfoDict[str(GPSTAGS[k])] = exifgpsInfo[k]
+                gpsData[str(GPSTAGS[k])] = str(exifgpsInfo[k])
+            lat, lon = get_decimal_coordinates(exifgpsInfoDict)
+
+            # lat, lon = get_decimal_coordinates(exif['GPSInfo'])
+            photoCoord.append({'lat': lat, 'lon': lon})
+            #gpsData.append({'gpsData': exifgpsInfoDict})
+
+            del exif["GPSInfo"]
+
+        if 'DateTime' in exif.keys():
+            # for d in exif:
+                # exifDateTime[str(TAGS[d])] = exif[d]
+            photoDateTime.append({'DateTime': exif['DateTime']})
+
+        if not photoCoord and not photoDateTime:
+            context = {'photoData': exif}
+        elif not photoDateTime:
+            context = {'photoData': exif, 'photoCoord': photoCoord}
+        elif not photoCoord:
+            context = {'photoData': exif, 'photoDateTime': photoDateTime}
+        else:
+            context = {'photoData': exif, 'photoDateTime': photoDateTime, 'photoCoord': photoCoord}
+
+    return Response(context)
+
+
+def get_decimal_coordinates(info):
+    try:
+        for key in ['Latitude', 'Longitude']:
+            v1 = str('GPS' + key)
+            v2 = str('GPS' + key + 'Ref')
+
+            if v1 in info.keys() and v2 in info.keys():
+                e = info['GPS' + key]
+                ref = info['GPS' + key + 'Ref']
+                info[v1] = (Decimal(e[0][0] / e[0][1]) + Decimal(e[1][0] / e[1][1]) / 60 + Decimal(e[2][0] / e[2][1]) / 3600) * (-1 if ref in ['S', 'W'] else 1)
+        if 'GPSLatitude' in info and 'GPSLongitude' in info:
+            return [float(info['GPSLatitude']), float(info['GPSLongitude'])]
+        else:
+            return [0.0, 0.0]
+    except:
+        return None
+
+
+def get_exif(filename):
+    try:
+        img = PIL.Image.open(filename)
+
+        if img is not None:
+            exif = {
+                PIL.ExifTags.TAGS[key]: value
+                for key, value in img._getexif().items()
+                if key in PIL.ExifTags.TAGS or key in PIL.ExifTags.GPSTAGS
+            }
+        return exif
+    except:
+        return None
