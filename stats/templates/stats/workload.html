@@ -6,9 +6,9 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <title>MosquitoAlert Stats</title>
 
-    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
-    <link rel="stylesheet" href={% static "stats/workload.css" %}>
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <link rel="stylesheet" href="{% static 'stats/workload.css' %}">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
@@ -34,7 +34,7 @@
             load_on_start = true;
         {% endif %}
     </script>
-    <script src={% static "stats/workload.js" %}></script>
+    <script src="{% static 'stats/workload.js' %}"></script>
   </head>
   <div class="navbar-wrapper">
         <div class="container">
@@ -47,7 +47,7 @@
                         <ul class="nav navbar-nav navbar-right">
                             <li><a href="{% url 'expert_report_annotation' %} ">Back to Entolab</a></li>
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
-                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            <li><a href="{% url 'auth_logout' %}">logout</a>
                         </ul>
                     </div>
                 </div>

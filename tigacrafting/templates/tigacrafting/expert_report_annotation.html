@@ -606,10 +606,17 @@
                     </button><br>
 
                     <div style="overflow: auto;">
-
-                        {{ form.instance.report.photo_html_for_report_validation | safe }}
+                        {% if request.user.userstat.is_superexpert %}
+                            {{ form.instance.report.photo_html_for_report_validation_superexpert | safe }}
+                        {% else %}
+                            {{ form.instance.report.photo_html_for_report_validation | safe }}
+                        {% endif %}
+                            <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
 
                     </div>
+
+                    <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>-->
+
                 {% else %}
 
                     <div style="overflow: auto;">
@@ -621,15 +628,36 @@
                 {% endif %}
             </div>
 
+            <div id="infoPhotoDialog" title="Photo's Metadata" style="height: 350px;">
+                <span class="infoPopupTop">
+                    {% if photoCoord %}
+                        <ul>
+                            <li>{{ photoCoord.lat }}</li>
+                            <li>{{ photoCoord.lan }}</li>
+                        </ul>
+                    {% endif %}
+                </span>
+                <span class="infoPopup">
+                    <ul>
+                        {% for pD in photoData %}
+                            <li>{{ pD.ColorSpace }}</li>
+                        {% endfor %}
+                    </ul>
+                </span>
+                <span class="infoPopupGPS"></span>
+            </div>
+            <div id="noDataAvailable" title="Photo's Metadata">
+                <span class="infoNoData">
+
+                </span>
+            </div>
+
             <div class="col-md-4">
                 <br>
                 <strong>Location</strong>
 
                 <div id="map{{ form.instance.id }}" class="report_annotation_map-container">
-
-                    <div style="z-index:100; position:absolute; top:0; right:0;"
-                         id="qrcode{{ form.instance.id }}"></div>
-
+                    <div style="z-index:100; position:absolute; top:0; right:0;" id="qrcode{{ form.instance.id }}"></div>
                 </div>
 
 
@@ -1088,15 +1116,18 @@
 
 {% block body_scripts %}
 
+
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
 
-    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js' %}"></script>
 
-    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+
+    <script src="{% static 'tigacrafting/javascript/experts.js' %}"></script>
 
     <script type="text/javascript">
         (function () {
