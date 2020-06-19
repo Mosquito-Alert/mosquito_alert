@@ -1635,12 +1635,11 @@
         var gear = $("#gear").hide();
 
         function background_save(qp) {
-            /*window.location.href = qp;*/
             /* This is extremely weird and caused some reports to be unvalidated $("[id*='validation_complete']:checked").prop("checked", false);
             and saved when changing the selector from flagged to public reports - changed because clicking these buttons should **NEVER** save
             reports, much less mark them as not validated!*/
             if ($("#formset_forms").length > 0 && ("{{ pending }}" == 'pending' || "{{ checked }}" == 'unchecked')) {
-                $("[id*='validation_complete']:checked").prop("checked", false);
+                //$("[id*='validation_complete']:checked").prop("checked", false);
                 updateHiddenTagFieldsFromUI();
                 $("#formset_forms").submit();
             } else {
