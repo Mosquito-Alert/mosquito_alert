@@ -26,6 +26,7 @@ import tigacrafting.html_utils as html_utils
 import pydenticon
 import os.path
 import tigaserver_project.settings as conf
+from django.conf import settings
 import pytz
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -1985,53 +1986,54 @@ def get_translation_in(string, locale):
     return val
 
 def issue_notification(report, reason_label, xp_amount, current_domain):
-    notification_content = NotificationContent()
-    context_es = {}
-    context_ca = {}
-    context_en = {}
-    super_movelab = User.objects.get(pk=24)
-    notification_content.title_es = "Acabas de recibir una recompensa de XP!"
-    notification_content.title_ca = "Acabes de rebre una recompensa d'XP!"
-    notification_content.title_en = "You just received an XP award!"
-    if report is not None and report.get_final_photo_url_for_notification():
-        context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-        context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-        context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+    if getattr( conf, 'DISABLE_ACHIEVEMENT_NOTIFICATIONS', True) == False:
+        notification_content = NotificationContent()
+        context_es = {}
+        context_ca = {}
+        context_en = {}
+        super_movelab = User.objects.get(pk=24)
+        notification_content.title_es = "Acabas de recibir una recompensa de XP!"
+        notification_content.title_ca = "Acabes de rebre una recompensa d'XP!"
+        notification_content.title_en = "You just received an XP award!"
+        if report is not None and report.get_final_photo_url_for_notification():
+            context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+            context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+            context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
 
-    context_es['amount_awarded'] = xp_amount
-    context_en['amount_awarded'] = xp_amount
-    context_ca['amount_awarded'] = xp_amount
+        context_es['amount_awarded'] = xp_amount
+        context_en['amount_awarded'] = xp_amount
+        context_ca['amount_awarded'] = xp_amount
 
-    context_es['reason_awarded'] = get_translation_in(reason_label,'es')
-    context_en['reason_awarded'] = get_translation_in(reason_label,'en')
-    context_ca['reason_awarded'] = get_translation_in(reason_label,'ca')
+        context_es['reason_awarded'] = get_translation_in(reason_label,'es')
+        context_en['reason_awarded'] = get_translation_in(reason_label,'en')
+        context_ca['reason_awarded'] = get_translation_in(reason_label,'ca')
 
-    notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
-    notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
-    notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
-    '''
-    if conf.DEBUG == True:
-        print(notification_content.body_html_es)
-        print(notification_content.body_html_ca)
-        print(notification_content.body_html_en)
-    '''
-    notification_content.save()
-    notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
-    notification.save()
-    recipient = report.user
-    if recipient.device_token is not None and recipient.device_token != '':
-        if (recipient.user_UUID.islower()):
-            try:
-                #print(recipient.user_UUID)
-                send_message_android(recipient.device_token, notification_content.title_es, '')
-            except Exception as e:
-                pass
-        else:
-            try:
-                #print(recipient.user_UUID)
-                send_message_ios(recipient.device_token, notification_content.title_es, '')
-            except Exception as e:
-                pass
+        notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
+        notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
+        notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
+        '''
+        if conf.DEBUG == True:
+            print(notification_content.body_html_es)
+            print(notification_content.body_html_ca)
+            print(notification_content.body_html_en)
+        '''
+        notification_content.save()
+        notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
+        notification.save()
+        recipient = report.user
+        if recipient.device_token is not None and recipient.device_token != '':
+            if (recipient.user_UUID.islower()):
+                try:
+                    #print(recipient.user_UUID)
+                    send_message_android(recipient.device_token, notification_content.title_es, '')
+                except Exception as e:
+                    pass
+            else:
+                try:
+                    #print(recipient.user_UUID)
+                    send_message_ios(recipient.device_token, notification_content.title_es, '')
+                except Exception as e:
+                    pass
 
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):

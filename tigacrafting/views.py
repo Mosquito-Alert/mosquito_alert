@@ -785,11 +785,12 @@ def entolab_license_agreement(request):
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na',loc='na'):
     this_user = request.user
-    if this_user.userstat:
-        if not this_user.userstat.has_accepted_license():
-            return HttpResponseRedirect(reverse('entolab_license_agreement'))
-    else:
-        return HttpResponse("There is a problem with your current user. Please contact the EntoLab admin at " + settings.ENTOLAB_ADMIN)
+    if getattr(settings, 'SHOW_USER_AGREEMENT_ENTOLAB', False) == True:
+        if this_user.userstat:
+            if not this_user.userstat.has_accepted_license():
+                return HttpResponseRedirect(reverse('entolab_license_agreement'))
+        else:
+            return HttpResponse("There is a problem with your current user. Please contact the EntoLab admin at " + settings.ENTOLAB_ADMIN)
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()

@@ -212,6 +212,8 @@ USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34]
 #PUSH KILL SWITCHES
 DISABLE_PUSH_IOS = False
 DISABLE_PUSH_ANDROID = False
+#Completely disables notifications for achievements/rewards
+DISABLE_ACHIEVEMENT_NOTIFICATIONS = True
 
 # CELERY STUFF
 BROKER_URL = 'redis://localhost:6379'
@@ -243,6 +245,8 @@ AWARD_START_YEAR = 2020
 SEASON_START_MONTH = 4
 SEASON_START_DAY = 23
 
+# This email shows up for contact in case of technical issues
 ENTOLAB_ADMIN = 'a.escobar@creaf.uab.cat'
+SHOW_USER_AGREEMENT_ENTOLAB = False
 
 HOST_NAME = 'webserver.mosquitoalert.com'
