@@ -37,6 +37,7 @@ from django.template.loader import render_to_string
 from tigacrafting.messaging import send_message_android,send_message_ios
 from django.utils import translation
 from django.utils.translation import ugettext
+from django.utils.deconstruct import deconstructible
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -2105,14 +2106,28 @@ class ReportResponse(models.Model):
     def __unicode__(self):
         return str(self.id)
 
+@deconstructible
+class MakeImageUUID(object):
+    path = ''
 
+    def __init__(self, path):
+        self.path = path
+
+    def __call__(self,instance,filename):
+        extension = filename.split('.')[-1]
+        filename = "%s.%s" % (uuid.uuid4(), extension)
+        return os.path.join(self.path, filename)
+
+make_image_uuid = MakeImageUUID('tigapics')
+
+'''
 def make_image_uuid(path):
     def wrapper(instance, filename):
         extension = filename.split('.')[-1]
         filename = "%s.%s" % (uuid.uuid4(), extension)
         return os.path.join(path, filename)
     return wrapper
-
+'''
 
 def make_uuid():
     return str(uuid.uuid4())
@@ -2122,7 +2137,7 @@ class Photo(models.Model):
     """
     Photo uploaded by user.
     """
-    photo = models.ImageField(upload_to=make_image_uuid('tigapics'), help_text='Photo uploaded by user.')
+    photo = models.ImageField(upload_to=make_image_uuid, help_text='Photo uploaded by user.')
     report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).', on_delete=models.DO_NOTHING, )
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')

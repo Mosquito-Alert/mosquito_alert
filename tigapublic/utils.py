@@ -267,7 +267,7 @@ def get_directory_structure(rootdir):
                         dict[folders[0]][int(folders[1]) - 1] = 1
 
     # Turn dict into array
-    for key, value in dict.iteritems():
+    for key, value in dict.items():
         temp = [key, value]
         dictlist.append(temp)
     # Return properly ordered list

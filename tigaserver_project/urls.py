@@ -1,7 +1,9 @@
 from django.conf.urls import *
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic.base import RedirectView
+
 from django.contrib.gis import admin
+
 from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image
@@ -11,7 +13,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
 from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto
-from tigaserver_messages.views import compose_w_data, reply_w_data
+from tigaserver_messages.views import compose_w_data, reply_w_data, compose
 from django_messages.views import *
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
@@ -116,7 +118,6 @@ urlpatterns += i18n_patterns(
     path('messages/outbox/', outbox, name='messages_outbox'),
     path('messages/compose/', compose, name='messages_compose'),
     path('messages/compose/<recipient>/', compose, name='messages_compose_to'),
-    #path('reply/(?P<message_id>[\d]+)/', reply, name='messages_reply'),
     path('messages/view/<int:message_id>/', view, name='messages_detail'),
     path('messages/delete/<int:message_id>/', delete, name='messages_delete'),
     path('messages/undelete/<int:message_id>/', undelete, name='messages_undelete'),

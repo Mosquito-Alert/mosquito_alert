@@ -23,6 +23,40 @@ def tokenize_recipients(recipients):
     return json.dumps(results)
 
 @login_required
+def compose(request, recipient=None, form_class=ComposeForm,
+        template_name='django_messages/compose.html', success_url=None, recipient_filter=None):
+    """
+    Displays and handles the ``form_class`` form to compose new messages.
+    Required Arguments: None
+    Optional Arguments:
+        ``recipient``: username of a `django.contrib.auth` User, who should
+                       receive the message, optionally multiple usernames
+                       could be separated by a '+'
+        ``form_class``: the form-class to use
+        ``template_name``: the template to use
+        ``success_url``: where to redirect after successfull submission
+    """
+    if request.method == "POST":
+        sender = request.user
+        form = form_class(request.POST, recipient_filter=recipient_filter)
+        if form.is_valid():
+            form.save(sender=request.user)
+            messages.info(request, _(u"Message successfully sent."))
+            if success_url is None:
+                success_url = reverse('messages_inbox')
+            if 'next' in request.GET:
+                success_url = request.GET['next']
+            return HttpResponseRedirect(success_url)
+    else:
+        form = form_class()
+        if recipient is not None:
+            recipients = [u for u in User.objects.filter(**{'%s__in' % get_username_field(): [r.strip() for r in recipient.split('+')]})]
+            form.fields['recipient'].initial = recipients
+    return render(request, template_name, {
+        'form': form,
+    })
+
+@login_required
 def compose_w_data(request, recipient=None, body=None, subject=None, form_class=ComposeForm,template_name='django_messages/compose.html', success_url=None, recipient_filter=None):
     """
     Displays and handles the ``form_class`` form to compose new messages.

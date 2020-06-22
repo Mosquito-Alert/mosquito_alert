@@ -87,7 +87,7 @@ def ajax_is_logged(request):
             'username': '', 'groups': [], 'roles': []
         }
     }
-    success = request.user.is_authenticated()
+    success = request.user.is_authenticated
     if success is True:
         request.session.set_expiry(86400)
         response['success'] = True
@@ -114,7 +114,7 @@ class ObservationsExportView(View):
         """Export data to Excel/CSV."""
         # Get filters from the request.GET
         filters = {key: value[0] for key, value in
-                   dict(self.request.GET).iteritems()}
+                   dict(self.request.GET).items()}
         return ObservationManager(request, **filters).export(*args, **kwargs)
 
 

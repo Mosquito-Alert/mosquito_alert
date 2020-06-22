@@ -74,13 +74,13 @@ class ObservationExporter(BaseManager):
         # All fields available
         fields = OrderedDict(fields_available)
         # Get and store the fields available to this role
-        self.fields = [key for key, value in fields.iteritems()
+        self.fields = [key for key, value in fields.items()
                        if type(value).__name__ == 'str'
                        or 'permissions' not in value
                        or role in value['permissions']]
         # Get and store the headers available to this role
         self.headers = []
-        for key, value in fields.iteritems():
+        for key, value in fields.items():
             if type(value).__name__ == 'str':
                 self.headers.append(value)
             elif 'permissions' not in value or role in value['permissions']:
