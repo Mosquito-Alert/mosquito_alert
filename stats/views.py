@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import connection
 from tigaserver_app.models import *
 from tigacrafting.models import UserStat
@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
 import json
-from sets import Set
+#from sets import Set
 import datetime
 from django.utils import timezone
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data

@@ -44,10 +44,10 @@ class Cursor(psycopg2.extensions.cursor):
         if not rows: rows = self.rowcount
         for row in range(rows):
             if self.rownumber < self.rowcount:
-                print
-                print '+++ %s' % str(self.rownumber).zfill(6)
+                print('')
+                print('+++ %s' % str(self.rownumber).zfill(6))
                 for field, fieldValue in zip(self.description, self.fetchone()):
-                    print field.name, ':', fieldValue
+                    print (field.name, ':', fieldValue)
 
 
 # +++ mosquitoAlert Table Class
@@ -81,22 +81,22 @@ class Table:
 
     def fieldNames(self):
         for index, field in enumerate(self.fList):
-            print str(index).zfill(2), '.', field.name
+            print (str(index).zfill(2), '.', field.name)
 
     def selectAll(self):
         self.cursor.execute('select * from %s;' % self.name)
-        if self.interactive: print '+++ totalRows:%6.0i' % self.cursor.rowcount
+        if self.interactive: print('+++ totalRows:%6.0i' % self.cursor.rowcount)
 
     def selectKey(self, keyName, keyValue):
         sql = 'select * from %s where %s = ' % (self.name, keyName) + '(%s);'
         self.cursor.execute(sql, (keyValue,))
-        if self.interactive: print '+++ totalRows:%6.0i' % self.cursor.rowcount
+        if self.interactive: print('+++ totalRows:%6.0i' % self.cursor.rowcount)
 
     def printRow(self, row):
-        print
-        print '+++ %s' % str(self.cursor.rownumber).zfill(6)
+        print('')
+        print('+++ %s' % str(self.cursor.rownumber).zfill(6))
         for field, rowValue in zip(self.fList, row):
-            print field.name, ':', rowValue
+            print(field.name, ':', rowValue)
 
     def browse(self, rows=1):
         for row in range(rows):

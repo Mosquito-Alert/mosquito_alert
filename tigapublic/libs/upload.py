@@ -2,7 +2,7 @@
 """Storm Drain Libraries."""
 import os
 import tempfile
-from StringIO import StringIO
+from io import StringIO
 from zipfile import ZipFile
 
 from django.db import connection
@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from tablib import Dataset
 import csv
 
-from base import BaseManager
+from tigapublic.libs.base import BaseManager
 from tigapublic.utils import extendUser
 from tigapublic.constants import (true_values, false_values)
 from tigapublic.models import Epidemiology
@@ -71,7 +71,7 @@ class ExcelUploader(BaseManager):
         # has_missing = False
         missing_headers = []
         for key, fieldVariants in (
-                self.compulsatory_fields.iteritems()
+                self.compulsatory_fields.items()
                 ):
 
             if not bool(set(fieldVariants) & set(file_headers)):
@@ -86,7 +86,7 @@ class ExcelUploader(BaseManager):
         return missing_headers
 
     def _get_optional_fields(self, file_headers):
-        for key, fieldVariants in self.optional_fields.iteritems():
+        for key, fieldVariants in self.optional_fields.items():
             # find out the match between column name and model field
             self._match_column_to_field(
                 fieldVariants,
@@ -159,7 +159,7 @@ class ExcelUploader(BaseManager):
         import_dataset.headers = None
 
         with tempfile.NamedTemporaryFile(delete=False) as f:
-                print f.name
+                print (f.name)
                 f.write(import_dataset.get_csv(delimiter='\t'))
                 f.seek(0)
 
@@ -180,7 +180,7 @@ class ExcelUploader(BaseManager):
 
     def put(self, *args, **kwargs):
         """Import a file."""
-        print self.model
+        print (self.model)
         if self.request.user.is_epidemiologist_editor():
             if self.request.method == 'POST':
                 # Prepare the input Dataset

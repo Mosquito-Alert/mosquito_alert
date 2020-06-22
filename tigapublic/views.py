@@ -12,18 +12,18 @@ from django.views.decorators.cache import never_cache, cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
-from decorators import cross_domain_ajax
-from forms import TinyMCEImageForm
-from libs.notifications import NotificationManager
-from libs.observations import ObservationManager
-from libs.stormdrains import (StormDrainData, StormDrainUploader,
+from tigapublic.decorators import cross_domain_ajax
+from tigapublic.forms import TinyMCEImageForm
+from tigapublic.libs.notifications import NotificationManager
+from tigapublic.libs.observations import ObservationManager
+from tigapublic.libs.stormdrains import (StormDrainData, StormDrainUploader,
                               StormDrainUserSetup)
-from libs.userfixes import UserfixesManager
-from libs.upload import ExcelUploader
-from libs.epidemiology import EpidemiologyData
-from libs.predictionmodels import predictionModels
-from models import MapAuxReports, Municipalities, Epidemiology
-from utils import CustomJSONEncoder
+from tigapublic.libs.userfixes import UserfixesManager
+from tigapublic.libs.upload import ExcelUploader
+from tigapublic.libs.epidemiology import EpidemiologyData
+from tigapublic.libs.predictionmodels import predictionModels
+from tigapublic.models import MapAuxReports, Municipalities, Epidemiology
+from tigapublic.utils import CustomJSONEncoder
 from tigapublic.constants import (compulsatory_epidemiology_fields,
                                   optional_epidemiology_fields,
                                   epi_templates_path, epi_form_file,
@@ -37,8 +37,8 @@ import os
 from tablib import Dataset
 from tigapublic.utils import get_directory_structure
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 
 #########
@@ -312,7 +312,7 @@ def predictionModelData(request, year, month):
         # Lower case headers
         lowerHeaders = [h.lower() for h in myModel.data.headers]
         myModel.data.headers = lowerHeaders
-        print myModel.data.headers
+        print(myModel.data.headers)
         response = {}
         response['prob'] = myModel.getProbGeometries()
         response['sd'] = myModel.getSdGeometries()

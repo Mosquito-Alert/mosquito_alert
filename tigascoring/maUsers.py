@@ -8,7 +8,7 @@ from operator import itemgetter, attrgetter
 from math import log
 from sklearn.preprocessing import minmax_scale
 
-import ma
+import tigascoring.ma
 
 # using 4 prior expertise-categories
 _catK = 4
@@ -107,11 +107,11 @@ class Report:
 
     def showIt(self):
         print
-        print '+++++ ID: %s' % self.id
-        print '    date: %s' % self.date
-        print '    type: %s' % self.type
-        print 'location: %9.5r, %9.5r' % self.location
-        print '   label:', self.getLbl(), ':', self.masterLbl, '.', self.expertLbl
+        print ('+++++ ID: %s' % self.id)
+        print ('    date: %s' % self.date)
+        print ('    type: %s' % self.type)
+        print ('location: %9.5r, %9.5r' % self.location)
+        print ('   label:', self.getLbl(), ':', self.masterLbl, '.', self.expertLbl)
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -182,12 +182,12 @@ class Usmmry:
 
     def showIt(self):
         print
-        print '+++ userId.', self.uuid
-        print '    adultR.', np.sum(self.rprtList('adult')), '...', self.rprtList('adult')
-        print '    bSiteR.', np.sum(self.rprtList('site')), '...', self.rprtList('site')
-        print '  location.', self.locList()
-        print '    movIdx.', self.movIdx()
-        print '    uScore.', self.score
+        print ('+++ userId.', self.uuid)
+        print ('    adultR.', np.sum(self.rprtList('adult')), '...', self.rprtList('adult'))
+        print ('    bSiteR.', np.sum(self.rprtList('site')), '...', self.rprtList('site'))
+        print ('  location.', self.locList())
+        print ('    movIdx.', self.movIdx())
+        print ('    uScore.', self.score)
 
     def chkIt(self):
         self.showIt()
@@ -235,38 +235,38 @@ class Dsmmry(dict):
         nv1 = np.where(nvIdx == 1)[0].shape[0]
         nv2 = np.where(nvIdx == 2)[0].shape[0]
         nv3 = np.where(nvIdx == 3)[0].shape[0]
-        print '-' * 68
-        print '+++   Users: %6i' % len(self)
-        print '+++   Rprts: %6i' % (np.sum(self.adultRprts) + np.sum(self.bSiteRprts) + self.flaggedRprts),
+        print ('-' * 68)
+        print ('+++   Users: %6i' % len(self))
+        print ('+++   Rprts: %6i' % (np.sum(self.adultRprts) + np.sum(self.bSiteRprts) + self.flaggedRprts)),
         if np.sum(self.flaggedRprts):
-            print '(flagged: %6.0i)' % np.sum(self.flaggedRprts),
+            print ('(flagged: %6.0i)' % np.sum(self.flaggedRprts)),
         print
-        print '-' * 68
-        print ' ' * 26, '          movIdx<=v             movIdx>v '
-        print ' ' * 26, ' %13.0i(%.2f)  %13.0i(%.2f)' % (
-        (nv0 + nv2), (nv0 + nv2) / len(nvIdx), (nv1 + nv3), (nv1 + nv3) / len(nvIdx))
-        print '+++   #R<=n:  %5i(%.2f)   %13.f(%.2f)  %13.f(%.2f) ' % (
-        (nv0 + nv1), (nv0 + nv1) / len(nvIdx), nv0, nv0 / len(nvIdx), nv1, nv1 / len(nvIdx))
-        print '+++    #R>n:  %5i(%.2f)   %13.f(%.2f)  %13.f(%.2f) ' % (
-        (nv2 + nv3), (nv2 + nv3) / len(nvIdx), nv2, nv2 / len(nvIdx), nv3, nv3 / len(nvIdx))
-        print '-' * 68
-        print '               ttl.     NC     hd     -2     -1      0     +1     +2'
-        print '+++  adults:', '%6.0i' % np.sum(self.adultRprts),
-        for n in self.adultRprts: print '%6.0i' % int(n),
+        print ('-' * 68)
+        print (' ' * 26, '          movIdx<=v             movIdx>v ')
+        print (' ' * 26, ' %13.0i(%.2f)  %13.0i(%.2f)' % (
+        (nv0 + nv2), (nv0 + nv2) / len(nvIdx), (nv1 + nv3), (nv1 + nv3) / len(nvIdx)))
+        print ('+++   #R<=n:  %5i(%.2f)   %13.f(%.2f)  %13.f(%.2f) ' % (
+        (nv0 + nv1), (nv0 + nv1) / len(nvIdx), nv0, nv0 / len(nvIdx), nv1, nv1 / len(nvIdx)))
+        print ('+++    #R>n:  %5i(%.2f)   %13.f(%.2f)  %13.f(%.2f) ' % (
+        (nv2 + nv3), (nv2 + nv3) / len(nvIdx), nv2, nv2 / len(nvIdx), nv3, nv3 / len(nvIdx)))
+        print ('-' * 68)
+        print ('               ttl.     NC     hd     -2     -1      0     +1     +2')
+        print ('+++  adults:', '%6.0i' % np.sum(self.adultRprts)),
+        for n in self.adultRprts: print ('%6.0i' % int(n)),
         print
-        print ' ' * 19,
-        for n in self.adultRprts: print '  %.2f' % (n / np.sum(self.adultRprts)),
+        print (' ' * 19,)
+        for n in self.adultRprts: print ('  %.2f' % (n / np.sum(self.adultRprts))),
         print
-        print '-' * 68
-        print '               ttl.     NC     hd     -1      0     +1'
-        print '+++  bSites:', '%6.0i' % np.sum(self.bSiteRprts),
-        for n in self.bSiteRprts: print '%6.0i' % int(n),
+        print ('-' * 68)
+        print ('               ttl.     NC     hd     -1      0     +1')
+        print ('+++  bSites:', '%6.0i' % np.sum(self.bSiteRprts)),
+        for n in self.bSiteRprts: print ('%6.0i' % int(n)),
         print
-        print ' ' * 19,
-        for n in self.bSiteRprts: print '  %.2f' % (n / np.sum(self.bSiteRprts)),
+        print (' ' * 19),
+        for n in self.bSiteRprts: print ('  %.2f' % (n / np.sum(self.bSiteRprts))),
         print
-        print '-' * 68
-        print ' ' * 36, 'summary time ... %s' % self.smmryTime
+        print ('-' * 68)
+        print (' ' * 36, 'summary time ... %s' % self.smmryTime)
 
     def smmry2_old(self):
 
@@ -411,19 +411,19 @@ class Dsmmry(dict):
     def shwLine(self, headLbl=None, rowLbl=None, nExCls=None):
         if headLbl != None:
             print
-            print '+++  %s ' % headLbl,
-            for k in range(self.k): print '    %1.0i  ' % (k + 1),
+            print ('+++  %s ' % headLbl),
+            for k in range(self.k): print ('    %1.0i  ' % (k + 1)),
             print
-            print '-' * 60
+            print ('-' * 60)
         if nExCls != None:
             if rowLbl != None:
-                print '%s' % rowLbl.center(11, ' '),
+                print ('%s' % rowLbl.center(11, ' ')),
             else:
-                print ' ' * 11,
+                print (' ' * 11),
             if self.p == 0:
-                for k in range(self.k):    print ' %6.0i' % nExCls[k],
+                for k in range(self.k):    print (' %6.0i' % nExCls[k]),
             else:
-                for k in range(self.k):    print ' %6.4f' % nExCls[k],
+                for k in range(self.k):    print (' %6.4f' % nExCls[k]),
             print
 
     # check self.counts_get() is done
@@ -436,16 +436,16 @@ class Dsmmry(dict):
     def catPrior(self):
         self.counts_chk()
         print
-        print '+++           #R<=n&mI<=v  #R<=n&mI>v  #R>n&mI<=v  #R>n&mI>v'
-        print '-' * 60
+        print ('+++           #R<=n&mI<=v  #R<=n&mI>v  #R>n&mI<=v  #R>n&mI>v')
+        print ('-' * 60)
         if self.p == 0:
             for k in range(self.nExCat.shape[0]):
-                print '+++    cat%1i     %6.0i      %6.0i       %6.0i      %6.0i  ' % (
-                (k + 1,) + tuple(self.nExCat[k,]))
+                print ('+++    cat%1i     %6.0i      %6.0i       %6.0i      %6.0i  ' % (
+                (k + 1,) + tuple(self.nExCat[k,])))
         else:
             for k in range(self.nExCat.shape[0]):
-                print '+++    cat%1i      %6.4f      %6.4f      %6.4f      %6.4f  ' % (
-                (k + 1,) + tuple(self.nExCat[k,]))
+                print ('+++    cat%1i      %6.4f      %6.4f      %6.4f      %6.4f  ' % (
+                (k + 1,) + tuple(self.nExCat[k,])))
         print
         # to check equality with expertise-class prior (self.nExCls)
         nExCls = np.zeros(self.k)
@@ -464,7 +464,7 @@ class Dsmmry(dict):
         self.shwLine(headLbl='Rprts.')
         for row, label in zip(self.nRpEx, [' adult ', ' bSite ']):
             self.shwLine(rowLbl=label, nExCls=row)
-        print '-' * 60
+        print ('-' * 60)
         self.shwLine(nExCls=np.sum(self.nRpEx.T, axis=1))
 
     # adultRprts/bSiteRprts (join)conditional distributions
@@ -474,13 +474,13 @@ class Dsmmry(dict):
         self.shwLine(headLbl='adultR')
         for row, rLabel in zip(self.nAdEx, ['--', 'hd', '-2', '-1', ' 0', '+1', '+2']):
             self.shwLine(rowLbl=rLabel, nExCls=row)
-        print '-' * 60
+        print ('-' * 60)
         self.shwLine(nExCls=np.sum(self.nAdEx.T, axis=1))
         # +++ bSiteReports
         self.shwLine(headLbl='bSiteR')
         for row, rLabel in zip(self.nBsEx, ['--', 'hd', '-1', ' 0', '+1']):
             self.shwLine(rowLbl=rLabel, nExCls=row)
-        print '-' * 60
+        print ('-' * 60)
         self.shwLine(nExCls=np.sum(self.nBsEx.T, axis=1))
 
     # compute bayesian network distributions
@@ -519,29 +519,29 @@ class Dsmmry(dict):
         self.expCond_get()
         # +++ adultReports
         print
-        print '+++  %s  ' % 'adultR',
-        for l in ['--', 'hd', '-2', '-1', ' 0', '+1', '+2']: print '  %s   ' % l,
+        print ('+++  %s  ' % 'adultR',)
+        for l in ['--', 'hd', '-2', '-1', ' 0', '+1', '+2']: print ('  %s   ' % l,)
         print
-        print '-' * 68
+        print ('-' * 68)
         for row, c in zip(self.nExAd, range(self.k)):
-            print '+++  expC=%s ' % (c + 1),
+            print ('+++  expC=%s ' % (c + 1),)
             for k in range(self.nExAd.shape[1]):
-                print ' %6.4f' % row[k],
+                print (' %6.4f' % row[k],)
             print
-        print '-' * 68
+        print ('-' * 68)
         print
         # +++ bSiteReports
         print
-        print '+++  %s  ' % 'bSiteR',
-        for l in ['--', 'hd', '-1', ' 0', '+1']: print '  %s   ' % l,
+        print ('+++  %s  ' % 'bSiteR',)
+        for l in ['--', 'hd', '-1', ' 0', '+1']: print ('  %s   ' % l,)
         print
-        print '-' * 52
+        print ('-' * 52)
         for row, c in zip(self.nExBs, range(self.k)):
-            print '+++  expC=%s ' % (c + 1),
+            print ('+++  expC=%s ' % (c + 1),)
             for k in range(self.nExBs.shape[1]):
-                print ' %6.4f' % row[k],
+                print (' %6.4f' % row[k],)
             print
-        print '-' * 52
+        print ('-' * 52)
         print
 
     # +++ score-rank computation methods
@@ -591,10 +591,10 @@ class Dsmmry(dict):
                 print
             counts += 1
             Counts += 1
-            print '%6i ... %14.8f, ... %6i %8i ' % (n, score, counts, Counts),
+            print ('%6i ... %14.8f, ... %6i %8i ' % (n, score, counts, Counts),)
             # show xLast reports used to score
-            print self[uuid].xLastR('adult', self.xLast),
-            print self[uuid].xLastR('site', self.xLast), '\r',
+            print (self[uuid].xLastR('adult', self.xLast),)
+            print (self[uuid].xLastR('site', self.xLast), '\r',)
 
     def rank_plt(self, ylim=(0.0, 1.1)):
         if not hasattr(self, 'rank'): self.rank_get()

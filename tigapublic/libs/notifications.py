@@ -2,7 +2,7 @@
 """Notification Libraries."""
 import json
 import urllib
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 
 import requests
 from django.conf import settings
@@ -10,7 +10,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils.html import strip_tags
 
-from base import BaseManager
+from tigapublic.libs.base import BaseManager
 from tigapublic.models import (MapAuxReports, Notification,
                                NotificationContent, ObservationNotifications,
                                PredefinedNotification)

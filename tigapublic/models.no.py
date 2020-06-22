@@ -1,4 +1,4 @@
-extra config from settings-development.py
+#extra config from settings-development.py
 
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
@@ -529,9 +529,9 @@ class Tiles(models.Model):
 
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification')
-    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent')
-    expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
-    date_comment = models.DateTimeField(auto_now_add=True, default=datetime.now())
+    user = models.ForeignKey('tigaserver_app.TigaUser', related_name="user_notifications", help_text='User to which the notification will be sent')
+    expert = models.ForeignKey('django.contrib.auth.models.User', blank=True, related_name="expert_notifications", help_text='Expert sending the notification')
+    date_comment = models.DateTimeField(auto_now_add=True)
     expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')

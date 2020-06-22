@@ -3,7 +3,8 @@ import json
 import socket
 import struct
 import binascii
-import urllib2
+#import urllib2
+import urllib
 import json
 from tigaserver_project import settings_local
 from tigaserver_project import settings

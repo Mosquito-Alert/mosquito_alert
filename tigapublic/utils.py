@@ -7,7 +7,7 @@ import requests
 import os
 from django.contrib.auth.models import User
 import re
-from constants import (managers_group, superusers_group, user_roles,
+from tigapublic.constants import (managers_group, superusers_group, user_roles,
                        epidemiologist_editor_group,
                        epidemiologist_viewer_group)
 

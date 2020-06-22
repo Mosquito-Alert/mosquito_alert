@@ -30,12 +30,13 @@ class Userfixes(models.Model):
         """Meta information."""
 
         db_table = 'tigaserver_app_fix'
+        managed = False
 
 
 class NotificationImageFormModel(models.Model):
     """NotificationImageFormModel."""
 
-    image = models.ImageField(upload_to=settings.MEDIA_ROOT)
+    image = models.ImageField(upload_to='media/')
 
     class Meta:
         """Meta."""
@@ -152,17 +153,16 @@ class AuthUser(models.Model):
 class ReportsMapData(models.Model):
     """All mosquito observations."""
 
-    id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
     version_uuid = models.CharField(max_length=36, blank=True, null=True)
     c = models.IntegerField()
     observation_date = models.DateTimeField(null=True, blank=True)
-    expert_validation_result = models.CharField(max_length=50, blank=True,
-                                                null=True)
-    category = models.CharField(primary_key=True, max_length=100, blank=True)
-    month = models.CharField(primary_key=True, max_length=6, blank=True)
-    lon = models.FloatField(primary_key=True)
-    lat = models.FloatField(primary_key=True)
-    geohashlevel = models.IntegerField(primary_key=True)
+    expert_validation_result = models.CharField(max_length=50, blank=True, null=True)
+    category = models.CharField(max_length=100, blank=True)
+    month = models.CharField(max_length=6, blank=True)
+    lon = models.FloatField()
+    lat = models.FloatField()
+    geohashlevel = models.IntegerField()
 
     class Meta:
         """Meta."""
@@ -285,6 +285,7 @@ class NotificationContent(models.Model):
         """Meta."""
 
         db_table = 'tigaserver_app_notificationcontent'
+        managed = False
 
 
 class PredefinedNotificationManager(models.Manager):
@@ -361,6 +362,7 @@ class Notification(models.Model):
         """Meta."""
 
         db_table = 'tigaserver_app_notification'
+        managed = False
 
 
 class ObservationNotifications(models.Model):

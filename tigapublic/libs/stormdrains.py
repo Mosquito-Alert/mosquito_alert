@@ -5,7 +5,7 @@ import json
 import os
 import tempfile
 from operator import __or__ as OR
-from StringIO import StringIO
+from io import StringIO
 from zipfile import ZipFile
 
 from django.db import connection
@@ -14,7 +14,7 @@ from django.http import HttpResponse
 from pyproj import Proj, transform
 from tablib import Dataset
 
-from base import BaseManager
+from tigapublic.libs.base import BaseManager
 from tigapublic.constants import (compulsatory_stormdrain_fields,
                                   defaultStormDrainStyle, false_values,
                                   null_values, optional_stormdrain_fields,

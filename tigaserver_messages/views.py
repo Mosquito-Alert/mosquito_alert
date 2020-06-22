@@ -5,7 +5,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.template import RequestContext
 from django_messages.utils import format_quote, get_user_model, get_username_field
 from django.shortcuts import render_to_response, get_object_or_404

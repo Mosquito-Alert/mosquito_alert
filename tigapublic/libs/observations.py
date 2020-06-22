@@ -2,21 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from StringIO import StringIO
+#from io import StringIO
+from io import BytesIO
 from zipfile import ZipFile
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
-from base import BaseManager
-from filters import FilterManager
-from notifications import NotificationManager
+from tigapublic.libs.base import BaseManager
+from tigapublic.libs.filters import FilterManager
+from tigapublic.libs.notifications import NotificationManager
 from tigapublic.constants import (fields_available, managers_group,
                                   superusers_group)
 from tigapublic.models import AuthUser, MapAuxReports, ReportsMapData
 from tigapublic.resources import GetObservationResource, NotificationResource
-from predictionmodels import predictionModels
+from tigapublic.libs.predictionmodels import predictionModels
 
 
 def coordinateListToWKTPolygon(coordinates):
@@ -223,7 +224,7 @@ class ObservationManager(BaseManager):
         # Run filters
         try:
             self.filter.run()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             self.response['error'] = str(e)
 
         return self.filter.queryset

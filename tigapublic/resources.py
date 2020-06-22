@@ -7,7 +7,7 @@ from django.conf import settings
 from import_export import resources
 
 # from constants import true_values
-from models import MapAuxReports, ObservationNotifications
+from tigapublic.models import MapAuxReports, ObservationNotifications
 
 # from import_export.widgets import DateTimeWidget
 # from pyproj import Proj, transform

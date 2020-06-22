@@ -7,7 +7,7 @@ from operator import __or__ as OR
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from base import BaseManager
+from tigapublic.libs.base import BaseManager
 from tigapublic.models import (AuthUser, MapAuxReports, Municipalities,
                                ObservationNotifications)
 
