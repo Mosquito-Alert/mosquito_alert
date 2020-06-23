@@ -115,6 +115,9 @@ def create_users():
 
             print("{0} {1} {2}".format( username, email, password ))
 
-create_users()
+#create_users()
 #perform_checks()
 #delete_users()
+
+for i in range(1,11):
+    print(generate_password())

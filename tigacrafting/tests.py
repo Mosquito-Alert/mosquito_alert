@@ -2,7 +2,7 @@ from django.test import TestCase
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation
+from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo
 from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex
 from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
@@ -80,6 +80,8 @@ class UserTestCase(TestCase):
                 type='adult',
             )
             r.save()
+            p = Photo.objects.create(report=r)
+            p.save()
             a = a + 1
 
     def create_team(self):
