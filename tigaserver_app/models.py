@@ -10,7 +10,6 @@ from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Max, Min
 from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
-#from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
@@ -37,6 +36,7 @@ from django.template.loader import render_to_string
 from tigacrafting.messaging import send_message_android,send_message_ios
 from django.utils import translation
 from django.utils.translation import ugettext
+from django.urls import reverse
 from django.utils.deconstruct import deconstructible
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')

@@ -1057,7 +1057,7 @@
                                         data-live-search="true">
                                     <option value=""></option>
                                     {% for version_uuid in my_version_uuids %}
-                                        <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
+                                        <option value="{{ version_uuid }}">{{ version_uuid }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -1076,7 +1076,7 @@
                                         data-live-search="true">
                                     <option value=""></option>
                                     {% for linked_id in my_linked_ids %}
-                                        <option value="{{ linked_id.values | first }}">{{ linked_id.values | first }}</option>
+                                        <option value="{{ linked_id }}">{{ linked_id }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

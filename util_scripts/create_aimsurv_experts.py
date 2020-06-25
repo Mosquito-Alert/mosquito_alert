@@ -19,6 +19,8 @@ import random
 from django.contrib.auth.models import User, Group
 from tigaserver_app.models import EuropeCountry
 
+USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy_v2.csv'
+
 
 def split_name(s):
     split = s.split(" ")
@@ -39,7 +41,7 @@ def generate_password( size=6, chars= string.ascii_uppercase + string.ascii_lowe
 
 
 def delete_users():
-    with open('/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy.csv') as csv_file:
+    with open(USERS_FILE) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader)
         for row in csv_reader:
@@ -62,7 +64,7 @@ def assign_user_to_country(user, country):
 
 
 def perform_checks():
-    with open('/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy.csv') as csv_file:
+    with open(USERS_FILE) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader)
         for row in csv_reader:
@@ -89,10 +91,10 @@ def perform_checks():
         es_group.save()
 
 
-def create_users():
+def create_users(add_users_to_euro_groups=True, ignore_regional_managers = False):
     perform_checks()
     experts_group = Group.objects.get(name="expert")
-    with open('/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy.csv') as csv_file:
+    with open(USERS_FILE) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader)
         for row in csv_reader:
@@ -104,17 +106,19 @@ def create_users():
             password = row[4]
             country_iso = row[7]
             user = User.objects.create_user(username=username,first_name=sp['name'],last_name=sp['last_name'],email=email,password=password)
-            regional_group = Group.objects.get(name=row[5])
+            if add_users_to_euro_groups:
+                regional_group = Group.objects.get(name=row[5])
+                regional_group.user_set.add(user)
             experts_group.user_set.add(user)
-            regional_group.user_set.add(user)
             country = EuropeCountry.objects.get(iso3_code=country_iso)
             assign_user_to_country(user,country)
-            if row[6] == '1':
-                print("Making user regional manager")
-                make_user_regional_manager(user, country)
+            if not ignore_regional_managers:
+                if row[6] == '1':
+                    print("Making user regional manager")
+                    make_user_regional_manager(user, country)
 
             print("{0} {1} {2}".format( username, email, password ))
 
-create_users()
+create_users(add_users_to_euro_groups=False, ignore_regional_managers = True)
 #perform_checks()
 #delete_users()
