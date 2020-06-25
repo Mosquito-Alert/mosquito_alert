@@ -11,10 +11,10 @@ var save_button = $("#save_button").click(function () {
         console.log("id_form-" + i + "-fastUpload.fastUploadClass");
         console.log($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent().attr('id'));*/
 
-        if($("#id_form-" + i + "-fastUpload.fastUploadClass").prop('checked')){
-            ref.push($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent().attr('id'));
+        if($("#id_form-" + index + "-fastUpload.fastUploadClass").prop('checked')){
+            ref.push($( "#id_form-" + index + "-fastUpload.fastUploadClass").parent().attr('id'));
         }
-        i++;
+        //i++;
 
         //ref.push($("#id_form-"+ i +"-version_UUID").val());
         //console.log($( "#id_form-" + i + "-fastUpload.fastUploadClass").parent());
