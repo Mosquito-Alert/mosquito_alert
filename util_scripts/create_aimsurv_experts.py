@@ -40,6 +40,12 @@ def generate_password( size=6, chars= string.ascii_uppercase + string.ascii_lowe
     return ''.join(random.choice(chars) for _ in range(size))
 
 
+def delete_euro_users():
+    users = User.objects.filter(groups__name='eu_group_europe')
+    for u in users:
+        u.delete()
+
+
 def delete_users():
     with open(USERS_FILE) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -102,7 +108,8 @@ def create_users(add_users_to_euro_groups=True, ignore_regional_managers = False
             email = row[1]
             country = row[2]
             sp = split_name(name)
-            username = get_username(name)
+            #username = get_username(name)
+            username = row[3]
             password = row[4]
             country_iso = row[7]
             user = User.objects.create_user(username=username,first_name=sp['name'],last_name=sp['last_name'],email=email,password=password)
