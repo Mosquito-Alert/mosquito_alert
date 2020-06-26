@@ -1933,12 +1933,16 @@
                             public_unclassified = true;
                         }
                     }
+                    {% if request.user.userstat.is_expert %}
                     if(validated_without_aedes_input || complex_without_class || simple_without_value || flagged_without_comment || hidden_without_comment || public_unclassified){
                         //launch ok dialog and not save
                         setup_and_launch_mustfix_dialog();
                     }else{
                         setup_and_launch_save_warning();
                     }
+                    {% else %}
+                        setup_and_launch_save_warning();
+                    {% endif %}
                 } else {
                     gear.show();
                     toggle_grab_reports_button();
