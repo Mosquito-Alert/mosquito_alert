@@ -397,7 +397,7 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
     def get(self):
         """Return the list of storm drain user setups."""
         # Return an Unauthorized 401 message if the user is not authenticated
-        if not self.request.user.is_authenticated():
+        if not self.request.user.is_authenticated:
             return self._end_unauthorized()
 
         # If super-mosquito, get list of all users and versions available
@@ -441,7 +441,7 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
     def put(self):
         """Store a style configuration on the server."""
         # Return an Unauthorized 401 message if the user is not authenticated
-        if not self.request.user.is_authenticated():
+        if not self.request.user.is_authenticated:
             return self._end_unauthorized()
 
         deactivated = self._hide_all_versions()

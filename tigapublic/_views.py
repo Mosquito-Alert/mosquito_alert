@@ -52,7 +52,7 @@ def save_notification(request):
 
         report_ids = request.POST.getlist('report_ids[]')
 
-        success = request.user.is_authenticated()
+        success = request.user.is_authenticated
         if success is True:
             if request.user is not None:
                 if (request.user.is_active and (request.user.groups.filter(name=managers_group).exists()
@@ -146,7 +146,7 @@ def ajax_logout(request):
 @cross_domain_ajax
 def ajax_is_logged(request):
     response = {'success': False, 'data': {'username':'', 'groups':[], 'roles':[]}}
-    success = request.user.is_authenticated()
+    success = request.user.is_authenticated
     if success is True:
         request.session.set_expiry(86400)
         response['success'] = True
@@ -221,7 +221,7 @@ class MapAuxReportsExportView(View):
 
     def get(self, request, *args, **kwargs):
 
-        authenticated = request.user.is_authenticated()
+        authenticated = request.user.is_authenticated
         filename = 'mosquito_alert_report'
         bbox = self.request.GET.get('bbox')#caixa
         bbox = bbox.split(',') # pas necesari per obtenir valors
@@ -393,7 +393,7 @@ def map_aux_reports(request, id):
     columns = 'r.id, version_uuid, observation_date, lon,lat, ref_system, type, breeding_site_answers,mosquito_answers, expert_validated, expert_validation_result,simplified_expert_validation_result, site_cat,storm_drain_status, edited_user_notes, r.photo_url,photo_license, dataset_license, single_report_map_url,n_photos, visible, final_expert_status, private_webmap_layer'
 
     # IF registered user then get corresponding private notifications
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         #Add extra columns to query
         columns = columns + ', note, t_q_1, t_q_2, t_q_3, t_a_1, t_a_2, t_a_3, s_q_1, s_q_2, s_q_3, s_q_4, s_a_1, s_a_2, s_a_3, s_a_4'
 
@@ -650,7 +650,7 @@ def notifications(request, bounds, year, months):
 
     columns = 'a.id, a.version_uuid, a.observation_date, a.lon,a.lat, a.ref_system, a.type, a.breeding_site_answers,a.mosquito_answers, a.expert_validated, a.expert_validation_result,a.simplified_expert_validation_result, a.site_cat,a.storm_drain_status, a.edited_user_notes, a.photo_url,a.photo_license, a.dataset_license, a.single_report_map_url,a.n_photos, a.visible, a.final_expert_status, a.private_webmap_layer'
 
-    success = request.user.is_authenticated()
+    success = request.user.is_authenticated
     if success is True:
        columns = columns + ', a.note, a.t_q_1, a.t_q_2, a.t_q_3, a.t_a_1, a.t_a_2, a.t_a_3, a.s_q_1, a.s_q_2, a.s_q_3, a.s_q_4, a.s_a_1, a.s_a_2, a.s_a_3, a.s_a_4'
 
@@ -750,7 +750,7 @@ def intersects(request):
 @csrf_exempt
 @cross_domain_ajax
 def embornals(request):
-    authenticated = request.user.is_authenticated()
+    authenticated = request.user.is_authenticated
     if authenticated is True:
         if request.user.is_superuser is True:
             qs = list(StormDrain.objects.values_list('lat', 'lon','water').order_by('id')) #ordered by id to assure cronological sequence
@@ -791,7 +791,7 @@ def reports_notif(request, bounds, years, months, categories, notifications, has
     ambiguous_columns = "aux.id as id, aux.photo_url"
     columns = 'version_uuid, observation_date, lon,lat, ref_system, type, breeding_site_answers,mosquito_answers, expert_validated, expert_validation_result,simplified_expert_validation_result, site_cat,storm_drain_status, edited_user_notes, photo_license, dataset_license, single_report_map_url,n_photos, visible, final_expert_status, private_webmap_layer'
 
-    success = request.user.is_authenticated()
+    success = request.user.is_authenticated
     if success is True:
        columns = columns + ', note, t_q_1, t_q_2, t_q_3, t_a_1, t_a_2, t_a_3, s_q_1, s_q_2, s_q_3, s_q_4, s_a_1, s_a_2, s_a_3, s_a_4'
     else:
@@ -861,7 +861,7 @@ def reports(request, bounds, years, months, categories, hashtag):
 
     columns = 'id, version_uuid, observation_date, lon,lat, ref_system, type, breeding_site_answers,mosquito_answers, expert_validated, expert_validation_result,simplified_expert_validation_result, site_cat,storm_drain_status, edited_user_notes, photo_url,photo_license, dataset_license, single_report_map_url,n_photos, visible, final_expert_status, private_webmap_layer'
 
-    success = request.user.is_authenticated()
+    success = request.user.is_authenticated
     if success is True:
        columns = columns + ', note, t_q_1, t_q_2, t_q_3, t_a_1, t_a_2, t_a_3, s_q_1, s_q_2, s_q_3, s_q_4, s_a_1, s_a_2, s_a_3, s_a_4'
 
@@ -911,7 +911,7 @@ def reports(request, bounds, years, months, categories, hashtag):
 @cross_domain_ajax
 #Get data for stormdrain configuration on client site. Only registered users
 def getStormDrainUserSetup(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1100,7 +1100,7 @@ def putStormDrainStyle(request, ):
     res={'success':False, 'err':''}
 
     style_str = request.body.decode(encoding='UTF-8')
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1192,7 +1192,7 @@ def putStormDrainStyle(request, ):
 @cross_domain_ajax
 def getStormDrainData(request):
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1326,7 +1326,7 @@ class DecimalEncoder(json.JSONEncoder):
 @cross_domain_ajax
 def stormDrainUpload(request, **kwargs):
     response = {'success': False, 'desc':''}
-    if (request.user.is_authenticated() and
+    if (request.user.is_authenticated and
         request.user.is_active and
         request.user.groups.filter(name=managers_group).exists()):
 
@@ -1459,7 +1459,7 @@ def stormDrainUpload(request, **kwargs):
 
 def getStormDrainLastVersion(request):
     #Return the last uploaded version.0 if there is none
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         qs = StormDrain.objects.filter(
             user__exact=request.user.id, version__isnull=False
         ).values_list('version', flat=True).distinct().order_by('-version')
@@ -1474,7 +1474,7 @@ def getStormDrainLastVersion(request):
     return version
 
 def addStormDrainVersion(request, version_id=None):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if version_id==None:
             version_id = getStormDrainLastVersion(request) +1
 

@@ -1,15 +1,16 @@
-import urllib2
-import StringIO
-import Tkinter
-import Image
+from urllib.request import urlopen
+from io import StringIO
+from tkinter import *
+from PIL import ImageTk
 from PIL import ImageTk
 # import imghdr
 
-import ma
+import tigascoring.ma as ma
 
 _HOST_Pictures = 'http://humboldt.ceab.csic.es/get_photo/q0n50KN2Tg1O0Zh/'
 _IMG_def = '/home/jgarriga/mosquitoAlert/ma.png'
 _IMG_def = '/home/jgarriga/Pictures/ceab/olighopodus_it3.jpg'
+_LOCAL_data = 'foo'
 
 
 def image_list():
@@ -23,10 +24,10 @@ def image_list():
 def image_get(img_idd='d1bbf374-4be1-4af0-ad6d-91644e163cc3', img_sze='medium'):
     img_url = _HOST_Pictures + img_idd + '/' + img_sze
     try:
-        img_str = urllib2.urlopen(img_url).read()
+        img_str = urlopen(img_url).read()
         img_rgb = Image.open(StringIO.StringIO(img_str))
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         img_rgb = Image.open(_IMG_def)
     # imghdr.what('ignore', img)
     return img_rgb
@@ -42,7 +43,7 @@ def image_show(img_rgb=None):
 class Cropper:
     def __init__(self, img_list, crop_size, save_path, tk_size=(1000, 800), tk_mrgn=50):
 
-        self.tk = Tkinter.Tk()
+        self.tk = Tk()
         self.tk.geometry('%dx%d' % tk_size)
         self.mrgn = tk_mrgn
         self.wdth = float(tk_size[0] - 2 * tk_mrgn)
@@ -51,11 +52,11 @@ class Cropper:
         self.tk.bind('<Button-1>', self.left_click)
         self.tk.bind('<Button-3>', self.right_click)
 
-        self.button_next = Tkinter.Button(self.tk, text='next', command=self.image_next)
-        self.button_prev = Tkinter.Button(self.tk, text='prev', command=self.image_prev)
-        self.button_save = Tkinter.Button(self.tk, text='save', command=self.image_save)
-        self.button_large = Tkinter.Button(self.tk, text='large', command=self.image_large)
-        self.button_rotate = Tkinter.Button(self.tk, text='rotate', command=self.image_rotate)
+        self.button_next = Button(self.tk, text='next', command=self.image_next)
+        self.button_prev = Button(self.tk, text='prev', command=self.image_prev)
+        self.button_save = Button(self.tk, text='save', command=self.image_save)
+        self.button_large = Button(self.tk, text='large', command=self.image_large)
+        self.button_rotate = Button(self.tk, text='rotate', command=self.image_rotate)
 
         self.button_next.pack(side='right', anchor='s')
         self.button_prev.pack(side='right', anchor='s')
@@ -94,7 +95,7 @@ class Cropper:
         self.tk.geometry('%dx%d' % (min(self.image.size[0] + 200, 800), min(self.image.size[1] + 200, 600)))
         self.tk.title(self.img_list[self.curr_img])
         photo = ImageTk.PhotoImage(self.image)
-        self.frame = Tkinter.Label(self.tk, image=photo)
+        self.frame = Label(self.tk, image=photo)
         self.frame.photo = photo
         self.frame.place(x=lft + self.mrgn, y=top + self.mrgn, width=self.image.size[0], height=self.image.size[1])
 
@@ -125,7 +126,7 @@ class Cropper:
             self.image = self.iBase
         # self.frame_reset()
         else:
-            print '... finished processing all images !!'
+            print('... finished processing all images !!')
             self.tk.destroy()
 
     def image_save(self):

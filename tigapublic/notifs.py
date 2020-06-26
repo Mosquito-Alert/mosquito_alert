@@ -63,7 +63,7 @@ class UserMethods(User):
 
         A valid user is an authenticated and active user.
         """
-        return self.is_authenticated() and self.is_active
+        return self.is_authenticated and self.is_active
 
     def is_manager(self):
         """Return True if user is manager.
@@ -97,7 +97,7 @@ def userIsValid(user):
 
     A valid user is an active & authenticated user.
     """
-    return user.is_authenticated() and user.is_active
+    return user.is_authenticated and user.is_active
 
 
 def userIsManager(user):
@@ -337,7 +337,7 @@ def ajax_is_logged(request):
             'username': '', 'groups': [], 'roles': []
         }
     }
-    success = request.user.is_authenticated()
+    success = request.user.is_authenticated
     if success is True:
         request.session.set_expiry(86400)
         response['success'] = True
@@ -479,7 +479,7 @@ def hashtag_filter(qs, hashtag):
 
 def municipality_filter(request, qs, municipalities):
     """Apply municipalities filter."""
-    if request.user.is_authenticated() and municipalities == '0':
+    if request.user.is_authenticated and municipalities == '0':
         if request.user.groups.filter(name=managers_group).exists():
             # All municipalities of registered user
             qs = qs.filter(
@@ -1143,7 +1143,7 @@ def reports(request, bounds, years, months, date_start, date_end, categories,
 # Get data for stormdrain configuration on client site. Only registered users
 def getStormDrainUserSetup(request):
     """GetStormDrainUserSetup."""
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1353,7 +1353,7 @@ def putStormDrainStyle(request, ):
     res = {'success': False, 'err': ''}
 
     style_str = request.body.decode(encoding='UTF-8')
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1396,7 +1396,7 @@ def putStormDrainStyle(request, ):
 @cross_domain_ajax
 def getStormDrainData(request):
     """getStormDrainData."""
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1675,7 +1675,7 @@ def stormDrainUpload(request, **kwargs):
 def getStormDrainLastVersion(request):
     """getStormDrainLastVersion."""
     # Return the last uploaded version.0 if there is none
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         qs = StormDrain.objects.values(
             'version'
         ).filter(
@@ -1694,7 +1694,7 @@ def getStormDrainLastVersion(request):
 
 def addStormDrainVersion(request, version_id=None):
     """addStormDrainVersion."""
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if version_id is None:
             version_id = getStormDrainLastVersion(request) + 1
 

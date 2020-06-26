@@ -34,7 +34,7 @@ class ExtendedUser(User):
 
         A valid user is an authenticated and active user.
         """
-        return self.is_authenticated() and self.is_active
+        return self.is_authenticated and self.is_active
 
     def is_manager(self):
         """Return True if user is manager.
@@ -158,7 +158,7 @@ def userIsValid(user):
 
     A valid user is an active & authenticated user.
     """
-    return user.is_authenticated() and user.is_active
+    return user.is_authenticated and user.is_active
 
 
 def userIsManager(user):

@@ -363,7 +363,7 @@ class MunicipalityFilter(Filter):
         if not self.is_valid(manager):
             return qs
 
-        if (manager.request.user.is_authenticated() and
+        if (manager.request.user.is_authenticated and
                 manager.filters[self.params] == '0'):
             if manager.request.user.is_manager():
                 # All municipalities of registered user
