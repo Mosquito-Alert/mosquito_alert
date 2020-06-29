@@ -284,3 +284,9 @@ class UserStat(models.Model):
 
     def n_pending_annotations(self):
         return self.user.expert_report_annotations.filter(validation_complete=False).count()
+
+    # this method returns the username, changing any '.' character to a '_'. This is used to avoid usernames used
+    # as id or class names in views to break jquery selector queries
+    @property
+    def username_nopoint(self):
+        return self.user.username.replace('.', '_')
