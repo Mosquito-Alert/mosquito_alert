@@ -329,6 +329,12 @@ class UserStat(models.Model):
     def is_national_supervisor_for_country(self, country):
         return self.is_national_supervisor() and self.national_supervisor_of.gid == country.gid
 
+    # this method returns the username, changing any '.' character to a '_'. This is used to avoid usernames used
+    # as id or class names in views to break jquery selector queries
+    @property
+    def username_nopoint(self):
+        return self.user.username.replace('.', '_')
+
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
         if created:
