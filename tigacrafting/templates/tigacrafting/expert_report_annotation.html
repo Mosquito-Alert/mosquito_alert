@@ -195,7 +195,12 @@
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                         {% for n in tasks_per_page_choices %}
                                             <li>
-                                                <a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>
+                                                {% if n|add:"0" == tasks_per_page|add:"0" %}
+                                                    <a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}"><span class="glyphicon glyphicon-check"></span>{{ n }}</a>
+                                                {% else %}
+                                                    <a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>
+                                                    <!--<a href="{% url 'expert_report_annotation' %}?tasks_per_page={{ n }}&orderby={{ orderby }}&tiger_certainty={{ tiger_certainty }}&site_certainty={{ site_certainty }}&status={{ status }}&pending={{ pending }}&final_status={{ final_status }}&checked={{ checked }}">{{ n }}</a>-->
+                                                {% endif %}
                                             </li>
                                         {% endfor %}
                                     </ul>
@@ -1838,6 +1843,32 @@
     {% block filterjs %}
         <script>
 
+            function dict_to_query(obj){
+                var str = [];
+                for (var p in obj)
+                if (obj.hasOwnProperty(p)) {
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                }
+                return "?" + str.join("&");
+            }
+
+            function query_to_dict(queryString){
+                var dictionary = {};
+                if (queryString.indexOf('?') === 0) {
+                    queryString = queryString.substr(1);
+                }
+                var parts = queryString.split('&');
+                for(var i = 0; i < parts.length; i++) {
+                    var p = parts[i];
+                    var keyValuePair = p.split('=');
+                    var key = keyValuePair[0];
+                    var value = keyValuePair[1];
+                    value = decodeURIComponent(value);
+                    value = value.replace(/\+/g, ' ');
+                    dictionary[key] = value;
+                }
+                return dictionary;
+            }
 
             function query_selectors() {
                 var this_orderby = $("#orderby_select").val();
@@ -1976,8 +2007,12 @@
                 var next_page = "{{ objects.next_page_number }}";
                 var qp = query_selectors();
                 qp += '&page=' + next_page;
+                var query_params = query_to_dict(qp);
+                var items_page = {'tasks_per_page': $('#tasks_per_page_input').val() };
+                var merged_params = Object.assign({}, query_params, items_page);
+                var merged_params_str = dict_to_query(merged_params);
                 $("#next_page_input").val(next_page);
-                background_save(qp);
+                background_save(merged_params_str);
             });
         {% else %}
             nb.hide();
@@ -1990,8 +2025,12 @@
                 var previous_page = "{{ objects.previous_page_number }}";
                 var qp = query_selectors();
                 qp += '&page=' + previous_page;
+                var query_params = query_to_dict(qp);
+                var items_page = {'tasks_per_page': $('#tasks_per_page_input').val() };
+                var merged_params = Object.assign({}, query_params, items_page);
+                var merged_params_str = dict_to_query(merged_params);
                 $("#next_page_input").val(previous_page);
-                background_save(qp);
+                background_save(merged_params_str);
             });
         {% else %}
             pb.hide();
