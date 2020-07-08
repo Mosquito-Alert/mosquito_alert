@@ -99,6 +99,11 @@ class ReportListingField(serializers.RelatedField):
         return value.version_UUID
 
 
+class FullReportResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReportResponse
+
+
 class ReportResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportResponse
@@ -189,6 +194,7 @@ class NearbyReportSerializer(serializers.ModelSerializer):
                    'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
                    'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide', 'type')
 
+
 class ReportIdSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
     class Meta:
@@ -198,6 +204,7 @@ class ReportIdSerializer(serializers.ModelSerializer):
                    'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
                    'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide',
                    'type','creation_time')
+
 
 class MapDataSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
@@ -211,6 +218,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     lon = serializers.Field()
     lat = serializers.Field()
     movelab_annotation = serializers.Field()
+    movelab_annotation_euro = serializers.Field()
     tiger_responses = serializers.Field()
     tiger_responses_text = serializers.Field()
     site_responses = serializers.Field()
@@ -220,6 +228,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     latest_version = serializers.Field()
     n_photos = serializers.Field()
     final_expert_status_text = serializers.Field()
+    responses = FullReportResponseSerializer(many=True)
 
     class Meta:
         model = Report

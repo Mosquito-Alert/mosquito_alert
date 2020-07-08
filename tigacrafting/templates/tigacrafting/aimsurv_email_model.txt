@@ -1,0 +1,17 @@
+Dear {{ name }}
+
+Thank you very much for agreeing to be part of the EntoLab. As we said here you have the login and password to access the “test version” of the EntoLab system.
+
+Login: {{ login }}
+Password: {{ password }}
+
+Link to access to the test version:
+
+{{ test_link }}
+
+Any question you might be having, please contact us through email at r.eritja@creaf.uab.cat and fbartu@ceab.csic.es. Since this is a test version, you cannot mess up or do anything wrong. Just play with it and try all the options available in the platform to familiarize yourself with the the system.
+
+As it is a test version there might be some things that might not be exactly or could work non-optimally as it works in the production version.
+
+Kind regards,
+Mosquito Alert

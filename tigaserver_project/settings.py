@@ -122,6 +122,15 @@ LANGUAGES = (
     ('zh-cn', _('Chinese')),
 )
 
+# generate locale files
+# ./manage.py makemessages -l en
+# ./manage.py makemessages -l ca
+# ./manage.py makemessages -l es
+# ./manage.py makemessages -d djangojs -l en
+# ./manage.py makemessages -d djangojs -l ca
+# ./manage.py makemessages -d djangojs -l es
+# ./manage.py compilemessages
+
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
@@ -203,6 +212,8 @@ USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49]
 #PUSH KILL SWITCHES
 DISABLE_PUSH_IOS = False
 DISABLE_PUSH_ANDROID = False
+#Completely disables notifications for achievements/rewards
+DISABLE_ACHIEVEMENT_NOTIFICATIONS = True
 
 # CELERY STUFF
 BROKER_URL = 'redis://localhost:6379'
@@ -218,3 +229,24 @@ APNS_ADDRESS = 'gateway.push.apple.com'
 FCM_ADDRESS = 'https://fcm.googleapis.com/fcm/send'
 
 from settings_local import *
+
+IDENTICON_FOREGROUNDS = [ "rgb(45,79,255)",
+               "rgb(254,180,44)",
+               "rgb(226,121,234)",
+               "rgb(30,179,253)",
+               "rgb(232,77,65)",
+               "rgb(49,203,115)",
+               "rgb(141,69,170)" ]
+
+# Awards stuff
+# Starting year - awards are given from this year onward
+AWARD_START_YEAR = 2020
+# Season start - These mark the beginning of the season (Diada de Sant Jordi)
+SEASON_START_MONTH = 4
+SEASON_START_DAY = 23
+
+# This email shows up for contact in case of technical issues
+ENTOLAB_ADMIN = 'a.escobar@creaf.uab.cat'
+SHOW_USER_AGREEMENT_ENTOLAB = False
+
+HOST_NAME = 'webserver.mosquitoalert.com'

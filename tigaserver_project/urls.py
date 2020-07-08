@@ -8,11 +8,12 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
-    adult_sunburst, site_sunburst, hashtag_map
+    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto
 from tigaserver_messages.views import compose_w_data, reply_w_data
 from django_messages.views import *
+from django.views.i18n import javascript_catalog
 
 admin.autodiscover()
 
@@ -67,6 +68,7 @@ urlpatterns += i18n_patterns('',
     url(r'^single_report_map/(?P<version_uuid>[-\w]+)/$', show_single_report_map, name='webmap.single_report'),
     url(r'^stats/$', show_usage, name='show_usage'),
     url(r'^stats/workload/$', workload_stats, name='workload_stats'),
+    url(r'^stats/workload/(?P<country_id>\w+)/$', workload_stats, name='workload_stats'),
     url(r'^stats/report_stats_ccaa/$', report_stats_ccaa, name='report_stats_ccaa'),
     url(r'^stats/report_stats_ccaa_pie/$', report_stats_ccaa_pie, name='report_stats_ccaa_pie'),
     url(r'^stats/report_stats_ccaa_pie_sites/$', report_stats_ccaa_pie_sites, name='report_stats_ccaa_pie_sites'),
@@ -80,6 +82,9 @@ urlpatterns += i18n_patterns('',
     url(r'^stats/site_sunburst/$', site_sunburst, name='site_sunburst'),
     url(r'^stats/hashtag_map/$', hashtag_map, name='hashtag_map'),
     url(r'^stats/directory/$', stats_directory, name='stats_directory'),
+    url(r'^stats/user_score/(?P<user_uuid>[\w{}.-]{36})$', stats_user_score, name='stats_user_score'),
+    url(r'^stats/user_ranking/(?P<page>[0-9]+)$', stats_user_ranking, name='stats_user_ranking'),
+    url(r'^stats/user_ranking/(?P<page>[0-9]+)/(?P<user_uuid>[\w{}.-]{36})$', stats_user_ranking, name='stats_user_ranking'),
     #url(r'^reportstats/$', show_report_users),
     #url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
     #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),
@@ -89,6 +94,7 @@ urlpatterns += i18n_patterns('',
     #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
 
     url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
+    url(r'^entolab_license_agreement/$', entolab_license_agreement, name='entolab_license_agreement'),
     url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
     url(r'^experts/status/reports/single/(?P<version_uuid>[-\w]+)/$', single_report_view, name='single_report_view'),
     url(r'^experts/status/people/$', expert_status, name='expert_status'),
@@ -115,5 +121,6 @@ urlpatterns += i18n_patterns('',
     url(r'^messages/trash/$', trash, name='messages_trash'),
     url(r'^messages/compose_w_data/$', compose_w_data, name='compose_w_data'),
     url(r'^messages/reply/(?P<message_id>[\d]+)/$', reply_w_data, name='messages_reply'),
+    url(r'^jsi18n/$', javascript_catalog, name='javascript-catalog'),
     url('metadataPhotoInfo', metadataPhoto, name='metadataPhotoInfo'),
 )

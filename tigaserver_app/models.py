@@ -15,15 +15,117 @@ from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES
+from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES, Categories
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 import logging
+import tigacrafting.html_utils as html_utils
+import pydenticon
+import os.path
+import tigaserver_project.settings as conf
+from django.conf import settings
+import pytz
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from slugify import slugify
+from django.utils import translation
+from django.template.loader import render_to_string
+from tigacrafting.messaging import send_message_android,send_message_ios
+from django.utils import translation
+from django.utils.translation import ugettext
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
+
+
+ACHIEVEMENT_10_REPORTS = 'achievement_10_reports'
+ACHIEVEMENT_20_REPORTS = 'achievement_20_reports'
+ACHIEVEMENT_50_REPORTS = 'achievement_50_reports'
+DAILY_PARTICIPATION = 'daily_participation'
+START_OF_SEASON = 'start_of_season'
+FIDELITY_DAY_2 = 'fidelity_day_2'
+FIDELITY_DAY_3 = 'fidelity_day_3'
+ACHIEVEMENT_10_REPORTS_XP = 10
+ACHIEVEMENT_20_REPORTS_XP = 20
+ACHIEVEMENT_50_REPORTS_XP = 50
+
+
+def grant_10_reports_achievement( report, granter ):
+    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP )
+
+
+def grant_20_reports_achievement( report, granter ):
+    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+
+
+def grant_50_reports_achievement( report, granter ):
+    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
+
+
+def grant_first_of_season( report, granter ):
+    c = AwardCategory.objects.get(category_label=START_OF_SEASON)
+    grant_award( report, report.creation_time, report.user, granter, c )
+
+
+def grant_first_of_day( report, granter ):
+    c = AwardCategory.objects.get(category_label=DAILY_PARTICIPATION)
+    grant_award( report, report.creation_time, report.user, granter, c )
+
+
+def grant_two_consecutive_days_sending( report, granter ):
+    c = AwardCategory.objects.get(category_label=FIDELITY_DAY_2)
+    grant_award( report, report.creation_time, report.user, granter, c )
+
+
+def grant_three_consecutive_days_sending(report, granter):
+        c = AwardCategory.objects.get(category_label=FIDELITY_DAY_3)
+        grant_award(report, report.creation_time, report.user, granter, c)
+
+def get_xp_value_of_category(category_label):
+    c = AwardCategory.objects.get(category_label=category_label)
+    return c.xp_points
+
+def grant_special_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, special_award_label, special_award_xp):
+    '''
+    :param for_report: Optional
+    :param awarded_on_date: Mandatory
+    :param awarded_to_tigauser: Mandatory
+    :param awarded_by_expert: Mandatory
+    :param special_award_label: Mandatory
+    :param special_award_xp: Mandatory
+    :return:
+    '''
+    a = Award()
+    a.report = for_report
+    a.date_given = awarded_on_date
+    a.given_to = awarded_to_tigauser
+    if awarded_by_expert is not None:
+        a.expert = awarded_by_expert
+    a.special_award_text = special_award_label
+    a.special_award_xp = special_award_xp
+    a.save()
+
+def grant_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, award_category):
+    '''
+
+    :param for_report: Report for which the award is given
+    :param awarded_on_date: Date on which the award was granted (usually same as report_creation)
+    :param awarded_to_tigauser: User to which it was awarded (usually report owner)
+    :param awarded_by_expert: Expert which awarded the report
+    :param award_category: Category of the award
+    :return:
+    '''
+    a = Award()
+    a.report = for_report
+    a.date_given = awarded_on_date
+    a.given_to = awarded_to_tigauser
+    if awarded_by_expert is not None:
+        a.expert = awarded_by_expert
+    if award_category is not None:
+        a.category = award_category
+    a.save()
 
 class TigaProfile(models.Model):
     firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
@@ -43,6 +145,14 @@ class TigaUser(models.Model):
 
     score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
 
+    score_v2 = models.IntegerField(help_text='Global XP Score. This field is updated whenever the user asks for the score, and is only stored here. The content must equal score_v2_adult + score_v2_bite + score_v2_site', default=0)
+
+    score_v2_adult = models.IntegerField(help_text='Adult reports XP Score.', default=0)
+
+    score_v2_bite = models.IntegerField(help_text='Bite reports XP Score.', default=0)
+
+    score_v2_site = models.IntegerField(help_text='Site reports XP Score.',default=0)
+
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True)
 
     def __unicode__(self):
@@ -53,6 +163,16 @@ class TigaUser(models.Model):
 
     def is_ios(self):
         return self.user_UUID.isupper()
+
+    def get_identicon(self):
+        file_path = settings.MEDIA_ROOT + "/identicons/" + self.user_UUID + ".png"
+        if not os.path.exists(file_path):
+            generator = pydenticon.Generator(5, 5, foreground=settings.IDENTICON_FOREGROUNDS)
+            identicon_png = generator.generate(self.user_UUID, 200, 200, output_format="png")
+            f = open(file_path, "w")
+            f.write(identicon_png)
+            f.close()
+        return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"
 
     n_reports = property(number_of_reports_uploaded)
     ios_user = property(is_ios)
@@ -192,6 +312,9 @@ class EuropeCountry(models.Model):
         managed = True
         db_table = 'europe_countries'
 
+    def __unicode__(self):
+        return self.name_engl
+
 
 class Report(models.Model):
     version_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
@@ -323,10 +446,18 @@ class Report(models.Model):
                 # K nearest neighbours,
                 # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
                 cursor.execute("""
+                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d, name_engl, gid
+                    FROM europe_countries
+                    ORDER BY d limit 1
+                """, ( self.point.x, self.point.y, ) )
+                # Changed this because some odd behaviour which messed the ordering (0 appeared lower than other distances)
+                '''
+                cursor.execute("""
                     SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d,name_engl,gid
                     FROM europe_countries
                     ORDER BY geom <-> 'SRID=4326;POINT(%s %s)'::geometry limit 1
                 """, ( self.point.x, self.point.y, self.point.x, self.point.y, ) )
+                '''
                 row = cursor.fetchone()
                 if row[0] < 0.1:
                     c = EuropeCountry.objects.get(pk=row[2])
@@ -365,6 +496,9 @@ class Report(models.Model):
             return self.selected_location_lon
         else:
             return self.current_location_lon
+
+    def has_location(self):
+        return self.get_lat() is not None and self.get_lon() is not None
 
     def get_tigaprob(self):
         these_responses = self.responses.only('answer').values('answer').iterator()
@@ -511,6 +645,9 @@ class Report(models.Model):
         else:
             return None
 
+    def get_n_visible_photos(self):
+        return Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True).count()
+
     def get_n_photos(self):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
         return len(these_photos)
@@ -525,13 +662,8 @@ class Report(models.Model):
     def get_photo_html_for_report_validation(self):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         result = ''
-
         for photo in these_photos:
-            result += '<div id="div_for_photo_to_display_report_' + str(
-                self.version_UUID) + '"><input type="radio" name="photo_to_display_report_' + str(
-                self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(
-                photo.id) + '"/>Display this photo on public map:</div><br><div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div><br>'
-
+            result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '"><input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:</div><br><div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div><br>'
         return result
 
     def get_photo_html_for_report_validation_superexpert(self):
@@ -540,13 +672,16 @@ class Report(models.Model):
 
         for photo in these_photos:
             result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
-                    '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:</div>' \
-                     '<br>' \
-                    '<div style="border: 1px solid #333333;margin:1px;position: relative;">' + photo.medium_image_for_validation_() + '' \
-                   '<a class="btn btn-default infoPhoto bottom-right" value="' + str(self.version_UUID) + '__' + str(photo.id) + '">' \
-                        '<i aria-hidden="true" title="Image EXIF metadata" class="glyphicon glyphicon-info-sign"></i>' \
-                    '</a>' \
-                    '</div><br>'
+                                                                                             '<input type="radio" name="photo_to_display_report_' + str(
+                self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(
+                photo.id) + '"/>Display this photo on public map:</div>' \
+                            '<br>' \
+                            '<div style="border: 1px solid #333333;margin:1px;position: relative;">' + photo.medium_image_for_validation_() + '' \
+                                                                                                                                              '<a class="btn btn-default infoPhoto bottom-right" value="' + str(
+                self.version_UUID) + '__' + str(photo.id) + '">' \
+                                                            '<i aria-hidden="true" title="Image EXIF metadata" class="glyphicon glyphicon-info-sign"></i>' \
+                                                            '</a>' \
+                                                            '</div><br>'
 
         return result
 
@@ -605,6 +740,13 @@ class Report(models.Model):
         else:
             return max(scores)
 
+    def get_report_language(self):
+        app_language = self.app_language
+        if app_language is not None and app_language != '':
+            trans_info = translation.get_language_info(app_language)
+            return trans_info['name']
+        return 'English'
+
     def get_is_crowd_validated(self):
         if self.get_crowdcrafting_score():
             return self.get_crowdcrafting_score() > settings.CROWD_VALIDATION_CUTOFF
@@ -634,6 +776,53 @@ class Report(models.Model):
                 return (not self.photos.all().exists()) or ((ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists()) and self.get_final_expert_status() == 1)
             else:
                 return self.cached_visible == 1
+
+    def get_movelab_annotation_euro(self):
+        expert_validated = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True)
+        if self.creation_time.year == 2014 and not expert_validated:
+            if self.type == 'adult':
+                max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
+                if max_movelab_annotation is not None:
+                    return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category,
+                            'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat,
+                            'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses,
+                            'edited_user_notes': max_movelab_annotation.edited_user_notes,
+                            'photo_html': max_movelab_annotation.task.photo.popup_image()}
+        else:
+            if expert_validated:
+                result = {'edited_user_notes': self.get_final_public_note()}
+                if self.get_final_photo_html():
+                    result['photo_html'] = self.get_final_photo_html().popup_image()
+                if self.type == 'adult':
+                    classification = self.get_final_combined_expert_category_euro_struct()
+                    if classification['conflict'] is True:
+                        result['class_name'] = 'Conflict'
+                        result['class_label'] = 'conflict'
+                    else:
+                        if classification['category'] is not None:
+                            result['class_name'] = classification['category'].name
+                            result['class_label'] = slugify(classification['category'].name)
+                            result['class_id'] = classification['category'].id
+                            result['class_value'] = classification['value']
+                        elif classification['complex'] is not None:
+                            result['class_name'] = classification['complex'].description
+                            result['class_label'] = slugify(classification['category'].description)
+                            result['class_id'] = classification['category'].id
+                            result['class_value'] = classification['value']
+                    '''
+                    retval = {
+                        'category': None,
+                        'complex': None,
+                        'value': None,
+                        'conflict': False
+                    }
+                    '''
+                elif self.type == 'site':
+                    result['class_name'] = "site"
+                    result['class_label'] = "site"
+                    result['site_certainty_category'] = self.get_final_expert_score()
+                return result
+        return None
 
     # note that I am making this really get movelab or expert annotation,
     # but keeping name for now to avoid refactoring templates
@@ -1014,6 +1203,183 @@ class Report(models.Model):
             elif score == -1 or score == -2:
                 return labels[locale]['other']
 
+
+    def get_most_voted_category(self, expert_annotations):
+        most_frequent_item, most_frequent_count = None, 0
+        n_blanks = 0
+        blank_category = None
+        score_table = {}
+        for anno in expert_annotations:
+            item = anno.category if anno.complex is None else anno.complex
+            if item.__class__.__name__ == 'Categories' and item.id == 9:
+                blank_category = item
+                n_blanks += 1
+                pass
+            else:
+                score_table[item] = score_table.get(item,0) + 1
+                if score_table[item] >= most_frequent_count:
+                    most_frequent_count, most_frequent_item = score_table[item], item
+        if n_blanks == len(expert_annotations):
+            return blank_category
+        else:
+            for key in score_table:
+                score = score_table[key]
+                if key != most_frequent_item and score >= most_frequent_count:
+                    return None  # conflict
+        return most_frequent_item
+
+    '''
+    def get_most_voted_category(self,expert_annotations):
+        score_table = {}
+        most_frequent_item, most_frequent_count = None, 0
+        for anno in expert_annotations:                            
+            item = anno.category if anno.complex is None else anno.complex
+            score_table[item] = score_table.get(item,0) + 1
+            if score_table[item] >= most_frequent_count:
+                most_frequent_count, most_frequent_item = score_table[item], item
+        # if there's a single key and it's Not sure, then not sure
+        if len(score_table.keys()) == 1:
+            for key in score_table:
+                if key.id == 9:
+                    return score_table[key]
+        # check for ties
+        for key in score_table:            
+            score = score_table[key]
+            if key != most_frequent_item and score >= most_frequent_count:
+                return None #conflict
+        return most_frequent_item
+    '''
+
+    def get_score_for_category_or_complex(self, category):
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category=category)
+        mean_score = -1
+        if superexpert_annotations.count() > 0:
+            cumulative_score = 0
+            for ano in superexpert_annotations:
+                cumulative_score += ano.validation_value
+            mean_score = cumulative_score/float(superexpert_annotations.count())
+        else:
+            cumulative_score = 0
+            for ano in expert_annotations:
+                cumulative_score += ano.validation_value
+            mean_score = cumulative_score / float(expert_annotations.count())
+        if mean_score > 1.5:
+            return 2
+        else:
+            return 1
+        #return mean_score
+
+
+    def get_html_color_for_label(self):
+        label = self.get_final_combined_expert_category_euro()
+        return html_utils.get_html_color_for_label(label)
+
+    def get_selector_data(self):
+        retVal = {
+            'id_category' : '',
+            'id_complex' : '',
+            'validation_value': ''
+        }
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True,category__isnull=False)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category__isnull=False)
+
+        most_voted = None
+        if superexpert_annotations.count() > 1:
+            most_voted = self.get_most_voted_category(superexpert_annotations)
+        elif superexpert_annotations.count() == 1:
+            most_voted = superexpert_annotations[0].category
+        elif expert_annotations.count() >= 3:
+            most_voted = self.get_most_voted_category(expert_annotations)
+        else:
+            retVal['id_category'] = None
+
+        if most_voted is None:
+            retVal['id_category'] = -1
+        else:
+            retVal['id_category'] = most_voted.id
+            if most_voted.__class__.__name__ == 'Categories':
+                if most_voted.specify_certainty_level == True:
+                    score = self.get_score_for_category_or_complex(most_voted)
+                    retVal['validation_value'] = score
+            elif most_voted.__class__.__name__ == 'Complex':
+                retVal['id_complex'] = most_voted.id
+        return retVal
+
+    # if superexpert has opinion then
+    #   if more than 1 superexpert has opinion then
+    #       consensuate superexpert opinion
+    #       return consensuate opinion
+    #   else just one expert has opinion then
+    #       return superexpert opinion
+    # else, check if more than 3 experts said something then
+    #   if at least 3 experts have opinion then
+    #       consensuate expert opinion
+    #       return consensuate opinion
+    #   else not yet validated
+    #       return not yet validated
+    # else no one has opinion then
+    #   return not yet validated
+    def get_final_combined_expert_category_euro(self):
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True,revise=True, category__isnull=False)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, category__isnull=False)
+        most_voted = None
+        if superexpert_annotations.count() > 1:
+            most_voted = self.get_most_voted_category(superexpert_annotations)
+        elif superexpert_annotations.count() == 1:
+            most_voted = superexpert_annotations[0].category
+        elif expert_annotations.count() >= 3:
+            most_voted = self.get_most_voted_category(expert_annotations)
+        else:
+            return "Unclassified"
+        if most_voted is None:
+            return "Conflict"
+        else:
+            if most_voted.__class__.__name__ == 'Categories':
+                if most_voted.specify_certainty_level == True:
+                    score = self.get_score_for_category_or_complex(most_voted)
+                    if score == 2:
+                        return "Definitely " + most_voted.name
+                    else:
+                        return "Probably " + most_voted.name
+                else:
+                    return most_voted.name
+            elif most_voted.__class__.__name__ == 'Complex':
+                return most_voted.description
+
+    def get_final_combined_expert_category_euro_struct(self):
+        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category__isnull=False)
+        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, category__isnull=False)
+        retval = {
+            'category' : None,
+            'complex': None,
+            'value': None,
+            'conflict': False,
+            'in_progress': False
+        }
+        most_voted = None
+        if superexpert_annotations.count() > 1:
+            most_voted = self.get_most_voted_category(superexpert_annotations)
+        elif superexpert_annotations.count() == 1:
+            most_voted = superexpert_annotations[0].category
+        elif expert_annotations.count() >= 3:
+            most_voted = self.get_most_voted_category(expert_annotations)
+        else:
+            most_voted = Categories.objects.get(name='Unclassified')
+            retval['in_progress'] = True
+
+        if most_voted is None:
+            retval['conflict'] = True
+        else:
+            if most_voted.__class__.__name__ == 'Categories':
+                retval['category'] = most_voted
+                if most_voted.specify_certainty_level == True:
+                    score = self.get_score_for_category_or_complex(most_voted)
+                    retval['value'] = score
+            elif most_voted.__class__.__name__ == 'Complex':
+                retval['complex'] = most_voted
+        return retval
+
     def get_final_combined_expert_category(self):
         # if self.type == 'site':
         #      return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
@@ -1032,7 +1398,6 @@ class Report(models.Model):
                 return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[score]
             else:
                 return "Conflict"
-
 
     def get_mean_combined_expert_adult_score(self):
         status = self.get_mean_expert_adult_classification_data()
@@ -1186,6 +1551,18 @@ class Report(models.Model):
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
 
+    def get_final_combined_expert_score_euro(self):
+        score = -3
+        if self.type == 'site':
+            score = self.get_mean_expert_site_score()
+        elif self.type == 'adult':
+            classification = self.get_mean_combined_expert_adult_score_euro()
+            score = classification['score']
+        if score is not None:
+            return int(round(score))
+        else:
+            return -3
+
     def get_final_combined_expert_score(self):
         score = -3
         if self.type == 'site':
@@ -1193,7 +1570,6 @@ class Report(models.Model):
         elif self.type == 'adult':
             classification = self.get_mean_combined_expert_adult_score()
             score = classification['score']
-            #score = self.get_mean_combined_expert_adult_score()
         if score is not None:
             return int(round(score))
         else:
@@ -1444,6 +1820,13 @@ class Report(models.Model):
                         return Photo.objects.get(pk=winning_photo_id).get_medium_url()
             return None
 
+    def get_first_visible_photo(self):
+        photos = Photo.objects.filter(report=self)
+        for photo in photos:
+            if not photo.hide:
+                return photo
+        return None
+
     def get_final_photo_html(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
             super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
@@ -1509,6 +1892,14 @@ class Report(models.Model):
         else:
             return ''
 
+    def can_be_first_of_season(self, year):
+        utc = pytz.UTC
+        # naive datetime
+        d = datetime(year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY)
+        # localized datetime
+        ld = utc.localize(d)
+        return self.creation_time >= ld
+
     # save is overriden to initialize the point spatial field with the coordinates supplied
     # to the Report object. See method get_point
     def save(self, *args, **kwargs):
@@ -1521,6 +1912,7 @@ class Report(models.Model):
             else:
                 logger_report_geolocation.debug('report with id {0} assigned to country {1} with code {2}'.format(self.version_UUID,c.name_engl,c.iso3_code,))
             self.country = c
+
         super(Report, self).save(*args, **kwargs)
 
     lon = property(get_lon)
@@ -1540,8 +1932,9 @@ class Report(models.Model):
     masked_lat = property(get_masked_lat)
     masked_lon = property(get_masked_lon)
     n_photos = property(get_n_photos)
+    n_visible_photos = property(get_n_visible_photos)
     photo_html = property(get_photo_html)
-    photo_html_for_report_validation = property(get_photo_html_for_report_validation)
+    photo_html_for_report_validation= property(get_photo_html_for_report_validation)
     photo_html_for_report_validation_superexpert = property(get_photo_html_for_report_validation_superexpert)
     formatted_date = property(get_formatted_date)
     response_html = property(get_response_html)
@@ -1551,6 +1944,7 @@ class Report(models.Model):
     latest_version = property(get_is_latest)
     visible = property(show_on_map)
     movelab_annotation = property(get_movelab_annotation)
+    movelab_annotation_euro = property(get_movelab_annotation_euro)
     simplified_annotation = property(get_simplified_adult_movelab_annotation)
     movelab_score = property(get_movelab_score)
     crowd_score = property(get_crowd_score)
@@ -1566,9 +1960,147 @@ class Report(models.Model):
     final_expert_status_text = property(get_final_expert_status)
     is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
     country_label = property(get_country_label)
+    language = property(get_report_language)
+    located = property(has_location)
+    is_spain_p = property(is_spain)
 
     class Meta:
         unique_together = ("user", "version_UUID")
+
+
+def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
+    day_before = r2_date_most_recent - timedelta(days=1)
+    week_less_recent = r1_date_less_recent.isocalendar()[1]
+    week_most_recent = r2_date_most_recent.isocalendar()[1]
+    return day_before.year == r1_date_less_recent.year and day_before.month == r1_date_less_recent.month and day_before.day == r1_date_less_recent.day and week_less_recent == week_most_recent
+
+
+def get_user_reports_count(user):
+    user_uuids = []
+    if user.profile:
+        ps = user.profile.profile_devices.all()
+        for p in ps:
+            user_uuids.append(p.user_UUID)
+    else:
+        user_uuids.append(user.user_UUID)
+    reports = Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type='bite')
+    last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
+    return len(last_versions)
+
+def get_translation_in(string, locale):
+    translation.activate(locale)
+    val = ugettext(string)
+    translation.deactivate()
+    return val
+
+def issue_notification(report, reason_label, xp_amount, current_domain):
+    if getattr( conf, 'DISABLE_ACHIEVEMENT_NOTIFICATIONS', True) == False:
+        notification_content = NotificationContent()
+        context_es = {}
+        context_ca = {}
+        context_en = {}
+        super_movelab = User.objects.get(pk=24)
+        notification_content.title_es = "Acabas de recibir una recompensa de XP!"
+        notification_content.title_ca = "Acabes de rebre una recompensa d'XP!"
+        notification_content.title_en = "You just received an XP award!"
+        if report is not None and report.get_final_photo_url_for_notification():
+            context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+            context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+            context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+
+        context_es['amount_awarded'] = xp_amount
+        context_en['amount_awarded'] = xp_amount
+        context_ca['amount_awarded'] = xp_amount
+
+        context_es['reason_awarded'] = get_translation_in(reason_label,'es')
+        context_en['reason_awarded'] = get_translation_in(reason_label,'en')
+        context_ca['reason_awarded'] = get_translation_in(reason_label,'ca')
+
+        notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
+        notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
+        notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
+        '''
+        if conf.DEBUG == True:
+            print(notification_content.body_html_es)
+            print(notification_content.body_html_ca)
+            print(notification_content.body_html_en)
+        '''
+        notification_content.save()
+        notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
+        notification.save()
+        recipient = report.user
+        if recipient.device_token is not None and recipient.device_token != '':
+            if (recipient.user_UUID.islower()):
+                try:
+                    #print(recipient.user_UUID)
+                    send_message_android(recipient.device_token, notification_content.title_es, '')
+                except Exception as e:
+                    pass
+            else:
+                try:
+                    #print(recipient.user_UUID)
+                    send_message_ios(recipient.device_token, notification_content.title_es, '')
+                except Exception as e:
+                    pass
+
+@receiver(post_save, sender=Report)
+def maybe_give_awards(sender, instance, created, **kwargs):
+    #only for adults and sites
+    if created:
+        super_movelab = User.objects.get(pk=24)
+        n_reports = get_user_reports_count(instance.user)
+        if n_reports == 10:
+            grant_10_reports_achievement(instance, super_movelab)
+            issue_notification(instance, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, conf.HOST_NAME)
+        if n_reports == 20:
+            grant_20_reports_achievement(instance, super_movelab)
+            issue_notification(instance, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, conf.HOST_NAME)
+        if n_reports == 50:
+            grant_50_reports_achievement(instance, super_movelab)
+            issue_notification(instance, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP, conf.HOST_NAME)
+        if instance.type == 'adult' or instance.type == 'site':
+            # check award for first of season
+            current_year = instance.creation_time.year
+            awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
+            if awards.count() == 0:  # not yet awarded
+                if instance.can_be_first_of_season(current_year):  # can be first of season?
+                    grant_first_of_season(instance, super_movelab)
+                    issue_notification(instance, START_OF_SEASON, get_xp_value_of_category(START_OF_SEASON), conf.HOST_NAME)
+            else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
+                if instance.latest_version: #this report is the last version
+                    version_of_previous = instance.version_number - 1
+                    if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
+                        #if yes, transfer award to current version
+                        award = awards.filter(report__version_number=version_of_previous).first()
+                        award.report = instance
+                        award.save()
+
+            report_day = instance.creation_time.day
+            report_month = instance.creation_time.month
+            report_year = instance.creation_time.year
+            awards = Award.objects\
+                .filter(report__creation_time__year=report_year)\
+                .filter(report__creation_time__month=report_month)\
+                .filter(report__creation_time__day=report_day) \
+                .filter(report__user=instance.user) \
+                .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
+            if awards.count() == 0: # not yet awarded
+                grant_first_of_day(instance, super_movelab)
+                issue_notification(instance, DAILY_PARTICIPATION, get_xp_value_of_category(DAILY_PARTICIPATION), conf.HOST_NAME)
+
+            date_1_day_before_report = instance.creation_time - timedelta(days=1)
+            date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
+            report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
+            if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
+                #report before this one has not been awarded neither 2nd nor 3rd day streak
+                if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
+                    grant_two_consecutive_days_sending(instance, super_movelab)
+                    issue_notification(instance, FIDELITY_DAY_2, get_xp_value_of_category(FIDELITY_DAY_2), conf.HOST_NAME)
+                else:
+                    if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
+                        grant_three_consecutive_days_sending(instance, super_movelab)
+                        issue_notification(instance, FIDELITY_DAY_3, get_xp_value_of_category(FIDELITY_DAY_3), conf.HOST_NAME)
+
 
 
 class ReportResponse(models.Model):
@@ -1824,3 +2356,25 @@ class Notification(models.Model):
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
     acknowledged = models.BooleanField(default=False,help_text='This is set to True through the public API, when the user signals that the message has been received')
     public = models.BooleanField(default=False,help_text='Whether the notification is shown in the public map or not')
+
+
+class AwardCategory(models.Model):
+    category_label = models.TextField(help_text='Coded label for the translated version of the award. For instance award_good_picture. This code refers to strings in several languages')
+    xp_points = models.IntegerField(help_text='Number of xp points associated to this kind of award')
+    category_long_description = models.TextField(default=None, blank=True, null=True, help_text='Long description specifying conditions in which the award should be conceded')
+
+
+class Award(models.Model):
+    report = models.ForeignKey('tigaserver_app.Report', default=None, blank=True, null=True, related_name='report_award', help_text='Report which the award refers to. Can be blank for arbitrary awards')
+    date_given = models.DateTimeField(default=datetime.now(), help_text='Date in which the award was given')
+    given_to = models.ForeignKey(TigaUser, blank=True, null=True, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards')
+    expert = models.ForeignKey(User, blank=True, related_name="expert_awards", help_text='Expert that gave the award')
+    category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards')
+    special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
+    special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')
+
+    def __unicode__(self):
+        if self.category:
+            return str(self.category.category_label)
+        else:
+            return self.special_award_text

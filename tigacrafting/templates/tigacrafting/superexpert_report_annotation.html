@@ -10,7 +10,7 @@
 
     {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
     <strong>Ordered by:</strong> {{ orderby }}<br>
-    <strong>Filters:</strong> Tiger certainty - {{ tiger_certainty }}, Site certainty - {{ site_certainty }}, Status - {{ status }}
+    <strong>Filters:</strong> Species classification - {{ tiger_certainty_label }}, Status - {{ status }}
     {% endif %}
 {% endblock %}
 
@@ -99,10 +99,19 @@
 {% block navbar_right_items %}
 <li class="dropdown">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Monitor <span class="caret"></span></a>
-    <ul class="dropdown-menu" role="menu">
+    <ul class="dropdown-menu" role="menu" style="width: 280px">
         <li><a href="{% url 'expert_report_status' %}">Reports</a></li>
         <li><a href="{% url 'expert_status' %}">People</a></li>
-        <li><a href="{% url 'workload_stats' %}">Workload Stats</a></li>
+        <li>
+            <a href="{% url 'workload_stats' %}">Workload Stats</a>
+        </li>
+
+        {% for t in country_name %}
+            <li>
+                <a href="/stats/workload/{{ t.iso3_code }}/">Workload stats {{ t.name_engl }}</a>
+            </li>
+        {% endfor %}
+
     </ul>
 </li>
 {% endblock %}
@@ -118,7 +127,9 @@
             {{ form.instance.report.get_final_expert_status_bootstrap | safe }}
             <!--<strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}
             <strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score_aegypti text=form.instance.report.get_final_expert_category_aegypti %}-->
-            <strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_combined_expert_score text=form.instance.report.get_final_combined_expert_category %}
+            <!-- %EURO_SWITCH% -->
+            <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=form.instance.report.get_final_combined_expert_category_euro color=form.instance.report.get_html_color_for_label %}
+            <!-- <strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_combined_expert_score text=form.instance.report.get_final_combined_expert_category %} -->
             <!--<strong>Current Status:</strong>  {% include "tigacrafting/score_label.html" with score=form.instance.report.get_final_expert_score text=form.instance.report.get_final_expert_category %}-->
 
             <div class="collapse" id="current_status_collapse{{ form.instance.id }}">
@@ -185,7 +196,9 @@
                                    aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i
                                     class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
                             </td>
-                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
+                            <!-- %EURO_SWITCH% -->
+                            <!--<td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>-->
+                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}</td>
                         </tr>
                         <tr>
                             <td colspan="12" class="hiddenRow">
@@ -367,6 +380,8 @@
         loc_all_btn.on('click', {extr: 'na'}, submit_queries_loc);
         loc_spain_btn.on('click', {extr: 'spain'}, submit_queries_loc);
         loc_europe_btn.on('click', {extr: 'europe'}, submit_queries_loc);
+
+        var country_name = "{{ country_name | safe }}";
 
     </script>
 

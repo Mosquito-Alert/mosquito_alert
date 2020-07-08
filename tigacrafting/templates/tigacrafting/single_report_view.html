@@ -262,14 +262,16 @@
                                                         {% endif %}
                                                     </td>
                                                     <td>
+                                                        <!-- $EURO_SWITCH -->
+                                                        <!-- {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %} -->
                                                         {% if ano.user.userstat.is_superexpert %}
                                                             {% if ano.revise == False and ano.validation_complete == True %}
-                                                                {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=report.get_final_combined_expert_score text=report.get_final_combined_expert_category %}
+                                                                {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
                                                             {% else %}
-                                                                {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}
+                                                                {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}
                                                             {% endif %}
                                                         {% else %}
-                                                        {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}
+                                                        {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}
                                                         {% endif %}
                                                     </td>
                                                 </tr>

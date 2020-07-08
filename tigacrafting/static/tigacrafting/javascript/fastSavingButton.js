@@ -5,9 +5,7 @@ var save_button = $("#save_button").click(function () {
         if ($(this).prop("checked")) {
             ref.push($(this).parent().attr('id'));
         }
-
     });
-
 
     if(ref.length>0){
         $("#dialogConfirmUpPhoto").dialog({

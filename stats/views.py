@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.core.urlresolvers import reverse
 from django.db import connection
 from tigaserver_app.models import *
+from tigacrafting.models import UserStat
 from datetime import date, timedelta, datetime
 import time
 import pytz
@@ -9,9 +11,9 @@ from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
@@ -19,7 +21,18 @@ import json
 from sets import Set
 import datetime
 from django.utils import timezone
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from rest_framework.exceptions import ParseError
+from django.core.paginator import Paginator
+import math
+from django.utils import translation
+
 from tigapublic.models import MapAuxReports
+
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from rest_framework.exceptions import ParseError
+from django.core.paginator import Paginator
+import math
 
 
 @xframe_options_exempt
@@ -75,7 +88,7 @@ def workload_stats_per_user(request):
         user_slug = request.QUERY_PARAMS.get('user_slug', -1)
         tz = get_localzone()
         queryset = User.objects.all()
-        user = get_object_or_404(queryset,username=user_slug)
+        user = get_object_or_404(queryset, username=user_slug)
         single_user_work_output = []
         annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
         ref_date = datetime.datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
@@ -597,6 +610,69 @@ def report_stats_ccaa_pie(request):
     return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie.html')
 
 
+def stats_user_score(request, user_uuid=None):
+    user_score = compute_user_score_in_xp_v2(user_uuid,update=True)
+    context = { "score_data": user_score }
+    return render(request, 'stats/user_score.html', context)
+
+
+def get_index_of_uuid(objects, user_uuid):
+    index = 0
+    for user in objects:
+        if user['user_uuid'] == user_uuid:
+            break
+        index += 1
+    return index
+
+def get_page_of_index(index, page_size):
+    index_base_1 = index + 1
+    return int(math.ceil( float(index_base_1) / float(page_size) ))
+
+def stats_user_ranking(request, page=1, user_uuid=None):
+    user = None
+    if user_uuid is not None:
+        try:
+            user = TigaUser.objects.get(pk=user_uuid)
+        except TigaUser.DoesNotExist:
+            pass
+    seek = request.GET.get('seek', 'f')
+    ranking = get_ranking_data()
+    objects = ranking['data']
+    page_length = 5
+    p = Paginator(objects, page_length )
+    if seek == 't':
+        index = get_index_of_uuid(objects,user_uuid)
+        page_of_index = get_page_of_index(index, page_length)
+        current_page = p.page(int(page_of_index))
+        return HttpResponseRedirect(reverse('stats_user_ranking', args=[int(page_of_index),user_uuid]))
+    else:
+        current_page = p.page(int(page))
+        previous = None
+        nextp = None
+        if current_page.has_previous():
+            previous = current_page.previous_page_number()
+        if current_page.has_next():
+            nextp = current_page.next_page_number()
+        objects = current_page.object_list
+        context = {
+                  'data': objects,
+                      'pagination':
+                          {
+                              'page': int(page),
+                              'total': p.num_pages,
+                              'start': current_page.start_index(),
+                              'end': current_page.end_index(),
+                              'total': p.count,
+                              'previous': previous,
+                              'next': nextp,
+                              'first': 1,
+                              'last': p.num_pages
+                          }
+                  }
+        if user is not None:
+            context['user_id'] = user_uuid
+        return render(request, 'stats/user_ranking.html', context)
+
 @login_required
 def report_stats_ccaa(request):
     cursor = connection.cursor()
@@ -631,15 +707,28 @@ def report_stats_ccaa(request):
     context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa), 'years': years}
     return render(request, 'stats/report_stats_ccaa.html', context)
 
+
+@api_view(['GET'])
 @login_required
-def workload_stats(request):
+def workload_stats(request, country_id=None):
     this_user = request.user
     user_id_filter = settings.USERS_IN_STATS
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     if this_user_is_superexpert:
-        users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name','last_name')
-        context = {'users': users, 'load_everything_on_start': True}
-        return render(request, 'stats/workload.html', context)
+        if country_id is None:
+            users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name','last_name')
+            context = {'users': users, 'load_everything_on_start': True, 'country_name': 'Spain'}
+            return render(request, 'stats/workload.html', context)
+        else:
+            user_id_filter = UserStat.objects.filter(native_of__iso3_code=country_id).values('user__id')
+            country_name = 'Unknown country??'
+            try:
+                country_name = EuropeCountry.objects.get(iso3_code=country_id).name_engl
+            except:
+                pass
+            users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name', 'last_name')
+            context = {'users': users, 'load_everything_on_start': True, 'country_name': country_name}
+            return render(request, 'stats/workload.html', context)
     else:
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
@@ -695,6 +784,27 @@ def show_report_users(request):
 def hashtag_map(request):
     context = {}
     return render(request, 'stats/hashtag_map.html', context)
+
+
+@api_view(['GET'])
+@permission_classes([])
+def get_user_xp_data(request):
+    user_id = request.QUERY_PARAMS.get('user_id', '-1')
+    locale = request.QUERY_PARAMS.get('locale', 'en')
+    update = request.QUERY_PARAMS.get('update', False)
+    try:
+        u = TigaUser.objects.get(pk=user_id)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='user does not exist')
+
+    #language = translation.get_language_from_request(request)
+    translation.activate(locale)
+
+    if update == False:
+        retval = compute_user_score_in_xp_v2(user_id)
+    else:
+        retval = compute_user_score_in_xp_v2(user_id, True)
+    return Response(retval)
 
 
 @api_view(['GET'])

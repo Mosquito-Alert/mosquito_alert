@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-26 17:37+0100\n"
+"POT-Creation-Date: 2020-06-10 08:37+0000\n"
 "PO-Revision-Date: 2015-07-16 13:40+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -77,6 +77,112 @@ msgstr "Participants with over 3 reports"
 msgid "Participants with over 4 reports"
 msgstr "Participants with over 4 reports"
 
+#: stats/templates/stats/user_ranking.html:138
+#: stats/templates/stats/user_ranking.html:226
+msgid "My position"
+msgstr "My position"
+
+#: stats/templates/stats/user_ranking.html:142
+#: stats/templates/stats/user_score.html:36
+#: stats/templates/stats/user_score.html:84
+#: stats/templates/stats/user_score.html:140
+msgid "of"
+msgstr ""
+
+#: stats/templates/stats/user_ranking.html:158
+msgid "Rank"
+msgstr "Rank"
+
+#: stats/templates/stats/user_ranking.html:159
+msgid "User"
+msgstr "User"
+
+#: stats/templates/stats/user_ranking.html:160
+msgid "Overall class"
+msgstr "Overall class"
+
+#: stats/templates/stats/user_ranking.html:161
+msgid "Score"
+msgstr "Score"
+
+#: stats/templates/stats/user_score.html:28
+msgid "Citizen Scientist"
+msgstr "Citizen Scientist"
+
+#: stats/templates/stats/user_score.html:31
+msgid "Joined"
+msgstr "Joined"
+
+#: stats/templates/stats/user_score.html:31
+msgid "Last active"
+msgstr "Last active"
+
+#: stats/templates/stats/user_score.html:31
+msgid "Never"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:33
+msgid "Overall rank - Unranked"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:35
+msgid "Overall rank"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:36
+#: stats/templates/stats/user_score.html:84
+#: stats/templates/stats/user_score.html:140
+msgid "Top"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:47
+msgid "Other awards"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:60
+msgid "XP, awarded on"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:79
+msgid "Mosquito"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:81
+msgid "Mosquito rank - Unranked"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:83
+msgid "Mosquito rank"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:112
+#: stats/templates/stats/user_score.html:167
+msgid "xp awarded for"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:117
+msgid "No awards because"
+msgstr "No awards because"
+
+#: stats/templates/stats/user_score.html:120
+#: stats/templates/stats/user_score.html:171
+msgid "No awards for this report!"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:135
+#, fuzzy
+msgid "Breeding site"
+msgstr "Breeding sites"
+
+#: stats/templates/stats/user_score.html:137
+msgid "Breeding site rank - Unranked"
+msgstr ""
+
+#: stats/templates/stats/user_score.html:139
+#, fuzzy
+msgid "Breeding site rank"
+msgstr "Breeding sites: Basins"
+
 #: templates/admin/base_site.html:4
 msgid "Tigaserver admin"
 msgstr "Tigaserver admin"
@@ -84,6 +190,93 @@ msgstr "Tigaserver admin"
 #: templates/admin/base_site.html:7
 msgid "Tigaserver administration"
 msgstr "Tigaserver administration"
+
+#: templates/django_messages/base.html:41
+#: templates/django_messages/inbox.html:6
+msgid "Inbox"
+msgstr ""
+
+#: templates/django_messages/base.html:42
+#: templates/django_messages/outbox.html:6
+msgid "Sent Messages"
+msgstr ""
+
+#: templates/django_messages/base.html:43
+msgid "New Message"
+msgstr ""
+
+#: templates/django_messages/base.html:44
+msgid "Trash"
+msgstr ""
+
+#: templates/django_messages/compose.html:48
+msgid "Compose Message"
+msgstr ""
+
+#: templates/django_messages/compose.html:57
+msgid "Send"
+msgstr ""
+
+#: templates/django_messages/inbox.html:10
+#: templates/django_messages/view.html:13
+msgid "Sender"
+msgstr ""
+
+#: templates/django_messages/inbox.html:10
+#: templates/django_messages/outbox.html:10
+#: templates/django_messages/view.html:9
+msgid "Subject"
+msgstr ""
+
+#: templates/django_messages/inbox.html:10
+msgid "Received"
+msgstr ""
+
+#: templates/django_messages/inbox.html:10
+#: templates/django_messages/outbox.html:10
+msgid "Action"
+msgstr ""
+
+#: templates/django_messages/inbox.html:22
+#: templates/django_messages/outbox.html:19
+#: templates/django_messages/view.html:18
+msgid "DATETIME_FORMAT"
+msgstr ""
+
+#: templates/django_messages/inbox.html:23
+#: templates/django_messages/outbox.html:20
+msgid "delete"
+msgstr ""
+
+#: templates/django_messages/inbox.html:29
+#: templates/django_messages/outbox.html:26
+msgid "No messages."
+msgstr ""
+
+#: templates/django_messages/outbox.html:10
+#: templates/django_messages/view.html:21
+msgid "Recipient"
+msgstr ""
+
+#: templates/django_messages/outbox.html:10
+msgid "Sent"
+msgstr ""
+
+#: templates/django_messages/view.html:6
+msgid "View Message"
+msgstr ""
+
+#: templates/django_messages/view.html:17
+msgid "Date"
+msgstr ""
+
+#: templates/django_messages/view.html:31
+msgid "Reply"
+msgstr ""
+
+#: templates/django_messages/view.html:33
+msgid "Delete"
+msgstr ""
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:88
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:88
@@ -133,6 +326,68 @@ msgstr "User Agreement"
 msgid "privacy-policy"
 msgstr "Privacy Policy"
 
+#: tigamap/views.py:147 tigamap/views.py:317
+msgid "coverage-map"
+msgstr "Coverage Map"
+
+#: tigamap/views.py:155
+msgid "Pseudo Occurrence-Exposure Map"
+msgstr "Pseudo Occurrence-Exposure Map"
+
+#: tigamap/views.py:162
+msgid "Adult tiger mosquitoes: Validated reports"
+msgstr "Adult tiger mosquitoes: Validated reports"
+
+#: tigamap/views.py:171
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Adult tiger mosquitoes: Medium and high probability reports"
+
+#: tigamap/views.py:177
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Adult tiger mosquitoes: High probability reports"
+
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Mosquitoes: All reports"
+
+#: tigamap/views.py:189
+msgid "Breeding Sites: Validated reports"
+msgstr "Breeding Sites: Validated reports"
+
+#: tigamap/views.py:199 tigamap/views.py:289
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Breeding sites: Storm drains and fountains"
+
+#: tigamap/views.py:202 tigamap/views.py:289
+msgid "breeding-sites-basins"
+msgstr "Breeding sites: Basins"
+
+#: tigamap/views.py:205 tigamap/views.py:289
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Breeding sites: Buckets and wells"
+
+#: tigamap/views.py:208 tigamap/views.py:289
+msgid "breeding-sites-other"
+msgstr "Breeding sites: Other"
+
+#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+msgid "breeding-sites-all-reports"
+msgstr "Breeding sites: All repors"
+
+#: tigamap/views.py:261 tigamap/views.py:263
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:171
+msgid "adult-tiger-mosquitoes"
+msgstr "Mosquito reports"
+
+#: tigamap/views.py:261 tigamap/templates/tigamap/app_new.html:177
+msgid "menu_adults_prob"
+msgstr "Possible and confirmed tiger mosquitoes"
+
+#: tigamap/views.py:263 tigamap/templates/tigamap/app_new.html:179
+msgid "menu_adults_definite"
+msgstr "Confirmed tiger mosquitoes"
+
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
@@ -148,12 +403,6 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "and"
 msgstr "and"
-
-#: tigamap/templates/tigamap/app.html:122
-#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:255
-#: tigamap/views.py:257
-msgid "adult-tiger-mosquitoes"
-msgstr "Mosquito reports"
 
 #: tigamap/templates/tigamap/app.html:126
 #: tigamap/templates/tigamap/app_new.html:175
@@ -197,7 +446,7 @@ msgstr "Buckets and wells"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:320
+#: tigaserver_app/models.py:541
 msgid "Other"
 msgstr "Other"
 
@@ -214,7 +463,7 @@ msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 
 #: tigamap/templates/tigamap/app_filtered.html:175
 #: tigamap/templates/tigamap/app_new.html:159
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:722
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:816
 msgid "navbar_toggle_navigation"
 msgstr "Toggle navigation"
 
@@ -222,20 +471,12 @@ msgstr "Toggle navigation"
 #: tigamap/templates/tigamap/app_new.html:203
 #: tigamap/templates/tigamap/coverage_map_new.html:383
 #: tigamap/templates/tigamap/validated_report_map.html:635
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:809
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:919
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1069
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1196
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:903
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1015
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1165
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
-
-#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:255
-msgid "menu_adults_prob"
-msgstr "Possible and confirmed tiger mosquitoes"
-
-#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:257
-msgid "menu_adults_definite"
-msgstr "Confirmed tiger mosquitoes"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 msgid "low"
@@ -250,27 +491,27 @@ msgid "high"
 msgstr "high"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:221
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:605
 msgid "fixes"
 msgstr "fixes"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:223
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:513
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:607
 msgid "fix"
 msgstr "fix"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:336
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:871
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:967
 msgid "coverage_legend_main_title"
 msgstr "Number of observations"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:372
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:908
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1004
 msgid "coverage_legend_info_title"
 msgstr "Coverage Information"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:373
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:909
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
 msgid "coverage_legend_info_blurb"
 msgstr ""
 "<p>The Android version of Tigatrapp includes optional background location "
@@ -282,9 +523,9 @@ msgstr ""
 
 #: tigamap/templates/tigamap/coverage_map_new.html:377
 #: tigamap/templates/tigamap/validated_report_map.html:629
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:913
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1063
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1191
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1009
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1287
 msgid "more_info"
 msgstr "more info"
 
@@ -305,19 +546,19 @@ msgstr "Points"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:312
+#: tigaserver_app/models.py:533
 msgid "storm-drain"
 msgstr "Storm drain"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:314
+#: tigaserver_app/models.py:535
 msgid "Fountain"
 msgstr "Fountain"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:316
+#: tigaserver_app/models.py:537
 msgid "Basin"
 msgstr "Basin"
 
@@ -328,7 +569,7 @@ msgstr "Bucket"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:318
+#: tigaserver_app/models.py:539
 msgid "Well"
 msgstr "Well"
 
@@ -367,152 +608,159 @@ msgstr "no"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:544
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:424
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:950
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1046
 msgid "expert_cat_tiger"
 msgstr "Confirmed albopictus"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:552
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:424
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:966
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1062
 msgid "expert_cat_possible_tiger"
 msgstr "Possible albopictus"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:570
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:424
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:991
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1087
 msgid "expert_cat_possible_other"
 msgstr "Possibly neither albopictus nor aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:579
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:424
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1000
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1096
 msgid "expert_cat_other"
 msgstr "Confirmed neither albopictus nor aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:561
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:424
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:426
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:982
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1114
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1078
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1210
 msgid "expert_cat_unknown"
 msgstr "Unknown"
 
 #: tigamap/templates/tigamap/validated_report_map.html:405
 #: tigamap/templates/tigamap/validated_report_map.html:595
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:433
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1029
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:489
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:502
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
 msgid "expert_row_title"
 msgstr ""
-"Expert validation <a href=\"http://www.mosquitoalert.com/en/map-results/tiger-mosquito-map/\" target=\"_blank\">results</a>"
+"Expert validation <a href=\"http://www.mosquitoalert.com/en/map-results/"
+"tiger-mosquito-map/\" target=\"_blank\">results</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map.html:600
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:441
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1034
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1164
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
 msgid "crowd_row_title"
 msgstr "Citizen validation results"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:441
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
 msgid "crowd_row_more_responses_needed"
 msgstr "More responses needed"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:450
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 msgid "user_response_row_q1"
 msgstr "Small, black, white stripes?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:450
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 msgid "user_response_row_q2"
 msgstr "Stripe on head and thorax?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:450
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 msgid "user_response_row_q3"
 msgstr "Stripes on abdomen and legs?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:535
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:941
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
 msgid "adult_report_legend_main_title"
 msgstr "Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:588
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1022
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1152
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1118
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1248
 msgid "adult_report_legend_info_title"
 msgstr "Popup Legend"
 
 #: tigamap/templates/tigamap/validated_report_map.html:595
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1029
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
 msgid "expert_row_help"
 msgstr "Classification by scientists using available photos"
 
 #: tigamap/templates/tigamap/validated_report_map.html:600
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1034
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1164
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
 msgid "crowd_row_help"
 msgstr ""
 "Classification by volunteers at <a href='http://crowdcrafting.org/app/"
 "Tigafotos/' target='_blank'>Crowdcrafting</a>  (if photo available)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1039
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1169
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
 msgid "report_row_title"
 msgstr ""
-"Taxonomic description <a href=\"http://www.mosquitoalert.com/en/mosquitoes/tiger-mosquito-ae-albopictus/\" target=\"_blank\">Ae. albopictus</a> and <a href=\"http://www.mosquitoalert.com/en/mosquitoes/yellow-fever-mosquito-ae-aegypti/\" target=\"_blank\">Ae. aegypti</a>"
+"Taxonomic description <a href=\"http://www.mosquitoalert.com/en/mosquitoes/"
+"tiger-mosquito-ae-albopictus/\" target=\"_blank\">Ae. albopictus</a> and <a "
+"href=\"http://www.mosquitoalert.com/en/mosquitoes/yellow-fever-mosquito-ae-"
+"aegypti/\" target=\"_blank\">Ae. aegypti</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1039
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1169
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
 msgid "report_row_help"
 msgstr "Observations by participant"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1044
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1174
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
 msgid "photo_row_title"
 msgstr "Photos"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1044
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1174
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
 msgid "photo_row_help"
 msgstr "Sent by participants (if there are photos)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1179
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
 msgid "notes_row_title"
 msgstr "Notes"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1049
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1179
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
 msgid "notes_row_help"
 msgstr "From experts or observers (optional)"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:146
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:794
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
 msgid "validation_button_subtext_adults_high"
 msgstr "Confirmed Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:147
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:797
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
 msgid "validation_button_subtext_adults_medium"
 msgstr "Possible and confirmed Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:148
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:800
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
 msgid "validation_button_subtext_adults_all"
 msgstr "No filter"
 
@@ -528,233 +776,309 @@ msgstr "Possible and confirmed breeding sites"
 msgid "validation_button_subtext_sites_all"
 msgstr "No filter"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:424
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:426
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1009
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1141
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1237
 msgid "expert_cat_unclassified"
 msgstr "Unclassified"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:426
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1097
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
 msgid "expert_cat_site"
 msgstr "Tiger mosquito breeding site"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:426
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
 msgid "expert_cat_possible_site"
 msgstr "Possible tiger mosquito breeding site"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:426
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1123
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
 msgid "expert_cat_possible_other_site"
 msgstr "Probably not tiger mosquito breeding site"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:426
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1132
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
 msgid "expert_cat_other_site"
 msgstr "Not tiger mosquito breeding site"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:460
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:462
-msgid "user_response_row_q_sitetype"
-msgstr "Site type"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:460
-msgid "user_response_row_sites_q1"
-msgstr "Stagnant water?"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:460
-msgid "user_response_row_sites_q2"
-msgstr "Larvae or pupae?"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:462
-msgid "user_response_row_sites_q1_new"
-msgstr "Public area?"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:462
-msgid "user_response_row_sites_q2_new"
-msgstr "Stagnant water and/or larvae or pupae?"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:462
-msgid "user_response_row_sites_q3_new"
-msgstr "Mosquitoes nearby?"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:739
-msgid "fmap_All_years"
-msgstr "All years"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:750
-msgid "fmap_All_months"
-msgstr "All months"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:751
-msgid "January"
-msgstr "January"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:753
-msgid "February"
-msgstr "February"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:755
-msgid "March"
-msgstr "March"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:756
-msgid "April"
-msgstr "April"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:757
-msgid "May"
-msgstr "May"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:758
-msgid "June"
-msgstr "June"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:759
-msgid "July"
-msgstr "July"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:760
-msgid "August"
-msgstr "August"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:761
-msgid "September"
-msgstr "September"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:763
-msgid "October"
-msgstr "October"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:765
-msgid "November"
-msgstr "November"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:767
-msgid "December"
-msgstr "December"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:779
-msgid "fmap_Adult_tiger_mosquitoes"
-msgstr "Adult Ae. albopictus/aegypti"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:779
-msgid "fmap_Adults"
-msgstr "Adults"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:781
-msgid "fmap_Tiger_mosquito_breeding_sites"
-msgstr "Ae. albopictus/aegypti breeding sites"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:781
-msgid "fmap_Breeding_sites"
-msgstr "Breeding sites"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:784
-msgid "fmap_Tigatrapp_coverage"
-msgstr " Sampling effort"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:784
-msgid "fmap_Coverage"
-msgstr "Coverage"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:794
-msgid "validation_button_text_high"
-msgstr "High reliability"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:797
-msgid "validation_button_text_medium"
-msgstr "Medium reliability"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:800
-msgid "validation_button_text_all"
-msgstr "All reports"
-
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:958
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
 msgid "expert_cat_aegypti"
 msgstr "Confirmed aegypti"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:974
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
 msgid "expert_cat_possible_aegypti"
 msgstr "Possible aegypti"
 
-#: tigamap/templates/tigamap/validated_report_map_filterable.html:1088
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_q_sitetype"
+msgstr "Site type"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q1"
+msgstr "Stagnant water?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q2"
+msgstr "Larvae or pupae?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q1_new"
+msgstr "Public area?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q2_new"
+msgstr "Stagnant water and/or larvae or pupae?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q3_new"
+msgstr "Mosquitoes nearby?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:833
+msgid "fmap_All_years"
+msgstr "All years"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:844
+msgid "fmap_All_months"
+msgstr "All months"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:845
+msgid "January"
+msgstr "January"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:847
+msgid "February"
+msgstr "February"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:849
+msgid "March"
+msgstr "March"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:850
+msgid "April"
+msgstr "April"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:851
+msgid "May"
+msgstr "May"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:852
+msgid "June"
+msgstr "June"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:853
+msgid "July"
+msgstr "July"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:854
+msgid "August"
+msgstr "August"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:855
+msgid "September"
+msgstr "September"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:857
+msgid "October"
+msgstr "October"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:859
+msgid "November"
+msgstr "November"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:861
+msgid "December"
+msgstr "December"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adult_tiger_mosquitoes"
+msgstr "Adult Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adults"
+msgstr "Adults"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Tiger_mosquito_breeding_sites"
+msgstr "Ae. albopictus/aegypti breeding sites"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Breeding_sites"
+msgstr "Breeding sites"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Tigatrapp_coverage"
+msgstr " Sampling effort"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Coverage"
+msgstr "Coverage"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_text_high"
+msgstr "High reliability"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_text_medium"
+msgstr "Medium reliability"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_text_all"
+msgstr "All reports"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1184
 msgid "site_report_legend_main_title"
 msgstr "Markers"
 
-#: tigamap/views.py:146 tigamap/views.py:317
-msgid "coverage-map"
-msgstr "Coverage Map"
+#: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
+#: tigascoring/xp_scoring.py:190
+msgid "Novice"
+msgstr ""
 
-#: tigamap/views.py:154
-msgid "Pseudo Occurrence-Exposure Map"
-msgstr "Pseudo Occurrence-Exposure Map"
+#: tigascoring/xp_scoring.py:192
+msgid "Contributor"
+msgstr ""
 
-#: tigamap/views.py:161
-msgid "Adult tiger mosquitoes: Validated reports"
-msgstr "Adult tiger mosquitoes: Validated reports"
+#: tigascoring/xp_scoring.py:194
+msgid "Expert"
+msgstr ""
 
-#: tigamap/views.py:170
-msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
-msgstr "Adult tiger mosquitoes: Medium and high probability reports"
+#: tigascoring/xp_scoring.py:196
+msgid "Master"
+msgstr ""
 
-#: tigamap/views.py:176
-msgid "adult-tiger-mosquitoes-high-probability-reports"
-msgstr "Adult tiger mosquitoes: High probability reports"
+#: tigascoring/xp_scoring.py:198
+msgid "Grandmaster"
+msgstr ""
 
-#: tigamap/views.py:182 tigamap/views.py:213 tigamap/views.py:259
-msgid "adult-tiger-mosquitoes-all-reports"
-msgstr "Mosquitoes: All reports"
+#: tigascoring/xp_scoring.py:217
+msgid "start_of_season"
+msgstr "Start of season"
 
-#: tigamap/views.py:188
-msgid "Breeding Sites: Validated reports"
-msgstr "Breeding Sites: Validated reports"
+#: tigascoring/xp_scoring.py:218
+msgid "daily_participation"
+msgstr "First report of day"
 
-#: tigamap/views.py:198 tigamap/views.py:286
-msgid "breeding-sites-storm-drains-and-fountains"
-msgstr "Breeding sites: Storm drains and fountains"
+#: tigascoring/xp_scoring.py:219
+msgid "fidelity_day_2"
+msgstr "Two consecutive days sending reports"
 
-#: tigamap/views.py:201 tigamap/views.py:286
-msgid "breeding-sites-basins"
-msgstr "Breeding sites: Basins"
+#: tigascoring/xp_scoring.py:220
+msgid "fidelity_day_3"
+msgstr "Three consecutive days sending reports"
 
-#: tigamap/views.py:204 tigamap/views.py:286
-msgid "breeding-sites-buckets-and-wells"
-msgstr "Breeding sites: Buckets and wells"
+#: tigascoring/xp_scoring.py:221
+msgid "achievement_10_reports"
+msgstr "10 uploaded reports"
 
-#: tigamap/views.py:207 tigamap/views.py:286
-msgid "breeding-sites-other"
-msgstr "Breeding sites: Other"
+#: tigascoring/xp_scoring.py:222
+msgid "achievement_20_reports"
+msgstr "20 uploaded reports"
 
-#: tigamap/views.py:210 tigamap/views.py:286 tigamap/views.py:290
-msgid "breeding-sites-all-reports"
-msgstr "Breeding sites: All repors"
+#: tigascoring/xp_scoring.py:223
+msgid "achievement_50_reports"
+msgstr "50 uploaded reports"
 
-#: tigaserver_app/models.py:295
+#: tigascoring/xp_scoring.py:259 tigascoring/xp_scoring.py:302
+msgid "picture"
+msgstr "the picture"
+
+#: tigascoring/xp_scoring.py:263 tigascoring/xp_scoring.py:309
+msgid "location"
+msgstr "geolocated report"
+
+#: tigascoring/xp_scoring.py:267
+msgid "storm_drain"
+msgstr "It's a storm drain"
+
+#: tigascoring/xp_scoring.py:271
+msgid "water_question"
+msgstr "answering the water question in the breeding site report"
+
+#: tigascoring/xp_scoring.py:275
+msgid "mosquito_report_follows_breeding_site"
+msgstr "adding a mosquito report after"
+
+#: tigascoring/xp_scoring.py:305
+msgid "no_picture"
+msgstr "no picture"
+
+#: tigascoring/xp_scoring.py:312
+msgid "no_location"
+msgstr "the report is not geolocated"
+
+#: tigascoring/xp_scoring.py:315
+msgid "thorax_question"
+msgstr "answering the thorax question in the mosquito report"
+
+#: tigascoring/xp_scoring.py:318
+msgid "abdomen_question"
+msgstr "answering the abdomen question in the mosquito report"
+
+#: tigascoring/xp_scoring.py:321
+msgid "leg_question"
+msgstr "answering the leg question in the mosquito report"
+
+#: tigascoring/xp_scoring.py:324
+msgid "other_species"
+msgstr "experts say it's not a mosquito (other species or can't say)"
+
+#: tigascoring/xp_scoring.py:331
+msgid "bite report follow"
+msgstr "following current report with a bite report"
+
+#: tigascoring/xp_scoring.py:371
+msgid " years ago"
+msgstr ""
+
+#: tigascoring/xp_scoring.py:373
+msgid " months ago"
+msgstr ""
+
+#: tigascoring/xp_scoring.py:375
+msgid " days ago"
+msgstr ""
+
+#: tigaserver_app/models.py:516
 msgid "High"
 msgstr "High"
 
-#: tigaserver_app/models.py:297
+#: tigaserver_app/models.py:518
 msgid "Medium"
 msgstr "Medium"
 
-#: tigaserver_app/models.py:299
+#: tigaserver_app/models.py:520
 msgid "Low"
 msgstr "Low"
 
-#: tigaserver_project/settings.py:114
+#: tigaserver_messages/views.py:43 tigaserver_messages/views.py:102
+msgid "Message successfully sent."
+msgstr ""
+
+#: tigaserver_messages/views.py:84
+#, python-format
+msgid "Re: %(subject)s"
+msgstr ""
+
+#: tigaserver_project/settings.py:119
 msgid "Spanish"
 msgstr "Spanish"
 
-#: tigaserver_project/settings.py:115
+#: tigaserver_project/settings.py:120
 msgid "Catalan"
 msgstr "Catalan"
 
-#: tigaserver_project/settings.py:116
+#: tigaserver_project/settings.py:121
 msgid "English"
 msgstr "English"
+
+#: tigaserver_project/settings.py:122
+msgid "Chinese"
+msgstr ""
 
 #~ msgid "Reports per page"
 #~ msgstr "Reports per page"

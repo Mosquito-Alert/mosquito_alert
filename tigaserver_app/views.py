@@ -28,6 +28,7 @@ from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios, send_message_android
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
 from tigascoring.maUsers import smmry
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
@@ -803,6 +804,14 @@ def refresh_user_scores():
                 user.save()
 
 
+@api_view(['GET'])
+def user_score_v2(request):
+    user_id = request.QUERY_PARAMS.get('user_id', -1)
+    if user_id == -1:
+        raise ParseError(detail='user_id is mandatory')
+    result = compute_user_score_in_xp_v2(user_id, update=True)
+    return Response(result)
+
 @api_view(['GET', 'POST'])
 def user_score(request):
     user_id = request.QUERY_PARAMS.get('user_id', -1)
@@ -931,11 +940,11 @@ def user_notifications(request):
         return Response(serializer.data)
     if request.method == 'PUT':
         this_notification = Notification()
-        serializer = NotificationSerializer(this_notification, data=request.DATA)
+        serializer = NotificationSerializer(this_notification,data=request.DATA)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
         id = request.QUERY_PARAMS.get('id', -1)
         try:

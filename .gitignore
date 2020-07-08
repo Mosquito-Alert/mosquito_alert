@@ -3,6 +3,7 @@ tigaserver_project/settings_local*
 tigaserver_project/settings/local.pyc
 tigapublic/static/tigapublic/files/
 tigapublic/files/models/
+*.csv
 *.log.*
 *.log
 *pyc
@@ -15,5 +16,7 @@ celerybeat-schedule
 celerybeat.pid
 dump.rdb
 CertificatMosquito.pem
+tigatrapp-server/media
+/media
 tigatrapp-server/media
 /media
