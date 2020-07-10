@@ -34,17 +34,22 @@ def crunch():
             login = row[3]
             password = row[4]
             test_link = "http://madev.creaf.cat/experts"
-            plaintext = get_template('tigacrafting/aimsurv_email_model.txt')
+            production_link = "http://webserver.mosquitoalert.com/experts"
+            document_autoria = "https://drive.google.com/file/d/10gxhi67f_PX8BlL5q_NQWPQ5N0dSriQi/view?usp=sharing"
+            #plaintext = get_template('tigacrafting/aimsurv_email_model.txt')
+            plaintext = get_template('tigacrafting/aimsurv_prod_email_model.txt')
             context = Context(
                     {
                         'login': login,
                         'password': password,
                         'name': name,
-                        'test_link': test_link
+                        'test_link': test_link,
+                        'production_link': production_link,
+                        'document_autoria': document_autoria
                     }
             )
             text_content = plaintext.render(context)
-            email = EmailMessage( "Welcome to EntoLab", text_content, to=send_to)
+            email = EmailMessage( "Moving to production EntoLab", text_content, to=send_to)
             print("Sending email to {0}".format(name,))
             email.send(fail_silently=False)
             time.sleep(5)
