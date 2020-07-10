@@ -1083,7 +1083,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     pass
 
         if all_annotations:
-            all_annotations = all_annotations.order_by('report__creation_time')
+            all_annotations = all_annotations.order_by('-report__creation_time')
             if orderby == "tiger_score":
                 all_annotations = all_annotations.order_by('category__name')
             # if orderby == "site_score":

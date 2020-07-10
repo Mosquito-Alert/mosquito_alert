@@ -36,6 +36,7 @@ from django.template.loader import render_to_string
 from tigacrafting.messaging import send_message_android,send_message_ios
 from django.utils import translation
 from django.utils.translation import ugettext
+import json
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -1346,6 +1347,33 @@ class Report(models.Model):
                     return most_voted.name
             elif most_voted.__class__.__name__ == 'Complex':
                 return most_voted.description
+
+    # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
+    # template friendly, also adds explicit ids for category and complex
+    def get_final_combined_expert_category_euro_struct_json(self):
+        original_struct = self.get_final_combined_expert_category_euro_struct()
+        retval = {
+            'category' : None,
+            'category_id': None,
+            'complex': None,
+            'complex_id': None,
+            'value': None,
+            'conflict': False,
+            'in_progress': False
+        }
+        if original_struct.get('category',None) is not None:
+            retval['category_id'] = str(original_struct['category'].id)
+            retval['category'] = original_struct['category'].name
+        if original_struct.get('complex', None) is not None:
+            retval['complex_id'] = str(original_struct['complex'].id)
+            retval['complex'] = original_struct['complex'].description
+
+        if original_struct['value'] is not None:
+            retval['value'] = str(original_struct['value'])
+        retval['conflict'] = original_struct['conflict']
+        retval['in_progress'] = original_struct['in_progress']
+
+        return json.dumps(retval)
 
     def get_final_combined_expert_category_euro_struct(self):
         superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category__isnull=False)

@@ -262,6 +262,11 @@ class ExpertReportAnnotation(models.Model):
                 return dict(list(VALIDATION_CATEGORIES))[self.validation_value] + " " + self.category.name
             elif self.category.id == 8:
                 return self.complex.description
+            elif self.category.id == 2:
+                if self.other_species:
+                    return self.category.name + " - " + self.other_species.name
+                else:
+                    return self.category.name + " - not specified"
             else:
                 return self.category.name
 
