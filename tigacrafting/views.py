@@ -1264,7 +1264,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
     if this_user_is_superexpert:
         args = {}
         args.update(csrf(request))
-        PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0)
+        PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0, can_order=True)
         if request.method == 'POST':
             save_formset = request.POST.get('save_formset', "F")
             tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
@@ -1277,10 +1277,26 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
                         who_has = report.get_who_has()
                         if who_has == '':
                             report.save()
+
+###############-------------------------------- FastUpload --------------------------------###############
+
+                            #print(f.cleaned_data)
+                            if f.cleaned_data['fastUpload']:
+                                photo = report.photos.first()
+                                new_annotation = ExpertReportAnnotation(report=report, user=this_user)
+                                new_annotation.site_certainty_notes = 'auto'
+                                new_annotation.best_photo_id = photo.id
+                                new_annotation.validation_complete = True
+                                new_annotation.revise = True
+                                new_annotation.save()
+
+###############------------------------------ FI FastUpload --------------------------------###############
+
             page = request.POST.get('page')
             visibility = request.POST.get('visibility')
             usr_note = request.POST.get('usr_note')
             type = request.POST.get('type', type)
+
             if not page:
                 page = '1'
             return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
