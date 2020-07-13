@@ -996,14 +996,56 @@ def expert_status(request):
     this_user = request.user
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         groups = Group.objects.filter(name__in=['expert', 'superexpert'])
-        for group in groups:
-            for user in group.user_set.all():
-                if not UserStat.objects.filter(user=user).exists():
-                    us = UserStat(user=user)
-                    us.save()
+
         return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
     else:
         return HttpResponseRedirect(reverse('login'))
+
+@api_view(['GET'])
+def expert_report_pending(request):
+    user = request.QUERY_PARAMS.get('u', None)
+    u = User.objects.filter(username=user)
+    x = ExpertReportAnnotation.objects.filter(user=u).filter(validation_complete=False)
+
+    reports = []
+    for var in x:
+        reports.append({
+            'report_id': var.report.version_UUID,
+            'givenToExpert': var.created,
+            'lastModified': var.last_modified,
+            'draftStatus': var.get_status_bootstrap(),
+            'getScore': var.get_score(),
+            'getCategory': var.get_category()
+        })
+
+    context = {'pendingReports': reports}
+
+    return Response(context)
+
+
+@api_view(['GET'])
+def expert_report_complete(request):
+    user = request.QUERY_PARAMS.get('u', None)
+    u = User.objects.filter(username=user)
+    x = ExpertReportAnnotation.objects.filter(user=u).filter(validation_complete=True)
+
+    reports = []
+    for var in x:
+        reports.append({
+            'report_id': var.report.version_UUID,
+            'givenToExpert': var.created,
+            'lastModified': var.last_modified,
+            'draftStatus': var.get_status_bootstrap(),
+            'getScore': var.get_score(),
+            'getCategory': var.get_category()
+        })
+
+    context = {'completeReports': reports}
+
+    return Response(context)
+
+#test = User.objects.filter(groups__name='expert').filter(username='fbartu')
+
 
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
     new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(

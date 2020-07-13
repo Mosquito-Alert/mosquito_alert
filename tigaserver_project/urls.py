@@ -10,7 +10,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, expert_report_assigned_data
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto, expert_report_pending, expert_report_complete
 from tigaserver_messages.views import compose_w_data, reply_w_data
 from django_messages.views import *
 
@@ -91,6 +91,8 @@ urlpatterns += i18n_patterns('',
 
     url(r'^experts/$', expert_report_annotation, name='expert_report_annotation'),
     url(r'^experts/status/reports/$', expert_report_status, name='expert_report_status'),
+    url(r'^experts/status/reports/pending', expert_report_pending, name='expert_report_pending'),
+    url(r'^experts/status/reports/complete', expert_report_complete, name='expert_report_complete'),
     url(r'^experts/status/reports/single/(?P<version_uuid>[-\w]+)/$', single_report_view, name='single_report_view'),
     url(r'^experts/status/people/$', expert_status, name='expert_status'),
     url(r'^photo_grid/$', picture_validation, name='picture_validation'),
