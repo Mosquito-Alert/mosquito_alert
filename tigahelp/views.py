@@ -82,3 +82,15 @@ def show_terms(request):
         return render(request, 'tigahelp/terms_en.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/terms_zh.html', context)
+
+def show_scoring(request):
+    language = request.LANGUAGE_CODE
+    context = {}
+    if language == 'ca':
+        return render(request, 'tigahelp/scoring_ca.html', context)
+    if language == 'es':
+        return render(request, 'tigahelp/scoring_es.html', context)
+    if language == 'en':
+        return render(request, 'tigahelp/scoring_en.html', context)
+    if language == 'zh-cn':
+        return render(request, 'tigahelp/scoring_en.html', context)

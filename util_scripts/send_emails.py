@@ -20,11 +20,12 @@ from django.core.mail import EmailMessage
 import time
 
 
-USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy_last.csv'
+#USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy_last.csv'
 #USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/test.csv'
+USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/test_users_14072020_1.csv'
 
 
-def crunch():
+def crunch(test_or_production):
     with open(USERS_FILE) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader)
@@ -36,8 +37,10 @@ def crunch():
             test_link = "http://madev.creaf.cat/experts"
             production_link = "http://webserver.mosquitoalert.com/experts"
             document_autoria = "https://drive.google.com/file/d/10gxhi67f_PX8BlL5q_NQWPQ5N0dSriQi/view?usp=sharing"
-            #plaintext = get_template('tigacrafting/aimsurv_email_model.txt')
-            plaintext = get_template('tigacrafting/aimsurv_prod_email_model.txt')
+            if test_or_production == 'production':
+                plaintext = get_template('tigacrafting/aimsurv_prod_email_model.txt')
+            else:
+                plaintext = get_template('tigacrafting/aimsurv_email_model.txt')
             context = Context(
                     {
                         'login': login,
@@ -49,9 +52,13 @@ def crunch():
                     }
             )
             text_content = plaintext.render(context)
-            email = EmailMessage( "Moving to production EntoLab", text_content, to=send_to)
+            if test_or_production == 'production':
+                subject = "Moving to production EntoLab"
+            else:
+                subject = "Welcome to EntoLab"
+            email = EmailMessage( subject, text_content, to=send_to)
             print("Sending email to {0}".format(name,))
             email.send(fail_silently=False)
             time.sleep(5)
 
-crunch()
+crunch('test')

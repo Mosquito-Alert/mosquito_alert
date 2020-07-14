@@ -19,7 +19,7 @@ import random
 from django.contrib.auth.models import User, Group
 from tigaserver_app.models import EuropeCountry
 
-USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy_v2.csv'
+USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/test_users_14072020.csv'
 
 
 def split_name(s):
@@ -97,6 +97,20 @@ def perform_checks():
         es_group.save()
 
 
+def check_users_by_email(comparison_file, output_file_name):
+    ignore_list = ['katja.kalan@gmail.com','isis.sanpera@upf.edu','mallorca@moscardtigre.com','r.eritja@creaf.uab.es','delacour@unizar.es','dbravo.barriga@gmail.com']
+    with open(comparison_file) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        next(csv_reader)
+        for row in csv_reader:
+            email = row[1]
+            if email not in ignore_list:
+                try:
+                    user = User.objects.get(email=email)
+                except User.DoesNotExist:
+                    print("User with name {0} - {1} is not in database".format(row[0],row[1]))
+
+
 def create_users(add_users_to_euro_groups=True, ignore_regional_managers = False):
     perform_checks()
     experts_group = Group.objects.get(name="expert")
@@ -129,3 +143,4 @@ def create_users(add_users_to_euro_groups=True, ignore_regional_managers = False
 create_users(add_users_to_euro_groups=False, ignore_regional_managers = True)
 #perform_checks()
 #delete_users()
+#check_users_by_email('/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/user_check.csv','')

@@ -1,0 +1,47 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+    Mosquito Alert Score Info
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>SCORE INFO</h1>
+    Actions taken in Mosquito Alert have recognition and rewards in the form of points. The number of points per report varies depending on the information provided and its quality.
+
+    <p>The maximum points that can be obtained per report are:</p>
+    <ul>
+        <li>Invasive <em>Aedes</em> Mosquito: 20 XP</li>
+        <li>Common mosquito: 14 XP</li>
+        <li>Storm drain breeding site: 20 XP</li>
+        <li>Other breeding site in a public area: 16 XP</li>
+    </ul>
+
+    <p>There are also extra bonuses for the first mosquito of the season, first report of the day or for participating frequently.</p>
+
+    <p>Reports that are submitted as a mosquito but turn out not to be mosquitoes will not earn points. Likewise, a photo that does not allow experts to identify what appears in it will not be scored.</p>
+
+    <p>The accumulation of points will allow you to go up a <b>level</b>:</p>
+    <ul>
+        <li>(1) Novice (novice)</li>
+        <li>(2) Contributor (contributor)</li>
+        <li>(3) Expert (expert)</li>
+        <li>(4) Master (master)</li>
+        <li>(5) Grandmaster (grandmaster)</li>
+    </ul>
+
+    <p>Icons always indicate the level you are at.</p>
+
+    <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+    <h2>Your points panel</h2>
+
+    <p>Pressing the button with the points on the main screen you can access the ranking where you will see your position.. If you click on your profile in the ranking, a broken down table with your points will be displayed.</p>
+
+    <p>Follow the link at the end of the table (link!) That will take you to your points panel.</p>
+
+    <p>Here you will find a list of the reports sent with the score obtained in each of them. The reports are interactive, clicking on one and you will see the broken down score and the explanation for the score.</p>
+
+{% endblock %}

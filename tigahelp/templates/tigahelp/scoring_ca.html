@@ -1,0 +1,48 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+    Mosquito Alert Info Puntuació
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>INFO PUNTUACIÓ</h1>
+    Les accions realitzades a Mosquito Alert ténen reconeixement i recompensa en forma de punts. El nombre de punts per informe varia en funció de la informació aportada i de la seva qualitat.
+
+    <p>Els punts màxims que es poden obtenir per informe són:</p>
+    <ul>
+        <li>Mosquit <em>Aedes</em> invasor: 20 XP</li>
+        <li>Mosquit comú: 14 XP</li>
+        <li>Lloc de cria embornal: 20 XP</li>
+        <li>Un altre lloc de cria en la via pública: 16 XP</li>
+    </ul>
+
+    <p>A més existeixen bonificacions extra pel primer mosquit de la temporada, primer informe del dia o per participar amb freqüència.</p>
+
+    <p>Aquells informes que s'enviïn com a mosquit però resulten no ser mosquits no obtindran punts. Igual que tampoc es puntuarà una foto que no permet identificar el que hi apareix.</p>
+
+    <p>L'acumulació de punts et permetrà anar ascendint de nivell:</p>
+    <ul>
+        <li>(1) principiant (novice)</li>
+        <li>(2) col·laborador (contributor)</li>
+        <li>(3) expert (expert)</li>
+        <li>(4) mestre (màster)</li>
+        <li>(5) gran mestre (grandmaster)</li>
+    </ul>
+
+    <p>Unes icones indiquen en tot moment el <b>nivell</b> en què et trobes.</p>
+
+    <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+    <h2>El teu panell de punts</h2>
+
+    <p>Pitjant el botó amb els punts de la pantalla principal podràs accedir al rànquing on veuràs en quina posició et situes. Si fas clic sobre la teva posició es desplegarà una taula desglossada amb els teus punts.</p>
+
+    <p>Segueix l'enllaç que hi ha al final de la taula (link!) que et portarà al teu panell de punts.</p>
+
+    <p>Aquí trobaràs una llista dels informes enviats amb la puntuació obtinguda en cadascun d'ells. Els informes són interactius, clicant en un veuràs la puntuació desglossada i el perquè de la puntuació.</p>
+
+{% endblock %}
+

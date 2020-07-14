@@ -4,7 +4,7 @@ from django.views.generic.base import RedirectView
 from django.contrib.gis import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image
+from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
@@ -46,6 +46,9 @@ urlpatterns = patterns('',
     url(r'^privacy/ca/$', RedirectView.as_view(url='/ca/privacy/', permanent=False)),
     url(r'^privacy/en/$', RedirectView.as_view(url='/en/privacy/', permanent=False)),
     url(r'^privacy/zh-cn/$', RedirectView.as_view(url='/zh-cn/privacy/', permanent=False)),
+    url(r'^scoring/es/$', RedirectView.as_view(url='/es/scoring/', permanent=False)),
+    url(r'^scoring/ca/$', RedirectView.as_view(url='/ca/scoring/', permanent=False)),
+    url(r'^scoring/en/$', RedirectView.as_view(url='/en/scoring/', permanent=False)),
     url(r'^tigapublic/', include('tigapublic.urls')),
     url(r'^get_photo/(?P<token>\w+)/(?P<photo_uuid>[\w{}.-]{36})/(?P<size>\w+)$', lookup_photo),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
@@ -55,6 +58,7 @@ urlpatterns += i18n_patterns('',
     url(r'^policies/$', show_policies, name='help.show_policies'),
     url(r'^terms/$', show_terms, name='help.show_terms'),
     url(r'^privacy/$', show_privacy, name='help.show_privacy'),
+    url(r'^scoring/$', show_scoring, name='help.show_privacy'),
     url(r'^webmap/embedded/$', show_filterable_report_map, {'fullscreen': 'off', 'legend': 'on'}),
     url(r'^webmap/adults/$', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map'),
     url(r'^webmap/adults/(?P<selected_validation>\w+)/$', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map_type'),
