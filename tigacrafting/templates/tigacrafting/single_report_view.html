@@ -168,7 +168,7 @@
             <div class="row row_for_{{ forloop.counter }}" style="background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
                 <div class="col-md-12">
                     <h4>
-                        <strong>{{ report.type|capfirst }} Report {{ report.version_UUID }} </strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC
+                        <strong>{{ report.type|capfirst }} Report {{ report.version_UUID }} </strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC - {{ report.country_label }} - {{ report.language }}
                     </h4>
                 </div>
             </div>
@@ -195,7 +195,7 @@
                 <div class="col-md-12">
                     {% if report.get_is_expert_validated %}
                         {{ report.get_final_expert_status_bootstrap | safe }}
-                        <strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_combined_expert_score text=report.get_final_combined_expert_category %}
+                        <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
                     {% else %}
                         <strong>Status:</strong> Not yet validated by three experts.
                     {% endif %}
