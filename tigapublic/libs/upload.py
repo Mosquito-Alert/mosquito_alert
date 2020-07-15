@@ -2,15 +2,13 @@
 """Storm Drain Libraries."""
 import os
 import tempfile
-from StringIO import StringIO
+from io import BytesIO
 from zipfile import ZipFile
 
 from django.db import connection
 from django.http import HttpResponse
 from tablib import Dataset
-import csv
-
-from base import BaseManager
+from .base import BaseManager
 from tigapublic.utils import extendUser
 from tigapublic.constants import (true_values, false_values)
 from tigapublic.models import Epidemiology
@@ -36,7 +34,7 @@ class ExcelUploader(BaseManager):
     def get_template(self):
         """Return the template used to import storm drain data."""
         if self.request.user.is_epidemiologist_editor():
-            in_memory = StringIO()
+            in_memory = BytesIO()
             zip = ZipFile(in_memory, "a")
             # Add files to zip
             for dirname, subdirs, files in os.walk(self.template_location):
@@ -62,7 +60,7 @@ class ExcelUploader(BaseManager):
             header_position = 0
             for header in file_headers:
                 if header == field:
-                    self.read_dataset.headers[header_position] = key
+                    self.dataset.headers[header_position] = key
                 else:
                     header_position = header_position + 1
 
@@ -71,7 +69,7 @@ class ExcelUploader(BaseManager):
         # has_missing = False
         missing_headers = []
         for key, fieldVariants in (
-                self.compulsatory_fields.iteritems()
+                self.compulsatory_fields.items()
                 ):
 
             if not bool(set(fieldVariants) & set(file_headers)):
@@ -86,7 +84,7 @@ class ExcelUploader(BaseManager):
         return missing_headers
 
     def _get_optional_fields(self, file_headers):
-        for key, fieldVariants in self.optional_fields.iteritems():
+        for key, fieldVariants in self.optional_fields.items():
             # find out the match between column name and model field
             self._match_column_to_field(
                 fieldVariants,
@@ -96,10 +94,10 @@ class ExcelUploader(BaseManager):
 
     def _prepare_dataset_to_import(self):
         # Add column 'user_id'
-        self.read_dataset.insert_col(
+        self.dataset.insert_col(
             0,
             col=([self.request.user.id, ]
-                 * self.read_dataset.height),
+                 * self.dataset.height),
             header="user_id"
         )
 
@@ -145,9 +143,9 @@ class ExcelUploader(BaseManager):
         """Execute the import."""
         import_dataset = Dataset()
         fieldtypes = self._prepare_dataset_to_import()
-        import_dataset.headers = self.read_dataset.headers
+        import_dataset.headers = self.dataset.headers
 
-        for row in self.read_dataset.dict:
+        for row in self.dataset.dict:
             row = self._check_fieldtypes(row, fieldtypes)
             new = []
             for key in row:
@@ -158,8 +156,9 @@ class ExcelUploader(BaseManager):
         db = connection.cursor()
         import_dataset.headers = None
 
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-                print f.name
+        with tempfile.NamedTemporaryFile(mode="r+",
+                                         delete=False,
+                                         newline='') as f:
                 f.write(import_dataset.get_csv(delimiter='\t'))
                 f.seek(0)
 
@@ -167,35 +166,35 @@ class ExcelUploader(BaseManager):
                     # Delete all elements before new import
                     self.model.objects.all().delete()
                     db.copy_from(f, self.model._meta.db_table,
-                                 columns=(self.read_dataset.headers),
+                                 columns=(self.dataset.headers),
                                  sep="\t",
                                  null='')
                     self.response = {
                         'success': True,
-                        'headers': self.read_dataset.headers
+                        'headers': self.dataset.headers
                     }
                 except Exception as e:
-                    error = str(e).replace('\n', ' ').replace('\r', '')
-                    self.response = {'success': False, 'err': error}
+                    # error = str(e).replace('\n', ' ').replace('\r', '')
+                    self.response = {'success': False, 'err': e}
 
     def put(self, *args, **kwargs):
         """Import a file."""
-        print self.model
+        # print self.model
         if self.request.user.is_epidemiologist_editor():
             if self.request.method == 'POST':
                 # Prepare the input Dataset
-                self.read_dataset = Dataset()
+                self.dataset = Dataset()
                 # Get file name and extension
                 file = self.request.FILES[self.form_input_name]
                 name, extension = os.path.splitext(
                     self.request.FILES[self.form_input_name].name
                 )
                 # Load data into the input Dataset
-                self.read_dataset.load(file.read(), extension[1:])
+                self.dataset.load(file.read(), extension[1:])
 
                 # headers to lowercase, and utf-8 encode (adreça...)
-                file_headers = [x.lower().encode('utf-8', 'ignore') for x in
-                                self.read_dataset.headers]
+                file_headers = [str(x).lower() for x in
+                                self.dataset.headers]
                 # Detect missing headers
                 missing_headers = self._get_missing_fields(file_headers)
 
@@ -204,7 +203,11 @@ class ExcelUploader(BaseManager):
 
                 # If there is no missing header
                 if len(missing_headers) == 0:
-                    self._import()
+                    try:
+                        self._import()
+                    except Exception as e:
+                        # error = str(e).replace('\n', ' ').replace('\r', '')
+                        self.response = {'success': False, 'err': e}
                 else:
                     txtMissing = ', '.join(missing_headers)
                     self.response['err'] = (

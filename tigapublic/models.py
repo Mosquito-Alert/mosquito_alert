@@ -30,12 +30,13 @@ class Userfixes(models.Model):
         """Meta information."""
 
         db_table = 'tigaserver_app_fix'
+        managed = False
 
 
 class NotificationImageFormModel(models.Model):
     """NotificationImageFormModel."""
 
-    image = models.ImageField(upload_to=settings.MEDIA_ROOT)
+    image = models.ImageField(upload_to='media/')
 
     class Meta:
         """Meta."""
@@ -130,9 +131,6 @@ class AuthUser(models.Model):
     date_joined = models.DateTimeField()
     province = models.ManyToManyField(Province, blank=True)
     municipalities = models.ManyToManyField(Municipalities, blank=True)
-    # stormdrain_users = models.ManyToManyField('self', blank=True,
-    #                                           verbose_name='Visible stormdrain'
-    #                                           )
 
     objects = AuthUserManager()
 
@@ -152,17 +150,17 @@ class AuthUser(models.Model):
 class ReportsMapData(models.Model):
     """All mosquito observations."""
 
-    id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
     version_uuid = models.CharField(max_length=36, blank=True, null=True)
     c = models.IntegerField()
     observation_date = models.DateTimeField(null=True, blank=True)
     expert_validation_result = models.CharField(max_length=50, blank=True,
                                                 null=True)
-    category = models.CharField(primary_key=True, max_length=100, blank=True)
-    month = models.CharField(primary_key=True, max_length=6, blank=True)
-    lon = models.FloatField(primary_key=True)
-    lat = models.FloatField(primary_key=True)
-    geohashlevel = models.IntegerField(primary_key=True)
+    category = models.CharField(max_length=100, blank=True)
+    month = models.CharField(max_length=6, blank=True)
+    lon = models.FloatField()
+    lat = models.FloatField()
+    geohashlevel = models.IntegerField()
 
     class Meta:
         """Meta."""
@@ -184,22 +182,6 @@ class MapAuxReports(models.Model):
     ref_system = models.CharField(max_length=36, blank=True)
     type = models.CharField(max_length=7, blank=True)
 
-    t_q_1 = models.CharField(max_length=255, blank=True)
-    t_a_1 = models.CharField(max_length=255, blank=True)
-    t_q_2 = models.CharField(max_length=255, blank=True)
-    t_a_2 = models.CharField(max_length=255, blank=True)
-    t_q_3 = models.CharField(max_length=255, blank=True)
-    t_a_3 = models.CharField(max_length=255, blank=True)
-
-    s_q_1 = models.CharField(max_length=255, blank=True)
-    s_a_1 = models.CharField(max_length=255, blank=True)
-    s_q_2 = models.CharField(max_length=255, blank=True)
-    s_a_2 = models.CharField(max_length=255, blank=True)
-    s_q_3 = models.CharField(max_length=255, blank=True)
-    s_a_3 = models.CharField(max_length=255, blank=True)
-    s_q_4 = models.CharField(max_length=255, blank=True)
-    s_a_4 = models.CharField(max_length=255, blank=True)
-
     expert_validated = models.NullBooleanField()
     expert_validation_result = models.CharField(max_length=100, blank=True)
     simplified_expert_validation_result = models.CharField(max_length=100,
@@ -214,6 +196,7 @@ class MapAuxReports(models.Model):
     private_webmap_layer = models.CharField(max_length=255, blank=True)
     final_expert_status = models.IntegerField()
     note = models.TextField()
+    tags = models.TextField()
     municipality = models.ForeignKey(Municipalities, null=True,
                                      on_delete=models.CASCADE)
     breeding_site_answers = models.CharField(max_length=100, blank=True)
@@ -224,7 +207,7 @@ class MapAuxReports(models.Model):
     class Meta:
         """Meta."""
 
-        managed = False
+        managed = True
         db_table = 'map_aux_reports'
 
 
@@ -246,7 +229,7 @@ class StormDrain(models.Model):
     lon = models.DecimalField(max_digits=9, decimal_places=6)
     lat = models.DecimalField(max_digits=9, decimal_places=6)
     user = models.ForeignKey(AuthUser, on_delete=models.CASCADE)
-    date = models.DateTimeField(default=datetime.now(), blank=True, null=True)
+    date = models.DateTimeField(default=datetime.now, blank=True, null=True)
     original_lon = models.FloatField(blank=True, null=True)
     original_lat = models.FloatField(blank=True, null=True)
     size = models.CharField(max_length=5, blank=True, null=True)
@@ -285,6 +268,7 @@ class NotificationContent(models.Model):
         """Meta."""
 
         db_table = 'tigaserver_app_notificationcontent'
+        managed = False
 
 
 class PredefinedNotificationManager(models.Manager):
@@ -361,6 +345,7 @@ class Notification(models.Model):
         """Meta."""
 
         db_table = 'tigaserver_app_notification'
+        managed = False
 
 
 class ObservationNotifications(models.Model):
@@ -395,7 +380,7 @@ class StormDrainUserVersions(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(AuthUser, on_delete=models.CASCADE)
     version = models.IntegerField()
-    published_date = models.DateTimeField(default=datetime.now())
+    published_date = models.DateTimeField(default=datetime.now)
     style_json = models.TextField()
     visible = models.BooleanField()
     title = models.CharField(max_length=50, blank=True)
@@ -409,20 +394,37 @@ class StormDrainUserVersions(models.Model):
 class Epidemiology(models.Model):
     """Epidemiolgy model."""
 
-    id = models.CharField(max_length=15, primary_key=True)
+    id = models.CharField(max_length=15,
+                          primary_key=True)
     year = models.IntegerField()
     lon = models.FloatField(null=False)
     lat = models.FloatField(null=False)
-    health_center = models.CharField(max_length=225, blank=True, null=True)
-    province = models.CharField(max_length=225, blank=True, null=True)
+    health_center = models.CharField(max_length=225,
+                                     blank=True,
+                                     null=True)
+    province = models.CharField(max_length=225,
+                                blank=True,
+                                null=True)
     age = models.IntegerField()
-    country = models.CharField(max_length=225, blank=True, null=True)
-    date_arribal = models.DateTimeField(blank=True, null=True, default=None)
-    date_symptom = models.DateTimeField(blank=True, null=True, default=None)
-    date_notification = models.DateTimeField(blank=True, null=True, default=None)
-    patient_state = models.CharField(max_length=225, blank=True, null=True)
+    country = models.CharField(max_length=225,
+                               blank=True,
+                               null=True)
+    date_arribal = models.DateTimeField(blank=True,
+                                        null=True,
+                                        default=None)
+    date_symptom = models.DateTimeField(blank=True,
+                                        null=True,
+                                        default=None)
+    date_notification = models.DateTimeField(blank=True,
+                                             null=True,
+                                             default=None)
+    patient_state = models.CharField(max_length=225,
+                                     blank=True,
+                                     null=True)
     comments = models.TextField(help_text='Extra comments for patients',
-                                default=None, blank=True, null=True)
+                                default=None,
+                                blank=True,
+                                null=True)
     user = models.ForeignKey(AuthUser, on_delete=models.CASCADE)
 
     class Meta:

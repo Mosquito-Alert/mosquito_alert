@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Notification Libraries."""
 import json
-import urllib
-from HTMLParser import HTMLParser
+import urllib.parse
+# from HTMLParser import HTMLParser  PYTHON 2
+from html.parser import HTMLParser
 
 import requests
 from django.conf import settings
@@ -10,7 +11,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils.html import strip_tags
 
-from base import BaseManager
+from .base import BaseManager
 from tigapublic.models import (MapAuxReports, Notification,
                                NotificationContent, ObservationNotifications,
                                PredefinedNotification)
@@ -27,7 +28,7 @@ class NotificationManager(BaseManager):
 
         Both root and managers can send notifications.
         """
-        return self.request.user.is_authorized()
+        return self.request.user.is_authorized
 
     def _save_notification(self, content_id):
         """Save notifications."""
@@ -99,9 +100,9 @@ class NotificationManager(BaseManager):
 
             url = '%smsg_android/?user_id=%s&title=%s&message=%s' % (
                 settings.TIGASERVER_API,
-                urllib.quote(user_id, ''),
-                urllib.quote(content.title_es.encode('utf8'), ''),
-                urllib.quote(body_msg.unescape(strip_tags(
+                urllib.parse.quote(user_id, ''),
+                urllib.parse.quote(content.title_es.encode('utf8'), ''),
+                urllib.parse.quote(body_msg.unescape(strip_tags(
                     content.body_html_es)).encode('utf8'), '')
             )
 
@@ -117,9 +118,9 @@ class NotificationManager(BaseManager):
             # set the url & params
             url = '%smsg_ios/?user_id=%s&link_url=%s&alert_message=%s' % (
                 settings.TIGASERVER_API,
-                urllib.quote(user_id, ''),
-                urllib.quote(link_url, ''),
-                urllib.quote(strip_tags(content.body_html_es), '')
+                urllib.parse.quote(user_id, ''),
+                urllib.parse.quote(link_url, ''),
+                urllib.parse.quote(strip_tags(content.body_html_es), '')
             )
 
         # Response codes
@@ -188,7 +189,7 @@ class NotificationManager(BaseManager):
             templates (even for a root user). Default = False.
         """
         # If user is not manager nor root, bail out
-        if not self.request.user.is_authorized():
+        if not self.request.user.is_authorized:
             return self._end_unauthorized()
         # define respnose object
         self.response = {'notifications': [], 'success': False}

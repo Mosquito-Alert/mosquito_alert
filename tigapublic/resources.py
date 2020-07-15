@@ -7,7 +7,7 @@ from django.conf import settings
 from import_export import resources
 
 # from constants import true_values
-from models import MapAuxReports, ObservationNotifications
+from .models import MapAuxReports, ObservationNotifications
 
 # from import_export.widgets import DateTimeWidget
 # from pyproj import Proj, transform
@@ -25,7 +25,7 @@ def GetObservationResource(*args, **kwargs):
         def dehydrate_user_id(self, report):
             """Return a hash of the user id."""
             m = hashlib.md5()
-            m.update(report.user_id)
+            m.update(report.user_id.encode('utf-8'))
             return m.hexdigest()
 
         def dehydrate_note(self, report):
@@ -76,9 +76,9 @@ class NotificationResource(resources.ModelResource):
         """Return a hash of the user id."""
         m = hashlib.md5()
         if type(report).__name__ == 'dict':
-            m.update(report['user_id'])
+            m.update(report['user_id'].encode('utf-8'))
         else:
-            m.update(report.user_id)
+            m.update(report.user_id.encode('utf-8'))
         return m.hexdigest()
 
 # Les següents classes no es fan servir

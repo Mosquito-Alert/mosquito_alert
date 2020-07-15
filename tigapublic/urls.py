@@ -1,10 +1,10 @@
 """ROUTER."""
 # -*- coding: utf-8 -*-
 import re
-
 from django.conf.urls import include, url
-
 from . import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 """Define regular expressions for each parameter."""
 # ZOOM: Zoomlevel
@@ -21,6 +21,10 @@ re_lon = "[-\d\.]*"
 # re_lon = "[\d\.]"
 # LAT: Latitude
 re_lat = "-?(?:90(?:(?:\.0{1,4})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,4})?))"
+
+re_coord = re.compile(r"(?P<lon>" + re_lon + ")/(?P<lat>" +
+                      re_lat + ")\/?").pattern
+
 re_bounds = re.compile(r"(?P<bounds>" + re_lon + "," + re_lat + ","
                        + re_lon + "," + re_lat + ")\/?").pattern
 
@@ -72,13 +76,24 @@ re_month = re.compile(r"(?P<month>\d{1,2})\/?").pattern
 # CATEGORIES (LAYERS)
 re_categories = re.compile(r"(?P<categories>[a-zA-Z,_]+)\/?").pattern
 
+# MODELS vectors (tig,jap,yfv)
+re_vectors = re.compile(r"(?P<vector>(tig|jap|yfv))\/?").pattern
+
+# SPAN CCAA (01-19)
+re_cc_aa = re.compile(r"(?P<ccaa>(0[123456789]|1[0123456789]))\/?").pattern
+
 # EXCLUDED CATEGORIES (LAYERS)
 re_excluded_categories = (re.compile(
         r"(?P<excluded_categories>[a-zA-Z,_]+)\/?"
     ).pattern)
 
+re_x = re.compile(r"(?P<x>\d*)\/?").pattern
+re_y = re.compile(r"(?P<y>\d*)\/?").pattern
+re_z = re.compile(r"(?P<z>\d*)\/?").pattern
+
 """Observation's data."""
 observation_urls = [
+    url(r'^geojson/' + re_z + re_x + re_y + '$', views.geojson),
     # Get unfiltered data to show on map
     url(r'^observations/' + re_zoom +
         re_bounds + '$',
@@ -99,11 +114,11 @@ observation_urls = [
         views.observation),
 
     # Excel export
-    url(r'(?i)export\.(?P<format>(xls)|(csv))$',
+    url(r'export\.(?P<format>(xls)|(csv))$',
         views.ObservationsExportView.as_view()),
 
     # Report based on YEARS & MONTHS
-    url(r'(?i)report/' +
+    url(r'report/' +
         re_bounds +
         re_years +
         re_months +
@@ -115,7 +130,7 @@ observation_urls = [
         views.observations_report),
 
     # Report based on DATERANGE
-    url(r'(?i)report/' +
+    url(r'report/' +
         re_bounds +
         re_daterange +
         re_categories +
@@ -129,13 +144,13 @@ observation_urls = [
 """User management."""
 user_urls = [
     # Do login
-    url(r'^(?i)ajax_login/$', views.ajax_login),
+    url(r'^ajax_login/$', views.ajax_login),
 
     # Check if user is logged in
-    url(r'^(?i)ajax_is_logged/$', views.ajax_is_logged),
+    url(r'^ajax_is_logged/$', views.ajax_is_logged),
 
     # Do logout
-    url(r'^(?i)ajax_logout/$', views.ajax_logout),
+    url(r'^ajax_logout/$', views.ajax_logout),
 ]
 
 """Notifications."""
@@ -220,13 +235,34 @@ epi_urls = [
 
 ]
 
-"""Prediction models data."""
+"""Get municipalities geometry by region."""
+ccaa_geom_urls = [
+#     # Manage StormDrain Data
+#     url(r'^get/geom/ccaa/' + re_cc_aa + '.geojson' + '$',
+#         views.regionGeometries),
+#     url(r'^get/centroid/ccaa/' + re_cc_aa + '.geojson' + '$',
+#         views.regionSdGeometries),
+    url(r'^get/region/' + re_coord +'$', views.getSpainRegionFromCoords)
+]
+
+
+"""Prediction models data. Municipality scale."""
 re_model_date = re.compile(r"(?P<prediction_date>" + re_date + ")\/?").pattern
 prediction_models_urls = [
     # Manage StormDrain Data
-    url(r'^get/prediction/' + re_year + '/' + re_month + '$',
+    url(r'^models/vector/grid/' +
+        re_vectors + '/' +
+        re_year + '/' + re_month + '$',
         views.predictionModelData)
 ]
+
+# """Prediction models data."""
+# re_model_date = re.compile(r"(?P<prediction_date>" + re_date + ")\/?").pattern
+# prediction_models_urls = [
+#     # Manage StormDrain Data
+#     url(r'^get/prediction/' + re_year + '/' + re_month + '$',
+#         views.predictionModelData)
+# ]
 
 """Municipalities."""
 muni_urls = [
@@ -248,5 +284,6 @@ urlpatterns = [
     url(r'', include(epi_urls)),
     url(r'', include(muni_urls)),
     url(r'', include(ufix_urls)),
+    url(r'', include(ccaa_geom_urls)),
     url(r'', include(prediction_models_urls)),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

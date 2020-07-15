@@ -7,7 +7,7 @@ from operator import __or__ as OR
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from base import BaseManager
+from .base import BaseManager
 from tigapublic.models import (AuthUser, MapAuxReports, Municipalities,
                                ObservationNotifications)
 
@@ -297,8 +297,17 @@ class HashtagFilter(Filter):
         if not self.is_valid(manager):
             return qs
 
-        qs = qs.filter(note__icontains=manager.filters[self.params])
-
+        if not manager.request.user.is_authorized():
+            e = manager.filters[self.params].replace(':','')
+            qs = qs.filter(note__icontains=manager.filters[self.params])
+        else:
+            search = manager.filters[self.params].split(',')
+            for e in search:
+                if e.startswith(":"):
+                    e = e.replace(':','')
+                    qs = qs.filter(note__icontains=e)
+                else:
+                    qs = qs.filter(tags__icontains=e)
         return qs
 
 
@@ -313,7 +322,7 @@ class NotificationFilter(Filter):
     def run(self, manager, qs):
         """Execute the filter."""
         # If can not send, then can not filter either
-        if (not manager.request.user.is_authorized() or not
+        if (not manager.request.user.is_authorized or not
                 self.is_valid(manager)):
             return qs
 
@@ -363,7 +372,7 @@ class MunicipalityFilter(Filter):
         if not self.is_valid(manager):
             return qs
 
-        if (manager.request.user.is_authenticated() and
+        if (manager.request.user.is_authenticated and
                 manager.filters[self.params] == '0'):
             if manager.request.user.is_manager():
                 # All municipalities of registered user
@@ -415,6 +424,7 @@ class FilterManager(BaseManager):
         'hashtag': HashtagFilter,
         'notifications': NotificationFilter,
         'notification': NotificationFilter,  # alias
+        'notification': NotificationFilter,  # alias
         'municipalities': MunicipalityFilter,
         'municipality': MunicipalityFilter,  # alias
         'bounds': BBOXFilter,
@@ -444,11 +454,11 @@ class FilterManager(BaseManager):
                 del filters['notifications']['notif_types']
 
         cleaned_filters = {}
-        for key, value in filters.iteritems():
+        for key, value in filters.items():
             if type(value).__name__ == 'dict':
                 hasvalue = False
                 inner_filter = {}
-                for key2, value2 in value.iteritems():
+                for key2, value2 in value.items():
                     if (value2 != 'all' and value2 != 'N'
                             and value2 is not None):
                         hasvalue = True
@@ -465,10 +475,11 @@ class FilterManager(BaseManager):
         result = {}
         structure = {'time': ['years', 'months', 'date_start', 'date_end'],
                      'notifications': ['mynotifs', 'notif_types']}
-        for key, value in filters.iteritems():
-            if type(value).__name__ == 'unicode':
+
+        for key, value in filters.items():
+            if type(value).__name__ == 'str':
                 found = False
-                for cat, items in structure.iteritems():
+                for cat, items in structure.items():
                     if key in items:
                         found = True
                         if cat not in result:
@@ -478,6 +489,7 @@ class FilterManager(BaseManager):
                     result[key] = value
             else:
                 result[key] = value
+
         return result
 
     def objects(self, model=MapAuxReports, **kwargs):
@@ -487,7 +499,7 @@ class FilterManager(BaseManager):
         # print
         # self.model = model
         qs = model.objects.all()
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key == 'extra':
                 if 'select' in value:
                     qs = qs.extra(select=value['select'])
@@ -505,9 +517,10 @@ class FilterManager(BaseManager):
 
     def run(self, filter_names=False):
         """Run all filters."""
+
         # If we didn't get the list of filter_names, get it from the data
         filter_names = tuple(
-            {key for key, value in self.filters.iteritems()}
+            {key for key, value in self.filters.items()}
         ) if not filter_names else filter_names
 
         # If we got a string convert it to tuple

@@ -1,4 +1,4 @@
-var trans = trans || {};
+  var trans = trans || {};
 
 add = {
   'layer.trash_layer': 'Altres observacions',
@@ -140,7 +140,7 @@ add = {
   'epi.date_symptom':'Data primers simptomes',
   'epi.date_arribal': 'Data d\'arribada',
   'epi.date_notification': 'Data de notificació',
-  'epi.date_nodate': 'Sense data (arribada/notificació)',
+  'epi.date_nodate': 'Sense data',
   'epi.age': 'Edat',
   'epi.country':'País visitat',
   'epi.patient_state':'Estat',
@@ -182,5 +182,23 @@ add = {
   'epidemiology.upload-explanation': 'ATENCIÓ!! Aquest procés d\'importació eliminarà totes les dades prèviament emmagatzemades de la capa d\'Epidemiologia',
   'epidemiology.empty-layer': 'En aquests moments no hi ha dades d\'epidemiologia',
   'epidemiology.upload-error': 'S\'ha produït un error durant el procés d\'importació',
+
+  //model_selector
+  'layer.models.virus': 'Tipo',
+  'layer.models.den': 'Dengue',
+  'layer.models.zika': 'Zika',
+  'layer.models.yf': 'Febre groga',
+  'layer.models.chk': 'Chikungunya',
+  'layer.models.wnv': 'Virus de l\'oest del nil',
+
+  'layer.predictionmodels.virus': 'Probabilitat malaltia',
+  'layer.predictionmodels-virus.description': 'El mapa mostra estimacions de la probabilitat d\'alerta de mosquits tigre, que representa la probabilitat que un participant enviï un informe de mosquit tigre fiable durant un període de dues setmanes, controlant l\'esforç de mostreig (és a dir, que el model representa el fet que hi hagi més participants en algunes àrees que en altres).<p>Aquestes estimacions es mostren en una graella de 0,05 graus de latitud per 0,05 graus de longitud i es promitgen per mes. La probabilitat d\'alerta depèn principalment de la distribució de la població del mosquit tigre i de l\'esforç de mostreig collectiu, que varia segons la ubicació i el mes. La probabilitat d\'alerta s\'ha demostrat que és un bon predictor de la presència de mosquits tigre mesurat pels mètodes tradicionals de vigilància (ovitraps), tal com s\'explica a Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Les estimacions s\'actualitzen setmanalment a mesura que apareixen noves dades.</p><p>Tingueu en compte que aquesta capa de probabilitat d\'alerta només es pot filtrar amb els selectors d\'any i mes que es mostren aquí (i no amb els filtres addicionals a continuació, que són per a altres capes).</p>',
+
+  //sugbroups
+  'group.tiger': 'Mosquit tigre',
+  'group.zika': 'Mosquit febre groga',
+  'group.japonicus': 'Aedes japonicus',
+  'group.koreicus': 'Aedes koreicus',
+  'group.culex': 'Culex pipiens',
 };
 _.extend(trans.ca, add);

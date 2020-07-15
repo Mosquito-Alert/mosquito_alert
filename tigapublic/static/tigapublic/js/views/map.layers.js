@@ -1,5 +1,4 @@
 var MapView = MapView.extend({
-
     LAYERS_CONF: MOSQUITO.config.layers,
     stormDrainData :[],
     forceReloadView : true, //Allows pan without reloading data just once. Need to make it false each time
@@ -7,7 +6,7 @@ var MapView = MapView.extend({
     userfixtileIndex : null,
     userFixtileOptions :  {
         maxZoom: 20,  // max zoom to preserve detail on
-        tolerance: 5, // simplification tolerance (higher means simpler)
+        tolerance: 2, // simplification tolerance (higher means simpler)
         extent: 4096, // tile extent (both width and height)
         buffer: 64,   // tile buffer on each side
         debug: 0,      // logging level (0 to disable, 1 or 2)
@@ -18,12 +17,11 @@ var MapView = MapView.extend({
 
     addBaseLayer: function(){
         this.layers = this.layers || {};
-        this.layers.baselayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        this.layers.baselayer = L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(this.map);
     },
-
 
     addLayers: function(){
         var _this = this;
@@ -124,13 +122,22 @@ var MapView = MapView.extend({
 
         // User coverage (user fixes) layer
         userfixeslayer = this.getLayerPositionFromKey('F');
-        if (userfixeslayer) this.addCoverageLayer(userfixeslayer);
+        if (userfixeslayer!==null) this.addCoverageLayer(userfixeslayer);
 
         stormdrainlayer = this.getLayerPositionFromKey('Q');
-        if (stormdrainlayer) this.addDrainStormLayer();
+        if (stormdrainlayer!==null) this.addDrainStormLayer();
 
-        forecastlayer = this.getLayerPositionFromKey('I');
-        if (forecastlayer) this.loadForecastModel();
+        forecastMunisLayer = this.getLayerPositionFromKey('M');
+        if (forecastMunisLayer!==null) {
+          this.loadVectorProbMunisModel();
+          this.loadForecastModel();
+        }
+
+        forecastVirusLayer = this.getLayerPositionFromKey('N');
+        if (forecastVirusLayer!==null) this.loadVirusProbMunisModel();
+
+        bitingLayer = this.getLayerPositionFromKey('R');
+        if (bitingLayer!==null) this.addBitingLayer(bitingLayer);
 
         //empty layergroup for epidemiology data
         epilayer = this.LAYERS_CONF[this.getLayerPositionFromKey('P')];
@@ -155,15 +162,17 @@ var MapView = MapView.extend({
             if(_.indexOf(this.options.layers, key) !== -1){
                 if (key == 'F') {
                   this.refreshCoverageLayer();
-                } else if (key === 'I') {
-                  this.refreshForecastModel();
+                } else if (key === 'M') {
+                  //check if grid is active
+                  var modelType = $("input[name='modelType']:checked").val();
+                  if (modelType=='grid'){
+                    this.refreshForecastModel();
+                  }
                 } else this.map.addLayer(layer);
             }else{
                 this.excludeLayerFromFilter(this.LAYERS_CONF[i]);
             }
         }
-
-
     },
 
     getCurrentGeohashLength: function(){
@@ -188,6 +197,10 @@ var MapView = MapView.extend({
             }
         }
         return ret;
+    },
+
+    getLayerFromKey: function (key){
+            return this.LAYERS_CONF[this.getLayerPositionFromKey(key)];
     },
 
     getGradientStyle: function(value, layer) {
@@ -379,18 +392,28 @@ var MapView = MapView.extend({
     },
 
     loadForecastVectorModel: function() {
-      let date = $('#forecast_date').val();
-      let layerpos = this.getLayerPositionFromKey('I');
+      let year = $('#yearVectorMunicipalityProb').val();
+      if (typeof year === 'undefined') {
+        year = new Date().toISOString().slice(0, 4)
+      }
+
+      let month = $('#monthVectorMunicipalityProb').val();
+      var date = year + '/' + month;
+      let layerpos = this.getLayerPositionFromKey('M');
       let layer = MOSQUITO.config.layers[layerpos];
       let ranges = layer.prob_ranges;
 
       $.ajax({
-        'url': MOSQUITO.config.URL_API + 'get/pred/data/' + date,
+        'url': URL_MODELS_VECTOR_GRID + date,
         'context': this,
         'complete': function(resp) {
           let all_data = resp.responseJSON;
           let prob = all_data.prob;
           let sd = all_data.sd;
+          //remove virus layer if exists
+          if (this.munis_virus_prob_layer) {
+              this.map.removeLayer(this.munis_virus_prob_layer);
+          }
           // PROBABILTY
           var probabilities = new L.geoJson(prob, {
             'style': function(feature) {
@@ -429,60 +452,63 @@ var MapView = MapView.extend({
               });
             }
           }).addTo(map);
-          // map.on('zoomend', function(ev) {
-          //   modelLayerPosition = this.getLayerPositionFromKey('I');
-          //   minDevZoom = MOSQUITO.config.layers[modelLayerPosition].deviation_min_zoom
-          //   if (map.getZoom() <= minDevZoom){
-          //     map.removeLayer(MOSQUITO.app.mapView.layers.standard_deviation);
-          //   }
-          //   else {
-          //     MOSQUITO.app.mapView.layers.standard_deviation.addTo(map);
-          //   }
-          // });
         }
       })
-    },
-
+    }
+    ,
     loadForecastModel: function() {
-      var zeroPoint ={"type": "Point", "coordinates": [0,0]};
+      var forecast_zeroPoint ={"type": "Point", "coordinates": [0,0]};
 
-      this.tileIndex = geojsonvt(zeroPoint , this.userFixtileOptions);
+      this.tileIndex = geojsonvt(forecast_zeroPoint , this.userFixtileOptions);
       this.forecast_layer_prob = L.canvasTiles()
           .params({ debug: false, padding: 0 })
           .drawing(this.prob_drawingOnCanvas);
 
       this.forecast_layer_sd = L.canvasOverlay()
-        .params({'data': zeroPoint})
+        .params({'data': forecast_zeroPoint})
         .drawing(this.sd_drawingOnCanvas);
 
       this.forecast_layer = L.layerGroup([this.forecast_layer_prob, this.forecast_layer_sd]);
-
-      this.forecast_layer.addTo(this.map);
-
-    },
-
+      // this.forecast_layer.addTo(this.map);
+    }
+    ,
     refreshForecastModel: function() {
-      let year = $('#forecast_year').val();
+      var layer_key = 'M'
+      let year = $('#yearVectorMunicipalityProb').val();
+      let vector = $('#selectVectorId').val();
       if (typeof year === 'undefined') {
         year = new Date().toISOString().slice(0, 4)
       }
-      let month = $('#forecast_month').val();
+      let month = $('#monthVectorMunicipalityProb').val();
+      month = ("00"+month).slice (-2)
       this.map.removeLayer(this.forecast_layer);
+      var file_name = MOSQUITO.config.MODELS_FILE_NAME;
+
       $.ajax({
-        'url': MOSQUITO.config.URL_API + 'get/prediction/' + year + '/' + month,
-        'context': this,
-        'complete': function(resp) {
-          let all_data = resp.responseJSON;
+        // 'url': MOSQUITO.config.URL_API + 'get/prediction/grid/' + year + '/' + month,
+        'url': MOSQUITO.config.URL_MODELS_VECTOR_GRID + vector + '/' + year + '/' + month +'/'+file_name,
+        cache: true,
+        context: this,
+        success: function(resp) {
+          let all_data = resp;
+          var sd_flag = true;
+          var geojson = this.geoJsonFromCsv(all_data, sd_flag, layer_key)
+          //remove vector/virus layer if exists
+          if (this.munis_virus_prob_layer) {
+              this.map.removeLayer(this.munis_virus_prob_layer);
+          }
           // PROBABILTY
-          MOSQUITO.app.tileIndex = geojsonvt(all_data.prob, this.userFixtileOptions);
+          MOSQUITO.app.tileIndex = geojsonvt(geojson.prob, this.userFixtileOptions);
           // STANDRARD DEVIATION
-          this.forecast_layer_sd.params({'data': all_data.sd});
+          this.grid_sd_data = geojson.sd
+          this.forecast_layer_sd.params({'data':this.grid_sd_data});
+
           // RELOAD
           this.map.addLayer(this.forecast_layer);
         }
       })
-    },
-
+    }
+    ,
     prob_drawingOnCanvas: function(canvasOverlay, params) {
       let tileIndex = MOSQUITO.app.tileIndex;
       var ctx = params.canvas.getContext('2d');
@@ -491,7 +517,7 @@ var MapView = MapView.extend({
       if (!tileIndex){
         return;
       }
-      let layerpos = MOSQUITO.app.mapView.getLayerPositionFromKey('I');
+      let layerpos = MOSQUITO.app.mapView.getLayerPositionFromKey('M');
       let layer = MOSQUITO.config.layers[layerpos];
       var bounds = params.bounds;
       params.tilePoint.z = params.zoom;
@@ -507,6 +533,7 @@ var MapView = MapView.extend({
       for (var i = 0; i < features.length; i++) {
         var feature = features[i],
             type = feature.type;
+
         if (typeof feature.tags.color === 'undefined') {
           let range = _this.getForecastRange(layer.prob_ranges, feature.tags.prob);
           feature.tags.color = range.color;
@@ -532,14 +559,12 @@ var MapView = MapView.extend({
         if (type === 3 || type === 1) ctx.fill('evenodd');
         ctx.stroke();
       }
-    },
-
+    }
+    ,
     sd_drawingOnCanvas: function(canvasOverlay, params) {
       var ctx = params.canvas.getContext('2d');
       ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
-
-      modelLayerPosition = _this.getLayerPositionFromKey('I');
-      isDeviationVisible = (map.getZoom() > MOSQUITO.config.layers[modelLayerPosition].deviation_min_zoom)
+      isDeviationVisible = (map.getZoom() > MOSQUITO.config.deviation_min_zoom)
 
       if (!isDeviationVisible) return true;
 
@@ -547,7 +572,7 @@ var MapView = MapView.extend({
       if (!tileIndex){
         return;
       }
-      let layerpos = MOSQUITO.app.mapView.getLayerPositionFromKey('I');
+      let layerpos = MOSQUITO.app.mapView.getLayerPositionFromKey('M');
       let layer = MOSQUITO.config.layers[layerpos];
 
       //Get dots radius size
@@ -559,12 +584,14 @@ var MapView = MapView.extend({
       var metresPerPixel = maxMeters/x;
 
       radius = 1000 / metresPerPixel
+      if (radius > MOSQUITO.config.max_sd_radius){
+        radius = MOSQUITO.config.max_sd_radius
+      }
 
       ctx.strokeStyle = 'rgba(0,0,0,0.5)';
       ctx.lineWidth   = 1;
 
-      data = params.options.data;
-
+      data = _this.grid_sd_data
       for (var i = 0; i < data.features.length; i+=1) {
         if (typeof data.features[i].properties.color === 'undefined') {
           let range = _this.getForecastRange(layer.sd_ranges, data.features[i].properties.val);
@@ -579,8 +606,8 @@ var MapView = MapView.extend({
         ctx.stroke();
         ctx.closePath();
       }
-    },
-
+    }
+    ,
     getForecastRange: function(ranges, val) {
       let result = ranges.filter(function(range) {
         return range.minValue <= val && range.maxValue > val;
@@ -592,8 +619,8 @@ var MapView = MapView.extend({
           result = {'color': ranges[ranges.length - 1].color};
       }
       return result;
-    },
-
+    }
+    ,
     addDrainStormLayer: function() {
         _this = this;
         this.drainstorm_layer = L.canvasOverlay()
@@ -658,8 +685,8 @@ var MapView = MapView.extend({
                 pointsdrawn+=1;
             }
         };
-    },
-
+    }
+    ,
     loadStormDrainData: function(forced){
         //if data not yet loaded
         if (arguments.length==0) {
@@ -691,15 +718,15 @@ var MapView = MapView.extend({
         }
         //otherwise
         else{
-            _this.drainstorm_layer.addTo(_this.map);
+          _this.drainstorm_layer.addTo(_this.map);
         }
 
-    },
-
+    }
+    ,
     checkStormDrainInfo:function(){
-    },
-
-    colorizeFeatures: function(arr) {
+    }
+    ,
+    colorizeGridFeatures: function(arr) {
         _this = this;
         layer = this.LAYERS_CONF[this.getLayerPositionFromKey('F')];
         arr.forEach(function(item){
@@ -707,8 +734,8 @@ var MapView = MapView.extend({
             item.properties.color = 'rgba('+ layer.segments[pos].color+' , '+ layer.segments[pos].opacity +')';
         });
         return true;
-    },
-
+    }
+    ,
     addCoverageLayer: function(layer) {
         _this = this;
         var strokecolor = this.LAYERS_CONF[layer].style.strokecolor
@@ -766,7 +793,6 @@ var MapView = MapView.extend({
             "coordinates": [0,0]};
 
         _this.userfixtileIndex = geojsonvt(zeroPoint , _this.userFixtileOptions);
-        //_this.colorizeFeatures(data);
         _this.coverage_layer = L.canvasTiles()
             .params({ debug: false, padding: 5 })
             .drawing(drawingOnCanvas);
@@ -796,7 +822,13 @@ var MapView = MapView.extend({
             "cache": true,
             "url": url
         }).done(function(data) {
-            _this.colorizeFeatures(data.features);
+          //if not logged then remove vector model layers
+          if (!MOSQUITO.app.headerView.logged){
+            if (_this.munis_vector_prob_layer) {
+                _this.map.removeLayer(_this.munis_vector_prob_layer);
+            }
+          }
+            _this.colorizeGridFeatures(data.features);
             _this.userfixtileIndex = geojsonvt(data, _this.userFixtileOptions);
             _this.map.removeLayer(_this.coverage_layer);
             _this.map.addLayer(_this.coverage_layer);
@@ -890,12 +922,17 @@ var MapView = MapView.extend({
         });
 
         this.map.on('zoomend',function(){
-            modelLayerPosition = _this.getLayerPositionFromKey('I');
-            minDevZoom = MOSQUITO.config.layers[modelLayerPosition].deviation_min_zoom
+            vectorModelLayer = _this.getLayerPositionFromKey('M');
+            virusModelLayer = _this.getLayerPositionFromKey('N');
+
+            if (vectorModelLayer ==-1 && virusModelLayer ==-1 ) return true
+
+            minDevZoom = MOSQUITO.config.deviation_min_zoom
             if (map.getZoom() <= minDevZoom){
-              $('#forecast_sd').css('opacity', '.3');
-            } else {
-              $('#forecast_sd').css('opacity', '1');
+              $('ul.forecast_sd').css('opacity', '.3');
+            }
+            else {
+              $('ul.forecast_sd').css('opacity', '1');
             }
         });
 
@@ -980,7 +1017,6 @@ var MapView = MapView.extend({
     check_filters: function(marker){
 
         excluded_type = this.filters.excluded_types.join(',');
-
         if(excluded_type.indexOf(marker._data.category) !== -1){
             return false;
         }
@@ -1122,10 +1158,13 @@ var MapView = MapView.extend({
     getHashtagValue: function(){
       var value = 'N'
       if ( 'hashtag' in this.filters && typeof this.filters.hashtag !== 'undefined' && this.filters.hashtag.trim()!='') {
-        value = this.filters.hashtag.replace('#','')
+        //replace '#'' for ':' so  django can accept the url
+        value = this.filters.hashtag.replace('#',':')
+        value = value.replace(/ /g, ",");
         if (value =='') value='N';
       }
       else value='N';
       return value;
     }
+
 });

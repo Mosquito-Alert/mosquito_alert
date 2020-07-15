@@ -15,6 +15,19 @@ trans.ca = {
     'layer.mosquito_tiger_probable': 'Possible mosquit tigre',
     'layer.yellow_fever_confirmed': 'Confirmat mosquit febre groga',
     'layer.yellow_fever_probable': 'Possible mosquit febre groga',
+    'layer.mosquito_japonicus_confirmed': 'Aedes japonicus confirmat',
+    'layer.mosquito_japonicus_probable': 'Aedes japonicus possible',
+    'layer.mosquito_koreicus_confirmed': 'Aedes koreicus confirmat',
+    'layer.mosquito_koreicus_probable': 'Aedes koreicus possible',
+    'layer.mosquito_culex_confirmed': 'Culex pipiens confirmat',
+    'layer.mosquito_culex_probable': 'Culex pipiens possible',
+    'layer.mosquito_jap_kor': 'Mosquit jap/kor',
+    'layer.mosquito_jap_kor_probable': 'Aedes jap/kor',
+    'layer.mosquito_jap_kor_confirmed': 'Aedes jap/kor',
+    'layer.mosquito_albo_cret': 'Mosquit albo/cret',
+    'layer.mosquito_albo_cret_probable': 'Aedes albo/cret',
+    'layer.mosquito_albo_cret_confirmed': 'Aedes albo/cret',
+
     'layer.unidentified': 'No identificable',
 
     'layer.site': 'Llocs de cria',
@@ -28,7 +41,13 @@ trans.ca = {
 
     'layer.tiger': 'Mosquit tigre',
     'layer.zika': 'Mosquit febre groga',
+    'layer.japonicus': 'Aedes japonicus',
+    'layer.koreicus': 'Aedes koreicus',
+    'layer.culex': 'Culex pipiens',
+    'layer.jap_kor': 'Aedes jap/kor',
+    'layer.albo_cret': 'Aedes albo/cret',
     'layer.site': 'Llocs de cria',
+    'group.combo': 'Combo espècies',
 
     'map.numfixes': 'Observacions',
     'map.control_layers': 'Llegenda',
@@ -66,7 +85,15 @@ trans.ca = {
     'map.mundial_controlmoreinfo_title': 'Descripció',
 
     'expertinfo.tiger_mosquito': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit tigre (<i>Aedes albopictus</i>).',
+
     'expertinfo.yellow_fever_mosquito':' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit de la febre groga (<i>Aedes aegypti</i>).',
+
+    'expertinfo.japonicus': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit <i>Aedes albopictus</i>.',
+    'expertinfo.koreicus': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit <i>Aedes koreicus</i>.',
+    'expertinfo.culex': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit <i>Culex pipiens</i>.',
+    'expertinfo.jap_kor': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit <i>Aedes japonicus</i> o <i>Aedes koreicus</i>.',
+    'expertinfo.albo_cret': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit <i>Aedes albopictus</i> o <i>Aedes cretinus</i>.',
+
     'expertinfo.other_species':' Segons els experts, les fotos d\'aquesta observació podrien ser d\'altres espècies de mosquit.',
     'expertinfo.unidentify': ' Segons els experts, aquestes observacions i les seves fotos no permeten identificar cap espècie de mosquit.',
     'expertinfo.site': 'Observacions ciutadanes de possibles llocs de cria (embornals) de mosquit tigre o de la febre groga.',
@@ -140,13 +167,18 @@ trans.ca = {
     'group.breeding_sites': 'Llocs de cria',
     'group.observations': 'Observacions ciutadanes',
     'group.userdata': 'Capes d\'usuari',
-    'group.filters':'Filtres',
+    'group.models':'Models disponibles',
+    'group.filters':'Filtres  observacions ciutadanes',
     'group.userfixes': 'Distribució de participants',
+    'models.type':'Tipus',
+    'models.type.grid':'Malla',
+    'models.type.municipalities':'Municipis',
     'hashtag.filters.placeholder': 'Per #hashtag',
     'observations.filters.title': 'Observacions',
     'remove': 'Eliminar',
     'title': 'Títol',
     'display-example': 'Veure exemple',
+    'layer.models.vector': 'Esp.',
 
     //Draw. Not visible when defined in ca_logged
     'leaflet.draw.polygon.continue': 'Continua dibuixant el contorn del polígon',
@@ -188,14 +220,17 @@ trans.ca = {
     'label.user-municipalities': 'Els meus municipis',
 
     // MODELS
-    'layer.predictionmodels': 'Models disponibles de probabilitat de mosquit tigre',
+    'layer.predictionmodels.vector': 'Probabilitat Mosquito Alert',
     //HTML FORMAT
+    'layer.biting.description': 'El mapa mostra estimacions de la probabilitat de picades, que representa la probabilitat que un participant enviï un informe de mosquit tigre fiable durant un període de dues setmanes, controlant l\'esforç de mostreig (és a dir, que el model representa el fet que hi hagi més participants en algunes àrees que en altres).<p>Aquestes estimacions es mostren en una graella de 0,05 graus de latitud per 0,05 graus de longitud i es promitgen per mes. La probabilitat d\'alerta depèn principalment de la distribució de la població del mosquit tigre i de l\'esforç de mostreig collectiu, que varia segons la ubicació i el mes. La probabilitat d\'alerta s\'ha demostrat que és un bon predictor de la presència de mosquits tigre mesurat pels mètodes tradicionals de vigilància (ovitraps), tal com s\'explica a Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Les estimacions s\'actualitzen setmanalment a mesura que apareixen noves dades.</p><p>Tingueu en compte que aquesta capa de probabilitat d\'alerta només es pot filtrar amb els selectors d\'any i mes que es mostren aquí (i no amb els filtres addicionals a continuació, que són per a altres capes).</p>',
+
     'layer.predictionmodels.description': 'El mapa mostra estimacions de la probabilitat d\'alerta de mosquits tigre, que representa la probabilitat que un participant enviï un informe de mosquit tigre fiable durant un període de dues setmanes, controlant l\'esforç de mostreig (és a dir, que el model representa el fet que hi hagi més participants en algunes àrees que en altres).<p>Aquestes estimacions es mostren en una graella de 0,05 graus de latitud per 0,05 graus de longitud i es promitgen per mes. La probabilitat d\'alerta depèn principalment de la distribució de la població del mosquit tigre i de l\'esforç de mostreig collectiu, que varia segons la ubicació i el mes. La probabilitat d\'alerta s\'ha demostrat que és un bon predictor de la presència de mosquits tigre mesurat pels mètodes tradicionals de vigilància (ovitraps), tal com s\'explica a Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Les estimacions s\'actualitzen setmanalment a mesura que apareixen noves dades.</p><p>Tingueu en compte que aquesta capa de probabilitat d\'alerta només es pot filtrar amb els selectors d\'any i mes que es mostren aquí (i no amb els filtres addicionals a continuació, que són per a altres capes).</p>',
 
     'models.label.prob-1': 'Molt baixa',
     'models.label.prob-2': 'Baixa',
     'models.label.prob-3': 'Mitja',
     'models.label.prob-4': 'Alta',
+    'models.label.prob-nodata': 'Sense dades',
     'models.label.sd-1': 'Molt baixa',
     'models.label.sd-2': 'Baixa',
     'models.label.sd-3': 'Mitja',
@@ -203,6 +238,28 @@ trans.ca = {
     'models.probability': 'Probabilitat',
     'models.uncertainty': 'Incertesa',
 
+    //Comunidades
+    'Andalucia':'Andalusia',
+    'Aragon':'Aragón',
+    'Asturias':'Astúries, Principat de',
+    'Baleares':'Balears, Illes',
+    'Canarias':'Canaries',
+    'Cantabria':'Cantàbria',
+    'CastillaLeon':'Castella i Lleó',
+    'CastillaMancha':'Castella-La Manxa',
+    'Cataluña':'Catalunya',
+    'Valencia':'Comunitat Valenciana',
+    'Extremadura': 'Extremadura',
+    'Galicia':'Galícia',
+    'Madrid':'Madrid, Comunitat de',
+    'Murcia':'Múrcia, Regió de',
+    'Navarra':'Navarra, Comunitat Floral de',
+    'PaisVasco':'País Basc',
+    'Rioja':'Rioja, La',
+    'Ceuta': 'Ceuta',
+    'Melilla': 'Melilla',
+
+    'general.select-region': 'CC.AA',
     'general.year': 'Any',
     'general.month': 'Mes',
 
@@ -215,4 +272,8 @@ trans.ca = {
     'models.hover-sd-label1': 'Valors entre 0.05 i 0.1',
     'models.hover-sd-label2': 'Valors entre 0.1 i 0.15',
     'models.hover-sd-label3': 'Valors entre 0.15 i 1',
+
+    //BITING RATES
+    'layer.biting': 'Probabilitat picades',
+    'bitting.legend-title': 'Incidència',
  };

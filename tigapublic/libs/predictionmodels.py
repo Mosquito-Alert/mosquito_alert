@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Storm Drain Libraries."""
-from base import BaseManager
+from .base import BaseManager
 from tigapublic.constants import gridsize
 
 

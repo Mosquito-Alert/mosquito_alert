@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect
-from django.core.urlresolvers import reverse
 from django.db import connection
 from tigaserver_app.models import *
 from tigacrafting.models import UserStat
@@ -18,7 +17,6 @@ from rest_framework.response import Response
 from tigacrafting.views import filter_reports
 from tigaserver_project import settings
 import json
-from sets import Set
 import datetime
 from django.utils import timezone
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
@@ -27,12 +25,11 @@ from django.core.paginator import Paginator
 import math
 from django.utils import translation
 
-from tigapublic.models import MapAuxReports
-
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
+from django.urls import reverse
 
 
 @xframe_options_exempt
@@ -696,7 +693,7 @@ def report_stats_ccaa(request):
     """)
     data = cursor.fetchall()
 
-    years = Set()
+    years = set()
     for elem in data:
         years.add(int(elem[1]))
     years = list(years)

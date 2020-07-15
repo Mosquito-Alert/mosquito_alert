@@ -119,7 +119,6 @@ var MapView = MapView.extend({
         //epidemiology marker
         else{
           iconImgUrl = _this.getEpidemiologyIcon(marker._data).split('.').slice(0, -1).join('.')
-          console.log(iconImgUrl +'_selected.svg')
           var selectedIcon = new this.epiSelectedIcon(
             {iconUrl: iconImgUrl +'_selected.svg'})
         }

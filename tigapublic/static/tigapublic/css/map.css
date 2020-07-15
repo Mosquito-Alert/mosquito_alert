@@ -639,6 +639,12 @@ button[data-id='notification-presets'] {
 
 /* NEW */
 /* MODELS */
+
+.models-type-label{
+	float: left;
+	min-width: 45px;
+	padding: 5px;
+}
 #forecast_date_selector {
   font-size: .9em;
 }
@@ -648,6 +654,13 @@ button[data-id='notification-presets'] {
 }
 #forecast_date_selector div.bootstrap-select {
   width:150px;
+}
+#forecast_date_selector.model-type {
+  display:table;
+}
+
+.model-type span{
+	padding: 0px 10px 0px 5px;
 }
 #layer_I h5 {
   font-size: 1em;
@@ -660,7 +673,10 @@ div#map canvas.leaflet-heatmap-layer {
 }
 .question-mark-toc {
   position: absolute;
-  right: 10px;
+	min-width: 5%;
+  /* right: 6px; */
+	margin-left:5px;
+	top: 10px;
   border: 1px solid #cacaca;
   padding: 2px 5px;
   border-radius: 30%;

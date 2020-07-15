@@ -47,62 +47,62 @@ fields_available = [
     ('ref_system', 'Ref. System'),
     ('municipality__nombre', 'Municipality'),
     ('type', 'Type'),
-    ('t_q_1', {
-        'label': 'Adult question 1',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('t_a_1', {
-        'label': 'Adult answer 1',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('t_q_2', {
-        'label': 'Adult question 2',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('t_a_2', {
-        'label': 'Adult answer 2',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('t_q_3', {
-        'label': 'Adult question 3',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('t_a_3', {
-        'label': 'Adult answer 3',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_q_1', {
-        'label': 'Site question 1',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_a_1', {
-        'label': 'Site answer 1',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_q_2', {
-        'label': 'Site question 2',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_a_2', {
-        'label': 'Site answer 2',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_q_3', {
-        'label': 'Site question 3',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_a_3', {
-        'label': 'Site answer 3',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_q_4', {
-        'label': 'Site question 4',
-        'permissions':  [superusers_group, managers_group]
-    }),
-    ('s_a_4', {
-        'label': 'Site answer 4',
-        'permissions':  [superusers_group, managers_group]
-    }),
+    # ('t_q_1', {
+    #     'label': 'Adult question 1',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('t_a_1', {
+    #     'label': 'Adult answer 1',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('t_q_2', {
+    #     'label': 'Adult question 2',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('t_a_2', {
+    #     'label': 'Adult answer 2',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('t_q_3', {
+    #     'label': 'Adult question 3',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('t_a_3', {
+    #     'label': 'Adult answer 3',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_q_1', {
+    #     'label': 'Site question 1',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_a_1', {
+    #     'label': 'Site answer 1',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_q_2', {
+    #     'label': 'Site question 2',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_a_2', {
+    #     'label': 'Site answer 2',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_q_3', {
+    #     'label': 'Site question 3',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_a_3', {
+    #     'label': 'Site answer 3',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_q_4', {
+    #     'label': 'Site question 4',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
+    # ('s_a_4', {
+    #     'label': 'Site answer 4',
+    #     'permissions':  [superusers_group, managers_group]
+    # }),
     ('expert_validated', 'Expert validated'),
     ('private_webmap_layer', 'Expert validation result'),
     ('single_report_map_url', 'Map link'),
@@ -205,11 +205,59 @@ gridsize = 0.05
 #############
 # MODELS    #
 #############
-"""Params for prediction models layer"""
+"""Params for mosquito/vector models layer"""
 
-prediction_models_folder = (settings.BASE_DIR +
-                            '/tigapublic/files/models/')
+# BITING RATES (FILES LOCATION)
+biting_rates_models_folder = (settings.BASE_DIR +
+                              '/tigapublic/files/static/models/biting/')
+biting_file_name = 'mascp_monthly'
+biting_file_ext = '.csv'
 
-prediction_file_name = 'mascp_monthly'
-prediction_file_ext = '.csv'
-prediction_days_ahead = 7
+# GRID VECTOR MODELS PROPERTIES
+grid_vectors_models_folder = (settings.BASE_DIR +
+                              '/tigapublic/files/static/models/vector/grid/')
+
+vector_file_name = 'mascp_monthly'
+vector_file_ext = '.csv'
+vector_days_ahead = 7
+
+# MUNICIPALITIES VECTOR MODELS PROPERTIES
+municipalities_vector_models_folder = (
+    settings.BASE_DIR +
+    '/tigapublic/files/static/models/vector/municipalities/'
+    )
+municipalities_vector_file_name = 'mascp_monthly'
+municipalities_vector_file_ext = '.csv'
+
+# AVAILABLE MOSQUITO SPECIES
+vectors = ['tig', 'jap', 'yfv']
+
+# AVAILABLE ILLNESS MODELS
+virus = ['den', 'chk', 'yf', 'wnv', 'zk']
+
+# MUNICIPALITIES VIRUS MODELS PROPERTIES
+municipalities_virus_models_folder = (
+    settings.BASE_DIR +
+    '/tigapublic/files/static/models/virus/municipalities/'
+    )
+municipalities_virus_file_name = 'mascp_monthly'
+municipalities_virus_file_ext = '.csv'
+
+# MUNICIPALITIES GEOMETRIES BY CC.AA
+municipalities_geom_folder = (
+    settings.BASE_DIR +
+    '/tigapublic/files/static/geoms/ccaa/'
+    )
+municipalities_geom_file_name = 'ccaa_'
+municipalities_geom_file_ext = '.geojson'
+
+# UNCERTAINTY GEOMETRIES BY CC.AA
+municipalities_sd_geom_folder = (
+    settings.BASE_DIR +
+    '/tigapublic/files/static/geoms/ccaa/'
+    )
+municipalities_sd_geom_file_name = 'ccaa_sd_'
+municipalities_sd_geom_file_ext = '.geojson'
+
+tiles_path = (settings.BASE_DIR +
+              '/tigapublic/files/static/tiles')

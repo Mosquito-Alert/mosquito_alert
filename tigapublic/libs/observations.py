@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from StringIO import StringIO
+from io import StringIO, BytesIO
 from zipfile import ZipFile
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
-from base import BaseManager
-from filters import FilterManager
-from notifications import NotificationManager
+from .base import BaseManager
+from .filters import FilterManager
+from .notifications import NotificationManager
 from tigapublic.constants import (fields_available, managers_group,
                                   superusers_group)
 from tigapublic.models import AuthUser, MapAuxReports, ReportsMapData
 from tigapublic.resources import GetObservationResource, NotificationResource
-from predictionmodels import predictionModels
+from .predictionmodels import predictionModels
 
 
 def coordinateListToWKTPolygon(coordinates):
@@ -43,22 +43,18 @@ class ObservationExporter(BaseManager):
     order_of_fields = {
         superusers_group: (
             'version_uuid', 'user_id', 'observation_date', 'lon', 'lat',
-            'ref_system', 'municipality__nombre', 'type', 't_q_1', 't_a_1', 't_q_2',
-            't_a_2', 't_q_3', 't_a_3', 's_q_1', 's_a_1', 's_q_2', 's_a_2',
-            's_q_3', 's_a_3', 's_q_4', 's_a_4', 'expert_validated',
+            'ref_system', 'municipality__nombre', 'type', 'expert_validated',
             'private_webmap_layer', 'single_report_map_url', 'note'
         ),
         managers_group: (
             'version_uuid', 'user_id', 'observation_date', 'lon', 'lat',
-            'ref_system', 'municipality__nombre', 'type', 't_q_1', 't_a_1', 't_q_2',
-            't_a_2', 't_q_3', 't_a_3', 's_q_1', 's_a_1', 's_q_2', 's_a_2',
-            's_q_3', 's_a_3', 's_q_4', 's_a_4', 'expert_validated',
+            'ref_system', 'municipality__nombre', 'type', 'expert_validated',
             'private_webmap_layer', 'single_report_map_url'
         ),
         'anonymous': (
             'version_uuid', 'observation_date', 'lon', 'lat', 'ref_system',
-            'municipality__nombre', 'type', 'expert_validated', 'private_webmap_layer',
-            'single_report_map_url'
+            'municipality__nombre', 'type', 'expert_validated',
+            'private_webmap_layer', 'single_report_map_url'
         )
     }
 
@@ -73,13 +69,13 @@ class ObservationExporter(BaseManager):
         # All fields available
         fields = OrderedDict(fields_available)
         # Get and store the fields available to this role
-        self.fields = [key for key, value in fields.iteritems()
+        self.fields = [key for key, value in fields.items()
                        if type(value).__name__ == 'str'
                        or 'permissions' not in value
                        or role in value['permissions']]
         # Get and store the headers available to this role
         self.headers = []
-        for key, value in fields.iteritems():
+        for key, value in fields.items():
             if type(value).__name__ == 'str':
                 self.headers.append(value)
             elif 'permissions' not in value or role in value['permissions']:
@@ -105,7 +101,7 @@ class ObservationExporter(BaseManager):
                 "/tigapublic/files/observations_public_metadata.txt"
             )
 
-        in_memory = StringIO()
+        in_memory = BytesIO()
         zip = ZipFile(in_memory, "a")
         zip.writestr("license.txt", license_file.read())
         zip.writestr("obs_metadata.txt",
@@ -223,7 +219,7 @@ class ObservationManager(BaseManager):
         # Run filters
         try:
             self.filter.run()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             self.response['error'] = str(e)
 
         return self.filter.queryset
@@ -256,7 +252,7 @@ class ObservationManager(BaseManager):
     def get_intersecting(self, extra=False):
         """Get observations intersecting polygon."""
         # If user is not authorized, bail out
-        if not self.request.user.is_authorized():
+        if not self.request.user.is_authorized:
             return self._end_unauthorized()
 
         # Get the filtered data
@@ -299,9 +295,7 @@ class ObservationManager(BaseManager):
         # If getting single observation and user is logged
         # add additional fields
         if key == 'single' and self.request.user.is_valid():
-            fields.extend(['note', 't_q_1', 't_q_2', 't_q_3', 't_a_1',
-                           't_a_2', 't_a_3', 's_q_1', 's_q_2', 's_q_3',
-                           's_q_4', 's_a_1', 's_a_2', 's_a_3', 's_a_4'])
+            fields.extend(['note'])
 
         return fields
 
@@ -321,13 +315,11 @@ class ObservationManager(BaseManager):
         ).values(*fields)
 
         self.response = qs[0]
-        self.response['notifs'] = sorted(
-            list(notifications.values(
+        self.response['notifs'] = list(notifications.values(
                 'expert__username',
                 'notification_content__body_html_es',
                 'notification_content__title_es',
-                'date_comment')
-                ), reverse=True)
+                'date_comment').order_by('-date_comment','expert__username'))
 
         return self._end()
 

@@ -135,7 +135,7 @@ add = {
     'epi.date_symptom':'Fecha primeros síntomas',
     'epi.date_arribal': 'Fecha de llegada',
     'epi.date_notification': 'Fecha de notificación',
-    'epi.date_nodate': 'Sin fecha (llegada/notificación)',
+    'epi.date_nodate': 'Sin fecha',
     'epi.age': 'Edad',
     'epi.country':'País visitado',
     'epi.patient_state':'Estado',
@@ -175,5 +175,23 @@ add = {
     'epidemiology.upload-explanation': 'ATENCIÓN!! Este proceso de importación eliminará todos los datos previamente almacenados de la capa de Epidemiología',
     'epidemiology.empty-layer': 'En estos momentos la capa Epidemiología no contiene datos.',
     'epidemiology.upload-error': 'Se ha producido un error durante el proceso de importación',
+
+    //model_selector
+    'layer.models.virus': 'Tipo',
+    'layer.models.den': 'Dengue',
+    'layer.models.zika': 'Zika',
+    'layer.models.yf': 'Fiebre amarilla',
+    'layer.models.chk': 'Chikunguña',
+    'layer.models.wnv': 'Virus del oeste del nilo',
+    'layer.predictionmodels.virus': 'Probabilidad enfermedad',
+    'layer.predictionmodels-virus.description': 'El mapa muestra estimaciones de la probabilidad de alerta de mosquito tigre, que representa la probabilidad de que un participante envíe un informe confiable de mosquito tigre durante un período de dos semanas, controlando el esfuerzo de muestreo (lo que significa que el modelo incorpora el hecho de que hay más participantes en algunas zonas que en otras).<p>Estas estimaciones se muestran en una cuadrícula de 0.05 grados de latitud por 0.05 grados de longitud y se promedian por mes. La probabilidad de alerta depende principalmente de la distribución de la población del mosquito tigre, que varia según la ubicación y el mes. Se ha demostrado que la probabilidad de alerta es un buen predictor de la presencia del mosquito tigre medida por los métodos tradicionales de vigilancia (ovitraps), como se explica en Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Las estimaciones se actualizan semanalmente a medida que ingresan nuevos datos.</p><p>Tenga en cuenta que esta capa de probabilidad de alerta solo se puede filtrar con los selectores de año y mes que se muestran aquí (y no con los filtros adicionales a continuación, que son para otras capas)</p>',
+
+    //sugbroups
+    'group.tiger': 'Mosquito tigre',
+    'group.zika': 'Mosquito fiebre amarilla',
+    'group.japonicus': 'Aedes japonicus',
+    'group.koreicus': 'Aedes koreicus',
+    'group.culex': 'Culex pipiens',
+    'group.mix': 'Aedes jap/kor',
 };
 _.extend(trans.es, add);

@@ -74,14 +74,42 @@ var HeaderView = Backbone.View.extend({
             'async': true,
             url:  MOSQUITO.config.URL_API + 'ajax_is_logged/',
             success: function(response){
-                MOSQUITO.config.predictionmodels_available = response.models;
-                MOSQUITO.app.user=response.data;
-                MOSQUITO.app.trigger('app_logged', response.success);
+              MOSQUITO.config.availableVectorData = response.availableVectorData
+              MOSQUITO.config.availableVirusData = response.availableVirusData
+              MOSQUITO.config.availableBitingData = response.biting_models
+              MOSQUITO.config.vector_municipalities ={}
+              MOSQUITO.config.vector_grid ={}
+              MOSQUITO.config.virus_municipalities ={}
+
+              var dict = response.vector_models_by_municipality
+              //do not include species with no data models (empty array)
+              for (var specie in dict){
+                if (dict[specie].length){
+                  MOSQUITO.config.vector_municipalities[specie] = dict[specie]
+                }
+              }
+              var dict = response.vector_models_by_grid
+              for (var specie in dict){
+                if (dict[specie].length){
+                  MOSQUITO.config.vector_grid[specie] = dict[specie]
+                }
+              }
+              var dict = response.virus_models_by_municipality
+              for (var specie in dict){
+                if (dict[specie].length){
+                  MOSQUITO.config.virus_municipalities[specie] = dict[specie]
+                }
+              }
+
+              MOSQUITO.app.user=response.data;
+              MOSQUITO.app.trigger('app_logged', response.success);
             }
         }).fail(function(error) {
             console.log('no response from login')
             MOSQUITO.app.trigger('app_logged', false);
             MOSQUITO.config.predictionmodels_available = [];
+            MOSQUITO.config.municipalities_models_available = [];
+            MOSQUITO.config.virus_models_available = [];
         });
     },
 
@@ -118,5 +146,6 @@ var HeaderView = Backbone.View.extend({
                 MOSQUITO.app.trigger('app_logged', false);
             }
         });
-    }
+    },
+
 });

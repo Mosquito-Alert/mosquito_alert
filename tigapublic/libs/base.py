@@ -1,6 +1,8 @@
 """Base classes for all API calls."""
 # -*- coding: utf-8 -*-
 import json
+from io import BytesIO
+import gzip
 
 from django.http import HttpResponse
 
@@ -48,3 +50,21 @@ class BaseManager(object):
             content_type='application/json',
             status=self.status
         )
+
+    def _end_gz(self):
+        """Finish the process.
+
+        ZIP Output an HttpResponse with self.response as the content and
+        self.status as status code.
+        """
+        zbuf = BytesIO()
+        zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
+        content = json.dumps(self.response, cls=CustomJSONEncoder)
+        zfile.write(content.encode('utf-8'))
+        zfile.close()
+
+        compressed_content = zbuf.getvalue()
+        response = HttpResponse(compressed_content)
+        response['Content-Encoding'] = 'gzip'
+        response['Content-Length'] = str(len(compressed_content))
+        return response

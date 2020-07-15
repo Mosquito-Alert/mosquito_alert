@@ -133,7 +133,7 @@ add = {
   'epi.date_symptom': 'Date first symptoms',
   'epi.date_arribal': 'Arribal date',
   'epi.date_notification': 'Notification date',
-  'epi.date_nodate': 'No date (arribal/notification)',
+  'epi.date_nodate': 'No date',
   'epi.age': 'Age',
   'epi.country': 'Country',
   'epi.patient_state':'State',
@@ -175,5 +175,23 @@ add = {
   'epidemiology.upload-explanation': 'WARNING!! The upload proces will delete all previouly stored data for the epidemiology layer',
   'epidemiology.empty-layer': 'There is no epidemiology data available at the moment',
   'epidemiology.upload-error': 'An error occurred while importing data',
+
+  //model_selector
+  'layer.models.virus': 'Type',
+  'layer.models.den': 'Dengue',
+  'layer.models.zika': 'Zika',
+  'layer.models.yf': 'Yellow fever',
+  'layer.models.chk': 'Chikungunya',
+  'layer.models.wnv': 'West nile virus',
+  'layer.predictionmodels.virus': 'Virus probability',
+  'layer.predictionmodels-virus.description': 'The map shows estimates of the tiger mosquito alert probability, which represents the probability of a participant sending a reliable tiger mosquito report during any given two-week period, controlling for sampling effort (meaning that the model accounts for the fact that there are more participants in some areas than others).<p>These estimates are shown on a grid of 0.05 degrees latitude by 0.05 degrees longitude and are averaged by month. The alert probability mainly depends on the tiger mosquito’s population distribution, and this varies by location as well as month. The alert probability has been shown to be a good predictor of tiger mosquito presence measured by traditional surveillance methods (ovitraps), as explained in Nature Communications 8:916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. The estimates are updated weekly as new data comes in.</p><p>Note that this alert probability layer can be filtered only with the year and month selectors shown here (and not with the additional filters below, which are for other layers)</p>',
+
+  //sugbroups
+  'group.tiger': 'Tiger mosquito',
+  'group.zika': 'Yellow fever mosquito',
+  'group.japonicus': 'Aedes japonicus',
+  'group.koreicus': 'Aedes koreicus',
+  'group.culex': 'Culex pipiens',
+  'group.mix': 'Aedes jap/kor',
 };
 _.extend(trans.en, add);

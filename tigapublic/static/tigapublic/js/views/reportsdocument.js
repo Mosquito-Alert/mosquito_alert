@@ -148,7 +148,14 @@ var ReportsdocumentView = MapView.extend({
             //remove some unnecessary sublist elements
             $('#map_layers > li.sublist-group-item').remove();
             // remove userfixes layer
-            $('#map_layers > li.list-group-item > label[i18n="layer.userfixes"]').parent().remove();
+
+            if (MOSQUITO.config.keyLayersExcludedFromSharingURL.length){
+              MOSQUITO.config.keyLayersExcludedFromSharingURL.forEach(function(e){
+                  $('#map_layers > li#layer_'+e).parent().remove();
+              })
+
+            }
+
             $('#legend_reports_map button').addClass('disabled');
 
             // Create header map
@@ -162,7 +169,7 @@ var ReportsdocumentView = MapView.extend({
             var theMap = L.map('reports_header_map', { zoomControl:false})
                 .setView(c,z);
 
-            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png', {
                     minZoom: z, // prevent from zooming
                     maxZoom: z,
                     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -185,7 +192,7 @@ var ReportsdocumentView = MapView.extend({
                 map = L.map('map_report_' + row.id, { zoomControl:false}).
                     setView(center, 16);
 
-                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png', {
                         maxZoom: 18,
                         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     }).addTo(map);

@@ -361,9 +361,52 @@ div.layer-group.list-group-item{
     margin-top:5px;
     cursor: pointer;
 }
+
+div.layer-subgroup.list-group-item{
+    display:inline-block;
+    margin-left:10px;
+    width: calc(100% - 14px);
+    padding-right:2px;
+    margin-top:2px;
+    cursor: pointer;
+}
+
+div.layer-subgroup.list-group-item.public{
+    display:inline-block;
+    margin-left:20px;
+    width: calc(100% - 24px);
+    padding-right:2px;
+    margin-top:0px;
+    cursor: pointer;
+}
+
+ul#ul_none{
+  margin-bottom: 0px !important;
+}
+
+ul#ul_combo.public{
+  margin-left:10px;
+}
+
+#map-ui ul#ul_combo li.list-group-item > label {
+    padding-left: 5px;
+    display:inline;
+    /* width: 180px; */
+}
+
 div.layer-group.list-group-item i{
     font-size:200%;
 }
+
+div#div_combo ul.private li.list-group-item{
+  margin-left:20px;
+  width:90%;
+}
+div#div_observations ul#ul_none.private li.list-group-item{
+  margin-left:10px;
+  width:94%;
+}
+
 #map-ui li.list-group-item{
     margin: 4px;
     margin-left:20px;
@@ -408,6 +451,7 @@ div.layer-group.list-group-item i{
     padding:5px 0 5px 5px;
     font-size:95%;
     border:1px solid #ddd;
+    position:relative;
 }
 
 #map-ui li.list-group-item:hover,
@@ -767,13 +811,55 @@ h3.reports{
 }
 
 ul li.tiger_mosquito {
+   background:url('../img/marker_albopictus_2.svg') 0 0 no-repeat no-repeat;
+}
+
+ul.info_list.private li.tiger_mosquito {
    background:url('../img/marker_albopictus_all.svg') 0 0 no-repeat no-repeat;
    text-indent: 42px;
 }
 
 ul li.yellow_fever_mosquito {
+   background:url('../img/marker_aegypti_2.svg') 0 0 no-repeat no-repeat;
+}
+
+ul.info_list.private li.yellow_fever_mosquito {
    background:url('../img/marker_aegypti_all.svg') 0 0 no-repeat no-repeat;
    text-indent: 42px;
+}
+
+li.aedes_japonicus {
+   background:url('../img/marker_japonicus_2.svg') 0 0 no-repeat no-repeat;
+}
+
+ul.info_list.private li.aedes_japonicus {
+   background:url('../img/marker_japonicus_all.svg') 0 0 no-repeat no-repeat;
+   text-indent: 42px;
+}
+
+li.aedes_koreicus {
+   background:url('../img/marker_koreicus_2.svg') 0 0 no-repeat no-repeat;
+}
+
+ul.info_list.private li.aedes_koreicus {
+   background:url('../img/marker_koreicus_all.svg') 0 0 no-repeat no-repeat;
+   text-indent: 42px;
+}
+
+li.culex {
+   background:url('../img/marker_culex_2.svg') 0 0 no-repeat no-repeat;
+}
+
+ul.info_list.private li.culex {
+   background:url('../img/marker_culex_all.svg') 0 0 no-repeat no-repeat;
+   text-indent: 42px;
+}
+li.aedes_jap_kor {
+   background:url('../img/marker_jap_kor.svg') 0 0 no-repeat no-repeat;
+}
+
+li.aedes_albo_cret {
+   background:url('../img/marker_albo_cret.svg') 0 0 no-repeat no-repeat;
 }
 
 li.other_species {
@@ -815,6 +901,7 @@ ul.info_list li span p{
 }
 
 li.tiger_mosquito, li.mosquito_tiger_probable, li.mosquito_tiger_confirmed,
+li.aedes_japonicus, li.aedes_koreicus, li.culex, li.aedes_jap_kor, li.aedes_albo_cret,
 li.yellow_fever_confirmed, li.yellow_fever_probable, li.unidentified,
 li.unclassified, li.not_yet_validated, li.trash_layer, li.site,
 li.other_species, li.userfixes, li.filtered, li.yellow_fever_mosquito,
@@ -954,12 +1041,12 @@ div#div_none{
 
 div.group-title::after,
 div[aria-expanded="false"] div.layer-group.list-group-item div.group-title::after{
-    content: ' ';
-    right:15px;
+  content: ' ';
+  right:15px;
 	height: 0;
 	position: absolute;
 	width: 0;
-    top:15px;
+  top:15px;
 	border: 5px solid transparent;
 	border-top-color: #333;
 }
@@ -975,7 +1062,10 @@ div[aria-expanded="false"] div.layer-group.list-group-item div.group-title::afte
   height: 0px;
 }
 
-div[aria-expanded="true"] div.layer-group.list-group-item div.group-title::after {
+div[aria-expanded="true"] div.layer-group.list-group-item div.group-title::after,
+div[aria-expanded="true"] div.layer-subgroup.list-group-item div.group-title::after,
+div[aria-expanded="true"] div.sublayer-group.list-group-item div.group-title::after,
+div[aria-expanded="true"] div.sublayer-group.list-group-item div.group-title::after {
   content: ' ';
   left: 5px;
   height: 0;
@@ -987,6 +1077,7 @@ div[aria-expanded="true"] div.layer-group.list-group-item div.group-title::after
   float:left;
 }
 
+div.layer-subgroup.list-group-item div.group-title,
 div.layer-group.list-group-item div.group-title {
   padding-left:5px;
 }
@@ -1023,7 +1114,9 @@ div.layer-group.list-group-item div.group-title {
   bottom: 0px;
   margin:0px;
 }
-.layer-group.active, .layer-group.active:hover {
+
+.layer-group.active, .layer-group.active:hover,
+.layer-subgroup.active, .layer-subgroup.active:hover {
   background:#dedede !important;
   color:black;
   border-color:#CACACA;
@@ -1349,4 +1442,24 @@ img.epi-icon{
 
 #epi-patient-container button span{
   max-width: 300px;
+}
+
+#info_vector_models,
+#info_virus_models{
+  float: left;
+  padding-right:5px;
+}
+
+div#filters_accordion{
+  width: 90%;
+}
+
+div#layer-title-container label{
+  margin-bottom:0px;
+  min-width: 85%;
+}
+div#layer-title-container{
+  margin-bottom:10px;
+  line-height: 2;
+  display:block;
 }

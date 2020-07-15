@@ -337,7 +337,7 @@ def ajax_is_logged(request):
             'username': '', 'groups': [], 'roles': []
         }
     }
-    success = request.user.is_authenticated()
+    success = request.user.is_authenticated
     if success is True:
         request.session.set_expiry(86400)
         response['success'] = True
@@ -479,7 +479,7 @@ def hashtag_filter(qs, hashtag):
 
 def municipality_filter(request, qs, municipalities):
     """Apply municipalities filter."""
-    if request.user.is_authenticated() and municipalities == '0':
+    if request.user.is_authenticated and municipalities == '0':
         if request.user.groups.filter(name=managers_group).exists():
             # All municipalities of registered user
             qs = qs.filter(
@@ -736,9 +736,7 @@ def map_aux_reports(request, id):
     else:
         arrayNotifs = []
         # Add some extra columns to query
-        field_names.extend(['note', 't_q_1', 't_q_2', 't_q_3', 't_a_1',
-                            't_a_2', 't_a_3', 's_q_1', 's_q_2', 's_q_3',
-                            's_q_4', 's_a_1', 's_a_2', 's_a_3', 's_a_4'])
+        field_names.extend(['note'])
 
         if request.user.groups.filter(name=superusers_group).exists():
             # Super users can alwahs send a notification
@@ -1113,10 +1111,7 @@ def reports(request, bounds, years, months, date_start, date_end, categories,
                    'visible', 'final_expert_status']
 
     if userIsValid(request.user):
-        field_names.extend([
-            'note', 't_q_1', 't_q_2', 't_q_3', 't_a_1', 't_a_2', 't_a_3',
-            's_q_1', 's_q_2', 's_q_3', 's_q_4', 's_a_1', 's_a_2', 's_a_3',
-            's_a_4'])
+        field_names.extend(['note'])
 
     # Apply filters
     qs = MapAuxReports.objects.all()
@@ -1143,7 +1138,7 @@ def reports(request, bounds, years, months, date_start, date_end, categories,
 # Get data for stormdrain configuration on client site. Only registered users
 def getStormDrainUserSetup(request):
     """GetStormDrainUserSetup."""
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1353,7 +1348,7 @@ def putStormDrainStyle(request, ):
     res = {'success': False, 'err': ''}
 
     style_str = request.body.decode(encoding='UTF-8')
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1396,7 +1391,7 @@ def putStormDrainStyle(request, ):
 @cross_domain_ajax
 def getStormDrainData(request):
     """getStormDrainData."""
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_id = request.user.id
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -1675,7 +1670,7 @@ def stormDrainUpload(request, **kwargs):
 def getStormDrainLastVersion(request):
     """getStormDrainLastVersion."""
     # Return the last uploaded version.0 if there is none
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         qs = StormDrain.objects.values(
             'version'
         ).filter(
@@ -1694,7 +1689,7 @@ def getStormDrainLastVersion(request):
 
 def addStormDrainVersion(request, version_id=None):
     """addStormDrainVersion."""
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if version_id is None:
             version_id = getStormDrainLastVersion(request) + 1
 

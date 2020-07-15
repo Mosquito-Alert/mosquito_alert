@@ -41,11 +41,29 @@ trans.es = {
     'group.userfixes':'Distribución de participantes',
     'group.breeding_sites':'Lugares de cría',
     'group.userdata':'Capas de usuario',
-    'group.filters':'Filtros',
+    'group.models':'Modelos disponibles',
+    'group.filters':'Filtros observaciones ciudadanas',
+    'models.type':'Tipo',
+    'models.type.grid':'Malla',
+    'models.type.municipalities':'Municipios',
     'layer.mosquito_tiger_probable': 'Posible mosquito tigre',
     'layer.mosquito_tiger_confirmed': 'Mosquito tigre confirmado',
     'layer.yellow_fever_confirmed': 'Mosquito fiebre amarilla confirmado',
     'layer.yellow_fever_probable': 'Posible mosquito fiebre amarilla',
+    'layer.mosquito_japonicus_confirmed': 'Aedes japonicus confirmado',
+    'layer.mosquito_japonicus_probable': 'Aedes japonicus posible',
+    'layer.mosquito_koreicus_confirmed': 'Aedes koreicus confirmado',
+    'layer.mosquito_koreicus_probable': 'Aedes koreicus posible',
+    'layer.mosquito_culex_confirmed': 'Culex pipiens confirmado',
+    'layer.mosquito_culex_probable': 'Culex pipiens posible',
+    'layer.mosquito_jap_kor': 'Aedes jap/kor',
+    'layer.mosquito_jap_kor_confirmed': 'Aedes jap/kor',
+    'layer.mosquito_jap_kor_probable': 'Aedes jap/kor',
+    'layer.mosquito_albo_cret': 'Aedes albo/cret',
+    'layer.mosquito_albo_cret_confirmed': 'Aedes albo/cret',
+    'layer.mosquito_albo_cret_probable': 'Aedes albo/cret',
+    'group.combo': 'Combo especies',
+
     'layer.unidentified': 'No identificable',
     'layer.breeding_site_other': 'Lugares de cría',
     'layer.breeding_site_not_yet_filtered': 'Lugares de cría',
@@ -56,6 +74,11 @@ trans.es = {
     'layer.filtered': 'Filtrado',
 
     'layer.tiger': 'Mosquito tigre',
+    'layer.japonicus': 'Aedes japonicus',
+    'layer.koreicus': 'Aedes koreicus',
+    'layer.culex': 'Culex pipiens',
+    'layer.jap_kor': 'Aedes jap/kor',
+    'layer.albo_cret': 'Aedes albo/cret',
     'layer.zika': 'Mosquito fiebre amarilla',
     'layer.site': 'Lugares de cría',
 
@@ -102,6 +125,13 @@ trans.es = {
 
     'expertinfo.tiger_mosquito': ' Según los expertos, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).',
     'expertinfo.yellow_fever_mosquito':' Según los expertos, las fotos de esta observación podrían ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).',
+
+    'expertinfo.japonicus': ' Según los expertos, las fotos de esta observación podrían ser de <i>Aedes japonicus</i>.',
+    'expertinfo.koreicus': ' Según los expertos, las fotos de esta observación podrían ser de <i>Aedes koreicus</i>.',
+    'expertinfo.culex': ' Según los expertos, las fotos de esta observación podrían ser de <i>Culex pipiens</i>.',
+    'expertinfo.jap_kor': ' Según los expertos, las fotos de esta observación podrían ser de <i>Aedes japonicus</i> o <i>Aedes koreicus</i>.',
+    'expertinfo.albo_cret': ' Según los expertos, las fotos de esta observación podrían ser de <i>Aedes albopictus</i> o <i>Aedes cretinus</i>.',
+
     'expertinfo.other_species':' Según los expertos, las fotos de esta observación podrían ser de otras especies de mosquito.',
     'expertinfo.unidentify': ' Según los expertos, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.',
     'expertinfo.site': 'Observaciones ciudadanas de posibles lugares de cría (imbornales) de mosquito tigre o de la fiebre amarilla.',
@@ -185,20 +215,46 @@ trans.es = {
     'label.user-municipalities': 'Mis municipios',
 
     // MODELS
-    'layer.predictionmodels': 'Modelos disponibles de probabilidad de mosquito tigre',
+    'layer.predictionmodels.vector': 'Probabilidad Mosquito Alert',
     //HTML FORMAT
+    'layer.biting.description': 'El mapa muestra estimaciones de la probabilidad de alerta de picaduras de mosquito tigre, que representa la probabilidad de que un participante envíe un informe confiable de mosquito tigre durante un período de dos semanas, controlando el esfuerzo de muestreo (lo que significa que el modelo incorpora el hecho de que hay más participantes en algunas zonas que en otras).<p>Estas estimaciones se muestran en una cuadrícula de 0.05 grados de latitud por 0.05 grados de longitud y se promedian por mes. La probabilidad de alerta depende principalmente de la distribución de la población del mosquito tigre, que varia según la ubicación y el mes. Se ha demostrado que la probabilidad de alerta es un buen predictor de la presencia del mosquito tigre medida por los métodos tradicionales de vigilancia (ovitraps), como se explica en Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Las estimaciones se actualizan semanalmente a medida que ingresan nuevos datos.</p><p>Tenga en cuenta que esta capa de probabilidad de alerta solo se puede filtrar con los selectores de año y mes que se muestran aquí (y no con los filtros adicionales a continuación, que son para otras capas)</p>',
+
     'layer.predictionmodels.description': 'El mapa muestra estimaciones de la probabilidad de alerta de mosquito tigre, que representa la probabilidad de que un participante envíe un informe confiable de mosquito tigre durante un período de dos semanas, controlando el esfuerzo de muestreo (lo que significa que el modelo incorpora el hecho de que hay más participantes en algunas zonas que en otras).<p>Estas estimaciones se muestran en una cuadrícula de 0.05 grados de latitud por 0.05 grados de longitud y se promedian por mes. La probabilidad de alerta depende principalmente de la distribución de la población del mosquito tigre, que varia según la ubicación y el mes. Se ha demostrado que la probabilidad de alerta es un buen predictor de la presencia del mosquito tigre medida por los métodos tradicionales de vigilancia (ovitraps), como se explica en Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Las estimaciones se actualizan semanalmente a medida que ingresan nuevos datos.</p><p>Tenga en cuenta que esta capa de probabilidad de alerta solo se puede filtrar con los selectores de año y mes que se muestran aquí (y no con los filtros adicionales a continuación, que son para otras capas)</p>',
     'models.label.prob-1': 'Muy baja',
     'models.label.prob-2': 'Baja',
     'models.label.prob-3': 'Media',
     'models.label.prob-4': 'Alta',
+    'models.label.prob-nodata': 'Sin datos',
     'models.label.sd-1': 'Muy baja',
     'models.label.sd-2': 'Baja',
     'models.label.sd-3': 'Media',
     'models.label.sd-4': 'Alta',
     'models.probability': 'Probabilidad',
     'models.uncertainty': 'Incertidumbre',
+    'layer.models.vector': 'Esp.',
 
+    //Comunidades
+    'Andalucia':'Andalucía',
+    'Aragon':'Aragón',
+    'Asturias':'Asturias, Principado de',
+    'Baleares':'Islas Baleares',
+    'Canarias':'Canarias',
+    'Cantabria':'Cantabria',
+    'CastillaLeon':'Castilla y León',
+    'CastillaMancha':'Castilla-La Mancha',
+    'Cataluña':'Cataluña',
+    'Valencia':'Comunitat Valenciana',
+    'Extremadura': 'Extremadura',
+    'Galicia':'Galicia',
+    'Madrid':'Madrid, Comunidad de',
+    'Murcia':'Murcia, Región de',
+    'Navarra':'Navarra, Comunidad Floral de',
+    'PaisVasco':'País Vasco',
+    'Rioja':'Rioja, La',
+    'Ceuta': 'Ceuta',
+    'Melilla': 'Melilla',
+
+    'general.select-region': 'CC.AA',
     'general.year': 'Año',
     'general.month': 'Mes',
 
@@ -212,4 +268,7 @@ trans.es = {
     'models.hover-sd-label2': 'Valores entre 0.1 y 0.15',
     'models.hover-sd-label3': 'Valores entre 0.15 y 1',
 
+    // BITING RATES
+    'layer.biting': 'Probabilidad picaduras',
+    'bitting.legend-title': 'Incidencia',
 };

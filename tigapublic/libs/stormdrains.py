@@ -5,7 +5,7 @@ import json
 import os
 import tempfile
 from operator import __or__ as OR
-from StringIO import StringIO
+from io import BytesIO
 from zipfile import ZipFile
 
 from django.db import connection
@@ -14,13 +14,14 @@ from django.http import HttpResponse
 from pyproj import Proj, transform
 from tablib import Dataset
 
-from base import BaseManager
+from .base import BaseManager
 from tigapublic.constants import (compulsatory_stormdrain_fields,
                                   defaultStormDrainStyle, false_values,
                                   null_values, optional_stormdrain_fields,
                                   stormdrain_templates_path, tematic_fields,
                                   true_values)
 from tigapublic.models import AuthUser, StormDrain, StormDrainUserVersions
+from functools import reduce
 
 
 class StormDrainVersioningMixin(BaseManager):
@@ -59,6 +60,7 @@ class StormDrainVersioningMixin(BaseManager):
         """Constructor."""
         """A QuerySet of all versions belonging to the current
             user. It is a subset of self.versions."""
+
         self.my_versions = self.versions.filter(user=request.user.id)
         super(StormDrainVersioningMixin, self).__init__(request)
 
@@ -68,7 +70,7 @@ class StormDrainVersioningMixin(BaseManager):
         If there is no version, returns 0.
         """
         # If user is root or manager
-        if request.user.is_authorized():
+        if request.user.is_authorized:
             # Get all versions (except null) from this user's storm drains
             # Last version is the first record
             qs = StormDrain.objects.values(
@@ -78,7 +80,7 @@ class StormDrainVersioningMixin(BaseManager):
                 version__isnull=False
             ).distinct().order_by('-version')
 
-            if qs.count() > 0:
+            if len(qs) > 0:
                 # Get the first element (last version)
                 version = qs[0]['version']
             else:
@@ -96,7 +98,7 @@ class StormDrainVersioningMixin(BaseManager):
         If user is not authorized (is anonymous) returns 0.
         """
         # User must be authorized (either root or manager)
-        if request.user.is_authorized():
+        if request.user.is_authorized:
             # If no version_id was provided, get the last one from the
             # database and increase it by 1.
             if version_id is None:
@@ -110,7 +112,10 @@ class StormDrainVersioningMixin(BaseManager):
             defaultStyle = json.dumps(style)
 
             # Hide (set visible to False) all current versions of the user
-            self.my_versions.update(visible=False)
+            if (len(self.my_versions) > 0):
+                StormDrainUserVersions.objects.filter(
+                    user=self.request.user.id
+                ).update(visible=False)
 
             # Get the user object
             user = AuthUser.objects.only('id').get(id=request.user.id)
@@ -125,6 +130,7 @@ class StormDrainVersioningMixin(BaseManager):
                 title=request.POST.get('title', '')
             )
             new.save()
+
             return version_id
         else:
             return 0
@@ -141,11 +147,20 @@ class StormDrainData(StormDrainVersioningMixin, BaseManager):
             visible__exact=True
         )[:1]
 
-        if visible_versions.count() > 0:
+        if len(visible_versions) > 0:
             version = visible_versions[0]['version']
             jstyle = json.loads(visible_versions[0]['style_json'])
         else:
-            jstyle = {'categories': []}
+            # Style by default
+            # jstyle = {'categories': [{"color": "#0000ff", "conditions": []}]}
+            jstyle = {'categories': [
+                {"color": "#ff0000",
+                 "conditions": [
+                    {"operator": "=",
+                     "field": "water",
+                     "value": "true"}
+                     ]
+                 }]}
             version = -1
 
         return {"version": version, "jstyle": jstyle}
@@ -156,7 +171,9 @@ class StormDrainData(StormDrainVersioningMixin, BaseManager):
         ends = []
         cases = []
         self.response['colors'] = []
+
         # loop through each category in jstyle['categories']
+
         for category in visible_styles['jstyle']['categories']:
             # get the color of this category
             self.response['colors'].append(category['color'])
@@ -186,20 +203,34 @@ class StormDrainData(StormDrainVersioningMixin, BaseManager):
             ends.append(' END ')
             cases.append(t)
             counter += 1
-        # Add default value -1 to the last else and close cases when ... end.
+
+            # Add default value -1 to the last else
+            # and close cases when ... end.
         cases = ''.join(cases) + '-1' + ''.join(ends)
+
+        # When no categories exist
+        if (cases == '-1'):
+            cases = None
 
         return cases
 
     def _get_data(self, cases, visible_styles):
         """Return the data of the visible layers."""
-        data = StormDrain.objects.all().extra(
-            select={
-                'date': 'TO_CHAR(date, \'YYYY/MM\')',
-                'n': cases
-            },
-            where=[cases + " != %s"], params=[-1]
-        )
+        if cases is None:
+            data = StormDrain.objects.all().extra(
+                select={
+                    'date': 'TO_CHAR(date, \'YYYY/MM\')',
+                    'n': '1'
+                }
+            )
+        else:
+            data = StormDrain.objects.all().extra(
+                select={
+                    'date': 'TO_CHAR(date, \'YYYY/MM\')',
+                    'n': cases
+                },
+                where=[cases + " != %s"], params=[-1]
+            )
         # FILTER THE DATA
         if self.request.user.is_root():
             # if it's root get any storm drain of the selected user versions
@@ -224,7 +255,7 @@ class StormDrainData(StormDrainVersioningMixin, BaseManager):
     def get(self):
         """Get the storm drain data."""
         # Return an Unauthorized 401 message if the user is not authenticated
-        if not self.request.user.is_authorized():
+        if not self.request.user.is_authorized:
             return self._end_unauthorized()
 
         # Get json style structure from StormDrainUserVersions where visible
@@ -238,7 +269,7 @@ class StormDrainData(StormDrainVersioningMixin, BaseManager):
 
         self.response['style_json'] = visible_styles['jstyle']
         self.response['rows'] = list(data.values_list('lat', 'lon', 'n'))
-        self.response['num_rows'] = data.count()
+        self.response['num_rows'] = len(data)
 
         return self._end()
 
@@ -290,11 +321,17 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
     def _get_user_data_versions(self):
         """Return the user_versions."""
         # initialize result
+
         versions = {}
         # store versions from other users
-        self.other_versions = self.versions.exclude(
+        self.other_versions = self.versions.filter(
+            user__in=StormDrain.objects.values(
+                        'user_id'
+                    ).distinct()
+        ).exclude(
             user_id__exact=self.request.user.id
         ).order_by('-version', 'user')
+
         # get visibility of other user's data
         visibleVer = self._get_versions_visibility()
         # Get available versions for the user to choose
@@ -378,13 +415,14 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
         """Return a list of versions with their visibility."""
         visibleVer = {}
         # Get visible versions from super user versions
-        if self.my_versions.count() > 0 and self.my_versions[0]['style_json']:
+        if len(self.my_versions) > 0:
             jstyle = json.loads(self.my_versions[0]['style_json'])
             if 'users_version' in jstyle:
                 for oneStyle in jstyle['users_version']:
                     iduser = str(oneStyle['user_id'])
                     if iduser not in visibleVer:
                         visibleVer[iduser] = oneStyle['version']
+
         # If we have no data, get visible versions from other user's versions
         if (not len(visibleVer.keys())):
             for oneVer in self.other_versions:
@@ -397,7 +435,7 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
     def get(self):
         """Return the list of storm drain user setups."""
         # Return an Unauthorized 401 message if the user is not authenticated
-        if not self.request.user.is_authenticated():
+        if not self.request.user.is_authenticated:
             return self._end_unauthorized()
 
         # If super-mosquito, get list of all users and versions available
@@ -425,23 +463,27 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
         Returns True if there is data.
         """
         # If user has no version ...
-        if (self.my_versions.count() == 0):
+        if (len(self.my_versions) == 0):
             # If user is not root, return False
             if not self.request.user.is_root():
                 return False
+                # self._add_version(self.request)
             else:
                 # if user is root, add a new version
                 self._add_version(self.request, 1)
         else:
             # Set the visibility of all the versions to False
-            self.my_versions.update(visible=False)
+            user_version = StormDrainUserVersions.objects.filter(
+                user=self.request.user.id
+            )
+            user_version.update(visible=False)
 
         return True
 
     def put(self):
         """Store a style configuration on the server."""
         # Return an Unauthorized 401 message if the user is not authenticated
-        if not self.request.user.is_authenticated():
+        if not self.request.user.is_authenticated:
             return self._end_unauthorized()
 
         deactivated = self._hide_all_versions()
@@ -455,10 +497,11 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
         style = json.loads(style_str)
 
         # Save the style json structure and make current version visible
-        self.my_versions.filter(version=style['version_data']).update(
-            visible=True,
-            style_json=style_str
+        user_version = StormDrainUserVersions.objects.filter(
+            user=self.request.user.id,
+            version=style['version_data']
         )
+        user_version.update(visible=True, style_json=style_str)
 
         self.response = {'success': True}
 
@@ -472,8 +515,8 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
 
     def get_template(self):
         """Return the template used to import storm drain data."""
-        if self.request.user.is_authorized():
-            in_memory = StringIO()
+        if self.request.user.is_authorized:
+            in_memory = BytesIO()
             zip = ZipFile(in_memory, "a")
             # Add files to zip
             for dirname, subdirs, files in os.walk(stormdrain_templates_path):
@@ -499,7 +542,7 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
             header_position = 0
             for header in file_headers:
                 if header == field:
-                    self.read_dataset.headers[header_position] = key
+                    self.dataset.headers[header_position] = key
                 else:
                     header_position = header_position + 1
 
@@ -508,7 +551,7 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
         # has_missing = False
         missing_headers = []
         for key, fieldVariants in (
-                compulsatory_stormdrain_fields.iteritems()
+                compulsatory_stormdrain_fields.items()
                 ):
             if not bool(set(fieldVariants) & set(file_headers)):
                 missing_headers.append(key)
@@ -522,7 +565,7 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
         return missing_headers
 
     def _get_optional_fields(self, file_headers):
-        for key, fieldVariants in optional_stormdrain_fields.iteritems():
+        for key, fieldVariants in optional_stormdrain_fields.items():
             # find out the match between column name and model field
             self._match_column_to_field(
                 fieldVariants,
@@ -532,29 +575,30 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
 
     def _prepare_dataset_to_import(self):
         # Add column 'user_id'
-        self.read_dataset.insert_col(
+        self.dataset.insert_col(
             0,
             col=([self.request.user.id, ]
-                 * self.read_dataset.height),
+                 * self.dataset.height),
             header="user_id"
         )
         # Add column 'version'
         self.last_ver = self._get_last_version_id(self.request)
-        self.read_dataset.insert_col(
+        self.dataset.insert_col(
             0,
-            col=[self.last_ver+1, ]*self.read_dataset.height,
+            col=[self.last_ver+1, ]*self.dataset.height,
             header="version"
         )
         # Define index position of headers
         headers = {k: v for v, k in
-                   enumerate(self.read_dataset.headers)}
+                   enumerate(self.dataset.headers)}
+
         # Add original lat, lon columns
-        self.read_dataset.append_col(
-            self.read_dataset.get_col(headers['lon']),
+        self.dataset.append_col(
+            self.dataset.get_col(headers['lon']),
             header="original_lon"
         )
-        self.read_dataset.append_col(
-            self.read_dataset.get_col(headers['lat']),
+        self.dataset.append_col(
+            self.dataset.get_col(headers['lat']),
             header="original_lat"
         )
 
@@ -599,12 +643,10 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
         """Execute the import."""
         import_dataset = Dataset()
         fieldtypes = self._prepare_dataset_to_import()
-        import_dataset.headers = self.read_dataset.headers
-
+        import_dataset.headers = self.dataset.headers
         inProj = Proj(init='epsg:25831')
         outProj = Proj(init='epsg:4326')
-
-        for row in self.read_dataset.dict:
+        for row in self.dataset.dict:
             # Ignore rows with emtpy lat or lon
             if row['lon'] is not None and row['lat'] is not None:
                 row['lon'], row['lat'] = transform(
@@ -617,56 +659,71 @@ class StormDrainUploader(StormDrainVersioningMixin, BaseManager):
                 new = []
                 for key in row:
                     new.append(row[key])
-
-                import_dataset.append(new)
+                try:
+                    import_dataset.append(new)
+                except Exception as e:
+                    self.response = {'success': False, 'err': e}
 
         db = connection.cursor()
         import_dataset.headers = None
 
-        with tempfile.NamedTemporaryFile() as f:
+        with tempfile.NamedTemporaryFile(mode="r+",
+                                         delete=False,
+                                         newline='') as f:
+            try:
                 f.write(import_dataset.csv)
-                f.seek(0)
+            except Exception as e:
+                self.response = {'success': False, 'err': e}
 
-                try:
-                    db.copy_from(f, 'storm_drain',
-                                 columns=(self.read_dataset.headers),
-                                 sep=",",
-                                 null='null')
-                    self._add_version(
-                        self.request,
-                        self.read_dataset.dict[0]['version']
-                    )
-                    self.response = {
-                        'success': True,
-                        'headers': self.read_dataset.headers
-                    }
-                except Exception as e:
-                    error = str(e).replace('\n', ' ').replace('\r', '')
-                    self.response = {'success': False, 'err': error}
+            f.seek(0)
+
+            try:
+                db.copy_from(f, 'storm_drain',
+                             columns=(self.dataset.headers),
+                             sep=",",
+                             null='null')
+
+                self._add_version(
+                    self.request,
+                    self.dataset.dict[0]['version']
+                )
+
+                self.response = {
+                    'success': True,
+                    'headers': self.dataset.headers
+                }
+            except Exception as e:
+                self.response = {'success': False, 'err': e}
 
     def put(self, *args, **kwargs):
         """Import a file."""
         if self.request.user.is_manager():
             if self.request.method == 'POST':
                 # Prepare the input Dataset
-                self.read_dataset = Dataset()
+                self.dataset = Dataset()
                 # Get file name and extension
                 file = self.request.FILES['stormdrain-file']
                 name, extension = os.path.splitext(
                     self.request.FILES['stormdrain-file'].name
                 )
                 # Load data into the input Dataset
-                self.read_dataset.load(file.read(), extension[1:])
+                self.dataset.load(file.read(), extension[1:])
                 # headers to lowercase
-                file_headers = [x.lower() for x in
-                                self.read_dataset.headers]
+
+                file_headers = [str(x).lower() for x in
+                                self.dataset.headers]
+
                 # Detect missing headers
                 missing_headers = self._get_missing_fields(file_headers)
                 # Get optional headers
                 self._get_optional_fields(file_headers)
                 # If there is no missing header
                 if len(missing_headers) == 0:
-                    self._import()
+                    try:
+                        self._import()
+                    except Exception as e:
+                        # error = str(e).replace('\n', ' ').replace('\r', '')
+                        self.response = {'success': False, 'err': str(e)}
                 else:
                     txtMissing = ', '.join(missing_headers)
                     self.response['err'] = (

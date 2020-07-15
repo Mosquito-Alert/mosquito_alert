@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from operator import __or__ as OR
-
+from functools import reduce
 from django.db.models import Count, Q
 
-from base import BaseManager
+from .base import BaseManager
 from tigapublic.constants import gridsize
 from tigapublic.models import Userfixes
 

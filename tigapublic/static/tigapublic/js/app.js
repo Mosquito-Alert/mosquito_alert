@@ -236,6 +236,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         MOSQUITO.app.once('app_logged', drawMapAfterLoggin);
+
         if (this.mapView){
           if(lng !== last_lang){
               t().change(lng);
@@ -408,7 +409,7 @@ var AppRouter = Backbone.Router.extend({
 
       for (var i = 0; i < user_layers.length; i++){
           if (user_layers[i].key === 'F') continue; //do not consider userfixes
-          if (user_layers[i].key === 'I') continue; //do not consider userfixes
+          if (user_layers[i].key === 'M') continue; //do not consider userfixes
           layers.push(user_layers[i].key);
       }
       return layers.join(',');

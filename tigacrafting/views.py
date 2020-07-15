@@ -1,5 +1,4 @@
 # coding=utf-8
-from ihooks import _Verbose
 from pydoc import visiblename
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
@@ -19,9 +18,9 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from random import shuffle
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -140,8 +139,8 @@ def import_tasks():
         if len(warnings) > 0:
             ef.write('<h1>tigacrafting.views.import_tasks warnings</h1><p>' + barcelona.localize(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S UTC%z') + '</p><p>' + '</p><p>'.join(warnings) + '</p>')
         ef.close()
-        print '\n'.join(errors)
-        print '\n'.join(warnings)
+        print( '\n'.join(errors) )
+        print( '\n'.join(warnings) )
     return {'errors': errors, 'warnings': warnings}
 
 
@@ -183,7 +182,7 @@ def import_task_responses():
             response_model.user_lang = info_dic['user_lang']
             existing_task = CrowdcraftingTask.objects.filter(task_id=response['task_id'])
             if existing_task:
-                print 'existing task'
+                print( 'existing task' )
                 this_task = CrowdcraftingTask.objects.get(task_id=response['task_id'])
                 response_model.task = this_task
             else:
@@ -262,7 +261,7 @@ def filter_eu_reports(reports, sort=True):
 
 
 def filter_reports_for_superexpert(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))>=3, reports)
+    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(list(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))) >= 3, reports)
     return reports_filtered
 
 

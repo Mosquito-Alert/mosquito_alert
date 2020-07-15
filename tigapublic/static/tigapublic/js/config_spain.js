@@ -9,9 +9,18 @@ var MOSQUITO = (function (m, _) {
 
         URL_API: '/tigapublic/',
         URL_PUBLIC: '/tigapublic/',
+        URL_MODELS_VECTOR_GRID: '/tigapublic/static/models/vector/grid/', //TO DO: add it to static
+        URL_MODELS_VECTOR_MUNICIPALITIES: '/tigapublic/static/models/vector/municipalities/',
+        URL_MODELS_VIRUS_MUNICIPALITIES: '/tigapublic/static/models/virus/municipalities/',
+        URL_MODELS_BITING: '/tigapublic/static/models/biting/',
+        MODELS_FILE_NAME: 'mascp_monthly.csv',
+        // BITING_FILE: 'mascp_monthly.csv',
 
-        lon: 1.130859375,
-        lat: 37.53097889440026,
+        min_length_region_search: 4,
+        show_bitting_sd: false,
+        lon: 13.6889,
+        lat: 44.8409,
+        gridSize: 0.05,
         maxzoom_cluster: 13,
         zoom: 5,
         login_allowed: true,
@@ -22,13 +31,55 @@ var MOSQUITO = (function (m, _) {
         printreports:true,
         maxPrintReports: 300,
         "groups":[
+            {'name': 'observations', 'icon': 'fa fa-mobile'},
+            {'name': 'models', 'icon':''},
             {'name': 'none', 'icon':''}
-        ]
-        ,
+        ],
+        deviation_min_zoom: 7,//Zoom when uncertainty first appears
+        max_sd_radius: 100,//max size of uncertainty. In pixels
+        keyLayersExcludedFromSharingURL:['M', 'N', 'R'],
+        available_vectors_selector:[
+            {'k': 'tig', 'v': 'layer.tiger'},
+            //Uncomment to make them available on the select
+            {'k': 'jap', 'v': 'layer.japonicus'}
+            //{'k': 'yfv', 'v': 'layer.zike'},
+        ],
+        available_virus_selector:[
+            {'k': 'den', 'v': 'layer.models.den'},
+            //Uncomment to make them available on the select
+            {'k': 'zk', 'v': 'layer.models.zika'},
+            {'k': 'yf', 'v': 'layer.models.yf'},
+            {'k': 'chk', 'v': 'layer.models.chk'},
+            //{'k': 'wnv', 'v': 'layer.models.wnv'}
+        ],
+        ccaa: [
+          {'k': '01', 'v': 'Andalucia'},
+          {'k': '02', 'v': 'Aragon'},
+          {'k': '03', 'v': 'Asturias'},
+          {'k': '04', 'v': 'Baleares'},
+          {'k': '05', 'v': 'Canarias'},
+          {'k': '06', 'v': 'Cantabria'},
+          {'k': '07', 'v': 'CastillaLeon'},
+          {'k': '08', 'v': 'CastillaMancha'},
+          {'k': '09', 'v': 'Cataluña'},
+          {'k': '10', 'v': 'Valencia'},
+          {'k': '11', 'v': 'Extremadura'},
+          {'k': '12', 'v': 'Galicia'},
+          {'k': '13', 'v': 'Madrid'},
+          {'k': '14', 'v': 'Murcia'},
+          {'k': '15', 'v': 'Navarra'},
+          {'k': '16', 'v': 'PaisVasco'},
+          {'k': '17', 'v': 'Rioja'},
+          {'k': '18', 'v': 'Ceuta'},
+          {'k': '19', 'v': 'Melilla'}
+        ],
+        months: ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                      'August', 'September', 'October', 'November', 'December'],
         "layers": [
             {
                 key: 'A',
-                group:'none',
+                group:'observations',
+                subgroup:'none',
                 title: 'layer.tiger',
                 categories: {
                   'albopictus_2': ['mosquito_tiger_probable', 'mosquito_tiger_confirmed']
@@ -36,15 +87,61 @@ var MOSQUITO = (function (m, _) {
             },
             {
                 key: 'B',
-                group:'none',
+                group:'observations',
+                subgroup:'none',
                 title: 'layer.zika',
                 categories: {
                   'aegypti_2': ['yellow_fever_probable', 'yellow_fever_confirmed']
                 }
             },
             {
+                key: 'S',
+                group:'observations',
+                subgroup:'none',
+                title: 'layer.japonicus',
+                categories: {
+                  'japonicus_2': ['japonicus_probable', 'japonicus_confirmed']
+                }
+            },
+            {
+                key: 'T',
+                group:'observations',
+                subgroup:'none',
+                title: 'layer.koreicus',
+                categories: {
+                  'koreicus_2': ['koreicus_probable', 'koreicus_confirmed']
+                }
+            },
+            {
+                key: 'U',
+                group:'observations',
+                subgroup:'none',
+                title: 'layer.culex',
+                categories: {
+                  'culex_2': ['culex_probable', 'culex_confirmed']
+                }
+            },
+            {
+                key: 'V',
+                group:'observations',
+                subgroup: 'combo',
+                title: 'layer.jap_kor',
+                categories: {
+                  'jap_kor_2': ['japonicus_koreicus']
+                }
+            },
+            {
+                key: 'X',
+                group:'observations',
+                subgroup: 'combo',
+                title: 'layer.mosquito_albo_cret',
+                categories: {
+                  'albo_cret': ['albopictus_cretinus']
+                }
+            },
+            {
                 key: 'C',
-                group:'none',
+                group:'observations',
                 title: 'layer.other_species',
                 categories: {
                   'noseparece': ['other_species']
@@ -52,7 +149,7 @@ var MOSQUITO = (function (m, _) {
             },
             {
                 key: 'D',
-                group:'none',
+                group:'observations',
                 title: 'layer.unidentified',
                 categories: {
                   'nosesabe': ['unidentified']
@@ -60,23 +157,30 @@ var MOSQUITO = (function (m, _) {
             },
             {
                 key: 'E',
-                group:'none',
+                group:'observations',
                 title: 'layer.site',
                 categories: {
                   'site_water': ['storm_drain_water'],
                   'site_dry': ['storm_drain_dry'],
+                  'site_other': ['breeding_site_other']
                 }
             },
+
+            //VECTOR (mosquito) models layer
             {
-              'key': 'I',
-              'group': 'none',
-              'title': 'layer.predictionmodels',
+              'key': 'M',
+              'group': 'models',
+              'title': 'layer.predictionmodels.vector',
               'deviation_min_zoom': 7,
+              // 'color_border_prob':'#bcbddc',
+              'color_border_prob':'white',
+              'color_border_sd':'black',
               'prob_ranges': [
-                {'minValue':0, 'maxValue':0.1, 'color': 'rgba(255,255,178,0.5)', 'label': 'models.label.prob-1'},
-                {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(254,204,92,0.5)', 'label': 'models.label.prob-2'},
-                {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
-                {'minValue':0.3, 'maxValue':1, 'color': 'rgba(227,26,28,0.5)', 'label': 'models.label.prob-4'}
+                // {'minValue':-1, 'maxValue':-1, 'color': '#feebe2', 'label': 'models.label.prob-nodata'},
+                {'minValue':0, 'maxValue':0.1, 'color': 'rgba(251,180,185,0.5)', 'label': 'models.label.prob-1'},
+                {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(247,104,161,0.5)', 'label': 'models.label.prob-2'},
+                {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(197,27,138,0.5)', 'label': 'models.label.prob-3'},
+                {'minValue':0.3, 'maxValue':1, 'color': 'rgba(122,1,119,0.5)', 'label': 'models.label.prob-4'}
               ],
               'sd_ranges': [
                 {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
@@ -84,7 +188,27 @@ var MOSQUITO = (function (m, _) {
                 {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
                 {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
               ]
-
+            },
+            //BITING layer
+            {
+              'key': 'R',
+              'group': 'models',
+              'title': 'layer.biting',
+              'deviation_min_zoom': 7,
+              'color_border_prob':'orange',
+              'color_border_sd':'black',
+              'prob_ranges': [
+                {'minValue':0, 'maxValue':0.1, 'color': 'rgba(254,237,222,0.5)', 'label': 'models.label.prob-1'},
+                {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(253,190,133,0.5)', 'label': 'models.label.prob-2'},
+                {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
+                {'minValue':0.3, 'maxValue':1, 'color': 'rgba(217,71,1,0.5)', 'label': 'models.label.prob-4'}
+              ],
+              'sd_ranges': [
+                {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
+                {'minValue':0.05, 'maxValue':0.1, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
+                {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
+                {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
+              ]
             },
             {
                 key: 'F',
@@ -100,30 +224,24 @@ var MOSQUITO = (function (m, _) {
                     'fillColor': 'red',
                     'fillOpacity': 0.8
                 },
+                'color_border':'rgb(120,198,121)',
                 'segmentationkey': 'color', // name of the attribute that will be used to paint the different segments (color, opacity)
                 'segments': [
-                  {
-                      "from": 0,
-                      "to": 9,
-                      "color": '65,171,93', // VERD
-                      'opacity': 0.2 // only used when "segmentationkey" equals "opacity"
+                    {
+                      "from": 0, "to": 9,
+                      "color": '65,171,93', 'opacity': 0.2
                     },{
-                      "from": 10,
-                      "to": 99,
-                      "color": "35,132,67", //VERD
-                      "opacity": 0.4
+                      "from": 10, "to": 99,
+                      "color": "35,132,67", "opacity": 0.4
                     },{
-                      "from": 100,
-                      "to": 999,
-                      "color": "0,104,55", //VERD
-                      "opacity": 0.6
+                      "from": 100, "to": 999,
+                      "color": "0,104,55", "opacity": 0.6
                     },{
                       "from": 1000,
-                      "color": "0,69,41", //VERD
-                      "opacity": 0.8
+                      "color": "0,69,41", "opacity": 0.8
                     }
                 ]
-            }
+            },
         ],
         "logged": {
             "managers_group":['gestors'],
@@ -134,12 +252,58 @@ var MOSQUITO = (function (m, _) {
             "groups":[
                 {'name': 'observations', 'icon': 'fa fa-mobile'},
                 {'name': 'userdata', 'icon':'fa fa-user'},
+                {'name': 'models', 'icon':''},
                 {'name': 'none', 'icon':''}
             ],
             "layers": [
+              //VECTOR (mosquito) models
+              {
+                'key': 'M',
+                'group': 'models',
+                'title': 'layer.predictionmodels.vector',
+                'deviation_min_zoom': 7,
+                'color_border_prob':'white',
+                'color_border_sd':'black',
+                'prob_ranges': [
+                  // {'minValue':-1, 'maxValue':-1, 'color': '#feebe2', 'label': 'models.label.prob-nodata'},
+                  {'minValue':0, 'maxValue':0.1, 'color': 'rgba(251,180,185,0.5)', 'label': 'models.label.prob-1'},
+                  {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(247,104,161,0.5)', 'label': 'models.label.prob-2'},
+                  {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(197,27,138,0.5)', 'label': 'models.label.prob-3'},
+                  {'minValue':0.3, 'maxValue':1, 'color': 'rgba(122,1,119,0.5)', 'label': 'models.label.prob-4'}
+                ],
+                'sd_ranges': [
+                  {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
+                  {'minValue':0.05, 'maxValue':0.1, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
+                  {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
+                  {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
+                ]
+              },
+              //VIRUS  models
+              {
+                'key': 'N',
+                'group': 'models',
+                'title': 'layer.predictionmodels.virus',
+                'deviation_min_zoom': 7,
+                'color_border_prob':'white',
+                'color_border_sd':'black',
+                'prob_ranges': [
+                  // {'minValue':-1, 'maxValue':-1, 'color': 'rgba(255,2255,204,0.5)', 'label': 'models.label.prob-nodata'},
+                  {'minValue':0, 'maxValue':0.1, 'color': 'rgba(161,218,180,0.5)', 'label': 'models.label.prob-1'},
+                  {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(65,182,196,0.5)', 'label': 'models.label.prob-2'},
+                  {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(44,127,184,0.5)', 'label': 'models.label.prob-3'},
+                  {'minValue':0.3, 'maxValue':1, 'color': 'rgba(37,52,148,0.5)', 'label': 'models.label.prob-4'}
+                ],
+                'sd_ranges': [
+                  {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
+                  {'minValue':0.05, 'maxValue':0.1, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
+                  {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
+                  {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
+                ]
+              },
               {
                   key: 'A2',
                   group:'observations',
+                  subgroup:'tiger',
                   title: 'layer.mosquito_tiger_confirmed',
                   categories: {
                     'albopictus_2': ['mosquito_tiger_confirmed']
@@ -148,6 +312,7 @@ var MOSQUITO = (function (m, _) {
               {
                   key: 'A1',
                   group:'observations',
+                  subgroup:'tiger',
                   title: 'layer.mosquito_tiger_probable',
                   categories: {
                     'albopictus_1': ['mosquito_tiger_probable']
@@ -156,6 +321,7 @@ var MOSQUITO = (function (m, _) {
               {
                   key: 'B2',
                   group:'observations',
+                  subgroup:'zika',
                   title: 'layer.yellow_fever_confirmed',
                   categories: {
                     'aegypti_2': ['yellow_fever_confirmed']
@@ -164,9 +330,82 @@ var MOSQUITO = (function (m, _) {
               {
                   key: 'B1',
                   group:'observations',
+                  subgroup:'zika',
                   title: 'layer.yellow_fever_probable',
                   categories: {
                     'aegypti_1': ['yellow_fever_probable']
+                  }
+              },
+              {
+                  key: 'S2',
+                  group:'observations',
+                  subgroup:'japonicus',
+                  title: 'layer.mosquito_japonicus_confirmed',
+                  categories: {
+                    'japonicus_2': ['mosquito_japonicus_confirmed']
+                  }
+              },
+              {
+                  key: 'S1',
+                  group:'observations',
+                  subgroup:'japonicus',
+                  title: 'layer.mosquito_japonicus_probable',
+                  categories: {
+                    'japonicus_1': ['mosquito_japonicus_probable']
+                  }
+              },
+              {
+                  key: 'T2',
+                  group:'observations',
+                  subgroup:'koreicus',
+                  title: 'layer.mosquito_koreicus_confirmed',
+                  categories: {
+                    'koreicus_2': ['mosquito_koreicus_confirmed']
+                  }
+              },
+              {
+                  key: 'T1',
+                  group:'observations',
+                  subgroup:'koreicus',
+                  title: 'layer.mosquito_koreicus_probable',
+                  categories: {
+                    'koreicus_1': ['mosquito_koreicus_probable']
+                  }
+              },
+              {
+                  key: 'U2',
+                  group:'observations',
+                  subgroup:'culex',
+                  title: 'layer.mosquito_culex_confirmed',
+                  categories: {
+                    'culex_2': ['mosquito_culex_confirmed']
+                  }
+              },
+              {
+                  key: 'U1',
+                  group:'observations',
+                  subgroup:'culex',
+                  title: 'layer.mosquito_culex_probable',
+                  categories: {
+                    'culex_1': ['mosquito_culex_probable']
+                  }
+              },
+              {
+                  key: 'V',
+                  group:'observations',
+                  subgroup: 'combo',
+                  title: 'layer.mosquito_jap_kor',
+                  categories: {
+                    'jap_kor': ['japonicus_koreicus']
+                  }
+              },
+              {
+                  key: 'X',
+                  group:'observations',
+                  subgroup: 'combo',
+                  title: 'layer.mosquito_albo_cret',
+                  categories: {
+                    'albo_cret': ['albopictus_cretinus']
                   }
               },
               {
@@ -184,6 +423,27 @@ var MOSQUITO = (function (m, _) {
                   categories: {
                     'nosesabe': ['unidentified']
                   }
+              },
+              //BITING layer
+              {
+                'key': 'R',
+                'group': 'models',
+                'title': 'layer.biting',
+                'deviation_min_zoom': 7,
+                'color_border_prob':'orange',
+                'color_border_sd':'black',
+                'prob_ranges': [
+                  {'minValue':0, 'maxValue':0.1, 'color': 'rgba(254,237,222,0.5)', 'label': 'models.label.prob-1'},
+                  {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(253,190,133,0.5)', 'label': 'models.label.prob-2'},
+                  {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
+                  {'minValue':0.3, 'maxValue':1, 'color': 'rgba(217,71,1,0.5)', 'label': 'models.label.prob-4'}
+                ],
+                'sd_ranges': [
+                  {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
+                  {'minValue':0.05, 'maxValue':0.1, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
+                  {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
+                  {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
+                ]
               },
               {
                   key: 'Q',
@@ -258,24 +518,6 @@ var MOSQUITO = (function (m, _) {
                   private:true
               },
               {
-                'key': 'I',
-                'group': 'none',
-                'title': 'layer.predictionmodels',
-                'deviation_min_zoom': 7,
-                'prob_ranges': [
-                  {'minValue':0, 'maxValue':0.1, 'color': 'rgba(255,255,178,0.5)', 'label': 'models.label.prob-1'},
-                  {'minValue':0.1, 'maxValue':0.2, 'color': 'rgba(254,204,92,0.5)', 'label': 'models.label.prob-2'},
-                  {'minValue':0.2, 'maxValue':0.3, 'color': 'rgba(253,141,60,0.5)', 'label': 'models.label.prob-3'},
-                  {'minValue':0.3, 'maxValue':1, 'color': 'rgba(227,26,28,0.5)', 'label': 'models.label.prob-4'}
-                ],
-                'sd_ranges': [
-                  {'minValue':0, 'maxValue':0.05, 'color': '#fff', 'label': 'models.label.sd-1'},
-                  {'minValue':0.05, 'maxValue':0.1, 'color': '#c8b2b2', 'label': 'models.label.sd-2'},
-                  {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
-                  {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
-                ]
-              },
-              {
                   key: 'F',
                   group: 'none',
                   title: 'layer.userfixes',
@@ -287,28 +529,22 @@ var MOSQUITO = (function (m, _) {
                       'fillColor': 'red',
                       'fillOpacity': 0.8
                   },
+                  'color_border':'rgb(120,198,121)',
                   'segmentationkey': 'color', // name of the attribute that will be used to paint the different segments (color, opacity)
                   'segments': [
                     {
-                        "from": 0,
-                        "to": 9,
-                        "color": '65,171,93', // VERD
-                        'opacity': 0.2 // only used when "segmentationkey" equals "opacity"
-                      },{
-                        "from": 10,
-                        "to": 99,
-                        "color": "35,132,67", //VERD
-                        "opacity": 0.4
-                      },{
-                        "from": 100,
-                        "to": 999,
-                        "color": "0,104,55", //VERD
-                        "opacity": 0.6
-                      },{
-                        "from": 1000,
-                        "color": "0,69,41", //VERD
-                        "opacity": 0.8
-                      }
+                      "from": 0, "to": 9,
+                      "color": '65,171,93', 'opacity': 0.2
+                    },{
+                      "from": 10, "to": 99,
+                      "color": "35,132,67", "opacity": 0.4
+                    },{
+                      "from": 100, "to": 999,
+                      "color": "0,104,55", "opacity": 0.6
+                    },{
+                      "from": 1000,
+                      "color": "0,69,41", "opacity": 0.8
+                    }
                   ]
               }
             ]

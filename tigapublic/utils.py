@@ -7,7 +7,7 @@ import requests
 import os
 from django.contrib.auth.models import User
 import re
-from constants import (managers_group, superusers_group, user_roles,
+from .constants import (managers_group, superusers_group, user_roles,
                        epidemiologist_editor_group,
                        epidemiologist_viewer_group)
 
@@ -34,7 +34,7 @@ class ExtendedUser(User):
 
         A valid user is an authenticated and active user.
         """
-        return self.is_authenticated() and self.is_active
+        return self.is_authenticated and self.is_active
 
     def is_manager(self):
         """Return True if user is manager.
@@ -158,7 +158,7 @@ def userIsValid(user):
 
     A valid user is an active & authenticated user.
     """
-    return user.is_authenticated() and user.is_active
+    return user.is_authenticated and user.is_active
 
 
 def userIsManager(user):
@@ -235,22 +235,23 @@ def urlExists(url):
     return r.status_code == requests.codes.ok
 
 
-def get_directory_structure(rootdir):
+def get_directory_structure(rootdir, filename):
     """
     Nested dictionaryself.
 
     Creates an ordered list (desc) that represents the availability of models
     """
-    valid_ext = [".csv"]
+    valid_ext = [filename]
     files = []
     folders = []
     dictlist = []
     dict = {}
 
     # models folder patterns yyyy/mm
-    pattern = re.compile("^(\d{4}\/0[1-9]|\d{4}\/1[0-2])$")
+    pattern = re.compile("^(\d{4}\/(0[1-9]|1[0-2]))$")
+    # pattern = re.compile("^(\d{4}\/0[1-9]|\d{4}\/1[0-2])$")
 
-    for root, dirs, files in os.walk(rootdir):
+    for root, dirs, files in sorted(os.walk(rootdir)):
         if root[len(rootdir)+1:].count(os.sep) < 2:
             for f in files:
                 if f.endswith(tuple(valid_ext)):
@@ -261,13 +262,14 @@ def get_directory_structure(rootdir):
                         folders = root.split('/')
                         if not folders[0] in dict:
                             # initialize all 12 months as disabled
-                            dict[folders[0]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                            dict[folders[0]] = [0, 0, 0, 0, 0, 0,
+                                                0, 0, 0, 0, 0, 0]
 
                         # Enable current month
                         dict[folders[0]][int(folders[1]) - 1] = 1
 
     # Turn dict into array
-    for key, value in dict.iteritems():
+    for key, value in dict.items():
         temp = [key, value]
         dictlist.append(temp)
     # Return properly ordered list

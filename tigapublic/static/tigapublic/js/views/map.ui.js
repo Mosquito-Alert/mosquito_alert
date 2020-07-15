@@ -579,7 +579,12 @@ var MapView = MapView.extend({
         var _this = this;
         _.extend(this.filters, Backbone.Events);
 
-        var container = $('div.sidebar-control-layers');
+        if (MOSQUITO.app.headerView.logged){
+          var container = $('div#iduserdata');
+        }
+        else{
+          var container = $('div#idmodels');
+        }
 
         //Add filter accordion
         var toggleGrup = $('<div/>')
@@ -588,13 +593,12 @@ var MapView = MapView.extend({
             .attr('class','layer-group-trigger')
             .attr('aria-expanded',"false")
             .attr('id', 'idfilters')
-        .appendTo(container);
+        .insertBefore(container);
 
         var parentDiv = $('<div/>')
             .attr('class', 'layer-group list-group-item')
         .appendTo(toggleGrup);
 
-        // add QUESTION MARK
         let question_mark = $('<a>', {
           'href':'#',
           'data-toggle':'popover-filters',
@@ -603,36 +607,42 @@ var MapView = MapView.extend({
           'data-container': 'body',
           'class':'fa fa-question question-mark-toc question-mark-filters'
         })
-
-        question_mark.appendTo(parentDiv)
-        question_mark.on('click', function(event) {
-          // event.preventDefault();
-          event.stopPropagation();
-        });
-        $(question_mark).popover({
-          html: true,
-          content: function() {
-            return true;
-            }
-        });
-        // LISTEN ANY CLICK TO HIDE POPOVER
-        $(document).click(function(e) {
-          var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
-          if (isVisible){
-            question_mark.click()
-          }
-        });
+        var questionDiv = $('<div>')
+          .attr('id', 'question_mark_container')
 
         //after question mark
         $('<div/>')
+           .attr('id', 'filters_accordion')
            .attr('i18n', 'group.filters')
            .attr('class','group-title')
        .appendTo(parentDiv)
 
+       question_mark.appendTo(questionDiv)
+       questionDiv.appendTo(parentDiv)
+
+       $(document).click(function(e) {
+         var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
+         if (isVisible){
+           question_mark.click()
+         }
+       });
+
+       question_mark.on('click', function(event) {
+         // event.preventDefault();
+         event.stopPropagation();
+       });
+
+       $(question_mark).popover({
+         html: true,
+         content: function() {
+           return true;
+           }
+       });
+
         var divGroup = $('<div>')
             .attr('id', 'div_filters')
             .attr('class', 'collapse') //+(!group.collapsed?'in':''))
-        .appendTo(container);
+        .insertBefore(container);
 
         //Start adding filters to filters accordion
         var filtersSection = $('<div>')
@@ -715,7 +725,7 @@ var MapView = MapView.extend({
           autocomplete: {
             position: {my: "left bottom", at: "left top", collision: "flip flip"},
             source: function (request, response) {
-              if (request.term.length > 1){
+              if (request.term.length >= MOSQUITO.config.min_length_region_search ){
                     jQuery.get(MOSQUITO.config.URL_API +"municipalities/search/", {
                         query: request.term
                     }, function (data) {
@@ -831,6 +841,12 @@ var MapView = MapView.extend({
             }
         );
         this.controls.info_btn = btn.addTo(this.map);
+
+        //add private class to info template
+        if (MOSQUITO.app.headerView.logged){
+          $('ul#legend-container').addClass('private')
+        }
+
         $(btn._container).find('a').attr('i18n', 'map.control_moreinfo|title');
     },
 
@@ -1106,20 +1122,21 @@ var MapView = MapView.extend({
                 build_url: function(){
                   var layers = [];
                   //Get layers set to look for active layers
+
                   if (MOSQUITO.app.headerView.logged) {
                       //Accordion objects has list-group-item class
                       layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-item, .sidebar-control-layers #div_none ul > li.list-group-only-item');
                   }
                   else{
-                      layersDiv = $('.sidebar-control-layers #div_none ul > li.list-group-only-item');
+                      // layersDiv = $('.sidebar-control-layers #div_none ul > li.list-group-only-item');
+                      layersDiv = $('.sidebar-control-layers #div_observations ul > li.list-group-item, .sidebar-control-layers #div_none ul > li.list-group-only-item');
                   }
                   layersDiv.each(function(i, el){
 
                     if($(el).hasClass('active')){
                         //Get position of selected layers
                         id = $(el).attr('id').replace('layer_','');
-
-                        if (id !== 'I' && id !== 'Fa') {
+                        if (MOSQUITO.config.keyLayersExcludedFromSharingURL.indexOf(id)==-1)  {
                           pos = _this.getLayerPositionFromKey(id);
                           if (!MOSQUITO.app.headerView.logged) {
                               layers.push(MOSQUITO.config.layers[pos].key);
@@ -1310,7 +1327,7 @@ var MapView = MapView.extend({
           epi_report.date_type='notification'
         }
       }
-      
+
       var arribalDate = new Date(epi_report.date_arribal);
       //If not is date then do date
       if (! (arribalDate instanceof Date && !isNaN(arribalDate.valueOf())) ){
@@ -1368,41 +1385,7 @@ var MapView = MapView.extend({
         nreport.questions = null;
         // only logged users. Queries & answers
 
-        if (MOSQUITO.app.headerView.logged)  {
-            if(nreport.t_q_1 != ''){
-                nreport.t_answers = [];
-                nreport.questions = [];
-                nreport.t_answers[0] = nreport.t_a_1;
-                nreport.questions[0] = nreport.t_q_1;
-                if (nreport.t_q_2 != ''){
-                    nreport.t_answers[1] = nreport.t_a_2;
-                    nreport.questions[1] = nreport.t_q_2;
-                }
-                if (nreport.t_q_3 != ''){
-                    nreport.t_answers[2] = nreport.t_a_3;
-                    nreport.questions[2] = nreport.t_q_3;
-                }
-            }
-            if(nreport.s_q_1 != ''){
-                nreport.s_answers = [];
-                nreport.questions = [];
-                nreport.s_answers[0] = nreport.s_a_1;
-                nreport.questions[0] = nreport.s_q_1;
-                if (nreport.s_q_2 != ''){
-                    nreport.s_answers[1] = nreport.s_a_2;
-                    nreport.questions[1] = nreport.s_q_2;
-                }
-                if (nreport.s_q_3 != ''){
-                    nreport.s_answers[2] = nreport.s_a_3;
-                    nreport.questions[2] = nreport.s_q_3;
-                }
-                if (nreport.s_q_4 != ''){
-                    nreport.s_answers[3] = nreport.s_a_4;
-                    nreport.questions[3] = nreport.s_q_4;
-                }
-            }
-
-        }else{
+        if (!MOSQUITO.app.headerView.logged)  {
             nreport.note = null;
         }
 
@@ -1519,7 +1502,6 @@ var MapView = MapView.extend({
     loading: {
         on: function(obj) {
           var tag = (typeof obj.attr('id') != 'undefined')?obj.attr('id'):'';
-
           this.container = $('#loading_container_'+tag);
           if (this.container.length === 0) {
               this.container = $('<div>')
@@ -2580,7 +2562,7 @@ var MapView = MapView.extend({
                   $('.epi-import-finished-btn').show();
                 }
                 else{
-                  txt_error = '<p class="st-upload-error">'+t('epidemiology.upload-error') + '</p>' + data.err;
+                  txt_error = '<p class="st-upload-error">'+t('epidemiology.upload-error') + ':</br>' + data.err.toUpperCase() + '</p>' ;
                   $('.epi-progress-bar-wrapper').hide();
                   $('.epi-upload-error').html(txt_error);
                   $('.epi-upload-error').show();

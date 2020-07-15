@@ -16,6 +16,19 @@ trans.en = {
     'layer.mosquito_tiger_probable': 'Possible tiger mosquito',
     'layer.yellow_fever_confirmed': 'Confirmed yellow fever mosquito',
     'layer.yellow_fever_probable': 'Possible yellow fever mosquito',
+    'layer.mosquito_japonicus_confirmed': 'Confirmed Aedes japonicus',
+    'layer.mosquito_japonicus_probable': 'Possible Aedes japonicus',
+    'layer.mosquito_koreicus_confirmed': 'Confirmed Aedes koreicus',
+    'layer.mosquito_koreicus_probable': 'Possible Aedes koreicus',
+    'layer.mosquito_culex_confirmed': 'Confirmed Culex pipiens',
+    'layer.mosquito_culex_probable': 'Possible Culex pipiens',
+    'layer.mosquito_jap_kor': 'Aedes jap/kor',
+    'layer.mosquito_jap_kor_confirmed': 'Aedes jap/kor',
+    'layer.mosquito_jap_kor_probable': 'Aedes jap/kor',
+    'layer.mosquito_albo_cret': 'Aedes albo/cret',
+    'layer.mosquito_albo_cret_confirmed': 'Aedes albo/cret',
+    'layer.mosquito_albo_cret_probable': 'Aedes albo/cret',
+
     'layer.unidentified': 'Unidentifiable',
 
     'layer.breeding_site_other': 'Breeding sites',
@@ -27,7 +40,13 @@ trans.en = {
     'layer.filtered': 'Filtered',
 
     'layer.tiger': 'Tiger mosquito',
+    'layer.japonicus': 'Aedes japonicus',
+    'layer.koreicus': 'Aedes koreicus',
+    'layer.culex': 'Culex pipiens',
+    'layer.jap_kor': 'Aedes jap/kor',
+    'layer.albo_cret': 'Aedes albo/cret',
     'layer.zika': 'Yellow fever mosquito',
+    'group.combo': 'Combo species',
     'layer.site': 'Breeding sites',
 
     'map.numfixes': 'Observations',
@@ -82,6 +101,13 @@ trans.en = {
 
     'expertinfo.tiger_mosquito': ' According to experts, the pictures of this observation could be tiger mosquito (<i>Aedes albopictus</i>).',
     'expertinfo.yellow_fever_mosquito':' According to experts, the pictures of this observation could be yellow fever mosquito (<i>Aedes aegypti</i>).',
+
+'expertinfo.japonicus': ' According to experts, the pictures of this observation could be <i>Aedes japonicus</i>.',
+'expertinfo.koreicus': ' According to experts, the pictures of this observation could be <i>Aedes koreicus</i>.',
+'expertinfo.culex': ' According to experts, the pictures of this observation could be <i>Culex pipiens</i>.',
+'expertinfo.jap_kor': ' According to experts, the pictures of this observation could be <i>Aedes japonicus</i> or <i>Aedes koreicus</i>.',
+'expertinfo.albo_cret': ' According to experts, the pictures of this observation could be <i>Aedes albopictus</i> or <i>Aedes cretinus</i>.',
+
     'expertinfo.other_species':' According to experts, the pictures of this observation may be of other species of mosquito.',
     'expertinfo.unidentify': ' According to experts, these observations and their photos do not identify any species of mosquito.',
     'expertinfo.site': 'Citizen’ observations of possible breeding sites (storm drainers and sewers) of tiger or yellow fever mosquitoes.',
@@ -139,8 +165,12 @@ trans.en = {
     'group.breeding_sites': 'Breeding sites',
     'group.observations': 'Citizen observations',
     'group.userdata': 'User layers',
-    'group.filters':'Filters',
+    'group.models':'Available Models',
+    'group.filters':'Citizens\' observations filters',
     'group.userfixes': 'Distribution of participants',
+    'models.type':'Type',
+    'models.type.grid':'Grid',
+    'models.type.municipalities':'Municipalities',
     'hashtag.filters.placeholder': 'By #hashtag',
     'observations.filters.title': 'Observations',
     'remove': 'Remove',
@@ -187,21 +217,47 @@ trans.en = {
     'label.user-municipalities': 'My municipalities',
 
     // MODELS
-    'layer.predictionmodels': 'Available models for tiger mosquito probability',
+    'layer.predictionmodels.vector': 'Mosquito Alert Probability',
     //HTLM FORMAT
+    'layer.biting.description': 'The map shows estimates of tiger mosquito bites alert probability, which represents the probability of a participant sending a reliable tiger mosquito report during any given two-week period, controlling for sampling effort (meaning that the model accounts for the fact that there are more participants in some areas than others).<p>These estimates are shown on a grid of 0.05 degrees latitude by 0.05 degrees longitude and are averaged by month. The alert probability mainly depends on the tiger mosquito’s population distribution, and this varies by location as well as month. The alert probability has been shown to be a good predictor of tiger mosquito presence measured by traditional surveillance methods (ovitraps), as explained in Nature Communications 8:916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. The estimates are updated weekly as new data comes in.</p><p>Note that this alert probability layer can be filtered only with the year and month selectors shown here (and not with the additional filters below, which are for other layers)</p>',
+
     'layer.predictionmodels.description': 'The map shows estimates of the tiger mosquito alert probability, which represents the probability of a participant sending a reliable tiger mosquito report during any given two-week period, controlling for sampling effort (meaning that the model accounts for the fact that there are more participants in some areas than others).<p>These estimates are shown on a grid of 0.05 degrees latitude by 0.05 degrees longitude and are averaged by month. The alert probability mainly depends on the tiger mosquito’s population distribution, and this varies by location as well as month. The alert probability has been shown to be a good predictor of tiger mosquito presence measured by traditional surveillance methods (ovitraps), as explained in Nature Communications 8:916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. The estimates are updated weekly as new data comes in.</p><p>Note that this alert probability layer can be filtered only with the year and month selectors shown here (and not with the additional filters below, which are for other layers)</p>',
 
     'models.label.prob-1': 'Very low',
     'models.label.prob-2': 'Low',
     'models.label.prob-3': 'Medium',
     'models.label.prob-4': 'High',
+    'models.label.prob-nodata': 'Without data',
     'models.label.sd-1': 'Very low',
     'models.label.sd-2': 'Low',
     'models.label.sd-3': 'Medium',
     'models.label.sd-4': 'High',
     'models.probability': 'Probability',
     'models.uncertainty': 'Uncertainty',
+    'layer.models.vector': 'Spc.',
 
+    //Comunidades
+    'Andalucia':'Andalucía',
+    'Aragon':'Aragón',
+    'Asturias':'Asturias, Principado de',
+    'Baleares':'Islas Baleares',
+    'Canarias':'Canarias',
+    'Cantabria':'Cantabria',
+    'CastillaLeon':'Castilla y León',
+    'CastillaMancha':'Castilla-La Mancha',
+    'Cataluña':'Cataluña',
+    'Valencia':'Comunitat Valenciana',
+    'Extremadura': 'Extremadura',
+    'Galicia':'Galicia',
+    'Madrid':'Madrid, Comunidad de',
+    'Murcia':'Murcia, Región de',
+    'Navarra':'Navarra, Comunidad Floral de',
+    'PaisVasco':'País Vasco',
+    'Rioja':'Rioja, La',
+    'Ceuta': 'Ceuta',
+    'Melilla': 'Melilla',
+
+    'general.select-region': 'CC.AA',
     'general.year': 'Year',
     'general.month': 'Month',
 
@@ -215,4 +271,7 @@ trans.en = {
     'models.hover-sd-label2': 'Values from 0.1 to 0.15',
     'models.hover-sd-label3': 'Values from 0.15 to 1',
 
+    // BITING RATES
+    'layer.biting': 'Bites Probability',
+    'bitting.legend-title': 'Impact',
 };

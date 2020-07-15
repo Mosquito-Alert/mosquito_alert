@@ -13,7 +13,8 @@ class AuthUserAdmin(admin.ModelAdmin):
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         """formfield_for_manytomany."""
         if db_field.name == "municipalities":
-            editing_user_id = request.resolver_match.args[0]
+
+            editing_user_id = request.resolver_match.kwargs['object_id']
 
             qs_p = AuthUser.objects.filter(
                 id__exact=editing_user_id

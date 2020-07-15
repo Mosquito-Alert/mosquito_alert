@@ -37,9 +37,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 
-TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
-    'django.core.context_processors.request',
-)
+# TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
+#     'django.core.context_processors.request',
+# )
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -57,15 +57,17 @@ INSTALLED_APPS = (
     'tigapublic',
     'rest_framework',
     'leaflet',
-    'south',
     'stats',
     'floppyforms',
     'taggit',
     'django_messages',
     'tigaserver_messages',
     'tigascoring',
+    'django.contrib.sites',
+    'django_filters',
 )
 
+'''
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -75,6 +77,16 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+'''
+MIDDLEWARE = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 ROOT_URLCONF = 'tigaserver_project.urls'
 
@@ -161,7 +173,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ),
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend',]
 }
 
 LEAFLET_CONFIG = {
@@ -193,7 +205,23 @@ LEAFLET_CONFIG = {
     }
 }
 
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+#TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 # This is the cuttoff score above which a photo will be considered "crowd-validated"
 CROWD_VALIDATION_CUTOFF = 0
@@ -228,7 +256,6 @@ APNS_ADDRESS = 'gateway.push.apple.com'
 #APNS_ADDRESS = 'gateway.sandbox.push.apple.com'
 FCM_ADDRESS = 'https://fcm.googleapis.com/fcm/send'
 
-from settings_local import *
 
 IDENTICON_FOREGROUNDS = [ "rgb(45,79,255)",
                "rgb(254,180,44)",
@@ -250,3 +277,6 @@ ENTOLAB_ADMIN = 'a.escobar@creaf.uab.cat'
 SHOW_USER_AGREEMENT_ENTOLAB = False
 
 HOST_NAME = 'webserver.mosquitoalert.com'
+
+SITE_ID = 1
+from tigaserver_project.settings_local import *

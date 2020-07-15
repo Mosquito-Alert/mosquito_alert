@@ -24,6 +24,7 @@
             //MOSQUITO.config.layers = MOSQUITO.config.logged.layers;
             this.LAYERS_CONF = MOSQUITO.config.logged.layers;
             MOSQUITO.config = _.extend(MOSQUITO.config, MOSQUITO.config.logged);
+
         }
         this.options = _.extend({}, this.defaults, options);
 

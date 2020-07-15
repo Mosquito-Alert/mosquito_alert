@@ -5,7 +5,7 @@
     <meta name="author" content="@sigte_udg" />
     <title>Mosquito Alert</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	  <link href="http://www.mosquitoalert.com/wp-content/themes/enfold-child/images/favicons/favicon.ico" rel="shortcut icon">
+	  <link href="//www.mosquitoalert.com/wp-content/themes/enfold-child/images/favicons/favicon.ico" rel="shortcut icon">
 
     <link href="lib/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <link href="lib/bootstrap-select-1.10.0/dist/css/bootstrap-select.min.css" rel="stylesheet">
@@ -19,7 +19,7 @@
     <link rel="stylesheet" type="text/css" href="lib/jssocials-1.2.1/jssocials-theme-flat.css">
 
     <!--Font awesome-->
-    <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- build:css css/style.min.css -->
     <link href="css/style.css" rel="stylesheet">
@@ -29,8 +29,8 @@
     <meta property="og:title" content="Mosquito Alert Map"/>
     <meta property="og:type" content="website"/>
     <meta property="og:locale" content="en_US"/>
-    <meta property="og:url" content="http://sigserver3.udg.edu/mosquito/spain.html"/>
-    <meta property="og:image" content="http://sigserver3.udg.edu/mosquito/img/screenshot.png"/>
+    <meta property="og:url" content="//sigserver3.udg.edu/mosquito/spain.html"/>
+    <meta property="og:image" content="//sigserver3.udg.edu/mosquito/img/screenshot.png"/>
     <meta property="og:site_name" content="Mosquito Alert"/>
     <meta property="og:description"
           content="Joining citizen, scientists and public health and environmental
@@ -858,7 +858,7 @@
 
         <h3 i18n="map.controlmoreinfo_title"></h3>
         <!--<span i18n="map.controlmoreinfo_desc_es"></span>-->
-        <ul class="info_list">
+        <ul id="legend-container" class="info_list">
             <li class="tiger_mosquito">
                 <span i18n="layer.tiger" class="bold"></span>:
                 <span i18n="expertinfo.tiger_mosquito"></span>
@@ -867,6 +867,27 @@
                 <span i18n="layer.zika" class="bold"></span>:
                 <span i18n="expertinfo.yellow_fever_mosquito"></span>
             </li>
+            <li class="aedes_japonicus">
+                <span i18n="layer.japonicus" class="bold"></span>:
+                <span i18n="expertinfo.japonicus"></span>
+            </li>
+            <li class="aedes_koreicus">
+                <span i18n="layer.koreicus" class="bold"></span>:
+                <span i18n="expertinfo.koreicus"></span>
+            </li>
+            <li class="culex">
+                <span i18n="layer.culex" class="bold"></span>:
+                <span i18n="expertinfo.culex"></span>
+            </li>
+            <li class="aedes_jap_kor">
+                <span i18n="layer.jap_kor" class="bold"></span>:
+                <span i18n="expertinfo.jap_kor"></span>
+            </li>
+            <li class="aedes_albo_cret">
+                <span i18n="layer.albo_cret" class="bold"></span>:
+                <span i18n="expertinfo.albo_cret"></span>
+            </li>
+
             <li class="other_species">
                 <span i18n="layer.other_species" class="bold"></span>:
                 <span i18n="expertinfo.other_species"></span>
@@ -887,9 +908,23 @@
                 <span i18n="layer.trash_layer" class="bold"></span>:
                 <span i18n="expertinfo.trash_layer"></span>
             </li>
-            <li class="predictionmodels">
-                <span i18n="layer.predictionmodels" class="bold"></span>:
+            <li class="">
+                <object id="info_vector_models" type="image/svg+xml" data="./img/predictionmodels_info_icon.svg"></object>
+                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
+                <span i18n="layer.predictionmodels.vector" class="bold"></span>:
                 <span i18n="layer.predictionmodels.description"></span>
+            </li>
+            <li class="">
+                <object id="info_biting_models" type="image/svg+xml" data="./img/biting_info_icon.svg"></object>
+                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
+                <span i18n="layer.biting" class="bold"></span>:
+                <span i18n="layer.biting.description"></span>
+            </li>            
+            <li class="" id="info-virus-models-li" style="display:none">
+                <object id="info_virus_models" type="image/svg+xml" data="./img/predictionmodels_info_icon.svg"></object>
+                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
+                <span i18n="layer.predictionmodels.virus" class="bold"></span>:
+                <span i18n="layer.predictionmodels-virus.description"></span>
             </li>
             <li class="userfixes">
                 <span i18n="layer.userfixes" class="bold"></span>:
@@ -899,6 +934,43 @@
         <p i18n="map.to_know_more"></p>
         <p i18n="map.more_info"></p>
         </div>
+        <script>
+        $('#info_vector_models').one('load', function() {
+          function changeSVG(svg_id, layer_key){
+            var svgObject = document.getElementById(svg_id).contentDocument;
+            var thisLayer = MOSQUITO.app.mapView.getLayerFromKey(layer_key)
+
+            let probColors=[]
+            let sdColors=[]
+
+            for (var a=0; a < thisLayer.prob_ranges.length; a++){
+              probColors.push(thisLayer.prob_ranges[a].color)
+            }
+
+            for (var a=0; a < thisLayer.sd_ranges.length; a++){
+              sdColors.push(thisLayer.sd_ranges[a].color)
+            }
+
+            svgObject.getElementById("square_1").style.fill =probColors[0];
+            svgObject.getElementById("square_2").style.fill =probColors[1];
+            svgObject.getElementById("square_3").style.fill =probColors[2];
+            svgObject.getElementById("square_4").style.fill =probColors[3];
+            svgObject.getElementById("circle_1").style.fill =sdColors[0];
+            svgObject.getElementById("circle_2").style.fill =sdColors[1];
+            svgObject.getElementById("circle_3").style.fill =sdColors[2];
+            svgObject.getElementById("circle_4").style.fill =sdColors[3];
+          }
+
+          changeSVG('info_biting_models', 'R')
+          changeSVG('info_vector_models', 'M')
+
+          //Virus layer if logged
+          if (MOSQUITO.app.headerView.logged){
+            $('#info-virus-models-li').css('display','')
+            changeSVG('info_virus_models', 'N')
+          }
+        });
+        </script>
     </script>
     <script type = "text/template" id="content-control-share-tpl">
         <div>
@@ -993,8 +1065,8 @@
 
           <% if( ( photo_url != null) && (photo_url != "") ) { %>
               <div id="popup_photo">
-                  <a href ="http://webserver.mosquitoalert.com/<%= photo_url %>" target="_blank">
-                  <img src="http://webserver.mosquitoalert.com/<%= photo_url %>" onerror="this.style.display = 'none'" />
+                  <a href ="//webserver.mosquitoalert.com/<%= photo_url %>" target="_blank">
+                  <img src="//webserver.mosquitoalert.com/<%= photo_url %>" onerror="this.style.display = 'none'" />
               </a>
               </div>
               <div class="photo_license">
@@ -1002,7 +1074,7 @@
                     <!-- cal afegir layer trash -->
                     <% if (category != 'not_yet_validated' && category != 'trash_layer' && category != 'breeding_site_not_yet_filtered') { %>
                         <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.
-                        <span i18n="report.license"></span><a href="http://www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
+                        <span i18n="report.license"></span><a href="//www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
                     <% } %>
                   </i>
               </div>
@@ -1185,15 +1257,15 @@
                     <% if( ( row.photo_url != null) && (row.photo_url != "") ) { %>
                         <div id="photo_reports">
                             <div class="popup_photo_reports">
-                                <a href ="http://webserver.mosquitoalert.com/<%= row.photo_url %>" target="_blank">
-                                    <img src="http://webserver.mosquitoalert.com/<%= row.photo_url %>" onerror="this.style.display = 'none'" />
+                                <a href ="//webserver.mosquitoalert.com/<%= row.photo_url %>" target="_blank">
+                                    <img src="//webserver.mosquitoalert.com/<%= row.photo_url %>" onerror="this.style.display = 'none'" />
                                 </a>
                             </div>
                             <div class="photo_license_reports">
                                 <i>
                                   <% if (row.category != 'not_yet_validated' && row.category != 'trash_layer' && row.category != 'breeding_site_not_yet_filtered') { %>
                                     <span i18n="report.author"></span>: <span i18n="map.anonim"></span>.<br/>
-                                    <span i18n="report.license"></span><a href="http://www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
+                                    <span i18n="report.license"></span><a href="//www.creativecommons.org/licences/by/4.0/" target="blank">CC by</a> Mosquito Alert
                                   <% } %>
                                 </i>
                             </div>
@@ -1433,7 +1505,9 @@
      <script src="js/leaflet/control-div.js"></script>
      <script src="js/leaflet/geojson-vt-dev.js"></script>
      <script src="js/leaflet/L.CanvasTiles.js"></script>
+     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-pip/v0.1.0/leaflet-pip.min.js'></script>
 
+     <script src='https://npmcdn.com/csv2geojson@latest/csv2geojson.js'></script>
 
      <script src="js/leaflet/control-sidebar-button.js"></script>
      <script src="lib/L.CanvasOverlay.js"></script>
@@ -1449,6 +1523,8 @@
      <script src="js/views/map.ui.js"></script>
      <script src="js/views/map.ui.markers.js"></script>
      <script src="js/views/map.layers.js"></script>
+     <script src="js/views/map.municipalities.js"></script>
+     <script src="js/views/map.biting.js"></script>
      <script src="js/views/reportsdocument.js"></script>
      <script src="js/app.js"></script>
 
