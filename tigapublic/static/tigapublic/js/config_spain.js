@@ -9,10 +9,10 @@ var MOSQUITO = (function (m, _) {
 
         URL_API: '/tigapublic/',
         URL_PUBLIC: '/tigapublic/',
-        URL_MODELS_VECTOR_GRID: '/tigapublic/static/models/vector/grid/', //TO DO: add it to static
-        URL_MODELS_VECTOR_MUNICIPALITIES: '/tigapublic/static/models/vector/municipalities/',
-        URL_MODELS_VIRUS_MUNICIPALITIES: '/tigapublic/static/models/virus/municipalities/',
-        URL_MODELS_BITING: '/tigapublic/static/models/biting/',
+        URL_MODELS_VECTOR_GRID: '/static/tigapublic/models/vector/grid/', //TO DO: add it to static
+        URL_MODELS_VECTOR_MUNICIPALITIES: '/static/tigapublic/models/vector/municipalities/',
+        URL_MODELS_VIRUS_MUNICIPALITIES: '/static/tigapublic/models/virus/municipalities/',
+        URL_MODELS_BITING: '/static/tigapublic/models/biting/',
         MODELS_FILE_NAME: 'mascp_monthly.csv',
         // BITING_FILE: 'mascp_monthly.csv',
 
@@ -190,7 +190,7 @@ var MOSQUITO = (function (m, _) {
               ]
             },
             //BITING layer
-            {
+            /*{
               'key': 'R',
               'group': 'models',
               'title': 'layer.biting',
@@ -209,7 +209,7 @@ var MOSQUITO = (function (m, _) {
                 {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
                 {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
               ]
-            },
+            },*/
             {
                 key: 'F',
                 group: 'none',
@@ -425,7 +425,7 @@ var MOSQUITO = (function (m, _) {
                   }
               },
               //BITING layer
-              {
+              /*{
                 'key': 'R',
                 'group': 'models',
                 'title': 'layer.biting',
@@ -444,7 +444,7 @@ var MOSQUITO = (function (m, _) {
                   {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
                   {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
                 ]
-              },
+              },*/
               {
                   key: 'Q',
                   group: 'userdata',
