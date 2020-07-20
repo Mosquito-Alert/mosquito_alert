@@ -65,7 +65,7 @@ def get_most_recently_validated_report(slug):
 @api_view(['GET'])
 def workload_pending_per_user(request):
     if request.method == 'GET':
-        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        user_slug = request.query_params.get('user_slug', -1)
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=user_slug)
         current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult')
@@ -82,7 +82,7 @@ def workload_pending_per_user(request):
 @api_view(['GET'])
 def workload_stats_per_user(request):
     if request.method == 'GET':
-        user_slug = request.QUERY_PARAMS.get('user_slug', -1)
+        user_slug = request.query_params.get('user_slug', -1)
         tz = get_localzone()
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=user_slug)
@@ -786,9 +786,9 @@ def hashtag_map(request):
 @api_view(['GET'])
 @permission_classes([])
 def get_user_xp_data(request):
-    user_id = request.QUERY_PARAMS.get('user_id', '-1')
-    locale = request.QUERY_PARAMS.get('locale', 'en')
-    update = request.QUERY_PARAMS.get('update', False)
+    user_id = request.query_params.get('user_id', '-1')
+    locale = request.query_params.get('locale', 'en')
+    update = request.query_params.get('update', False)
     try:
         u = TigaUser.objects.get(pk=user_id)
     except TigaUser.DoesNotExist:
@@ -806,7 +806,7 @@ def get_user_xp_data(request):
 
 @api_view(['GET'])
 def get_hashtag_map_data(request):
-    hashtag = request.QUERY_PARAMS.get('ht', '')
+    hashtag = request.query_params.get('ht', '')
     data = []
     if hashtag.strip() == '':
         return Response({ 'stats': '', 'data': data})

@@ -2016,7 +2016,7 @@ def get_user_reports_count(user):
         user_uuids.append(user.user_UUID)
     reports = Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type='bite')
     last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
-    return len(last_versions)
+    return len(list(last_versions))
 
 def get_translation_in(string, locale):
     translation.activate(locale)
