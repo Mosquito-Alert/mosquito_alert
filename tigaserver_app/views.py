@@ -174,7 +174,7 @@ version_UUID linking this photo to a specific report version.
 * report: The version_UUID of the report to which this photo is attached.
     """
     if request.method == 'POST':
-        this_report = Report.objects.get(version_UUID=request.DATA['report'])
+        this_report = Report.objects.get(version_UUID=request.data['report'])
         instance = Photo(photo=request.FILES['photo'], report=this_report)
         instance.save()
         return Response('uploaded')
