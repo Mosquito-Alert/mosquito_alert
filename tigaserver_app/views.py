@@ -147,7 +147,7 @@ mission_version null. Defaults to 100.
         these_missions = Mission.objects.filter(Q(id__gt=request.query_params.get('id_gt', 0)),
                                                 Q(platform__exact=request.query_params.get('platform', 'all')) | Q(platform__isnull=True) | Q(platform__exact='all'),
                                                 Q(mission_version__lte=request.query_params.get('version_lte',100)) | Q(mission_version__isnull=True)).order_by('id')
-        serializer = MissionSerializer(these_missions)
+        serializer = MissionSerializer(these_missions, many=True)
         return Response(serializer.data)
 
 
