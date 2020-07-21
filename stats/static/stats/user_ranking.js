@@ -27,7 +27,7 @@ var detail_template = '<div class="panel panel-default">' +
                 '<div class="col-xs-6">' + gettext('Reports') + '</div><div class="col-xs-6"><span class="badge badge-success">#n_adult#</span></div>' +
              '</div>' +
              '<div class="row">' +
-                '<div class="col-xs-6">XP</div><div class="col-xs-6"><span class="badge badge-success">#xp_adult# XP</span></div>' +
+                '<div class="col-xs-6">'+ gettext('Score') +'</div><div class="col-xs-6"><span class="badge badge-success">#xp_adult#</span></div>' +
              '</div>' +
              '<hr>' +
              '<div class="row">' +
@@ -37,11 +37,11 @@ var detail_template = '<div class="panel panel-default">' +
                 '<div class="col-xs-6">' + gettext('Reports') + '</div><div class="col-xs-6"><span class="badge badge-success">#n_site#</span></div>' +
              '</div>' +
              '<div class="row">' +
-                '<div class="col-xs-6">XP</div><div class="col-xs-6"><span class="badge badge-success">#xp_site# XP</span></div>' +
+                '<div class="col-xs-6">'+ gettext('Score') +'</div><div class="col-xs-6"><span class="badge badge-success">#xp_site#</span></div>' +
              '</div>' +
              '<hr>' +
              '<div class="row">' +
-                 '<div class="col-xs-6">' + gettext('Other') + ' XP</div><div class="col-xs-6"><span class="badge badge-success">#xp_unrelated#</span></div>' +
+                 '<div class="col-xs-6">' + gettext('Other') + '</div><div class="col-xs-6"><span class="badge badge-success">#xp_unrelated#</span></div>' +
              '</div>' +
             '</div>' +
         '</div>' +
@@ -101,6 +101,7 @@ $(document).ready(function() {
                 },
                 success: function( data, textStatus, jqXHR ) {
                     create_info_div(user_uuid, data);
+                    $('#moreinfo_' + user_uuid).show();
                 },
                 error: function(jqXHR, textStatus, errorThrown){
                     console.log(jqXHR.responseJSON);

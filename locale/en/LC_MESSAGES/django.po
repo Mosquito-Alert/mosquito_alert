@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-10 08:37+0000\n"
+"POT-Creation-Date: 2020-07-21 15:19+0000\n"
 "PO-Revision-Date: 2015-07-16 13:40+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -77,111 +77,162 @@ msgstr "Participants with over 3 reports"
 msgid "Participants with over 4 reports"
 msgstr "Participants with over 4 reports"
 
-#: stats/templates/stats/user_ranking.html:138
-#: stats/templates/stats/user_ranking.html:226
+#: stats/templates/stats/user_ranking.html:30
+msgid "user_ranking_info_text_1"
+msgstr ""
+"Check your current score and level. In the settings menu you will find "
+"detailed information about Mosquito Alert scoring system."
+
+#: stats/templates/stats/user_ranking.html:34
+msgid "user_ranking_info_text_2"
+msgstr "More info about"
+
+#: stats/templates/stats/user_ranking.html:34
+msgid "user_ranking_info_text_3"
+msgstr "scoring"
+
+#: stats/templates/stats/user_ranking.html:55
+#: stats/templates/stats/user_ranking.html:143
 msgid "My position"
 msgstr "My position"
 
-#: stats/templates/stats/user_ranking.html:142
-#: stats/templates/stats/user_score.html:36
-#: stats/templates/stats/user_score.html:84
-#: stats/templates/stats/user_score.html:140
+#: stats/templates/stats/user_ranking.html:59
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:142
 msgid "of"
 msgstr ""
 
-#: stats/templates/stats/user_ranking.html:158
+#: stats/templates/stats/user_ranking.html:75
 msgid "Rank"
 msgstr "Rank"
 
-#: stats/templates/stats/user_ranking.html:159
+#: stats/templates/stats/user_ranking.html:76
 msgid "User"
 msgstr "User"
 
-#: stats/templates/stats/user_ranking.html:160
+#: stats/templates/stats/user_ranking.html:77
 msgid "Overall class"
 msgstr "Overall class"
 
-#: stats/templates/stats/user_ranking.html:161
+#: stats/templates/stats/user_ranking.html:78
 msgid "Score"
 msgstr "Score"
 
+#: stats/templates/stats/user_ranking.html:84
+msgid "This is you!"
+msgstr "This is you!"
+
+#: stats/templates/stats/user_ranking.html:121
+msgid "Score details"
+msgstr "Score details"
+
 #: stats/templates/stats/user_score.html:28
 msgid "Citizen Scientist"
-msgstr "Citizen Scientist"
+msgstr "Score summary"
 
 #: stats/templates/stats/user_score.html:31
+msgid "this_is_your_personal_avatar"
+msgstr ""
+"This is your personal avatar. According to your score, you have reached the "
+"general experience level of "
+
+#: stats/templates/stats/user_score.html:31
+msgid "there_are_5_levels"
+msgstr ""
+"Hay 5 niveles posibles: Novice, Beginner, Collaborator, Expert, Master and "
+"Grand Master."
+
+#: stats/templates/stats/user_score.html:32
 msgid "Joined"
 msgstr "Joined"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:32
 msgid "Last active"
 msgstr "Last active"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:32
 msgid "Never"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:33
+#: stats/templates/stats/user_score.html:34
 msgid "Overall rank - Unranked"
-msgstr ""
-
-#: stats/templates/stats/user_score.html:35
-msgid "Overall rank"
-msgstr ""
+msgstr "Your overall position - unranked"
 
 #: stats/templates/stats/user_score.html:36
-#: stats/templates/stats/user_score.html:84
-#: stats/templates/stats/user_score.html:140
+msgid "Overall rank"
+msgstr "Your overall position"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:142
 msgid "Top"
-msgstr ""
+msgstr "You are in the top"
 
-#: stats/templates/stats/user_score.html:47
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+msgid "participants"
+msgstr "participants"
+
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
+#: stats/templates/stats/user_score.html:91
+#: stats/templates/stats/user_score.html:99
+msgid "XP"
+msgstr "Points"
+
+#: stats/templates/stats/user_score.html:49
 msgid "Other awards"
-msgstr ""
+msgstr "Granted awards"
 
-#: stats/templates/stats/user_score.html:60
+#: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:79
+#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:137
+msgid "Level obtained for"
+msgstr "Level obtained for"
+
+#: stats/templates/stats/user_score.html:81
 msgid "Mosquito"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:81
-msgid "Mosquito rank - Unranked"
-msgstr ""
-
 #: stats/templates/stats/user_score.html:83
-msgid "Mosquito rank"
-msgstr ""
+msgid "Mosquito rank - Unranked"
+msgstr "Your specific position for Mosquito - unranked"
 
-#: stats/templates/stats/user_score.html:112
-#: stats/templates/stats/user_score.html:167
+#: stats/templates/stats/user_score.html:85
+msgid "Mosquito rank"
+msgstr "Your specific position for Mosquito"
+
+#: stats/templates/stats/user_score.html:114
+#: stats/templates/stats/user_score.html:169
 msgid "xp awarded for"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:117
+#: stats/templates/stats/user_score.html:119
 msgid "No awards because"
 msgstr "No awards because"
 
-#: stats/templates/stats/user_score.html:120
-#: stats/templates/stats/user_score.html:171
+#: stats/templates/stats/user_score.html:122
+#: stats/templates/stats/user_score.html:173
 msgid "No awards for this report!"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:135
+#: stats/templates/stats/user_score.html:137
 #, fuzzy
 msgid "Breeding site"
 msgstr "Breeding sites"
 
-#: stats/templates/stats/user_score.html:137
-msgid "Breeding site rank - Unranked"
-msgstr ""
-
 #: stats/templates/stats/user_score.html:139
-#, fuzzy
+msgid "Breeding site rank - Unranked"
+msgstr "Your specific Breeding site rank - Unranked"
+
+#: stats/templates/stats/user_score.html:141
 msgid "Breeding site rank"
-msgstr "Breeding sites: Basins"
+msgstr "Your specific Breeding site rank"
 
 #: templates/admin/base_site.html:4
 msgid "Tigaserver admin"
@@ -191,21 +242,21 @@ msgstr "Tigaserver admin"
 msgid "Tigaserver administration"
 msgstr "Tigaserver administration"
 
-#: templates/django_messages/base.html:41
-#: templates/django_messages/inbox.html:6
+#: templates/django_messages/base.html:40
+#: templates/django_messages/inbox.html:5
 msgid "Inbox"
 msgstr ""
 
-#: templates/django_messages/base.html:42
-#: templates/django_messages/outbox.html:6
+#: templates/django_messages/base.html:41
+#: templates/django_messages/outbox.html:5
 msgid "Sent Messages"
 msgstr ""
 
-#: templates/django_messages/base.html:43
+#: templates/django_messages/base.html:42
 msgid "New Message"
 msgstr ""
 
-#: templates/django_messages/base.html:44
+#: templates/django_messages/base.html:43
 msgid "Trash"
 msgstr ""
 
@@ -217,64 +268,64 @@ msgstr ""
 msgid "Send"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
-#: templates/django_messages/view.html:13
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/view.html:12
 msgid "Sender"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
-#: templates/django_messages/outbox.html:10
-#: templates/django_messages/view.html:9
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
 msgid "Subject"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
+#: templates/django_messages/inbox.html:9
 msgid "Received"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
-#: templates/django_messages/outbox.html:10
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
 msgid "Action"
+msgstr ""
+
+#: templates/django_messages/inbox.html:21
+#: templates/django_messages/outbox.html:18
+#: templates/django_messages/view.html:17
+msgid "DATETIME_FORMAT"
 msgstr ""
 
 #: templates/django_messages/inbox.html:22
 #: templates/django_messages/outbox.html:19
-#: templates/django_messages/view.html:18
-msgid "DATETIME_FORMAT"
-msgstr ""
-
-#: templates/django_messages/inbox.html:23
-#: templates/django_messages/outbox.html:20
 msgid "delete"
 msgstr ""
 
-#: templates/django_messages/inbox.html:29
-#: templates/django_messages/outbox.html:26
+#: templates/django_messages/inbox.html:28
+#: templates/django_messages/outbox.html:25
 msgid "No messages."
 msgstr ""
 
-#: templates/django_messages/outbox.html:10
-#: templates/django_messages/view.html:21
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
 msgid "Recipient"
 msgstr ""
 
-#: templates/django_messages/outbox.html:10
+#: templates/django_messages/outbox.html:9
 msgid "Sent"
 msgstr ""
 
-#: templates/django_messages/view.html:6
+#: templates/django_messages/view.html:5
 msgid "View Message"
 msgstr ""
 
-#: templates/django_messages/view.html:17
+#: templates/django_messages/view.html:16
 msgid "Date"
 msgstr ""
 
-#: templates/django_messages/view.html:31
+#: templates/django_messages/view.html:30
 msgid "Reply"
 msgstr ""
 
-#: templates/django_messages/view.html:33
+#: templates/django_messages/view.html:32
 msgid "Delete"
 msgstr ""
 
@@ -326,68 +377,6 @@ msgstr "User Agreement"
 msgid "privacy-policy"
 msgstr "Privacy Policy"
 
-#: tigamap/views.py:147 tigamap/views.py:317
-msgid "coverage-map"
-msgstr "Coverage Map"
-
-#: tigamap/views.py:155
-msgid "Pseudo Occurrence-Exposure Map"
-msgstr "Pseudo Occurrence-Exposure Map"
-
-#: tigamap/views.py:162
-msgid "Adult tiger mosquitoes: Validated reports"
-msgstr "Adult tiger mosquitoes: Validated reports"
-
-#: tigamap/views.py:171
-msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
-msgstr "Adult tiger mosquitoes: Medium and high probability reports"
-
-#: tigamap/views.py:177
-msgid "adult-tiger-mosquitoes-high-probability-reports"
-msgstr "Adult tiger mosquitoes: High probability reports"
-
-#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
-msgid "adult-tiger-mosquitoes-all-reports"
-msgstr "Mosquitoes: All reports"
-
-#: tigamap/views.py:189
-msgid "Breeding Sites: Validated reports"
-msgstr "Breeding Sites: Validated reports"
-
-#: tigamap/views.py:199 tigamap/views.py:289
-msgid "breeding-sites-storm-drains-and-fountains"
-msgstr "Breeding sites: Storm drains and fountains"
-
-#: tigamap/views.py:202 tigamap/views.py:289
-msgid "breeding-sites-basins"
-msgstr "Breeding sites: Basins"
-
-#: tigamap/views.py:205 tigamap/views.py:289
-msgid "breeding-sites-buckets-and-wells"
-msgstr "Breeding sites: Buckets and wells"
-
-#: tigamap/views.py:208 tigamap/views.py:289
-msgid "breeding-sites-other"
-msgstr "Breeding sites: Other"
-
-#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
-msgid "breeding-sites-all-reports"
-msgstr "Breeding sites: All repors"
-
-#: tigamap/views.py:261 tigamap/views.py:263
-#: tigamap/templates/tigamap/app.html:122
-#: tigamap/templates/tigamap/app_new.html:171
-msgid "adult-tiger-mosquitoes"
-msgstr "Mosquito reports"
-
-#: tigamap/views.py:261 tigamap/templates/tigamap/app_new.html:177
-msgid "menu_adults_prob"
-msgstr "Possible and confirmed tiger mosquitoes"
-
-#: tigamap/views.py:263 tigamap/templates/tigamap/app_new.html:179
-msgid "menu_adults_definite"
-msgstr "Confirmed tiger mosquitoes"
-
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
@@ -403,6 +392,12 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "and"
 msgstr "and"
+
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
+#: tigamap/views.py:263
+msgid "adult-tiger-mosquitoes"
+msgstr "Mosquito reports"
 
 #: tigamap/templates/tigamap/app.html:126
 #: tigamap/templates/tigamap/app_new.html:175
@@ -446,7 +441,7 @@ msgstr "Buckets and wells"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:541
+#: tigaserver_app/models.py:565
 msgid "Other"
 msgstr "Other"
 
@@ -477,6 +472,14 @@ msgstr "Toggle navigation"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
+
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+msgid "menu_adults_prob"
+msgstr "Possible and confirmed tiger mosquitoes"
+
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+msgid "menu_adults_definite"
+msgstr "Confirmed tiger mosquitoes"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 msgid "low"
@@ -546,19 +549,19 @@ msgstr "Points"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:533
+#: tigaserver_app/models.py:557
 msgid "storm-drain"
 msgstr "Storm drain"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:535
+#: tigaserver_app/models.py:559
 msgid "Fountain"
 msgstr "Fountain"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:537
+#: tigaserver_app/models.py:561
 msgid "Basin"
 msgstr "Basin"
 
@@ -569,7 +572,7 @@ msgstr "Bucket"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:539
+#: tigaserver_app/models.py:563
 msgid "Well"
 msgstr "Well"
 
@@ -934,6 +937,54 @@ msgstr "All reports"
 msgid "site_report_legend_main_title"
 msgstr "Markers"
 
+#: tigamap/views.py:147 tigamap/views.py:317
+msgid "coverage-map"
+msgstr "Coverage Map"
+
+#: tigamap/views.py:155
+msgid "Pseudo Occurrence-Exposure Map"
+msgstr "Pseudo Occurrence-Exposure Map"
+
+#: tigamap/views.py:162
+msgid "Adult tiger mosquitoes: Validated reports"
+msgstr "Adult tiger mosquitoes: Validated reports"
+
+#: tigamap/views.py:171
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Adult tiger mosquitoes: Medium and high probability reports"
+
+#: tigamap/views.py:177
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Adult tiger mosquitoes: High probability reports"
+
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Mosquitoes: All reports"
+
+#: tigamap/views.py:189
+msgid "Breeding Sites: Validated reports"
+msgstr "Breeding Sites: Validated reports"
+
+#: tigamap/views.py:199 tigamap/views.py:289
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Breeding sites: Storm drains and fountains"
+
+#: tigamap/views.py:202 tigamap/views.py:289
+msgid "breeding-sites-basins"
+msgstr "Breeding sites: Basins"
+
+#: tigamap/views.py:205 tigamap/views.py:289
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Breeding sites: Buckets and wells"
+
+#: tigamap/views.py:208 tigamap/views.py:289
+msgid "breeding-sites-other"
+msgstr "Breeding sites: Other"
+
+#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+msgid "breeding-sites-all-reports"
+msgstr "Breeding sites: All repors"
+
 #: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
 #: tigascoring/xp_scoring.py:190
 msgid "Novice"
@@ -1043,40 +1094,50 @@ msgstr ""
 msgid " days ago"
 msgstr ""
 
-#: tigaserver_app/models.py:516
+#: tigaserver_app/models.py:540
 msgid "High"
 msgstr "High"
 
-#: tigaserver_app/models.py:518
+#: tigaserver_app/models.py:542
 msgid "Medium"
 msgstr "Medium"
 
-#: tigaserver_app/models.py:520
+#: tigaserver_app/models.py:544
 msgid "Low"
 msgstr "Low"
 
-#: tigaserver_messages/views.py:43 tigaserver_messages/views.py:102
+#: tigaserver_messages/fields.py:56
+#, python-format
+msgid "The following usernames are incorrect: %(users)s"
+msgstr ""
+
+#: tigaserver_messages/forms.py:20
+msgid "Body"
+msgstr ""
+
+#: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
+#: tigaserver_messages/views.py:138
 msgid "Message successfully sent."
 msgstr ""
 
-#: tigaserver_messages/views.py:84
+#: tigaserver_messages/views.py:120
 #, python-format
 msgid "Re: %(subject)s"
 msgstr ""
 
-#: tigaserver_project/settings.py:119
+#: tigaserver_project/settings.py:131
 msgid "Spanish"
 msgstr "Spanish"
 
-#: tigaserver_project/settings.py:120
+#: tigaserver_project/settings.py:132
 msgid "Catalan"
 msgstr "Catalan"
 
-#: tigaserver_project/settings.py:121
+#: tigaserver_project/settings.py:133
 msgid "English"
 msgstr "English"
 
-#: tigaserver_project/settings.py:122
+#: tigaserver_project/settings.py:134
 msgid "Chinese"
 msgstr ""
 

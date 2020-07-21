@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-29 08:43+0000\n"
+"POT-Creation-Date: 2020-07-21 14:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,23 +30,62 @@ msgstr "Última actividad hace"
 msgid "Overall"
 msgstr "Nivel General"
 
-#: stats/static/stats/user_ranking.js:23
+#: stats/static/stats/user_ranking.js:24
 msgid "Adult"
 msgstr "Nivel Mosquito"
 
-#: stats/static/stats/user_ranking.js:24 stats/static/stats/user_ranking.js:29
-#: stats/static/stats/user_ranking.js:34
+#: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
 msgid "Reports"
 msgstr "Notificaciones"
 
-#: stats/static/stats/user_ranking.js:28
-msgid "Bite"
-msgstr "Picaduras"
+#: stats/static/stats/user_ranking.js:30 stats/static/stats/user_ranking.js:40
+msgid "Score"
+msgstr "Puntuación"
 
-#: stats/static/stats/user_ranking.js:33
+#: stats/static/stats/user_ranking.js:34
 msgid "Site"
 msgstr "Nivel Lugares de cría"
 
-#: stats/static/stats/user_ranking.js:38
+#: stats/static/stats/user_ranking.js:44
 msgid "Other"
 msgstr "Otra puntuación"
+
+#: tigacrafting/static/tigacrafting/jquery-ui/jquery-ui.min.js:10
+msgid "'"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
+msgid "v"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
+msgid "h"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/tinymce.min.js:8
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+msgid "blockquote"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+msgid "UL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+msgid "OL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+msgid "DL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+msgid "align"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+msgid "p"
+msgstr ""
+
+#~ msgid "Bite"
+#~ msgstr "Picaduras"

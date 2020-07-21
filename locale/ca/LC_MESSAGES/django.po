@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-10 08:37+0000\n"
+"POT-Creation-Date: 2020-07-21 15:19+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -77,109 +77,161 @@ msgstr ""
 msgid "Participants with over 4 reports"
 msgstr ""
 
-#: stats/templates/stats/user_ranking.html:138
-#: stats/templates/stats/user_ranking.html:226
+#: stats/templates/stats/user_ranking.html:30
+msgid "user_ranking_info_text_1"
+msgstr ""
+"Consulta la teva puntuació i nivell assolits. Al menú d'ajustos trobaràs "
+"informació detallada sobre el sistema de puntuació de Mosquito Alert."
+
+#: stats/templates/stats/user_ranking.html:34
+msgid "user_ranking_info_text_2"
+msgstr "Més informació sobre la"
+
+#: stats/templates/stats/user_ranking.html:34
+msgid "user_ranking_info_text_3"
+msgstr "puntuació"
+
+#: stats/templates/stats/user_ranking.html:55
+#: stats/templates/stats/user_ranking.html:143
 msgid "My position"
 msgstr "La meva posició"
 
-#: stats/templates/stats/user_ranking.html:142
-#: stats/templates/stats/user_score.html:36
-#: stats/templates/stats/user_score.html:84
-#: stats/templates/stats/user_score.html:140
+#: stats/templates/stats/user_ranking.html:59
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:142
 msgid "of"
 msgstr "de"
 
-#: stats/templates/stats/user_ranking.html:158
+#: stats/templates/stats/user_ranking.html:75
 msgid "Rank"
 msgstr "Posició"
 
-#: stats/templates/stats/user_ranking.html:159
+#: stats/templates/stats/user_ranking.html:76
 msgid "User"
 msgstr "Usuari"
 
-#: stats/templates/stats/user_ranking.html:160
+#: stats/templates/stats/user_ranking.html:77
 msgid "Overall class"
 msgstr "Rang general"
 
-#: stats/templates/stats/user_ranking.html:161
+#: stats/templates/stats/user_ranking.html:78
 msgid "Score"
 msgstr "Puntuació"
 
+#: stats/templates/stats/user_ranking.html:84
+msgid "This is you!"
+msgstr "Tu ets aquí!"
+
+#: stats/templates/stats/user_ranking.html:121
+msgid "Score details"
+msgstr "Detalls de la puntuació"
+
 #: stats/templates/stats/user_score.html:28
 msgid "Citizen Scientist"
-msgstr "Ciutadà científic"
+msgstr "Resum de la puntuació"
 
 #: stats/templates/stats/user_score.html:31
+msgid "this_is_your_personal_avatar"
+msgstr ""
+"Aquest és el teu avatar personal. Gràcies a la puntuació obtinguda, has "
+"assolit el nivell d'experiència general de "
+
+#: stats/templates/stats/user_score.html:31
+msgid "there_are_5_levels"
+msgstr ""
+"Hi ha 5 nivells possibles: Novell, Principiant, Col·laborador, Expert, "
+"Mestre i Gran Mestre."
+
+#: stats/templates/stats/user_score.html:32
 msgid "Joined"
 msgstr "Es va unir fa"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:32
 msgid "Last active"
 msgstr "Darrera activitat fa"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:32
 msgid "Never"
 msgstr "Mai"
 
-#: stats/templates/stats/user_score.html:33
+#: stats/templates/stats/user_score.html:34
 msgid "Overall rank - Unranked"
-msgstr "Rang general - Sense rang"
-
-#: stats/templates/stats/user_score.html:35
-msgid "Overall rank"
-msgstr "Rang general"
+msgstr "La teva posició global - no tens posició"
 
 #: stats/templates/stats/user_score.html:36
-#: stats/templates/stats/user_score.html:84
-#: stats/templates/stats/user_score.html:140
+msgid "Overall rank"
+msgstr "La teva posició global"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:142
 msgid "Top"
-msgstr "Top"
+msgstr "Estàs entre el"
 
-#: stats/templates/stats/user_score.html:47
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+msgid "participants"
+msgstr "participants"
+
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
+#: stats/templates/stats/user_score.html:91
+#: stats/templates/stats/user_score.html:99
+msgid "XP"
+msgstr "Punts"
+
+#: stats/templates/stats/user_score.html:49
 msgid "Other awards"
-msgstr "Altres premis"
+msgstr "Premis obtinguts"
 
-#: stats/templates/stats/user_score.html:60
+#: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
 msgstr "XP, concedits el"
 
-#: stats/templates/stats/user_score.html:79
+#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:137
+msgid "Level obtained for"
+msgstr "Nivell assolit per"
+
+#: stats/templates/stats/user_score.html:81
 msgid "Mosquito"
 msgstr "Mosquit"
 
-#: stats/templates/stats/user_score.html:81
-msgid "Mosquito rank - Unranked"
-msgstr "Rang mosquit - Sense rang"
-
 #: stats/templates/stats/user_score.html:83
-msgid "Mosquito rank"
-msgstr "Rang mosquit"
+msgid "Mosquito rank - Unranked"
+msgstr "La teva posició específica per Mosquit - Sense classificació"
 
-#: stats/templates/stats/user_score.html:112
-#: stats/templates/stats/user_score.html:167
+#: stats/templates/stats/user_score.html:85
+msgid "Mosquito rank"
+msgstr "La teva posició específica per Mosquit"
+
+#: stats/templates/stats/user_score.html:114
+#: stats/templates/stats/user_score.html:169
 msgid "xp awarded for"
 msgstr "xp concedits per"
 
-#: stats/templates/stats/user_score.html:117
+#: stats/templates/stats/user_score.html:119
 msgid "No awards because"
 msgstr "No s'han concedit premis perque"
 
-#: stats/templates/stats/user_score.html:120
-#: stats/templates/stats/user_score.html:171
+#: stats/templates/stats/user_score.html:122
+#: stats/templates/stats/user_score.html:173
 msgid "No awards for this report!"
 msgstr "Cap premi per aquest informe"
 
-#: stats/templates/stats/user_score.html:135
+#: stats/templates/stats/user_score.html:137
 msgid "Breeding site"
 msgstr "Llocs de cria"
 
-#: stats/templates/stats/user_score.html:137
-msgid "Breeding site rank - Unranked"
-msgstr "Rang llocs de cria - sense rang"
-
 #: stats/templates/stats/user_score.html:139
+msgid "Breeding site rank - Unranked"
+msgstr "La teva posició específica per Llocs de cria - sense classificar"
+
+#: stats/templates/stats/user_score.html:141
 msgid "Breeding site rank"
-msgstr "Rang llocs de cria"
+msgstr "La teva posició específica per Llocs de cria"
 
 #: templates/admin/base_site.html:4
 #, fuzzy
@@ -191,21 +243,21 @@ msgstr "Tigaserver admin"
 msgid "Tigaserver administration"
 msgstr "Tigaserver administration"
 
-#: templates/django_messages/base.html:41
-#: templates/django_messages/inbox.html:6
+#: templates/django_messages/base.html:40
+#: templates/django_messages/inbox.html:5
 msgid "Inbox"
 msgstr ""
 
-#: templates/django_messages/base.html:42
-#: templates/django_messages/outbox.html:6
+#: templates/django_messages/base.html:41
+#: templates/django_messages/outbox.html:5
 msgid "Sent Messages"
 msgstr ""
 
-#: templates/django_messages/base.html:43
+#: templates/django_messages/base.html:42
 msgid "New Message"
 msgstr ""
 
-#: templates/django_messages/base.html:44
+#: templates/django_messages/base.html:43
 msgid "Trash"
 msgstr ""
 
@@ -217,64 +269,64 @@ msgstr ""
 msgid "Send"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
-#: templates/django_messages/view.html:13
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/view.html:12
 msgid "Sender"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
-#: templates/django_messages/outbox.html:10
-#: templates/django_messages/view.html:9
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
 msgid "Subject"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
+#: templates/django_messages/inbox.html:9
 msgid "Received"
 msgstr ""
 
-#: templates/django_messages/inbox.html:10
-#: templates/django_messages/outbox.html:10
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
 msgid "Action"
+msgstr ""
+
+#: templates/django_messages/inbox.html:21
+#: templates/django_messages/outbox.html:18
+#: templates/django_messages/view.html:17
+msgid "DATETIME_FORMAT"
 msgstr ""
 
 #: templates/django_messages/inbox.html:22
 #: templates/django_messages/outbox.html:19
-#: templates/django_messages/view.html:18
-msgid "DATETIME_FORMAT"
-msgstr ""
-
-#: templates/django_messages/inbox.html:23
-#: templates/django_messages/outbox.html:20
 msgid "delete"
 msgstr ""
 
-#: templates/django_messages/inbox.html:29
-#: templates/django_messages/outbox.html:26
+#: templates/django_messages/inbox.html:28
+#: templates/django_messages/outbox.html:25
 msgid "No messages."
 msgstr ""
 
-#: templates/django_messages/outbox.html:10
-#: templates/django_messages/view.html:21
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
 msgid "Recipient"
 msgstr ""
 
-#: templates/django_messages/outbox.html:10
+#: templates/django_messages/outbox.html:9
 msgid "Sent"
 msgstr ""
 
-#: templates/django_messages/view.html:6
+#: templates/django_messages/view.html:5
 msgid "View Message"
 msgstr ""
 
-#: templates/django_messages/view.html:17
+#: templates/django_messages/view.html:16
 msgid "Date"
 msgstr ""
 
-#: templates/django_messages/view.html:31
+#: templates/django_messages/view.html:30
 msgid "Reply"
 msgstr ""
 
-#: templates/django_messages/view.html:33
+#: templates/django_messages/view.html:32
 msgid "Delete"
 msgstr ""
 
@@ -326,70 +378,6 @@ msgstr "Acord de l'usuari"
 msgid "privacy-policy"
 msgstr "Política de privacitat"
 
-#: tigamap/views.py:147 tigamap/views.py:317
-msgid "coverage-map"
-msgstr "Zones explorades"
-
-#: tigamap/views.py:155
-msgid "Pseudo Occurrence-Exposure Map"
-msgstr ""
-
-#: tigamap/views.py:162
-#, fuzzy
-msgid "Adult tiger mosquitoes: Validated reports"
-msgstr "Mosquits: Tots"
-
-#: tigamap/views.py:171
-msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
-msgstr "Mosquits tigre: Només probabilitat mitjana i alta"
-
-#: tigamap/views.py:177
-msgid "adult-tiger-mosquitoes-high-probability-reports"
-msgstr "Mosquits tigre: Només probabilitat alta"
-
-#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
-msgid "adult-tiger-mosquitoes-all-reports"
-msgstr "Informes de mosquits: Tots"
-
-#: tigamap/views.py:189
-#, fuzzy
-msgid "Breeding Sites: Validated reports"
-msgstr "Llocs de cria: Tots"
-
-#: tigamap/views.py:199 tigamap/views.py:289
-msgid "breeding-sites-storm-drains-and-fountains"
-msgstr "Llocs de cria: Embornals i fonts"
-
-#: tigamap/views.py:202 tigamap/views.py:289
-msgid "breeding-sites-basins"
-msgstr "Llocs de cria: Basses artificials petites"
-
-#: tigamap/views.py:205 tigamap/views.py:289
-msgid "breeding-sites-buckets-and-wells"
-msgstr "Llocs de cria: Bidons i pous"
-
-#: tigamap/views.py:208 tigamap/views.py:289
-msgid "breeding-sites-other"
-msgstr "Llocs de cria: Altres"
-
-#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
-msgid "breeding-sites-all-reports"
-msgstr "Llocs de cria: Tots"
-
-#: tigamap/views.py:261 tigamap/views.py:263
-#: tigamap/templates/tigamap/app.html:122
-#: tigamap/templates/tigamap/app_new.html:171
-msgid "adult-tiger-mosquitoes"
-msgstr "Informes de mosquits"
-
-#: tigamap/views.py:261 tigamap/templates/tigamap/app_new.html:177
-msgid "menu_adults_prob"
-msgstr "Mosquits tigre confirmats i possibles"
-
-#: tigamap/views.py:263 tigamap/templates/tigamap/app_new.html:179
-msgid "menu_adults_definite"
-msgstr "Mosquits tigre confirmats"
-
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
@@ -406,6 +394,12 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "and"
 msgstr "i"
+
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
+#: tigamap/views.py:263
+msgid "adult-tiger-mosquitoes"
+msgstr "Informes de mosquits"
 
 #: tigamap/templates/tigamap/app.html:126
 #: tigamap/templates/tigamap/app_new.html:175
@@ -449,7 +443,7 @@ msgstr "Bidons i pous"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:541
+#: tigaserver_app/models.py:565
 msgid "Other"
 msgstr "Altres"
 
@@ -480,6 +474,14 @@ msgstr "Alternar panell de navegació"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/ca/el-mapa-del-mosquit-tigre-2014/"
+
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+msgid "menu_adults_prob"
+msgstr "Mosquits tigre confirmats i possibles"
+
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+msgid "menu_adults_definite"
+msgstr "Mosquits tigre confirmats"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 #, fuzzy
@@ -552,19 +554,19 @@ msgstr "Punts"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:533
+#: tigaserver_app/models.py:557
 msgid "storm-drain"
 msgstr "Embornal"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:535
+#: tigaserver_app/models.py:559
 msgid "Fountain"
 msgstr "Font"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:537
+#: tigaserver_app/models.py:561
 msgid "Basin"
 msgstr "Basse artificial petit"
 
@@ -575,7 +577,7 @@ msgstr "Bidó"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:539
+#: tigaserver_app/models.py:563
 msgid "Well"
 msgstr "Pou"
 
@@ -943,6 +945,56 @@ msgstr "Tots els informes"
 msgid "site_report_legend_main_title"
 msgstr "Marcadors"
 
+#: tigamap/views.py:147 tigamap/views.py:317
+msgid "coverage-map"
+msgstr "Zones explorades"
+
+#: tigamap/views.py:155
+msgid "Pseudo Occurrence-Exposure Map"
+msgstr ""
+
+#: tigamap/views.py:162
+#, fuzzy
+msgid "Adult tiger mosquitoes: Validated reports"
+msgstr "Mosquits: Tots"
+
+#: tigamap/views.py:171
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Mosquits tigre: Només probabilitat mitjana i alta"
+
+#: tigamap/views.py:177
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Mosquits tigre: Només probabilitat alta"
+
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Informes de mosquits: Tots"
+
+#: tigamap/views.py:189
+#, fuzzy
+msgid "Breeding Sites: Validated reports"
+msgstr "Llocs de cria: Tots"
+
+#: tigamap/views.py:199 tigamap/views.py:289
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Llocs de cria: Embornals i fonts"
+
+#: tigamap/views.py:202 tigamap/views.py:289
+msgid "breeding-sites-basins"
+msgstr "Llocs de cria: Basses artificials petites"
+
+#: tigamap/views.py:205 tigamap/views.py:289
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Llocs de cria: Bidons i pous"
+
+#: tigamap/views.py:208 tigamap/views.py:289
+msgid "breeding-sites-other"
+msgstr "Llocs de cria: Altres"
+
+#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+msgid "breeding-sites-all-reports"
+msgstr "Llocs de cria: Tots"
+
 #: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
 #: tigascoring/xp_scoring.py:190
 msgid "Novice"
@@ -982,15 +1034,15 @@ msgstr "Tres dies seguits enviant informes"
 
 #: tigascoring/xp_scoring.py:221
 msgid "achievement_10_reports"
-msgstr "10 informes pujats"
+msgstr "10 notificacions realitzades"
 
 #: tigascoring/xp_scoring.py:222
 msgid "achievement_20_reports"
-msgstr "20 informes pujats"
+msgstr "20 notificacions realitzades"
 
 #: tigascoring/xp_scoring.py:223
 msgid "achievement_50_reports"
-msgstr "50 informes pujats"
+msgstr "50 notificacions realitzades"
 
 #: tigascoring/xp_scoring.py:259 tigascoring/xp_scoring.py:302
 msgid "picture"
@@ -1055,40 +1107,50 @@ msgstr " mesos"
 msgid " days ago"
 msgstr " dies"
 
-#: tigaserver_app/models.py:516
+#: tigaserver_app/models.py:540
 msgid "High"
 msgstr "Alta"
 
-#: tigaserver_app/models.py:518
+#: tigaserver_app/models.py:542
 msgid "Medium"
 msgstr "Mitjana"
 
-#: tigaserver_app/models.py:520
+#: tigaserver_app/models.py:544
 msgid "Low"
 msgstr "Baixa "
 
-#: tigaserver_messages/views.py:43 tigaserver_messages/views.py:102
+#: tigaserver_messages/fields.py:56
+#, python-format
+msgid "The following usernames are incorrect: %(users)s"
+msgstr ""
+
+#: tigaserver_messages/forms.py:20
+msgid "Body"
+msgstr ""
+
+#: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
+#: tigaserver_messages/views.py:138
 msgid "Message successfully sent."
 msgstr ""
 
-#: tigaserver_messages/views.py:84
+#: tigaserver_messages/views.py:120
 #, python-format
 msgid "Re: %(subject)s"
 msgstr ""
 
-#: tigaserver_project/settings.py:119
+#: tigaserver_project/settings.py:131
 msgid "Spanish"
 msgstr "Espanyol"
 
-#: tigaserver_project/settings.py:120
+#: tigaserver_project/settings.py:132
 msgid "Catalan"
 msgstr "Català"
 
-#: tigaserver_project/settings.py:121
+#: tigaserver_project/settings.py:133
 msgid "English"
 msgstr "Anglès"
 
-#: tigaserver_project/settings.py:122
+#: tigaserver_project/settings.py:134
 msgid "Chinese"
 msgstr ""
 

@@ -28,17 +28,18 @@
                     <h4>{% trans 'Citizen Scientist' %} - <b>{{ score_data.overall_class_label }}</b></h4>
                     <!--<p>User ID - {{ score_data.user_uuid }}</p>-->
                     <p><img src="{{ score_data.identicon | safe }}" height="75px"></p>
+                    <p class="small">{% trans 'this_is_your_personal_avatar' %} <b>{{ score_data.overall_class_label }}</b>. {% trans 'there_are_5_levels' %}</p>
                     <p><i>{% trans 'Joined' %} {{ score_data.joined_label }} | {% trans 'Last active' %} {% if score_data.active_label %}{{ score_data.active_label }}{%else%}{% trans 'Never' %}{%endif%}</i></p>
                     {% if score_data.overall_rank_value == 0 %}
                         <p class="score_label">{% trans 'Overall rank - Unranked' %}</p>
                     {% else %}
                         <p class="score_label">{% trans 'Overall rank' %} - #{{ score_data.overall_rank_value }}</p>
-                        <p><i>{% trans 'Top' %} {{ score_data.overall_top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.overall_ranked_users }}</i></p>
+                        <p><i>{% trans 'Top' %} {{ score_data.overall_top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.overall_ranked_users }} {% trans 'participants' %}</i></p>
                     {% endif %}
                 </div>
                 <div class="col-xs-3 class_image">
                     <img src="{% static "stats/icon/" %}L{{ score_data.overall_class_value }}_75.png">
-                    <p class="score_label">{{ score_data.total_score }} XP</p>
+                    <p class="score_label">{{ score_data.total_score }} {% trans 'XP' %}</p>
                 </div>
             </div>
             {% if score_data.unrelated_awards.awards %}
@@ -52,7 +53,7 @@
                             <img src="{% static "stats/icon/" %}{{ item.media_label }}.png">
                             <p>{{ item.reason }}</p>
                             <p>{{ item.awarded_on }}</p>
-                            <p class="score_label_smallest">{{ item.xp_awarded }} XP</p>
+                            <p class="score_label_smallest">{{ item.xp_awarded }} {% trans 'XP' %}</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -63,7 +64,7 @@
                     </ul>-->
                 </div>
                 <div class="col-xs-3 class_image">
-                    <p class="score_label">{{ score_data.unrelated_awards.score }} XP</p>
+                    <p class="score_label">{{ score_data.unrelated_awards.score }} {% trans 'XP' %}</p>
                 </div>
             </div>
             {% endif %}
@@ -77,17 +78,17 @@
                 </div>
                 -->
                 <div class="col-xs-9">
-                    <h4>{% trans 'Mosquito' %} - <b>{{ score_data.score_detail.adult.class_label }}</b></h4>
+                    <h4>{% trans 'Level obtained for' %} {% trans 'Mosquito' %} - <b>{{ score_data.score_detail.adult.class_label }}</b></h4>
                     {% if score_data.score_detail.adult.rank_value == 0%}
                         <p class="score_label_smaller">{% trans 'Mosquito rank - Unranked' %}</p>
                     {% else %}
                         <p class="score_label_smaller">{% trans 'Mosquito rank' %} - #{{ score_data.score_detail.adult.rank_value }}</p>
-                        <p><i>{% trans 'Top' %} {{ score_data.score_detail.adult.top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.score_detail.adult.ranked_users }}</i></p>
+                        <p><i>{% trans 'Top' %} {{ score_data.score_detail.adult.top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.score_detail.adult.ranked_users }} {% trans 'participants' %}</i></p>
                     {% endif %}
                 </div>
                 <div class="col-xs-3 class_image">
                     <img src="{% static "stats/icon/" %}L{{ score_data.score_detail.adult.class_value }}_75.png">
-                    <p class="score_label">{{ score_data.score_detail.adult.score }} XP</p>
+                    <p class="score_label">{{ score_data.score_detail.adult.score }} {% trans 'XP' %}</p>
                 </div>
             </div>
             <div class="row">
@@ -95,7 +96,7 @@
                     {% for item in score_data.score_detail.adult.score_items %}
                     <div class="report_box {% if item.report_score == 0 %}expert_rejected{%else%}expert_approved{%endif%}" onclick="javascript:create_dialog('{{ item.report }}');">
                         <!--<img url="http://webserver.mosquitoalert.com{{ item.report_photo }}" width="20" height="20">-->
-                        {{ item.report_score }} XP
+                        {{ item.report_score }} {% trans 'XP' %}
                     </div>
                     {% endfor %}
                 </div>
@@ -133,7 +134,7 @@
                 </div>
                 -->
                 <div class="col-xs-9">
-                    <h4>{% trans 'Breeding site' %} - <b>{{ score_data.score_detail.site.class_label }}</b></h4>
+                    <h4>{% trans 'Level obtained for' %} {% trans 'Breeding site' %} - <b>{{ score_data.score_detail.site.class_label }}</b></h4>
                     {% if score_data.score_detail.site.rank_value == 0%}
                         <p class="score_label_smaller">{% trans 'Breeding site rank - Unranked' %}</p>
                     {% else %}
@@ -143,14 +144,14 @@
                 </div>
                 <div class="col-xs-3 class_image">
                     <img src="{% static "stats/icon/" %}L{{ score_data.score_detail.site.class_value }}_75.png">
-                    <p class="score_label">{{ score_data.score_detail.site.score }}  XP</p>
+                    <p class="score_label">{{ score_data.score_detail.site.score }}  {% trans 'XP' %}</p>
                 </div>
             </div>
             <div class="row">
                 <div class="col-xs-12 report_container">
                     {% for item in score_data.score_detail.site.score_items %}
                     <div class="report_box breeding_site" onclick="javascript:create_dialog('{{ item.report }}');">
-                        {{ item.report_score }} XP
+                        {{ item.report_score }} {% trans 'XP' %}
                     </div>
                     {% endfor %}
                 </div>

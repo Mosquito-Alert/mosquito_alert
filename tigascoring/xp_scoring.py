@@ -368,7 +368,7 @@ def get_elapsed_label( date_now, date_before ):
     if diff.days >= 30:
         diff_months = diff_month( date_now, date_before )
         if diff_months > 12:
-            return str( diff_months / 12 ) + _(" years ago")
+            return str( int(diff_months / 12) ) + _(" years ago")
         else:
             return str( diff_months ) + _(" months ago")
     else:
