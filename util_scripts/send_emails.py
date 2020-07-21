@@ -14,7 +14,6 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from django.template import Context
 from django.template.loader import get_template
 from django.core.mail import EmailMessage
 import time
@@ -22,7 +21,7 @@ import time
 
 #USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy_last.csv'
 #USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/test.csv'
-USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/test_users_14072020_1.csv'
+USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/production_users_20072020_test.csv'
 
 
 def crunch(test_or_production):
@@ -41,7 +40,7 @@ def crunch(test_or_production):
                 plaintext = get_template('tigacrafting/aimsurv_prod_email_model.txt')
             else:
                 plaintext = get_template('tigacrafting/aimsurv_email_model.txt')
-            context = Context(
+            context = (
                     {
                         'login': login,
                         'password': password,
@@ -61,4 +60,4 @@ def crunch(test_or_production):
             email.send(fail_silently=False)
             time.sleep(5)
 
-crunch('test')
+crunch('production')
