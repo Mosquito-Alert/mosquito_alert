@@ -28,16 +28,16 @@ msgstr "Darrera activitat fa"
 
 #: stats/static/stats/user_ranking.js:20
 msgid "Overall"
-msgstr "General"
+msgstr "Nivell General"
 
 #: stats/static/stats/user_ranking.js:23
 msgid "Adult"
-msgstr "Adult"
+msgstr "Nivell Mosquit"
 
 #: stats/static/stats/user_ranking.js:24 stats/static/stats/user_ranking.js:29
 #: stats/static/stats/user_ranking.js:34
 msgid "Reports"
-msgstr "Informes"
+msgstr "Notificacions"
 
 #: stats/static/stats/user_ranking.js:28
 msgid "Bite"
@@ -45,8 +45,8 @@ msgstr "Picada"
 
 #: stats/static/stats/user_ranking.js:33
 msgid "Site"
-msgstr "Lloc de cria"
+msgstr "Nivell Lloc de cria"
 
 #: stats/static/stats/user_ranking.js:38
 msgid "Other"
-msgstr "Altres"
+msgstr "Altra puntuació"

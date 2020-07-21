@@ -30,6 +30,7 @@ from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
 from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 
 
 @xframe_options_exempt
@@ -626,6 +627,11 @@ def get_page_of_index(index, page_size):
     return int(math.ceil( float(index_base_1) / float(page_size) ))
 
 def stats_user_ranking(request, page=1, user_uuid=None):
+    current_locale = request.LANGUAGE_CODE
+    try:
+        info_url = reverse('scoring_' + current_locale)
+    except NoReverseMatch:
+        info_url = reverse('scoring_en')
     user = None
     if user_uuid is not None:
         try:
@@ -668,6 +674,7 @@ def stats_user_ranking(request, page=1, user_uuid=None):
                   }
         if user is not None:
             context['user_id'] = user_uuid
+        context['info_url'] = info_url
         return render(request, 'stats/user_ranking.html', context)
 
 @login_required

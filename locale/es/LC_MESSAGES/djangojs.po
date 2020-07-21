@@ -28,16 +28,16 @@ msgstr "Última actividad hace"
 
 #: stats/static/stats/user_ranking.js:20
 msgid "Overall"
-msgstr "General"
+msgstr "Nivel General"
 
 #: stats/static/stats/user_ranking.js:23
 msgid "Adult"
-msgstr "Adulto"
+msgstr "Nivel Mosquito"
 
 #: stats/static/stats/user_ranking.js:24 stats/static/stats/user_ranking.js:29
 #: stats/static/stats/user_ranking.js:34
 msgid "Reports"
-msgstr "Informes"
+msgstr "Notificaciones"
 
 #: stats/static/stats/user_ranking.js:28
 msgid "Bite"
@@ -45,8 +45,8 @@ msgstr "Picaduras"
 
 #: stats/static/stats/user_ranking.js:33
 msgid "Site"
-msgstr "Lugares de cría"
+msgstr "Nivel Lugares de cría"
 
 #: stats/static/stats/user_ranking.js:38
 msgid "Other"
-msgstr "Otros"
+msgstr "Otra puntuación"

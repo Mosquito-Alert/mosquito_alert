@@ -50,9 +50,9 @@ urlpatterns = [
     path('privacy/ca/', RedirectView.as_view(url='/ca/privacy/', permanent=False)),
     path('privacy/en/', RedirectView.as_view(url='/en/privacy/', permanent=False)),
     path('privacy/zh-cn/', RedirectView.as_view(url='/zh-cn/privacy/', permanent=False)),
-    path('scoring/es/', RedirectView.as_view(url='/es/scoring/', permanent=False)),
-    path('scoring/ca/', RedirectView.as_view(url='/ca/scoring/', permanent=False)),
-    path('scoring/en/', RedirectView.as_view(url='/en/scoring/', permanent=False)),
+    path('scoring/es/', RedirectView.as_view(url='/es/scoring/', permanent=False), name="scoring_es"),
+    path('scoring/ca/', RedirectView.as_view(url='/ca/scoring/', permanent=False), name="scoring_ca"),
+    path('scoring/en/', RedirectView.as_view(url='/en/scoring/', permanent=False), name="scoring_en"),
     path('tigapublic/', include('tigapublic.urls')),
     path('get_photo/<token>/<photo_uuid>/<size>', lookup_photo),
 ]
