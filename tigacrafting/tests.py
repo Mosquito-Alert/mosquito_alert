@@ -215,7 +215,7 @@ class UserTestCase(TestCase):
         country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
         for this_user in User.objects.all():
             assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
-            user_summary(this_user)
+            #user_summary(this_user)
 
         for report in Report.objects.all():
             annotations = ExpertReportAnnotation.objects.filter(report=report).filter(user__groups__name='expert')

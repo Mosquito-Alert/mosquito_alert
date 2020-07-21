@@ -2418,7 +2418,7 @@ class Award(models.Model):
     special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
     special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')
 
-    def __unicode__(self):
+    def __str__(self):
         if self.category:
             return str(self.category.category_label)
         else:
