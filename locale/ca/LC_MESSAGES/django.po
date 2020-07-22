@@ -188,7 +188,7 @@ msgstr "Premis obtinguts"
 
 #: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
-msgstr "XP, concedits el"
+msgstr "punts, concedits el"
 
 #: stats/templates/stats/user_score.html:81
 #: stats/templates/stats/user_score.html:137
@@ -210,11 +210,11 @@ msgstr "La teva posició específica per Mosquit"
 #: stats/templates/stats/user_score.html:114
 #: stats/templates/stats/user_score.html:169
 msgid "xp awarded for"
-msgstr "xp concedits per"
+msgstr "punts concedits per"
 
 #: stats/templates/stats/user_score.html:119
 msgid "No awards because"
-msgstr "No s'han concedit premis perque"
+msgstr "No has obtingut punts per què"
 
 #: stats/templates/stats/user_score.html:122
 #: stats/templates/stats/user_score.html:173
@@ -1022,15 +1022,15 @@ msgstr "Primer informe de la temporada"
 
 #: tigascoring/xp_scoring.py:218
 msgid "daily_participation"
-msgstr "Primer informe del dia"
+msgstr "ser el primer informe del dia"
 
 #: tigascoring/xp_scoring.py:219
 msgid "fidelity_day_2"
-msgstr "Dos dies seguits enviant informes"
+msgstr "haver enviat informes durant DOS dies seguits"
 
 #: tigascoring/xp_scoring.py:220
 msgid "fidelity_day_3"
-msgstr "Tres dies seguits enviant informes"
+msgstr "haver enviat informes durant TRES dies seguits"
 
 #: tigascoring/xp_scoring.py:221
 msgid "achievement_10_reports"
@@ -1087,8 +1087,7 @@ msgstr "haver respost el formulari de les potes del mosquit"
 #: tigascoring/xp_scoring.py:324
 msgid "other_species"
 msgstr ""
-"els experts diuen que no és un mosquit (una altra espècie, o no "
-"identificable)"
+"després d'analitzar la teva notificació, els experts consideren que no coincideix amb cap de les 5 espècies objectiu de mosquits. Per més info, consulta el tutorial de l'app."
 
 #: tigascoring/xp_scoring.py:331
 #, fuzzy

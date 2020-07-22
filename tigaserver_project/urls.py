@@ -6,7 +6,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring
+from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
@@ -53,6 +53,12 @@ urlpatterns = [
     path('scoring/es/', RedirectView.as_view(url='/es/scoring/', permanent=False), name="scoring_es"),
     path('scoring/ca/', RedirectView.as_view(url='/ca/scoring/', permanent=False), name="scoring_ca"),
     path('scoring/en/', RedirectView.as_view(url='/en/scoring/', permanent=False), name="scoring_en"),
+    path('about_us/es/', RedirectView.as_view(url='/es/about_us/', permanent=False), name="about_us_es"),
+    path('about_us/ca/', RedirectView.as_view(url='/ca/about_us/', permanent=False), name="about_us_ca"),
+    path('about_us/en/', RedirectView.as_view(url='/en/about_us/', permanent=False), name="about_us_en"),
+    path('project_about/es/', RedirectView.as_view(url='/es/project_about/', permanent=False), name="project_about_es"),
+    path('project_about/ca/', RedirectView.as_view(url='/ca/project_about/', permanent=False), name="project_about_ca"),
+    path('project_about/en/', RedirectView.as_view(url='/en/project_about/', permanent=False), name="project_about_en"),
     path('tigapublic/', include('tigapublic.urls')),
     path('get_photo/<token>/<photo_uuid>/<size>', lookup_photo),
 ]
@@ -64,6 +70,8 @@ urlpatterns += i18n_patterns(
     path('terms/', show_terms, name='help.show_terms'),
     path('privacy/', show_privacy, name='help.show_privacy'),
     path('scoring/', show_scoring, name='help.show_scoring'),
+    path('about_us/', show_about_us, name='help.show_about_us'),
+    path('project_about/', show_project_about, name='help.show_project_about'),
     path('webmap/embedded/', show_filterable_report_map, {'fullscreen': 'off', 'legend': 'on'}),
     path('webmap/adults/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map'),
     path('webmap/adults/<selected_validation>/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map_type'),

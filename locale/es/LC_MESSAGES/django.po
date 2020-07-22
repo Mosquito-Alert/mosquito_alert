@@ -188,7 +188,7 @@ msgstr "Premios obtenidos"
 
 #: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
-msgstr "XP, concedidos"
+msgstr "puntos, concedidos"
 
 #: stats/templates/stats/user_score.html:81
 #: stats/templates/stats/user_score.html:137
@@ -210,11 +210,11 @@ msgstr "Tu posición específica para Mosquito"
 #: stats/templates/stats/user_score.html:114
 #: stats/templates/stats/user_score.html:169
 msgid "xp awarded for"
-msgstr "xp concedidos por"
+msgstr "puntos concedidos por"
 
 #: stats/templates/stats/user_score.html:119
 msgid "No awards because"
-msgstr "No se han concedido premios porque"
+msgstr "No has obtenido puntos ya que"
 
 #: stats/templates/stats/user_score.html:122
 #: stats/templates/stats/user_score.html:173
@@ -1022,15 +1022,15 @@ msgstr "Primer informe de la temporada"
 
 #: tigascoring/xp_scoring.py:218
 msgid "daily_participation"
-msgstr "Primer informe del dia"
+msgstr "ser el primer informe del día"
 
 #: tigascoring/xp_scoring.py:219
 msgid "fidelity_day_2"
-msgstr "Dos días seguidos mandando informes"
+msgstr "haber mandado datos durante DOS días seguidos"
 
 #: tigascoring/xp_scoring.py:220
 msgid "fidelity_day_3"
-msgstr "Tres días seguidos mandando informes"
+msgstr "haber mandado datos durante TRES días seguidos"
 
 #: tigascoring/xp_scoring.py:221
 msgid "achievement_10_reports"
@@ -1088,7 +1088,7 @@ msgstr "haber respondido el formulario de las patas del mosquito"
 #: tigascoring/xp_scoring.py:324
 msgid "other_species"
 msgstr ""
-"los expertos dicen que no es un mosquito (otra especie o no identificable)"
+"después de analizar la notificación, los expertos consideran que no corresponde a ninguna de las 5 especies objetivo de mosquito. Para más info, revisa el tutorial de la app."
 
 #: tigascoring/xp_scoring.py:331
 #, fuzzy

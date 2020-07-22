@@ -83,6 +83,7 @@ def show_terms(request):
     if language == 'zh-cn':
         return render(request, 'tigahelp/terms_zh.html', context)
 
+
 def show_scoring(request):
     language = request.LANGUAGE_CODE
     context = {}
@@ -94,3 +95,29 @@ def show_scoring(request):
         return render(request, 'tigahelp/scoring_en.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/scoring_en.html', context)
+
+
+def show_about_us(request):
+    language = request.LANGUAGE_CODE
+    context = {}
+    if language == 'ca':
+        return render(request, 'tigahelp/about_us_ca.html', context)
+    if language == 'es':
+        return render(request, 'tigahelp/about_us_es.html', context)
+    if language == 'en':
+        return render(request, 'tigahelp/about_us_en.html', context)
+    if language == 'zh-cn':
+        return render(request, 'tigahelp/about_us_en.html', context)
+
+
+def show_project_about(request):
+    language = request.LANGUAGE_CODE
+    context = {}
+    if language == 'ca':
+        return render(request, 'tigahelp/project_about_ca.html', context)
+    if language == 'es':
+        return render(request, 'tigahelp/project_about_es.html', context)
+    if language == 'en':
+        return render(request, 'tigahelp/project_about_en.html', context)
+    if language == 'zh-cn':
+        return render(request, 'tigahelp/project_about_en.html', context)

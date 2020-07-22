@@ -188,7 +188,7 @@ msgstr "Granted awards"
 
 #: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
-msgstr ""
+msgstr "points, awarded on"
 
 #: stats/templates/stats/user_score.html:81
 #: stats/templates/stats/user_score.html:137
@@ -210,11 +210,11 @@ msgstr "Your specific position for Mosquito"
 #: stats/templates/stats/user_score.html:114
 #: stats/templates/stats/user_score.html:169
 msgid "xp awarded for"
-msgstr ""
+msgstr "points awarded for"
 
 #: stats/templates/stats/user_score.html:119
 msgid "No awards because"
-msgstr "No awards because"
+msgstr "You have gained no points because"
 
 #: stats/templates/stats/user_score.html:122
 #: stats/templates/stats/user_score.html:173
@@ -1012,15 +1012,15 @@ msgstr "Start of season"
 
 #: tigascoring/xp_scoring.py:218
 msgid "daily_participation"
-msgstr "First report of day"
+msgstr "uploading the first report of the day"
 
 #: tigascoring/xp_scoring.py:219
 msgid "fidelity_day_2"
-msgstr "Two consecutive days sending reports"
+msgstr "uploading reports during TWO consecutive days"
 
 #: tigascoring/xp_scoring.py:220
 msgid "fidelity_day_3"
-msgstr "Three consecutive days sending reports"
+msgstr "uploading reports during THREE consecutive days"
 
 #: tigascoring/xp_scoring.py:221
 msgid "achievement_10_reports"
@@ -1076,7 +1076,7 @@ msgstr "answering the leg question in the mosquito report"
 
 #: tigascoring/xp_scoring.py:324
 msgid "other_species"
-msgstr "experts say it's not a mosquito (other species or can't say)"
+msgstr "after analyzing your submission, the experts have decided that it does not match any of the 5 target mosquito species. For more info, revise the app tutorial."
 
 #: tigascoring/xp_scoring.py:331
 msgid "bite report follow"
