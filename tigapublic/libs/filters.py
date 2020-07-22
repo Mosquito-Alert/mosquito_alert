@@ -3,6 +3,7 @@
 import datetime
 from datetime import date
 from operator import __or__ as OR
+from functools import reduce
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q

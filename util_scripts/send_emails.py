@@ -21,7 +21,7 @@ import time
 
 #USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/clean_copy_last.csv'
 #USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/test.csv'
-USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/production_users_20072020_test.csv'
+USERS_FILE = '/home/webuser/Documents/filestigaserver/registre_usuaris_aimcost/production_users_20072020.csv'
 
 
 def crunch(test_or_production):
