@@ -249,7 +249,12 @@ var MOSQUITO = (function (m) {
                               'kindSelectorText': 'layer.models.vector'
                             }
                             mode = 'vector'
-                            modelDates=MOSQUITO.config.vector_municipalities
+                            //if logged default is municipalities models
+                            if (MOSQUITO.app.headerView.logged){
+                              modelDates=MOSQUITO.config.vector_municipalities
+                            }else{
+                              modelDates=MOSQUITO.config.vector_grid
+                            }
 
                             if (MOSQUITO.config.availableVectorData){
                               _this.modelsUI(layer, item, options, mode, modelDates)
@@ -943,20 +948,24 @@ var MOSQUITO = (function (m) {
                       var vector_select = $('#' + options.selectId);
                       var vectorValue = $('#'+options.selectId).val()
 
-                      var newAvailableValue=''
-                      $('#' + options.selectId +' option').each(function(){
-                        var disabled='false'
-                        if (availableDates[this.value]===undefined){
-                            $(this).attr('disabled','true');
-                        }else{
-                          $(this).removeAttr('disabled');
-                          newAvailableValue = this.value
-                          $('#' + options.selectId).val(newAvailableValue)
-                        }
-                      });
+                      if (availableDates[vectorValue]===null){
+                        var newAvailableValue=''
+                        $('#' + options.selectId +' option').each(function(){
+                          var disabled='false'
+                          if (availableDates[this.value]===undefined){
+                              $(this).attr('disabled','true');
+                          }else{
+                            $(this).removeAttr('disabled');
+                            newAvailableValue = this.value
+                            $('#' + options.selectId).val(newAvailableValue)
+                          }
+                        });
+                        vectorValue = newAvailableValue
+                      }
+
                       vector_select.selectpicker('refresh')
                       if (newAvailableValue!=''){
-                        _this.rebuildSelectPicker(options.forecastYearId, options.forecastMonthId, availableDates[newAvailableValue])
+                        _this.rebuildSelectPicker(options.forecastYearId, options.forecastMonthId, availableDates[vectorValue])
                       }else{
                         //if no mosquito dates available then remove layer from map
                         e.stopPropagation();
@@ -1044,7 +1053,7 @@ var MOSQUITO = (function (m) {
 
             $(vector_select).on("changed.bs.select",
                   function(e, clickedIndex, newValue, oldValue) {
-                newDatesAvailable = MOSQUITO.config.vector_municipalities[this.value]
+                newDatesAvailable = modelDates[this.value]
                 _this.rebuildSelectPicker(options.forecastYearId, options.forecastMonthId, newDatesAvailable)
 
             })
@@ -1169,6 +1178,7 @@ var MOSQUITO = (function (m) {
               ).appendTo(date_selector);
 
             firstKey = Object.keys(modelAvailableDates)[0]
+
             modelAvailableDates[firstKey].forEach(function(y, i) {
               let attrs = {'value': y[0]};
               if (i === 0) attrs['selected'] = 'selected';

@@ -95,6 +95,7 @@ var MapView = MapView.extend({
         'id': 'time_group',
         'title': 'group.filters.time'
       });
+
       if (div_time) div_time.appendTo(section);
       // Create year select
       var select_years = $('<select multiple>')

@@ -94,6 +94,7 @@ var HeaderView = Backbone.View.extend({
                   MOSQUITO.config.vector_grid[specie] = dict[specie]
                 }
               }
+
               var dict = response.virus_models_by_municipality
               for (var specie in dict){
                 if (dict[specie].length){
