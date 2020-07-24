@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-21 15:19+0000\n"
+"POT-Creation-Date: 2020-07-24 09:57+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -98,8 +98,8 @@ msgstr "Mi posición"
 
 #: stats/templates/stats/user_ranking.html:59
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:142
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:143
 msgid "of"
 msgstr "de"
 
@@ -125,7 +125,7 @@ msgstr "¡Tú estás aquí!"
 
 #: stats/templates/stats/user_ranking.html:121
 msgid "Score details"
-msgstr "Detalle de puntuación"
+msgstr "Más detalles"
 
 #: stats/templates/stats/user_score.html:28
 msgid "Citizen Scientist"
@@ -134,7 +134,7 @@ msgstr "Resumen de la puntuación"
 #: stats/templates/stats/user_score.html:31
 msgid "this_is_your_personal_avatar"
 msgstr ""
-"Este es tu avatar personal. Gracias a la puntuación obtenida, has alcanzado "
+"Avatar personal del participante. Gracias a la puntuación obtenida, se ha alcanzado "
 "el nivel de experiencia general de "
 
 #: stats/templates/stats/user_score.html:31
@@ -145,7 +145,7 @@ msgstr ""
 
 #: stats/templates/stats/user_score.html:32
 msgid "Joined"
-msgstr "Se unió hace"
+msgstr "Empezó a participar hace"
 
 #: stats/templates/stats/user_score.html:32
 msgid "Last active"
@@ -157,81 +157,91 @@ msgstr "Nunca"
 
 #: stats/templates/stats/user_score.html:34
 msgid "Overall rank - Unranked"
-msgstr "Tu posición global - Sin posición"
+msgstr "Posición global - Sin posición"
 
 #: stats/templates/stats/user_score.html:36
 msgid "Overall rank"
-msgstr "Tu posición global"
+msgstr "Posición global"
 
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:142
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:143
 msgid "Top"
 msgstr "Estás entre el"
 
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:87
 msgid "participants"
 msgstr "participantes"
 
-#: stats/templates/stats/user_score.html:42
-#: stats/templates/stats/user_score.html:56
-#: stats/templates/stats/user_score.html:67
-#: stats/templates/stats/user_score.html:91
-#: stats/templates/stats/user_score.html:99
+#: stats/templates/stats/user_score.html:38
+msgid "click_score_instructions"
+msgstr "Clica encima de los cuadros para ver los detalles de los datos enviados y los puntos conseguidos."
+
+#: stats/templates/stats/user_score.html:43
+#: stats/templates/stats/user_score.html:57
+#: stats/templates/stats/user_score.html:68
+#: stats/templates/stats/user_score.html:92
+#: stats/templates/stats/user_score.html:100
+#: stats/templates/stats/user_score.html:148
+#: stats/templates/stats/user_score.html:155
 msgid "XP"
 msgstr "Puntos"
 
-#: stats/templates/stats/user_score.html:49
+#: stats/templates/stats/user_score.html:50
 msgid "Other awards"
 msgstr "Premios obtenidos"
 
-#: stats/templates/stats/user_score.html:62
+#: stats/templates/stats/user_score.html:56
+msgid "awarded_on"
+msgstr "Concedido el"
+
+#: stats/templates/stats/user_score.html:63
 msgid "XP, awarded on"
 msgstr "puntos, concedidos"
 
-#: stats/templates/stats/user_score.html:81
-#: stats/templates/stats/user_score.html:137
+#: stats/templates/stats/user_score.html:82
+#: stats/templates/stats/user_score.html:138
 msgid "Level obtained for"
 msgstr "Nivel alcanzado para"
 
-#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:82
 msgid "Mosquito"
 msgstr "Mosquito"
 
-#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:84
 msgid "Mosquito rank - Unranked"
-msgstr "Tu posición específica para Mosquito - Sin clasificar"
+msgstr "Posición específica para Mosquito - Sin clasificar"
 
-#: stats/templates/stats/user_score.html:85
+#: stats/templates/stats/user_score.html:86
 msgid "Mosquito rank"
-msgstr "Tu posición específica para Mosquito"
+msgstr "Posición específica para Mosquito"
 
-#: stats/templates/stats/user_score.html:114
-#: stats/templates/stats/user_score.html:169
+#: stats/templates/stats/user_score.html:115
+#: stats/templates/stats/user_score.html:170
 msgid "xp awarded for"
 msgstr "puntos concedidos por"
 
-#: stats/templates/stats/user_score.html:119
+#: stats/templates/stats/user_score.html:120
 msgid "No awards because"
 msgstr "No has obtenido puntos ya que"
 
-#: stats/templates/stats/user_score.html:122
-#: stats/templates/stats/user_score.html:173
+#: stats/templates/stats/user_score.html:123
+#: stats/templates/stats/user_score.html:174
 msgid "No awards for this report!"
 msgstr "¡Este informe no tiene puntos concedidos!"
 
-#: stats/templates/stats/user_score.html:137
+#: stats/templates/stats/user_score.html:138
 msgid "Breeding site"
 msgstr "Lugares de cría"
 
-#: stats/templates/stats/user_score.html:139
+#: stats/templates/stats/user_score.html:140
 msgid "Breeding site rank - Unranked"
-msgstr "Tu posición específica para Lugares de cría - Sin clasificar"
+msgstr "Posición específica para Lugares de cría - Sin clasificar"
 
-#: stats/templates/stats/user_score.html:141
+#: stats/templates/stats/user_score.html:142
 msgid "Breeding site rank"
-msgstr "Tu posición específica para Lugares de cría"
+msgstr "Posición específica para Lugares de cría"
 
 #: templates/admin/base_site.html:4
 #, fuzzy
@@ -1034,23 +1044,23 @@ msgstr "haber mandado datos durante TRES días seguidos"
 
 #: tigascoring/xp_scoring.py:221
 msgid "achievement_10_reports"
-msgstr "10 notificaciones realizadas"
+msgstr "10 datos enviados"
 
 #: tigascoring/xp_scoring.py:222
 msgid "achievement_20_reports"
-msgstr "20 notificaciones realizadas"
+msgstr "20 datos enviados"
 
 #: tigascoring/xp_scoring.py:223
 msgid "achievement_50_reports"
-msgstr "50 notificaciones realizadas"
+msgstr "50 datos enviados"
 
 #: tigascoring/xp_scoring.py:259 tigascoring/xp_scoring.py:302
 msgid "picture"
-msgstr "la foto del informe"
+msgstr "la foto"
 
 #: tigascoring/xp_scoring.py:263 tigascoring/xp_scoring.py:309
 msgid "location"
-msgstr "que el informe está geolocalizado"
+msgstr "la geolocalización de los datos"
 
 #: tigascoring/xp_scoring.py:267
 msgid "storm_drain"
@@ -1088,7 +1098,9 @@ msgstr "haber respondido el formulario de las patas del mosquito"
 #: tigascoring/xp_scoring.py:324
 msgid "other_species"
 msgstr ""
-"después de analizar la notificación, los expertos consideran que no corresponde a ninguna de las 5 especies objetivo de mosquito. Para más info, revisa el tutorial de la app."
+"después de analizar la notificación, los expertos consideran que no "
+"corresponde a ninguna de las 5 especies objetivo de mosquito. Para más info, "
+"revisa el tutorial de la app."
 
 #: tigascoring/xp_scoring.py:331
 #, fuzzy
