@@ -44,6 +44,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -63,7 +64,6 @@ INSTALLED_APPS = (
     'django_messages',
     'tigaserver_messages',
     'tigascoring',
-    'django.contrib.sites',
     'django_filters',
 )
 

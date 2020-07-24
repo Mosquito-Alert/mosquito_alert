@@ -23,7 +23,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
-from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
+from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports,get_decimal_coordinates
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios, send_message_android
@@ -33,7 +33,8 @@ from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
-
+from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
@@ -176,6 +177,45 @@ version_UUID linking this photo to a specific report version.
     """
     if request.method == 'POST':
         this_report = Report.objects.get(version_UUID=request.data['report'])
+
+        image = Image.open(request.FILES['photo'])
+        exif = Image.open(request.FILES['photo'])._getexif()
+
+        for key, value in exif.items():
+            name = TAGS.get(key, key)
+            exif[name] = exif.pop(key)
+
+        '''for key in exif['GPSInfo'].keys():
+            name = GPSTAGS.get(key, key)
+            exif['GPSInfo'][name] = exif['GPSInfo'].pop(key)'''
+
+        photoCoord = []
+        exifgpsInfoDict = {}
+        gpsData = {}
+        '''if 'GPSInfo' in exif:
+            lat, lon = get_decimal_coordinates(exif['GPSInfo'])
+            print(lat)
+            print(lon)
+            photoCoord.append({'lat': lat, 'lon': lon})'''
+
+        _TAGS_r = dict(((v, k) for k, v in TAGS.items()))
+        _GPSTAGS_r = dict(((p, t) for t, p in GPSTAGS.items()))
+
+
+        print(GPSTAGS)
+        exifgpsInfo = exif["GPSInfo"]
+        for k in exifgpsInfo.keys():
+            print(GPSTAGS[k])
+            exifgpsInfoDict[str(GPSTAGS[k])] = exifgpsInfo[k]
+            gpsData[str(GPSTAGS[k])] = str(exifgpsInfo[k])
+        lat, lon = get_decimal_coordinates(exifgpsInfoDict)
+
+
+        photoCoord.append({'lat': lat, 'lon': lon})
+
+
+
+
         instance = Photo(photo=request.FILES['photo'], report=this_report)
         instance.save()
         return Response('uploaded')

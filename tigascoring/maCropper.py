@@ -1,6 +1,6 @@
 import urllib2
 import StringIO
-import Tkinter
+import tkinter
 import Image
 from PIL import ImageTk
 # import imghdr
@@ -42,7 +42,7 @@ def image_show(img_rgb=None):
 class Cropper:
     def __init__(self, img_list, crop_size, save_path, tk_size=(1000, 800), tk_mrgn=50):
 
-        self.tk = Tkinter.Tk()
+        self.tk = tkinter.Tk()
         self.tk.geometry('%dx%d' % tk_size)
         self.mrgn = tk_mrgn
         self.wdth = float(tk_size[0] - 2 * tk_mrgn)
@@ -51,11 +51,11 @@ class Cropper:
         self.tk.bind('<Button-1>', self.left_click)
         self.tk.bind('<Button-3>', self.right_click)
 
-        self.button_next = Tkinter.Button(self.tk, text='next', command=self.image_next)
-        self.button_prev = Tkinter.Button(self.tk, text='prev', command=self.image_prev)
-        self.button_save = Tkinter.Button(self.tk, text='save', command=self.image_save)
-        self.button_large = Tkinter.Button(self.tk, text='large', command=self.image_large)
-        self.button_rotate = Tkinter.Button(self.tk, text='rotate', command=self.image_rotate)
+        self.button_next = tkinter.Button(self.tk, text='next', command=self.image_next)
+        self.button_prev = tkinter.Button(self.tk, text='prev', command=self.image_prev)
+        self.button_save = tkinter.Button(self.tk, text='save', command=self.image_save)
+        self.button_large = tkinter.Button(self.tk, text='large', command=self.image_large)
+        self.button_rotate = tkinter.Button(self.tk, text='rotate', command=self.image_rotate)
 
         self.button_next.pack(side='right', anchor='s')
         self.button_prev.pack(side='right', anchor='s')
@@ -94,7 +94,7 @@ class Cropper:
         self.tk.geometry('%dx%d' % (min(self.image.size[0] + 200, 800), min(self.image.size[1] + 200, 600)))
         self.tk.title(self.img_list[self.curr_img])
         photo = ImageTk.PhotoImage(self.image)
-        self.frame = Tkinter.Label(self.tk, image=photo)
+        self.frame = tkinter.Label(self.tk, image=photo)
         self.frame.photo = photo
         self.frame.place(x=lft + self.mrgn, y=top + self.mrgn, width=self.image.size[0], height=self.image.size[1])
 
