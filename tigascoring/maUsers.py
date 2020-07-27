@@ -8,7 +8,7 @@ from operator import itemgetter, attrgetter
 from math import log
 from sklearn.preprocessing import minmax_scale
 
-import tigascoring.ma
+import tigascoring.ma as ma
 
 # using 4 prior expertise-categories
 _catK = 4
