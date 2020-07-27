@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django_filters import rest_framework as filters
-import django_filters
+#import django_filters
 from datetime import datetime, timedelta
 import pytz
 import calendar
@@ -450,16 +450,16 @@ class MapDataFilter(filters.FilterSet):
         fields = ['day', 'week', 'month', 'year']
 
 
-class CoverageMapFilter(django_filters.FilterSet):
-    id_range_start = django_filters.NumberFilter(field_name='id', lookup_type='gte')
-    id_range_end = django_filters.NumberFilter(field_name='id', lookup_type='lte')
+class CoverageMapFilter(filters.FilterSet):
+    id_range_start = filters.NumberFilter(field_name='id', lookup_type='gte')
+    id_range_end = filters.NumberFilter(field_name='id', lookup_type='lte')
 
     class Meta:
         model = CoverageArea
         fields = ['id_range_start', 'id_range_end']
 
 
-class CoverageMonthMapFilter(django_filters.FilterSet):
+class CoverageMonthMapFilter(filters.FilterSet):
     id_range_start = filters.NumberFilter(field_name='id', lookup_expr='gte')
     id_range_end = filters.NumberFilter(field_name='id', lookup_expr='lte')
 
@@ -714,8 +714,14 @@ def filter_partial_name(queryset, name):
         return queryset
     return queryset.filter(name__icontains=name)
 
-class TagFilter(django_filters.FilterSet):
-    name = django_filters.Filter(action=filter_partial_name)
+class TagFilter(filters.FilterSet):
+    name = filters.Filter(method='filter_partial_name')
+
+    def filter_partial_name(self, qs, name, value):
+        name = value
+        if not name:
+            return qs
+        return qs.filter(name__icontains=name)
 
     class Meta:
         model = Tag
@@ -1157,7 +1163,7 @@ def filter_partial_name_address(queryset, name):
         return queryset
     return queryset.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
 
-class UserAddressFilter(django_filters.FilterSet):
+class UserAddressFilter(filters.FilterSet):
     name = filters.Filter(method='filter_partial_name_address')
 
     def filter_partial_name_address(self, qs, name, value):

@@ -843,7 +843,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             page = request.POST.get('page')
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&loc=' + loc + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.quote_plus(tags_filter)) if tags_filter else ''))
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&loc=' + loc + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             note_language = request.GET.get('note_language', note_language)
@@ -1024,7 +1024,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
             # any expert has put on the report
             # these are all (not only yours, but also) the reports that contain the filtered tag
-            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
+            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct()
             # we want the annotations of the reports which contain the tag(s)
             all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
         if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter or tags_filter == 'na' or tags_filter==''):
@@ -1298,7 +1298,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
+            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type)
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             type = request.GET.get('type', type)

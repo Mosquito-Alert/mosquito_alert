@@ -6,7 +6,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about
+from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about, show_app_license
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
@@ -72,6 +72,7 @@ urlpatterns += i18n_patterns(
     path('scoring/', show_scoring, name='help.show_scoring'),
     path('about_us/', show_about_us, name='help.show_about_us'),
     path('project_about/', show_project_about, name='help.show_project_about'),
+    path('app_license/', show_app_license, name='help.show_app_license'),
     path('webmap/embedded/', show_filterable_report_map, {'fullscreen': 'off', 'legend': 'on'}),
     path('webmap/adults/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map'),
     path('webmap/adults/<selected_validation>/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map_type'),

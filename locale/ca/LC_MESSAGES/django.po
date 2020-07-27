@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-24 09:58+0000\n"
+"POT-Creation-Date: 2020-07-27 08:31+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -98,7 +98,7 @@ msgstr "La meva posició"
 
 #: stats/templates/stats/user_ranking.html:59
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:86
 #: stats/templates/stats/user_score.html:143
 msgid "of"
 msgstr "de"
@@ -164,61 +164,64 @@ msgid "Overall rank"
 msgstr "Posició global"
 
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:86
 #: stats/templates/stats/user_score.html:143
 msgid "Top"
 msgstr "Estàs entre el"
 
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:86
 msgid "participants"
 msgstr "participants"
 
-#: stats/templates/stats/user_score.html:38
-msgid "click_score_instructions"
-msgstr "Fes clic sobre els quadres per veure detalls de les dades enviades i els punts aconseguits."
-
-#: stats/templates/stats/user_score.html:43
-#: stats/templates/stats/user_score.html:57
-#: stats/templates/stats/user_score.html:68
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
 #: stats/templates/stats/user_score.html:92
 #: stats/templates/stats/user_score.html:100
-#: stats/templates/stats/user_score.html:148
-#: stats/templates/stats/user_score.html:155
+#: stats/templates/stats/user_score.html:149
+#: stats/templates/stats/user_score.html:156
 msgid "XP"
 msgstr "Punts"
 
-#: stats/templates/stats/user_score.html:50
+#: stats/templates/stats/user_score.html:49
 msgid "Other awards"
 msgstr "Premis obtinguts"
 
-#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:55
 msgid "awarded_on"
 msgstr "Concedits el"
 
-#: stats/templates/stats/user_score.html:63
+#: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
 msgstr "punts, concedits el"
 
-#: stats/templates/stats/user_score.html:82
+#: stats/templates/stats/user_score.html:81
 #: stats/templates/stats/user_score.html:138
 msgid "Level obtained for"
 msgstr "Nivell assolit per"
 
-#: stats/templates/stats/user_score.html:82
+#: stats/templates/stats/user_score.html:81
 msgid "Mosquito"
 msgstr "Mosquit"
 
-#: stats/templates/stats/user_score.html:84
+#: stats/templates/stats/user_score.html:83
 msgid "Mosquito rank - Unranked"
 msgstr "Posició específica per Mosquit - Sense classificació"
 
-#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:85
 msgid "Mosquito rank"
 msgstr "Posició específica per Mosquit"
 
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:144
+msgid "click_score_instructions"
+msgstr ""
+"Fes clic sobre els quadres per veure detalls de les dades enviades i els "
+"punts aconseguits."
+
 #: stats/templates/stats/user_score.html:115
-#: stats/templates/stats/user_score.html:170
+#: stats/templates/stats/user_score.html:171
 msgid "xp awarded for"
 msgstr "punts concedits per"
 
@@ -227,7 +230,7 @@ msgid "No awards because"
 msgstr "No has obtingut punts per què"
 
 #: stats/templates/stats/user_score.html:123
-#: stats/templates/stats/user_score.html:174
+#: stats/templates/stats/user_score.html:175
 msgid "No awards for this report!"
 msgstr "Cap premi per aquest informe"
 
@@ -387,6 +390,10 @@ msgstr "Acord de l'usuari"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "privacy-policy"
 msgstr "Política de privacitat"
+
+#: tigahelp/templates/tigahelp/policies.html:38
+msgid "app-license"
+msgstr "Llicència Apps"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102

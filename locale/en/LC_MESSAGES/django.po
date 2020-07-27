@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-24 09:58+0000\n"
+"POT-Creation-Date: 2020-07-27 08:31+0000\n"
 "PO-Revision-Date: 2015-07-16 13:40+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -98,7 +98,7 @@ msgstr "My position"
 
 #: stats/templates/stats/user_ranking.html:59
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:86
 #: stats/templates/stats/user_score.html:143
 msgid "of"
 msgstr ""
@@ -164,61 +164,64 @@ msgid "Overall rank"
 msgstr "Overall position"
 
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:86
 #: stats/templates/stats/user_score.html:143
 msgid "Top"
 msgstr "You are in the top"
 
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:86
 msgid "participants"
 msgstr "participants"
 
-#: stats/templates/stats/user_score.html:38
-msgid "click_score_instructions"
-msgstr "Click the colored squares to see the details of sent data and awards received."
-
-#: stats/templates/stats/user_score.html:43
-#: stats/templates/stats/user_score.html:57
-#: stats/templates/stats/user_score.html:68
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
 #: stats/templates/stats/user_score.html:92
 #: stats/templates/stats/user_score.html:100
-#: stats/templates/stats/user_score.html:148
-#: stats/templates/stats/user_score.html:155
+#: stats/templates/stats/user_score.html:149
+#: stats/templates/stats/user_score.html:156
 msgid "XP"
 msgstr "Points"
 
-#: stats/templates/stats/user_score.html:50
+#: stats/templates/stats/user_score.html:49
 msgid "Other awards"
 msgstr "Granted awards"
 
-#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:55
 msgid "awarded_on"
 msgstr "Granted on"
 
-#: stats/templates/stats/user_score.html:63
+#: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
 msgstr "points, awarded on"
 
-#: stats/templates/stats/user_score.html:82
+#: stats/templates/stats/user_score.html:81
 #: stats/templates/stats/user_score.html:138
 msgid "Level obtained for"
 msgstr "Level obtained for"
 
-#: stats/templates/stats/user_score.html:82
+#: stats/templates/stats/user_score.html:81
 msgid "Mosquito"
 msgstr ""
 
-#: stats/templates/stats/user_score.html:84
+#: stats/templates/stats/user_score.html:83
 msgid "Mosquito rank - Unranked"
 msgstr "Specific position for Mosquito - unranked"
 
-#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:85
 msgid "Mosquito rank"
 msgstr "Specific position for Mosquito"
 
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:144
+msgid "click_score_instructions"
+msgstr ""
+"Click the colored squares to see the details of sent data and awards "
+"received."
+
 #: stats/templates/stats/user_score.html:115
-#: stats/templates/stats/user_score.html:170
+#: stats/templates/stats/user_score.html:171
 msgid "xp awarded for"
 msgstr "points awarded for"
 
@@ -227,7 +230,7 @@ msgid "No awards because"
 msgstr "You have gained no points because"
 
 #: stats/templates/stats/user_score.html:123
-#: stats/templates/stats/user_score.html:174
+#: stats/templates/stats/user_score.html:175
 msgid "No awards for this report!"
 msgstr ""
 
@@ -386,6 +389,10 @@ msgstr "User Agreement"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "privacy-policy"
 msgstr "Privacy Policy"
+
+#: tigahelp/templates/tigahelp/policies.html:38
+msgid "app-license"
+msgstr "Apps License"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
