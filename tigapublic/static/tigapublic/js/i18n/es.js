@@ -22,7 +22,7 @@ trans.es = {
     'header.username': 'Usuario',
     'header.password': 'Clave',
     'header.submit': 'Aceptar',
-    'header.motto': 'Observaciones ciudadanas',
+    'header.motto': 'Mapa interactivo Mosquito Alert',
     'header.logo_url': "window.open('http://www.mosquitoalert.com')",
 
     //COOKIE
@@ -96,7 +96,7 @@ trans.es = {
     'map.controlshare_view': 'Vista',
 
     //MAP FILTERS
-    'filters.description':'Los filtros del mapa no se aplican a la capa de modelos disponibles',
+    'filters.description': 'Se pueden filtrar las observaciones ciudadanas de mosquitos, lugares de cría y el esfuerzo de muestreo, por año, mes y municipio. Estos filtros temporales y espaciales no se aplican en las capas de modelos disponibles para mosquitos y picaduras.',
     'All years': 'Todos los años',
     'All months': 'Todos los meses',
     'January': 'Enero',
@@ -217,9 +217,9 @@ trans.es = {
     // MODELS
     'layer.predictionmodels.vector': 'Probabilidad Mosquito Alert',
     //HTML FORMAT
-    'layer.biting.description': 'El mapa muestra estimaciones de la probabilidad de alerta de picaduras de mosquito tigre, que representa la probabilidad de que un participante envíe un informe confiable de mosquito tigre durante un período de dos semanas, controlando el esfuerzo de muestreo (lo que significa que el modelo incorpora el hecho de que hay más participantes en algunas zonas que en otras).<p>Estas estimaciones se muestran en una cuadrícula de 0.05 grados de latitud por 0.05 grados de longitud y se promedian por mes. La probabilidad de alerta depende principalmente de la distribución de la población del mosquito tigre, que varia según la ubicación y el mes. Se ha demostrado que la probabilidad de alerta es un buen predictor de la presencia del mosquito tigre medida por los métodos tradicionales de vigilancia (ovitraps), como se explica en Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Las estimaciones se actualizan semanalmente a medida que ingresan nuevos datos.</p><p>Tenga en cuenta que esta capa de probabilidad de alerta solo se puede filtrar con los selectores de año y mes que se muestran aquí (y no con los filtros adicionales a continuación, que son para otras capas)</p>',
+    'layer.biting.description': '<p>El mapa muestra la probabilidad de recibir una picadura de mosquito basada en los datos enviados por la ciudadanía en Mosquito Alert. Las probabilidades no corresponden a ninguna especie de mosquito en concreto, sino a todas las notificaciones de picaduras recibidas, reflejando la interacción humano-mosquitos que hay en la zona.</p><p>Las primeras estimaciones de un mes se basan en las observaciones recibidas para ese mes en años anteriores, estimaciones que se van actualizando semanalmente con los datos del año en curso para reajustar los valores a tiempo real. Las estimaciones se muestran en cuadrículas de aproximadamente 2x2 kilómetros (cuadrícula de 0,05 grados de latitud por 0,05 grados de longitud).</p><p>Este cálculo tiene en cuenta el esfuerzo de muestreo, considerando la cantidad de participantes con la app activa en cada cuadrícula en el tiempo definido (consulta la capa “esfuerzo de muestreo”). La incidencia de picaduras es más alta en una cuadrícula en la que se han recibido 10 notificaciones de picadas y hay 5 participantes, que en otra con 10 notificaciones pero 10 participantes activos. La modelización de los datos recibidos y de participantes activos determina el valor de la probabilidad mostrada en el mapa.</p>',
 
-    'layer.predictionmodels.description': 'El mapa muestra estimaciones de la probabilidad de alerta de mosquito tigre, que representa la probabilidad de que un participante envíe un informe confiable de mosquito tigre durante un período de dos semanas, controlando el esfuerzo de muestreo (lo que significa que el modelo incorpora el hecho de que hay más participantes en algunas zonas que en otras).<p>Estas estimaciones se muestran en una cuadrícula de 0.05 grados de latitud por 0.05 grados de longitud y se promedian por mes. La probabilidad de alerta depende principalmente de la distribución de la población del mosquito tigre, que varia según la ubicación y el mes. Se ha demostrado que la probabilidad de alerta es un buen predictor de la presencia del mosquito tigre medida por los métodos tradicionales de vigilancia (ovitraps), como se explica en Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Las estimaciones se actualizan semanalmente a medida que ingresan nuevos datos.</p><p>Tenga en cuenta que esta capa de probabilidad de alerta solo se puede filtrar con los selectores de año y mes que se muestran aquí (y no con los filtros adicionales a continuación, que son para otras capas)</p>',
+    'layer.predictionmodels.description': '<p>El mapa muestra la probabilidad de encuentro con el mosquito tigre (<em>Aedes albopictus</em>) o el mosquito del Japón (<em>Aedes japonicus</em>) basada en los datos enviados por la ciudadanía en Mosquito Alert. Las primeras estimaciones de un mes se basan en las observaciones recibidas para ese mes en años anteriores, estimaciones que se van actualizando semanalmente con los datos del año en curso para reajustar los valores a tiempo real. Las estimaciones se muestran en cuadrículas de aproximadamente 2x2 kilómetros (cuadrícula de 0,05 grados de latitud por 0,05 grados de longitud).</p><p>Este cálculo tiene en cuenta el esfuerzo de muestreo, considerando la cantidad de participantes con la app activa en cada cuadrícula en el tiempo definido (consulta la capa “esfuerzo de muestreo”). La probabilidad de mosquito es más alta en una cuadrícula en la que se han recibido 10 observaciones y hay 5 participantes, que en otra con 10 observaciones y 10 participantes. La modelización de las observaciones y de participantes activos determina el valor de la probabilidad mostrada en el mapa.</p><p>Se ha observado que esta probabilidad se corresponde con las observaciones de mosquito tigre obtenidas por métodos tradicionales de vigilancia (ovitraps), demostrando así que es una buena manera de estimar la presencia y abundancia de la especie.</p><p>Más info en: <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>.</p>',
     'models.label.prob-1': 'Muy baja',
     'models.label.prob-2': 'Baja',
     'models.label.prob-3': 'Media',
@@ -273,13 +273,40 @@ trans.es = {
     'bitting.legend-title': 'Incidencia',
 
     //HELPING popup_observation_date_reports'
-    'observations.description': 'Descripción de las observaciones',
-    'combo.description': 'Descripción de las capas combo',
-    'models.description': 'Descripción de los modelos',
+    'observations.description': '<ul class="info_list">' +
+        '<li class="tiger_mosquito"> <b>Mosquito tigre</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito tigre (Aedes albopictus).</li>' +
+        '<li class="yellow_fever_mosquito"> <b>Mosquito fiebre amarilla</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito de la fiebre amarilla (Aedes aegypti).</li>' +
+        '<li class="aedes_japonicus"> <b>Aedes japonicus</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes japonicus.</li>' +
+        '<li class="aedes_koreicus"> <b>Aedes koreicus</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes koreicus.</li>' +
+        '<li class="culex"> <b>Mosquito común</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito común (Culex pipiens).</li>' +
+        '<li class="aedes_jap_kor"> <b>Aedes jap/kor</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes japonicus o Aedes koreicus. Los expertos no pueden determinar con seguridad de cuál de las dos especies se trata.</li>' +
+        '<li class="aedes_albo_cret"> <b>Aedes albo/cret</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes albopictus o Aedes cretinus. Los expertos no pueden determinar con seguridad de cuál de las dos especies se trata.</li>' +
+        '<li class="other_species"> <b>Otras especies</b>: Según los expertos, las fotos de esta observación podrían ser de otras especies de mosquito.</li>' +
+        '<li class="unidentified"> <b>No identificable</b>: Según los expertos, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li>' +
+        '<li class="site"> <b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales) de las 5 especies de mosquitos estudiadas por Mosquito Alert.</li>' +
+        '</ul>',
+    'combo.description': 'Un combo une dos especies muy similares. En estos casos, los expertos no pueden apreciar en las fotos el carácter que diferencia ambas especies, no pudiendo así determinar con seguridad de cuál de las dos especies se trata.',
+    'models.description': '<ul class="info_list">' +
+        '<li><b>Probabilidad Mosquito Alert</b>: Probabilidad de encuentro con mosquito tigre (Aedes albopictus) o mosquito del Japón (Aedes japonicus) basada en las observaciones recibidas en Mosquito Alert. Más detalles en la capa del mapa, botón [?]. </li>' +
+        '<li><b>Probabilidad picaduras</b>: Probabilidad de recibir una picadura de mosquito basada en las notificaciones recibidas en Mosquito Alert. Más detalles en la capa del mapa, botón [?]. </li>' +
+        '</ul>',
     'userdata.description': 'Descripción de los datos de usuario',
-    'layer.userfixes.description': 'Descripción capa participantes',
+    'layer.userfixes.description': '<ul class="info_list">' +
+        '<li><b>Esfuerzo de muestreo</b>: la capa muestra la distribución de los participantes, donde las cuadrículas más oscuras indican un mayor número de dispositivos con la app instalada o que han estado mucho tiempo en la zona. Al igual que las observaciones ciudadanas se pueden filtrar por año y mes para ver cómo varía el esfuerzo de muestreo temporalmente. Este dato es esencial para poder elaborar los modelos, sin esta información no se podría saber si hay muchos mosquitos en un área o si lo que hay es mucha participación. En ecología esta información se conoce como esfuerzo de muestreo, permitiendo corregir las observaciones para hacerlas comparables entre área.</li>' +
+        '</ul>',
 
     //MODAL FIRST MESSAGES
-    'modal.firstvisit.title': 'Información adicional',
-    'modal.firstvisit.content': 'Contenido información',
+    'modal.firstvisit.title': 'Te damos la bienvenida al mapa interactivo de Mosquito Alert',
+    'modal.firstvisit.content': '<p>Aquí podrás consultar los datos de mosquitos enviados por la ciudadanía, mediante la app Mosquito Alert, y validados por profesionales de la entomología. La herramienta no solo te permite <b>visualizar datos</b>, también <b>filtrarlos</b> según tus intereses, <b>elaborar informes</b> personalizados o incluso <b>descargarlos</b>.</p>' +
+                                '<ul>' +
+                                '  <li><i class="fa fa-bars" aria-hidden="true"></i>  Abre las distintas capas de datos, fíltralos por fecha, hashtag o municipio y consulta los modelos Mosquito Alert</li>' +
+                                '  <li><i class="fa fa-info" aria-hidden="true"></i>  Consulta la información del mapa</li>' +
+                                '  <li><i class="fa fa-share-alt" aria-hidden="true"></i> Comparte la vista del mapa</li>' +
+                                '  <li><i class="fa fa-file-text-o" aria-hidden="true"></i> Elabora informes personalizados</li>' +
+                                '  <li><i class="fa fa-download" aria-hidden="true"></i> Descarga los datos</li>' +
+                                '</ul>' +
+                                '<p>El mapa contiene información de 5 especies de mosquitos vectores de enfermedades: el <b>mosquito tigre</b> (Aedes albopictus), el <b>mosquito de la fiebre amarilla</b> (Aedes aegypti), el <b>mosquito del Japón</b> (Aedes japonicus), el <b>mosquito de Corea</b> (Aedes koreicus) y el <b>mosquito común</b> (Culex pipiens). Además, puedes visualizar posibles <b>lugares de cría</b> de estos insectos en la vía pública. Esta información se complementa con <b>modelos de probabilidad</b>, elaborados a partir de los datos ciudadanos y con el <b>esfuerzo de muestreo</b> o <b>distribución de participantes</b>.</p>' +
+                                '<p>Para más información, accede al botón [?] de cada capa o grupo de capas, donde encontrarás detalles de los distintos datos disponibles y el significado de los modelos.</p>' +
+                                '<p>Para más información, visita <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>'
+
 };

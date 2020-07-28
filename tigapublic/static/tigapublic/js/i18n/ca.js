@@ -65,7 +65,7 @@ trans.ca = {
       '<br/>Per a més informació sobre les polítiques del lloc web, consulta la <a href="http://webserver.mosquitoalert.com/ca/privacy/">Política de privacitat</a> i <a href="http://webserver.mosquitoalert.com/ca/terms/">l\'Acord de l\'usuari</a>.',
     'map.cookie_accept': 'Tanca notificació',
 
-    'filters.description':'Els filtres del mapa no apliquen a la capa de models disponibles',
+    'filters.description':'Es poden filtrar les observacions ciutadanes de mosquits, llocs de cria i l\'esforç de mostreig, per any, mes i municipi. Aquests filtres temporals i espacials no s\'apliquen en les capes de models disponibles per a mosquits i picades.',
     'All years': 'Tots els anys',
     'All months': 'Tots els mesos',
     'January': 'Gener',
@@ -222,9 +222,9 @@ trans.ca = {
     // MODELS
     'layer.predictionmodels.vector': 'Probabilitat Mosquito Alert',
     //HTML FORMAT
-    'layer.biting.description': 'El mapa mostra estimacions de la probabilitat de picades, que representa la probabilitat que un participant enviï un informe de mosquit tigre fiable durant un període de dues setmanes, controlant l\'esforç de mostreig (és a dir, que el model representa el fet que hi hagi més participants en algunes àrees que en altres).<p>Aquestes estimacions es mostren en una graella de 0,05 graus de latitud per 0,05 graus de longitud i es promitgen per mes. La probabilitat d\'alerta depèn principalment de la distribució de la població del mosquit tigre i de l\'esforç de mostreig collectiu, que varia segons la ubicació i el mes. La probabilitat d\'alerta s\'ha demostrat que és un bon predictor de la presència de mosquits tigre mesurat pels mètodes tradicionals de vigilància (ovitraps), tal com s\'explica a Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Les estimacions s\'actualitzen setmanalment a mesura que apareixen noves dades.</p><p>Tingueu en compte que aquesta capa de probabilitat d\'alerta només es pot filtrar amb els selectors d\'any i mes que es mostren aquí (i no amb els filtres addicionals a continuació, que són per a altres capes).</p>',
+    'layer.biting.description': '<p>El mapa mostra la probabilitat de rebre una picada de mosquit basada en les dades enviades per la ciutadania a Mosquito Alert. Les probabilitats no corresponen a cap espècie de mosquit en concret, sinó a totes les notificacions de picades rebudes, reflectint la interacció humà-mosquits que hi ha a la zona. Les primeres estimacions d\'un mes es basen en les observacions rebudes per a aquest mes en anys anteriors, estimacions que es van actualitzant setmanalment amb les dades de l\'any en curs per a reajustar els valors a temps real. Les estimacions es mostren en quadrícules d\'aproximadament 2x2 quilòmetres (quadrícula de 0,05 graus de latitud per 0,05 graus de longitud).</p><p>Aquest càlcul té en compte l\'esforç de mostreig, considerant la quantitat de participants amb l\'app activa en cada quadrícula en el temps definit (consulta la capa “esforç de mostreig”). La incidència de picades és més alta en una quadrícula en la qual s\'han rebut 10 notificacions de picades i hi ha 5 participants, que en una altra amb 10 notificacions però 10 participants actius. La modelització de les dades rebudes i de participants actius determina el valor de la probabilitat mostrada en el mapa.</p>',
 
-    'layer.predictionmodels.description': 'El mapa mostra estimacions de la probabilitat d\'alerta de mosquits tigre, que representa la probabilitat que un participant enviï un informe de mosquit tigre fiable durant un període de dues setmanes, controlant l\'esforç de mostreig (és a dir, que el model representa el fet que hi hagi més participants en algunes àrees que en altres).<p>Aquestes estimacions es mostren en una graella de 0,05 graus de latitud per 0,05 graus de longitud i es promitgen per mes. La probabilitat d\'alerta depèn principalment de la distribució de la població del mosquit tigre i de l\'esforç de mostreig collectiu, que varia segons la ubicació i el mes. La probabilitat d\'alerta s\'ha demostrat que és un bon predictor de la presència de mosquits tigre mesurat pels mètodes tradicionals de vigilància (ovitraps), tal com s\'explica a Nature Communications 8: 916 (2017), <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>. Les estimacions s\'actualitzen setmanalment a mesura que apareixen noves dades.</p><p>Tingueu en compte que aquesta capa de probabilitat d\'alerta només es pot filtrar amb els selectors d\'any i mes que es mostren aquí (i no amb els filtres addicionals a continuació, que són per a altres capes).</p>',
+    'layer.predictionmodels.description': '<p>El mapa mostra la probabilitat de trobada amb el mosquit tigre (<em>Aedes albopictus</em>) o el mosquit del Japó (<em>Aedes japonicus</em>) basada en les dades enviades per la ciutadania a Mosquito Alert. Les primeres estimacions d\'un mes es basen en les observacions rebudes per a aquest mes en anys anteriors, estimacions que es van actualitzant setmanalment amb les dades de l\'any en curs per a reajustar els valors a temps real. Les estimacions es mostren en quadrícules d\'aproximadament 2x2 quilòmetres (quadrícula de 0,05 graus de latitud per 0,05 graus de longitud).</p><p>Aquest càlcul té en compte l\'esforç de mostreig, considerant la quantitat de participants amb l\'app activa en cada quadrícula en el temps definit (consulta la capa “esforç de mostreig”). La probabilitat de mosquit és més alta en una quadrícula en la qual s\'han rebut 10 observacions i hi ha 5 participants, que en una altra amb 10 observacions i 10 participants. La modelització de les observacions i de participants actius determina el valor de la probabilitat mostrada en el mapa. S\'ha observat que aquesta probabilitat es correspon amb les observacions de mosquit tigre obtingudes per mètodes tradicionals de vigilància (ovitraps), demostrant així que és una bona manera d\'estimar la presència i abundància de l\'espècie. Més info a: <a href="https://doi.org/10.1038/s41467-017-00914-9" target="_blank">https://doi.org/10.1038/s41467-017-00914-9</a>.</p>',
 
     'models.label.prob-1': 'Molt baixa',
     'models.label.prob-2': 'Baixa',
@@ -278,13 +278,39 @@ trans.ca = {
     'bitting.legend-title': 'Incidència',
 
     //HELPING popup_observation_date_reports'
-    'observations.description': 'Descripció de les observacions',
-    'combo.description': 'Descripció de les capes combo',
-    'models.description': 'Descripció dels models',
+    'observations.description': '<ul class="info_list">' +
+        '<li class="tiger_mosquito"> <b>Mosquit tigre</b>: Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit tigre (Aedes albopictus).</li>' +
+        '<li class="yellow_fever_mosquito"> <b>Mosquit febre groga</b>: Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit de la febre groga (Aedes aegypti).</li>' +
+        '<li class="aedes_japonicus"> <b>Aedes japonicus</b>: Segons els experts, les fotos d\'aquesta observació podrien ser d\'Aedes japonicus.</li>' +
+        '<li class="aedes_koreicus"> <b>Aedes koreicus</b>: Segons els experts, les fotos d\'aquesta observació podrien ser d\'Aedes koreicus.</li>' +
+        '<li class="culex"> <b>Mosquit comú</b>: Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit comú (Culex pipiens).</li>' +
+        '<li class="aedes_jap_kor"> <b>Aedes jap/kor</b>: Segons els experts, les fotos d\'aquesta observació podrien ser d\'Aedes japonicus o Aedes koreicus. Els experts no poden determinar amb seguretat quina de les dues espècies correspon.</li>' +
+        '<li class="aedes_albo_cret"> <b>Aedes albo/cret</b>: Segons els experts, les fotos d\'aquesta observació podrien ser d\'Aedes albopictus o Aedes cretinus. Els experts no poden determinar amb seguretat quina de les dues espècies correspon.</li>' +
+        '<li class="other_species"> <b>Altres espècies</b>: Segons els experts, les fotos d\'aquesta observació podrien ser d\'altres espècies de mosquit.</li>' +
+        '<li class="unidentified"> <b>No identificable</b>: Segons els experts, aquestes observacions i les seves fotos no permeten identificar cap espècie de mosquit.</li>' +
+        '<li class="site"> <b>Llocs de cria</b>: Observacions ciutadanes de possibles llocs de cria (imbornals) de qualsevol de les 5 espècies estudiades per Mosquito Alert.</li>' +
+        '</ul>',
+    'combo.description': 'Un combo uneix dues espècies molt similars. En aquests casos, els experts no poden apreciar en les fotos el caràcter que diferencia totes dues espècies, no podent així determinar amb seguretat de quin de les dues espècies es tracta.',
+    'models.description': '<ul class="info_list">' +
+        '<li><b>Probabilitat Mosquit Alert</b>: Probabilitat de trobada amb mosquit tigre (Aedes albopictus) o mosquit del Japó (Aedes japonicus) basada en les observacions rebudes per Mosquito Alert. Més detalls en la capa del mapa, botó [?].</li>' +
+        '<li><b>Probabilitat picades</b>: Probabilitat de rebre una picada de mosquit basada en les notificacions rebudes en Mosquito Alert. Més detalls en la capa del mapa, botó [?].</li>' +
+        '</ul>',
     'userdata.description': 'Descripció de dades d\'usuari',
-    'layer.userfixes.description': 'Descripció capa participants',
+    'layer.userfixes.description': '<ul class="info_list">' +
+        '<li><b>Esforç de mostreig</b>: la capa mostra la distribució dels participants, on les quadrícules més fosques indiquen un major nombre de dispositius amb l\'app instal·lada o que han estat molt de temps en la zona. Igual que les observacions ciutadanes es poden filtrar per any i mes per a veure com varia l\'esforç de mostreig temporalment. Aquesta dada és essencial per a poder elaborar els models, sense aquesta informació no es podria saber si hi ha molts mosquits en una àrea o si el que hi ha és molta participació. En ecologia aquesta informació es coneix com a esforç de mostreig, permetent corregir les observacions per a fer-les comparables entre àrea.</li>' +
+        '</ul>',
 
     //MODAL FIRST MESSAGES
-    'modal.firstvisit.title': 'Informació addicional',
-    'modal.firstvisit.content': 'Contingut de la informació',
+    'modal.firstvisit.title': 'Et donem la benvinguda al mapa interactiu de Mosquito Alert',
+    'modal.firstvisit.content': '<p>Aquí podràs consultar les dades de mosquits enviats per la ciutadania, mitjançant l\'app Mosquito Alert, i validats per professionals de l\'entomologia. L\'eina no sols et permet <b>visualitzar dades</b>, també <b>filtrar-los</b> segons els teus interessos, <b>elaborar informes personalitzats</b> o fins i tot <b>descarregar-los</b>.</p>' +
+                                '<ul>' +
+                                  '<li><i class="fa fa-bars" aria-hidden="true"></i>  Obre les diferents capes de dades, filtra\'ls per data, etiqueta o municipi i consulta els models Mosquito Alert</li>' +
+                                  '<li><i class="fa fa-info" aria-hidden="true"></i>  Consulta la informació del mapa</li>' +
+                                  '<li><i class="fa fa-share-alt" aria-hidden="true"></i> Comparteix la vista del mapa</li>' +
+                                  '<li><i class="fa fa-file-text-o" aria-hidden="true"></i> Elabora informes personalitzats</li>' +
+                                  '<li><i class="fa fa-download" aria-hidden="true"></i> Descarrega les dades</li>' +
+                                '</ul>' +
+                                '<p>El mapa conté informació de 5 espècies de mosquits vectors de malalties: el <b>mosquit tigre</b> (Aedes albopictus), el <b>mosquit de la febre groga</b> (Aedes aegypti), el <b>mosquit del Japó</b> (Aedes japonicus), el <b>mosquit de Corea</b> (Aedes koreicus) i el <b>mosquit comú</b> (Culex pipiens). A més, pots visualitzar possibles <b>llocs de cria</b> d\'aquests insectes en la via pública. Aquesta informació es complementa amb <b>models de probabilitat</b>, elaborats a partir de les dades ciutadanes i amb <b>l\'esforç de mostreig</b> o <b>distribució de participants</b>. </p>' +
+                                '<p>Per a més informació, accedeix al botó [?] de cada capa o grup de capes, on trobaràs detalls de les diferents dades disponibles i el significat dels models.</p>' +
+                                '<p>Per a més informació, visita <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>'
  };
