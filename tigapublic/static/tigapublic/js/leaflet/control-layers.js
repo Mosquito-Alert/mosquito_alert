@@ -262,7 +262,7 @@ var MOSQUITO = (function (m) {
                             break;
                         case 'N': // Forecast models
                             options={
-                              'infoPopup': 'layer.predictionmodels.description',
+                              'infoPopup': 'layer.predictionmodels.viruscontent',
                               'infoIcon': 'fa fa-question question-mark-toc',
                               'infoIconId': 'virusToolTip',
                               'forecastMonthId': 'monthVirusMunicipalityProb',
@@ -776,6 +776,7 @@ var MOSQUITO = (function (m) {
           question_mark.appendTo(labelContainer)
           question_mark.on('click', function(event) {
             event.stopPropagation();
+            return false;
           });
 
           $(question_mark).popover({
@@ -903,6 +904,7 @@ var MOSQUITO = (function (m) {
           question_mark.appendTo(labelContainer)
           question_mark.on('click', function(event) {
             event.stopPropagation();
+            return false;
           });
 
           $(question_mark).popover({
@@ -961,6 +963,7 @@ var MOSQUITO = (function (m) {
           question_mark.appendTo(labelContainer)
           question_mark.on('click', function(event) {
             event.stopPropagation();
+            return false;
           });
 
           $(question_mark).popover({

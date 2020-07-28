@@ -193,5 +193,43 @@ add = {
     'group.koreicus': 'Aedes koreicus',
     'group.culex': 'Culex pipiens',
     'group.mix': 'Aedes jap/kor',
+
+    'header.motto': 'Mapa privado Mosquito Alert',
+
+    //MODAL FIRST MESSAGES
+    'modal.firstvisit.title': 'Te damos la bienvenida al mapa privado de Mosquito Alert',
+    'modal.firstvisit.content': '<p>Aquí podrás consultar los datos de mosquitos enviados por la ciudadanía, mediante la app Mosquito Alert, y validados por profesionales de la entomología. También podrás consultar datos que aún no han sido validados, así como datos que no se hacen públicos por contener información considerada sensible, pero potencialmente útil para el seguimiento y control de estas especies. La herramienta no solo te permite <b>visualizar datos</b>, también <b>filtrarlos</b> según tus intereses, <b>elaborar informes</b> personalizados o incluso <b>descargarlos</b>. Además, podrás <b>enviar notificaciones</b> directamente a la ciudadanía a través de la app de Mosquito Alert, seleccionando observaciones en el mapa.</p>' +
+        '<ul>' +
+        '  <li><i class="fa fa-bars" aria-hidden="true"></i>  Abre las distintas capas de datos, fíltralos por fecha, hashtag o municipio y consulta los modelos Mosquito Alert</li>' +
+        '  <li><i class="fa fa-info" aria-hidden="true"></i>  Consulta la información del mapa</li>' +
+        '  <li><i class="fa fa-share-alt" aria-hidden="true"></i> Comparte la vista del mapa</li>' +
+        '  <li><i class="fa fa-file-text-o" aria-hidden="true"></i> Elabora informes personalizados</li>' +
+        '  <li><i class="fa fa-download" aria-hidden="true"></i> Descarga los datos</li>' +
+        '  <li><i class="fa fa-bell" aria-hidden="true"></i> Envía notificaciones a participantes</li>' +
+        '</ul>' +
+        '<p>El mapa contiene información de 5 especies de mosquitos vectores de enfermedades: el <b>mosquito tigre</b> (Aedes albopictus), el <b>mosquito de la fiebre amarilla</b> (Aedes aegypti), el <b>mosquito del Japón</b> (Aedes japonicus), el <b>mosquito de Corea</b> (Aedes koreicus) y el <b>mosquito común</b> (Culex pipiens). Además, puedes visualizar posibles <b>lugares de cría</b> de estos insectos en la vía pública. Esta información se complementa con <b>modelos de probabilidad</b>, elaborados a partir de los datos ciudadanos y con el <b>esfuerzo de muestreo</b> o <b>distribución de participantes</b>.</p>' +
+        '<p>Para más información, accede al botón [?] de cada capa o grupo de capas, donde encontrarás detalles de los distintos datos disponibles y el significado de los modelos.</p>' +
+        '<p>Para más información, visita <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>',
+
+    'observations.description': '<ul class="info_list">' +
+        '<li class="tiger_mosquito"> <b>Mosquito tigre</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito tigre (Aedes albopictus). Si se ven muy claramente sus rasgos taxonómicos, especialmente la raya blanca en cabeza y tórax, será “confirmado”. Si no se aprecian algunos rasgos, será “posible”.</li>' +
+        '<li class="yellow_fever_mosquito"> <b>Mosquito fiebre amarilla</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito de la fiebre amarilla (Aedes aegypti). Si se ven muy claramente sus rasgos taxonómicos, especialmente la lira en cabeza y tórax, será “confirmado”. Si no se aprecian algunos rasgos, será “posible”.</li>' +
+        '<li class="aedes_japonicus"> <b>Aedes japonicus</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes japonicus. Si se ven muy claramente sus rasgos taxonómicos, especialmente las líneas doradas sobre el tórax y la última sección del tercer par de patas uniformemente negra., será “confirmado”. Si no se aprecian algunos rasgos, será “posible”.</li>' +
+        '<li class="aedes_koreicus"> <b>Aedes koreicus</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes koreicus. Si se ven muy claramente sus rasgos taxonómicos, especialmente las líneas doradas sobre el tórax y la última sección del tercer par de patas con una banda blanca., será “confirmado”. Si no se aprecian algunos rasgos, será “posible”.</li>' +
+        '<li class="culex"> <b>Mosquito común</b>: Según los expertos, las fotos de esta observación podrían ser de mosquito común (Culex pipiens). Será “confirmado” cuando se aprecie el color amarillento y tamaño del mosquito, unos palpos maxilares cortos y el final del abdomen redondeado. Si no se aprecian algunos rasgos, será “posible”.</li>' +
+        '<li class="aedes_jap_kor"> <b>Aedes jap/kor</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes japonicus o Aedes koreicus. Los expertos no pueden determinar con seguridad de cuál de las dos especies se trata, al no poder apreciar en la foto el carácter que las distingue.</li>' +
+        '<li class="aedes_albo_cret"> <b>Aedes albo/cret</b>: Según los expertos, las fotos de esta observación podrían ser de Aedes albopictus o Aedes cretinus. Los expertos no pueden determinar con seguridad de cuál de las dos especies se trata, al no poder apreciar en la foto el carácter que las distingue.</li>' +
+        '<li class="other_species"> <b>Otras especies</b>: Según los expertos, las fotos de esta observación podrían ser de otras especies de mosquito.</li>' +
+        '<li class="unidentified"> <b>No identificable</b>: Según los expertos, estas observaciones y sus fotos no permiten identificar a ninguna especie de mosquito.</li>' +
+        '<li class="unclassified private"><b>Por validar</b>: Observaciones con foto que todavía no han sido validadas por los expertos.</li>' +
+        '<li class="site"> <b>Lugares de cría</b>: Observaciones ciudadanas de posibles lugares de cría (imbornales y otros) de las 5 especies de mosquitos estudiadas por Mosquito Alert.</li>' +
+        '<li class="trash_layer private"> <b>Otras observaciones</b>: Observaciones que no corresponden a ninguna otra categoría pero que podrían contener información de interés para los gestores.</li>' +
+        '</ul>',
+    'models.description': '<ul class="info_list">' +
+        '<li><b>Probabilidad Mosquito Alert</b>: Probabilidad de encuentro con mosquito tigre (Aedes albopictus) o mosquito del Japón (Aedes japonicus) basada en las observaciones recibidas en Mosquito Alert. Más detalles en la capa del mapa, botón [?].</li>' +
+        '<li><b>Probabilidad picaduras</b>: Probabilidad de recibir una picadura de mosquito basada en las notificaciones recibidas en Mosquito Alert. Más detalles en la capa del mapa, botón [?].</li>' +
+        '<li><b>Probabilidad enfermedad</b>: Modelos de predicción de riesgo de enfermedades arbovirales para los municipios de Cataluña. Más detalles en la capa del mapa, botón [?].</li>' +
+        '</ul>',
+    'layer.predictionmodels.viruscontent' : 'Modelos de predicción de riesgo de enfermedades arbovirales para los municipios de Cataluña. Las probabilidades se estiman considerando tanto información de casos importados de las enfermedades como de variables climáticas, abundancia de mosquitos y factores socioeconómicos. Los modelos se han desarrollado dentro del proyecto Plataforma Integral per al Control d’Arbovirosis a Catalunya (PICAT) coordinado por el Vall d’Hebron Institut de Recerca (VHIR) en colaboración con la Agencia de Salud Pública de Cataluña (ASPCAT), ISGlobal y Mosquito Alert.',
 };
 _.extend(trans.es, add);
