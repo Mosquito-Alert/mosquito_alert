@@ -606,7 +606,8 @@ var MapView = MapView.extend({
           'data-placement':'left',
           'i18n': 'filters.description|data-content',
           'data-container': 'body',
-          'class':'fa fa-question question-mark-toc question-mark-filters'
+          'class':'fa fa-question question-mark-toc question-mark-filters',
+          'id': 'question_mark_filters'
         })
         var questionDiv = $('<div>')
           .attr('id', 'question_mark_container')
@@ -621,20 +622,21 @@ var MapView = MapView.extend({
        question_mark.appendTo(questionDiv)
        questionDiv.appendTo(parentDiv)
 
-       $(document).click(function(e) {
-         var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
-         if (isVisible){
-           question_mark.click()
-         }
-       });
+       // $(document).click(function(e) {
+       //   var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
+       //   if (isVisible){
+       //     question_mark.click()
+       //   }
+       // });
 
        question_mark.on('click', function(event) {
-         // event.preventDefault();
-         event.stopPropagation();
+        event.stopPropagation();
+        return false;
        });
 
        $(question_mark).popover({
          html: true,
+         trigger: 'focus',
          content: function() {
            return true;
            }

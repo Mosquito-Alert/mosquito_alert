@@ -276,4 +276,15 @@ trans.ca = {
     //BITING RATES
     'layer.biting': 'Probabilitat picades',
     'bitting.legend-title': 'Incidència',
+
+    //HELPING popup_observation_date_reports'
+    'observations.description': 'Descripció de les observacions',
+    'combo.description': 'Descripció de les capes combo',
+    'models.description': 'Descripció dels models',
+    'userdata.description': 'Descripció de dades d\'usuari',
+    'layer.userfixes.description': 'Descripció capa participants',
+
+    //MODAL FIRST MESSAGES
+    'modal.firstvisit.title': 'Informació addicional',
+    'modal.firstvisit.content': 'Contingut de la informació',
  };

@@ -274,4 +274,15 @@ trans.en = {
     // BITING RATES
     'layer.biting': 'Bites Probability',
     'bitting.legend-title': 'Impact',
+
+    //HELPING popup_observation_date_reports'
+    'observations.description': 'Observations description',
+    'combo.description': 'combo species description',
+    'models.description': 'Models description',
+    'userdata.description': 'User data description',
+    'layer.userfixes.description': 'Citizents layer description',
+
+    //MODAL FIRST MESSAGES
+    'modal.firstvisit.title': 'Additional information',
+    'modal.firstvisit.content': 'information content',
 };

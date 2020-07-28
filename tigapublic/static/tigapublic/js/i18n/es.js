@@ -271,4 +271,15 @@ trans.es = {
     // BITING RATES
     'layer.biting': 'Probabilidad picaduras',
     'bitting.legend-title': 'Incidencia',
+
+    //HELPING popup_observation_date_reports'
+    'observations.description': 'Descripción de las observaciones',
+    'combo.description': 'Descripción de las capas combo',
+    'models.description': 'Descripción de los modelos',
+    'userdata.description': 'Descripción de los datos de usuario',
+    'layer.userfixes.description': 'Descripción capa participantes',
+
+    //MODAL FIRST MESSAGES
+    'modal.firstvisit.title': 'Información adicional',
+    'modal.firstvisit.content': 'Contenido información',
 };
