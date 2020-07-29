@@ -1005,7 +1005,7 @@ msgstr "Breeding sites: All repors"
 #: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
 #: tigascoring/xp_scoring.py:190
 msgid "Novice"
-msgstr ""
+msgstr "Beginner"
 
 #: tigascoring/xp_scoring.py:192
 msgid "Contributor"
