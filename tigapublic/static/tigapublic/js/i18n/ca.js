@@ -5,7 +5,7 @@ trans.ca = {
     'header.username': 'Usuari',
     'header.password': 'Clau',
     'header.submit': 'Acceptar',
-    'header.motto': 'Observacions ciutadanes',
+    'header.motto': 'Mapa interactiu Mosquito Alert',
     'header.logo_url': "window.open('http://www.mosquitoalert.com/ca/')",
 
     'group.observations':'Observacions ciutadanes',
@@ -51,7 +51,7 @@ trans.ca = {
 
     'map.numfixes': 'Observacions',
     'map.control_layers': 'Llegenda',
-    'map.control_moreinfo': 'Més informació sobre la llegenda',
+    'map.control_moreinfo': 'Informació del mapa',
     'map.control_share': 'Compartir',
     'map.control_viewreports': 'Llistat d\'observacions',
 
@@ -81,8 +81,8 @@ trans.ca = {
     'November': 'Novembre',
     'December': 'Desembre',
 
-    'map.controlmoreinfo_title': 'Descripció',
-    'map.mundial_controlmoreinfo_title': 'Descripció',
+    'map.controlmoreinfo_title': '',
+    'map.mundial_controlmoreinfo_title': '',
 
     'expertinfo.tiger_mosquito': ' Segons els experts, les fotos d\'aquesta observació podrien ser de mosquit tigre (<i>Aedes albopictus</i>).',
 
@@ -302,15 +302,15 @@ trans.ca = {
 
     //MODAL FIRST MESSAGES
     'modal.firstvisit.title': 'Et donem la benvinguda al mapa interactiu de Mosquito Alert',
-    'modal.firstvisit.content': '<p>Aquí podràs consultar les dades de mosquits enviats per la ciutadania, mitjançant l\'app Mosquito Alert, i validats per professionals de l\'entomologia. L\'eina no sols et permet <b>visualitzar dades</b>, també <b>filtrar-los</b> segons els teus interessos, <b>elaborar informes personalitzats</b> o fins i tot <b>descarregar-los</b>.</p>' +
+    'modal.firstvisit.content': '<p>Aquí podràs consultar les dades de mosquits enviades per la ciutadania, mitjançant l\'app Mosquito Alert, i validades per professionals de l\'entomologia. L\'eina no sols et permet <b>visualitzar dades</b>, també <b>filtrar-les</b> segons els teus interessos, <b>elaborar informes personalitzats</b> o fins i tot <b>descarregar-les</b>.</p>' +
                                 '<ul>' +
-                                  '<li><i class="fa fa-bars" aria-hidden="true"></i>  Obre les diferents capes de dades, filtra\'ls per data, etiqueta o municipi i consulta els models Mosquito Alert</li>' +
+                                  '<li><i class="fa fa-bars" aria-hidden="true"></i>  Obre les diferents capes de dades, filtra-les per data, etiqueta o municipi i consulta els models Mosquito Alert</li>' +
                                   '<li><i class="fa fa-info" aria-hidden="true"></i>  Consulta la informació del mapa</li>' +
                                   '<li><i class="fa fa-share-alt" aria-hidden="true"></i> Comparteix la vista del mapa</li>' +
                                   '<li><i class="fa fa-file-text-o" aria-hidden="true"></i> Elabora informes personalitzats</li>' +
                                   '<li><i class="fa fa-download" aria-hidden="true"></i> Descarrega les dades</li>' +
                                 '</ul>' +
-                                '<p>El mapa conté informació de 5 espècies de mosquits vectors de malalties: el <b>mosquit tigre</b> (Aedes albopictus), el <b>mosquit de la febre groga</b> (Aedes aegypti), el <b>mosquit del Japó</b> (Aedes japonicus), el <b>mosquit de Corea</b> (Aedes koreicus) i el <b>mosquit comú</b> (Culex pipiens). A més, pots visualitzar possibles <b>llocs de cria</b> d\'aquests insectes en la via pública. Aquesta informació es complementa amb <b>models de probabilitat</b>, elaborats a partir de les dades ciutadanes i amb <b>l\'esforç de mostreig</b> o <b>distribució de participants</b>. </p>' +
+                                '<p>El mapa conté informació de 5 espècies de mosquits vectors de malalties: el <b>mosquit tigre</b> (Aedes albopictus), el <b>mosquit de la febre groga</b> (Aedes aegypti), el <b>mosquit del Japó</b> (Aedes japonicus), el <b>mosquit de Corea</b> (Aedes koreicus) i el <b>mosquit comú</b> (Culex pipiens). A més, pots visualitzar possibles <b>llocs de cria</b> d\'aquests insectes a la via pública. Aquesta informació es complementa amb <b>models de probabilitat</b>, elaborats a partir de les dades ciutadanes i amb <b>l\'esforç de mostreig</b> o <b>distribució de participants</b>. </p>' +
                                 '<p>Per a més informació, accedeix al botó [?] de cada capa o grup de capes, on trobaràs detalls de les diferents dades disponibles i el significat dels models.</p>' +
                                 '<p>Per a més informació, visita <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>'
  };

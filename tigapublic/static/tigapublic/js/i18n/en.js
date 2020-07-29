@@ -51,7 +51,7 @@ trans.en = {
 
     'map.numfixes': 'Observations',
     'map.control_layers': 'Legend',
-    'map.control_moreinfo': 'More information about the legend',
+    'map.control_moreinfo': 'Map info',
     'map.control_share': 'Share',
     'map.control_viewreports': 'List of observations',
 
@@ -87,8 +87,8 @@ trans.en = {
     'October': 'October',
     'November': 'November',
     'December': 'December',
-    'map.controlmoreinfo_title': 'Description',
-    'map.mundial_controlmoreinfo_title': 'Description',
+    'map.controlmoreinfo_title': '',
+    'map.mundial_controlmoreinfo_title': '',
 
     'info.notifications': 'Notifications',
     'citizeninfo.tiger_mosquito': ' According to citizens, the pictures of this observation could be tiger mosquito (<i>Aedes albopictus</i>).',
@@ -299,17 +299,16 @@ trans.en = {
         '</ul>',
 
     //MODAL FIRST MESSAGES
-    'modal.firstvisit.title': 'We welcome you to the interactive Mosquito Alert map',
-    'modal.firstvisit.content': '<p>Here you can check the mosquito data sent by citizens, through the Mosquito Alert app, and validated by entomology professionals. The tool not only allows you to view data, also filter it according to your interests, prepare personalized reports or even download them.</p>' +
-                                '<p>Open the different data layers, filter them by date, hashtag or municipality and consult the Mosquito Alert models</p>' +
+    'modal.firstvisit.title': 'Welcome to the interactive Mosquito Alert map',
+    'modal.firstvisit.content': '<p>Explore mosquito data sent by citizens, through the Mosquito Alert app, and validated by entomology professionals. You can view, filter and download data and also prepare personalized reports according to your interests. Use the following tools to:</p>' +
                                 '<ul>' +
-                                '  <li><i class="fa fa-bars" aria-hidden="true"></i>  Consult the Mosquito Alert models</li>' +
+                                '  <li><i class="fa fa-bars" aria-hidden="true"></i>  View Mosquito Alert data and models and filter data by date, hashtag or municipality</li>' +
                                 '  <li><i class="fa fa-info" aria-hidden="true"></i>  Check the map information</li>' +
                                 '  <li><i class="fa fa-share-alt" aria-hidden="true"></i> Share the map view</li>' +
                                 '  <li><i class="fa fa-file-text-o" aria-hidden="true"></i> Create custom reports</li>' +
                                 '  <li><i class="fa fa-download" aria-hidden="true"></i> Download the data</li>' +
                                 '</ul>' +
-                                '<p>The map contains information on 5 species of disease-vector mosquitoes: the <b>tiger mosquito</b> (Aedes albopictus), the <b>yellow fever mosquito</b> (Aedes aegypti), the <b>Asian bush mosquito</b> (Aedes japonicus), <b>Aedes koreicus</b> and the <b>common house mosquito</b> (Culex pipiens). In addition, you can visualize possible <b>breeding places</b> for these insects on public roads. This information is complemented with <b>probability models</b>, elaborated from the citizen data and with the <b>effort of sampling</b> or <b>distribution of participants</b>.</p>' +
-                                '<p>For more information, access the [?] Button for each layer or group of layers, where you will find details of the different data available and the meaning of the models.</p>'  +
+                                '<p>The map contains information about 5 disease-vector mosquitoes: the <b>tiger mosquito</b> (Aedes albopictus), the <b>yellow fever mosquito</b> (Aedes aegypti), the <b>Asian bush mosquito</b> (Aedes japonicus),  <b>Aedes koreicus</b> and the <b>common house mosquito</b> (Culex pipiens). You can also visualize possible mosquitos’ <b>breeding sites</b> on public areas. This information is complemented with <b>probability models</b>, elaborated from the citizen data and corrected with the <b>distribution of participants</b> (a proxy of sampling effort).</p>' +
+                                '<p>Read the detailed info of each layer or group of layers using the [?] button.</p>'  +
                                 '<p>For more information, visit <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>'
 };

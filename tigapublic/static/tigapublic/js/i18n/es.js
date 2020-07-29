@@ -85,7 +85,7 @@ trans.es = {
     //MAP CONTROLS
     'map.numfixes': 'Observaciones',
     'map.control_layers': 'Leyenda',
-    'map.control_moreinfo': 'Más información acerca de la leyenda',
+    'map.control_moreinfo': 'Información del Mapa',
     'map.control_share': 'Compartir',
     'map.control_viewreports': 'Listado de observaciones',
 
@@ -112,8 +112,8 @@ trans.es = {
     'November': 'Noviembre',
     'December': 'Diciembre',
 
-    'map.controlmoreinfo_title': 'Descripción',
-    'map.mundial_controlmoreinfo_title': 'Descripción',
+    'map.controlmoreinfo_title': '',
+    'map.mundial_controlmoreinfo_title': '',
 
     'citizeninfo.tiger_mosquito': ' Según los ciudadanos y ciudadanas, las fotos de esta observación podrían ser de mosquito tigre (<i>Aedes albopictus</i>).',
     'citizeninfo.yellow_fever_mosquito':' Según los ciudadanos y ciudadanas, las fotos de esta observación podrían  ser de mosquito de la fiebre amarilla (<i>Aedes aegypti</i>).',
