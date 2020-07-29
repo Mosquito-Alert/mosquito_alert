@@ -5,7 +5,7 @@ trans.en = {
     'header.username': 'User',
     'header.password': 'Password',
     'header.submit': 'Confirm',
-    'header.motto': 'Citizens\' observations',
+    'header.motto': 'Mosquito Alert interactive map',
     'header.logo_url': "window.open('http://www.mosquitoalert.com/en/')",
 
     'group.observations':'Citizens observations',
