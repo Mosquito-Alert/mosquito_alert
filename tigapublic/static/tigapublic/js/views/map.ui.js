@@ -601,8 +601,9 @@ var MapView = MapView.extend({
         .appendTo(toggleGrup);
 
         let question_mark = $('<a>', {
-          'href':'#',
-          'data-toggle':'popover-filters',
+          'tabindex':'0',
+          'role': 'button',
+          'data-trigger': 'focus',
           'data-placement':'left',
           'i18n': 'filters.description|data-content',
           'data-container': 'body',
@@ -622,13 +623,6 @@ var MapView = MapView.extend({
        question_mark.appendTo(questionDiv)
        questionDiv.appendTo(parentDiv)
 
-       // $(document).click(function(e) {
-       //   var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
-       //   if (isVisible){
-       //     question_mark.click()
-       //   }
-       // });
-
        question_mark.on('click', function(event) {
         event.stopPropagation();
         return false;
@@ -636,7 +630,6 @@ var MapView = MapView.extend({
 
        $(question_mark).popover({
          html: true,
-         trigger: 'focus',
          content: function() {
            return true;
            }

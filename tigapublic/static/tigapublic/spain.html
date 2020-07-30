@@ -875,8 +875,7 @@
         <div>
 
         <h3 i18n="map.controlmoreinfo_title"></h3>
-        <span i18n="modal.firstvisit.content"></span>
-            <!--
+        <!--<span i18n="map.controlmoreinfo_desc_es"></span>-->
         <ul id="legend-container" class="info_list">
             <li class="tiger_mosquito">
                 <span i18n="layer.tiger" class="bold"></span>:
@@ -929,16 +928,19 @@
             </li>
             <li class="">
                 <object id="info_vector_models" type="image/svg+xml" data="./img/predictionmodels_info_icon.svg"></object>
+                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
                 <span i18n="layer.predictionmodels.vector" class="bold"></span>:
                 <span i18n="layer.predictionmodels.description"></span>
             </li>
             <li class="">
                 <object id="info_biting_models" type="image/svg+xml" data="./img/biting_info_icon.svg"></object>
+                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
                 <span i18n="layer.biting" class="bold"></span>:
                 <span i18n="layer.biting.description"></span>
             </li>
             <li class="" id="info-virus-models-li" style="display:none">
                 <object id="info_virus_models" type="image/svg+xml" data="./img/predictionmodels_info_icon.svg"></object>
+                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
                 <span i18n="layer.predictionmodels.virus" class="bold"></span>:
                 <span i18n="layer.predictionmodels-virus.description"></span>
             </li>
@@ -949,7 +951,6 @@
         </ul>
         <p i18n="map.to_know_more"></p>
         <p i18n="map.more_info"></p>
-        -->
         </div>
         <script>
 
@@ -1556,7 +1557,6 @@
     <script>
     $(document).ready(function(){
         if (Cookies.get('first-visit')===undefined){
-          /*Cookies.set('first-visit', 'false', { expires: 7 });*/
           Cookies.set('first-visit', 'false');
           $('#modal-firstvisit').modal('show')
         }

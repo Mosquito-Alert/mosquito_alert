@@ -705,8 +705,10 @@ var MOSQUITO = (function (m) {
         var excludedGroups=['tiger', 'zika','koreicus', 'japonicus', 'culex']
         if (excludedGroups.indexOf(group_name)===-1 ){
             let question_mark = $('<a>', {
-              'href':'#',
-              'data-toggle':'popover-filters',
+              'tabindex':'0',
+              'role': 'button',
+              'data-trigger': 'focus',
+              // 'data-toggle':'popover-filters',
               'data-placement':'left',
               'i18n': group_name + '.description|data-content',
               'data-container': 'body',
@@ -734,7 +736,7 @@ var MOSQUITO = (function (m) {
 
             $(question_mark).popover({
               html: true,
-              trigger: 'focus',
+              // trigger: 'focus',
               content: function() {
                 return true;
                 }
@@ -764,7 +766,9 @@ var MOSQUITO = (function (m) {
 
           // QUESTION MARK
           let question_mark = $('<a>', {
-            'href':'#',
+            'tabindex':'0',
+            'role': 'button',
+            'data-trigger': 'focus',
             'id': options.infoIconId,
             'data-toggle':'popover',
             'data-placement':'left',
@@ -781,7 +785,6 @@ var MOSQUITO = (function (m) {
 
           $(question_mark).popover({
             html: true,
-            trigger: 'focus',
             content: function() {
               return true;
               }
@@ -892,7 +895,9 @@ var MOSQUITO = (function (m) {
 
           // QUESTION MARK
           let question_mark = $('<a>', {
-            'href':'#',
+            'tabindex':'0',
+            'role': 'button',
+            'data-trigger': 'focus',
             'id': options.infoIconId,
             'data-toggle':'popover',
             'data-placement':'left',
@@ -909,7 +914,6 @@ var MOSQUITO = (function (m) {
 
           $(question_mark).popover({
             html: true,
-            trigger: 'focus',
             content: function() {
               return true;
               }
@@ -951,7 +955,9 @@ var MOSQUITO = (function (m) {
 
           // QUESTION MARK
           let question_mark = $('<a>', {
-            'href':'#',
+            'tabindex':'0',
+            'role': 'button',
+            'data-trigger': 'focus',
             'id': options.infoIconId,
             'data-toggle':'popover',
             'data-placement':'left',
@@ -968,7 +974,6 @@ var MOSQUITO = (function (m) {
 
           $(question_mark).popover({
             html: true,
-            trigger: 'focus',
             content: function() {
               return true;
               }
