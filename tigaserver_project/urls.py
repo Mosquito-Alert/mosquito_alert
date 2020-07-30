@@ -69,6 +69,7 @@ urlpatterns += i18n_patterns(
     path('policies/', show_policies, name='help.show_policies'),
     path('terms/', show_terms, name='help.show_terms'),
     path('privacy/', show_privacy, name='help.show_privacy'),
+    path('privacy/<str:version>/', show_privacy, name='help.show_privacy'),
     path('scoring/', show_scoring, name='help.show_scoring'),
     path('about_us/', show_about_us, name='help.show_about_us'),
     path('project_about/', show_project_about, name='help.show_project_about'),

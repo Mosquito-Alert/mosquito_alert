@@ -40,6 +40,8 @@ import json
 from django.db.models import Manager as GeoManager
 from django.utils.deconstruct import deconstructible
 from django.urls import reverse
+from io import BytesIO
+from django.core.files import File
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -2078,60 +2080,62 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
 def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
     if created:
-        super_movelab = User.objects.get(pk=24)
-        n_reports = get_user_reports_count(instance.user)
-        if n_reports == 10:
-            grant_10_reports_achievement(instance, super_movelab)
-            issue_notification(instance, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, conf.HOST_NAME)
-        if n_reports == 20:
-            grant_20_reports_achievement(instance, super_movelab)
-            issue_notification(instance, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, conf.HOST_NAME)
-        if n_reports == 50:
-            grant_50_reports_achievement(instance, super_movelab)
-            issue_notification(instance, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP, conf.HOST_NAME)
-        if instance.type == 'adult' or instance.type == 'site':
-            # check award for first of season
-            current_year = instance.creation_time.year
-            awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
-            if awards.count() == 0:  # not yet awarded
-                if instance.can_be_first_of_season(current_year):  # can be first of season?
-                    grant_first_of_season(instance, super_movelab)
-                    issue_notification(instance, START_OF_SEASON, get_xp_value_of_category(START_OF_SEASON), conf.HOST_NAME)
-            else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
-                if instance.latest_version: #this report is the last version
-                    version_of_previous = instance.version_number - 1
-                    if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
-                        #if yes, transfer award to current version
-                        award = awards.filter(report__version_number=version_of_previous).first()
-                        award.report = instance
-                        award.save()
+        try:
+            super_movelab = User.objects.get(pk=24)
+            n_reports = get_user_reports_count(instance.user)
+            if n_reports == 10:
+                grant_10_reports_achievement(instance, super_movelab)
+                issue_notification(instance, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, conf.HOST_NAME)
+            if n_reports == 20:
+                grant_20_reports_achievement(instance, super_movelab)
+                issue_notification(instance, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, conf.HOST_NAME)
+            if n_reports == 50:
+                grant_50_reports_achievement(instance, super_movelab)
+                issue_notification(instance, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP, conf.HOST_NAME)
+            if instance.type == 'adult' or instance.type == 'site':
+                # check award for first of season
+                current_year = instance.creation_time.year
+                awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
+                if awards.count() == 0:  # not yet awarded
+                    if instance.can_be_first_of_season(current_year):  # can be first of season?
+                        grant_first_of_season(instance, super_movelab)
+                        issue_notification(instance, START_OF_SEASON, get_xp_value_of_category(START_OF_SEASON), conf.HOST_NAME)
+                else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
+                    if instance.latest_version: #this report is the last version
+                        version_of_previous = instance.version_number - 1
+                        if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
+                            #if yes, transfer award to current version
+                            award = awards.filter(report__version_number=version_of_previous).first()
+                            award.report = instance
+                            award.save()
 
-            report_day = instance.creation_time.day
-            report_month = instance.creation_time.month
-            report_year = instance.creation_time.year
-            awards = Award.objects\
-                .filter(report__creation_time__year=report_year)\
-                .filter(report__creation_time__month=report_month)\
-                .filter(report__creation_time__day=report_day) \
-                .filter(report__user=instance.user) \
-                .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
-            if awards.count() == 0: # not yet awarded
-                grant_first_of_day(instance, super_movelab)
-                issue_notification(instance, DAILY_PARTICIPATION, get_xp_value_of_category(DAILY_PARTICIPATION), conf.HOST_NAME)
+                report_day = instance.creation_time.day
+                report_month = instance.creation_time.month
+                report_year = instance.creation_time.year
+                awards = Award.objects\
+                    .filter(report__creation_time__year=report_year)\
+                    .filter(report__creation_time__month=report_month)\
+                    .filter(report__creation_time__day=report_day) \
+                    .filter(report__user=instance.user) \
+                    .filter(category__category_label='daily_participation').order_by('report__creation_time') #first is oldest
+                if awards.count() == 0: # not yet awarded
+                    grant_first_of_day(instance, super_movelab)
+                    issue_notification(instance, DAILY_PARTICIPATION, get_xp_value_of_category(DAILY_PARTICIPATION), conf.HOST_NAME)
 
-            date_1_day_before_report = instance.creation_time - timedelta(days=1)
-            date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
-            report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
-            if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
-                #report before this one has not been awarded neither 2nd nor 3rd day streak
-                if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
-                    grant_two_consecutive_days_sending(instance, super_movelab)
-                    issue_notification(instance, FIDELITY_DAY_2, get_xp_value_of_category(FIDELITY_DAY_2), conf.HOST_NAME)
-                else:
-                    if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
-                        grant_three_consecutive_days_sending(instance, super_movelab)
-                        issue_notification(instance, FIDELITY_DAY_3, get_xp_value_of_category(FIDELITY_DAY_3), conf.HOST_NAME)
-
+                date_1_day_before_report = instance.creation_time - timedelta(days=1)
+                date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
+                report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first() #first is most recent
+                if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
+                    #report before this one has not been awarded neither 2nd nor 3rd day streak
+                    if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
+                        grant_two_consecutive_days_sending(instance, super_movelab)
+                        issue_notification(instance, FIDELITY_DAY_2, get_xp_value_of_category(FIDELITY_DAY_2), conf.HOST_NAME)
+                    else:
+                        if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
+                            grant_three_consecutive_days_sending(instance, super_movelab)
+                            issue_notification(instance, FIDELITY_DAY_3, get_xp_value_of_category(FIDELITY_DAY_3), conf.HOST_NAME)
+        except User.DoesNotExist:
+            pass
 
 
 class ReportResponse(models.Model):
@@ -2255,6 +2259,18 @@ class Photo(models.Model):
 
     def medium_image_for_validation_(self):
         return '<a target="_blank" href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
+
+    # Metadata scrubbing
+    # def save(self, *args, **kwargs):
+    #     image = Image.open(self.photo)
+    #     photo_name = self.photo.name
+    #     data = list(image.getdata())
+    #     scrubbed_image = Image.new(image.mode, image.size)
+    #     scrubbed_image.putdata(data)
+    #     scrubbed_image_io = BytesIO()
+    #     scrubbed_image.save(scrubbed_image_io,"JPEG")
+    #     self.photo = File(scrubbed_image_io, name=photo_name)
+    #     super(Photo, self).save(*args, **kwargs)
 
 
     medium_image_.allow_tags = True

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.template.loader import TemplateDoesNotExist
 
 # Create your views here.
 
@@ -58,17 +59,20 @@ def show_policies(request):
     return render(request, 'tigahelp/policies.html', context)
 
 
-def show_privacy(request):
+def show_privacy(request, version=None):
     language = request.LANGUAGE_CODE
     context = {}
-    if language == 'ca':
-        return render(request, 'tigahelp/privacy_ca.html', context)
-    if language == 'es':
-        return render(request, 'tigahelp/privacy_es.html', context)
-    if language == 'en':
-        return render(request, 'tigahelp/privacy_en.html', context)
-    if language == 'zh-cn':
-        return render(request, 'tigahelp/privacy_zh.html', context)
+    if version is None:
+        try:
+            return render(request, 'tigahelp/privacy_' + language +'.html', context)
+        except TemplateDoesNotExist:
+            return render(request, 'tigahelp/privacy_en.html', context)
+    else:
+        try:
+            return render(request, 'tigahelp/privacy_versions/' + version + '/privacy_' + language +'.html', context)
+        except TemplateDoesNotExist:
+            return render(request, 'tigahelp/privacy_en.html', context)
+
 
 
 def show_terms(request):
