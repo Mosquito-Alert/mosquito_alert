@@ -342,7 +342,7 @@ var MOSQUITO = (function (m, _) {
                   subgroup:'japonicus',
                   title: 'layer.mosquito_japonicus_confirmed',
                   categories: {
-                    'japonicus_2': ['mosquito_japonicus_confirmed']
+                    'japonicus_2': ['japonicus_confirmed']
                   }
               },
               {
@@ -351,7 +351,7 @@ var MOSQUITO = (function (m, _) {
                   subgroup:'japonicus',
                   title: 'layer.mosquito_japonicus_probable',
                   categories: {
-                    'japonicus_1': ['mosquito_japonicus_probable']
+                    'japonicus_1': ['japonicus_probable']
                   }
               },
               {
@@ -360,7 +360,7 @@ var MOSQUITO = (function (m, _) {
                   subgroup:'koreicus',
                   title: 'layer.mosquito_koreicus_confirmed',
                   categories: {
-                    'koreicus_2': ['mosquito_koreicus_confirmed']
+                    'koreicus_2': ['koreicus_confirmed']
                   }
               },
               {
@@ -369,7 +369,7 @@ var MOSQUITO = (function (m, _) {
                   subgroup:'koreicus',
                   title: 'layer.mosquito_koreicus_probable',
                   categories: {
-                    'koreicus_1': ['mosquito_koreicus_probable']
+                    'koreicus_1': ['koreicus_probable']
                   }
               },
               {
@@ -378,7 +378,7 @@ var MOSQUITO = (function (m, _) {
                   subgroup:'culex',
                   title: 'layer.mosquito_culex_confirmed',
                   categories: {
-                    'culex_2': ['mosquito_culex_confirmed']
+                    'culex_2': ['culex_confirmed']
                   }
               },
               {
@@ -387,7 +387,7 @@ var MOSQUITO = (function (m, _) {
                   subgroup:'culex',
                   title: 'layer.mosquito_culex_probable',
                   categories: {
-                    'culex_1': ['mosquito_culex_probable']
+                    'culex_1': ['culex_probable']
                   }
               },
               {
