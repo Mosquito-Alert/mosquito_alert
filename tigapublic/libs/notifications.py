@@ -136,7 +136,11 @@ class NotificationManager(BaseManager):
             }
         )
 
-        return json.loads(response.text)
+        try:
+            return json.loads(response.text)
+        except:
+            print(response.text)
+            return json.loads('{}')
 
     def save(self):
         """Send notifications."""
