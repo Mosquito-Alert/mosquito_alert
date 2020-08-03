@@ -1333,6 +1333,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 
         new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
 
+        new_reports_unfiltered = list(new_reports_unfiltered)
+
         paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
         page = request.GET.get('page', 1)
         try:
