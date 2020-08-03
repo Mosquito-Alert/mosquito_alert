@@ -231,7 +231,7 @@ var MOSQUITO = (function (m) {
                           _this.addBitingsUI(layer,item, options)
                           break;
                         case 'F': // user fixes
-                            _this.addLayerFixesUI(layer,item)
+                            /*_this.addLayerFixesUI(layer,item)*/
                             break;
                         case 'M': // Forecast models
                             options={
