@@ -302,7 +302,7 @@ trans.ca = {
 
     //MODAL FIRST MESSAGES
     'modal.firstvisit.title': 'Et donem la benvinguda al mapa interactiu de Mosquito Alert',
-    'modal.firstvisit.content': '<p>Aquí podràs consultar les dades de mosquits enviades per la ciutadania, mitjançant l\'app Mosquito Alert, i validades per professionals de l\'entomologia. L\'eina no sols et permet <b>visualitzar dades</b>, també <b>filtrar-les</b> segons els teus interessos, <b>elaborar informes personalitzats</b> o fins i tot <b>descarregar-les</b>.</p>' +
+    'modal.firstvisit.content': '<p>Al mapa interactiu podràs consultar les dades de mosquits enviats per la ciutadania, mitjançant l\'app Mosquito Alert, i validats per professionals de l\'entomologia. L\'eina no sols et permet <b>visualitzar dades</b>, també <n>filtrar-les</b> segons els teus interessos, elaborar <b>informes personalitzats</b> o fins i tot <b>descarregar-les</b>.</p>' +
                                 '<ul>' +
                                   '<li><i class="fa fa-bars" aria-hidden="true"></i>  Obre les diferents capes de dades, filtra-les per data, etiqueta o municipi i consulta els models Mosquito Alert</li>' +
                                   '<li><i class="fa fa-info" aria-hidden="true"></i>  Consulta la informació del mapa</li>' +
@@ -310,7 +310,7 @@ trans.ca = {
                                   '<li><i class="fa fa-file-text-o" aria-hidden="true"></i> Elabora informes personalitzats</li>' +
                                   '<li><i class="fa fa-download" aria-hidden="true"></i> Descarrega les dades</li>' +
                                 '</ul>' +
-                                '<p>El mapa conté informació de 5 espècies de mosquits vectors de malalties: el <b>mosquit tigre</b> (Aedes albopictus), el <b>mosquit de la febre groga</b> (Aedes aegypti), el <b>mosquit del Japó</b> (Aedes japonicus), el <b>mosquit de Corea</b> (Aedes koreicus) i el <b>mosquit comú</b> (Culex pipiens). A més, pots visualitzar possibles <b>llocs de cria</b> d\'aquests insectes a la via pública. Aquesta informació es complementa amb <b>models de probabilitat</b>, elaborats a partir de les dades ciutadanes i amb <b>l\'esforç de mostreig</b> o <b>distribució de participants</b>. </p>' +
-                                '<p>Per a més informació, accedeix al botó [?] de cada capa o grup de capes, on trobaràs detalls de les diferents dades disponibles i el significat dels models.</p>' +
+                                '<p>El mapa conté informació de 5 espècies de mosquits vectors de malalties: el <b>mosquit tigre</b> (<em>Aedes albopictus</em>), el <b>mosquit de la febre groga</b> (<em>Aedes aegypti</em>), el <b>mosquit del Japó</b> (<em>Aedes japonicus</em>), el <b>mosquit de Corea</b> (<em>Aedes koreicus</em>) i el <b>mosquit comú</b> (<em>Culex pipiens</em>). A més, pots visualitzar possibles <b>llocs de cria</b> d\'aquests insectes a la via pública. Aquesta informació es complementa amb models de probabilitat, elaborats a partir de les dades ciutadanes i amb <b>l\'esforç de mostreig</b> o <b>distribució de participants</b>. </p>' +
+                                '<p>Per a més informació, accedeix al <b>botó [?]</b> de cada capa o grup de capes, on trobaràs detalls de les diferents dades disponibles i el significat dels models.</p>' +
                                 '<p>Per a més informació, visita <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>'
  };

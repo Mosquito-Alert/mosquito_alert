@@ -297,7 +297,7 @@ trans.es = {
 
     //MODAL FIRST MESSAGES
     'modal.firstvisit.title': 'Te damos la bienvenida al mapa interactivo de Mosquito Alert',
-    'modal.firstvisit.content': '<p>Aquí podrás consultar los datos de mosquitos enviados por la ciudadanía, mediante la app Mosquito Alert, y validados por profesionales de la entomología. La herramienta no solo te permite <b>visualizar datos</b>, también <b>filtrarlos</b> según tus intereses, <b>elaborar informes</b> personalizados o incluso <b>descargarlos</b>.</p>' +
+    'modal.firstvisit.content': '<p>En el mapa interactivo podrás consultar los datos de mosquitos enviados por la ciudadanía, mediante la app Mosquito Alert, y validados por profesionales de la entomología. La herramienta no solo te permite <b>visualizar datos</b>, también <b>filtrarlos</b> según tus intereses, <b>elaborar informes</b> personalizados o incluso <b>descargarlos</b>.</p>' +
                                 '<ul>' +
                                 '  <li><i class="fa fa-bars" aria-hidden="true"></i>  Abre las distintas capas de datos, fíltralos por fecha, hashtag o municipio y consulta los modelos Mosquito Alert</li>' +
                                 '  <li><i class="fa fa-info" aria-hidden="true"></i>  Consulta la información del mapa</li>' +
@@ -305,8 +305,8 @@ trans.es = {
                                 '  <li><i class="fa fa-file-text-o" aria-hidden="true"></i> Elabora informes personalizados</li>' +
                                 '  <li><i class="fa fa-download" aria-hidden="true"></i> Descarga los datos</li>' +
                                 '</ul>' +
-                                '<p>El mapa contiene información de 5 especies de mosquitos vectores de enfermedades: el <b>mosquito tigre</b> (Aedes albopictus), el <b>mosquito de la fiebre amarilla</b> (Aedes aegypti), el <b>mosquito del Japón</b> (Aedes japonicus), el <b>mosquito de Corea</b> (Aedes koreicus) y el <b>mosquito común</b> (Culex pipiens). Además, puedes visualizar posibles <b>lugares de cría</b> de estos insectos en la vía pública. Esta información se complementa con <b>modelos de probabilidad</b>, elaborados a partir de los datos ciudadanos y con el <b>esfuerzo de muestreo</b> o <b>distribución de participantes</b>.</p>' +
-                                '<p>Para más información, accede al botón [?] de cada capa o grupo de capas, donde encontrarás detalles de los distintos datos disponibles y el significado de los modelos.</p>' +
+                                '<p>El mapa contiene información de 5 especies de mosquitos vectores de enfermedades: el <b>mosquito tigre</b> (<em>Aedes albopictus</em>), el <b>mosquito de la fiebre amarilla</b> (<em>Aedes aegypti</em>), el <b>mosquito del Japón</b> (<em>Aedes japonicus</em>), el <b>mosquito de Corea</b> (<em>Aedes koreicus</em>) y el <b>mosquito común</b> (<em>Culex pipiens</em>). Además, puedes visualizar posibles <b>lugares de cría</b> de estos insectos en la vía pública. Esta información se complementa con <b>modelos de probabilidad</b>, elaborados a partir de los datos ciudadanos y con el <b>esfuerzo de muestreo</b> o <b>distribución de participantes</b>.</p>' +
+                                '<p>Para más información, accede al <b>botón [?]</b> de cada capa o grupo de capas, donde encontrarás detalles de los distintos datos disponibles y el significado de los modelos.</p>' +
                                 '<p>Para más información, visita <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>'
 
 };

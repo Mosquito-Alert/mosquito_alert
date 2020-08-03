@@ -300,15 +300,15 @@ trans.en = {
 
     //MODAL FIRST MESSAGES
     'modal.firstvisit.title': 'Welcome to the interactive Mosquito Alert map',
-    'modal.firstvisit.content': '<p>Explore mosquito data sent by citizens, through the Mosquito Alert app, and validated by entomology professionals. You can view, filter and download data and also prepare personalized reports according to your interests. Use the following tools to:</p>' +
+    'modal.firstvisit.content': '<p>In the interactive map you can check the mosquito data sent by citizens, through the Mosquito Alert app, and validated by entomologists. The tool allows you to <b>view</b>, <b>filter</b> and <b>download data</b> according to your interests and prepare <b>personalized reports</b>.</p>' +
                                 '<ul>' +
-                                '  <li><i class="fa fa-bars" aria-hidden="true"></i>  View Mosquito Alert data and models and filter data by date, hashtag or municipality</li>' +
+                                '  <li><i class="fa fa-bars" aria-hidden="true"></i>  Explore Mosquito Alert data and models and filter data by date, hashtag or municipality</li>' +
                                 '  <li><i class="fa fa-info" aria-hidden="true"></i>  Check the map information</li>' +
                                 '  <li><i class="fa fa-share-alt" aria-hidden="true"></i> Share the map view</li>' +
                                 '  <li><i class="fa fa-file-text-o" aria-hidden="true"></i> Create custom reports</li>' +
                                 '  <li><i class="fa fa-download" aria-hidden="true"></i> Download the data</li>' +
                                 '</ul>' +
-                                '<p>The map contains information about 5 disease-vector mosquitoes: the <b>tiger mosquito</b> (Aedes albopictus), the <b>yellow fever mosquito</b> (Aedes aegypti), the <b>Asian bush mosquito</b> (Aedes japonicus),  <b>Aedes koreicus</b> and the <b>common house mosquito</b> (Culex pipiens). You can also visualize possible mosquitos’ <b>breeding sites</b> on public areas. This information is complemented with <b>probability models</b>, elaborated from the citizen data and corrected with the <b>distribution of participants</b> (a proxy of sampling effort).</p>' +
-                                '<p>Read the detailed info of each layer or group of layers using the [?] button.</p>'  +
+                                '<p>The map contains information about 5 disease-vector mosquitoes: the <b>tiger mosquito</b> (<em>Aedes albopictus</em>), the <b>yellow fever mosquito</b> (<em>Aedes aegypti</em>), the <b>Asian bush mosquito</b> (<em>Aedes japonicus</em>),  <em>Aedes koreicus</em> and the <b>common house mosquito</b> (<em>Culex pipiens</em>). You can also visualize possible mosquitos’ <b>breeding sites</b> on public areas. This information is complemented with <b>probability models</b>, elaborated from the citizen data and corrected with the <b>distribution of participants</b> (a proxy of sampling effort).</p>' +
+                                '<p>Click the <b>[?] button</b> on each layer or group of layers. There you will find more details on the data displayed and the meaning of the models.</p>'  +
                                 '<p>For more information, visit <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a></p>'
 };
