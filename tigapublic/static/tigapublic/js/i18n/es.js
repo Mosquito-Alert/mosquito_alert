@@ -70,7 +70,7 @@ trans.es = {
     'layer.storm_drain_dry': 'Lugares de cría',
     'layer.storm_drain_water': 'Lugares de cría',
     'layer.other_species': 'Otras especies',
-    'layer.userfixes': 'Distribución de participantes',
+    'layer.userfixes': 'Esfuerzo de muestreo',
     'layer.filtered': 'Filtrado',
 
     'layer.tiger': 'Mosquito tigre',

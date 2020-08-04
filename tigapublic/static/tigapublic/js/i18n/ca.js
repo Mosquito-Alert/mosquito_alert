@@ -36,7 +36,7 @@ trans.ca = {
     'layer.storm_drain_dry': 'Llocs de cria',
     'layer.storm_drain_water': 'Llocs de cria',
     'layer.other_species': 'Altres espècies',
-    'layer.userfixes': 'Distribució dels participants',
+    'layer.userfixes': 'Esforç de mostreig',
     'layer.filtered': 'Filtrat',
 
     'layer.tiger': 'Mosquit tigre',

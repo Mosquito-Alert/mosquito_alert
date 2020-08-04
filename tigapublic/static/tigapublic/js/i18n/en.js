@@ -36,7 +36,7 @@ trans.en = {
     'layer.storm_drain_dry': 'Breeding sites',
     'layer.storm_drain_water': 'Breeding sites',
     'layer.other_species': 'Other species',
-    'layer.userfixes': 'Participants\' distribution',
+    'layer.userfixes': 'Sampling effort',
     'layer.filtered': 'Filtered',
 
     'layer.tiger': 'Tiger mosquito',
