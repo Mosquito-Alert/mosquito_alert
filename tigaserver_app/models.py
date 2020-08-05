@@ -1411,6 +1411,7 @@ class Report(models.Model):
                     retval['value'] = score
             elif most_voted.__class__.__name__ == 'Complex':
                 retval['complex'] = most_voted
+                retval['category'] = Categories.objects.get(pk=8)
         return retval
 
     def get_final_combined_expert_category(self):

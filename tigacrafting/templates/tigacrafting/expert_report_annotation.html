@@ -1241,7 +1241,7 @@
             }
             */
 
-            //inputToCategorySelectionRevise(form_id,data.category_struct);
+            inputToCategorySelectionRevise(form_id,data.category_struct);
 
             $("#id_form-" + id_to_index[form_id] + "-status").selectpicker('val',data.status);
 
@@ -1313,11 +1313,12 @@
                 $('#container_value_' + input_id).hide();
                 $('#container_other_' + input_id).hide();
                 $('#complex_' + input_id).val(complex);
+                $('#category_' + input_id).selectpicker("val","8");
             }else if ( category == "2" ){ //other species
                 $('#container_mix_' + input_id).hide();
                 $('#container_value_' + input_id).hide();
                 $('#container_other_' + input_id).show();
-                //$('#other_' + input_id).val(other);
+                $('#category_' + input_id).selectpicker("val","2");
             }else if ( species_categories.indexOf(category) >= 0 ){
                 $('#container_value_' + input_id).show();
                 $('#container_mix_' + input_id).hide();
@@ -1327,6 +1328,19 @@
                 $('#container_mix_' + input_id).hide();
                 $('#container_value_' + input_id).hide();
             }
+            do_translate_classification(input_id);
+
+            var selected_other = $('#other_' + input_id).find(':selected').val();
+            $('#id_form-' + id_to_index[input_id] + '-other_species').val(selected_other);
+
+            var selected_complex = $('#complex_' + input_id).find(':selected').val();
+            $('#id_form-' + id_to_index[input_id] + '-complex').val(selected_complex);
+
+            var selected_category = $('#category_' + input_id).find(':selected').val();
+            $('#id_form-' + id_to_index[input_id] + '-category').val(selected_category);
+
+            var selected_category_value = $('#categoryvalue_' + input_id).find(':selected').val();
+            $('#id_form-' + id_to_index[input_id] + '-validation_value').val(selected_category_value);
         }
 
         function inputToCategorySelection(input_id){
