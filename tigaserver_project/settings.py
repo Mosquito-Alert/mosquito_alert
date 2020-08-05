@@ -283,3 +283,7 @@ from tigaserver_project.settings_local import *
 
 # Disable notifications for messaging system. It falls back to email if pinax not present
 DJANGO_MESSAGES_NOTIFY = False
+
+# Mainly concerning files in media (i.e pictures). In some cases, the files have 0600 permissions, so they can't be
+# opened from a internet browser. This ensures that all files in media will be world (and group) readable
+FILE_UPLOAD_PERMISSIONS = 0o644
