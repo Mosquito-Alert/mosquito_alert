@@ -20,8 +20,7 @@
     {% block bootstrap_css %}
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
-    {% endblock %}
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>    {% endblock %}
 
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
@@ -203,9 +202,14 @@
     {% for report in reports %}
         <div class="row row_for_{{ forloop.counter }}" style="background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
             <div class="col-md-12">
-                <h4><strong>{{ report.type|capfirst }}
-                    Report {{ report.version_UUID }}</strong>
-                    {{ report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+                <h4>
+                    <strong>
+                        {{ report.type|capfirst }}
+                    Report {{ report.version_UUID }}
+                    </strong>
+                    {{ report.creation_time|date:"d/m/y H:i" }} UTC
+                    - {{ report.country_label }} - {{ report.language }}
+                </h4>
             </div>
         </div>
 {% if report.deleted %}
@@ -230,7 +234,8 @@
             {{ report.get_final_expert_status_bootstrap | safe }}
             <!--<strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}-->
             <!--<strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score_aegypti text=report.get_final_expert_category_aegypti %}-->
-            <strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_combined_expert_score text=report.get_final_combined_expert_category %}
+            <!--<strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_combined_expert_score text=report.get_final_combined_expert_category %}-->
+            <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
         {% else %}
             <strong>Status:</strong> Not yet validated by three experts.
         {% endif %}
@@ -303,7 +308,7 @@
                                    aria-controls="expert_collapse' + forloop.counter + str(ano.id) + '"><i
                                     class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
                             </td>
-                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
+                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}</td>
                         </tr>
                         <tr>
                             <td colspan="12" class="hiddenRow">
@@ -475,7 +480,7 @@
                                         data-live-search="true">
                                     <option value=""></option>
                                     {% for version_uuid in all_reports_version_uuids %}
-                                        <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
+                                        <option value="{{ version_uuid.version_UUID }}">{{ version_uuid.version_UUID }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

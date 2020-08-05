@@ -1188,7 +1188,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            reports = filter_reports(these_reports, sort=False)
+            reports = list(filter_reports(these_reports, sort=False))
             n_reports = len(reports)
         paginator = Paginator(reports, int(reports_per_page))
         page = request.GET.get('page', 1)
