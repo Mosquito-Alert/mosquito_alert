@@ -76,11 +76,12 @@ $(document).ready(function () {
             $('#container_value_' + form_id).hide();
             $('#container_other_' + form_id).hide();
         }
-        if( $(this).find(':selected').val() == "8"){
+        $('#id_form-' + form_index + '-category').val($(this).find(':selected').val());
+        /*if( $(this).find(':selected').val() == "8"){
             $('#id_form-' + form_index + '-category').val("");
         }else{
             $('#id_form-' + form_index + '-category').val($(this).find(':selected').val());
-        }
+        }*/
         do_translate_classification(form_id);
     });
 
