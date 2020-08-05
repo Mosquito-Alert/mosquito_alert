@@ -280,3 +280,6 @@ HOST_NAME = 'webserver.mosquitoalert.com'
 
 SITE_ID = 1
 from tigaserver_project.settings_local import *
+
+# Disable notifications for messaging system. It falls back to email if pinax not present
+DJANGO_MESSAGES_NOTIFY = False
