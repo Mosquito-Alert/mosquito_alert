@@ -1062,7 +1062,7 @@
                                         data-live-search="true">
                                     <option value=""></option>
                                     {% for version_uuid in my_version_uuids %}
-                                        <option value="{{ version_uuid }}">{{ version_uuid }}</option>
+                                        <option value="{{ version_uuid.report__version_UUID }}">{{ version_uuid.report__version_UUID }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
