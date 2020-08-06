@@ -10,9 +10,9 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
-    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
+    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement
 from tigaserver_messages.views import compose_w_data, reply_w_data, compose
 from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
@@ -100,6 +100,7 @@ urlpatterns += i18n_patterns(
     path('stats/site_sunburst/', site_sunburst, name='site_sunburst'),
     path('stats/hashtag_map/', hashtag_map, name='hashtag_map'),
     path('stats/directory/', stats_directory, name='stats_directory'),
+    path('stats/expert_report_assigned/', expert_report_assigned_data, name='expert_report_assigned_data'),
     path('stats/user_score/<user_uuid>', stats_user_score, name='stats_user_score'),
     path('stats/user_ranking/<page>', stats_user_ranking, name='stats_user_ranking'),
     path('stats/user_ranking/<page>/<user_uuid>', stats_user_ranking, name='stats_user_ranking'),
@@ -114,6 +115,8 @@ urlpatterns += i18n_patterns(
     path('experts/', expert_report_annotation, name='expert_report_annotation'),
     path('entolab_license_agreement/', entolab_license_agreement, name='entolab_license_agreement'),
     path('experts/status/reports/', expert_report_status, name='expert_report_status'),
+    path('experts/status/reports/pending', expert_report_pending, name='expert_report_pending'),
+    path('experts/status/reports/complete', expert_report_complete, name='expert_report_complete'),
     path('experts/status/reports/single/<version_uuid>/', single_report_view, name='single_report_view'),
     path('experts/status/people/', expert_status, name='expert_status'),
     path('photo_grid/', picture_validation, name='picture_validation'),
