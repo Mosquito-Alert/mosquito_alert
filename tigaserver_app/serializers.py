@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session
 from django.contrib.auth.models import User
 
 def score_label(score):
@@ -130,7 +130,7 @@ class FullReportResponseSerializer(serializers.ModelSerializer):
 class ReportResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportResponse
-        fields = ['question', 'answer']
+        fields = ['question', 'answer', 'question_id', 'answer_id', 'answer_value']
 
 class ReportSerializer(serializers.ModelSerializer):
 
@@ -173,8 +173,8 @@ class ReportSerializer(serializers.ModelSerializer):
         Check that the report type is either 'adult', 'site', or 'mission'.
         """
         value = attrs
-        if value not in ['adult', 'site', 'mission']:
-            raise serializers.ValidationError("Make sure type is 'adult', 'site', or 'mission'.")
+        if value not in ['adult', 'site', 'mission', 'bite']:
+            raise serializers.ValidationError("Make sure type is 'adult', 'site', 'mission' or 'bite'.")
         return attrs
 
     def create(self,validated_data):
@@ -198,12 +198,16 @@ class PhotoSerializer(serializers.ModelSerializer):
         depth = 0
         fields = ['photo', 'report']
 
+class SessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+        fields = ['id', 'session_ID', 'user', 'session_start_time', 'session_end_time']
 
 class FixSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Fix
-        fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power']
+        fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power', 'mask_size']
 
 
 class ConfigurationSerializer(serializers.ModelSerializer):
@@ -214,6 +218,45 @@ class ConfigurationSerializer(serializers.ModelSerializer):
         model = Configuration
         fields = '__all__'
 
+class DetailedPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photo
+        fields = ['id', 'photo', 'uuid']
+
+class NearbyReportSerializer(serializers.ModelSerializer):
+    user = UserListingField
+    version_UUID = serializers.CharField()
+    version_number = serializers.IntegerField()
+    report_id = serializers.CharField()
+    server_upload_time = serializers.Field()
+    phone_upload_time = serializers.DateTimeField()
+    creation_time = serializers.DateTimeField()
+    version_time = serializers.DateTimeField()
+    type = serializers.CharField()
+    mission = MissionListingField
+    location_choice = serializers.CharField()
+    current_location_lon = serializers.FloatField(required=False)
+    current_location_lat = serializers.FloatField(required=False)
+    selected_location_lon = serializers.FloatField(required=False)
+    selected_location_lat = serializers.FloatField(required=False)
+    note = serializers.CharField(required=False)
+    package_name = serializers.CharField(required=False)
+    package_version = serializers.IntegerField(required=False)
+    device_manufacturer = serializers.CharField(required=False)
+    device_model = serializers.CharField(required=False)
+    os = serializers.CharField(required=False)
+    os_version = serializers.CharField(required=False)
+    os_language = serializers.CharField(required=False)
+    app_language = serializers.CharField(required=False)
+    responses = ReportResponseSerializer(many=True)
+    simplified_annotation = serializers.Field()
+    photos = DetailedPhotoSerializer(many=True)
+
+    class Meta:
+        model = Report
+
+
+'''
 class NearbyReportSerializer(serializers.ModelSerializer):
     version_UUID = serializers.ReadOnlyField()
     lon = serializers.ReadOnlyField()
@@ -228,7 +271,7 @@ class NearbyReportSerializer(serializers.ModelSerializer):
         #            'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
         #            'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide',
         #            'type','point')
-
+'''
 
 class ReportIdSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
@@ -355,10 +398,6 @@ class TigaProfileSerializer(serializers.ModelSerializer):
         model = TigaProfile
         fields = ('id', 'firebase_token', 'score', 'profile_devices')
 
-class DetailedPhotoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Photo
-        fields = ('id', 'photo', 'uuid')
 
 class DetailedReportSerializer(serializers.ModelSerializer):
 
