@@ -1,0 +1,24 @@
+.titulo{
+    margin-top: 120px;
+    text-align: center;
+}
+
+.taula{
+padding-top: 30px;
+}
+
+.pagination{
+    text-align: left;
+    display:inline-block;
+}
+
+.pagination .paginationButtons a {
+    color: black;
+}
+
+.pagination > .disabled > span, .pagination > .disabled > span:hover, .pagination > .disabled > span:focus, .pagination > .disabled > a, .pagination > .disabled > a:hover, .pagination > .disabled > a:focus {
+    color: black;
+    cursor: not-allowed;
+    background-color: #fff;
+    border-color: #ddd;
+}

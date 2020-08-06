@@ -21,7 +21,7 @@ import datetime
 from django.utils import timezone
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
 from rest_framework.exceptions import ParseError
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import math
 from django.utils import translation
 
@@ -841,3 +841,42 @@ def get_hashtag_map_data(request):
         max_date = max(dates)
         max_date_str = max_date.strftime('%d-%m-%Y / %H:%M:%S')
     return Response({ 'stats':{ 'earliest_date': min_date_str, 'latest_date': max_date_str, 'n': n }, 'data': data})
+
+
+@login_required
+def expert_report_assigned_data(request):
+
+    report_list = []
+
+    a = ExpertReportAnnotation.objects.all().order_by('-created')
+
+    paginator = Paginator(a, 50)
+    page = request.GET.get('page', 1)
+    try:
+        reports = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        reports = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        reports = paginator.page(paginator.num_pages)
+
+
+    for t in reports:
+        if t.report.country is None:
+            report_list.append({
+                'assignedExpert': str(t.user),
+                'codiReport': str(t.report),
+                'ubication': 'Null',
+                'assignationDate': t.created.strftime("%Y-%m-%d")
+            })
+        else:
+            report_list.append({
+                'assignedExpert': str(t.user),
+                'codiReport': str(t.report),
+                'ubication': str(t.report.country.name_engl),
+                'assignationDate': t.created.strftime("%Y-%m-%d")
+            })
+    pages = range(1, reports.paginator.num_pages + 1)
+
+    return render(request, 'tigacrafting/expert_report_assigned_data.html', {'list': report_list, 'pages': pages, 'reports': reports})
