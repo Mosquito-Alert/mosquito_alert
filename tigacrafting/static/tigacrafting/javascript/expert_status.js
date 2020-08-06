@@ -28,7 +28,7 @@ function getPendingReports(user, group){
                 var datos = [];
                 for(i=0;i<dataSize; i++){
                     datos[i] = {
-                            "report_id": '<a href='+ urlReport +'?version_uuid='+ data.pendingReports[i].report_id +'>'+ data.pendingReports[i].report_id +'</a>',
+                            "report_id": '<a href='+ urlReport +'?version_uuid='+ data.pendingReports[i].report_id +' target="_blank">'+ data.pendingReports[i].report_id +'</a>',
                             "report_type": data.pendingReports[i].report_type,
                             "givenToExpert": data.pendingReports[i].givenToExpert,
                             "lastMod": data.pendingReports[i].lastModified,
@@ -84,7 +84,7 @@ function getCompleteReports(user, group){
                 var datos = [];
                 for(i=0;i<dataSize; i++){
                    datos[i] = {
-                        "report_id": '<a href='+ urlReport +'?version_uuid='+ data.completeReports[i].report_id +'>'+ data.completeReports[i].report_id +'</a>',
+                        "report_id": '<a href='+ urlReport +'?version_uuid='+ data.completeReports[i].report_id +' target="_blank">'+ data.completeReports[i].report_id +'</a>',
                         "report_type": data.completeReports[i].report_type,
                         "givenToExpert": data.completeReports[i].givenToExpert,
                         "lastMod": data.completeReports[i].lastModified,

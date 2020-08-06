@@ -235,7 +235,7 @@ SOUTH_MIGRATION_MODULES = {
     'django_messages': 'django_messages.south_migrations',
 }
 
-USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49]
+USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49, 130, 123, 126, 131, 129, 127, 124, 128, 125]
 
 #PUSH KILL SWITCHES
 DISABLE_PUSH_IOS = False
