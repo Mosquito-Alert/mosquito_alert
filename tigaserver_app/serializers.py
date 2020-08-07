@@ -228,12 +228,11 @@ class NearbyReportSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
     version_number = serializers.IntegerField()
     report_id = serializers.CharField()
-    server_upload_time = serializers.Field()
+    server_upload_time = serializers.ReadOnlyField()
     phone_upload_time = serializers.DateTimeField()
     creation_time = serializers.DateTimeField()
     version_time = serializers.DateTimeField()
     type = serializers.CharField()
-    mission = MissionListingField
     location_choice = serializers.CharField()
     current_location_lon = serializers.FloatField(required=False)
     current_location_lat = serializers.FloatField(required=False)
@@ -249,11 +248,12 @@ class NearbyReportSerializer(serializers.ModelSerializer):
     os_language = serializers.CharField(required=False)
     app_language = serializers.CharField(required=False)
     responses = ReportResponseSerializer(many=True)
-    simplified_annotation = serializers.Field()
+    simplified_annotation = serializers.ReadOnlyField()
     photos = DetailedPhotoSerializer(many=True)
 
     class Meta:
         model = Report
+        fields = '__all__'
 
 
 '''

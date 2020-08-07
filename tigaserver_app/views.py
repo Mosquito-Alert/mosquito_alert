@@ -1140,15 +1140,15 @@ def send_notifications(request):
 def nearby_reports_no_dwindow(request):
     if request.method == 'GET':
 
-        page = request.QUERY_PARAMS.get('page', 1)
-        page_size = request.QUERY_PARAMS.get('page_size', 10)
-        show_hidden = request.QUERY_PARAMS.get('show_hidden', 0)
-        show_versions = request.QUERY_PARAMS.get('show_versions', 0)
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 10)
+        show_hidden = request.query_params.get('show_hidden', 0)
+        show_versions = request.query_params.get('show_versions', 0)
 
-        center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
-        center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
+        center_buffer_lat = request.query_params.get('lat', None)
+        center_buffer_lon = request.query_params.get('lon', None)
 
-        user = request.QUERY_PARAMS.get('user', None)
+        user = request.query_params.get('user', None)
         tigauser = None
         user_uuids = None
         if user is not None:
@@ -1156,7 +1156,7 @@ def nearby_reports_no_dwindow(request):
             if tigauser.profile is not None:
                 user_uuids = TigaUser.objects.filter(profile=tigauser.profile).values('user_UUID')
 
-        radius = request.QUERY_PARAMS.get('radius', 5000)
+        radius = request.query_params.get('radius', 5000)
         try:
             int(radius)
             if int(radius) > 10000:
@@ -1256,9 +1256,9 @@ def nearby_reports_no_dwindow(request):
                 user_reports = user_reports.exclude(version_number=-1)
             if show_versions == 0:
                 user_reports = filter(lambda x: x.latest_version, user_reports)
-            all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site) + list(user_reports)
+            all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site) + list(user_reports)
         else:
-            all_reports = classified_reports_in_max_radius + list(reports_bite) + list(reports_site)
+            all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site)
 
         all_reports_sorted = sorted(all_reports, key=lambda x: x.creation_time, reverse=True)
 
@@ -1290,7 +1290,7 @@ def nearby_reports_no_dwindow(request):
 @api_view(['GET'])
 def nearby_reports_fast(request):
     if request.method == 'GET':
-        dwindow = request.QUERY_PARAMS.get('dwindow', 90)
+        dwindow = request.query_params.get('dwindow', 90)
         try:
             int(dwindow)
         except ValueError:
@@ -1300,10 +1300,10 @@ def nearby_reports_fast(request):
 
         date_n_days_ago = datetime.now() - timedelta(days=int(dwindow))
 
-        center_buffer_lat = request.QUERY_PARAMS.get('lat', None)
-        center_buffer_lon = request.QUERY_PARAMS.get('lon', None)
+        center_buffer_lat = request.query_params.get('lat', None)
+        center_buffer_lon = request.query_params.get('lon', None)
 
-        radius = request.QUERY_PARAMS.get('radius', 5000)
+        radius = request.query_params.get('radius', 5000)
         if radius >= 10000:
             raise ParseError(detail='Values above 10000 not allowed for radius')
 

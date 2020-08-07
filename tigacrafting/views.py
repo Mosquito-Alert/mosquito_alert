@@ -237,12 +237,11 @@ def filter_false_validated(reports, sort=True):
 
 
 def filter_reports(reports, sort=True):
-    # if sort:
-    #     reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports), key=attrgetter('n_annotations'), reverse=True)
-    # else:
-    #     reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-    # return reports_filtered
-    return []
+    if sort:
+        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports), key=attrgetter('n_annotations'), reverse=True)
+    else:
+        reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
+    return reports_filtered
 
 
 def filter_spain_reports(reports, sort=True):
