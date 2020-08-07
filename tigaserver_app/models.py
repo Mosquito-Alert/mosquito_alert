@@ -40,6 +40,9 @@ import json
 from django.db.models import Manager as GeoManager
 from django.utils.deconstruct import deconstructible
 from django.urls import reverse
+from io import BytesIO
+from django.core.files import File
+from PIL.ExifTags import TAGS, GPSTAGS
 from django.template.loader import TemplateDoesNotExist
 from io import BytesIO
 from django.core.files import File
@@ -2316,6 +2319,9 @@ class Photo(models.Model):
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
     uuid = models.CharField(max_length=36, default=make_uuid)
 
+    utmX = models.FloatField(default=None, blank=True, null=True)
+    utmY = models.FloatField(default=None, blank=True, null=True)
+
     def __unicode__(self):
         return self.photo.name
 
@@ -2404,12 +2410,69 @@ class Photo(models.Model):
     #     self.photo = File(scrubbed_image_io, name=photo_name)
     #     super(Photo, self).save(*args, **kwargs)
 
+    # Metadata scrubbing
+    def save(self, *args, **kwargs):
+        image = Image.open(self.photo)
+        imageExif = Image.open(self.photo)._getexif()
+
+        exif_data = {}
+        if imageExif:
+            for tag, value in imageExif.items():
+                decoded = TAGS.get(tag, tag)
+                if decoded == "GPSInfo":
+                    gps_data = {}
+                    for t in value:
+                        sub_decoded = GPSTAGS.get(t, t)
+                        gps_data[sub_decoded] = value[t]
+
+                    exif_data[decoded] = gps_data
+                else:
+                    exif_data[decoded] = value
+        self.exif_data = exif_data
+
+        if "GPSInfo" in exif_data:
+            gps_info = exif_data["GPSInfo"]
+            gps_latitude = self.get_if_exist(gps_info, "GPSLatitude")
+            gps_latitude_ref = self.get_if_exist(gps_info, 'GPSLatitudeRef')
+            gps_longitude = self.get_if_exist(gps_info, 'GPSLongitude')
+            gps_longitude_ref = self.get_if_exist(gps_info, 'GPSLongitudeRef')
+            if gps_latitude and gps_latitude_ref and gps_longitude and gps_longitude_ref:
+                lat = self.convert_to_degress(gps_latitude)
+                if gps_latitude_ref != "N":
+                    lat = 0 - lat
+                lng = self.convert_to_degress(gps_longitude)
+                if gps_longitude_ref != "E":
+                    lng = 0 - lng
+
+                self.utmX = lat
+                self.utmY = lng
+
+        photo_name = self.photo.name
+        data = list(image.getdata())
+        scrubbed_image = Image.new(image.mode, image.size)
+        scrubbed_image.putdata(data)
+        scrubbed_image_io = BytesIO()
+        scrubbed_image.save(scrubbed_image_io,"JPEG")
+        self.photo = File(scrubbed_image_io, name=photo_name)
+
+        super(Photo, self).save(*args, **kwargs)
 
     medium_image_.allow_tags = True
-
     user = property(get_user)
     date = property(get_date)
 
+    def get_if_exist(self, data, key):
+        if key in data:
+            return data[key]
+        return None
+
+    def convert_to_degress(self, value):
+        """Helper function to convert the GPS coordinates stored in the EXIF to degress in float format"""
+        degrees = value[0]
+        minutes = value[1] / 60.0
+        seconds = value[2] / 3600.0
+
+        return round(degrees + minutes + seconds, 5)
 
 class Fix(models.Model):
     """
