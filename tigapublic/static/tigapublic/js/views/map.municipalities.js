@@ -323,7 +323,7 @@ var MapView = MapView.extend({
       /*url_munis_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_' + region + '.js'
       url_sd_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_sd_' + region + '.js'*/
       url_munis_geoms = '/static/tigapublic/geoms/ccaa/ccaa_' + region + '.js'
-      url_sd_geoms = 'static/tigapublic/geoms/ccaa/ccaa_sd_' + region + '.js'
+      url_sd_geoms = '/static/tigapublic/geoms/ccaa/ccaa_sd_' + region + '.js'
 
       var j1 = $.ajax( {
           type: "GET",
