@@ -340,7 +340,7 @@ var MOSQUITO = (function (m, _) {
                   key: 'S2',
                   group:'observations',
                   subgroup:'japonicus',
-                  title: 'layer.mosquito_japonicus_confirmed',
+                  title: 'layer.japonicus_confirmed',
                   categories: {
                     'japonicus_2': ['japonicus_confirmed']
                   }
@@ -349,7 +349,7 @@ var MOSQUITO = (function (m, _) {
                   key: 'S1',
                   group:'observations',
                   subgroup:'japonicus',
-                  title: 'layer.mosquito_japonicus_probable',
+                  title: 'layer.japonicus_probable',
                   categories: {
                     'japonicus_1': ['japonicus_probable']
                   }
@@ -358,7 +358,7 @@ var MOSQUITO = (function (m, _) {
                   key: 'T2',
                   group:'observations',
                   subgroup:'koreicus',
-                  title: 'layer.mosquito_koreicus_confirmed',
+                  title: 'layer.koreicus_confirmed',
                   categories: {
                     'koreicus_2': ['koreicus_confirmed']
                   }
@@ -367,7 +367,7 @@ var MOSQUITO = (function (m, _) {
                   key: 'T1',
                   group:'observations',
                   subgroup:'koreicus',
-                  title: 'layer.mosquito_koreicus_probable',
+                  title: 'layer.koreicus_probable',
                   categories: {
                     'koreicus_1': ['koreicus_probable']
                   }
@@ -376,7 +376,7 @@ var MOSQUITO = (function (m, _) {
                   key: 'U2',
                   group:'observations',
                   subgroup:'culex',
-                  title: 'layer.mosquito_culex_confirmed',
+                  title: 'layer.culex_confirmed',
                   categories: {
                     'culex_2': ['culex_confirmed']
                   }
@@ -385,7 +385,7 @@ var MOSQUITO = (function (m, _) {
                   key: 'U1',
                   group:'observations',
                   subgroup:'culex',
-                  title: 'layer.mosquito_culex_probable',
+                  title: 'layer.culex_probable',
                   categories: {
                     'culex_1': ['culex_probable']
                   }
