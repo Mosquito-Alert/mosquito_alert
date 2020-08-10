@@ -401,7 +401,8 @@ var MapView = MapView.extend({
           };
 
           _this.map.removeLayer(_this.munis_vector_prob_layer);
-          _this.map.removeLayer(_this.biting_layer);
+          //Removed this because it crashed the layer
+          //_this.map.removeLayer(_this.biting_layer);
 
           _this.prob_tileIndex = geojsonvt(data_geoms, tileOptions);
           _this.sd_municipalities_data = data_sd_geoms
