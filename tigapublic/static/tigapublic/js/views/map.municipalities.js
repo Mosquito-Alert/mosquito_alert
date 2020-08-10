@@ -265,7 +265,8 @@ var MapView = MapView.extend({
           //removing virus layer is required because shares geometries with vector layer
           if (_this.munis_virus_prob_layer) {
               _this.map.removeLayer(_this.munis_virus_prob_layer);
-              _this.map.removeLayer(_this.biting_layer);
+              //This caused a crash
+              //_this.map.removeLayer(_this.biting_layer);
           }
 
           _this.prob_tileIndex = geojsonvt(data_geoms, tileOptions);
