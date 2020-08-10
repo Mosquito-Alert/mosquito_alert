@@ -2120,6 +2120,34 @@
         $("#filters_submit_button").on('click', submit_queries);
 
 
+        function dict_to_query(obj){
+            var str = [];
+            for (var p in obj)
+            if (obj.hasOwnProperty(p)) {
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+            }
+            return "?" + str.join("&");
+        }
+
+        function query_to_dict(queryString){
+            var dictionary = {};
+            if (queryString.indexOf('?') === 0) {
+                queryString = queryString.substr(1);
+            }
+            var parts = queryString.split('&');
+            for(var i = 0; i < parts.length; i++) {
+                var p = parts[i];
+                var keyValuePair = p.split('=');
+                var key = keyValuePair[0];
+                var value = keyValuePair[1];
+                value = decodeURIComponent(value);
+                value = value.replace(/\+/g, ' ');
+                dictionary[key] = value;
+            }
+            return dictionary;
+        }
+
+
         function submit_search_version_uuid() {
             gear.show();
             clear_inputs();
