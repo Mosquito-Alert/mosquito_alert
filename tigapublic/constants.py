@@ -209,13 +209,13 @@ gridsize = 0.05
 
 # BITING RATES (FILES LOCATION)
 biting_rates_models_folder = (settings.BASE_DIR +
-                              '/tigapublic/files/static/models/biting/')
+                              '/static/tigapublic/models/biting/')
 biting_file_name = 'mascp_monthly'
 biting_file_ext = '.csv'
 
 # GRID VECTOR MODELS PROPERTIES
 grid_vectors_models_folder = (settings.BASE_DIR +
-                              '/tigapublic/files/static/models/vector/grid/')
+                              '/static/tigapublic/models/vector/grid/')
 
 vector_file_name = 'mascp_monthly'
 vector_file_ext = '.csv'
@@ -224,7 +224,7 @@ vector_days_ahead = 7
 # MUNICIPALITIES VECTOR MODELS PROPERTIES
 municipalities_vector_models_folder = (
     settings.BASE_DIR +
-    '/tigapublic/files/static/models/vector/municipalities/'
+    '/static/tigapublic/models/vector/municipalities/'
     )
 municipalities_vector_file_name = 'mascp_monthly'
 municipalities_vector_file_ext = '.csv'
@@ -238,7 +238,7 @@ virus = ['den', 'chk', 'yf', 'wnv', 'zk']
 # MUNICIPALITIES VIRUS MODELS PROPERTIES
 municipalities_virus_models_folder = (
     settings.BASE_DIR +
-    '/tigapublic/files/static/models/virus/municipalities/'
+    '/static/tigapublic/models/virus/municipalities/'
     )
 municipalities_virus_file_name = 'mascp_monthly'
 municipalities_virus_file_ext = '.csv'
@@ -246,7 +246,7 @@ municipalities_virus_file_ext = '.csv'
 # MUNICIPALITIES GEOMETRIES BY CC.AA
 municipalities_geom_folder = (
     settings.BASE_DIR +
-    '/tigapublic/files/static/geoms/ccaa/'
+    '/static/tigapublic/geoms/ccaa/'
     )
 municipalities_geom_file_name = 'ccaa_'
 municipalities_geom_file_ext = '.geojson'
@@ -254,10 +254,10 @@ municipalities_geom_file_ext = '.geojson'
 # UNCERTAINTY GEOMETRIES BY CC.AA
 municipalities_sd_geom_folder = (
     settings.BASE_DIR +
-    '/tigapublic/files/static/geoms/ccaa/'
+    '/static/tigapublic/geoms/ccaa/'
     )
 municipalities_sd_geom_file_name = 'ccaa_sd_'
 municipalities_sd_geom_file_ext = '.geojson'
 
 tiles_path = (settings.BASE_DIR +
-              '/tigapublic/files/static/tiles')
+              '/static/tigapublic/tiles')
