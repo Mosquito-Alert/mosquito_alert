@@ -43,12 +43,13 @@ prompt-toolkit==1.0.14
 psycopg2==2.8.4
 ptyprocess==0.5.1
 pydenticon==0.3.1
+pyfcm==1.4.7
 Pygments==2.2.0
 pyparsing==2.2.0
 pyproj==1.9.5.1
 python-dateutil==2.8.1
-python-memcached==1.57
 python-slugify==4.0.1
+python3-memcached==1.51
 pytz==2017.2
 PyYAML==5.1.2
 redis==2.10.3
