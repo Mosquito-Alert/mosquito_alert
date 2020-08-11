@@ -21,8 +21,10 @@
         var expert_color = ["#c0ce76","#7f4ed5","#4fdf89","#ed0d82","#01bb91","#ff5245","#00d0f3","#ff8324","#0099fc","#508500","#ff66b6","#3d5b12","#ff6d87","#87c9ff","#b20028","#d2a07a","#893169","#ad6e00","#79452c","#ff8d4e"];
         var users = [];
         var report_input_data = [];
+        var user_ids = [];
         {% for user in users %}
             users.push({ 'username':'{{user.username}}','name':'{{user.first_name}} {{user.last_name}}'});
+            user_ids.push('{{user.id}}');
         {% endfor %}
         var user_data = {};
         for(var i = 0; i < users.length; i++){
