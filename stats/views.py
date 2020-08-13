@@ -628,6 +628,7 @@ def get_page_of_index(index, page_size):
 
 def stats_user_ranking(request, page=1, user_uuid=None):
     current_locale = request.LANGUAGE_CODE
+    user_has_score = False
     try:
         info_url = reverse('scoring_' + current_locale)
     except NoReverseMatch:
@@ -636,6 +637,13 @@ def stats_user_ranking(request, page=1, user_uuid=None):
     if user_uuid is not None:
         try:
             user = TigaUser.objects.get(pk=user_uuid)
+            if user.score_v2 > 0:
+                user_has_score = True
+            else:
+                user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+                if user_score['total_score'] > 0:
+                    user_has_score = True
+
         except TigaUser.DoesNotExist:
             pass
     seek = request.GET.get('seek', 'f')
@@ -658,10 +666,11 @@ def stats_user_ranking(request, page=1, user_uuid=None):
             nextp = current_page.next_page_number()
         objects = current_page.object_list
         context = {
-                  'data': objects,
-                      'pagination':
-                          {
-                              'page': int(page),
+                    'data': objects,
+                    'user_has_score': user_has_score,
+                    'pagination':
+                        {
+                            'page': int(page),
                               'total': p.num_pages,
                               'start': current_page.start_index(),
                               'end': current_page.end_index(),
@@ -670,7 +679,7 @@ def stats_user_ranking(request, page=1, user_uuid=None):
                               'next': nextp,
                               'first': 1,
                               'last': p.num_pages
-                          }
+                        }
                   }
         if user is not None:
             context['user_id'] = user_uuid

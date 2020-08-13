@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-27 08:31+0000\n"
+"POT-Creation-Date: 2020-08-13 12:28+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -83,47 +83,55 @@ msgstr ""
 "Consulta la teva puntuació i nivell assolits. Al menú d'ajustos trobaràs "
 "informació detallada sobre el sistema de puntuació de Mosquito Alert."
 
-#: stats/templates/stats/user_ranking.html:34
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
 msgid "user_ranking_info_text_2"
 msgstr "Més informació sobre la"
 
-#: stats/templates/stats/user_ranking.html:34
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
 msgid "user_ranking_info_text_3"
 msgstr "puntuació"
 
-#: stats/templates/stats/user_ranking.html:55
-#: stats/templates/stats/user_ranking.html:143
+#: stats/templates/stats/user_ranking.html:40
+msgid "no_score_yet"
+msgstr "Encara no tens una puntuació, així que no apareixes al ranking. Si us plau, puja algunes notificacions i torna a consultar el ranking més tard. Per saber com guanyar punts, segueix l'enllaç de més avall."
+
+#: stats/templates/stats/user_ranking.html:68
+#: stats/templates/stats/user_ranking.html:156
 msgid "My position"
 msgstr "La meva posició"
 
-#: stats/templates/stats/user_ranking.html:59
+#: stats/templates/stats/user_ranking.html:72
 #: stats/templates/stats/user_score.html:37
 #: stats/templates/stats/user_score.html:86
 #: stats/templates/stats/user_score.html:143
 msgid "of"
 msgstr "de"
 
-#: stats/templates/stats/user_ranking.html:75
+#: stats/templates/stats/user_ranking.html:88
 msgid "Rank"
 msgstr "Posició"
 
-#: stats/templates/stats/user_ranking.html:76
+#: stats/templates/stats/user_ranking.html:89
 msgid "User"
 msgstr "Usuari"
 
-#: stats/templates/stats/user_ranking.html:77
+#: stats/templates/stats/user_ranking.html:90
 msgid "Overall class"
 msgstr "Rang general"
 
-#: stats/templates/stats/user_ranking.html:78
+#: stats/templates/stats/user_ranking.html:91
 msgid "Score"
 msgstr "Puntuació"
 
-#: stats/templates/stats/user_ranking.html:84
+#: stats/templates/stats/user_ranking.html:97
 msgid "This is you!"
 msgstr "Tu ets aquí!"
 
-#: stats/templates/stats/user_ranking.html:121
+#: stats/templates/stats/user_ranking.html:134
 msgid "Score details"
 msgstr "Més detalls"
 
@@ -460,7 +468,7 @@ msgstr "Bidons i pous"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:565
+#: tigaserver_app/models.py:579
 msgid "Other"
 msgstr "Altres"
 
@@ -571,19 +579,19 @@ msgstr "Punts"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:557
+#: tigaserver_app/models.py:571
 msgid "storm-drain"
 msgstr "Embornal"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:559
+#: tigaserver_app/models.py:573
 msgid "Fountain"
 msgstr "Font"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:561
+#: tigaserver_app/models.py:575
 msgid "Basin"
 msgstr "Basse artificial petit"
 
@@ -594,7 +602,7 @@ msgstr "Bidó"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:563
+#: tigaserver_app/models.py:577
 msgid "Well"
 msgstr "Pou"
 
@@ -1125,15 +1133,15 @@ msgstr " mesos"
 msgid " days ago"
 msgstr " dies"
 
-#: tigaserver_app/models.py:540
+#: tigaserver_app/models.py:554
 msgid "High"
 msgstr "Alta"
 
-#: tigaserver_app/models.py:542
+#: tigaserver_app/models.py:556
 msgid "Medium"
 msgstr "Mitjana"
 
-#: tigaserver_app/models.py:544
+#: tigaserver_app/models.py:558
 msgid "Low"
 msgstr "Baixa "
 
