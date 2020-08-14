@@ -14,14 +14,20 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from tigaserver_app.models import Photo
 from io import BytesIO
 from django.core.files import File
+from tqdm import tqdm
 
-tigapics_path = "../media/TEST_tigapics/"
+tigapics_path = "../media/tigapics/"
 
 
 def cleanPhoto():
-    for t in listdir(tigapics_path):
-        print("*************")
-        print(t)
+    numFotos = len(listdir(tigapics_path))
+    #for t in listdir(tigapics_path):
+    print()
+    print("Removing metadata from images, this will take some time.")
+    print()
+    for t in tqdm(listdir(tigapics_path), desc="Test"):
+        #print("*************")
+        #print(t)
         imageExif = Image.open(tigapics_path + t)._getexif()
 
         nomPhoto = "tigapics/" + str(t)
@@ -56,10 +62,10 @@ def cleanPhoto():
 
                 utmX = lat
                 utmY = lng
-                print("UTMX: ", utmX)
-                print("UTMY: ", utmY)
+                #print("UTMX: ", utmX)
+                #print("UTMY: ", utmY)
 
-                print(nomPhoto)
+                #print(nomPhoto)
                 q = Photo.objects.filter(photo__icontains=nomPhoto).update(utmX=utmX, utmY=utmY)
 
         #f = Photo.objects.filter(photo__icontains=nomPhoto)
@@ -72,8 +78,14 @@ def cleanPhoto():
         #scrubbed_image_io = BytesIO()
         scrubbed_image.save(tigapics_path + str(t))
         #photo = File(scrubbed_image_io, name=str(t))
-        print("------------")
+        #print("------------")
+        pass
+    print()
+    print("Progress finished.")
+    print()
     return True
+
+
 
 
 
