@@ -175,7 +175,7 @@ class TigaUser(models.Model):
         if not os.path.exists(file_path):
             generator = pydenticon.Generator(5, 5, foreground=settings.IDENTICON_FOREGROUNDS)
             identicon_png = generator.generate(self.user_UUID, 200, 200, output_format="png")
-            f = open(file_path, "w")
+            f = open(file_path, "wb")
             f.write(identicon_png)
             f.close()
         return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"

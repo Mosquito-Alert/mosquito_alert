@@ -3,6 +3,7 @@ from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportA
     Notification, NotificationContent, get_translation_in, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
 from tigaserver_project import settings as conf
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from django.utils import timezone
 from datetime import datetime, timedelta, date
 import pytz
@@ -42,6 +43,11 @@ class ScoringTestCase(TestCase):
             type='adult',
         )
         return r
+
+    def test_compute_score_for_new_user(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        retval = compute_user_score_in_xp_v2(user_id)
+        self.assertEqual(retval['total_score'], 0)
 
     def test_first_of_season_awarded(self):
         user_id = '00000000-0000-0000-0000-000000000000'

@@ -637,6 +637,7 @@ def stats_user_ranking(request, page=1, user_uuid=None):
     if user_uuid is not None:
         try:
             user = TigaUser.objects.get(pk=user_uuid)
+            user.get_identicon()
             if user.score_v2 > 0:
                 user_has_score = True
             else:
