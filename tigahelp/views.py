@@ -97,8 +97,11 @@ def show_scoring(request):
         return render(request, 'tigahelp/scoring_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/scoring_en.html', context)
+    if language == 'de':
+        return render(request, 'tigahelp/scoring_de.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/scoring_en.html', context)
+    return render(request, 'tigahelp/scoring_en.html', context)
 
 
 def show_about_us(request):
@@ -110,8 +113,11 @@ def show_about_us(request):
         return render(request, 'tigahelp/about_us_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/about_us_en.html', context)
+    if language == 'de':
+        return render(request, 'tigahelp/about_us_de.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/about_us_en.html', context)
+    return render(request, 'tigahelp/about_us_en.html', context)
 
 
 def show_project_about(request):
@@ -123,8 +129,11 @@ def show_project_about(request):
         return render(request, 'tigahelp/project_about_es.html', context)
     if language == 'en':
         return render(request, 'tigahelp/project_about_en.html', context)
+    if language == 'de':
+        return render(request, 'tigahelp/project_about_de.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/project_about_en.html', context)
+    return render(request, 'tigahelp/scoring_en.html', context)
 
 
 def show_app_license(request):

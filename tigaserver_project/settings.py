@@ -131,6 +131,7 @@ LANGUAGES = (
     ('es', _('Spanish')),
     ('ca', _('Catalan')),
     ('en', _('English')),
+    ('de', _('German')),
     ('zh-cn', _('Chinese')),
 )
 
