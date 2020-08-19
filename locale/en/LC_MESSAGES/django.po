@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-27 08:31+0000\n"
+"POT-Creation-Date: 2020-08-19 07:58+0000\n"
 "PO-Revision-Date: 2015-07-16 13:40+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -458,7 +458,7 @@ msgstr "Buckets and wells"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:565
+#: tigaserver_app/models.py:567
 msgid "Other"
 msgstr "Other"
 
@@ -566,19 +566,19 @@ msgstr "Points"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:557
+#: tigaserver_app/models.py:559
 msgid "storm-drain"
 msgstr "Storm drain"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:559
+#: tigaserver_app/models.py:561
 msgid "Fountain"
 msgstr "Fountain"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:561
+#: tigaserver_app/models.py:563
 msgid "Basin"
 msgstr "Basin"
 
@@ -589,7 +589,7 @@ msgstr "Bucket"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:563
+#: tigaserver_app/models.py:565
 msgid "Well"
 msgstr "Well"
 
@@ -1114,17 +1114,61 @@ msgstr ""
 msgid " days ago"
 msgstr ""
 
-#: tigaserver_app/models.py:540
+#: tigaserver_app/models.py:542
 msgid "High"
 msgstr "High"
 
-#: tigaserver_app/models.py:542
+#: tigaserver_app/models.py:544
 msgid "Medium"
 msgstr "Medium"
 
-#: tigaserver_app/models.py:544
+#: tigaserver_app/models.py:546
 msgid "Low"
 msgstr "Low"
+
+#: tigaserver_app/models.py:1219
+msgid "species_unclassified"
+msgstr "Unidentifiable"
+
+#: tigaserver_app/models.py:1220
+msgid "species_other"
+msgstr "Other species"
+
+#: tigaserver_app/models.py:1221
+msgid "species_albopictus"
+msgstr "tiger mosquito (Aedes albopictus)"
+
+#: tigaserver_app/models.py:1222
+msgid "species_aegypti"
+msgstr "yellow fever mosquito (Aedes aegypti)"
+
+#: tigaserver_app/models.py:1223
+msgid "species_japonicus"
+msgstr "Asian bush mosquito (Aedes japonicus)"
+
+#: tigaserver_app/models.py:1224
+msgid "species_koreicus"
+msgstr "Aedes koreicus"
+
+#: tigaserver_app/models.py:1225
+msgid "species_complex"
+msgstr "Mixed species"
+
+#: tigaserver_app/models.py:1226
+msgid "species_notsure"
+msgstr "Not sure"
+
+#: tigaserver_app/models.py:1227
+msgid "species_culex"
+msgstr "common house mosquito (Culex sp.)"
+
+#: tigaserver_app/models.py:1240
+msgid "species_value_possible"
+msgstr "Probable"
+
+#: tigaserver_app/models.py:1241
+msgid "species_value_confirmed"
+msgstr "Confirmed"
 
 #: tigaserver_messages/fields.py:56
 #, python-format

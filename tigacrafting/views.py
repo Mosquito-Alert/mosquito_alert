@@ -546,25 +546,25 @@ def issue_notification(report_annotation,current_domain):
         context_ca['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
     if report_annotation.edited_user_notes:
         clean_annotation = django.utils.html.escape(report_annotation.edited_user_notes)
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        #clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode()
         context_es['expert_note'] = clean_annotation
         context_en['expert_note'] = clean_annotation
         context_ca['expert_note'] = clean_annotation
     if report_annotation.message_for_user:
         clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        #clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode()
         context_es['message_for_user'] = clean_annotation
         context_en['message_for_user'] = clean_annotation
         context_ca['message_for_user'] = clean_annotation
     if report_annotation.report:
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('es'))
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('es'))
+        #clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode()
         context_es['validation_category'] = clean_annotation
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('en'))
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('en'))
+        #clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode()
         context_en['validation_category'] = clean_annotation
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('ca'))
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('ca'))
+        #clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode()
         context_ca['validation_category'] = clean_annotation
         map_data = get_sigte_map_info(report_annotation.report)
         if map_data:

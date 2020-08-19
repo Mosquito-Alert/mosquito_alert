@@ -1209,6 +1209,68 @@ class Report(models.Model):
             elif score == -1 or score == -2:
                 return labels[locale]['other']
 
+    def get_translated_species_name(self,locale,untranslated_species):
+        current_locale = 'en'
+        for l in settings.LANGUAGES:
+            if locale==l[0]:
+                current_locale = locale
+        translation.activate(current_locale)
+        translations_table_species_name = {
+            "Unclassified": ugettext("species_unclassified"),
+            "Other species": ugettext("species_other"),
+            "Aedes albopictus": ugettext("species_albopictus"),
+            "Aedes aegypti": ugettext("species_aegypti"),
+            "Aedes japonicus": ugettext("species_japonicus"),
+            "Aedes koreicus": ugettext("species_koreicus"),
+            "Complex": ugettext("species_complex"),
+            "Not sure": ugettext("species_notsure"),
+            "Culex sp.": ugettext("species_culex")
+        }
+        retval = translations_table_species_name.get(untranslated_species, "Unknown")
+        translation.deactivate()
+        return retval
+
+    def get_translated_value_name(self, locale, untranslated_value):
+        current_locale = 'en'
+        for l in settings.LANGUAGES:
+            if locale == l[0]:
+                current_locale = locale
+        translation.activate(current_locale)
+        translations_table_value_name = {
+            1: ugettext("species_value_possible"),
+            2: ugettext("species_value_confirmed")
+        }
+        retval = translations_table_value_name.get(untranslated_value, "Unknown")
+        translation.deactivate()
+        return retval
+
+    def get_final_combined_expert_category_public_map_euro(self, locale):
+        classification = self.get_final_combined_expert_category_euro_struct()
+        # retval = {
+        #     'category': None,
+        #     'complex': None,
+        #     'value': None,
+        #     'conflict': False,
+        #     'in_progress': False
+        # }
+        if classification['category'] is not None:
+            c = classification['category']
+            untranslated_category = c.name
+            if c.id == 8:
+                if classification['complex'] is not None:
+                    complex = classification['complex']
+                    untranslated_complex = complex.description
+                    return untranslated_complex
+                else:
+                    return "N/A"
+            else:
+                if c.specify_certainty_level == True:
+                    untranslated_certainty = classification['value']
+                    return self.get_translated_species_name(locale,untranslated_category) + " - " + self.get_translated_value_name(locale,untranslated_certainty)
+                else:
+                    return self.get_translated_species_name(locale,untranslated_category)
+
+
 
     def get_most_voted_category(self, expert_annotations):
         most_frequent_item, most_frequent_count = None, 0
