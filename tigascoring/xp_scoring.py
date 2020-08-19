@@ -281,15 +281,15 @@ def get_adult_report_score(report, result):
     local_result['report_score'] = 0
     local_result['awards'] = []
     local_result['penalties'] = []
+    local_result['report_photo'] = picture.get_small_url()
 
     if is_aedes(validation_result) or is_culex(validation_result):
         if picture:
-            local_result['report_photo'] = picture.get_small_url()
             local_result['awards'].append({"reason": _("picture"), "xp_awarded": MOSQUITO_PICTURE_REWARD})
             local_result['report_score'] += MOSQUITO_PICTURE_REWARD
         else:
-            local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
             local_result['report_photo'] = None
+            local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
 
         if report.located:
             local_result['awards'].append({"reason": _("location"), "xp_awarded": MOSQUITO_LOCATION_REWARD})
