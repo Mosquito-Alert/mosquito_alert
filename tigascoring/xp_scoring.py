@@ -281,7 +281,8 @@ def get_adult_report_score(report, result):
     local_result['report_score'] = 0
     local_result['awards'] = []
     local_result['penalties'] = []
-    local_result['report_photo'] = picture.get_small_url()
+    if picture is not None:
+        local_result['report_photo'] = picture.get_small_url()
 
     if is_aedes(validation_result) or is_culex(validation_result):
         if picture:

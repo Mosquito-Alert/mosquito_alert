@@ -25,7 +25,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import math
 from django.utils import translation
 
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data, compute_user_score_in_xp_v2_fast
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
@@ -806,6 +806,7 @@ def get_user_xp_data(request):
     user_id = request.query_params.get('user_id', '-1')
     locale = request.query_params.get('locale', 'en')
     update = request.query_params.get('update', False)
+    u = None
     try:
         u = TigaUser.objects.get(pk=user_id)
     except TigaUser.DoesNotExist:
@@ -815,7 +816,7 @@ def get_user_xp_data(request):
     translation.activate(locale)
 
     if update == False:
-        retval = compute_user_score_in_xp_v2(user_id)
+        retval = { "total_score": u.score_v2 }
     else:
         retval = compute_user_score_in_xp_v2(user_id, True)
     return Response(retval)
