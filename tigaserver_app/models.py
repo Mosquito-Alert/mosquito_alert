@@ -2046,13 +2046,22 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
         context_ca = {}
         context_en = {}
         super_movelab = User.objects.get(pk=24)
-        notification_content.title_es = "Acabas de recibir una recompensa de XP!"
-        notification_content.title_ca = "Acabes de rebre una recompensa d'XP!"
-        notification_content.title_en = "You just received an XP award!"
-        if report is not None and report.get_final_photo_url_for_notification():
-            context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-            context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-            context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+        notification_content.title_es = "Acabas de recibir una recompensa de puntos!"
+        notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
+        notification_content.title_en = "You just received a points award!"
+        if report is not None:
+            if report.get_final_photo_url_for_notification():
+                context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+            else:
+                pic = report.get_first_visible_photo()
+                if pic:
+                    pic_url = pic.get_medium_url()
+                    if pic_url is not None:
+                        context_es['picture_link'] = 'http://' + current_domain + pic_url
+                        context_en['picture_link'] = 'http://' + current_domain + pic_url
+                        context_ca['picture_link'] = 'http://' + current_domain + pic_url
 
         context_es['amount_awarded'] = xp_amount
         context_en['amount_awarded'] = xp_amount
@@ -2065,6 +2074,13 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
         notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
         notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
         notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
+
+        '''
+        notification_content.body_html_es = notification_content.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
+        notification_content.body_html_ca = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
+        notification_content.body_html_en = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
+        '''
+
         '''
         if conf.DEBUG == True:
             print(notification_content.body_html_es)

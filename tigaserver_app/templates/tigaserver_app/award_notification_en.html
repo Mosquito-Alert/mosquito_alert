@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block title_header_block %}
-    <h2>You just received a points award!</h2>
+
 {% endblock %}
 
 {% block amount_xp_awarded %}
@@ -17,7 +17,8 @@
 {% endblock %}
 
 {% block report_related %}
-    {% if report %}
+    {% if picture_link %}
+        <img src="{{ picture_link }}" width=100%>
     {% endif %}
 {% endblock %}
 

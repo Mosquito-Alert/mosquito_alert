@@ -638,12 +638,9 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         try:
             user = TigaUser.objects.get(pk=user_uuid)
             user.get_identicon()
-            if user.score_v2 > 0:
+            user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+            if user_score['total_score'] > 0:
                 user_has_score = True
-            else:
-                user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
-                if user_score['total_score'] > 0:
-                    user_has_score = True
 
         except TigaUser.DoesNotExist:
             pass
