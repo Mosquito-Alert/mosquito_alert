@@ -1525,19 +1525,27 @@ def profile_new(request):
 def profile_detail(request):
     if request.method == 'GET':
         firebase_token = request.query_params.get('fbt', -1)
+        uuid = request.query_params.get('usr_uuid', -1)
         if firebase_token == -1:
-            raise ParseError(detail='firebase token is mandatory')
-        profile = get_object_or_404(TigaProfile.objects,firebase_token=firebase_token)
-        serializer = DetailedTigaProfileSerializer(profile)
+            if uuid == -1:
+                raise ParseError(detail='either firebase token or usr_uuid are mandatory')
+            else:
+                user = get_object_or_404(TigaUser,user_UUID=uuid)
+                reports = Report.objects.filter(user=user).exclude(type='bite').exclude(type='mission')
+                serializer = DetailedReportSerializer(reports, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            profile = get_object_or_404(TigaProfile.objects,firebase_token=firebase_token)
+            serializer = DetailedTigaProfileSerializer(profile)
 
-        #This is probably very wrong. We filter a copy of the serialized data to exclude missions
-        copied_data = copy.deepcopy(serializer.data)
-        for device in copied_data['profile_devices']:
-            for idx, report in reversed(list(enumerate(device['user_reports']))):
-                if report['type'] == 'mission':
-                    del device['user_reports'][idx]
-                r = Report.objects.get(pk=report['version_UUID'])
-                if not r.latest_version:
-                    del device['user_reports'][idx]
+            #This is probably very wrong. We filter a copy of the serialized data to exclude missions
+            copied_data = copy.deepcopy(serializer.data)
+            for device in copied_data['profile_devices']:
+                for idx, report in reversed(list(enumerate(device['user_reports']))):
+                    if report['type'] == 'mission':
+                        del device['user_reports'][idx]
+                    r = Report.objects.get(pk=report['version_UUID'])
+                    if not r.latest_version:
+                        del device['user_reports'][idx]
 
-        return Response(copied_data, status=status.HTTP_200_OK)
+            return Response(copied_data, status=status.HTTP_200_OK)
