@@ -105,6 +105,11 @@ class MissionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class SessionListingField(serializers.RelatedField):
+    def to_native(self, value):
+        return value.id
+
+
 class UserListingField(serializers.RelatedField):
 
     def to_native(self, value):
@@ -158,6 +163,7 @@ class ReportSerializer(serializers.ModelSerializer):
     os_language = serializers.CharField(required=False)
     app_language = serializers.CharField(required=False)
     responses = ReportResponseSerializer(many=True)
+    session = SessionListingField
 
     def validate_report_UUID(self, attrs):
         """
