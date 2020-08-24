@@ -1914,6 +1914,9 @@ class Report(models.Model):
                     winning_photo = Photo.objects.filter(pk=winning_photo_id)
                     if winning_photo and winning_photo.count() > 0:
                         return Photo.objects.get(pk=winning_photo_id).get_medium_url()
+            else:
+                if self.get_first_visible_photo() is not None:
+                    return self.get_first_visible_photo().get_medium_url()
             return None
 
     def get_first_visible_photo(self):
