@@ -61,10 +61,6 @@ def show_policies(request):
 
 def show_privacy(request, version=None):
     language = request.LANGUAGE_CODE
-    if language == 'sq-al':
-        language = 'al'
-    if language == 'zh-cn':
-        language = 'zh'
     context = {}
     if version is None:
         try:
@@ -103,8 +99,8 @@ def show_scoring(request):
         return render(request, 'tigahelp/scoring_en.html', context)
     if language == 'de':
         return render(request, 'tigahelp/scoring_de.html', context)
-    if language == 'sq-al':
-        return render(request, 'tigahelp/scoring_al.html', context)
+    if language == 'sq':
+        return render(request, 'tigahelp/scoring_sq.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/scoring_en.html', context)
     return render(request, 'tigahelp/scoring_en.html', context)
@@ -121,8 +117,8 @@ def show_about_us(request):
         return render(request, 'tigahelp/about_us_en.html', context)
     if language == 'de':
         return render(request, 'tigahelp/about_us_de.html', context)
-    if language == 'sq-al':
-        return render(request, 'tigahelp/about_us_al.html', context)
+    if language == 'sq':
+        return render(request, 'tigahelp/about_us_sq.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/about_us_en.html', context)
     return render(request, 'tigahelp/about_us_en.html', context)
@@ -139,8 +135,8 @@ def show_project_about(request):
         return render(request, 'tigahelp/project_about_en.html', context)
     if language == 'de':
         return render(request, 'tigahelp/project_about_de.html', context)
-    if language == 'sq-al':
-        return render(request, 'tigahelp/project_about_al.html', context)
+    if language == 'sq':
+        return render(request, 'tigahelp/project_about_sq.html', context)
     if language == 'zh-cn':
         return render(request, 'tigahelp/project_about_en.html', context)
     return render(request, 'tigahelp/scoring_en.html', context)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-26 08:10+0000\n"
+"POT-Creation-Date: 2020-08-26 09:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,163 +16,171 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: stats/templates/stats/chart.html:64
 #: stats/templates/stats/fix_user_chart.html:78
 #: stats/templates/stats/report_user_chart.html:78
 msgid "cumulative-total"
-msgstr ""
+msgstr "Kumulative totale"
 
 #: stats/templates/stats/chart.html:85
 msgid "number-of-citizen-scientists"
-msgstr ""
+msgstr "Qytetarë shkencëtarë"
 
 #: stats/templates/stats/chart.html:94
 msgid "number-of-tiger-mosquito-reports"
-msgstr ""
+msgstr "Raporti i mushkonjës tigër"
 
 #: stats/templates/stats/chart.html:103
 msgid "number-of-breeding-site-reports"
-msgstr ""
+msgstr "Raporti i vendeve të rritjes"
 
 #: stats/templates/stats/fix_user_chart.html:99
 msgid "Participants with over 20 fixes"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 20 rregullime"
 
 #: stats/templates/stats/fix_user_chart.html:108
 msgid "Participants with over 15 fixes"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 15 rregullime"
 
 #: stats/templates/stats/fix_user_chart.html:117
 msgid "Participants with over 10 fixes"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 10 rregullime"
 
 #: stats/templates/stats/fix_user_chart.html:126
 msgid "Participants with over 5 fixes"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 5 rregullime"
 
 #: stats/templates/stats/fix_user_chart.html:135
 msgid "Participants with at least 1 fix"
-msgstr ""
+msgstr "Pjesëmarrës me të paktën një rregullim"
 
 #: stats/templates/stats/report_user_chart.html:99
 msgid "Participants with at least 1 report"
-msgstr ""
+msgstr "Pjesëmarrës me të paktën një raport"
 
 #: stats/templates/stats/report_user_chart.html:108
 msgid "Participants with over 1 reports"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 1 raport"
 
 #: stats/templates/stats/report_user_chart.html:117
 msgid "Participants with over 2 reports"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 2 raporte"
 
 #: stats/templates/stats/report_user_chart.html:126
 msgid "Participants with over 3 reports"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 3 raporte"
 
 #: stats/templates/stats/report_user_chart.html:135
 msgid "Participants with over 4 reports"
-msgstr ""
+msgstr "Pjesëmarrës me mbi 4 raporte"
 
 #: stats/templates/stats/user_ranking.html:30
 msgid "user_ranking_info_text_1"
 msgstr ""
+"Kontrollo nivelin dhe pikët tuaja aktuale. Tek menuja e cilësimeve do të "
+"gjeni informacion të detajuar mbi sistemin e pikëve Alerti i Mushkonjave."
 
 #: stats/templates/stats/user_ranking.html:36
 #: stats/templates/stats/user_ranking.html:41
 #: stats/templates/stats/user_ranking.html:46
 msgid "user_ranking_info_text_2"
-msgstr ""
+msgstr "Më shumë informacion përreth"
 
 #: stats/templates/stats/user_ranking.html:36
 #: stats/templates/stats/user_ranking.html:41
 #: stats/templates/stats/user_ranking.html:46
 msgid "user_ranking_info_text_3"
-msgstr ""
+msgstr "Shënimi i pikëve"
 
 #: stats/templates/stats/user_ranking.html:40
 msgid "no_score_yet"
 msgstr ""
+"Nuk ke asnjë pikë akoma, prandaj nuk shfaqeni në klasifikim. Ju lutem, "
+"ngarkoni disa njoftime dhe kontrolloni më vonë. Për të ditur sesi të fitoni "
+"pikë, ndiqni link-un e mëposhtëm."
 
 #: stats/templates/stats/user_ranking.html:68
 #: stats/templates/stats/user_ranking.html:156
 msgid "My position"
-msgstr ""
+msgstr "Pozicioni im"
 
 #: stats/templates/stats/user_ranking.html:72
 #: stats/templates/stats/user_score.html:37
 #: stats/templates/stats/user_score.html:86
 #: stats/templates/stats/user_score.html:143
 msgid "of"
-msgstr ""
+msgstr "Nga"
 
 #: stats/templates/stats/user_ranking.html:88
 msgid "Rank"
-msgstr ""
+msgstr "Kategoria"
 
 #: stats/templates/stats/user_ranking.html:89
 msgid "User"
-msgstr ""
+msgstr "Përdorues"
 
 #: stats/templates/stats/user_ranking.html:90
 msgid "Overall class"
-msgstr ""
+msgstr "Klasa e përgjithshme"
 
 #: stats/templates/stats/user_ranking.html:91
 msgid "Score"
-msgstr ""
+msgstr "Pikët"
 
 #: stats/templates/stats/user_ranking.html:97
 msgid "This is you!"
-msgstr ""
+msgstr "Ky jeni ju!"
 
 #: stats/templates/stats/user_ranking.html:134
 msgid "Score details"
-msgstr ""
+msgstr "Detaje"
 
 #: stats/templates/stats/user_score.html:28
 msgid "Citizen Scientist"
-msgstr ""
+msgstr "Përmbledhja e pikëve"
 
 #: stats/templates/stats/user_score.html:31
 msgid "this_is_your_personal_avatar"
-msgstr ""
+msgstr "Kjo është figura e pjesëmarrësit"
 
 #: stats/templates/stats/user_score.html:31
 msgid "there_are_5_levels"
 msgstr ""
+"Janë 5 nivele të mundshme: Për herë të parë, Fillestar, Bashkëpunëtor, "
+"Ekspert, Mjeshtër/Master dhe Mjeshtër/Master i madh"
 
 #: stats/templates/stats/user_score.html:32
 msgid "Joined"
-msgstr ""
+msgstr "Fillim i kontribuimit"
 
 #: stats/templates/stats/user_score.html:32
 msgid "Last active"
-msgstr ""
+msgstr "Kur keni qenë aktiv për herë të fundit"
 
 #: stats/templates/stats/user_score.html:32
 msgid "Never"
-msgstr ""
+msgstr "Asnjëherë"
 
 #: stats/templates/stats/user_score.html:34
 msgid "Overall rank - Unranked"
-msgstr ""
+msgstr "Pozicion i përgjithshëm - i parenditur"
 
 #: stats/templates/stats/user_score.html:36
 msgid "Overall rank"
-msgstr ""
+msgstr "Pozicion i përgjithshëm "
 
 #: stats/templates/stats/user_score.html:37
 #: stats/templates/stats/user_score.html:86
 #: stats/templates/stats/user_score.html:143
 msgid "Top"
-msgstr ""
+msgstr "Jeni në krye"
 
 #: stats/templates/stats/user_score.html:37
 #: stats/templates/stats/user_score.html:86
 msgid "participants"
-msgstr ""
+msgstr "Pjesëmarrësit"
 
 #: stats/templates/stats/user_score.html:42
 #: stats/templates/stats/user_score.html:56
@@ -182,192 +190,195 @@ msgstr ""
 #: stats/templates/stats/user_score.html:149
 #: stats/templates/stats/user_score.html:156
 msgid "XP"
-msgstr ""
+msgstr "Pikët"
 
 #: stats/templates/stats/user_score.html:49
 msgid "Other awards"
-msgstr ""
+msgstr "Çmime të dhëna"
 
 #: stats/templates/stats/user_score.html:55
 msgid "awarded_on"
-msgstr ""
+msgstr "Dhënë më"
 
 #: stats/templates/stats/user_score.html:62
 msgid "XP, awarded on"
-msgstr ""
+msgstr "Pikët, dhënë më"
 
 #: stats/templates/stats/user_score.html:81
 #: stats/templates/stats/user_score.html:138
 msgid "Level obtained for"
-msgstr ""
+msgstr "Niveli i fituar për"
 
 #: stats/templates/stats/user_score.html:81
 msgid "Mosquito"
-msgstr ""
+msgstr "Mushkonja"
 
 #: stats/templates/stats/user_score.html:83
 msgid "Mosquito rank - Unranked"
-msgstr ""
+msgstr "Pozicion i veçantë për Mushkonjat - i parenditur"
 
 #: stats/templates/stats/user_score.html:85
 msgid "Mosquito rank"
-msgstr ""
+msgstr "Pozicion i veçantë për Mushkonjat"
 
 #: stats/templates/stats/user_score.html:87
 #: stats/templates/stats/user_score.html:144
 msgid "click_score_instructions"
 msgstr ""
+"Klikoni katrorin e ngjyrosur për të parë detajet e të dhënave të dërguara "
+"dhe e çmimet e marra"
 
 #: stats/templates/stats/user_score.html:115
 #: stats/templates/stats/user_score.html:171
 msgid "xp awarded for"
-msgstr ""
+msgstr "Pikë të dhëna për"
 
 #: stats/templates/stats/user_score.html:120
 msgid "No awards because"
-msgstr ""
+msgstr "Nuk keni fituar pikë sepse"
 
 #: stats/templates/stats/user_score.html:123
 #: stats/templates/stats/user_score.html:175
 msgid "No awards for this report!"
-msgstr ""
+msgstr "Ky raport nuk ka asnjë pikë të fituar"
 
 #: stats/templates/stats/user_score.html:138
 msgid "Breeding site"
-msgstr ""
+msgstr "Vendet e shumimit"
 
 #: stats/templates/stats/user_score.html:140
 msgid "Breeding site rank - Unranked"
-msgstr ""
+msgstr "Renditja e vendeve specifike të shumimit - i parenditur"
 
 #: stats/templates/stats/user_score.html:142
 msgid "Breeding site rank"
-msgstr ""
+msgstr "Renditja e vendeve specifike të shumimit "
 
 #: templates/admin/base_site.html:4
 msgid "Tigaserver admin"
-msgstr ""
+msgstr "Adminintatori i serverit tiga"
 
 #: templates/admin/base_site.html:7
 msgid "Tigaserver administration"
-msgstr ""
+msgstr "Administrimi i serverit tiga"
 
 #: templates/django_messages/base.html:40
 #: templates/django_messages/inbox.html:5
 msgid "Inbox"
-msgstr ""
+msgstr "Mesazhe të ardhura"
 
 #: templates/django_messages/base.html:41
 #: templates/django_messages/outbox.html:5
 msgid "Sent Messages"
-msgstr ""
+msgstr "Mesazhe të dërguara"
 
 #: templates/django_messages/base.html:42
 msgid "New Message"
-msgstr ""
+msgstr "Mesazhe të reja"
 
 #: templates/django_messages/base.html:43
 msgid "Trash"
-msgstr ""
+msgstr "Koshi"
 
 #: templates/django_messages/compose.html:48
 msgid "Compose Message"
-msgstr ""
+msgstr "Shkruaj mesazh"
 
 #: templates/django_messages/compose.html:57
 msgid "Send"
-msgstr ""
+msgstr "Të dërguara"
 
 #: templates/django_messages/inbox.html:9
 #: templates/django_messages/view.html:12
 msgid "Sender"
-msgstr ""
+msgstr "Dërguesi"
 
 #: templates/django_messages/inbox.html:9
 #: templates/django_messages/outbox.html:9
 #: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
 msgid "Subject"
-msgstr ""
+msgstr "Subjekti"
 
 #: templates/django_messages/inbox.html:9
 msgid "Received"
-msgstr ""
+msgstr "Të ardhura"
 
 #: templates/django_messages/inbox.html:9
 #: templates/django_messages/outbox.html:9
 msgid "Action"
-msgstr ""
+msgstr "Veprim"
 
 #: templates/django_messages/inbox.html:21
 #: templates/django_messages/outbox.html:18
 #: templates/django_messages/view.html:17
 msgid "DATETIME_FORMAT"
-msgstr ""
+msgstr "FORMATI_KOHA E DITËS"
 
 #: templates/django_messages/inbox.html:22
 #: templates/django_messages/outbox.html:19
 msgid "delete"
-msgstr ""
+msgstr "Fshij"
 
 #: templates/django_messages/inbox.html:28
 #: templates/django_messages/outbox.html:25
 msgid "No messages."
-msgstr ""
+msgstr "Nuk ka mesazhe"
 
 #: templates/django_messages/outbox.html:9
 #: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
 msgid "Recipient"
-msgstr ""
+msgstr "Marrësi"
 
 #: templates/django_messages/outbox.html:9
 msgid "Sent"
-msgstr ""
+msgstr "I dërguar"
 
 #: templates/django_messages/view.html:5
 msgid "View Message"
-msgstr ""
+msgstr "Shih mesazhin"
 
 #: templates/django_messages/view.html:16
 msgid "Date"
-msgstr ""
+msgstr "Data"
 
 #: templates/django_messages/view.html:30
 msgid "Reply"
-msgstr ""
+msgstr "Kthej përgjigje"
 
 #: templates/django_messages/view.html:32
 msgid "Delete"
-msgstr ""
+msgstr "Fshij"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:88
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:88
 msgid "Toggle navigation"
-msgstr ""
+msgstr "Ndryshim i lundrimit/navigimit"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:98
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:101
 msgid "New batch"
-msgstr ""
+msgstr "Grumbull i ri"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:102
 msgid "Photos you have taken notes on but not yet scored"
 msgstr ""
+"Fotografi për të cilat keni mbajtur shënime, por që nuk kanë marrë akoma pikë"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:103
 msgid "Photos you have already scored"
-msgstr ""
+msgstr "Fotografi për të cilat tashmë keni fituar pikë"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:171
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:195
 msgid "Save"
-msgstr ""
+msgstr "Ruaj"
 
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:103
 msgid "Photos per page"
-msgstr ""
+msgstr "Fotografi për faqe"
 
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
@@ -376,7 +387,7 @@ msgstr ""
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "user-agreement"
-msgstr ""
+msgstr "Dakordësi e përdoruesit"
 
 #: tigahelp/templates/tigahelp/policies.html:35
 #: tigahelp/templates/tigahelp/policies_en.html:34
@@ -385,11 +396,11 @@ msgstr ""
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "privacy-policy"
-msgstr ""
+msgstr "Politika e privatësisë"
 
 #: tigahelp/templates/tigahelp/policies.html:38
 msgid "app-license"
-msgstr ""
+msgstr "Licensa e Aplikacionit"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
@@ -397,57 +408,60 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "our-website-uses-cookies"
 msgstr ""
+"Faqja jonë e internetit përdor cookies. Nëse do të vazhdoni, ne do t'a "
+"marrim atë si lejen tuaj për të vendosur cookies. Për më shumë informacione "
+"në faqen tonë të politikave, ju lutem shihni, tonë"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
 msgid "and"
-msgstr ""
+msgstr "dhe"
 
 #: tigamap/templates/tigamap/app.html:122
 #: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
 #: tigamap/views.py:263
 msgid "adult-tiger-mosquitoes"
-msgstr ""
+msgstr "Raportet e mushkonjave"
 
 #: tigamap/templates/tigamap/app.html:126
 #: tigamap/templates/tigamap/app_new.html:175
 msgid "all-reports"
-msgstr ""
+msgstr "Të gjitha raportet"
 
 #: tigamap/templates/tigamap/app.html:128
 msgid "medium-and-high-probability-reports-only"
-msgstr ""
+msgstr "Vetëm raportet me mundësi të lartë dhe mesatare"
 
 #: tigamap/templates/tigamap/app.html:130
 msgid "high-probability-reports-only"
-msgstr ""
+msgstr "Vetëm raportet me mundësi të lartë"
 
 #: tigamap/templates/tigamap/app.html:134
 #: tigamap/templates/tigamap/app_new.html:183
 msgid "breeding-site-reports"
-msgstr ""
+msgstr "Raportet e vendeve të shumimit"
 
 #: tigamap/templates/tigamap/app.html:138
 #: tigamap/templates/tigamap/app_new.html:187
 msgid "all-sites"
-msgstr ""
+msgstr "Të gjitha vendet"
 
 #: tigamap/templates/tigamap/app.html:141
 #: tigamap/templates/tigamap/app_new.html:190
 msgid "storm-drains-and-fountains"
-msgstr ""
+msgstr "Tubacionet/kanalizimet e ujërave dhe burimet"
 
 #: tigamap/templates/tigamap/app.html:144
 #: tigamap/templates/tigamap/app_new.html:193
 msgid "Basins"
-msgstr ""
+msgstr "Pellgje"
 
 #: tigamap/templates/tigamap/app.html:146
 #: tigamap/templates/tigamap/app_new.html:195
 msgid "buckets-and-wells"
-msgstr ""
+msgstr "Kova dhe puse"
 
 #: tigamap/templates/tigamap/app.html:148
 #: tigamap/templates/tigamap/app_new.html:197
@@ -455,24 +469,24 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
 #: tigaserver_app/models.py:579
 msgid "Other"
-msgstr ""
+msgstr "Të tjera"
 
 #: tigamap/templates/tigamap/app.html:152
 #: tigamap/templates/tigamap/app_filtered.html:193
 #: tigamap/templates/tigamap/app_new.html:201
 #: tigamap/templates/tigamap/coverage_map_beta.html:82
 msgid "Coverage"
-msgstr ""
+msgstr "Mbulimi"
 
 #: tigamap/templates/tigamap/app.html:154
 msgid "http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014"
-msgstr ""
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 
 #: tigamap/templates/tigamap/app_filtered.html:175
 #: tigamap/templates/tigamap/app_new.html:159
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:816
 msgid "navbar_toggle_navigation"
-msgstr ""
+msgstr "Ndryshim i lundrimit/navigimit"
 
 #: tigamap/templates/tigamap/app_filtered.html:195
 #: tigamap/templates/tigamap/app_new.html:203
@@ -483,52 +497,60 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1165
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
 msgid "map_help_url_new"
-msgstr ""
+msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
 
 #: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
 msgid "menu_adults_prob"
-msgstr ""
+msgstr "Mushkonjat tigër të konfirmuara dhe të mundshme"
 
 #: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
 msgid "menu_adults_definite"
-msgstr ""
+msgstr "Mushkonjat tigër të konfirmuara"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 msgid "low"
-msgstr ""
+msgstr "I ulët"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 msgid "medium"
-msgstr ""
+msgstr "i mesëm"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 msgid "high"
-msgstr ""
+msgstr "i lartë"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:221
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:605
 msgid "fixes"
-msgstr ""
+msgstr "Të rregulluara"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:223
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:607
 msgid "fix"
-msgstr ""
+msgstr "Rregulloj"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:336
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:967
 msgid "coverage_legend_main_title"
-msgstr ""
+msgstr "Numri i vëzhgimeve"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:372
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1004
 msgid "coverage_legend_info_title"
-msgstr ""
+msgstr "Informacion mbi mbulimin"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:373
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
 msgid "coverage_legend_info_blurb"
 msgstr ""
+"Versioni i Androidit të Tigatrapp përfshin gjurmimin jo të detyrueshëm të "
+"sfondit të vendndodhjes. Aplikacioni regjistron vendndodhjet e përdoruesit "
+"në 5 kohë të rastësishme çdo ditë. Ai regjistron vetëm pozicionin e përafërt "
+"(katrori i kuq në hartë) në mënyrë që të ruaj anonimitetin e përdoruesit. "
+"<br /><br /> Numri i vëzhgimeve në një katror të dhënë është numri i "
+"grumbulluar i pozicioneve të regjistruara në atë katror për të gjithë "
+"pjesëmarrësit. Sa më e errët të jetë ajo, aq më shumë është ekspozuar një "
+"zonë.</p>"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:377
 #: tigamap/templates/tigamap/validated_report_map.html:629
@@ -536,112 +558,112 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1287
 msgid "more_info"
-msgstr ""
+msgstr "Më shumë informacion"
 
 #: tigamap/templates/tigamap/report_map.html:112
 #: tigamap/templates/tigamap/report_map.html:125
 msgid "type"
-msgstr ""
+msgstr "Tipi"
 
 #: tigamap/templates/tigamap/report_map.html:149
 #: tigamap/templates/tigamap/validated_photo_map.html:152
 msgid "clusters"
-msgstr ""
+msgstr "Grumpimet"
 
 #: tigamap/templates/tigamap/report_map.html:150
 #: tigamap/templates/tigamap/validated_photo_map.html:153
 msgid "points"
-msgstr ""
+msgstr "Pikët"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
 #: tigaserver_app/models.py:571
 msgid "storm-drain"
-msgstr ""
+msgstr "Tubacione/kanalizme kulluese të ujërave"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
 #: tigaserver_app/models.py:573
 msgid "Fountain"
-msgstr ""
+msgstr "Burime"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
 #: tigaserver_app/models.py:575
 msgid "Basin"
-msgstr ""
+msgstr "Pellgje"
 
 #: tigamap/templates/tigamap/site_map.html:201
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:380
 msgid "Bucket"
-msgstr ""
+msgstr "Kovë"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
 #: tigaserver_app/models.py:577
 msgid "Well"
-msgstr ""
+msgstr "Pus"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:169
 msgid "Photos"
-msgstr ""
+msgstr "Fotografi"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:173
 msgid "all-photos"
-msgstr ""
+msgstr "Të gjitha fotografitë"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:175
 msgid "medium-and-high-probability-photos-only"
-msgstr ""
+msgstr "Vetëm fotografi me mundësi të lartë dhe të mesme"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:177
 msgid "high-probability-photos-only"
-msgstr ""
+msgstr "Vetëm fotografi me mundësi të lartë"
 
 #: tigamap/templates/tigamap/validated_report_map.html:379
 #: tigamap/templates/tigamap/validated_report_map.html:381
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:360
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:362
 msgid "not_sure"
-msgstr ""
+msgstr "Jo i sigurt"
 
 #: tigamap/templates/tigamap/validated_report_map.html:381
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:362
 msgid "yes"
-msgstr ""
+msgstr "Po"
 
 #: tigamap/templates/tigamap/validated_report_map.html:381
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:362
 msgid "no"
-msgstr ""
+msgstr "Jo"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:544
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1046
 msgid "expert_cat_tiger"
-msgstr ""
+msgstr "albopictus e konfirmuar"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:552
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1062
 msgid "expert_cat_possible_tiger"
-msgstr ""
+msgstr "albopictus e mundshme"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:570
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1087
 msgid "expert_cat_possible_other"
-msgstr ""
+msgstr "E mundshme as albopictus as aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:579
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1096
 msgid "expert_cat_other"
-msgstr ""
+msgstr "E konfirmuar as albopictus as aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:561
@@ -650,7 +672,7 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1078
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1210
 msgid "expert_cat_unknown"
-msgstr ""
+msgstr "E panjohur"
 
 #: tigamap/templates/tigamap/validated_report_map.html:405
 #: tigamap/templates/tigamap/validated_report_map.html:595
@@ -661,7 +683,7 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
 msgid "expert_row_title"
-msgstr ""
+msgstr "Rezultatet e miratimit të ekspertit"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map.html:600
@@ -669,471 +691,477 @@ msgstr ""
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
 msgid "crowd_row_title"
-msgstr ""
+msgstr "Rezultatet e miratimit të qytetarit"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:511
 msgid "crowd_row_more_responses_needed"
-msgstr ""
+msgstr "Më shumë përgjigje të nevojshme"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 msgid "user_response_row_q1"
-msgstr ""
+msgstr "Vija të vogla, të zeza, të bardha"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 msgid "user_response_row_q2"
-msgstr ""
+msgstr "Vijë në kokë dhe toraks?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 msgid "user_response_row_q3"
-msgstr ""
+msgstr "Vijë në abdomen dhe këmbë?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:535
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
 msgid "adult_report_legend_main_title"
-msgstr ""
+msgstr "Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:588
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1118
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1248
 msgid "adult_report_legend_info_title"
-msgstr ""
+msgstr "Legjenda e shfaqshme"
 
 #: tigamap/templates/tigamap/validated_report_map.html:595
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
 msgid "expert_row_help"
-msgstr ""
+msgstr "Klasifikimi nga shkenctarët duke përdorur fotografitë në dispozicion"
 
 #: tigamap/templates/tigamap/validated_report_map.html:600
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
 msgid "crowd_row_help"
 msgstr ""
+"Klasifikimi sipas vullnetarëve tek Crowdcrafting (nëse fotografia është në "
+"dispozicion)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
 msgid "report_row_title"
-msgstr ""
+msgstr "Përshkrimi taksonomik i Ae. albopictus dhe Ae. aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
 msgid "report_row_help"
-msgstr ""
+msgstr "Vëzhgimet nga pjesëmarrësit"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
 msgid "photo_row_title"
-msgstr ""
+msgstr "Fotografitë"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
 msgid "photo_row_help"
-msgstr ""
+msgstr "Të dërguara nga pjesëmarrësit (nëse ka fotgrafi në dispozicion)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
 msgid "notes_row_title"
-msgstr ""
+msgstr "Shënime"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
 msgid "notes_row_help"
-msgstr ""
+msgstr "Nga ekspertët ose vëzhguesit (jo e detyrueshme)"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:146
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:888
 msgid "validation_button_subtext_adults_high"
-msgstr ""
+msgstr "Ae. albopictus/aegypti e konfirmuar"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:147
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:891
 msgid "validation_button_subtext_adults_medium"
-msgstr ""
+msgstr "Ae. albopictus/aegypti e konfirmuar ose e mundshme"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:148
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:894
 msgid "validation_button_subtext_adults_all"
-msgstr ""
+msgstr "Pa filtër"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:150
 msgid "validation_button_subtext_sites_high"
-msgstr ""
+msgstr "Vende shumimi të konfirmuara"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:151
 msgid "validation_button_subtext_sites_medium"
-msgstr ""
+msgstr "Vende shumimi të konfirmuara dhe të mundshme"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:152
 msgid "validation_button_subtext_sites_all"
-msgstr ""
+msgstr "Pa filtër"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1237
 msgid "expert_cat_unclassified"
-msgstr ""
+msgstr "I paklasifikuar"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
 msgid "expert_cat_site"
-msgstr ""
+msgstr "Vend shumimi i mushkonjës tigër"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
 msgid "expert_cat_possible_site"
-msgstr ""
+msgstr "Vend shumimi i mundshëm i mushkonjës tigër"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
 msgid "expert_cat_possible_other_site"
-msgstr ""
+msgstr "Vend shumimi i mundshëm jo i mushkonjës tigër"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
 msgid "expert_cat_other_site"
-msgstr ""
+msgstr "Vend shumimi jo i mushkonjës tigër"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:498
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
 msgid "expert_cat_aegypti"
-msgstr ""
+msgstr "aegypti e konfirmuar"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:500
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
 msgid "expert_cat_possible_aegypti"
-msgstr ""
+msgstr "aegypti e mundshme"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:530
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
 msgid "user_response_row_q_sitetype"
-msgstr ""
+msgstr "Tipi i vendit"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:530
 msgid "user_response_row_sites_q1"
-msgstr ""
+msgstr "Ujë i ndenjur?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:530
 msgid "user_response_row_sites_q2"
-msgstr ""
+msgstr "Larva ose pupa?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
 msgid "user_response_row_sites_q1_new"
-msgstr ""
+msgstr "Zonë publike?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
 msgid "user_response_row_sites_q2_new"
-msgstr ""
+msgstr "Ujë i ndenjur dhe/ose larva ose pupa?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
 msgid "user_response_row_sites_q3_new"
-msgstr ""
+msgstr "Mushkonja pranë?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:833
 msgid "fmap_All_years"
-msgstr ""
+msgstr "Të gjithë vitet"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:844
 msgid "fmap_All_months"
-msgstr ""
+msgstr "Të gjithë muajt"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:845
 msgid "January"
-msgstr ""
+msgstr "Janar"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:847
 msgid "February"
-msgstr ""
+msgstr "Shkurt"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:849
 msgid "March"
-msgstr ""
+msgstr "Mars"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:850
 msgid "April"
-msgstr ""
+msgstr "Prill"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:851
 msgid "May"
-msgstr ""
+msgstr "Maj"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:852
 msgid "June"
-msgstr ""
+msgstr "Qershor"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:853
 msgid "July"
-msgstr ""
+msgstr "Korrik"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:854
 msgid "August"
-msgstr ""
+msgstr "Gusht"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:855
 msgid "September"
-msgstr ""
+msgstr "Shtator"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:857
 msgid "October"
-msgstr ""
+msgstr "Tetor"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:859
 msgid "November"
-msgstr ""
+msgstr "Nëntor"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:861
 msgid "December"
-msgstr ""
+msgstr "Dhjetor"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:873
 msgid "fmap_Adult_tiger_mosquitoes"
-msgstr ""
+msgstr "Adult i Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:873
 msgid "fmap_Adults"
-msgstr ""
+msgstr "Adultë/Të rritur"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:875
 msgid "fmap_Tiger_mosquito_breeding_sites"
-msgstr ""
+msgstr "Vendet e shumimit të Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:875
 msgid "fmap_Breeding_sites"
-msgstr ""
+msgstr "Vendet e shumimit"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:878
 msgid "fmap_Tigatrapp_coverage"
-msgstr ""
+msgstr "Përpjekjet për marrjen e mostrës"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:878
 msgid "fmap_Coverage"
-msgstr ""
+msgstr "Mbulesa"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:888
 msgid "validation_button_text_high"
-msgstr ""
+msgstr "Seriozitet i lartë"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:891
 msgid "validation_button_text_medium"
-msgstr ""
+msgstr "Seriozitet i mesëm"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:894
 msgid "validation_button_text_all"
-msgstr ""
+msgstr "Të gjithë raportet"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1184
 msgid "site_report_legend_main_title"
-msgstr ""
+msgstr "Shënuesit"
 
 #: tigamap/views.py:147 tigamap/views.py:317
 msgid "coverage-map"
-msgstr ""
+msgstr "Harta e mbulesës"
 
 #: tigamap/views.py:155
 msgid "Pseudo Occurrence-Exposure Map"
-msgstr ""
+msgstr "Harta e Ngjarje/Ekspozim e rreme"
 
 #: tigamap/views.py:162
 msgid "Adult tiger mosquitoes: Validated reports"
-msgstr ""
+msgstr "Mushkonja tigër e rritur: Raportet e vërtetuara"
 
 #: tigamap/views.py:171
 msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
-msgstr ""
+msgstr "Mushkonja tigër  rritur: Mundësia e mesatare dhe e lartë e raporteve"
 
 #: tigamap/views.py:177
 msgid "adult-tiger-mosquitoes-high-probability-reports"
-msgstr ""
+msgstr "Mushkonja tigër e rritur: Raportet me mundësi të lartë"
 
 #: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
 msgid "adult-tiger-mosquitoes-all-reports"
-msgstr ""
+msgstr "Mushkonjat: Të gjithë raportet"
 
 #: tigamap/views.py:189
 msgid "Breeding Sites: Validated reports"
-msgstr ""
+msgstr "Vendet e shumimit: Raportet e vërtetuara"
 
 #: tigamap/views.py:199 tigamap/views.py:289
 msgid "breeding-sites-storm-drains-and-fountains"
 msgstr ""
+"Vendet e shumimit: Tubacion/kanalizim për kullimin e ujërave dhe burimet"
 
 #: tigamap/views.py:202 tigamap/views.py:289
 msgid "breeding-sites-basins"
-msgstr ""
+msgstr "Vendet e shumimit: Pellgje"
 
 #: tigamap/views.py:205 tigamap/views.py:289
 msgid "breeding-sites-buckets-and-wells"
-msgstr ""
+msgstr "Vendet e shumimit: Kova dhe puse"
 
 #: tigamap/views.py:208 tigamap/views.py:289
 msgid "breeding-sites-other"
-msgstr ""
+msgstr "Vendet e shumimit: Të tjera"
 
 #: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
 msgid "breeding-sites-all-reports"
-msgstr ""
+msgstr "Vendet e shumimit: Të gjithë raportet"
 
 #: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
 #: tigascoring/xp_scoring.py:176
 msgid "Novice"
-msgstr ""
+msgstr "Fillestar"
 
 #: tigascoring/xp_scoring.py:178
 msgid "Contributor"
-msgstr ""
+msgstr "Bashkëpunëtor"
 
 #: tigascoring/xp_scoring.py:180
 msgid "Expert"
-msgstr ""
+msgstr "Ekspert"
 
 #: tigascoring/xp_scoring.py:182
 msgid "Master"
-msgstr ""
+msgstr "Mjeshtër/Master"
 
 #: tigascoring/xp_scoring.py:184
 msgid "Grandmaster"
-msgstr ""
+msgstr "Mjeshtër/Master i madh"
 
 #: tigascoring/xp_scoring.py:203
 msgid "start_of_season"
-msgstr ""
+msgstr "Fillimi i sezonit"
 
 #: tigascoring/xp_scoring.py:204
 msgid "daily_participation"
-msgstr ""
+msgstr "Ngarkimi i raportit të parë të ditës"
 
 #: tigascoring/xp_scoring.py:205
 msgid "fidelity_day_2"
-msgstr ""
+msgstr "Ngarkimi i raporteve përgjatë DY ditëve radhazi"
 
 #: tigascoring/xp_scoring.py:206
 msgid "fidelity_day_3"
-msgstr ""
+msgstr "Ngarkimi i raporteve përgjatë TRE ditëve radhazi"
 
 #: tigascoring/xp_scoring.py:207
 msgid "achievement_10_reports"
-msgstr ""
+msgstr "10 të dhëna të ngarkuara"
 
 #: tigascoring/xp_scoring.py:208
 msgid "achievement_20_reports"
-msgstr ""
+msgstr "20 të dhëna të ngarkuara"
 
 #: tigascoring/xp_scoring.py:209
 msgid "achievement_50_reports"
-msgstr ""
+msgstr "50 të dhëna të ngarkuara"
 
 #: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
 msgid "picture"
-msgstr ""
+msgstr "Fotografia"
 
 #: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
 msgid "location"
-msgstr ""
+msgstr "Dërgo të dhënat e gjeo-vendndodhjes"
 
 #: tigascoring/xp_scoring.py:253
 msgid "storm_drain"
-msgstr ""
+msgstr "Është tubacion/kanalizim për kullimin e ujërave"
 
 #: tigascoring/xp_scoring.py:257
 msgid "water_question"
-msgstr ""
+msgstr "Përgjigjja e pyetjes së ujit tek raporti i vendeve të shumimit"
 
 #: tigascoring/xp_scoring.py:261
 msgid "mosquito_report_follows_breeding_site"
-msgstr ""
+msgstr "Shtimi i raportit të mushkonjave më pas"
 
 #: tigascoring/xp_scoring.py:293
 msgid "no_picture"
-msgstr ""
+msgstr "Nuk ka fotografi"
 
 #: tigascoring/xp_scoring.py:299
 msgid "no_location"
-msgstr ""
+msgstr "Raporti nuk ka gjeo-vendndodhje"
 
 #: tigascoring/xp_scoring.py:302
 msgid "thorax_question"
-msgstr ""
+msgstr "Përgjigjja e pyetjes së toraksit tek raporti i mushkonjave"
 
 #: tigascoring/xp_scoring.py:305
 msgid "abdomen_question"
-msgstr ""
+msgstr "Përgjigjja e pyetjes së abdomenit tek raporti i mushkonjave"
 
 #: tigascoring/xp_scoring.py:308
 msgid "leg_question"
-msgstr ""
+msgstr "Përgjigjja e pyetjes së këmbës tek raporti i mushkonjave"
 
 #: tigascoring/xp_scoring.py:311
 msgid "other_species"
 msgstr ""
+"Pas analizimit të dërgimit tuaj, ekspertët kanë vendosur që ai nuk përputhet "
+"me asnjë nga 5 llojet e mushkonjave target. Për më shumë informacion, "
+"rishikoni praktikën e aplikacionit"
 
 #: tigascoring/xp_scoring.py:318
 msgid "bite report follow"
-msgstr ""
+msgstr "Duke ndjekur raportin aktual me raportin e pickimit"
 
 #: tigascoring/xp_scoring.py:358
 msgid " years ago"
-msgstr ""
+msgstr "Vit"
 
 #: tigascoring/xp_scoring.py:360
 msgid " months ago"
-msgstr ""
+msgstr "Muajt"
 
 #: tigascoring/xp_scoring.py:362
 msgid " days ago"
-msgstr ""
+msgstr "Ditët"
 
 #: tigaserver_app/models.py:554
 msgid "High"
-msgstr ""
+msgstr "I lartë"
 
 #: tigaserver_app/models.py:556
 msgid "Medium"
-msgstr ""
+msgstr "I mesëm"
 
 #: tigaserver_app/models.py:558
 msgid "Low"
-msgstr ""
+msgstr "I ulët"
 
 #: tigaserver_messages/fields.py:56
 #, python-format
 msgid "The following usernames are incorrect: %(users)s"
-msgstr ""
+msgstr "Përdorusit e mëposhtëm nuk janë të saktë: %(users)s"
 
 #: tigaserver_messages/forms.py:20
 msgid "Body"
-msgstr ""
+msgstr "Trupi"
 
 #: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
 #: tigaserver_messages/views.py:138
 msgid "Message successfully sent."
-msgstr ""
+msgstr "Mesazhi u dërgua me sukses"
 
 #: tigaserver_messages/views.py:120
 #, python-format
 msgid "Re: %(subject)s"
-msgstr ""
+msgstr "Kthim përgjigje: %(subject)s"
 
 #: tigaserver_project/settings.py:131
 msgid "Spanish"
-msgstr ""
+msgstr "Spanjisht"
 
 #: tigaserver_project/settings.py:132
 msgid "Catalan"
-msgstr ""
+msgstr "Katalan"
 
 #: tigaserver_project/settings.py:133
 msgid "English"
-msgstr ""
+msgstr "Anglisht"
 
 #: tigaserver_project/settings.py:134
 msgid "German"
@@ -1145,4 +1173,4 @@ msgstr ""
 
 #: tigaserver_project/settings.py:136
 msgid "Chinese"
-msgstr ""
+msgstr "Kineze"
