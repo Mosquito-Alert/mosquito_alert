@@ -136,6 +136,7 @@ LANGUAGES = (
     ('el', _('Greek')),
     ('hu', _('Hungarian')),
     ('pt', _('Portuguese')),
+    ('sl', _('Slovenian')),
     ('zh-cn', _('Chinese')),
 )
 
