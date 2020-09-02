@@ -25,7 +25,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import math
 from django.utils import translation
 
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data, compute_user_score_in_xp_v2_fast
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
@@ -645,6 +645,7 @@ def get_page_of_index(index, page_size):
 
 def stats_user_ranking(request, page=1, user_uuid=None):
     current_locale = request.LANGUAGE_CODE
+    user_has_score = False
     try:
         info_url = reverse('scoring_' + current_locale)
     except NoReverseMatch:
@@ -653,6 +654,11 @@ def stats_user_ranking(request, page=1, user_uuid=None):
     if user_uuid is not None:
         try:
             user = TigaUser.objects.get(pk=user_uuid)
+            user.get_identicon()
+            user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+            if user_score['total_score'] > 0:
+                user_has_score = True
+
         except TigaUser.DoesNotExist:
             pass
     seek = request.GET.get('seek', 'f')
@@ -675,10 +681,11 @@ def stats_user_ranking(request, page=1, user_uuid=None):
             nextp = current_page.next_page_number()
         objects = current_page.object_list
         context = {
-                  'data': objects,
-                      'pagination':
-                          {
-                              'page': int(page),
+                    'data': objects,
+                    'user_has_score': user_has_score,
+                    'pagination':
+                        {
+                            'page': int(page),
                               'total': p.num_pages,
                               'start': current_page.start_index(),
                               'end': current_page.end_index(),
@@ -687,7 +694,7 @@ def stats_user_ranking(request, page=1, user_uuid=None):
                               'next': nextp,
                               'first': 1,
                               'last': p.num_pages
-                          }
+                        }
                   }
         if user is not None:
             context['user_id'] = user_uuid
@@ -813,6 +820,7 @@ def get_user_xp_data(request):
     user_id = request.query_params.get('user_id', '-1')
     locale = request.query_params.get('locale', 'en')
     update = request.query_params.get('update', False)
+    u = None
     try:
         u = TigaUser.objects.get(pk=user_id)
     except TigaUser.DoesNotExist:
@@ -822,7 +830,7 @@ def get_user_xp_data(request):
     translation.activate(locale)
 
     if update == False:
-        retval = compute_user_score_in_xp_v2(user_id)
+        retval = { "total_score": u.score_v2 }
     else:
         retval = compute_user_score_in_xp_v2(user_id, True)
     return Response(retval)

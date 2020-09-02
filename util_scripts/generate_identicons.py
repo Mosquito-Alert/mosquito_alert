@@ -28,5 +28,5 @@ foreground = ["rgb(45,79,255)",
 generator = pydenticon.Generator(5, 5, foreground=foreground)
 for user in TigaUser.objects.exclude(score_v2=0):
     identicon_png = generator.generate(user.user_UUID, 200, 200, output_format="png")
-    f = open(conf.MEDIA_ROOT + '/identicons/' + user.user_UUID + ".png", "w")
+    f = open(conf.MEDIA_ROOT + '/identicons/' + user.user_UUID + ".png", "wb")
     f.write(identicon_png)

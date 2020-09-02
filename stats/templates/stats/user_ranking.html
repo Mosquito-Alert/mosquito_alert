@@ -31,7 +31,20 @@
                     <!--<p>Consulta tu puntuación y nivel adquirido. En el menú ajustes encontrarás información detallada sobre el sistema de puntuación de Mosquito Alert.</p>-->
                 </div>
                 <div class="col-xs-12">
-                    <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
+                    {% if user_id %}
+                        {% if user_has_score %}
+                            <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
+                        {% else %}
+                            <div class="panel panel-primary">
+                                <div class="panel-body">
+                                    <p>{% trans 'no_score_yet' %}</p>
+                                    <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
+                    {% endif %}
                     <!--<p>Más info sobre la <a href="{{ info_url }}">puntuación</a></p>-->
                 </div>
             </div>

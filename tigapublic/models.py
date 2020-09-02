@@ -239,6 +239,7 @@ class StormDrain(models.Model):
         """Meta."""
 
         db_table = 'storm_drain'
+        managed = False
 
 
 class NotificationContent(models.Model):
@@ -389,6 +390,7 @@ class StormDrainUserVersions(models.Model):
         """Meta."""
 
         db_table = 'tigapublic_storm_drain_user_version'
+        managed = False
 
 
 class Epidemiology(models.Model):
