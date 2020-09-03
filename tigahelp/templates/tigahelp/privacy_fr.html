@@ -1,0 +1,83 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Politique de confidentialité
+{% endblock %}
+
+
+{% block content %}
+
+<div class="center">
+    <h2>Politique de confidentialité</h2>
+</div>
+
+<p>Mosquito Alert (sous tous les noms qu'elle a pu avoir dans le passé ou qu'elle pourrait acquérir à l'avenir)
+    recueille, entre autres, les données et les photos partagées par les bénévoles et les met à la disposition de tiers
+    et du grand public. Afin de protéger la vie privée de ses bénévoles, Mosquito Alert vise à éviter de recueillir des
+    informations personnelles, c'est-à-dire des informations qui peuvent être utilisées pour identifier individuellement
+    une personne physique donnée. Ainsi, Mosquito Alert demande aux volontaires de ne pas transmettre leurs noms,
+    adresses, mots de passe et toute autre information personnelle lors de l'envoi de rapports. Les emplacements exacts
+    des observations sont recueillis lors de la soumission du rapport, et ceux-ci peuvent coïncider avec l'emplacement
+    exact des volontaires, mais ces informations sont uniquement liées au rapport et à un identifiant utilisateur généré
+    de manière aléatoire. Les métadonnées des photos ne sont pas demandées, et si les photos envoyées au projet via
+    l'application contiennent des métadonnées, celles-ci seront supprimées une fois que l'image aura atteint le serveur
+    du projet, à l'exception de la géolocalisation de la photo, qui sera conservée associée à la photo et pourra être
+    publiée.</p> <p>Mosquito Alert collecte également la localisation approximative des volontaires à des intervalles de
+    temps aléatoires (afin d'évaluer les zones géographiques couvertes ou explorées par les volontaires), mais ces
+    informations ne sont également liées qu'à un identifiant d'utilisateur généré de manière aléatoire. Les volontaires
+    peuvent inclure des notes et des photographies dans leurs rapports, mais il est de leur responsabilité de ne pas
+    inclure dans ces notes et photographies toute information qu'ils souhaitent garder privée ou toute information qui
+    viole les droits à la vie privée d'autrui ou qui est incompatible avec les conditions d'utilisation de Mosquito
+    Alert.</p> <p>Mosquito Alert dispose de mécanismes pour empêcher, dans la mesure du possible, que les données
+    personnelles que les utilisateurs ont pu envoyer par erreur, malgré les mesures d'anonymisation, soient partagées
+    avec le grand public. De même, Mosquito Alert applique des mesures visant à détecter si des données personnelles ont
+    été partagées et à les éliminer de la base de données, dans la mesure du possible. Malgré cela, si dans un cas
+    particulier ces mesures n'empêchent pas la publication d'une donnée personnelle, ceux qui la détectent sont
+    encouragés à en informer les responsables de Mosquito Alert, afin de procéder à l'élimination de son apparition dans
+    l'espace public si possible. Alerte Moustique ne peut pas garantir l'élimination des données personnelles qui
+    pourraient être collectées par Mosquito Alert par erreur malgré les mesures d'anonymisation, ni garantir que ces
+    données ne seront pas visibles par les membres de Mosquito Alert ou par l'un de ses collaborateurs ou des tiers.</p>
+<p>Il est à noter que si les participants partagent leurs observations (rapports) sur un support public, comme les
+    réseaux sociaux, ils peuvent associer ces observations à leurs données personnelles (par exemple, compte personnel
+    sur les réseaux sociaux), renonçant ainsi, volontairement, à l'anonymat que le projet cherche à fournir.</p> <p>
+    Mosquito Alert permet aux participants de conserver leurs données tout en préservant leur anonymat, grâce à un
+    système d'authentification utilisant des comptes externes (courrier électronique, Facebook, Twitter), via Firebase.
+    Cela permet aux participants de synchroniser plusieurs appareils et de récupérer des données s'ils doivent
+    désinstaller l'application. Cette option est volontaire et n'est pas activée par défaut. En tout état de cause, les
+    informations collectées par Firebase à cette fin ne sont pas stockées sur les serveurs de Mosquito Alert, ne sont
+    pas liées aux données scientifiques collectées par Mosquito Alert et ne sont pas traitées par Mosquito Alert.</p>
+<p>Voici une liste détaillée des informations que Mosquito Alert collecte :</p>
+<ul>
+    <li>Les rapports collectés et envoyés par les volontaires concernant les sites de reproduction, les piqûres et les
+        observations de moustiques possibles (Mosquito Alert se concentre actuellement sur 5 espèces de moustiques
+        différentes), ainsi que les réponses des volontaires aux questions qui leur sont envoyées par le biais de
+        l'application. Cela comprend l'emplacement précis des observations et des photographies des volontaires (ainsi
+        que l'emplacement des métadonnées des photographies, le cas échéant), des notes ou toute autre information que
+        le volontaire ajoute au rapport.
+    </li>
+    <li>Informations sur la localisation approximative des volontaires, échantillonnés en mode arrière-plan et à des
+        intervalles de temps aléatoires. Ces informations sont collectées à des fins scientifiques, pour connaître les
+        zones géographiques explorées par les volontaires (effort d'échantillonnage, c'est-à-dire les zones où il y a ou
+        non participation et dans quelle mesure, pour pouvoir le relier au nombre d'observations dans cette même zone
+        par exemple avec des techniques de modélisation ou des statistiques), et pour améliorer la connaissance des
+        voies de dispersion des moustiques liées à la mobilité humaine (c'est-à-dire pour mieux comprendre la relation
+        entre la façon dont les gens se déplacent à grande échelle et la dispersion de ces espèces sur le territoire).
+        Ces informations sont d'un grand intérêt scientifique. Pour éviter la collecte des emplacements exacts des
+        volontaires, ces emplacements sont placés sur une grille de 0,025 degré de latitude et de longitude et seul
+        l'identifiant des carrés de la grille dans lesquels ils se trouvent est transmis au serveur. Ainsi, il est
+        impossible de déterminer l'emplacement réel, dans une zone de 0,025 degré de latitude par 0,025 degré de
+        longitude (entre environ 3,1 et environ 7,7 km carrés, ou entre 765 et 1901 terrains de football). Dans tous les
+        cas, les volontaires peuvent désactiver cette option, activée par défaut, dans les paramètres de l'application.
+    </li>
+    <li>Informations sur le modèle de téléphone, la batterie, les paramètres linguistiques et la version de
+        l'application (c'est-à-dire la version installée et le système d'exploitation et la version dans laquelle il est
+        installé). Ces informations sont utilisées pour aider l'équipe de recherche à améliorer l'application.
+    </li>
+    <li>Si le volontaire choisit de s'authentifier via un compte externe en utilisant Firebase, alors Firebase peut
+        recueillir l'adresse électronique, le mot de passe, le numéro de téléphone, l'adresse IP et d'autres
+        informations associées à ce compte externe.
+    </li>
+</ul>
+
+{% endblock %}

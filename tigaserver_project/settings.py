@@ -138,6 +138,7 @@ LANGUAGES = (
     ('pt', _('Portuguese')),
     ('sl', _('Slovenian')),
     ('it', _('Italian')),
+    ('fr', _('French')),
     ('zh-cn', _('Chinese')),
 )
 

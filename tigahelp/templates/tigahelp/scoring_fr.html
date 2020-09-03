@@ -1,0 +1,54 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Informations sur les scores de Mosquito Alert
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>INFO SUR LES SCORES</h2>
+        <p>Les actions entreprises dans le cadre de Mosquito Alert sont reconnues et récompensées sous forme de points.
+            Le nombre de points par rapport varie en fonction des informations fournies et de leur qualité.</p>
+        <p>Les points maximums pouvant être obtenus par rapport sont:</p>
+        <ul>
+            <li>Invasive <em>Aedes</em> Moustique : 20 points</li>
+            <li> Moustique commun : 14 points</li>
+            <li>Site de reproduction dans une grille d'égout : 20 points</li>
+            <li>Autre site de reproduction dans un espace public : 16 points</li>
+        </ul>
+        <p> De plus, il y a des bonus supplémentaires pour le premier moustique de la saison, le premier signalement de
+            la journée ou pour une participation fréquente. Lorsque vous atteignez un certain nombre de rapports, vous
+            obtenez non seulement des points supplémentaires, mais aussi un trophée spécial. Il existe différents
+            trophées en fonction des étapes franchies.</p>
+        <p>Les rapports envoyés sensés concerner un moustique mais pour lesquels ce n'est pas le cas, suite à la
+            validation par des experts, ne rapporteront pas de points. Une photo qui ne permet pas aux experts
+            d'identifier le moustique ou le lieu de reproduction ne sera pas non plus notée.</p>
+        <p>L'accumulation de points vous permettra de monter en <b>grade</b>:</p>
+        <ul>
+            <li>(1) Novice (débutant)</li>
+            <li>(2) Contributeur (contributeur)</li>
+            <li>(3) Expert (expert)</li>
+            <li>(4) Maître (maître)</li>
+            <li>(5) Grand maître (grand maître)</li>
+        </ul>
+        <p>Ces icônes indiquent le niveau atteint:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Tableau des points</h2>
+        <p>Le classement global est accessible en cliquant sur le score sur l'écran principal. En cliquant sur une
+            position du classement, on affiche la répartition des points obtenus par l'utilisateur.</p>
+        <p>Cliquer sur "Plus de détails" permet d'accéder au tableau détaillé.</p>
+        <p>Dans cette section, vous trouverez la liste des rapports envoyés avec le score obtenu pour chacun d'entre
+            eux. Les rapports sont interactifs, en cliquant vous obtenez le score détaillé et la raison pour laquelle le
+            score a été obtenu.</p>
+
+    </div>
+</div>
+{% endblock %}
