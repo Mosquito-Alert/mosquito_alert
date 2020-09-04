@@ -139,6 +139,9 @@ LANGUAGES = (
     ('sl', _('Slovenian')),
     ('it', _('Italian')),
     ('fr', _('French')),
+    ('bg', _('Bulgarian')),
+    ('bg', _('Bulgarian')),
+    ('ro', _('Romanian')),
     ('zh-cn', _('Chinese')),
 )
 
