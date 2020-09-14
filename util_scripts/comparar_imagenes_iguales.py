@@ -9,10 +9,10 @@ application = get_wsgi_application()
 
 from os import listdir
 import cv2
-tigapics_path = "../media/tigapics/"
-repetigapics_path = "../media/tigapics/repetidas/"
-#tigapics_path = "../media/testFotosRepe/"
-#repetigapics_path = "../media/testFotosRepe/repetidas/"
+#tigapics_path = "../media/tigapics/"
+#repetigapics_path = "../media/repetidas/"
+tigapics_path = "../media/testFotosRepe/"
+repetigapics_path = "../media/repetidas/"
 import numpy
 import filecmp
 import shutil
@@ -23,12 +23,9 @@ from tigaserver_app.models import Photo
 
 def sameImages():
     listaRepetidas = []
-
-    #images = os.listdir(tigapics_path)
-    #print(images)
     diff = 0
-    igual = 0
     images = []
+
     for (dirpath, dirnames, filenames) in os.walk(tigapics_path):
         for f in filenames:
             images.append(os.path.join(dirpath, f))
@@ -38,16 +35,24 @@ def sameImages():
             continue
         else:
             if filecmp.cmp(f1, f2, shallow=False):
-                #print('F1: '+f1)
-                #print('F2: '+f2)
-
-                igual = igual + 1
+                t = f2.split('../media/')
+                nombreFoto = f2.split('../media/testFotosRepe/')
+                #print(nombreFoto[1])
+                #print(t)
+                #print(f2)
+                #listaRepetidas.append(t[1])
                 listaRepetidas.append(f2)
+                #shutil.move(f2, repetigapics_path + nombreFoto[1])
             else:
                 diff = diff + 1
-
     print(listaRepetidas)
     Photo.objects.filter(photo__in=listaRepetidas).delete()
+    for h in listaRepetidas:
+        f = h.split('testFotosRepe/')
+        #print(h)
+        #print(f)
+        #print(repetigapics_path + f[1])
+        shutil.move('../media/'+h, repetigapics_path + f[1])
     print('Fin')
 
 
