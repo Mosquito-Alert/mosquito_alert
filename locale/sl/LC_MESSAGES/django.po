@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-09-01 12:48+0200\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Slovenian (Slovenia)\n"
 "Language: sl_SI\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Loco-Project-Id: 95706\n"
 "X-Loco-Tagged: plain_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.24 20200814-1"
+"X-Loco-Api-Version: 1.0.25 20200901-1"
 
 #: stats/templates/stats/chart.html:64
 #: stats/templates/stats/fix_user_chart.html:78
@@ -40,7 +40,7 @@ msgstr "Poročila o tigrastih komarjih"
 #: stats/templates/stats/chart.html:103 loco:5f3558c334e29c5953399545
 #| msgid "Informes de lugares de cría"
 msgid "number-of-breeding-site-reports"
-msgstr "Poročila o razmnoževalnih mestih"
+msgstr "Poročila o mestih razvoja komarjev"
 
 #: stats/templates/stats/fix_user_chart.html:99 loco:5f3558c334e29c5953399546
 msgid "Participants with over 20 fixes"
@@ -94,7 +94,7 @@ msgstr "Udeleženci z več kot 4. poročili"
 #| "Mosquito Alert."
 msgid "user_ranking_info_text_1"
 msgstr ""
-"Preverite svoje trenutne točke in stopnjo izkušenj. V meniju z nastavitvami "
+"Preverite svoje trenutne točke in dosežen nivo. V meniju z nastavitvami "
 "boste našli podrobne informacije o sistemu točkovanja Mosquito Alert."
 
 #: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399551
@@ -114,8 +114,8 @@ msgstr "točkovanje"
 #| "tarde. Para saber cómo ganar puntos, sigue el enlace más abajo."
 msgid "no_score_yet"
 msgstr ""
-"Nimate še točk, zato še niste uvrščeni na lestvici. Naložite nekaj obvestil "
-"in preverite pozneje. Če želite vedeti, kako si prislužiti točke, sledite "
+"Nimate še točk, zato še niste uvrščeni na lestvici. Naložite nekaj poročilin "
+"preverite pozneje. Če želite vedeti, kako si prislužiti točke, sledite "
 "povezavi spodaj."
 
 #: stats/templates/stats/user_ranking.html:55
@@ -155,7 +155,7 @@ msgstr "Točke"
 #: stats/templates/stats/user_ranking.html:84 loco:5f3558c334e29c595339955a
 #| msgid "¡Tú estás aquí!"
 msgid "This is you!"
-msgstr "To si ti!"
+msgstr "To ste vi!"
 
 #: stats/templates/stats/user_ranking.html:121 loco:5f3558c334e29c595339955b
 #| msgid "Más detalles"
@@ -174,7 +174,7 @@ msgstr "Povzetek točk"
 msgid "this_is_your_personal_avatar"
 msgstr ""
 "To je avatar udeleženca. Glede na točke udeleženca je trenutna stopnja "
-"izkušenj"
+"izkušenosti"
 
 #: stats/templates/stats/user_score.html:31 loco:5f3558c334e29c595339955e
 #| msgid ""
@@ -188,7 +188,7 @@ msgstr ""
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
 #| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Začeli prispevati"
+msgstr "Začeli ste prispevati"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
 #| msgid "Última actividad hace"
@@ -242,7 +242,7 @@ msgstr "Podeljene nagrade"
 #: stats/templates/stats/user_score.html:55 loco:5f3558c334e29c5953399568
 #| msgid "Concedido el"
 msgid "awarded_on"
-msgstr "Odobreno"
+msgstr "Nagarada dodeljena dne"
 
 #: stats/templates/stats/user_score.html:62 loco:5f3558c334e29c5953399569
 #| msgid "puntos, concedidos"
@@ -253,16 +253,16 @@ msgstr "točke, dodeljene dne"
 #: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c595339956a
 #| msgid "Nivel alcanzado para"
 msgid "Level obtained for"
-msgstr "Stopnja izkušenj pridobljena za"
+msgstr "Stopnja izkušenosti pridobljena za"
 
 #: stats/templates/stats/user_score.html:81 loco:5f3558c334e29c595339956b
 msgid "Mosquito"
-msgstr "Mosquito"
+msgstr "Komar"
 
 #: stats/templates/stats/user_score.html:83 loco:5f3558c334e29c595339956c
 #| msgid "Posición específica para Mosquito - Sin clasificar"
 msgid "Mosquito rank - Unranked"
-msgstr "Poseben položaj za Mosquito - neocenjeno"
+msgstr "Poseben položaj za komarje - neocenjeno"
 
 #: stats/templates/stats/user_score.html:85 loco:5f3558c334e29c595339956d
 #| msgid "Posición específica para Mosquito"
@@ -299,17 +299,17 @@ msgstr "To poročilo nima dodeljenih točk!"
 #: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c5953399572
 #| msgid "Lugares de cría"
 msgid "Breeding site"
-msgstr "Razmnoževalna mesta"
+msgstr "Mesta razvoja ličink"
 
 #: stats/templates/stats/user_score.html:140 loco:5f3558c334e29c5953399573
 #| msgid "Posición específica para Lugares de cría - Sin clasificar"
 msgid "Breeding site rank - Unranked"
-msgstr "Uvrstitev določenega razmnoževalnega mesta - brez uvrstitve"
+msgstr "Uvrstitev določenega mesta razvoja ličink - brez uvrstitve"
 
 #: stats/templates/stats/user_score.html:142 loco:5f3558c334e29c5953399574
 #| msgid "Posición específica para Lugares de cría"
 msgid "Breeding site rank"
-msgstr "Uvrstitev določenega razmnoževalnega mesta "
+msgstr "Uvrstitev določenega mesta razvoja ličink"
 
 #: templates/admin/base_site.html:4 loco:5f3558c334e29c5953399575
 msgid "Tigaserver admin"
@@ -322,91 +322,91 @@ msgstr "Tigaserver skrbnik"
 #: templates/django_messages/base.html:40
 #: templates/django_messages/inbox.html:5 loco:5f3558c334e29c5953399577
 msgid "Inbox"
-msgstr ""
+msgstr "Inbox"
 
 #: templates/django_messages/base.html:41
 #: templates/django_messages/outbox.html:5 loco:5f3558c334e29c5953399578
 msgid "Sent Messages"
-msgstr ""
+msgstr "Poslana sporočila"
 
 #: templates/django_messages/base.html:42 loco:5f3558c334e29c5953399579
 msgid "New Message"
-msgstr ""
+msgstr "Nova sporočila"
 
 #: templates/django_messages/base.html:43 loco:5f3558c334e29c595339957a
 msgid "Trash"
-msgstr ""
+msgstr "Koš"
 
 #: templates/django_messages/compose.html:48 loco:5f3558c334e29c595339957b
 msgid "Compose Message"
-msgstr ""
+msgstr "Sestavi sporočilo"
 
 #: templates/django_messages/compose.html:57 loco:5f3558c334e29c595339957c
 msgid "Send"
-msgstr ""
+msgstr "Pošlji"
 
 #: templates/django_messages/inbox.html:9
 #: templates/django_messages/view.html:12 loco:5f3558c334e29c595339957d
 msgid "Sender"
-msgstr ""
+msgstr "Pošiljatelj"
 
 #: templates/django_messages/inbox.html:9
 #: templates/django_messages/outbox.html:9
 #: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
 #: loco:5f3558c334e29c595339957e
 msgid "Subject"
-msgstr ""
+msgstr "Tema"
 
 #: templates/django_messages/inbox.html:9 loco:5f3558c334e29c595339957f
 msgid "Received"
-msgstr ""
+msgstr "Prejeto"
 
 #: templates/django_messages/inbox.html:9
 #: templates/django_messages/outbox.html:9 loco:5f3558c334e29c5953399580
 msgid "Action"
-msgstr ""
+msgstr "Action"
 
 #: templates/django_messages/inbox.html:21
 #: templates/django_messages/outbox.html:18
 #: templates/django_messages/view.html:17 loco:5f3558c334e29c5953399581
 msgid "DATETIME_FORMAT"
-msgstr ""
+msgstr "format zapisa datuma"
 
 #: templates/django_messages/inbox.html:22
 #: templates/django_messages/outbox.html:19 loco:5f3558c334e29c5953399582
 msgid "delete"
-msgstr ""
+msgstr "Izbriši"
 
 #: templates/django_messages/inbox.html:28
 #: templates/django_messages/outbox.html:25 loco:5f3558c334e29c5953399583
 msgid "No messages."
-msgstr ""
+msgstr "Ni sporočil"
 
 #: templates/django_messages/outbox.html:9
 #: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
 #: loco:5f3558c334e29c5953399584
 msgid "Recipient"
-msgstr ""
+msgstr "Prejemnik"
 
 #: templates/django_messages/outbox.html:9 loco:5f3558c334e29c5953399585
 msgid "Sent"
-msgstr ""
+msgstr "Poslano"
 
 #: templates/django_messages/view.html:5 loco:5f3558c334e29c5953399586
 msgid "View Message"
-msgstr ""
+msgstr "Poglej sporočilo"
 
 #: templates/django_messages/view.html:16 loco:5f3558c334e29c5953399587
 msgid "Date"
-msgstr ""
+msgstr "Datum"
 
 #: templates/django_messages/view.html:30 loco:5f3558c334e29c5953399588
 msgid "Reply"
-msgstr ""
+msgstr "Odgovori"
 
 #: templates/django_messages/view.html:32 loco:5f3558c334e29c5953399589
 msgid "Delete"
-msgstr ""
+msgstr "Izbriši"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:88
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:88
@@ -428,12 +428,12 @@ msgstr "Nova serija"
 #: tigacrafting/templates/tigacrafting/expert_validation.html:102
 #: loco:5f3558c334e29c595339958d
 msgid "Photos you have taken notes on but not yet scored"
-msgstr "Fotografije na katerih ste zapisali opombe, a še brez točkovanja"
+msgstr "Fotografije, na katerih ste zapisali opombe, a še brez točkovanja"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:103
 #: loco:5f3558c334e29c595339958e
 msgid "Photos you have already scored"
-msgstr "Fotografije že točkovane"
+msgstr "Že točkovane fotografije"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:171
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:195
@@ -502,7 +502,7 @@ msgstr "in"
 #: tigamap/views.py:263 loco:5f3558c334e29c5953399596
 #| msgid "Informes de mosquitos"
 msgid "adult-tiger-mosquitoes"
-msgstr "Mosquito poročila"
+msgstr "Vsa poročila"
 
 #: tigamap/templates/tigamap/app.html:126
 #: tigamap/templates/tigamap/app_new.html:175 loco:5f3558c334e29c5953399597
@@ -513,7 +513,7 @@ msgstr "Vsa poročila"
 #: tigamap/templates/tigamap/app.html:128 loco:5f3558c334e29c5953399598
 #| msgid "Sólo probabilidad media y alta"
 msgid "medium-and-high-probability-reports-only"
-msgstr "Samo poročila s srednjo in visoko verjetnosti"
+msgstr "Samo poročila s srednjo in visoko verjetnostjo"
 
 #: tigamap/templates/tigamap/app.html:130 loco:5f3558c334e29c5953399599
 #| msgid "Sólo probabilidad alta"
@@ -524,7 +524,7 @@ msgstr "Samo poročila z visoko verjetnostjo"
 #: tigamap/templates/tigamap/app_new.html:183 loco:5f3558c334e29c595339959a
 #| msgid "Lugares de cría"
 msgid "breeding-site-reports"
-msgstr "Poročila razmnoževalnih mest"
+msgstr "Poročila o mestih razvoja ličink"
 
 #: tigamap/templates/tigamap/app.html:138
 #: tigamap/templates/tigamap/app_new.html:187 loco:5f3558c334e29c595339959b
@@ -536,7 +536,7 @@ msgstr "Vsa mesta"
 #: tigamap/templates/tigamap/app_new.html:190 loco:5f3558c334e29c595339959c
 #| msgid "Sumideros y fuentes"
 msgid "storm-drains-and-fountains"
-msgstr "Nevihtni odtoki in vodnjaki"
+msgstr "Odtoki meteornih voda in vodnjaki"
 
 #: tigamap/templates/tigamap/app.html:144
 #: tigamap/templates/tigamap/app_new.html:193 loco:5f3558c334e29c595339959d
@@ -670,7 +670,7 @@ msgstr ""
 "Zabeleži le približni položaj (rdeči kvadratki na zemljevidu), da se ohrani "
 "anonimnost uporabnika. <br /> <br /> Število opazovanj na določenem kvadratu "
 "je skupno število položajev, zabeleženih v tem kvadratu za vse udeležence. "
-"Temnejša kot je, več območja je bilo raziskano. </p>"
+"Temnejša kot je, več območja je bilo raziskanega. </p>"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:377
 #: tigamap/templates/tigamap/validated_report_map.html:629
@@ -693,7 +693,7 @@ msgstr "Vrsta"
 #: loco:5f3558c334e29c59533995b0
 #| msgid "Valores agregados"
 msgid "clusters"
-msgstr "Skupek"
+msgstr "Skupki"
 
 #: tigamap/templates/tigamap/report_map.html:150
 #: tigamap/templates/tigamap/validated_photo_map.html:153
@@ -714,7 +714,7 @@ msgstr "Nevihtni odtok"
 #: tigaserver_app/models.py:561 loco:5f3558c334e29c59533995b3
 #| msgid "Fuente"
 msgid "Fountain"
-msgstr "Vir vode"
+msgstr "Vodnjak"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
@@ -747,7 +747,7 @@ msgstr "Fotografije"
 #: loco:5f3558c334e29c59533995b8
 #| msgid "Todos"
 msgid "all-photos"
-msgstr "Vse Fotografije"
+msgstr "Vse fotografije"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:175
 #: loco:5f3558c334e29c59533995b9
@@ -759,7 +759,7 @@ msgstr "Samo fotografije srednje in visoke verjetnosti"
 #: loco:5f3558c334e29c59533995ba
 #| msgid "Sólo probabilidad alta"
 msgid "high-probability-photos-only"
-msgstr "Samo fotografije s visoko verjetnostjo"
+msgstr "Samo fotografije z visoko verjetnostjo"
 
 #: tigamap/templates/tigamap/validated_report_map.html:379
 #: tigamap/templates/tigamap/validated_report_map.html:381
@@ -775,7 +775,7 @@ msgstr "Nisem prepričan"
 #: loco:5f3558c334e29c59533995bc
 #| msgid "sí"
 msgid "yes"
-msgstr "ja"
+msgstr "da"
 
 #: tigamap/templates/tigamap/validated_report_map.html:381
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:362
@@ -790,7 +790,7 @@ msgstr "ne"
 #: loco:5f3558c334e29c59533995be
 #| msgid "Confirmado albopictus"
 msgid "expert_cat_tiger"
-msgstr "Potrjen albopictus"
+msgstr "Potrjen tigrasti komar"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:552
@@ -799,7 +799,7 @@ msgstr "Potrjen albopictus"
 #: loco:5f3558c334e29c59533995bf
 #| msgid "Posible albopictus"
 msgid "expert_cat_possible_tiger"
-msgstr "Verjeten albopictus"
+msgstr "Verjeten tigrasti komar"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:570
@@ -808,7 +808,7 @@ msgstr "Verjeten albopictus"
 #: loco:5f3558c334e29c59533995c0
 #| msgid "Posiblemente ni albopictus ni aegypti"
 msgid "expert_cat_possible_other"
-msgstr "Verjetno niti albopictus niti aegypti"
+msgstr "Verjetno niti tigrasti komar niti komar ščitar"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:579
@@ -817,7 +817,7 @@ msgstr "Verjetno niti albopictus niti aegypti"
 #: loco:5f3558c334e29c59533995c1
 #| msgid "Confirmado ni albopictus ni aegypti"
 msgid "expert_cat_other"
-msgstr "Ni potrjen niti albopictus niti aegypti"
+msgstr "Potrjeno niti tigrasti komar niti komar ščitar"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:561
@@ -862,7 +862,7 @@ msgstr "Rezultati validacije državljanov"
 #: loco:5f3558c334e29c59533995c5
 #| msgid "Faltan respuestas"
 msgid "crowd_row_more_responses_needed"
-msgstr "Potrebno je več odgovorov"
+msgstr "Potrebnih je več odgovorov"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
@@ -876,14 +876,14 @@ msgstr "Majhne, ​​črne, bele črte?"
 #: loco:5f3558c334e29c59533995c7
 #| msgid " ¿Raya blanca en cabeza y tórax?"
 msgid "user_response_row_q2"
-msgstr "Proga na glavi in ​​prsnem košu?"
+msgstr "Proga na glavi in ​​oprsju?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 #: loco:5f3558c334e29c59533995c8
 #| msgid "¿Rayas blancas en abdomen y patas?"
 msgid "user_response_row_q3"
-msgstr "Proge na trebuhu in nogah?"
+msgstr "Proge na zadku in nogah?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:535
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
@@ -906,7 +906,7 @@ msgstr "Popup Legenda"
 #: loco:5f3558c334e29c59533995cb
 #| msgid "Clasificación hecha por científicos con las fotos disponibles"
 msgid "expert_row_help"
-msgstr "Razvrstitev znanstvenikov z uporabo razpoložljivih fotografij"
+msgstr "Identifikacija vrste znanstvenikov z uporabo razpoložljivih fotografij"
 
 #: tigamap/templates/tigamap/validated_report_map.html:600
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
@@ -917,7 +917,7 @@ msgstr "Razvrstitev znanstvenikov z uporabo razpoložljivih fotografij"
 #| "org/app/Tigafotos/\" target=\"_blank\">Crowdcrafting</a>  (si hay fotos)"
 msgid "crowd_row_help"
 msgstr ""
-"Razvrstitev prostovoljcev na <a href='http://crowdcrafting."
+"Identifikacija vrste prostovoljcev na <a href='http://crowdcrafting."
 "org/app/Tigafotos/' target='_blank'>Crowdcrafting</a> (če je fotografija na "
 "voljo)"
 
@@ -1003,13 +1003,13 @@ msgstr "Brez filtra"
 #: loco:5f3558c334e29c59533995d6
 #| msgid "Lugares de cría confirmados"
 msgid "validation_button_subtext_sites_high"
-msgstr "Potrjeno razmnoževalno mesto"
+msgstr "Potrjeno mesto razvoja ličink"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:151
 #: loco:5f3558c334e29c59533995d7
 #| msgid "Lugares de cría posibles y confirmados"
 msgid "validation_button_subtext_sites_medium"
-msgstr "Verjetno in potrjeno razmnoževalno mesto"
+msgstr "Verjetno in potrjeno mesto razvoja ličink"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:152
 #: loco:5f3558c334e29c59533995d8
@@ -1031,42 +1031,42 @@ msgstr "Nerazvrščeno"
 #: loco:5f3558c334e29c59533995da
 #| msgid "Lugar de cría de mosquito tigre"
 msgid "expert_cat_site"
-msgstr "Razmnoževalno mesto tigrastih komarjev"
+msgstr "Mesto razvoja tigrastih komarjev"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
 #: loco:5f3558c334e29c59533995db
 #| msgid "Posible lugar de cría de mosquito tigre"
 msgid "expert_cat_possible_site"
-msgstr "Verjetno razmnoževalno mesto tigrastih komarjev"
+msgstr "Verjetno mesto razvoja ličink tigrastih komarjev"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
 #: loco:5f3558c334e29c59533995dc
 #| msgid "Seguramente no lugar de cría de mosquito tigre"
 msgid "expert_cat_possible_other_site"
-msgstr "Verjetno ni razmnoževalno mesto tigrastih komarjev"
+msgstr "Verjetno ni mesto razvoja ličink tigrastih komarjev"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
 #: loco:5f3558c334e29c59533995dd
 #| msgid "No lugar de cría de mosquito tigre"
 msgid "expert_cat_other_site"
-msgstr "Ni razmnoževalno mesto tigrastih komarjev"
+msgstr "Ni mesto razvoja ličink tigrastih komarjev"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:498
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
 #: loco:5f3558c334e29c59533995de
 #| msgid "Confirmado aegypti"
 msgid "expert_cat_aegypti"
-msgstr "Potrjen aegypti"
+msgstr "Potrjen komar ščitar (Ae. aegypti)"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:500
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
 #: loco:5f3558c334e29c59533995df
 #| msgid "Posible aegypti"
 msgid "expert_cat_possible_aegypti"
-msgstr "Verjeten aegypti"
+msgstr "Verjeten komar ščitar (Ae. aegypti)"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:530
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
@@ -1109,13 +1109,13 @@ msgstr "Komarji blizu?"
 #: loco:5f3558c334e29c59533995e6
 #| msgid "Todos los años"
 msgid "fmap_All_years"
-msgstr "Vsa leta?"
+msgstr "Vsa leta"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:844
 #: loco:5f3558c334e29c59533995e7
 #| msgid "Todos los meses"
 msgid "fmap_All_months"
-msgstr "Vsi meseci?"
+msgstr "Vsi meseci"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:845
 #: loco:5f3558c334e29c59533995e8
@@ -1175,7 +1175,7 @@ msgstr "September"
 #: loco:5f3558c334e29c59533995f1
 #| msgid "octubre"
 msgid "October"
-msgstr "October"
+msgstr "Oktober"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:859
 #: loco:5f3558c334e29c59533995f2
@@ -1205,13 +1205,13 @@ msgstr "Odrasli"
 #: loco:5f3558c334e29c59533995f6
 #| msgid "Lugares de cría de Ae. albopictus/aegypti"
 msgid "fmap_Tiger_mosquito_breeding_sites"
-msgstr "Ae. albopictus/aegypti razmnoževalno mesto"
+msgstr "Mesto razvoja Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:875
 #: loco:5f3558c334e29c59533995f7
 #| msgid "Lugares de cría"
 msgid "fmap_Breeding_sites"
-msgstr "Razmnoževalna mesta"
+msgstr "Mesta razvoja ličink"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:878
 #: loco:5f3558c334e29c59533995f8
@@ -1282,33 +1282,33 @@ msgstr "Komarji: vsa poročila"
 #: tigamap/views.py:189 loco:5f3558c334e29c5953399604
 #| msgid "Lugares de cría: Todos"
 msgid "Breeding Sites: Validated reports"
-msgstr "Razmnoževalna mesta: Potrjena poročila"
+msgstr "Mesta razvoja ličink: Potrjena poročila"
 
 #: tigamap/views.py:199 tigamap/views.py:289 loco:5f3558c334e29c5953399605
 #| msgid "Lugares de cría: Sumideros y fuentes"
 msgid "breeding-sites-storm-drains-and-fountains"
-msgstr "Razmnoževalna mesta: Nevihtni odtoki in vodnjaki"
+msgstr "Mesta razvoja ličink: Nevihtni odtoki in vodnjaki"
 
 #: tigamap/views.py:202 tigamap/views.py:289 loco:5f3558c334e29c5953399606
 #| msgid "Lugares de cría: Pequeñas balsas artificiales"
 msgid "breeding-sites-basins"
-msgstr "Razmnoževalna mesta: manjše kotline"
+msgstr "Mesta razvoja ličink: manjše kotline"
 
 #: tigamap/views.py:205 tigamap/views.py:289 loco:5f3558c334e29c5953399607
 #| msgid "Lugares de cría: Bidones y pozos"
 msgid "breeding-sites-buckets-and-wells"
-msgstr "Razmnoževalna mesta: vedra in vodjaki"
+msgstr "Mesta razvoja ličink: vedra in vodjaki"
 
 #: tigamap/views.py:208 tigamap/views.py:289 loco:5f3558c334e29c5953399608
 #| msgid "Lugares de cría: Otros"
 msgid "breeding-sites-other"
-msgstr "Razmnoževalna mesta: Ostalo"
+msgstr "Mesta razvoja ličink: Ostalo"
 
 #: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
 #: loco:5f3558c334e29c5953399609
 #| msgid "Lugares de cría: Todos"
 msgid "breeding-sites-all-reports"
-msgstr "Razmnoževalna mesta: Vsa poročila"
+msgstr "Mesta razvoja ličink: Vsa poročila"
 
 #: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
 #: tigascoring/xp_scoring.py:190 loco:5f3558c334e29c595339960a
@@ -1391,17 +1391,17 @@ msgstr "To je nevihtni odtok"
 #: tigascoring/xp_scoring.py:271 loco:5f3558c334e29c5953399619
 #| msgid "haber respondido la pregunta del agua del lugar de cría"
 msgid "water_question"
-msgstr "ste odgovorili na vprašanje o vodi v razmnoževalnih mestih"
+msgstr "ste odgovorili na vprašanje o vodi v mestih razvoja ličink"
 
 #: tigascoring/xp_scoring.py:275 loco:5f3558c334e29c595339961a
 #| msgid "haber añadido un informe de mosquito al final"
 msgid "mosquito_report_follows_breeding_site"
-msgstr "ste na koncu dodali poročilo o komarjih"
+msgstr "dodajte poročilo o komarjih naknadno"
 
 #: tigascoring/xp_scoring.py:305 loco:5f3558c334e29c595339961b
 #| msgid "no hay foto"
 msgid "no_picture"
-msgstr "ni slike"
+msgstr "ni fotografije"
 
 #: tigascoring/xp_scoring.py:312 loco:5f3558c334e29c595339961c
 #| msgid "el informe no está geolocalizado"
@@ -1411,17 +1411,17 @@ msgstr "poročilo nima geolokacije"
 #: tigascoring/xp_scoring.py:315 loco:5f3558c334e29c595339961d
 #| msgid "haber respondido el formulario del tórax del mosquito"
 msgid "thorax_question"
-msgstr "ste odgovorili na vprašanja glede opisa prsnega koša komarja"
+msgstr "odgovarjanje na vprašanje glede opisa oprsja komarja"
 
 #: tigascoring/xp_scoring.py:318 loco:5f3558c334e29c595339961e
 #| msgid "haber respondido el formulario del abdomen del mosquito"
 msgid "abdomen_question"
-msgstr "ste odgovorili na vprašanja glede opis trebuha komarja"
+msgstr "odgovarjanje na vprašanje glede opis zadka komarja"
 
 #: tigascoring/xp_scoring.py:321 loco:5f3558c334e29c595339961f
 #| msgid "haber respondido el formulario de las patas del mosquito"
 msgid "leg_question"
-msgstr "ste odgovorili na vprašanja glede opisa nog komarja"
+msgstr "odgovarjanje na vprašanje glede opisa nog komarja"
 
 #: tigascoring/xp_scoring.py:324 loco:5f3558c334e29c5953399620
 #| msgid ""
@@ -1430,28 +1430,28 @@ msgstr "ste odgovorili na vprašanja glede opisa nog komarja"
 #| "info, revisa el tutorial de la app."
 msgid "other_species"
 msgstr ""
-"po analizi obvestila strokovnjaki menijo, da ne ustreza nobeni od 5 ciljnih "
-"vrst komarjev. Za več informacij si oglejte učbenik aplikacije."
+"po analizi vašega poročila strokovnjaki menijo, da komar ne ustreza nobeni "
+"od 5 ciljnih vrst komarjev. Za več informacij si oglejte navodila aplikacije."
 
 #: tigascoring/xp_scoring.py:331 loco:5f3558c334e29c5953399621
 #| msgid "Lugares de cría"
 msgid "bite report follow"
-msgstr "Razmnoževalno mesto"
+msgstr "nadaljujte trenutno poročilo s poročilom o vbodih"
 
 #: tigascoring/xp_scoring.py:371 loco:5f3558c334e29c5953399622
 #| msgid " años"
 msgid " years ago"
-msgstr "leta"
+msgstr "pred več leti"
 
 #: tigascoring/xp_scoring.py:373 loco:5f3558c334e29c5953399623
 #| msgid " meses"
 msgid " months ago"
-msgstr "meseci"
+msgstr "pred več meseci"
 
 #: tigascoring/xp_scoring.py:375 loco:5f3558c334e29c5953399624
 #| msgid " días"
 msgid " days ago"
-msgstr "dnevi"
+msgstr "pred več dnevi"
 
 #: tigaserver_app/models.py:542 loco:5f3558c334e29c5953399625
 #| msgid "Alta"
@@ -1471,21 +1471,21 @@ msgstr "Nizko"
 #: tigaserver_messages/fields.py:56 loco:5f3558c334e29c5953399628
 #, python-format
 msgid "The following usernames are incorrect: %(users)s"
-msgstr ""
+msgstr "Naslednja uporabniška imena niso pravilna: %(users)s"
 
 #: tigaserver_messages/forms.py:20 loco:5f3558c334e29c5953399629
 msgid "Body"
-msgstr ""
+msgstr "Telo"
 
 #: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
 #: tigaserver_messages/views.py:138 loco:5f3558c334e29c595339962a
 msgid "Message successfully sent."
-msgstr ""
+msgstr "Vaše sporočilo je bilo uspešno oddano."
 
 #: tigaserver_messages/views.py:120 loco:5f3558c334e29c595339962b
 #, python-format
 msgid "Re: %(subject)s"
-msgstr ""
+msgstr "Re: %(subject)s"
 
 #: tigaserver_project/settings.py:131 loco:5f3558c334e29c595339962c
 #| msgid "Español"
@@ -1504,4 +1504,4 @@ msgstr "Angleščina"
 
 #: tigaserver_project/settings.py:134 loco:5f3558c334e29c595339962f
 msgid "Chinese"
-msgstr ""
+msgstr "Kitajščina"

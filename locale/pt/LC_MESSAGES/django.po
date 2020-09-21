@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-08-31 12:57+0200\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Portuguese (Portugal)\n"
 "Language: pt-PT\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Loco-Project-Id: 95706\n"
 "X-Loco-Tagged: plain_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.24 20200814-1"
+"X-Loco-Api-Version: 1.0.25 20200901-1"
 
 #: stats/templates/stats/chart.html:64
 #: stats/templates/stats/fix_user_chart.html:78

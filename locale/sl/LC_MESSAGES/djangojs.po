@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-09-01 12:48+0200\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Slovenian (Slovenia)\n"
 "Language: sl_SI\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Loco-Project-Id: 95706\n"
 "X-Loco-Tagged: js_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.24 20200814-1"
+"X-Loco-Api-Version: 1.0.25 20200901-1"
 
 #: stats/templates/stats/user_ranking.html:78 loco:5f3558c334e29c5953399559
 #| msgid "Puntuación"
@@ -27,7 +27,7 @@ msgstr "Točke"
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
 #| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Začeli prispevati"
+msgstr "Začeli ste prispevati"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
 #| msgid "Última actividad hace"
@@ -46,12 +46,12 @@ msgstr "Ostalo"
 #: stats/static/stats/user_ranking.js:20 loco:5f355e391e841656806f0f12
 #| msgid "Nivel General"
 msgid "Overall"
-msgstr "Splošen nivo"
+msgstr "Splošno"
 
 #: stats/static/stats/user_ranking.js:24 loco:5f355e391e841656806f0f13
 #| msgid "Nivel Mosquito"
 msgid "Adult"
-msgstr "Mosquito nivo"
+msgstr "Odrasel komar"
 
 #: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
 #: loco:5f355e391e841656806f0f14
@@ -67,45 +67,45 @@ msgstr "Nivo razmnoževalnega mesta"
 #: tigacrafting/static/tigacrafting/jquery-ui/jquery-ui.min.js:10
 #: loco:5f355e391e841656806f0f16
 msgid "'"
-msgstr ""
+msgstr "'"
 
 #: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
 #: loco:5f355e391e841656806f0f17
 msgid "v"
-msgstr ""
+msgstr "v"
 
 #: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
 #: loco:5f355e391e841656806f0f18
 msgid "h"
-msgstr ""
+msgstr "h"
 
 #: tigacrafting/static/tigacrafting/tinymce/js/tinymce/tinymce.min.js:8
 #: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
 #: loco:5f355e391e841656806f0f19
 msgid "blockquote"
-msgstr ""
+msgstr "blockquote"
 
 #: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
 #: loco:5f355e391e841656806f0f1a
 msgid "UL"
-msgstr ""
+msgstr "UL"
 
 #: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
 #: loco:5f355e391e841656806f0f1b
 msgid "OL"
-msgstr ""
+msgstr "OL"
 
 #: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
 #: loco:5f355e391e841656806f0f1c
 msgid "DL"
-msgstr ""
+msgstr "DL"
 
 #: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
 #: loco:5f355e391e841656806f0f1d
 msgid "align"
-msgstr ""
+msgstr "align"
 
 #: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
 #: loco:5f355e391e841656806f0f1e
 msgid "p"
-msgstr ""
+msgstr "p"

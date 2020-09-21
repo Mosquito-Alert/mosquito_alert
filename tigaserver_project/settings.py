@@ -142,6 +142,10 @@ LANGUAGES = (
     ('bg', _('Bulgarian')),
     ('bg', _('Bulgarian')),
     ('ro', _('Romanian')),
+    ('hr', _('Croatian')),
+    ('mk', _('Macedonian')),
+    ('sr', _('Serbian')),
+    ('lb', _('Letzeburgesch')),
     ('zh-cn', _('Chinese')),
 )
 

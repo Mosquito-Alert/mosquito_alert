@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-08-31 08:38+0200\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Greek (Greece)\n"
 "Language: el_GR\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Loco-Project-Id: 95706\n"
 "X-Loco-Tagged: js_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.24 20200814-1"
+"X-Loco-Api-Version: 1.0.25 20200901-1"
 
 #: stats/templates/stats/user_ranking.html:78 loco:5f3558c334e29c5953399559
 #| msgid "Puntuación"
@@ -26,7 +26,7 @@ msgstr "Βαθμολογία"
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
 #| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Ξεκίνησε να συμμετέχει έχει"
+msgstr "Ξεκινήστε να συμμετέχετε "
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
 #| msgid "Última actividad hace"
@@ -40,28 +40,28 @@ msgstr "Τελευταία δραστηριότητα έχει"
 #: tigaserver_app/models.py:567 loco:5f3558c334e29c595339959f
 #| msgid "Otros"
 msgid "Other"
-msgstr "Άλλο"
+msgstr "Άλλο/Άλλη κατηγορία"
 
 #: stats/static/stats/user_ranking.js:20 loco:5f355e391e841656806f0f12
 #| msgid "Nivel General"
 msgid "Overall"
-msgstr "Γενικό επίπεδο"
+msgstr "Eπίπεδο γένους"
 
 #: stats/static/stats/user_ranking.js:24 loco:5f355e391e841656806f0f13
 #| msgid "Nivel Mosquito"
 msgid "Adult"
-msgstr "Επίπεδο κουνουπιού"
+msgstr "Επίπεδο είδους"
 
 #: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
 #: loco:5f355e391e841656806f0f14
 #| msgid "Datos enviados"
 msgid "Reports"
-msgstr "Δεδομένα που αποστάληκαν"
+msgstr "Δεδομένα που αποστάλθηκαν"
 
 #: stats/static/stats/user_ranking.js:34 loco:5f355e391e841656806f0f15
 #| msgid "Nivel Lugares de cría"
 msgid "Site"
-msgstr "Επίπεδο Εστίες ανάπτυξης"
+msgstr "Επίπεδο Εστία ανάπτυξης"
 
 #: tigacrafting/static/tigacrafting/jquery-ui/jquery-ui.min.js:10
 #: loco:5f355e391e841656806f0f16

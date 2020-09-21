@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-09-03 17:32+0200\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Bulgarian (Bulgaria)\n"
 "Language: bg-BG\n"
@@ -185,7 +185,7 @@ msgstr ""
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
 #| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Започна да участва на"
+msgstr "Започна да участва от"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
 #| msgid "Última actividad hace"
@@ -218,7 +218,7 @@ msgstr "Ти си сред първите"
 #: stats/templates/stats/user_score.html:86 loco:5f3558c334e29c5953399565
 #| msgid "participantes"
 msgid "participants"
-msgstr "Участници"
+msgstr "участници"
 
 #: stats/templates/stats/user_score.html:42
 #: stats/templates/stats/user_score.html:56
@@ -239,7 +239,7 @@ msgstr "Присъдени награди"
 #: stats/templates/stats/user_score.html:55 loco:5f3558c334e29c5953399568
 #| msgid "Concedido el"
 msgid "awarded_on"
-msgstr "Присъден на"
+msgstr "Присъдена на"
 
 #: stats/templates/stats/user_score.html:62 loco:5f3558c334e29c5953399569
 #| msgid "puntos, concedidos"
@@ -534,7 +534,7 @@ msgstr "Всички"
 #: tigamap/templates/tigamap/app_new.html:190 loco:5f3558c334e29c595339959c
 #| msgid "Sumideros y fuentes"
 msgid "storm-drains-and-fountains"
-msgstr "Дъждовна отводнителна канализация и чешми"
+msgstr "Дъждовна канализация и чешми"
 
 #: tigamap/templates/tigamap/app.html:144
 #: tigamap/templates/tigamap/app_new.html:193 loco:5f3558c334e29c595339959d
@@ -590,7 +590,7 @@ msgstr "Включване на навигацията"
 #: loco:5f3558c334e29c59533995a3
 #| msgid "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 msgid "map_help_url_new"
-msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
+msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
 
 #: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
 #: loco:5f3558c334e29c59533995a4
@@ -706,14 +706,14 @@ msgstr "Точки"
 #: tigaserver_app/models.py:559 loco:5f3558c334e29c59533995b2
 #| msgid "Sumidero"
 msgid "storm-drain"
-msgstr "Дъждовна отточна канализация"
+msgstr "Дъждовна канализация"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
 #: tigaserver_app/models.py:561 loco:5f3558c334e29c59533995b3
 #| msgid "Fuente"
 msgid "Fountain"
-msgstr "Фонтан"
+msgstr "Чешмичка"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
@@ -1285,7 +1285,7 @@ msgstr "Равъдни места: Валидирани доклади"
 #: tigamap/views.py:199 tigamap/views.py:289 loco:5f3558c334e29c5953399605
 #| msgid "Lugares de cría: Sumideros y fuentes"
 msgid "breeding-sites-storm-drains-and-fountains"
-msgstr "Развъдни места: Дъждовна отточна канализация и чешми"
+msgstr "Развъдни места: Дъждовна канализация и чешми"
 
 #: tigamap/views.py:202 tigamap/views.py:289 loco:5f3558c334e29c5953399606
 #| msgid "Lugares de cría: Pequeñas balsas artificiales"
@@ -1384,7 +1384,7 @@ msgstr "изпратена геолокация на данни"
 #: tigascoring/xp_scoring.py:267 loco:5f3558c334e29c5953399618
 #| msgid "Es un sumidero"
 msgid "storm_drain"
-msgstr "Това е отводнителен канал"
+msgstr "Това е дъждовен канал"
 
 #: tigascoring/xp_scoring.py:271 loco:5f3558c334e29c5953399619
 #| msgid "haber respondido la pregunta del agua del lugar de cría"
@@ -1404,7 +1404,7 @@ msgstr "няма снимка"
 #: tigascoring/xp_scoring.py:312 loco:5f3558c334e29c595339961c
 #| msgid "el informe no está geolocalizado"
 msgid "no_location"
-msgstr "този доклад нама геолокация"
+msgstr "този доклад няма геолокация"
 
 #: tigascoring/xp_scoring.py:315 loco:5f3558c334e29c595339961d
 #| msgid "haber respondido el formulario del tórax del mosquito"
@@ -1435,7 +1435,7 @@ msgstr ""
 #: tigascoring/xp_scoring.py:331 loco:5f3558c334e29c5953399621
 #| msgid "Lugares de cría"
 msgid "bite report follow"
-msgstr "последвана на текущия доклад с доклад за ухапване"
+msgstr "последване на текущия доклад с доклад за ухапване"
 
 #: tigascoring/xp_scoring.py:371 loco:5f3558c334e29c5953399622
 #| msgid " años"

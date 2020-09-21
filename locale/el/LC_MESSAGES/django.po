@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-08-31 08:38+0200\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Greek (Greece)\n"
 "Language: el_GR\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Loco-Project-Id: 95706\n"
 "X-Loco-Tagged: plain_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.24 20200814-1"
+"X-Loco-Api-Version: 1.0.25 20200901-1"
 
 #: stats/templates/stats/chart.html:64
 #: stats/templates/stats/fix_user_chart.html:78
@@ -39,27 +39,27 @@ msgstr "Αναφορές για κουνούπι τίγρης"
 #: stats/templates/stats/chart.html:103 loco:5f3558c334e29c5953399545
 #| msgid "Informes de lugares de cría"
 msgid "number-of-breeding-site-reports"
-msgstr "Αναφορές για εστίες ανάπτυξης"
+msgstr "Αναφορές για εστίες ανάπτυξης/αναπαραγωγής"
 
 #: stats/templates/stats/fix_user_chart.html:99 loco:5f3558c334e29c5953399546
 msgid "Participants with over 20 fixes"
-msgstr "Συμμετέχοντες με άνω των 20 διορθώσεων"
+msgstr "Συμμετέχοντες με περισσότερες από 20 διορθώσεις"
 
 #: stats/templates/stats/fix_user_chart.html:108 loco:5f3558c334e29c5953399547
 msgid "Participants with over 15 fixes"
-msgstr "Συμμετέχοντες με άνω των 15 διορθώσεων"
+msgstr "Συμμετέχοντες με περισσότερες από  15 διορθώσεις"
 
 #: stats/templates/stats/fix_user_chart.html:117 loco:5f3558c334e29c5953399548
 msgid "Participants with over 10 fixes"
-msgstr "Συμμετέχοντες με άνω των 10 διορθώσεων"
+msgstr "Συμμετέχοντες με περισσότερες από 10 διορθώσεις"
 
 #: stats/templates/stats/fix_user_chart.html:126 loco:5f3558c334e29c5953399549
 msgid "Participants with over 5 fixes"
-msgstr "Συμμετέχοντες με άνω των 5 διορθώσεων"
+msgstr "Συμμετέχοντες με περισσότερες από 5 διορθώσεις"
 
 #: stats/templates/stats/fix_user_chart.html:135 loco:5f3558c334e29c595339954a
 msgid "Participants with at least 1 fix"
-msgstr "Συμμετέχοντες με άνω της 1 διόρθωσης"
+msgstr "Συμμετέχοντες με τουλάχιστον 1 διόρθωση"
 
 #: stats/templates/stats/report_user_chart.html:99
 #: loco:5f3558c334e29c595339954b
@@ -69,22 +69,22 @@ msgstr "Συμμετέχοντες με τουλάχιστον 1 αναφορά"
 #: stats/templates/stats/report_user_chart.html:108
 #: loco:5f3558c334e29c595339954c
 msgid "Participants with over 1 reports"
-msgstr "Συμμετέχοντες με άνω της 1 αναφοράς"
+msgstr "Συμμετέχοντες με περισσότερες από 1 αναφορά"
 
 #: stats/templates/stats/report_user_chart.html:117
 #: loco:5f3558c334e29c595339954d
 msgid "Participants with over 2 reports"
-msgstr "Συμμετέχοντες με άνω των 2 αναφορών"
+msgstr "Συμμετέχοντες με περισσότερες από 2 αναφορές"
 
 #: stats/templates/stats/report_user_chart.html:126
 #: loco:5f3558c334e29c595339954e
 msgid "Participants with over 3 reports"
-msgstr "Συμμετέχοντες με άνω των 3 αναφορών"
+msgstr "Συμμετέχοντες με περισσότερες από 3 αναφορές"
 
 #: stats/templates/stats/report_user_chart.html:135
 #: loco:5f3558c334e29c595339954f
 msgid "Participants with over 4 reports"
-msgstr "Συμμετέχοντες με άνω των 4 αναφορών"
+msgstr "Συμμετέχοντες με περισσότερες από 4 αναφορές"
 
 #: stats/templates/stats/user_ranking.html:30 loco:5f3558c334e29c5953399550
 #| msgid ""
@@ -93,8 +93,8 @@ msgstr "Συμμετέχοντες με άνω των 4 αναφορών"
 #| "Mosquito Alert."
 msgid "user_ranking_info_text_1"
 msgstr ""
-"Συμβουλεύτου τη βαθμολογία σου και το επίπεδο που έφτασες. Στο μενού των "
-"ρυθμίσεων θα βρεις λεπτομερής πληροφορία για το σύστημα βαθμολόγησης του "
+"Δείτε τη βαθμολογία σας και το επίπεδο που ανήκετε. Στο μενού των ρυθμίσεων "
+"μπορείτε να βρείτε αναλυτικές πληροφορίες για τον τρόπο βαθμολόγησης του "
 "Mosquito Alert."
 
 #: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399551
@@ -114,9 +114,9 @@ msgstr "τη βαθμολογία"
 #| "tarde. Para saber cómo ganar puntos, sigue el enlace más abajo."
 msgid "no_score_yet"
 msgstr ""
-"Ακόμη δεν έχεις βαθμολογία, έτσι δεν εμφανίζεσαι στη σειρά κατάταξης. "
-"Παρακαλώ, υπόβαλε κάποιες παρατηρήσεις αργότερα. Για να μάθεις πώς να "
-"κερδίσεις βαθμούς, ακολούθησε το σύνδεσμο πιο κάτω."
+"Λόγω έλλειψης βαθμολογίας, δεν εμφανίζεστε στη σειρά κατάταξης. Παρακαλώ, "
+"υποβάλετε γνωστοποιήσεις/παρατηρήσεις και δείτε ξανά τη βαθμολογία σας. Για "
+"να μάθετε πώς να κερδίσετε βαθμούς, ακολουθήστε το σύνδεσμο παρακάτω."
 
 #: stats/templates/stats/user_ranking.html:55
 #: stats/templates/stats/user_ranking.html:143 loco:5f3558c334e29c5953399554
@@ -135,12 +135,12 @@ msgstr "του"
 #: stats/templates/stats/user_ranking.html:75 loco:5f3558c334e29c5953399556
 #| msgid "Posición"
 msgid "Rank"
-msgstr "Θέση"
+msgstr "Θέση κατάταξης"
 
 #: stats/templates/stats/user_ranking.html:76 loco:5f3558c334e29c5953399557
 #| msgid "Usuario"
 msgid "User"
-msgstr "Χρήστη"
+msgstr "Χρήστης"
 
 #: stats/templates/stats/user_ranking.html:77 loco:5f3558c334e29c5953399558
 #| msgid "Rango general"
@@ -155,7 +155,7 @@ msgstr "Βαθμολογία"
 #: stats/templates/stats/user_ranking.html:84 loco:5f3558c334e29c595339955a
 #| msgid "¡Tú estás aquí!"
 msgid "This is you!"
-msgstr "Εσύ είσαι εδώ!"
+msgstr "Είστε εδώ!"
 
 #: stats/templates/stats/user_ranking.html:121 loco:5f3558c334e29c595339955b
 #| msgid "Más detalles"
@@ -173,8 +173,8 @@ msgstr "Σύνοψη βαθμολογίας"
 #| "alcanzado el nivel de experiencia general de "
 msgid "this_is_your_personal_avatar"
 msgstr ""
-"Προσωπικό είδωλο του συμμετέχοντα. Χάρη της βαθμολογίας που έλαβες, έχεις "
-"φτάσει στο επίπεδο γενικής εμπειρίας του"
+"Προσωπικό είδωλο του συμμετέχοντα. Χάρη της βαθμολογίας που λάβατε, έχετε "
+"φτάσει στο επίπεδο εμπειρίας"
 
 #: stats/templates/stats/user_score.html:31 loco:5f3558c334e29c595339955e
 #| msgid ""
@@ -182,12 +182,13 @@ msgstr ""
 #| "Gran Maestro."
 msgid "there_are_5_levels"
 msgstr ""
-"Υπάρχουν 5 επίπεδα: Αρχάριος, Συνεργάτης, Ειδικός, Δάσκαλος και Μέγα Δάσκαλος"
+"Υπάρχουν 5 επίπεδα εμπειρίας: Αρχάριος, Συνεργάτης, Ειδικός, Δάσκαλος και "
+"Μέγα Δάσκαλος"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
 #| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Ξεκίνησε να συμμετέχει έχει"
+msgstr "Ξεκινήστε να συμμετέχετε "
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
 #| msgid "Última actividad hace"
@@ -202,12 +203,12 @@ msgstr "Ποτέ"
 #: stats/templates/stats/user_score.html:34 loco:5f3558c334e29c5953399562
 #| msgid "Posición global - Sin posición"
 msgid "Overall rank - Unranked"
-msgstr "Παγκόσμια κατάταξη - Χωρίς κατάταξη"
+msgstr "Συνολική κατάταξη - Χωρίς κατάταξη"
 
 #: stats/templates/stats/user_score.html:36 loco:5f3558c334e29c5953399563
 #| msgid "Posición global"
 msgid "Overall rank"
-msgstr "Παγκόσμια κατάταξη"
+msgstr "Συνολική κατάταξη"
 
 #: stats/templates/stats/user_score.html:37
 #: stats/templates/stats/user_score.html:86
@@ -275,8 +276,8 @@ msgstr "Ακριβής θέση για Κουνούπι"
 #| "los puntos conseguidos."
 msgid "click_score_instructions"
 msgstr ""
-"Κάνε κλικ πάνω στα τετράγωνα για να δεις λεπτομέρειες των δεδομένων που "
-"αποστάληκαν και των βαθμών που αποκτήθηκαν."
+"Κάντε κλικ πάνω στα χρωματιστά τετράγωνα για να δείτε τις λεπτομέρειες των "
+"δεδομένων που στάλθηκαν και των βαθμών που αποκτήθηκαν."
 
 #: stats/templates/stats/user_score.html:115
 #: stats/templates/stats/user_score.html:171 loco:5f3558c334e29c595339956f
@@ -298,17 +299,18 @@ msgstr "Αυτή η έκθεση δεν έχει βαθμούς!"
 #: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c5953399572
 #| msgid "Lugares de cría"
 msgid "Breeding site"
-msgstr "Εστίες ανάπτυξης"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
 
 #: stats/templates/stats/user_score.html:140 loco:5f3558c334e29c5953399573
 #| msgid "Posición específica para Lugares de cría - Sin clasificar"
 msgid "Breeding site rank - Unranked"
-msgstr "Ακριβής θέση για Εστίες ανάπτυξης - Χωρίς κατάταξη"
+msgstr ""
+"Ακριβής θέση για εστίες ανάπτυξης/αναπαραγωγής κουνουπιών - Χωρίς κατάταξη"
 
 #: stats/templates/stats/user_score.html:142 loco:5f3558c334e29c5953399574
 #| msgid "Posición específica para Lugares de cría"
 msgid "Breeding site rank"
-msgstr "Ακριβής θέση για Εστίες ανάπτυξης"
+msgstr "Ακριβής θέση για εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
 
 #: templates/admin/base_site.html:4 loco:5f3558c334e29c5953399575
 msgid "Tigaserver admin"
@@ -427,24 +429,25 @@ msgstr "Νέα παρτίδα"
 #: tigacrafting/templates/tigacrafting/expert_validation.html:102
 #: loco:5f3558c334e29c595339958d
 msgid "Photos you have taken notes on but not yet scored"
-msgstr "Φωτογραφίες που πήρες σημειώσεις αλλά δεν έχεις βαθμολογήσει ακόμη"
+msgstr ""
+"Φωτογραφίες που σχολιάσατε (σημειώσεις) αλλά δεν έχετε βαθμολογήσει ακόμη"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:103
 #: loco:5f3558c334e29c595339958e
 msgid "Photos you have already scored"
-msgstr "Φωτογραφίες που έχεις ήδη βαθμολογήσει"
+msgstr "Φωτογραφίες που έχετε ήδη βαθμολογήσει"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:171
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:195
 #: loco:5f3558c334e29c595339958f
 #| msgid "Guardar"
 msgid "Save"
-msgstr "Φύλαξη"
+msgstr "Αποθήκευση"
 
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:103
 #: loco:5f3558c334e29c5953399590
 msgid "Photos per page"
-msgstr "Φωτογραφίες τη σελίδα"
+msgstr "Φωτογραφίες ανά σελίδα"
 
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
@@ -455,7 +458,7 @@ msgstr "Φωτογραφίες τη σελίδα"
 #: loco:5f3558c334e29c5953399591
 #| msgid "Acuerdo del usuario"
 msgid "user-agreement"
-msgstr "Συμφωνία χρήστη"
+msgstr "Αποδοχή χρήστη"
 
 #: tigahelp/templates/tigahelp/policies.html:35
 #: tigahelp/templates/tigahelp/policies_en.html:34
@@ -484,10 +487,10 @@ msgstr "Άδεια χρήσης της εφαρμογής"
 #| "de nuestro sitio web, por favor consulta nuestra"
 msgid "our-website-uses-cookies"
 msgstr ""
-"Η ιστοσελίδα μας χρησιμοποιεί cookies. Αν συνεχίσεις να περιηγείσαι "
-"υποθέτουμε ότι δίνεις συγκατάθεση για τη χρήση cookies. Για περισσότερες "
-"πληφορορίες σχετικά με την πολιτική της ιστοσελίδας μας, παρακαλώ όπως "
-"συμβουλευτείς τη"
+"Η ιστοσελίδα μας χρησιμοποιεί cookies. Αν συνεχίσετε να περιηγείστε "
+"υποθέτουμε ότι δίνετε τη συγκατάθεσή σας για τη χρήση cookies. Για "
+"περισσότερες πληφορορίες σχετικά με την πολιτική της ιστοσελίδας μας, "
+"παρακαλώ να συμβουλευτείτε τη"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
@@ -514,36 +517,36 @@ msgstr "Όλες οι εκθέσεις"
 #: tigamap/templates/tigamap/app.html:128 loco:5f3558c334e29c5953399598
 #| msgid "Sólo probabilidad media y alta"
 msgid "medium-and-high-probability-reports-only"
-msgstr "Μόνο εκθέσεις με μεσαία και ψηλή πιθανότητα"
+msgstr "Επιλογή εκθέσεων με μεσαία και ψηλή πιθανότητα"
 
 #: tigamap/templates/tigamap/app.html:130 loco:5f3558c334e29c5953399599
 #| msgid "Sólo probabilidad alta"
 msgid "high-probability-reports-only"
-msgstr "Μόνο εκθέσεις με ψηλή πιθανότητα"
+msgstr "Επιλογή εκθέσεων με υψηλή πιθανότητα"
 
 #: tigamap/templates/tigamap/app.html:134
 #: tigamap/templates/tigamap/app_new.html:183 loco:5f3558c334e29c595339959a
 #| msgid "Lugares de cría"
 msgid "breeding-site-reports"
-msgstr "Εστίες ανάπτυξης"
+msgstr "Αναφορές για εστίες ανάπτυξης"
 
 #: tigamap/templates/tigamap/app.html:138
 #: tigamap/templates/tigamap/app_new.html:187 loco:5f3558c334e29c595339959b
 #| msgid "Todos"
 msgid "all-sites"
-msgstr "Όλες οι εστίες"
+msgstr "Όλες οι εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
 
 #: tigamap/templates/tigamap/app.html:141
 #: tigamap/templates/tigamap/app_new.html:190 loco:5f3558c334e29c595339959c
 #| msgid "Sumideros y fuentes"
 msgid "storm-drains-and-fountains"
-msgstr "Αποχετευτικά ομβρίων και συντριβάνια"
+msgstr "Αποχετευτικό σύστημα ομβρίων και συντριβάνια"
 
 #: tigamap/templates/tigamap/app.html:144
 #: tigamap/templates/tigamap/app_new.html:193 loco:5f3558c334e29c595339959d
 #| msgid "Pequeñas balsas artificiales"
 msgid "Basins"
-msgstr "Μικρές τεχνητές λεκάνες"
+msgstr "Μικρές τεχνητές λεκάνες συλλογής νερού"
 
 #: tigamap/templates/tigamap/app.html:146
 #: tigamap/templates/tigamap/app_new.html:195 loco:5f3558c334e29c595339959e
@@ -558,7 +561,7 @@ msgstr "Κάδοι και πηγάδια"
 #: tigaserver_app/models.py:567 loco:5f3558c334e29c595339959f
 #| msgid "Otros"
 msgid "Other"
-msgstr "Άλλο"
+msgstr "Άλλο/Άλλη κατηγορία"
 
 #: tigamap/templates/tigamap/app.html:152
 #: tigamap/templates/tigamap/app_filtered.html:193
@@ -580,7 +583,7 @@ msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 #: loco:5f3558c334e29c59533995a2
 #| msgid "navbar toggle"
 msgid "navbar_toggle_navigation"
-msgstr "εναλλαγή πλοήγησης"
+msgstr "Εναλλαγή πλοήγησης"
 
 #: tigamap/templates/tigamap/app_filtered.html:195
 #: tigamap/templates/tigamap/app_new.html:203
@@ -599,13 +602,13 @@ msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
 #: loco:5f3558c334e29c59533995a4
 #| msgid "Mosquitos tigre confirmados y posibles"
 msgid "menu_adults_prob"
-msgstr "Πιθανά και επιβεβαιωμένα κουνούπια τίγρης"
+msgstr "Πιθανά και επιβεβαιωμένα δείγματα για το Ασιατικό κουνούπι τίγρης"
 
 #: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
 #: loco:5f3558c334e29c59533995a5
 #| msgid "Mosquitos tigre confirmados"
 msgid "menu_adults_definite"
-msgstr "Επιβεβαιωμένα κουνούπια τίγρης"
+msgstr "Επιβεβαιωμένα δείγματα για το Ασιατικό κουνούπι τίγρης"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 #: loco:5f3558c334e29c59533995a6
@@ -622,21 +625,21 @@ msgstr "Μεσαία"
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 #: loco:5f3558c334e29c59533995a8
 msgid "high"
-msgstr "ψηλή"
+msgstr "Υψηλή"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:221
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:605
 #: loco:5f3558c334e29c59533995a9
 #| msgid "observaciones"
 msgid "fixes"
-msgstr "παρατηρήσεις"
+msgstr "Παρατηρήσεις/διορθώσεις"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:223
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:607
 #: loco:5f3558c334e29c59533995aa
 #| msgid "observación"
 msgid "fix"
-msgstr "παρατήρηση"
+msgstr "Παρατήρηση/διόρθωση"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:336
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:967
@@ -667,13 +670,14 @@ msgstr "Περιοχές που ελέγχθηκαν"
 msgid "coverage_legend_info_blurb"
 msgstr ""
 "<p> Η έκδοση Android του Tigatrapp περιλαμβάνει προαιρετική παρακολούθηση "
-"τοποθεσίας στο υπόβαθρο. Η εφαρμογή καταγράφει τις τοποθεσίες των χρηστών σε "
-"5 τυχαίες φορές κάθε μέρα. Καταγράφει μόνο την κατά προσέγγιση θέση (κόκκινα "
+"τοποθεσίας στο υπόβαθρο. Η εφαρμογή καταγράφει τυχαία τις τοποθεσίες των "
+"χρηστών 5 φορές κάθε μέρα. Καταγράφει μόνο την κατά προσέγγιση θέση (κόκκινα "
 "τετράγωνα στο χάρτη) προκειμένου να διατηρηθεί η ανωνυμία του χρήστη. <br /> "
-"<br /> Ο αριθμός των παρατηρήσεων σε ένα δεδομένο τετράγωνο είναι ο "
-"συσσωρευμένος αριθμός θέσεων που καταγράφηκαν σε αυτό το τετράγωνο για όλους "
-"τους συμμετέχοντες. Όσο πιο σκούρο είναι, τόσο περισσότερο έχει εξερευνηθεί "
-"μια περιοχή. </p>"
+"<br /> Ο αριθμός των παρατηρήσεων σε ένα δεδομένο τετράγωνο είναι το "
+"άθροισμα των  θέσεων που καταγράφηκαν σε αυτό το τετράγωνο για όλους τους "
+"συμμετέχοντες. Η εμφάνιση σκουρόχρομων χρωμάτων σε μια περιοχή υποδηλώνει "
+"ότι έχουν εξερευνηθεί περισσότερο σε συγκριση με τις περιοχές με "
+"ανοικτόχρωμους χρωματισμούς."
 
 #: tigamap/templates/tigamap/coverage_map_new.html:377
 #: tigamap/templates/tigamap/validated_report_map.html:629
@@ -756,13 +760,13 @@ msgstr "Όλες οι φωτογραφίες"
 #: loco:5f3558c334e29c59533995b9
 #| msgid "Sólo probabilidad media y alta"
 msgid "medium-and-high-probability-photos-only"
-msgstr "Φωτογραφίες με μέτρια και ψηλή πιθανότητα"
+msgstr "Φωτογραφίες με μέτρια και υψηλή πιθανότητα"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:177
 #: loco:5f3558c334e29c59533995ba
 #| msgid "Sólo probabilidad alta"
 msgid "high-probability-photos-only"
-msgstr "Φωτογραφίες με ψηλή πιθανότητα μόνο"
+msgstr "Φωτογραφίες με υψηλή πιθανότητα μόνο"
 
 #: tigamap/templates/tigamap/validated_report_map.html:379
 #: tigamap/templates/tigamap/validated_report_map.html:381
@@ -811,7 +815,7 @@ msgstr "Πιθανόν albopictus"
 #: loco:5f3558c334e29c59533995c0
 #| msgid "Posiblemente ni albopictus ni aegypti"
 msgid "expert_cat_possible_other"
-msgstr "Πιθανόν ούτε albopictus ούτε aegypti"
+msgstr "Πιθανότατα δεν είναι ούτε albopictus ούτε aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:579
@@ -820,7 +824,7 @@ msgstr "Πιθανόν ούτε albopictus ούτε aegypti"
 #: loco:5f3558c334e29c59533995c1
 #| msgid "Confirmado ni albopictus ni aegypti"
 msgid "expert_cat_other"
-msgstr "Επιβεβαιωμένο δεν είναι albopictus ούτε aegypti"
+msgstr "Επιβεβαιωμένα δεν είναι ούτε albopictus ούτε aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:561
@@ -831,7 +835,7 @@ msgstr "Επιβεβαιωμένο δεν είναι albopictus ούτε aegypti
 #: loco:5f3558c334e29c59533995c2
 #| msgid "No se sabe"
 msgid "expert_cat_unknown"
-msgstr "Αγνωστο"
+msgstr "Άγνωστο"
 
 #: tigamap/templates/tigamap/validated_report_map.html:405
 #: tigamap/templates/tigamap/validated_report_map.html:595
@@ -847,8 +851,8 @@ msgstr "Αγνωστο"
 #| "target=\"_blank\">Resultado</a> validación experta "
 msgid "expert_row_title"
 msgstr ""
-"Επιβεβαίωση ειδικού <a href=\"http://www.mosquitoalert.com/en/map-"
-"results/tiger-mosquito-map/\" target=\"_blank\">αποτελέσματα</a>"
+"Αποτελέσματα επιβεβαίωσης από ειδικό <a href=\"http://www.mosquitoalert."
+"com/en/map-results/tiger-mosquito-map/\" target=\"_blank\">αποτελέσματα</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map.html:600
@@ -858,21 +862,21 @@ msgstr ""
 #: loco:5f3558c334e29c59533995c4
 #| msgid "Resultado validación ciudadana"
 msgid "crowd_row_title"
-msgstr "Αποτελέσματα επιβεβαίωση πολιτών"
+msgstr "Αποτελέσματα επιβεβαίωσης χρηστών"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:511
 #: loco:5f3558c334e29c59533995c5
 #| msgid "Faltan respuestas"
 msgid "crowd_row_more_responses_needed"
-msgstr "Λείπουν απαντήσεις"
+msgstr "Απαιτούνται περισσότερες απαντήσεις"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
 #: loco:5f3558c334e29c59533995c6
 #| msgid "¿Pequeño, negro, con rayas blancas?"
 msgid "user_response_row_q1"
-msgstr "Μικρό, μαύρο, άσπρες κηλίδες;"
+msgstr "Μικρό, μαύρο με άσπρες γραμμές;"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
@@ -901,7 +905,7 @@ msgstr "Ae. albopictus/aegypti"
 #: loco:5f3558c334e29c59533995ca
 #| msgid "Contenido del marcador"
 msgid "adult_report_legend_info_title"
-msgstr "Αναδυόμενος τίτλος"
+msgstr "Αναδυόμενο παράθυρο"
 
 #: tigamap/templates/tigamap/validated_report_map.html:595
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
@@ -909,7 +913,7 @@ msgstr "Αναδυόμενος τίτλος"
 #: loco:5f3558c334e29c59533995cb
 #| msgid "Clasificación hecha por científicos con las fotos disponibles"
 msgid "expert_row_help"
-msgstr "Ταξινόμηση από ερευνητές χρησιμοποιώντας τις διαθέσιμες φωτογραφίες"
+msgstr "Ταξινόμηση από επιστήμονες χρησιμοποιώντας τις διαθέσιμες φωτογραφίες"
 
 #: tigamap/templates/tigamap/validated_report_map.html:600
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
@@ -921,8 +925,8 @@ msgstr "Ταξινόμηση από ερευνητές χρησιμοποιών�
 msgid "crowd_row_help"
 msgstr ""
 "Ταξινόμηση από εθελοντές στο <a href='http://crowdcrafting."
-"org/app/Tigafotos/' target='_blank'>Χειροτεχνία</a>  αν υπάρχει φωτογραφία "
-"διαθέσιμη"
+"org/app/Tigafotos/' target='_blank'>Χειροτεχνία</a>  αν υπάρχει διαθέσιμη "
+"φωτογραφία"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
@@ -948,7 +952,7 @@ msgstr ""
 #: loco:5f3558c334e29c59533995ce
 #| msgid "Observaciones hechas por los participantes"
 msgid "report_row_help"
-msgstr "Παρατηρήσεις από συμμετέχοντες"
+msgstr "Παρατηρήσεις από συμμετέχοντες/χρήστες"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
@@ -964,7 +968,8 @@ msgstr "Φωτογραφίες"
 #: loco:5f3558c334e29c59533995d0
 #| msgid "Hechas por los participantes (si hay fotos)"
 msgid "photo_row_help"
-msgstr "Αποστάληκαν από συμμετέχοντες (αν υπάρχουν φωτογραφίες)"
+msgstr ""
+"Στάλθηκαν από συμμετέχοντες/χρήστες (αν υπάρχουν διαθέσιμες φωτογραφίες)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
@@ -980,7 +985,7 @@ msgstr "Σημειώσεις"
 #: loco:5f3558c334e29c59533995d2
 #| msgid "Escritas por expertos o participantes (optativo)"
 msgid "notes_row_help"
-msgstr "Από έμπειρους ή παρατηρητές (προαιρετικό)"
+msgstr "Από ειδικούς ή απλούς παρατηρητές (προαιρετικό)"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:146
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:888
@@ -1007,13 +1012,13 @@ msgstr "Χωρίς φίλτρο"
 #: loco:5f3558c334e29c59533995d6
 #| msgid "Lugares de cría confirmados"
 msgid "validation_button_subtext_sites_high"
-msgstr "Επιβεβαιωμένες εστίες ανάπτυξης"
+msgstr "Επιβεβαιωμένες εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:151
 #: loco:5f3558c334e29c59533995d7
 #| msgid "Lugares de cría posibles y confirmados"
 msgid "validation_button_subtext_sites_medium"
-msgstr "Πιθανές και επιβεβαιωμένες εστίες ανάπτυξης"
+msgstr "Πιθανές και επιβεβαιωμένες εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:152
 #: loco:5f3558c334e29c59533995d8
@@ -1028,35 +1033,35 @@ msgstr "Χωρίς φίλτρο"
 #: loco:5f3558c334e29c59533995d9
 #| msgid "Sin clasificar"
 msgid "expert_cat_unclassified"
-msgstr "Αταξινόμητα"
+msgstr "Μη ταξινομημένα"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
 #: loco:5f3558c334e29c59533995da
 #| msgid "Lugar de cría de mosquito tigre"
 msgid "expert_cat_site"
-msgstr "Εστία ανάπτυξης κουνουπιού τίγρη"
+msgstr "Εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
 #: loco:5f3558c334e29c59533995db
 #| msgid "Posible lugar de cría de mosquito tigre"
 msgid "expert_cat_possible_site"
-msgstr "Πιθανή εστία ανάπτυξης κουνουπιού τίγρη"
+msgstr "Πιθανή εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
 #: loco:5f3558c334e29c59533995dc
 #| msgid "Seguramente no lugar de cría de mosquito tigre"
 msgid "expert_cat_possible_other_site"
-msgstr "Μάλλον όχι εστία ανάπτυξης κουνουπιού τίγρη"
+msgstr "Μη πιθανή εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη "
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
 #: loco:5f3558c334e29c59533995dd
 #| msgid "No lugar de cría de mosquito tigre"
 msgid "expert_cat_other_site"
-msgstr "Όχι εστία ανάπτυξης κουνουπιού τίγρη"
+msgstr "Δεν είναι εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:498
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
@@ -1107,7 +1112,7 @@ msgstr "Σε στάσιμα νερά ή/και προνύμφες ή νύμφε�
 #: loco:5f3558c334e29c59533995e5
 #| msgid "¿Has visto mosquitos cerca?"
 msgid "user_response_row_sites_q3_new"
-msgstr "Έχεις δει κουνούπια κοντά;"
+msgstr "Έχετε εντοπίσει κουνούπια σε κοντινή απόσταση;"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:833
 #: loco:5f3558c334e29c59533995e6
@@ -1125,31 +1130,31 @@ msgstr "Όλους τους μήνες"
 #: loco:5f3558c334e29c59533995e8
 #| msgid "enero"
 msgid "January"
-msgstr "Γεννάρης"
+msgstr "Ιανουάριος"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:847
 #: loco:5f3558c334e29c59533995e9
 #| msgid "febrero"
 msgid "February"
-msgstr "Φεβράρης"
+msgstr "Φεβρουάριος"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:849
 #: loco:5f3558c334e29c59533995ea
 #| msgid "marzo"
 msgid "March"
-msgstr "Μάρτης"
+msgstr "Μάρτιος"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:850
 #: loco:5f3558c334e29c59533995eb
 #| msgid "abril"
 msgid "April"
-msgstr "Απρίλης"
+msgstr "Απρίλιος"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:851
 #: loco:5f3558c334e29c59533995ec
 #| msgid "mayo"
 msgid "May"
-msgstr "Μάης"
+msgstr "Μάιος"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:852
 #: loco:5f3558c334e29c59533995ed
@@ -1197,25 +1202,25 @@ msgstr "Δεκέμβριος"
 #: loco:5f3558c334e29c59533995f4
 #| msgid "Adultos Ae. albopictus/aegypti"
 msgid "fmap_Adult_tiger_mosquitoes"
-msgstr "Ενήλικας Ae. albopictus/aegypti"
+msgstr "Ακμαία κουνούπια Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:873
 #: loco:5f3558c334e29c59533995f5
 #| msgid "Adultos"
 msgid "fmap_Adults"
-msgstr "Ενήλικα"
+msgstr "Ακμαία κουνούπια"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:875
 #: loco:5f3558c334e29c59533995f6
 #| msgid "Lugares de cría de Ae. albopictus/aegypti"
 msgid "fmap_Tiger_mosquito_breeding_sites"
-msgstr "Εστίες ανάπτυξης Ae. albopictus/aegypti"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:875
 #: loco:5f3558c334e29c59533995f7
 #| msgid "Lugares de cría"
 msgid "fmap_Breeding_sites"
-msgstr "Εστίες ανάπτυξης"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:878
 #: loco:5f3558c334e29c59533995f8
@@ -1265,17 +1270,17 @@ msgstr "Χάρτης ψευδοκατανομής"
 #: tigamap/views.py:162 loco:5f3558c334e29c5953399600
 #| msgid "Mosquitos: Todos"
 msgid "Adult tiger mosquitoes: Validated reports"
-msgstr "Ενήλικα κουνούπια τίγρη: Επιβεβαιωμένες εκθέσεις"
+msgstr "Ακμαπία κουνούπια τίγρη: Επιβεβαιωμένες εκθέσεις"
 
 #: tigamap/views.py:171 loco:5f3558c334e29c5953399601
 #| msgid "Mosquitos tigre: Sólo probabilidad media y alta"
 msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
-msgstr "Ενήλικα κουνούπια τίγρη: εκθέσεις με μέτρια και ψηλή πιθανότητα"
+msgstr "Ακμαία κουνούπια τίγρη: εκθέσεις με μέτρια και ψηλή πιθανότητα"
 
 #: tigamap/views.py:177 loco:5f3558c334e29c5953399602
 #| msgid "Mosquitos tigre: Sólo probabilidad alta"
 msgid "adult-tiger-mosquitoes-high-probability-reports"
-msgstr "Κουνούπι τίγρης: Μόνο εκθέσεις ψηλής πιθανότητας"
+msgstr "Κουνούπι τίγρης: Μόνο εκθέσεις yψηλής πιθανότητας"
 
 #: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
 #: loco:5f3558c334e29c5953399603
@@ -1286,33 +1291,33 @@ msgstr "Κουνούπια: όλες οι εκθέσεις"
 #: tigamap/views.py:189 loco:5f3558c334e29c5953399604
 #| msgid "Lugares de cría: Todos"
 msgid "Breeding Sites: Validated reports"
-msgstr "Εστίες ανάπτυξης: επιβεβαιωμένες εκθέσεις"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: επιβεβαιωμένες εκθέσεις"
 
 #: tigamap/views.py:199 tigamap/views.py:289 loco:5f3558c334e29c5953399605
 #| msgid "Lugares de cría: Sumideros y fuentes"
 msgid "breeding-sites-storm-drains-and-fountains"
-msgstr "Εστίες ανάπτυξης: Αποχετεύσεις ομβρίων και συντριβάνια"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Αποχετεύσεις ομβρίων και συντριβάνια"
 
 #: tigamap/views.py:202 tigamap/views.py:289 loco:5f3558c334e29c5953399606
 #| msgid "Lugares de cría: Pequeñas balsas artificiales"
 msgid "breeding-sites-basins"
-msgstr "Εστίες ανάπτυξης: Λεκάνες"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Λεκάνες"
 
 #: tigamap/views.py:205 tigamap/views.py:289 loco:5f3558c334e29c5953399607
 #| msgid "Lugares de cría: Bidones y pozos"
 msgid "breeding-sites-buckets-and-wells"
-msgstr "Εστίες ανάπτυξης: κουβάδες και πηγάδια"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: κουβάδες και πηγάδια"
 
 #: tigamap/views.py:208 tigamap/views.py:289 loco:5f3558c334e29c5953399608
 #| msgid "Lugares de cría: Otros"
 msgid "breeding-sites-other"
-msgstr "Εστίες ανάπτυξης: Άλλες"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Άλλoυ τύπου"
 
 #: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
 #: loco:5f3558c334e29c5953399609
 #| msgid "Lugares de cría: Todos"
 msgid "breeding-sites-all-reports"
-msgstr "Εστίες ανάπτυξης: Όλες οι εκθέσεις"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Όλες οι εκθέσεις"
 
 #: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
 #: tigascoring/xp_scoring.py:190 loco:5f3558c334e29c595339960a
@@ -1343,37 +1348,37 @@ msgstr "Μεγάλος δάσκαλος"
 #: tigascoring/xp_scoring.py:217 loco:5f3558c334e29c595339960f
 #| msgid "Primer informe de la temporada"
 msgid "start_of_season"
-msgstr "Πρώτη έκθεση της εποχής"
+msgstr "Έναρξη περιόδου"
 
 #: tigascoring/xp_scoring.py:218 loco:5f3558c334e29c5953399610
 #| msgid "ser el primer informe del día"
 msgid "daily_participation"
-msgstr "υποβολή πρώτης έκθεσης της ημέρας"
+msgstr "Υποβολή πρώτης έκθεσης της ημέρας"
 
 #: tigascoring/xp_scoring.py:219 loco:5f3558c334e29c5953399611
 #| msgid "haber mandado datos durante DOS días seguidos"
 msgid "fidelity_day_2"
-msgstr "υποβολή εκθέσεων κατά δύο συνεχόμενες ημέρες"
+msgstr "υποβολή εκθέσεων για δύο συνεχόμενες ημέρες"
 
 #: tigascoring/xp_scoring.py:220 loco:5f3558c334e29c5953399612
 #| msgid "haber mandado datos durante TRES días seguidos"
 msgid "fidelity_day_3"
-msgstr "υποβολή εκθέσεων κατά τρεις συνεχόμενες ημέρες"
+msgstr "υποβολή εκθέσεων για τρεις συνεχόμενες ημέρες"
 
 #: tigascoring/xp_scoring.py:221 loco:5f3558c334e29c5953399613
 #| msgid "10 datos enviados"
 msgid "achievement_10_reports"
-msgstr "10 υποβλημένα δεδομένα"
+msgstr "10 μεταφορτωμένα δεδομένα"
 
 #: tigascoring/xp_scoring.py:222 loco:5f3558c334e29c5953399614
 #| msgid "20 datos enviados"
 msgid "achievement_20_reports"
-msgstr "20 υποβλημένα δεδομένα"
+msgstr "20 μεταφορτωμένα δεδομένα"
 
 #: tigascoring/xp_scoring.py:223 loco:5f3558c334e29c5953399615
 #| msgid "50 datos enviados"
 msgid "achievement_50_reports"
-msgstr "50 υποβλημένα δεδομένα"
+msgstr "50 μεταφορτωμένα δεδομένα"
 
 #: tigascoring/xp_scoring.py:259 tigascoring/xp_scoring.py:302
 #: loco:5f3558c334e29c5953399616
@@ -1395,12 +1400,14 @@ msgstr "Είναι ένα αποχετευτικό ομβρίων"
 #: tigascoring/xp_scoring.py:271 loco:5f3558c334e29c5953399619
 #| msgid "haber respondido la pregunta del agua del lugar de cría"
 msgid "water_question"
-msgstr "απαντώντας την ερώτηση νερού στην έκθεση για την εστία ανάπτυξης"
+msgstr ""
+"Απάντηση στην ερώτηση για ύπαρξη νερού στην έκθεση για την εστία "
+"ανάπτυξη/αναπαραγωγής κουνουπιών"
 
 #: tigascoring/xp_scoring.py:275 loco:5f3558c334e29c595339961a
 #| msgid "haber añadido un informe de mosquito al final"
 msgid "mosquito_report_follows_breeding_site"
-msgstr "υποβολή έκθεσης για κουνούπια μετά"
+msgstr "υποβολή έκθεσης για κουνούπια αργότερα"
 
 #: tigascoring/xp_scoring.py:305 loco:5f3558c334e29c595339961b
 #| msgid "no hay foto"
@@ -1420,7 +1427,7 @@ msgstr "απαντώντας την ερώτηση για το θώρακα στ
 #: tigascoring/xp_scoring.py:318 loco:5f3558c334e29c595339961e
 #| msgid "haber respondido el formulario del abdomen del mosquito"
 msgid "abdomen_question"
-msgstr "απαντώντας την ερώτηση κοιλία στην έκθεση για τα κουνούπια"
+msgstr "απαντώντας την ερώτηση για την κοιλία στην έκθεση για τα κουνούπια"
 
 #: tigascoring/xp_scoring.py:321 loco:5f3558c334e29c595339961f
 #| msgid "haber respondido el formulario de las patas del mosquito"
@@ -1434,14 +1441,14 @@ msgstr "απαντώντας την ερώτηση για το πόδι στην
 #| "info, revisa el tutorial de la app."
 msgid "other_species"
 msgstr ""
-"Μετά την ανάλυση της υποβολής σου, οι ειδικοί έχουν αποφασίσει ότι δεν "
-"ταιριάζει με κανένα από τα 5 είδη κουνουπιών που στοχεύουμε. Για "
-"περισσότερες πληροφορίες, μπορείς να μελετήσεις το εγχειρίδιο της εφαρμογής."
+"Μετά την ανάλυση της υποβολής σας, οι ειδικοί αποφάσισαν ότι δεν ταιριάζει "
+"με κανένα από τα 5 είδη κουνουπιών που στοχεύουμε. Για περισσότερες "
+"πληροφορίες, μπορείτε να μελετήσετε το εγχειρίδιο της εφαρμογής."
 
 #: tigascoring/xp_scoring.py:331 loco:5f3558c334e29c5953399621
 #| msgid "Lugares de cría"
 msgid "bite report follow"
-msgstr "Εστίες ανάπτυξης"
+msgstr "μετά την τρέχουσα αναφορά δώστε αναφορά τσιμπήματος"
 
 #: tigascoring/xp_scoring.py:371 loco:5f3558c334e29c5953399622
 #| msgid " años"
@@ -1461,12 +1468,12 @@ msgstr "ημέρες"
 #: tigaserver_app/models.py:542 loco:5f3558c334e29c5953399625
 #| msgid "Alta"
 msgid "High"
-msgstr "Ψηλή"
+msgstr "Υψηλή"
 
 #: tigaserver_app/models.py:544 loco:5f3558c334e29c5953399626
 #| msgid "Media"
 msgid "Medium"
-msgstr "Μέση"
+msgstr "Μέτρια"
 
 #: tigaserver_app/models.py:546 loco:5f3558c334e29c5953399627
 #| msgid "Baja"
@@ -1476,7 +1483,7 @@ msgstr "Χαμηλή"
 #: tigaserver_messages/fields.py:56 loco:5f3558c334e29c5953399628
 #, python-format
 msgid "The following usernames are incorrect: %(users)s"
-msgstr "The following usernames are incorrect: %(users)s"
+msgstr ""
 
 #: tigaserver_messages/forms.py:20 loco:5f3558c334e29c5953399629
 msgid "Body"
@@ -1485,7 +1492,7 @@ msgstr "Σώμα"
 #: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
 #: tigaserver_messages/views.py:138 loco:5f3558c334e29c595339962a
 msgid "Message successfully sent."
-msgstr "Μήνυμα στάληκε επιτυχώς"
+msgstr "Το μήνυμα στάλθηκε επιτυχώς"
 
 #: tigaserver_messages/views.py:120 loco:5f3558c334e29c595339962b
 #, python-format
