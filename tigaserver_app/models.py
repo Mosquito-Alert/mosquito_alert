@@ -388,7 +388,7 @@ class Report(models.Model):
     selected_location_lat = models.FloatField(blank=True, null=True, help_text="Longitude of location selected by "
                                                                                "user on map. "
                                                                               "In decimal degrees.")
-    note = models.TextField(blank=True, help_text='Note user attached to report.')
+    note = models.TextField(blank=True, null=True, help_text='Note user attached to report.')
     package_name = models.CharField(db_index=True, max_length=400, blank=True, help_text='Name of tigatrapp package from which this '
                                                                           'report was submitted.')
     package_version = models.IntegerField(db_index=True, blank=True, null=True, help_text='Version number of tigatrapp package from '
