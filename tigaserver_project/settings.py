@@ -147,6 +147,7 @@ LANGUAGES = (
     ('sr', _('Serbian')),
     ('lb', _('Letzeburgesch')),
     ('nl', _('Dutch')),
+    ('tr', _('Turkish')),
     ('zh-cn', _('Chinese')),
 )
 
