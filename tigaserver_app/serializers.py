@@ -153,7 +153,7 @@ class ReportSerializer(serializers.ModelSerializer):
     current_location_lat = serializers.FloatField(required=False)
     selected_location_lon = serializers.FloatField(required=False)
     selected_location_lat = serializers.FloatField(required=False)
-    note = serializers.CharField(required=False)
+    note = serializers.CharField(required=False, allow_blank=True)
     package_name = serializers.CharField(required=False)
     package_version = serializers.IntegerField(required=False)
     device_manufacturer = serializers.CharField(required=False)
