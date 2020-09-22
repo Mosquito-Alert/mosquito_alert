@@ -988,7 +988,7 @@ def custom_render_notification_queryset(queryset,locale):
 @api_view(['GET','POST','DELETE','PUT'])
 def user_notifications(request):
     if request.method == 'GET':
-        locale = request.query_params.get('locale', 'es')
+        locale = request.query_params.get('locale', 'en')
         user_id = request.query_params.get('user_id', -1)
         acknowledged = 'ignore'
         if request.query_params.get('acknowledged') != None:

@@ -1,0 +1,81 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Privacybeleid
+{% endblock %}
+
+
+{% block content %}
+
+<div class="center">
+    <h2>Privacybeleid</h2>
+</div>
+
+<p>Mosquito Alert (met elke naam die het in het verleden heeft gehad of in de toekomst zal verwerven) verzamelt, onder
+    andere, gegevens en afbeeldingen gedeeld door vrijwilligers en maakt deze beschikbaar voor derden en het algemeen
+    publiek. Om de privacy van vrijwilligers te kunnen beschermen, probeert Mosquito Alert geen persoonlijke informatie
+    te verzamelen, dat wil zeggen informatie die gebruikt kan worden om een natuurlijke persoon individueel te
+    identificeren. Om deze reden vraagt Mosquito Alert aan haar vrijwilligers om geen namen, adressen, wachtwoorden en
+    andere persoonlijke informatie te delen tijdens het versturen van een melding. De exacte locatie van een observatie
+    wordt geregistreerd bij het insturen van een melding, deze kunnen samenvallen met de exacte locatie van
+    vrijwilligers, deze informatie is alleen gekoppeld aan de melding met een willekeurig gegenereerd gebruikers ID.
+    Metadata van foto's wordt niet opgevraagd, wanneer via de applicatie ingestuurde foto's toch metadata bevatten, zal
+    deze metadata worden verwijderd wanneer de foto de project server bereikt, met de uitzondering van de geolocatie van
+    de foto, welke gekoppeld zal blijven aan de foto en gepubliceerd kan worden.</p> <p>Mosquito Alert verzamelt de
+    geschatte locatie van vrijwilligers op willekeurige momenten in de tijd (om de geografische gebieden te beoordelen
+    die door vrijwilligers worden bezocht), deze informatie is alleen gelinkt met een willekeurig gegenereerd gebruikers
+    ID. Vrijwilligers kunnen notities en foto's toevoegen aan hun meldingen, het is hun eigen verantwoordelijkheid om
+    geen privégegevens toe te voegen aan deze notities en foto's of andere informatie die de privacy rechten van anderen
+    schendt of die niet strookt met de gebruikersovereenkomst van Mosquito Alert.</p> <p>Mosquito Alert heeft
+    mechanismen om, voor zover mogelijk, te voorkomen dat persoonlijke gegevens die gebruikers per ongeluk hebben
+    verzonden, ondanks anonimiseringsmaatregelen, worden gedeeld met het publiek. Evenzo past Mosquito Alert maatregelen
+    toe om te detecteren of persoonlijke gegevens zijn gedeeld en om deze voor zover mogelijk uit de database te
+    verwijderen. Desondanks, als deze maatregelen in een bepaald geval de publicatie van persoonlijke gegevens niet
+    verhinderen, worden degenen die deze detecteren aangemoedigd om degenen verantwoordelijk voor Mosquito Alert op de
+    hoogte te stellen, zodat ze indien mogelijk kunnen voorkomen dat deze openbaar worden gemaakt. Mosquito Alert kan
+    niet garanderen dat persoonsgegevens die door Mosquito Alert per ongeluk worden verzameld, ondanks de
+    anonimiseringsmaatregelen, worden verwijderd, noch kan het garanderen dat dergelijke gegevens niet zichtbaar zullen
+    zijn voor leden van Mosquito Alert of voor een van zijn medewerkers of derden.</p> <p>Opgemerkt wordt dat wanneer
+    deelnemers hun observaties (meldingen) delen in welk publiek medium dan ook, zoals sociale netwerken, ze hun
+    observaties koppelen aan hun persoonsgegevens (bijvoorbeeld het persoonlijke account op sociale netwerken) en
+    daarmee, vrijwillig, hun anonimiteit opgeven welke het project juist wil bieden.</p> <p>Met Mosquito Alert kunnen
+    deelnemers hun gegevens met behoud van anonimiteit opslaan, via een authenticatiesysteem met externe accounts
+    (e-mail, Facebook, Twitter), via Firebase. Hierdoor kunnen deelnemers meerdere apparaten synchroniseren en gegevens
+    herstellen als ze de applicatie moeten verwijderen. Deze optie is vrijwillig en wordt niet standaard geactiveerd. De
+    informatie die Firebase voor dit doel verzameld, wordt in ieder geval niet opgeslagen op de Mosquito Alert-servers,
+    is niet gekoppeld aan de wetenschappelijke gegevens verzameld door Mosquito Alert en wordt niet verwerkt door
+    Mosquito Alert.</p> <p>Een gedetailleerde lijst van informatie die door Mosquito Alert wordt verzameld is als
+    volgt:</p>
+<ul>
+    <li>Meldingen verzameld en verzonden door vrijwilligers met betrekking tot broedplaatsen, muggenbeten en
+        waarnemingen van steekmuggen (Mosquito Alert richt zich momenteel op 5 verschillende soorten steekmuggen),
+        evenals antwoorden van vrijwilligers op vragen die hen via de app zijn gestuurd. Dit omvat de exacte locatie van
+        de observaties en foto's van de vrijwilliger (evenals de locatie van de metagegevens van de foto, indien van
+        toepassing), notities of andere informatie die de vrijwilliger aan de melding toevoegt.
+    </li>
+    <li>Informatie over de geschatte locatie van vrijwilligers, verkregen in de achtergrondmodus en met willekeurige
+        tijdsintervallen. Deze informatie wordt verzameld voor wetenschappelijke doeleinden, om de geografische gebieden
+        in kaart te brengen die door de vrijwilligers worden bezocht (bemonsteringsinspanning, dat wil zeggen in welke
+        gebieden wel of niet wordt deelgenomen en in welke mate, om het te kunnen relateren aan het aantal waarnemingen
+        in hetzelfde gebied door bijvoorbeeld modelleertechnieken of statistieken te gebruiken), en om de kennis over de
+        verspreidingsroutes van muggen gerelateerd aan menselijke mobiliteit te vergroten (dat wil zeggen, om de relatie
+        tussen hoe mensen op grote schaal bewegen en de verspreiding van deze soorten beter te begrijpen ). Deze
+        informatie is van groot wetenschappelijk belang. Om te voorkomen dat de exacte locaties van vrijwilligers worden
+        verzameld, worden deze locaties op een raster van 0,025 graden lengte- en breedtegraad geplaatst en wordt alleen
+        de identificatie van de rastervierkanten waarin ze vallen naar de server verzonden. Het is dus onmogelijk om de
+        werkelijke locatie te bepalen, binnen een gebied van 0,025 graden noorderbreedte en 0,025 graden lengte (tussen
+        ongeveer 3,1 en ongeveer 7,7 vierkante kilometer, of tussen 765 en 1901 voetbalvelden). In ieder geval kunnen
+        vrijwilligers deze optie, die standaard geactiveerd is, deactiveren in de applicatie-instellingen.
+    </li>
+    <li>Informatie over het telefoonmodel, de batterij, de taalinstellingen en de app-versie (dat wil zeggen, de
+        geïnstalleerde versie en het besturingssysteem en de versie waarin deze is geïnstalleerd). Deze informatie wordt
+        gebruikt om het onderzoeksteam te helpen de applicatie te verbeteren.
+    </li>
+    <li>Als de vrijwilliger ervoor kiest om zich te authenticeren via een extern account met Firebase, kan Firebase het
+        e-mailadres, wachtwoord, telefoonnummer, IP-adres en andere informatie verzamelen die aan dat externe account
+        zijn gekoppeld.
+    </li>
+</ul>
+
+{% endblock %}
