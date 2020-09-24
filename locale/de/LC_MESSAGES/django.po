@@ -44,7 +44,7 @@ msgstr "Meldungen von Brutstätten"
 #: stats/templates/stats/fix_user_chart.html:99 loco:5f3558c334e29c5953399546
 msgid "Participants with over 20 fixes"
 msgstr ""
-"Teilnehmer mit mehr als 20 Korrekturen\n"
+"Teilnehmer mit mehr als 20 Korrekturen"
 
 #: stats/templates/stats/fix_user_chart.html:108 loco:5f3558c334e29c5953399547
 msgid "Participants with over 15 fixes"
@@ -1253,7 +1253,7 @@ msgstr "Markierungen"
 #| msgid "Zonas exploradas"
 msgid "coverage-map"
 msgstr ""
-"Karte der Abdeckung\n"
+"Karte der Abdeckung"
 
 #: tigamap/views.py:155 loco:5f3558c334e29c59533995ff
 msgid "Pseudo Occurrence-Exposure Map"
@@ -1435,8 +1435,7 @@ msgid "other_species"
 msgstr ""
 "Nach der Analyse deiner Meldung haben die Experten entschieden, dass sie "
 "keiner der 5 Zielmückenarten entspricht. Weitere Informationen findest du im "
-"App-Tutorial.\n"
-"\n"
+"App-Tutorial."
 
 #: tigascoring/xp_scoring.py:331 loco:5f3558c334e29c5953399621
 #| msgid "Lugares de cría"
