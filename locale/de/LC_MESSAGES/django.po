@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"PO-Revision-Date: 2020-09-23 22:06+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: German (Germany)\n"
 "Language: de_DE\n"
@@ -44,7 +44,7 @@ msgstr "Meldungen von Brutstätten"
 #: stats/templates/stats/fix_user_chart.html:99 loco:5f3558c334e29c5953399546
 msgid "Participants with over 20 fixes"
 msgstr ""
-"Teilnehmer mit mehr als 20 Korrekturen"
+"Teilnehmer mit mehr als 20 Korrekturen\n"
 
 #: stats/templates/stats/fix_user_chart.html:108 loco:5f3558c334e29c5953399547
 msgid "Participants with over 15 fixes"
@@ -101,7 +101,7 @@ msgstr ""
 #: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399551
 #| msgid "Más información sobre"
 msgid "user_ranking_info_text_2"
-msgstr "Mehr Informationen über"
+msgstr "Mehr Informationen über die"
 
 #: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399552
 #| msgid "la puntuación"
@@ -124,7 +124,7 @@ msgstr ""
 #: stats/templates/stats/user_ranking.html:143 loco:5f3558c334e29c5953399554
 #| msgid "Mi posición"
 msgid "My position"
-msgstr "Mein Standort"
+msgstr "Meine Position"
 
 #: stats/templates/stats/user_ranking.html:59
 #: stats/templates/stats/user_score.html:37
@@ -132,7 +132,7 @@ msgstr "Mein Standort"
 #: stats/templates/stats/user_score.html:143 loco:5f3558c334e29c5953399555
 #| msgid "de"
 msgid "of"
-msgstr ""
+msgstr "von"
 
 #: stats/templates/stats/user_ranking.html:75 loco:5f3558c334e29c5953399556
 #| msgid "Posición"
@@ -147,7 +147,7 @@ msgstr "Benutzer"
 #: stats/templates/stats/user_ranking.html:77 loco:5f3558c334e29c5953399558
 #| msgid "Rango general"
 msgid "Overall class"
-msgstr "Allgemeine Klasse"
+msgstr "Level Gesamt"
 
 #: stats/templates/stats/user_ranking.html:78 loco:5f3558c334e29c5953399559
 #| msgid "Puntuación"
@@ -184,13 +184,13 @@ msgstr ""
 #| "Gran Maestro."
 msgid "there_are_5_levels"
 msgstr ""
-"Es gibt 5 erreichbae Level: Anfänger, Beginner, Mitarbeiter, Meister und "
-"Großmeister"
+"Es gibt 5 erreichbae Level: Anfänger, Fortgeschrittener, Experte, Meister "
+"und Großmeister"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
 #| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Teilnehmen"
+msgstr "Start der Teilnahme"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
 #| msgid "Última actividad hace"
@@ -200,7 +200,7 @@ msgstr "Letze Aktivität"
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399561
 #| msgid "Nunca"
 msgid "Never"
-msgstr ""
+msgstr "Niemals"
 
 #: stats/templates/stats/user_score.html:34 loco:5f3558c334e29c5953399562
 #| msgid "Posición global - Sin posición"
@@ -239,12 +239,12 @@ msgstr "Punkte"
 #: stats/templates/stats/user_score.html:49 loco:5f3558c334e29c5953399567
 #| msgid "Premios obtenidos"
 msgid "Other awards"
-msgstr "verliehene Auszeichnungen"
+msgstr "vVerliehene Auszeichnungen"
 
 #: stats/templates/stats/user_score.html:55 loco:5f3558c334e29c5953399568
 #| msgid "Concedido el"
 msgid "awarded_on"
-msgstr "verliehen am"
+msgstr "Verliehen am"
 
 #: stats/templates/stats/user_score.html:62 loco:5f3558c334e29c5953399569
 #| msgid "puntos, concedidos"
@@ -259,7 +259,7 @@ msgstr "Niveau erreicht für"
 
 #: stats/templates/stats/user_score.html:81 loco:5f3558c334e29c595339956b
 msgid "Mosquito"
-msgstr ""
+msgstr "Stechmücke"
 
 #: stats/templates/stats/user_score.html:83 loco:5f3558c334e29c595339956c
 #| msgid "Posición específica para Mosquito - Sin clasificar"
@@ -296,7 +296,7 @@ msgstr "Du hast keine Punkte erzielt, weil"
 #: stats/templates/stats/user_score.html:175 loco:5f3558c334e29c5953399571
 #| msgid "¡Este informe no tiene puntos concedidos!"
 msgid "No awards for this report!"
-msgstr ""
+msgstr "Keine Punkte für diese Meldung!"
 
 #: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c5953399572
 #| msgid "Lugares de cría"
@@ -1253,7 +1253,7 @@ msgstr "Markierungen"
 #| msgid "Zonas exploradas"
 msgid "coverage-map"
 msgstr ""
-"Karte der Abdeckung"
+"Karte der Abdeckung\n"
 
 #: tigamap/views.py:155 loco:5f3558c334e29c59533995ff
 msgid "Pseudo Occurrence-Exposure Map"
@@ -1322,22 +1322,22 @@ msgstr "Anfänger"
 #: tigascoring/xp_scoring.py:192 loco:5f3558c334e29c595339960b
 #| msgid "Colaborador"
 msgid "Contributor"
-msgstr ""
+msgstr "Fortgeschrittener"
 
 #: tigascoring/xp_scoring.py:194 loco:5f3558c334e29c595339960c
 #| msgid "Experto"
 msgid "Expert"
-msgstr ""
+msgstr "Experte"
 
 #: tigascoring/xp_scoring.py:196 loco:5f3558c334e29c595339960d
 #| msgid "Maestro"
 msgid "Master"
-msgstr ""
+msgstr "Meister"
 
 #: tigascoring/xp_scoring.py:198 loco:5f3558c334e29c595339960e
 #| msgid "Gran maestro"
 msgid "Grandmaster"
-msgstr ""
+msgstr "Großmeister"
 
 #: tigascoring/xp_scoring.py:217 loco:5f3558c334e29c595339960f
 #| msgid "Primer informe de la temporada"
@@ -1435,7 +1435,8 @@ msgid "other_species"
 msgstr ""
 "Nach der Analyse deiner Meldung haben die Experten entschieden, dass sie "
 "keiner der 5 Zielmückenarten entspricht. Weitere Informationen findest du im "
-"App-Tutorial."
+"App-Tutorial.\n"
+"\n"
 
 #: tigascoring/xp_scoring.py:331 loco:5f3558c334e29c5953399621
 #| msgid "Lugares de cría"
@@ -1445,17 +1446,17 @@ msgstr "nach der aktuellen Meldung einen Biss melden"
 #: tigascoring/xp_scoring.py:371 loco:5f3558c334e29c5953399622
 #| msgid " años"
 msgid " years ago"
-msgstr ""
+msgstr "Jahre"
 
 #: tigascoring/xp_scoring.py:373 loco:5f3558c334e29c5953399623
 #| msgid " meses"
 msgid " months ago"
-msgstr ""
+msgstr "Monate"
 
 #: tigascoring/xp_scoring.py:375 loco:5f3558c334e29c5953399624
 #| msgid " días"
 msgid " days ago"
-msgstr ""
+msgstr "Tage"
 
 #: tigaserver_app/models.py:542 loco:5f3558c334e29c5953399625
 #| msgid "Alta"
@@ -1494,7 +1495,7 @@ msgstr ""
 #: tigaserver_project/settings.py:131 loco:5f3558c334e29c595339962c
 #| msgid "Español"
 msgid "Spanish"
-msgstr "spanisch"
+msgstr "Spanisch"
 
 #: tigaserver_project/settings.py:132 loco:5f3558c334e29c595339962d
 #| msgid "Catalán"
@@ -1504,7 +1505,7 @@ msgstr "Katalanisch"
 #: tigaserver_project/settings.py:133 loco:5f3558c334e29c595339962e
 #| msgid "Inglés"
 msgid "English"
-msgstr "englisch"
+msgstr "Englisch"
 
 #: tigaserver_project/settings.py:134 loco:5f3558c334e29c595339962f
 msgid "Chinese"
