@@ -2478,10 +2478,12 @@ class NotificationContent(models.Model):
                 return self.title_es
             else:
                 return self.title_en
-        elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
-            return self.title_en
         else:
-            return self.title_es
+            return self.title_en
+        # elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
+        #     return self.title_en
+        # else:
+        #     return self.title_es
 
     def get_body_locale_safe(self,locale):
         if locale.lower().startswith('es'):
@@ -2496,10 +2498,12 @@ class NotificationContent(models.Model):
                 return self.body_html_es
             else:
                 return self.body_html_en
-        elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
-            return self.body_html_en
         else:
-            return self.body_html_es
+            return self.body_html_en
+        # elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
+        #     return self.body_html_en
+        # else:
+        #     return self.body_html_es
 
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.DO_NOTHING, )
