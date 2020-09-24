@@ -14,7 +14,7 @@ from django.template.loader import render_to_string
 class ScoringTestCase(TestCase):
     fixtures = ['awardcategory.json', 'tigausers.json', 'europe_countries.json', 'granter_user.json']
 
-    def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None):
+    def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
         if hour is None:
             hour = 0
@@ -41,6 +41,7 @@ class ScoringTestCase(TestCase):
             current_location_lon=long,
             current_location_lat=lat,
             type='adult',
+            app_language=report_app_language
         )
         return r
 
@@ -259,6 +260,13 @@ class ScoringTestCase(TestCase):
         context_es['reason_awarded'] = get_translation_in(category_label, 'es')
         return render_to_string('tigaserver_app/award_notification_es.html', context_es)
 
+    @staticmethod
+    def get_notification_body_for_locale(category_label, xp, locale):
+        context = {}
+        context['amount_awarded'] = xp
+        context['reason_awarded'] = get_translation_in(category_label, locale)
+        return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context)
+
     def test_10_day_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
         user = TigaUser.objects.get(pk=user_id)
@@ -339,3 +347,21 @@ class ScoringTestCase(TestCase):
         self.assertEqual(Award.objects.filter(category__id=1).count(),2)  # First of season given to each of the reports
         self.assertEqual(Award.objects.filter(category__id=1).filter(report__version_UUID=report_1_user_1.version_UUID).count(), 1)
         self.assertEqual(Award.objects.filter(category__id=1).filter(report__version_UUID=report_1_user_2.version_UUID).count(), 1)
+
+
+    def test_10_day_achievement_for_sq_locale(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+
+        month_1 = 1
+        year = 2020
+
+        for i in range(1,11,1):
+            r = self.create_single_report(i, month_1, year, user, '00000000-0000-0000-0000-0000000000' + str(i), report_app_language='sq')
+            r.save()
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        # emulate notifications
+        if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
+            notification_body = self.get_notification_body_for_locale(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP,'sq')
+            #The english notification should be in Albanian
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
