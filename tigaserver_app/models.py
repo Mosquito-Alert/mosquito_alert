@@ -2115,77 +2115,88 @@ def get_locale_for_en(report):
                         return report_locale
     return 'en'
 
+
+def package_number_allows_notification(report):
+    minimum_package_version = getattr(conf, 'MINIMUM_PACKAGE_VERSION_SCORING_NOTIFICATIONS', 32)
+    if report is not None:
+        if report.package_version is not None:
+            if report.package_version >= minimum_package_version:
+                return True
+    return False
+
+
 def issue_notification(report, reason_label, xp_amount, current_domain):
     if getattr( conf, 'DISABLE_ACHIEVEMENT_NOTIFICATIONS', True) == False:
-        notification_content = NotificationContent()
-        context_es = {}
-        context_ca = {}
-        context_en = {}
-        locale_for_en = get_locale_for_en(report)
+        if package_number_allows_notification(report):
+            notification_content = NotificationContent()
+            context_es = {}
+            context_ca = {}
+            context_en = {}
+            locale_for_en = get_locale_for_en(report)
 
-        super_movelab = User.objects.get(pk=24)
-        notification_content.title_es = "!Acabas de recibir una recompensa de puntos!"
-        notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
-        notification_content.title_en = get_translation_in("you_just_received_a_points_award",locale_for_en)
-        #notification_content.title_en = "You just received a points award!"
-        if report is not None:
-            if report.get_final_photo_url_for_notification():
-                context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-            else:
-                pic = report.get_first_visible_photo()
-                if pic:
-                    pic_url = pic.get_medium_url()
-                    if pic_url is not None:
-                        context_es['picture_link'] = 'http://' + current_domain + pic_url
-                        context_en['picture_link'] = 'http://' + current_domain + pic_url
-                        context_ca['picture_link'] = 'http://' + current_domain + pic_url
+            super_movelab = User.objects.get(pk=24)
+            notification_content.title_es = "!Acabas de recibir una recompensa de puntos!"
+            notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
+            notification_content.title_en = get_translation_in("you_just_received_a_points_award",locale_for_en)
+            #notification_content.title_en = "You just received a points award!"
+            if report is not None:
+                if report.get_final_photo_url_for_notification():
+                    context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                    context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                    context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                else:
+                    pic = report.get_first_visible_photo()
+                    if pic:
+                        pic_url = pic.get_medium_url()
+                        if pic_url is not None:
+                            context_es['picture_link'] = 'http://' + current_domain + pic_url
+                            context_en['picture_link'] = 'http://' + current_domain + pic_url
+                            context_ca['picture_link'] = 'http://' + current_domain + pic_url
 
-        context_es['amount_awarded'] = xp_amount
-        context_en['amount_awarded'] = xp_amount
-        context_ca['amount_awarded'] = xp_amount
+            context_es['amount_awarded'] = xp_amount
+            context_en['amount_awarded'] = xp_amount
+            context_ca['amount_awarded'] = xp_amount
 
-        context_es['reason_awarded'] = get_translation_in(reason_label,'es')
-        context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en)
-        context_ca['reason_awarded'] = get_translation_in(reason_label,'ca')
+            context_es['reason_awarded'] = get_translation_in(reason_label,'es')
+            context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en)
+            context_ca['reason_awarded'] = get_translation_in(reason_label,'ca')
 
-        notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
-        notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
-        try:
-            notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_' + locale_for_en + '.html', context_en)
-        except TemplateDoesNotExist:
-            notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html',context_en)
+            notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
+            notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
+            try:
+                notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_' + locale_for_en + '.html', context_en)
+            except TemplateDoesNotExist:
+                notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html',context_en)
 
-        '''
-        notification_content.body_html_es = notification_content.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
-        notification_content.body_html_ca = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
-        notification_content.body_html_en = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
-        '''
+            '''
+            notification_content.body_html_es = notification_content.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
+            notification_content.body_html_ca = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
+            notification_content.body_html_en = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
+            '''
 
-        '''
-        if conf.DEBUG == True:
-            print(notification_content.body_html_es)
-            print(notification_content.body_html_ca)
-            print(notification_content.body_html_en)
-        '''
-        notification_content.save()
-        notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
-        notification.save()
-        recipient = report.user
-        if recipient.device_token is not None and recipient.device_token != '':
-            if (recipient.user_UUID.islower()):
-                try:
-                    #print(recipient.user_UUID)
-                    send_message_android(recipient.device_token, notification_content.title_es, '')
-                except Exception as e:
-                    pass
-            else:
-                try:
-                    #print(recipient.user_UUID)
-                    send_message_ios(recipient.device_token, notification_content.title_es, '')
-                except Exception as e:
-                    pass
+            '''
+            if conf.DEBUG == True:
+                print(notification_content.body_html_es)
+                print(notification_content.body_html_ca)
+                print(notification_content.body_html_en)
+            '''
+            notification_content.save()
+            notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
+            notification.save()
+            recipient = report.user
+            if recipient.device_token is not None and recipient.device_token != '':
+                if (recipient.user_UUID.islower()):
+                    try:
+                        #print(recipient.user_UUID)
+                        send_message_android(recipient.device_token, notification_content.title_es, '')
+                    except Exception as e:
+                        pass
+                else:
+                    try:
+                        #print(recipient.user_UUID)
+                        send_message_ios(recipient.device_token, notification_content.title_es, '')
+                    except Exception as e:
+                        pass
 
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):

@@ -258,7 +258,9 @@ USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49, 130, 123, 126, 131
 DISABLE_PUSH_IOS = False
 DISABLE_PUSH_ANDROID = False
 #Completely disables notifications for achievements/rewards
-DISABLE_ACHIEVEMENT_NOTIFICATIONS = True
+DISABLE_ACHIEVEMENT_NOTIFICATIONS = False
+#Minimum package version for scoring notifications
+MINIMUM_PACKAGE_VERSION_SCORING_NOTIFICATIONS = 32
 
 # CELERY STUFF
 BROKER_URL = 'redis://localhost:6379'
