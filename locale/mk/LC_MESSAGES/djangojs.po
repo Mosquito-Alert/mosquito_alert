@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"PO-Revision-Date: 2020-09-26 22:35+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Macedonian (Macedonia)\n"
 "Language: mk_MK\n"
@@ -102,7 +102,7 @@ msgstr "DL"
 #: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
 #: loco:5f355e391e841656806f0f1d
 msgid "align"
-msgstr "усогласување"
+msgstr "споредување"
 
 #: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
 #: loco:5f355e391e841656806f0f1e
