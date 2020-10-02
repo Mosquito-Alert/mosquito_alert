@@ -43,6 +43,7 @@ from django.urls import reverse
 from django.template.loader import TemplateDoesNotExist
 from io import BytesIO
 from django.core.files import File
+import html.entities
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -2128,6 +2129,7 @@ def package_number_allows_notification(report):
 def issue_notification(report, reason_label, xp_amount, current_domain):
     if getattr( conf, 'DISABLE_ACHIEVEMENT_NOTIFICATIONS', True) == False:
         if package_number_allows_notification(report):
+            table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
             notification_content = NotificationContent()
             context_es = {}
             context_ca = {}
@@ -2135,10 +2137,9 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             locale_for_en = get_locale_for_en(report)
 
             super_movelab = User.objects.get(pk=24)
-            notification_content.title_es = "!Acabas de recibir una recompensa de puntos!"
-            notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
-            notification_content.title_en = get_translation_in("you_just_received_a_points_award",locale_for_en)
-            #notification_content.title_en = "You just received a points award!"
+            notification_content.title_es = "¡Acabas de recibir una recompensa de puntos!".translate(table)
+            notification_content.title_ca = "Acabes de rebre una recompensa de punts!".translate(table)
+            notification_content.title_en = get_translation_in("you_just_received_a_points_award",locale_for_en).translate(table)
             if report is not None:
                 if report.get_final_photo_url_for_notification():
                     context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
@@ -2157,16 +2158,20 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             context_en['amount_awarded'] = xp_amount
             context_ca['amount_awarded'] = xp_amount
 
-            context_es['reason_awarded'] = get_translation_in(reason_label,'es')
-            context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en)
-            context_ca['reason_awarded'] = get_translation_in(reason_label,'ca')
+            context_es['reason_awarded'] = get_translation_in(reason_label, 'es').translate(table).translate(table)
+            context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en).translate(table)
+            context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca').translate(table).translate(table)
 
             notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
+            notification_content.body_html_es = notification_content.body_html_es.replace('&amp;','&')
             notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
+            notification_content.body_html_ca = notification_content.body_html_ca.replace('&amp;','&')
             try:
                 notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_' + locale_for_en + '.html', context_en)
+                notification_content.body_html_en = notification_content.body_html_en.replace('&amp;','&')
             except TemplateDoesNotExist:
                 notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html',context_en)
+                notification_content.body_html_en = notification_content.body_html_en.replace('&amp;', '&')
 
             '''
             notification_content.body_html_es = notification_content.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
@@ -2183,6 +2188,7 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             notification_content.save()
             notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
             notification.save()
+
             recipient = report.user
             if recipient.device_token is not None and recipient.device_token != '':
                 if (recipient.user_UUID.islower()):

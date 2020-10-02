@@ -1,0 +1,25 @@
+{% extends "tigacrafting/validation_message_template.html" %}
+
+{% block title_block %}
+    <title>Ihr Bild wurde von einem Experten validiert!</title>
+{% endblock %}
+
+{% block title_header_block %}
+    <h1>Ihr Bild wurde von einem Experten validiert!</h1>
+{% endblock %}
+
+{% block validation_category_block %}
+    <p><strong>Ihre Beobachtung ist:</strong> {{ validation_category }}</p>
+{% endblock %}
+
+{% block map_link_block %}
+    <!--<p><a href="{{ map_link }}" target="_blank">View it on the map</a></p>-->
+{% endblock %}
+
+{% block expert_note_block %}
+    <p><strong>Gutachten:</strong> <i>{{ expert_note }}</i></p>
+{% endblock %}
+
+{% block message_for_user_block %}
+    <p><strong>Nachricht des Experten:</strong> <i>{{ message_for_user }}</i></p>
+{% endblock %}

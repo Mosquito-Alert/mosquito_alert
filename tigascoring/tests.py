@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, date
 import pytz
 from random import seed, random
 from django.template.loader import render_to_string
+import html.entities
 
 
 class ScoringTestCase(TestCase):
@@ -41,7 +42,8 @@ class ScoringTestCase(TestCase):
             current_location_lon=long,
             current_location_lat=lat,
             type='adult',
-            app_language=report_app_language
+            app_language=report_app_language,
+            package_version=32
         )
         return r
 
@@ -256,16 +258,18 @@ class ScoringTestCase(TestCase):
     @staticmethod
     def get_notification_body_es(category_label, xp):
         context_es = {}
+        table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
         context_es['amount_awarded'] = xp
-        context_es['reason_awarded'] = get_translation_in(category_label, 'es')
-        return render_to_string('tigaserver_app/award_notification_es.html', context_es)
+        context_es['reason_awarded'] = get_translation_in(category_label, 'es').translate(table)
+        return render_to_string('tigaserver_app/award_notification_es.html', context_es).replace('&amp;','&')
 
     @staticmethod
     def get_notification_body_for_locale(category_label, xp, locale):
         context = {}
+        table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
         context['amount_awarded'] = xp
-        context['reason_awarded'] = get_translation_in(category_label, locale)
-        return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context)
+        context['reason_awarded'] = get_translation_in(category_label, locale).translate(table)
+        return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context).replace('&amp;','&')
 
     def test_10_day_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
@@ -363,5 +367,23 @@ class ScoringTestCase(TestCase):
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
             notification_body = self.get_notification_body_for_locale(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP,'sq')
+            #The english notification should be in Albanian
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
+
+    def test_10_day_achievement_for_el_locale(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+
+        month_1 = 1
+        year = 2020
+
+        for i in range(1,11,1):
+            r = self.create_single_report(i, month_1, year, user, '00000000-0000-0000-0000-0000000000' + str(i), report_app_language='el')
+            r.save()
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        # emulate notifications
+        if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
+            notification_body = self.get_notification_body_for_locale(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP,'el')
+            print(notification_body)
             #The english notification should be in Albanian
             self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
