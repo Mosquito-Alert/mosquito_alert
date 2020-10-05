@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-24 07:18+0000\n"
+"POT-Creation-Date: 2020-10-05 11:01+0000\n"
 "PO-Revision-Date: 2015-07-16 13:40+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -383,6 +383,10 @@ msgstr "Save"
 msgid "Photos per page"
 msgstr "Photos per page"
 
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Your picture has been validated by an expert!"
+
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -469,7 +473,7 @@ msgstr "Buckets and wells"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:579
+#: tigaserver_app/models.py:582
 msgid "Other"
 msgstr "Other"
 
@@ -577,19 +581,19 @@ msgstr "Points"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:571
+#: tigaserver_app/models.py:574
 msgid "storm-drain"
 msgstr "Storm drain"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:573
+#: tigaserver_app/models.py:576
 msgid "Fountain"
 msgstr "Fountain"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:575
+#: tigaserver_app/models.py:578
 msgid "Basin"
 msgstr "Basin"
 
@@ -600,7 +604,7 @@ msgstr "Bucket"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:577
+#: tigaserver_app/models.py:580
 msgid "Well"
 msgstr "Well"
 
@@ -1125,65 +1129,61 @@ msgstr ""
 msgid " days ago"
 msgstr ""
 
-#: tigaserver_app/models.py:554
+#: tigaserver_app/models.py:557
 msgid "High"
 msgstr "High"
 
-#: tigaserver_app/models.py:556
+#: tigaserver_app/models.py:559
 msgid "Medium"
 msgstr "Medium"
 
-#: tigaserver_app/models.py:558
+#: tigaserver_app/models.py:561
 msgid "Low"
 msgstr "Low"
 
-#: tigaserver_app/models.py:1231
+#: tigaserver_app/models.py:1234
 msgid "species_unclassified"
 msgstr "Unidentifiable"
 
-#: tigaserver_app/models.py:1232
+#: tigaserver_app/models.py:1235
 msgid "species_other"
 msgstr "Other species"
 
-#: tigaserver_app/models.py:1233
+#: tigaserver_app/models.py:1236
 msgid "species_albopictus"
 msgstr "tiger mosquito (Aedes albopictus)"
 
-#: tigaserver_app/models.py:1234
+#: tigaserver_app/models.py:1237
 msgid "species_aegypti"
 msgstr "yellow fever mosquito (Aedes aegypti)"
 
-#: tigaserver_app/models.py:1235
+#: tigaserver_app/models.py:1238
 msgid "species_japonicus"
 msgstr "Asian bush mosquito (Aedes japonicus)"
 
-#: tigaserver_app/models.py:1236
+#: tigaserver_app/models.py:1239
 msgid "species_koreicus"
 msgstr "Aedes koreicus"
 
-#: tigaserver_app/models.py:1237
+#: tigaserver_app/models.py:1240
 msgid "species_complex"
 msgstr "Mixed species"
 
-#: tigaserver_app/models.py:1238
+#: tigaserver_app/models.py:1241
 msgid "species_notsure"
 msgstr "Not sure"
 
-#: tigaserver_app/models.py:1239
+#: tigaserver_app/models.py:1242
 msgid "species_culex"
 msgstr "common house mosquito (Culex sp.)"
 
-#: tigaserver_app/models.py:1252
+#: tigaserver_app/models.py:1255
 msgid "species_value_possible"
 msgstr "Probable"
 
-#: tigaserver_app/models.py:1253
+#: tigaserver_app/models.py:1256
 msgid "species_value_confirmed"
 msgstr "Confirmed"
-
-#: tigaserver_app/models.py:2116
-msgid "you_just_received_a_points_award"
-msgstr "You just received a points award!"
 
 #: tigaserver_messages/fields.py:56
 #, python-format
@@ -1283,6 +1283,9 @@ msgstr ""
 #: tigaserver_project/settings.py:151
 msgid "Chinese"
 msgstr ""
+
+#~ msgid "you_just_received_a_points_award"
+#~ msgstr "You just received a points award!"
 
 #~ msgid "Reports per page"
 #~ msgstr "Reports per page"

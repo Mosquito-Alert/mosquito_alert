@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tigatrapp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-24 07:20+0000\n"
+"POT-Creation-Date: 2020-10-05 11:01+0000\n"
 "PO-Revision-Date: 2015-07-16 15:20+0100\n"
 "Last-Translator: John Palmer <johnrbpalmer@gmail.com>\n"
 "Language-Team: John Palmer\n"
@@ -384,6 +384,10 @@ msgstr "Guardar"
 msgid "Photos per page"
 msgstr ""
 
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "La teva foto ha estat validada per un expert!"
+
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -471,7 +475,7 @@ msgstr "Bidons i pous"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:579
+#: tigaserver_app/models.py:582
 msgid "Other"
 msgstr "Altres"
 
@@ -582,19 +586,19 @@ msgstr "Punts"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:571
+#: tigaserver_app/models.py:574
 msgid "storm-drain"
 msgstr "Embornal"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:573
+#: tigaserver_app/models.py:576
 msgid "Fountain"
 msgstr "Font"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:575
+#: tigaserver_app/models.py:578
 msgid "Basin"
 msgstr "Basse artificial petit"
 
@@ -605,7 +609,7 @@ msgstr "Bidó"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:577
+#: tigaserver_app/models.py:580
 msgid "Well"
 msgstr "Pou"
 
@@ -1136,65 +1140,61 @@ msgstr " mesos"
 msgid " days ago"
 msgstr " dies"
 
-#: tigaserver_app/models.py:554
+#: tigaserver_app/models.py:557
 msgid "High"
 msgstr "Alta"
 
-#: tigaserver_app/models.py:556
+#: tigaserver_app/models.py:559
 msgid "Medium"
 msgstr "Mitjana"
 
-#: tigaserver_app/models.py:558
+#: tigaserver_app/models.py:561
 msgid "Low"
 msgstr "Baixa "
 
-#: tigaserver_app/models.py:1231
+#: tigaserver_app/models.py:1234
 msgid "species_unclassified"
 msgstr "No identificable"
 
-#: tigaserver_app/models.py:1232
+#: tigaserver_app/models.py:1235
 msgid "species_other"
 msgstr "Altres espècies"
 
-#: tigaserver_app/models.py:1233
+#: tigaserver_app/models.py:1236
 msgid "species_albopictus"
 msgstr "mosquit tigre (Aedes albopictus)"
 
-#: tigaserver_app/models.py:1234
+#: tigaserver_app/models.py:1237
 msgid "species_aegypti"
 msgstr "mosquit de la febre groga (Aedes aegypti)"
 
-#: tigaserver_app/models.py:1235
+#: tigaserver_app/models.py:1238
 msgid "species_japonicus"
 msgstr "mosquit del Japó (Aedes japonicus)"
 
-#: tigaserver_app/models.py:1236
+#: tigaserver_app/models.py:1239
 msgid "species_koreicus"
 msgstr "mosquit de Corea (Aedes koreicus)"
 
-#: tigaserver_app/models.py:1237
+#: tigaserver_app/models.py:1240
 msgid "species_complex"
 msgstr "Barreja d'espècies"
 
-#: tigaserver_app/models.py:1238
+#: tigaserver_app/models.py:1241
 msgid "species_notsure"
 msgstr "No està clar"
 
-#: tigaserver_app/models.py:1239
+#: tigaserver_app/models.py:1242
 msgid "species_culex"
 msgstr "mosquit comú (Culex pipiens)"
 
-#: tigaserver_app/models.py:1252
+#: tigaserver_app/models.py:1255
 msgid "species_value_possible"
 msgstr "Possible"
 
-#: tigaserver_app/models.py:1253
+#: tigaserver_app/models.py:1256
 msgid "species_value_confirmed"
 msgstr "Confirmat"
-
-#: tigaserver_app/models.py:2116
-msgid "you_just_received_a_points_award"
-msgstr "Acabes de rebre una recompensa de punts!"
 
 #: tigaserver_messages/fields.py:56
 #, python-format
@@ -1294,6 +1294,9 @@ msgstr ""
 #: tigaserver_project/settings.py:151
 msgid "Chinese"
 msgstr ""
+
+#~ msgid "you_just_received_a_points_award"
+#~ msgstr "Acabes de rebre una recompensa de punts!"
 
 #~ msgid "Bite"
 #~ msgstr "Picades"

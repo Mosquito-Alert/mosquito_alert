@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-24 07:20+0000\n"
+"POT-Creation-Date: 2020-10-05 11:02+0000\n"
 "PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: French (France)\n"
@@ -388,6 +388,10 @@ msgstr "Sauvegarder"
 msgid "Photos per page"
 msgstr "Photos par page"
 
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Votre photo a été validée par un expert!"
+
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -475,7 +479,7 @@ msgstr "Seaux et puits"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:579
+#: tigaserver_app/models.py:582
 msgid "Other"
 msgstr "Autres"
 
@@ -585,19 +589,19 @@ msgstr "Points"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:571
+#: tigaserver_app/models.py:574
 msgid "storm-drain"
 msgstr "Grille d'égout"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:573
+#: tigaserver_app/models.py:576
 msgid "Fountain"
 msgstr "Fontaine"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:575
+#: tigaserver_app/models.py:578
 msgid "Basin"
 msgstr "Bassin"
 
@@ -608,7 +612,7 @@ msgstr "Seau"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:577
+#: tigaserver_app/models.py:580
 msgid "Well"
 msgstr "Puit"
 
@@ -1134,73 +1138,61 @@ msgstr ""
 msgid " days ago"
 msgstr ""
 
-#: tigaserver_app/models.py:554
+#: tigaserver_app/models.py:557
 msgid "High"
 msgstr "Haut"
 
-#: tigaserver_app/models.py:556
+#: tigaserver_app/models.py:559
 msgid "Medium"
 msgstr "Moyen"
 
-#: tigaserver_app/models.py:558
+#: tigaserver_app/models.py:561
 msgid "Low"
 msgstr "Bas"
 
-#: tigaserver_app/models.py:1231
-#, fuzzy
-#| msgid "expert_cat_unclassified"
-msgid "species_unclassified"
-msgstr "Non classé"
-
-#: tigaserver_app/models.py:1232
-#, fuzzy
-#| msgid "expert_cat_other"
-msgid "species_other"
-msgstr "Confirmé ni albopictus ni aegypti"
-
-#: tigaserver_app/models.py:1233
-msgid "species_albopictus"
-msgstr ""
-
 #: tigaserver_app/models.py:1234
-#, fuzzy
-#| msgid "expert_cat_aegypti"
-msgid "species_aegypti"
-msgstr "Aegypti confirmé"
+msgid "species_unclassified"
+msgstr "Non identifiables"
 
 #: tigaserver_app/models.py:1235
-msgid "species_japonicus"
-msgstr ""
+msgid "species_other"
+msgstr "Autres espèces"
 
 #: tigaserver_app/models.py:1236
-msgid "species_koreicus"
-msgstr ""
+msgid "species_albopictus"
+msgstr "le moustique-tigre asiatique (Aedes albopictus)"
 
 #: tigaserver_app/models.py:1237
-msgid "species_complex"
-msgstr ""
+msgid "species_aegypti"
+msgstr "Aedes aegypti"
 
 #: tigaserver_app/models.py:1238
-#, fuzzy
-#| msgid "not_sure"
-msgid "species_notsure"
-msgstr "pas sûr"
+msgid "species_japonicus"
+msgstr "Aedes japonicus"
 
 #: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "Aedes koreicus"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Espèces mélangées"
+
+#: tigaserver_app/models.py:1241
+msgid "species_notsure"
+msgstr "Pas sûr"
+
+#: tigaserver_app/models.py:1242
 msgid "species_culex"
-msgstr ""
+msgstr "moustique domestique commun (Culex sp.)"
 
-#: tigaserver_app/models.py:1252
+#: tigaserver_app/models.py:1255
 msgid "species_value_possible"
-msgstr ""
+msgstr "Probable"
 
-#: tigaserver_app/models.py:1253
+#: tigaserver_app/models.py:1256
 msgid "species_value_confirmed"
-msgstr ""
-
-#: tigaserver_app/models.py:2116
-msgid "you_just_received_a_points_award"
-msgstr "Vous venez de recevoir une récompense de points!"
+msgstr "Confirmé"
 
 #: tigaserver_messages/fields.py:56
 #, python-format
@@ -1300,3 +1292,6 @@ msgstr ""
 #: tigaserver_project/settings.py:151
 msgid "Chinese"
 msgstr ""
+
+#~ msgid "you_just_received_a_points_award"
+#~ msgstr "Vous venez de recevoir une récompense de points!"

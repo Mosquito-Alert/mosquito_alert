@@ -2,7 +2,7 @@ from django.test import TestCase
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo
+from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
 from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex
 from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
@@ -10,7 +10,9 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from django.core.exceptions import ObjectDoesNotExist
 from operator import attrgetter
-from tigacrafting.views import assign_reports_to_user
+from tigacrafting.views import assign_reports_to_user, issue_notification
+import tigaserver_project.settings as conf
+from django.utils import timezone
 import pytz
 
 ###                 HELPER STUFF                ########################################################################
@@ -57,7 +59,7 @@ def filter_reports(reports, sort=True):
 
 
 class UserTestCase(TestCase):
-    fixtures = ['europe_countries.json','granter_user.json','awardcategory.json']
+    fixtures = ['europe_countries.json','reritja_like.json','granter_user.json','awardcategory.json']
 
     def create_report_pool(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
@@ -80,7 +82,7 @@ class UserTestCase(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r)
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
             p.save()
             a = a + 1
 
@@ -292,3 +294,50 @@ class UserTestCase(TestCase):
         # Two equal categories, one different -> No Conflict
         autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
         self.assertEqual(autoflag_question_mark, False)
+
+    def test_validation_notification(self):
+        self.create_report_pool()
+        r = Report.objects.get(pk='1')
+        reritja_user = User.objects.get(pk=25)
+        superexperts_group = Group.objects.create(name='superexpert')
+        superexperts_group.user_set.add(reritja_user)
+        reritja_user.save()
+        superexperts_group.save()
+
+        c_1 = Categories.objects.create(pk=1, name="Unclassified", specify_certainty_level=False)
+        c_1.save()
+        c_2 = Categories.objects.create(pk=2, name="Other species", specify_certainty_level=False)
+        c_2.save()
+        c_3 = Categories.objects.create(pk=3, name="Aedes albopictus", specify_certainty_level=True)
+        c_3.save()
+        c_4 = Categories.objects.create(pk=4, name="Aedes aegypti", specify_certainty_level=True)
+        c_4.save()
+        c_5 = Categories.objects.create(pk=5, name="Aedes japonicus", specify_certainty_level=True)
+        c_5.save()
+        c_6 = Categories.objects.create(pk=6, name="Aedes koreicus", specify_certainty_level=True)
+        c_6.save()
+        c_7 = Categories.objects.create(pk=7, name="Complex", specify_certainty_level=False)
+        c_7.save()
+        c_8 = Categories.objects.create(pk=8, name="Not sure", specify_certainty_level=False)
+        c_8.save()
+        c_9 = Categories.objects.create(pk=9, name="Culex sp.", specify_certainty_level=True)
+        c_9.save()
+
+        validation_value_possible = 1
+        validation_value_confirmed = 2
+
+        for l in conf.LANGUAGES:
+            locale = l[0]
+            if locale != 'zh-cn':
+                r.app_language = locale
+                r.save()
+                anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=r, category=c_3,
+                                                                     validation_complete=True, revise=True,
+                                                                     validation_value=validation_value_confirmed)
+                anno_reritja.save()
+                issue_notification(anno_reritja, "http://127.0.0.1:8000")
+                nc = NotificationContent.objects.first()
+                print(nc.title_en)
+                Notification.objects.all().delete()
+                NotificationContent.objects.all().delete()
+        pass

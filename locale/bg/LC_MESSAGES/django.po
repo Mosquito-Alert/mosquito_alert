@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-24 07:20+0000\n"
+"POT-Creation-Date: 2020-10-05 11:00+0000\n"
 "PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Bulgarian (Bulgaria)\n"
@@ -379,6 +379,10 @@ msgstr "Запазване"
 msgid "Photos per page"
 msgstr "Снимки на страница"
 
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Вашата снимка е потвърдена от експерт!"
+
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -466,7 +470,7 @@ msgstr "Кофи и кладенци"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:579
+#: tigaserver_app/models.py:582
 msgid "Other"
 msgstr "Други"
 
@@ -575,19 +579,19 @@ msgstr "Точки"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:571
+#: tigaserver_app/models.py:574
 msgid "storm-drain"
 msgstr "Дъждовна канализация"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:573
+#: tigaserver_app/models.py:576
 msgid "Fountain"
 msgstr "Чешмичка"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:575
+#: tigaserver_app/models.py:578
 msgid "Basin"
 msgstr "Малък изкуствен съд"
 
@@ -598,7 +602,7 @@ msgstr "Кофа"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:577
+#: tigaserver_app/models.py:580
 msgid "Well"
 msgstr "Кладенец"
 
@@ -1123,73 +1127,61 @@ msgstr "месец(а)"
 msgid " days ago"
 msgstr "дни"
 
-#: tigaserver_app/models.py:554
+#: tigaserver_app/models.py:557
 msgid "High"
 msgstr "Висок"
 
-#: tigaserver_app/models.py:556
+#: tigaserver_app/models.py:559
 msgid "Medium"
 msgstr "Среден"
 
-#: tigaserver_app/models.py:558
+#: tigaserver_app/models.py:561
 msgid "Low"
 msgstr "Нисък"
 
-#: tigaserver_app/models.py:1231
-#, fuzzy
-#| msgid "expert_cat_unclassified"
-msgid "species_unclassified"
-msgstr "Некласифициран"
-
-#: tigaserver_app/models.py:1232
-#, fuzzy
-#| msgid "expert_cat_other"
-msgid "species_other"
-msgstr "Потвърден нито albopictus, нито aegypti"
-
-#: tigaserver_app/models.py:1233
-msgid "species_albopictus"
-msgstr ""
-
 #: tigaserver_app/models.py:1234
-#, fuzzy
-#| msgid "expert_cat_aegypti"
-msgid "species_aegypti"
-msgstr "Потвърден aegypti"
+msgid "species_unclassified"
+msgstr "Неопределяем"
 
 #: tigaserver_app/models.py:1235
-msgid "species_japonicus"
-msgstr ""
+msgid "species_other"
+msgstr "Друг вид"
 
 #: tigaserver_app/models.py:1236
-msgid "species_koreicus"
-msgstr ""
+msgid "species_albopictus"
+msgstr "тигров комар (Aedes albopictus)"
 
 #: tigaserver_app/models.py:1237
-msgid "species_complex"
-msgstr ""
+msgid "species_aegypti"
+msgstr "комар на жълтата треска (Aedes aegypti)"
 
 #: tigaserver_app/models.py:1238
-#, fuzzy
-#| msgid "not_sure"
-msgid "species_notsure"
-msgstr "не знам"
+msgid "species_japonicus"
+msgstr "япоснки комар (Aedes japonicus)"
 
 #: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "корейски комар (Aedes koreicus)"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Смес от видове"
+
+#: tigaserver_app/models.py:1241
+msgid "species_notsure"
+msgstr "Не съм сигурен/а"
+
+#: tigaserver_app/models.py:1242
 msgid "species_culex"
-msgstr ""
+msgstr "обикновен комар (Culex sp.)"
 
-#: tigaserver_app/models.py:1252
+#: tigaserver_app/models.py:1255
 msgid "species_value_possible"
-msgstr ""
+msgstr "Вероятен"
 
-#: tigaserver_app/models.py:1253
+#: tigaserver_app/models.py:1256
 msgid "species_value_confirmed"
-msgstr ""
-
-#: tigaserver_app/models.py:2116
-msgid "you_just_received_a_points_award"
-msgstr "Току-що получихте награда за точки!"
+msgstr "Потвърден"
 
 #: tigaserver_messages/fields.py:56
 #, python-format
@@ -1289,3 +1281,6 @@ msgstr ""
 #: tigaserver_project/settings.py:151
 msgid "Chinese"
 msgstr "Китайски"
+
+#~ msgid "you_just_received_a_points_award"
+#~ msgstr "Току-що получихте награда за точки!"

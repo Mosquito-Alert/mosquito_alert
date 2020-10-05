@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-24 07:22+0000\n"
+"POT-Creation-Date: 2020-10-05 11:03+0000\n"
 "PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Serbian (Serbia)\n"
@@ -382,6 +382,10 @@ msgstr "Sačuvati"
 msgid "Photos per page"
 msgstr "Fotografije po strani"
 
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Fotografiju je potvrdio stručnjak!"
+
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -469,7 +473,7 @@ msgstr "Kante i bunari"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:579
+#: tigaserver_app/models.py:582
 msgid "Other"
 msgstr "Drugo"
 
@@ -578,19 +582,19 @@ msgstr "Poeni"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:571
+#: tigaserver_app/models.py:574
 msgid "storm-drain"
 msgstr "Ulični šaht"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:573
+#: tigaserver_app/models.py:576
 msgid "Fountain"
 msgstr "Fontana"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:575
+#: tigaserver_app/models.py:578
 msgid "Basin"
 msgstr "Bazen"
 
@@ -601,7 +605,7 @@ msgstr "Kanta"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:577
+#: tigaserver_app/models.py:580
 msgid "Well"
 msgstr "Bunar"
 
@@ -1121,73 +1125,61 @@ msgstr "mesec"
 msgid " days ago"
 msgstr "dan"
 
-#: tigaserver_app/models.py:554
+#: tigaserver_app/models.py:557
 msgid "High"
 msgstr "Visoka"
 
-#: tigaserver_app/models.py:556
+#: tigaserver_app/models.py:559
 msgid "Medium"
 msgstr "Srednji"
 
-#: tigaserver_app/models.py:558
+#: tigaserver_app/models.py:561
 msgid "Low"
 msgstr "Nizak"
 
-#: tigaserver_app/models.py:1231
-#, fuzzy
-#| msgid "expert_cat_unclassified"
-msgid "species_unclassified"
-msgstr "Neklasifikovano"
-
-#: tigaserver_app/models.py:1232
-#, fuzzy
-#| msgid "expert_cat_other"
-msgid "species_other"
-msgstr "Potvrđeno je da nije ni tigrasti komarac niti komarac žute groznice"
-
-#: tigaserver_app/models.py:1233
-msgid "species_albopictus"
-msgstr ""
-
 #: tigaserver_app/models.py:1234
-#, fuzzy
-#| msgid "expert_cat_aegypti"
-msgid "species_aegypti"
-msgstr "Potvrđen komarac žute groznice (Ae. aegypti)"
+msgid "species_unclassified"
+msgstr "Ne može se identifikovati"
 
 #: tigaserver_app/models.py:1235
-msgid "species_japonicus"
-msgstr ""
+msgid "species_other"
+msgstr "Druga vrsta"
 
 #: tigaserver_app/models.py:1236
-msgid "species_koreicus"
-msgstr ""
+msgid "species_albopictus"
+msgstr "Tigrasti komarac (Aedes albopictus)"
 
 #: tigaserver_app/models.py:1237
-msgid "species_complex"
-msgstr ""
+msgid "species_aegypti"
+msgstr "Komarac žute groznice (Aedes aegypti)"
 
 #: tigaserver_app/models.py:1238
-#, fuzzy
-#| msgid "not_sure"
+msgid "species_japonicus"
+msgstr "Japanski komarac (Aedes japonicus)"
+
+#: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "Korejski komarac (Aedes koreicus)"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Pomešane vrste"
+
+#: tigaserver_app/models.py:1241
 msgid "species_notsure"
 msgstr "Nismo sigurni"
 
-#: tigaserver_app/models.py:1239
+#: tigaserver_app/models.py:1242
 msgid "species_culex"
-msgstr ""
+msgstr "Kućni komarac (Culex sp.)"
 
-#: tigaserver_app/models.py:1252
+#: tigaserver_app/models.py:1255
 msgid "species_value_possible"
-msgstr ""
+msgstr "Verovatno"
 
-#: tigaserver_app/models.py:1253
+#: tigaserver_app/models.py:1256
 msgid "species_value_confirmed"
-msgstr ""
-
-#: tigaserver_app/models.py:2116
-msgid "you_just_received_a_points_award"
-msgstr "Upravo ste dobili nagradu za bodove!"
+msgstr "Potvrđeno"
 
 #: tigaserver_messages/fields.py:56
 #, python-format
@@ -1287,3 +1279,6 @@ msgstr ""
 #: tigaserver_project/settings.py:151
 msgid "Chinese"
 msgstr "kineski"
+
+#~ msgid "you_just_received_a_points_award"
+#~ msgstr "Upravo ste dobili nagradu za bodove!"

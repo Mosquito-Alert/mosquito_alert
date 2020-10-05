@@ -44,6 +44,7 @@ from django.template.loader import TemplateDoesNotExist
 from io import BytesIO
 from django.core.files import File
 import html.entities
+from common.translation import get_locale_for_en, get_translation_in
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -2100,21 +2101,21 @@ def get_user_reports_count(user):
     last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
     return len(list(last_versions))
 
-def get_translation_in(string, locale):
-    translation.activate(locale)
-    val = ugettext(string)
-    translation.deactivate()
-    return val
-
-def get_locale_for_en(report):
-    if report is not None:
-        if report.app_language is not None and report.app_language != '':
-            if report.app_language != 'ca' and report.app_language != 'en' and report.app_language != 'es':
-                report_locale = report.app_language
-                for lang in settings.LANGUAGES:
-                    if lang[0] == report_locale:
-                        return report_locale
-    return 'en'
+# def get_translation_in(string, locale):
+#     translation.activate(locale)
+#     val = ugettext(string)
+#     translation.deactivate()
+#     return val
+#
+# def get_locale_for_en(report):
+#     if report is not None:
+#         if report.app_language is not None and report.app_language != '':
+#             if report.app_language != 'ca' and report.app_language != 'en' and report.app_language != 'es':
+#                 report_locale = report.app_language
+#                 for lang in settings.LANGUAGES:
+#                     if lang[0] == report_locale:
+#                         return report_locale
+#     return 'en'
 
 
 def package_number_allows_notification(report):
@@ -2158,9 +2159,9 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             context_en['amount_awarded'] = xp_amount
             context_ca['amount_awarded'] = xp_amount
 
-            context_es['reason_awarded'] = get_translation_in(reason_label, 'es').translate(table).translate(table)
+            context_es['reason_awarded'] = get_translation_in(reason_label, 'es').translate(table)
             context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en).translate(table)
-            context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca').translate(table).translate(table)
+            context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca').translate(table)
 
             notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
             notification_content.body_html_es = notification_content.body_html_es.replace('&amp;','&')

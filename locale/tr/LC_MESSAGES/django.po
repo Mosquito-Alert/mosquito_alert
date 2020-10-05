@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-24 07:22+0000\n"
+"POT-Creation-Date: 2020-10-05 11:03+0000\n"
 "PO-Revision-Date: 2020-09-22 15:50+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Turkish (Turkey)\n"
@@ -377,6 +377,10 @@ msgstr "Kaydet"
 msgid "Photos per page"
 msgstr "Sayfa başına fotoğraf"
 
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Fotoğrafınız bir uzman tarafından onaylandı!"
+
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -464,7 +468,7 @@ msgstr "Kovalar ve kuyular"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:579
+#: tigaserver_app/models.py:582
 msgid "Other"
 msgstr "Diğer"
 
@@ -572,19 +576,19 @@ msgstr "Puanlar"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:571
+#: tigaserver_app/models.py:574
 msgid "storm-drain"
 msgstr "Yağmur ana mecrası, rögar"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:573
+#: tigaserver_app/models.py:576
 msgid "Fountain"
 msgstr "Süs Havuzu"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:575
+#: tigaserver_app/models.py:578
 msgid "Basin"
 msgstr "Leğen/Su kabı"
 
@@ -595,7 +599,7 @@ msgstr "Kova"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:577
+#: tigaserver_app/models.py:580
 msgid "Well"
 msgstr "Kuyu"
 
@@ -1120,73 +1124,61 @@ msgstr "Aylar önce"
 msgid " days ago"
 msgstr "Günler önce"
 
-#: tigaserver_app/models.py:554
+#: tigaserver_app/models.py:557
 msgid "High"
 msgstr "Yüksek"
 
-#: tigaserver_app/models.py:556
+#: tigaserver_app/models.py:559
 msgid "Medium"
 msgstr "Orta"
 
-#: tigaserver_app/models.py:558
+#: tigaserver_app/models.py:561
 msgid "Low"
 msgstr "Düşük"
 
-#: tigaserver_app/models.py:1231
-#, fuzzy
-#| msgid "expert_cat_unclassified"
-msgid "species_unclassified"
-msgstr "Sınıflandırılmamış"
-
-#: tigaserver_app/models.py:1232
-#, fuzzy
-#| msgid "expert_cat_other"
-msgid "species_other"
-msgstr "Onaylanmış albopictus ya da aegypti değil"
-
-#: tigaserver_app/models.py:1233
-msgid "species_albopictus"
-msgstr ""
-
 #: tigaserver_app/models.py:1234
-#, fuzzy
-#| msgid "expert_cat_aegypti"
-msgid "species_aegypti"
-msgstr "Onaylanmış aegypti"
+msgid "species_unclassified"
+msgstr "Tanımlanamayan"
 
 #: tigaserver_app/models.py:1235
-msgid "species_japonicus"
-msgstr ""
+msgid "species_other"
+msgstr "Diğer türler"
 
 #: tigaserver_app/models.py:1236
-msgid "species_koreicus"
-msgstr ""
+msgid "species_albopictus"
+msgstr "kaplan sivrisineği (Aedes albopictus)"
 
 #: tigaserver_app/models.py:1237
-msgid "species_complex"
-msgstr ""
+msgid "species_aegypti"
+msgstr "sarı humma sivrisineği (Aedes aegypti)"
 
 #: tigaserver_app/models.py:1238
-#, fuzzy
-#| msgid "not_sure"
-msgid "species_notsure"
-msgstr "Emin değilim"
+msgid "species_japonicus"
+msgstr "Asya çalı sivrisineği (Aedes japonicus)"
 
 #: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "Aedes koreicus"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Karışık türler"
+
+#: tigaserver_app/models.py:1241
+msgid "species_notsure"
+msgstr "Emin olunamayan"
+
+#: tigaserver_app/models.py:1242
 msgid "species_culex"
-msgstr ""
+msgstr "ev sivrisineği (Culex pipiens)"
 
-#: tigaserver_app/models.py:1252
+#: tigaserver_app/models.py:1255
 msgid "species_value_possible"
-msgstr ""
+msgstr "Muhtemel"
 
-#: tigaserver_app/models.py:1253
+#: tigaserver_app/models.py:1256
 msgid "species_value_confirmed"
-msgstr ""
-
-#: tigaserver_app/models.py:2116
-msgid "you_just_received_a_points_award"
-msgstr "Az önce bir puan ödülü aldınız!"
+msgstr "Onaylı"
 
 #: tigaserver_messages/fields.py:56
 #, python-format
@@ -1286,3 +1278,6 @@ msgstr ""
 #: tigaserver_project/settings.py:151
 msgid "Chinese"
 msgstr ""
+
+#~ msgid "you_just_received_a_points_award"
+#~ msgstr "Az önce bir puan ödülü aldınız!"

@@ -42,6 +42,10 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
 import logging
+from common.translation import get_translation_in, get_locale_for_en
+import html.entities
+from django.template.loader import TemplateDoesNotExist
+from django.utils.translation import gettext as _
 
 #----------Metadades fotos----------#
 
@@ -537,13 +541,18 @@ def issue_notification(report_annotation,current_domain):
     context_es = {}
     context_ca = {}
     context_en = {}
+    locale_for_en = get_locale_for_en(report_annotation.report)
+
     notification_content.title_es = "¡Tu foto ha sido validada por un experto!"
     notification_content.title_ca = "La teva foto ha estat validada per un expert!"
-    notification_content.title_en = "Your picture has been validated by an expert!"
+    title_en = _("your_picture_has_been_validated_by_an_expert")
+    notification_content.title_en = get_translation_in("your_picture_has_been_validated_by_an_expert", locale_for_en)
+
     if report_annotation.report.get_final_photo_url_for_notification():
         context_es['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
         context_en['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
         context_ca['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+
     if report_annotation.edited_user_notes:
         #clean_annotation = django.utils.html.escape(report_annotation.edited_user_notes)
         #clean_annotation = report_annotation.edited_user_notes.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
@@ -551,6 +560,7 @@ def issue_notification(report_annotation,current_domain):
         context_es['expert_note'] = clean_annotation
         context_en['expert_note'] = clean_annotation
         context_ca['expert_note'] = clean_annotation
+
     if report_annotation.message_for_user:
         #clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
         #clean_annotation = report_annotation.message_for_user.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
@@ -558,27 +568,36 @@ def issue_notification(report_annotation,current_domain):
         context_es['message_for_user'] = clean_annotation
         context_en['message_for_user'] = clean_annotation
         context_ca['message_for_user'] = clean_annotation
+
     if report_annotation.report:
         clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('es'))
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         context_es['validation_category'] = clean_annotation
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('en'))
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro(locale_for_en))
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         context_en['validation_category'] = clean_annotation
         clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('ca'))
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         context_ca['validation_category'] = clean_annotation
         map_data = get_sigte_map_info(report_annotation.report)
+
         if map_data:
             context_es['map_link'] = get_sigte_report_link(report_annotation.report, "es", current_domain)
             context_en['map_link'] = get_sigte_report_link(report_annotation.report, "en", current_domain)
             context_ca['map_link'] = get_sigte_report_link(report_annotation.report, "ca", current_domain)
-    notification_content.body_html_es = render_to_string('tigacrafting/validation_message_template_es.html', context_es)
-    notification_content.body_html_ca = render_to_string('tigacrafting/validation_message_template_ca.html', context_ca)
-    notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en)
+
+    notification_content.body_html_es = render_to_string('tigacrafting/validation_message_template_es.html', context_es).replace('&amp;', '&')
+    notification_content.body_html_ca = render_to_string('tigacrafting/validation_message_template_ca.html', context_ca).replace('&amp;', '&')
+
+    try:
+        notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_' + locale_for_en + '.html', context_en).replace('&amp;', '&')
+    except TemplateDoesNotExist:
+        notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en).replace('&amp;', '&')
+
     notification_content.save()
     notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
+
     recipient = report_annotation.report.user
     if recipient.device_token is not None and recipient.device_token != '':
         if (recipient.user_UUID.islower()):
