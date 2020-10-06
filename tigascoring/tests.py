@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, date
 import pytz
 from random import seed, random
 from django.template.loader import render_to_string
-
+import html.entities
 
 class ScoringTestCase(TestCase):
     fixtures = ['awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'europe_countries.json', 'granter_user.json']
@@ -263,10 +263,11 @@ class ScoringTestCase(TestCase):
 
     @staticmethod
     def get_notification_body_for_locale(category_label, xp, locale):
+        table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
         context = {}
         context['amount_awarded'] = xp
-        context['reason_awarded'] = get_translation_in(category_label, locale)
-        return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context)
+        context['reason_awarded'] = get_translation_in(category_label, locale).translate(table)
+        return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context).replace('&amp;','&')
 
     def test_10_report_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
@@ -365,6 +366,10 @@ class ScoringTestCase(TestCase):
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
             notification_body = self.get_notification_body_for_locale(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP,'sq')
             #The english notification should be in Albanian
+            # for n in Notification.objects.all():
+            #     print("<---- SEPARATOR ---->")
+            #     print(n.notification_content.body_html_en)
+            #     print("<---- END SEPARATOR ---->")
             self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
 
     def test_profile_first_of_season(self):
