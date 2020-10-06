@@ -626,10 +626,16 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     result['score_detail']['site']['ranked_users'] = site_number_total
 
     if update:
-        user.score_v2 = result['total_score']
-        user.score_v2_adult = result['score_detail']['adult']['score']
-        user.score_v2_site = result['score_detail']['site']['score']
-        user.save()
+        if user_uuids is not None:
+            all_users_in_profile = TigaUser.objects.filter(user_UUID__in=user_uuids)
+            all_users_in_profile.update(score_v2=result['total_score'])
+            all_users_in_profile.update(score_v2_adult=result['score_detail']['adult']['score'])
+            all_users_in_profile.update(score_v2_site=result['score_detail']['site']['score'])
+        else:
+            user.score_v2 = result['total_score']
+            user.score_v2_adult = result['score_detail']['adult']['score']
+            user.score_v2_site = result['score_detail']['site']['score']
+            user.save()
 
     '''
     if bite_number_below_rank == 0 and bite_number_total == 0:

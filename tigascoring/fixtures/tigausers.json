@@ -26,5 +26,33 @@
       "score_v2_site": 0,
       "score_v2": 0
     }
+  },
+  {
+    "pk": "00000000-0000-0000-0000-000000000002",
+    "model": "tigaserver_app.tigauser",
+    "fields": {
+      "device_token": null,
+      "profile": 1,
+      "score_v2_bite": 0,
+      "registration_time": "2017-06-26T01:38:41.782Z",
+      "score_v2_adult": 0,
+      "score": 1,
+      "score_v2_site": 0,
+      "score_v2": 0
+    }
+  },
+  {
+    "pk": "00000000-0000-0000-0000-000000000003",
+    "model": "tigaserver_app.tigauser",
+    "fields": {
+      "device_token": null,
+      "profile": 1,
+      "score_v2_bite": 0,
+      "registration_time": "2017-06-26T01:38:41.782Z",
+      "score_v2_adult": 0,
+      "score": 1,
+      "score_v2_site": 0,
+      "score_v2": 0
+    }
   }
 ]

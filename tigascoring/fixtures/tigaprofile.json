@@ -1,0 +1,10 @@
+[
+  {
+    "pk": "1",
+    "model": "tigaserver_app.tigaprofile",
+    "fields": {
+      "firebase_token": "abcdefg",
+      "score": 0
+    }
+  }
+]
