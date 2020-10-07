@@ -2,6 +2,7 @@ from django.test import TestCase
 from tigaserver_app.models import EuropeCountry, TigaUser, TigaProfile, Report, ExpertReportAnnotation, Award, AwardCategory, \
     Notification, NotificationContent, get_translation_in, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
+from tigacrafting.models import Categories
 from tigaserver_project import settings as conf
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from django.utils import timezone
@@ -10,9 +11,13 @@ import pytz
 from random import seed, random
 from django.template.loader import render_to_string
 import html.entities
+from django.contrib.auth.models import User, Group
+
+VALIDATION_VALUE_POSSIBLE = 1
+VALIDATION_VALUE_CONFIRMED = 2
 
 class ScoringTestCase(TestCase):
-    fixtures = ['awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'europe_countries.json', 'granter_user.json']
+    fixtures = ['awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'reritja_like.json', 'categories.json', 'europe_countries.json', 'granter_user.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
@@ -50,6 +55,41 @@ class ScoringTestCase(TestCase):
         user_id = '00000000-0000-0000-0000-000000000000'
         retval = compute_user_score_in_xp_v2(user_id)
         self.assertEqual(retval['total_score'], 0)
+
+    def test_score_non_validated_adult_report(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+        report_in_season = self.create_single_report(conf.SEASON_START_DAY, conf.SEASON_START_MONTH, 2020, user, '00000000-0000-0000-0000-000000000002')
+        report_in_season.save()
+        retval = compute_user_score_in_xp_v2(user_id)
+        # 6 points first of season
+        # 6 points first of day
+        # no awards for mosquito. not yet classified
+        self.assertEqual(retval['total_score'], 12)
+
+    def test_score_for_aedes_adult_report(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+        report_in_season = self.create_single_report(conf.SEASON_START_DAY, conf.SEASON_START_MONTH, 2020, user, '00000000-0000-0000-0000-000000000002')
+        report_in_season.save()
+        reritja_user = User.objects.get(pk=25)
+        superexperts_group = Group.objects.create(name='superexpert')
+        superexperts_group.user_set.add(reritja_user)
+        c_4 = Categories.objects.get(pk=4) #Aedes albopictus
+        anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=report_in_season, category=c_4,
+                                                             validation_complete=True, revise=True,
+                                                             validation_value=VALIDATION_VALUE_CONFIRMED)
+        retval = compute_user_score_in_xp_v2(user_id)
+        # 6 points first of season
+        # 6 points first of day
+        # 6 points geolocated
+        self.assertEqual(retval['total_score'], 18)
+        # we hide the report, it does not yield any points
+        report_in_season.hide = True
+        report_in_season.save()
+        retval = compute_user_score_in_xp_v2(user_id)
+        self.assertEqual(retval['total_score'], 0)
+
 
     def test_first_of_season_awarded(self):
         user_id = '00000000-0000-0000-0000-000000000000'
