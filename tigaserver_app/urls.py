@@ -38,6 +38,8 @@ urlpatterns = [
     url('nearby_reports/$', views.nearby_reports),
     url('nearby_reports_fast/$', views.nearby_reports_fast),
     url('nearby_reports_nod/$', views.nearby_reports_no_dwindow),
+    url('reports_id_filtered/$', views.reports_id_filtered),
+    url('uuid_list_autocomplete/$', views.uuid_list_autocomplete),
     url('missions/$', views.get_new_missions),
     url('cfs_reports/$', views.force_refresh_cfs_reports),
     url('cfa_reports/$', views.force_refresh_cfa_reports),

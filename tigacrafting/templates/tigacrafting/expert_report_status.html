@@ -214,6 +214,9 @@
                     {{ report.creation_time|date:"d/m/y H:i" }} UTC
                     - {{ report.country_label }} - {{ report.language }}
                 </h4>
+                <h5>
+                    <strong>Report code - {{ report.report_id }}</strong>
+                </h5>
             </div>
         </div>
 {% if report.deleted %}
@@ -379,12 +382,14 @@
 
 
                 <br>
+                <!--
                 <strong>User Responses</strong><br>
 
                 <div style="overflow: auto;height: 120px;border:1px solid #333333;padding:2px;">
                     {{ report.response_html  | safe }}
                 </div>
                 <br>
+                -->
                 <strong>User Notes</strong><br>
 
                 <div style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">

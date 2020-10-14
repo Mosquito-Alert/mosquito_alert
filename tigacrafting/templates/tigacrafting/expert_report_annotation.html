@@ -32,8 +32,10 @@
     <!--link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}-->
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/tag-it/jquery.tagit.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
 
     <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
+    <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
     <style>
         #ex1Slider .slider-selection {
             background: #BABABA;
@@ -41,6 +43,18 @@
 
         .container_value, .container_mix, .container_other, .container_category{
             font-size: 14px;
+        }
+
+        .tokenize-dropdown{
+            z-index: 9999;
+        }
+
+        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-id{
+            display: none;
+        }
+
+        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-uuid{
+            display: none;
         }
 
     </style>
@@ -359,6 +373,9 @@
                     {{ form.instance.report.creation_time|date:"d/m/y H:i" }} UTC
                     - {{ form.instance.report.country_label }} - {{ form.instance.report.language }}
                 </h4>
+                <h5>
+                    <strong>Report code - {{ form.instance.report.report_id }}</strong>
+                </h5>
             </div>
             <div class="col-md-1">
                 <h4>
@@ -1053,54 +1070,50 @@
                         <h4 class="modal-title" id="searchModalLabel">Search</h4>
                     </div>
                     <div class="modal-body">
-                        <form role="form" class="form-inline">
-
-                            <div class="form-group">
-                                <label for="version_uuid_select">Report ID:</label>
-
-                                <select id="version_uuid_select" class="selectpicker show-tick form-control"
-                                        data-live-search="true">
-                                    <option value=""></option>
-                                    {% for version_uuid in my_version_uuids %}
-                                        <option value="{{ version_uuid.report__version_UUID }}">{{ version_uuid.report__version_UUID }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="button" id="search_version_uuid_submit_button" class="btn btn-default">
-                                Search
-                            </button>
-
-                        </form>
-
-                        <form role="form" class="form-inline">
-
-                            <div class="form-group">
-                                <label for="linked_id_select">Linked ID:</label>
-
-                                <select id="linked_id_select" class="selectpicker show-tick form-control"
-                                        data-live-search="true">
-                                    <option value=""></option>
-                                    {% for linked_id in my_linked_ids %}
-                                        <option value="{{ linked_id }}">{{ linked_id }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search
-                            </button>
-                        </form>
-
-                        <form role="form" class="form-inline">
-                            <div class="form-group">
-                                <label for="tags_filter" class="col-sm-2 control-label">Tags:</label>
-                                <div class="col-sm-10">
+                        <table>
+                            <tr>
+                                <td><label for="uuid_autocomplete"><small>Report UUID (write in the text box the first 3 characters of the uuid for a list):</small></label></td>
+                                <td>
+                                    <select id="uuid_autocomplete" class="tokenize-report-uuid" multiple></select>
+                                </td>
+                                <td>
+                                    <button type="button" id="search_uuid_autocomplete" class="btn btn-default">Search</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label for="id_autocomplete"><small>Report Code (write in the text box the first character of the report id for a list):</small></label></td>
+                                <td>
+                                    <select id="id_autocomplete" class="tokenize-report-id" multiple></select>
+                                </td>
+                                <td>
+                                    <button type="button" id="search_id_autocomplete" class="btn btn-default">Search</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label for="linked_id_select">Linked ID:</label></td>
+                                <td>
+                                    <select id="linked_id_select" class="selectpicker show-tick form-control" data-live-search="true">
+                                        <option value=""></option>
+                                        {% for linked_id in my_linked_ids %}
+                                            <option value="{{ linked_id.linked_id }}">{{ linked_id.linked_id }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label for="tags_filter" class="col-sm-2 control-label">Tags:</label></td>
+                                <td>
                                     <ul class="tagit ui-widget ui-widget-content ui-corner-all" style="max-width: 300px; min-width: 300px;" id="tags_filter">
                                     </ul>
-                                </div>
-                            </div>
-                            <button type="button" id="search_tag_submit_button" class="btn btn-default">Search
-                            </button>
-                        </form>
-
+                                </td>
+                                <td>
+                                    <button type="button" id="search_tag_submit_button" class="btn btn-default">Search</button>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                     <div class="modal-footer">
                         {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}
@@ -1919,6 +1932,51 @@
 
         $(document).ready(function () {
 
+            var format_report_label = function(r){
+                return r.report_id + ' - version:' + r.version_number + ' - date:' + r.version_time.substring(0,10);
+            }
+
+            $('.tokenize-report-id').tokenize2({
+                dropdownMaxItems: 15,
+                searchMinLength: 1,
+                tokensMaxItems: 1,
+                zIndexMargin: 9999,
+                dataSource: function(term, object){
+                    $.ajax('/api/reports_id_filtered/', {
+                        data: { report_id: term, start: 0 },
+                        dataType: 'json',
+                        success: function(data){
+                            var $items = [];
+                            $.each(data, function(k, v){
+                                $items.push({"text": format_report_label(v),"value": v.version_UUID });
+                            });
+                            object.trigger('tokenize:dropdown:fill', [$items]);
+                        }
+                    });
+                }
+            });
+
+            $('.tokenize-report-uuid').tokenize2({
+                dropdownMaxItems: 15,
+                searchMinLength: 3,
+                tokensMaxItems: 1,
+                zIndexMargin: 9999,
+                dataSource: function(term, object){
+                    $.ajax('/api/uuid_list_autocomplete/', {
+                        data: { uuid: term, loc: $('#loc_input').val(), start: 0 },
+                        dataType: 'json',
+                        success: function(data){
+                            var $items = [];
+                            $.each(data, function(k, v){
+                                $items.push({"text": v.report__version_UUID,"value": v.report__version_UUID });
+                            });
+                            object.trigger('tokenize:dropdown:fill', [$items]);
+                        }
+                    });
+                }
+            });
+
+
             $('[data-toggle="tooltip"]').tooltip();
 
             $('#note_language_select').change(function(){
@@ -2157,6 +2215,17 @@
             background_save(qp);
         }
 
+        function submit_search_version_id() {
+            gear.show();
+            clear_inputs();
+            var this_version_uuid = $('.token').attr('data-value');
+            if(this_version_uuid!=null){
+                $("#version_uuid_input").val(this_version_uuid);
+                var qp = '?version_uuid=' + this_version_uuid;
+                background_save(qp);
+            }
+        }
+
         function submit_search_linked_id() {
             gear.show();
             clear_inputs();
@@ -2185,6 +2254,8 @@
         $("#search_linked_id_submit_button").on('click', submit_search_linked_id);
 
         $("#search_tag_submit_button").on('click', submit_search_tag);
+
+        $("#search_id_autocomplete").on('click', submit_search_version_id);
 
         grab_reports_button.on('click', function () {
             $("#grab_reports_button").attr("disabled", true);

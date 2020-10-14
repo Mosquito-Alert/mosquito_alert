@@ -17,7 +17,7 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -1549,3 +1549,34 @@ def profile_detail(request):
                         del device['user_reports'][idx]
 
             return Response(copied_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def reports_id_filtered(request):
+    if request.method == 'GET':
+        report_id = request.query_params.get('report_id', -1)
+        if report_id == -1:
+            raise ParseError(detail='report_id is mandatory')
+        qs = Report.objects.filter(type='adult').exclude(version_number=-1).filter(report_id__startswith=report_id).order_by('-version_time')
+        serializer = ReportSerializer(qs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def uuid_list_autocomplete(request):
+    if request.method == 'GET':
+        loc = request.query_params.get('loc', -1)
+        user = request.user
+        uuid = request.query_params.get('uuid', -1)
+
+        if uuid == -1:
+            raise ParseError(detail='uuid is mandatory')
+
+        qs = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').filter(report__version_UUID__startswith=uuid)
+        if loc == 'spain':
+            qs = qs.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        elif loc == 'europe':
+            qs = qs.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        else:
+            qs = qs.values('report__version_UUID').distinct()
+        return Response(qs, status=status.HTTP_200_OK)

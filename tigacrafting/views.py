@@ -986,15 +986,15 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 for this_report in new_reports:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                     new_annotation.save()
-        #all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
+
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
 
-        if loc == 'spain':
-            my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        elif loc == 'europe':
-            my_version_uuids = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        else:
-            my_version_uuids = all_annotations.values('report__version_UUID').distinct()
+        # if loc == 'spain':
+        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        # elif loc == 'europe':
+        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        # else:
+        #     my_version_uuids = all_annotations.values('report__version_UUID').distinct()
 
         my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:
@@ -1152,7 +1152,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['version_uuid'] = version_uuid
         args['linked_id'] = linked_id
         args['tags_filter'] = tags_filter
-        args['my_version_uuids'] = my_version_uuids
+        #args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page
         args['note_language'] = note_language
