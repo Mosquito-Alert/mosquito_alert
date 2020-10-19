@@ -1956,6 +1956,14 @@
                 }
             });
 
+            $('.tokenize-report-id').on('tokenize:tokens:add', function(e, value, text){
+                $("#version_uuid_input").val(value);
+            });
+
+            $('.tokenize-report-id').on('tokenize:tokens:remove', function(e, value){
+                $("#version_uuid_input").val('');
+            });
+
             $('.tokenize-report-uuid').tokenize2({
                 dropdownMaxItems: 15,
                 searchMinLength: 3,
@@ -1974,6 +1982,14 @@
                         }
                     });
                 }
+            });
+
+            $('.tokenize-report-uuid').on('tokenize:tokens:add', function(e, value, text){
+                $("#version_uuid_input").val(value);
+            });
+
+            $('.tokenize-report-uuid').on('tokenize:tokens:remove', function(e, value){
+                $("#version_uuid_input").val('');
             });
 
 
@@ -2208,18 +2224,20 @@
 
         function submit_search_version_uuid() {
             gear.show();
+            var this_version_uuid = $("#version_uuid_input").val();
             clear_inputs();
-            var this_version_uuid = $("#version_uuid_select").val();
-            $("#version_uuid_input").val(this_version_uuid);
-            var qp = '?version_uuid=' + this_version_uuid;
-            background_save(qp);
+            if(this_version_uuid!=null && this_version_uuid!=''){
+                $("#version_uuid_input").val(this_version_uuid);
+                var qp = '?version_uuid=' + this_version_uuid;
+                background_save(qp);
+            }
         }
 
         function submit_search_version_id() {
             gear.show();
+            var this_version_uuid = $("#version_uuid_input").val();
             clear_inputs();
-            var this_version_uuid = $('.token').attr('data-value');
-            if(this_version_uuid!=null){
+            if(this_version_uuid!=null && this_version_uuid!=''){
                 $("#version_uuid_input").val(this_version_uuid);
                 var qp = '?version_uuid=' + this_version_uuid;
                 background_save(qp);
@@ -2249,13 +2267,15 @@
             background_save(qp);
         }
 
-        $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
+        /*$("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);*/
 
         $("#search_linked_id_submit_button").on('click', submit_search_linked_id);
 
         $("#search_tag_submit_button").on('click', submit_search_tag);
 
         $("#search_id_autocomplete").on('click', submit_search_version_id);
+
+        $("#search_uuid_autocomplete").on('click', submit_search_version_uuid);
 
         grab_reports_button.on('click', function () {
             $("#grab_reports_button").attr("disabled", true);

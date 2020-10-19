@@ -13,7 +13,7 @@ import dateutil.parser
 from django.db.models import Count
 import pytz
 from datetime import datetime, date
-from django.db.models import Max
+from django.db.models import Max,Min
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
@@ -237,6 +237,16 @@ def filter_false_validated(reports, sort=True):
         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports),key=attrgetter('n_annotations'), reverse=True)
     else:
         reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
+    return reports_filtered
+
+def fast_filter_reports(reports):
+    #these are all the report_id in reports, with its max version number and the number of versions
+    #the values at the end drops everything into a dictionary
+    keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
+    report_id_table = {}
+    for row in keys:
+        report_id_table[row['report_id']] = {'max_version':row['version_number__max'],'min_version':row['version_number__min'],'num_versions': row['version_number__count']}
+    reports_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), reports )
     return reports_filtered
 
 
@@ -1199,7 +1209,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
         version_uuid = request.GET.get('version_uuid', version_uuid)
         reports_per_page = request.GET.get('reports_per_page', reports_per_page)
         #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
-        all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
+        #all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
         #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
         these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('-creation_time')
         if version_uuid and version_uuid != 'na':
@@ -1209,7 +1219,8 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            reports = list(filter_reports(these_reports, sort=False))
+            #reports = list(filter_reports(these_reports, sort=False))
+            reports = list(fast_filter_reports(these_reports))
             n_reports = len(reports)
         paginator = Paginator(reports, int(reports_per_page))
         page = request.GET.get('page', 1)
@@ -1221,7 +1232,8 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             objects = paginator.page(paginator.num_pages)
         paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
         reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
-        context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
+        #context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
+        context = {'reports': paged_reports, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
         context['objects'] = objects
         context['pages'] = range(1, objects.paginator.num_pages+1)
 
@@ -1326,7 +1338,10 @@ def get_reports_imbornal():
             question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site',
                                                                       answer='Storm drain') | Q(
             question='Type of breeding site', answer='Storm drain or similar receptacle')).values('report').distinct()
-    return  reports_imbornal
+
+    reports_imbornal_new = ReportResponse.objects.filter(question_id=12).filter(answer_id=121).values('report').distinct()
+
+    return  reports_imbornal | reports_imbornal_new
 
 def get_reports_unfiltered_adults_except_being_validated():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
