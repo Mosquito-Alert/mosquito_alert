@@ -7,12 +7,15 @@ paths:
   /api/score_v2/:
     get:
       operationId: listuser_score_v2s
-      description: 'Returns score v2 details for a user given its uuid'
-      parameters:
+      summary: 'Returns score v2 details for a user given its uuid'
+      description: 'Calculates and updates user score for a given user uuid. If the uuid is part of a profile, it updates the scores of all involved uuids'
+      tags:
+      - score
+      parameters:      
       - name: user_id
         required: true
         in: query
-        description: 'User uuid for which the v2 score will be supplied'
+        description: 'User uuid for which the v2 score will be calculated'
         schema:
           type: string
       responses:
@@ -20,8 +23,85 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items: {}
+                type: object
+                properties:
+                  total_score:
+                    type: integer
+                    description: 'Accumulated score of the user. Equals the sum of scores given by adult + site reports'
+                  user_uuid:
+                    type: string
+                    description: 'Uuid of the user for which the score is being asked'
+                  identicon:
+                    type: string
+                    description: 'Relative path to the user identicon'
+                  score_detail:
+                    type: object
+                    description: 'Contains the detailed info regarding the user score'
+                    properties:
+                      adult:
+                        type: object
+                        description: 'Score details in regard to (adult) mosquito reports'
+                        properties:                          
+                          score:
+                            type: integer
+                            description: 'Accumulated (adult) mosquito reports score. It''s the sum of all xp given by each of the awards, minus the sum of all penalties'
+                          score_items:
+                            type: array
+                            items:
+                              properties:
+                                report:                                  
+                                  type: string
+                                  description: 'Report uuid'
+                                report_date:
+                                  type: string
+                                  format: date-time
+                                  description: 'Report creation time'
+                                report_score:
+                                  type: integer
+                                  description: 'Accumulated score granted by this report'
+                                awards:
+                                  type: array
+                                  description: 'List of awards granted to this report'
+                                  items:
+                                    properties:
+                                      reason: 
+                                        type: string
+                                        description: 'brief description of why this award was given'
+                                      xp_awarded:
+                                        type: integer
+                                        description: 'number of xp awarded to this report according to the reason previously stated'
+                                penalties:
+                                  type: array
+                                  description: 'List of penalties granted to this report'
+                                  items:
+                                    properties:
+                                      reason: 
+                                        type: string
+                                        description: 'brief description of why this penalty was imposed'
+                                      xp_awarded:
+                                        type: integer
+                                        description: 'number of xp substracted from this report according to the reason previously stated'
+                                report_photo:
+                                  type: string
+                                  description: 'url to the photo associated with this report, if available (not hidden)'
+                  class_value:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                    description: 'number from 1 to 5, indicating the current user rank (beginner, etc) in respect to adult reports. The lower the number, the higher the rank'
+                  class_label:
+                    type: string
+                    description: 'Label corresponding to the class_value: i.e 1 for Grandmaster'
+                  rank_value:
+                    type: integer
+                    description: 'Ranking position of this user according to the adult score only'
+                  top_perc:
+                    type: float
+                    description: 'Percentile of users that contains this user according to his mosquito rank'
+                  ranked_users:
+                    type: integer
+                    description: 'Number of users used to calculate the adult(mosquito) rank'
+
           description: ''
   /api/photos_user/:
     get:
