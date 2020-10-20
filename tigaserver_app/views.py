@@ -917,6 +917,7 @@ def user_score_v2(request):
     user_id = request.query_params.get('user_id', -1)
     if user_id == -1:
         raise ParseError(detail='user_id is mandatory')
+    user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
     result = compute_user_score_in_xp_v2(user_id, update=True)
     return Response(result)
 
