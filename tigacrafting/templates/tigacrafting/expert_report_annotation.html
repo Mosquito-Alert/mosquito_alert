@@ -2224,7 +2224,7 @@
 
         function submit_search_version_uuid() {
             gear.show();
-            var this_version_uuid = $("#version_uuid_input").val();
+            var this_version_uuid = $( "#uuid_autocomplete option:selected" ).val();
             clear_inputs();
             if(this_version_uuid!=null && this_version_uuid!=''){
                 $("#version_uuid_input").val(this_version_uuid);
@@ -2235,7 +2235,7 @@
 
         function submit_search_version_id() {
             gear.show();
-            var this_version_uuid = $("#version_uuid_input").val();
+            var this_version_uuid = $("#id_autocomplete option:selected").val();
             clear_inputs();
             if(this_version_uuid!=null && this_version_uuid!=''){
                 $("#version_uuid_input").val(this_version_uuid);
