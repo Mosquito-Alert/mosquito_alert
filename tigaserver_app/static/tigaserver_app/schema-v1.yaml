@@ -96,7 +96,8 @@ paths:
                     type: integer
                     description: 'Ranking position of this user according to the adult score only'
                   top_perc:
-                    type: float
+                    type: number
+                    format: float
                     description: 'Percentile of users that contains this user according to his mosquito rank'
                   ranked_users:
                     type: integer

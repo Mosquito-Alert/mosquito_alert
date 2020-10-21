@@ -1296,17 +1296,17 @@ msgstr ""
 msgid "Chinese"
 msgstr ""
 
-#~ msgid "you_just_received_a_points_award"
-#~ msgstr "!Acabas de recibir una recompensa de puntos!"
+msgid "you_just_received_a_points_award"
+msgstr "!Acabas de recibir una recompensa de puntos!"
 
-#~ msgid "Bite"
-#~ msgstr "Picaduras"
+msgid "Bite"
+msgstr "Picaduras"
 
-#~ msgid "Bite rank - Unranked"
-#~ msgstr "Rango picaduras - Sin rango"
+msgid "Bite rank - Unranked"
+msgstr "Rango picaduras - Sin rango"
 
-#~ msgid "Bite rank"
-#~ msgstr "Rango picaduras"
+msgid "Bite rank"
+msgstr "Rango picaduras"
 
 #~ msgid "Reports per page"
 #~ msgstr "Informes por página"

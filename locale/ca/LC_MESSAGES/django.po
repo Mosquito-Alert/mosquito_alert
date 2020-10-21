@@ -1295,17 +1295,17 @@ msgstr ""
 msgid "Chinese"
 msgstr ""
 
-#~ msgid "you_just_received_a_points_award"
-#~ msgstr "Acabes de rebre una recompensa de punts!"
+msgid "you_just_received_a_points_award"
+msgstr "Acabes de rebre una recompensa de punts!"
 
-#~ msgid "Bite"
-#~ msgstr "Picades"
+msgid "Bite"
+msgstr "Picades"
 
-#~ msgid "Bite rank - Unranked"
-#~ msgstr "Rang picades - Sense rang"
+msgid "Bite rank - Unranked"
+msgstr "Rang picades - Sense rang"
 
-#~ msgid "Bite rank"
-#~ msgstr "Rang picades"
+msgid "Bite rank"
+msgstr "Rang picades"
 
 #~ msgid "Reports per page"
 #~ msgstr "Informes per pàgina"

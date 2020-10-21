@@ -1278,5 +1278,5 @@ msgstr ""
 msgid "Chinese"
 msgstr "Chinês"
 
-#~ msgid "you_just_received_a_points_award"
-#~ msgstr "Você acabou de receber um prêmio de pontos!"
+msgid "you_just_received_a_points_award"
+msgstr "Você acabou de receber um prêmio de pontos!"
