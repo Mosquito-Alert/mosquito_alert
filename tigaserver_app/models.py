@@ -2138,9 +2138,9 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             locale_for_en = get_locale_for_en(report)
 
             super_movelab = User.objects.get(pk=24)
-            notification_content.title_es = "¡Acabas de recibir una recompensa de puntos!".translate(table)
-            notification_content.title_ca = "Acabes de rebre una recompensa de punts!".translate(table)
-            notification_content.title_en = get_translation_in("you_just_received_a_points_award",locale_for_en).translate(table)
+            notification_content.title_es = "¡Acabas de recibir una recompensa de puntos!"
+            notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
+            notification_content.title_en = get_translation_in("you_just_received_a_points_award",locale_for_en)
             if report is not None:
                 if report.get_final_photo_url_for_notification():
                     context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
