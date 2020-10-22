@@ -1081,7 +1081,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td><label for="id_autocomplete"><small>Report Code (write in the text box the first character of the report id for a list):</small></label></td>
+                                <td><label for="id_autocomplete"><small>Report Code (write in the text box the first 2 characters character of the report id for a list):</small></label></td>
                                 <td>
                                     <select id="id_autocomplete" class="tokenize-report-id" multiple></select>
                                 </td>
@@ -1938,7 +1938,7 @@
 
             $('.tokenize-report-id').tokenize2({
                 dropdownMaxItems: 15,
-                searchMinLength: 1,
+                searchMinLength: 2,
                 tokensMaxItems: 1,
                 zIndexMargin: 9999,
                 dataSource: function(term, object){
