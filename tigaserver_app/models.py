@@ -2159,9 +2159,9 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             context_en['amount_awarded'] = xp_amount
             context_ca['amount_awarded'] = xp_amount
 
-            context_es['reason_awarded'] = get_translation_in(reason_label, 'es').encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-            context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en).encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-            context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca').encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+            context_es['reason_awarded'] = get_translation_in(reason_label, 'es')
+            context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en)
+            context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca')
 
             notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
             notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
@@ -2170,11 +2170,11 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             except TemplateDoesNotExist:
                 notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html',context_en)
 
-            '''
-            notification_content.body_html_es = notification_content.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
-            notification_content.body_html_ca = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii','xmlcharrefreplace')
-            notification_content.body_html_en = notification_content.body_html_ca.body_html_es.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
-            '''
+
+            notification_content.body_html_es = notification_content.body_html_es.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+            notification_content.body_html_ca = notification_content.body_html_ca.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+            notification_content.body_html_en = notification_content.body_html_en.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+
 
             '''
             if conf.DEBUG == True:

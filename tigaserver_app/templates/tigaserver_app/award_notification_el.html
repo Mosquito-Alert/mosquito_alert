@@ -1,7 +1,7 @@
 {% extends "tigaserver_app/award_notification.html" %}
 
 {% block title_block %}
-    <title>&#924;&#972;&#955;&#953;&#962; &#955;&#940;&#946;&#945;&#964;&#949; &#941;&#957;&#945; &#946;&#961;&#945;&#946;&#949;&#943;&#959; &#960;&#972;&#957;&#964;&#969;&#957;!</title>
+    <title>Μόλις λάβατε ένα βραβείο πόντων!</title>
 {% endblock %}
 
 {% block title_header_block %}
@@ -9,11 +9,11 @@
 {% endblock %}
 
 {% block amount_xp_awarded %}
-    <p>&#924;&#972;&#955;&#953;&#962; &#955;&#940;&#946;&#945;&#964;&#949; &#960;&#972;&#957;&#964;&#959;&#965;&#962; <b style="color:red;">{{ amount_awarded }}</b></p>
+    <p>Μόλις λάβατε πόντους <b style="color:red;">{{ amount_awarded }}</b></p>
 {% endblock %}
 
 {% block reason_awarded %}
-    <p>&#923;&#972;&#947;&#959;&#962;: {{ reason_awarded }}</p>
+    <p>Λόγος: {{ reason_awarded }}</p>
 {% endblock %}
 
 {% block report_related %}
@@ -23,5 +23,5 @@
 {% endblock %}
 
 {% block congratulations %}
-    <p>&#931;&#965;&#947;&#967;&#945;&#961;&#951;&#964;&#942;&#961;&#953;&#945;!</p>
+    <p>Συγχαρητήρια!</p>
 {% endblock %}
