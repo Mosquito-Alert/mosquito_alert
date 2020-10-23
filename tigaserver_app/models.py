@@ -591,6 +591,9 @@ class Report(models.Model):
                     this_response.question.startswith(u'\xc9s un embornal') or \
                     this_response.question.startswith(u'\xbfEs un imbornal'):
                 result = this_response.answer.startswith('Embornal') or this_response.answer.startswith('Sumidero') or this_response.answer.startswith('Storm') or this_response.answer.startswith('Yes') or this_response.answer.startswith(u'S\xed')
+        for this_response in these_responses:
+            if this_response.question_id == 12 and this_response.answer_id == 121:
+                return True
         return result
 
     def get_site_fonts(self):
