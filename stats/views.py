@@ -736,7 +736,92 @@ def report_stats_ccaa(request):
     return render(request, 'stats/report_stats_ccaa.html', context)
 
 
-@api_view(['GET'])
+@login_required
+def global_assignments(request):
+    this_user = request.user
+    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    if this_user_is_superexpert:
+        national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
+        keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
+        report_id_table = {}
+        for row in keys:
+            report_id_table[row['report_id']] = {'max_version': row['version_number__max'],
+                                                 'min_version': row['version_number__min'],
+                                                 'num_versions': row['version_number__count']}
+        data = []
+        total_unassigned = 0
+        total_progress = 0
+        total_pending = 0
+        # manually add spain
+        current_country = 17
+        unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+            hide=True).exclude(photos=None).filter(type='adult').filter(
+            Q(country_id=current_country) | Q(country_id__isnull=True)).annotate(
+            n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+        unassigned_filtered = filter(lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (
+                    report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
+                    report_id_table[x.report_id]['max_version']), unassigned)
+        progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+            hide=True).exclude(photos=None).filter(type='adult').filter(
+            Q(country_id=current_country) | Q(country_id__isnull=True)).annotate(
+            n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+        progress_filtered = filter(lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (
+                    report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
+                    report_id_table[x.report_id]['max_version']), progress)
+        user_id_filter = settings.USERS_IN_STATS
+        pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(
+            validation_complete=False).filter(report__type='adult').values('report')
+        n_unassigned = len(list(unassigned_filtered))
+        n_progress = len(list(progress_filtered))
+        n_pending = pending.count()
+        data.append(
+            {
+                "ns_id": 'N/A',
+                "ns_username": 'N/A',
+                "ns_country_id": 17,
+                "ns_country_code": 'ESP',
+                "ns_country_name": 'Spain',
+                "unassigned": n_unassigned,
+                "progress": n_progress,
+                "pending": n_pending
+            }
+        )
+        total_unassigned += n_unassigned
+        total_progress += n_progress
+        total_pending += n_pending
+        for user in national_supervisors:
+            current_country = user.userstat.national_supervisor_of.gid
+            unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+            unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
+            progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+            progress_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), progress )
+            user_id_filter = UserStat.objects.filter(native_of__gid=current_country).values('user__id')
+            pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
+            n_unassigned = len(list(unassigned_filtered))
+            n_progress = len(list(progress_filtered))
+            n_pending = pending.count()
+            data.append(
+                {
+                    "ns_id":user.id,
+                    "ns_username":user.username,
+                    "ns_country_id":user.userstat.national_supervisor_of.gid,
+                    "ns_country_code": user.userstat.national_supervisor_of.iso3_code,
+                    "ns_country_name":user.userstat.national_supervisor_of.name_engl,
+                    "unassigned": n_unassigned,
+                    "progress": n_progress,
+                    "pending": n_pending
+                }
+            )
+            total_unassigned += n_unassigned
+            total_progress += n_progress
+            total_pending += n_pending
+        summary = { 'total_unassigned':total_unassigned, 'total_progress':total_progress, 'total_pending':total_pending }
+        context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary}
+        return render(request, 'stats/global_assignments.html', context)
+    else:
+        return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+
 @login_required
 def workload_stats(request, country_id=None):
     this_user = request.user

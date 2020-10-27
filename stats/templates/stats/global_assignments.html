@@ -1,0 +1,99 @@
+{% load staticfiles %}
+{% load i18n %}
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>MosquitoAlert Stats</title>
+
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <link rel="stylesheet" href="{% static 'stats/workload.css' %}">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    <script>
+        var data = JSON.parse('{{ encoded_data|safe }}');
+    </script>
+    <script src="{% static 'stats/global_assignments.js' %}"></script>
+    <style>
+        .container-custom{
+            margin: 20px 0 0 0;
+        }
+        .solid-border{
+            border-style: solid;
+            border-width: 0px 0px 1px 0px;
+            padding: 5px 5px 5px 5px;
+            margin: 5px 5px 5px 5px;
+        }
+    </style>
+  </head>
+  <div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-brand">
+                        <span style="color:#ff9900; font-size: small">MosquitoAlert Global Report Assignment Stats</span>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="{% url 'expert_report_annotation' %} ">Back to Entolab</a></li>
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url 'auth_logout' %}">logout</a>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  <body>
+  <div style="margin-top:60px"></div>
+  <div class="container-custom">
+      <div class="row solid-border">
+            <div class="col-md-6">
+                <p><h3>Category description:</h3></p>
+                <p><strong>Unassigned reports</strong></p>
+                <p>Unassigned reports are reports that have not been yet assigned to any expert. Reports which are hidden or missing pictures are not included in this count.</p>
+                <p><strong>Reports in progress</strong></p>
+                <p>Reports in progress are reports which have not yet been assigned to at least 3 experts. Therefore, they are considered work in progress. This count excludes unassigned reports.</p>
+                <p><strong>Pending reports</strong></p>
+                <p>This is the total pending (assigned but not yet validated) reports for the users of the current country. These users include the national supervisor of the current country.</p>
+            </div>
+            <div class="col-md-6">
+                <p><h3>Summary stats:</h3></p>
+                <p><strong>Total unassigned reports:</strong></p>
+                <p><h3>{{ summary.total_unassigned }}</h3></p>
+                <p><strong>Total in progress reports:</strong></p>
+                <p><h3>{{ summary.total_progress }}</h3></p>
+                <p><strong>Total pending reports:</strong></p>
+                <p><h3>{{ summary.total_pending }}</h3></p>
+            </div>
+      </div>
+  </div>
+  {% for d in data %}
+  <div class="container-custom">
+      <div class="row solid-border">
+        <div class="col-md-2">
+            <p><h3>{{ d.ns_country_name }}</h3></p>
+            <p>National supervisor - {{ d.ns_username }}</p>
+        </div>
+        <div class="col-md-10">
+            <div class="row">
+                <div class="col-md-3">
+                    <div id="{{ d.ns_country_code }}_unassigned" style="height: 200px; margin: 0 auto"></div>
+                </div>
+                <div class="col-md-3">
+                    <div id="{{ d.ns_country_code }}_progress" style="height: 200px; margin: 0 auto"></div>
+                </div>
+                <div class="col-md-3">
+                    <div id="{{ d.ns_country_code }}_pending" style="height: 200px; margin: 0 auto"></div>
+                </div>
+            </div>
+        </div>
+      </div>
+  </div>
+  {% endfor %}
+  </body>
+</html>

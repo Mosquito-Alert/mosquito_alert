@@ -10,7 +10,7 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
-    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data
+    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments
 from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement
 from tigaserver_messages.views import compose_w_data, reply_w_data, compose
@@ -162,6 +162,7 @@ urlpatterns += i18n_patterns(
     path('stats/', show_usage, name='show_usage'),
     path('stats/workload/', workload_stats, name='workload_stats'),
     path('stats/workload/<country_id>/', workload_stats, name='workload_stats'),
+    path('stats/global_assignments/', global_assignments, name='global_assignments'),
     path('stats/report_stats_ccaa/', report_stats_ccaa, name='report_stats_ccaa'),
     path('stats/report_stats_ccaa_pie/', report_stats_ccaa_pie, name='report_stats_ccaa_pie'),
     path('stats/report_stats_ccaa_pie_sites/', report_stats_ccaa_pie_sites, name='report_stats_ccaa_pie_sites'),
