@@ -1469,3 +1469,7 @@ def get_exif(filename):
         return exif
     except:
         return None
+
+def imageIdentifier(request):
+
+    return render(request, 'tigacrafting/image_identifier.html')

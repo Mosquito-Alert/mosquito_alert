@@ -12,7 +12,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto, imageIdentifier
 from tigaserver_messages.views import compose_w_data, reply_w_data, compose
 from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
@@ -55,6 +55,7 @@ urlpatterns = [
     path('scoring/en/', RedirectView.as_view(url='/en/scoring/', permanent=False), name="scoring_en"),
     path('tigapublic/', include('tigapublic.urls')),
     path('get_photo/<token>/<photo_uuid>/<size>', lookup_photo),
+    path('imageIdentifier', imageIdentifier, name='image_identifier')
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
@@ -130,4 +131,6 @@ urlpatterns += i18n_patterns(
     path('messages/reply/<int:message_id>/', reply_w_data, name='messages_reply'),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     path('metadataPhotoInfo', metadataPhoto, name='metadataPhotoInfo'),
+
+
 )
