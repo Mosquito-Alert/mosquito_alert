@@ -1,0 +1,52 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Info Pontuaçao Mosquito Alert
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>INFO PONTUAÇÃO</h2>
+        <p>As ações realizadas na Mosquito Alert são reconhecidas e recompensadas na forma de pontos. O número de pontos
+            por relatório varia de acordo com as informações fornecidas e sua qualidade.</p>
+        <p>Os pontos máximos que podem ser obtidos por relatório são:</p>
+        <ul>
+            <li>Mosquito <em>Aedes</em> invasor: 20 pontos</li>
+            <li>Mosquito comum: 14 pontos</li>
+            <li>Criadouro em sarjeta: 20 pontos</li>
+            <li>Outro criadouro na via pública: 16 pontos</li>
+        </ul>
+        <p>Além disso, há bónus extras para o primeiro mosquito da temporada, o primeiro relatório do dia ou por
+            participar com frequência. Quando atinge um número específico de relatórios, não só ganha alguns pontos
+            extras, como também um troféu especial. Há diferentes troféus de acordo com os marcos alcançados.</p>
+        <p>Relatórios enviados como mosquitos, mas que não são mosquitos com base na validação de um especialista, não
+            vão ganahr pontos. Uma foto que não permita identificar o mosquito ou o criadouro também não será
+            pontuada.</p>
+        <p>A acumulação de pontos vai permitir que suba de <strong>nível</strong>:</p>
+        <ul>
+            <li>(1) iniciante (<em>beginner</em>)</li>
+            <li>(2) colaborador <em>(contributor)</em></li>
+            <li>(3) especialista (<em>expert</em>)</li>
+            <li>(4) mestre (<em>master</em>)</li>
+            <li>(5) grande mestre (<em>grandmaster</em>)</li>
+        </ul>
+        <p>Estes ícones indicam o nível atingido:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Painel de pontos</h2>
+        <p>O ranking global é acessado clicando sobre a pontuação na tela principal. Ao clicar numa posição no ranking,
+            é exibido o detalhe dos pontos obtidos pelo utilizador.</p>
+        <p>Clicando em "Mais detalhes" o utlizador acessa ao painel detalhado de pontos.</p>
+        <p>Nesta secção encontra-se a lista dos relatórios enviados com a pontuação obtida em cada um deles. Os
+            relatórios são interativos, ao clicar o utilizador obtém a pontuação detalhada e o motivo da pontuação.</p>
+
+    </div>
+</div>
+{% endblock %}

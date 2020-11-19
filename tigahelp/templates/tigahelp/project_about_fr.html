@@ -1,0 +1,124 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+À propos du projet
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+        <h2>Qu'est-ce que Mosquito Alert ?</h2>
+        <p>Mosquito Alert est une plateforme scientifique citoyenne qui facilite la collaboration entre différents
+            acteurs pour étudier, surveiller et contrôler les espèces de moustiques qui sont porteuses de maladies comme
+            la dengue, le Zika, le chikungunya et le virus du Nil occidental.</p>
+        <p>Le projet donne des rôles clés aux citoyens, aux scientifiques, aux experts de la santé publique et aux
+            éducateurs. Mosquito Alert permet à quiconque de collecter et de partager des données (1) et de s'engager
+            dans la validation des données aux côtés d'entomologistes professionnels, qui étiquettent les rapports de
+            moustiques et répondent aux participants (2). Une fois validées, les données sont mises à la disposition du
+            grand public par le biais d'une carte web interactive (3). Les scientifiques (4) et les agents de santé
+            publique (5) s'appuient également sur ces données pour étudier et surveiller les moustiques vecteurs de
+            maladies.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Pourquoi a-t-on besoin de Mosquito Alert ?</h2> <p> Au cours des dernières décennies, le nombre de moustiques
+            envahissants et de maladies émergentes transmises par les moustiques a augmenté à l'échelle mondiale. De
+            nouvelles espèces envahissantes, principalement du genre Aedes, se sont installées dans de nouvelles zones
+            et continuent à se développer. Les moustiques du genre Aedes sont importants du point de vue de la santé en
+            raison de leur capacité à transmettre des maladies comme la dengue, le Zika et le chikungunya. De même, le
+            moustique commun (Culex pipiens) est important car il peut transmettre le virus du Nil occidental. Le risque
+            que les moustiques représentent pour la santé publique rend important le suivi de leurs populations.
+            <p> Vu la complexité du problème, Mosquito Alert implique le public dans la surveillance et la recherche sur
+                les moustiques, permettant la collaboration entre différents acteurs grâce à son application et à ses
+                autres plateformes et communautés.</p>
+        <h2>Quelles sont les données collectées ?</h2> <p>Les données portent sur 5 espèces de moustiques différentes :
+                <em>Aedes albopictus</em> (le moustique-tigre asiatique), <em>Aedes aegypti</em>, <em>Aedes
+                    japonicus</em>, <em>Aedes koreicus</em>, et <em>Culex pipiens</em> (le moustique commun). </p>
+
+
+                <p class="centeredImage">
+
+                    <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+                </p>
+
+
+                <p>Pour ces espèces, des données sont recueillies sur les moustiques adultes, leurs sites de
+                    reproduction et leurs piqûres. Toutes ces données sont importantes pour mieux comprendre ces espèces
+                    et pour les surveiller et les contrôler.</p>
+
+
+                <p class="centeredImage">
+
+                    <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+                </p>
+
+
+                <p>Mosquito Alert collecte également les emplacements approximatifs des appareils des participants, en
+                    prélevant un échantillon de ces emplacements à 5 moments aléatoires chaque jour, à moins que le
+                    participant n'ait choisi de ne pas participer. Les emplacements sont masqués sur une grille de 0,025
+                    x 0,025 degrés de latitude et de longitude (environ 2x2 km) avant d'être envoyés au serveur Mosquito
+                    Alert. Pour des raisons de confidentialité, seul l'identifiant du carré de la grille est
+                    effectivement partagé avec Mosquito Alert, et non l'emplacement précis. Ces informations sont très
+                    précieuses d'un point de vue scientifique, car elles permettent aux chercheurs de faire de
+                    meilleures estimations sur les populations de moustiques, en distinguant, par exemple, les endroits
+                    où il y a peu de moustiques des endroits où il y a peu de participants (mais potentiellement
+                    beaucoup de moustiques). La localisation des participants fournit des informations sur ce que l'on
+                    appelle en écologie l'effort d'échantillonnage.</p>
+
+
+                <p class="centeredImage">
+
+                    <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+                </p>
+
+
+                <h2>À quoi servent les données ?</h2>
+                <p>Voici quelques exemples:</p>
+                <ul>
+                    <li type="disc">Les rapports que les gens envoient à Mosquito Alert se sont avérés être, ces
+                        dernières années, un système d'alerte précoce efficace contre l'invasion de nouveaux moustiques.
+                        Le système est utilisé pour surveiller les populations de moustiques établies et découvrir de
+                        nouvelles populations.
+                    </li>
+                    <li type="disc">L'observation des moustiques, des sites de reproduction et des piqûres aide les
+                        scientifiques et les responsables de la santé publique à évaluer le risque et à gérer les
+                        populations de vecteurs de maladies. Afin d'estimer l'abondance des moustiques dans un site
+                        donné, il est important d'ajuster les observations en fonction de l'effort d'échantillonnage.
+                        Pour ce faire, l'application Mosquito Alert collecte des données sur la position approximative
+                        de l'appareil à des moments aléatoires de la journée. Les positions sont masquées sur une grille
+                        d'environ 2x2 km afin de protéger la vie privée.
+                    </li>
+                    <li type="disc">Des travaux sont actuellement en cours pour développer un système de prévision des
+                        risques épidémiologiques en temps réel, participatif et dynamique.
+                    </li>
+                </ul>
+        <h2>Où puis-je trouver plus d'informations ?</h2> <p>Vous trouverez plus d'informations sur le site web du
+                    projet et sur les réseaux sociaux.</p>
+                    <p><a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a></p>
+                    <p>Dans les paramètres de l'application, vous trouverez un tutoriel pour les participants, un guide
+                        pour vous aider à identifier les moustiques, la politique de confidentialité et les conditions
+                        d'utilisation, et des informations sur les organismes à l'origine de ce projet.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

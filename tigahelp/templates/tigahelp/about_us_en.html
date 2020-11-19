@@ -1,0 +1,30 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About Us
+{% endblock %}
+
+{% block content %}
+
+<h2>Coordinating Entities</h2> <p>Mosquito Alert is led by the following public research institutions: the <em>Spanish
+    National Research Council’s Center for Advanced Studies of Blanes</em> (<strong>CEAB-CSIC</strong>), the <em>Center
+    for Ecological Research and Forestry Applications</em> (<strong>CREAF</strong>) and <em>Pompeu Fabra University</em>
+    (<strong>UPF</strong>). The <em>Catalan Institution for Research and Advanced Studies</em> (<strong>ICREA</strong>)
+    also participates.</p>
+<p class="centeredImage">
+    <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/colaboradors_about_us.jpg" %}">
+</p>
+
+<h2>Collaborators</h2> <p>Mosquito Alert is made possible also thanks to the participation of a number of experts
+    (professionals who, for example, validate citizen scientists’ data), and entities from various countries working in
+    the field of public health, invasive species control, and environmental education.</p> <h2>Financing and
+    participation in projects</h2> <p>Mosquito Alert participates in competitive projects for research, scientific
+    communication dissemination (including the Spanish <em>Plan Estal</em>, the EU’s Horizon 2020 funding line, and “la
+    Caixa” Foundation projects, among others). Mosquito Alert also relies on contributions of resources from the leading
+    and collaborating entities.</p> <p>More information on entities, collaborations and projects can be found at <a
+        href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a> and on social networks.</p>
+
+<p class="centeredImage"><img style="max-width: 100%; height: auto;" src="{% static "tigahelp/banner_web.jpg" %}"></p>
+
+{% endblock %}

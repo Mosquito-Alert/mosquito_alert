@@ -1,0 +1,117 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About The Project
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>Što je Mosquito Alert?</h2>
+        <p>Mosquito Alert je platforma koja omogućava suradnju između različitih sudionika u cilju proučavanja, praćenja
+            i suzbijanja vrsta komaraca koji prenose uzročnike denge, Zika virusne infekcije, chikungunya i groznice
+            Zapadnog Nila.</p>
+        <p>Projekt daje ključnu ulogu građanima, znanstvenicima, radnicima u javnom zdravstvu i edukatorima. Mosquito
+            Alert dozvoljava svakome da prikuplja i dijeli podatke (1) i angažira profesionalne entomologe u procesu
+            ocjenjivanja, koji omogućavaju izvješća o komarcima i odgovaraju sudionicima (2). Nakon što su ocijenjeni,
+            podaci postaju dostupni javnosti kroz interaktivne web mape (3). Također se oslanja na znanstvenike i na
+            radnike javnog zdravstva (5) u proučavanju i praćenju komaraca prenositelja uzročnika oboljenja.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Zašto je potreban Mosquito Alert?</h2>
+        <p>U posljednjim desetljećima broj invazivnih vrsta i dolazećih oboljenja koja prenose komarci je porastao na
+            globalnoj razini. Nove invazivne vrste, većinom iz roda <em>Aedes</em> zauzele su nova područja i dalje se
+            nastavljaju širiti. <em>Aedes</em> komarci su značajni iz perspektive zdravlja zbog njihove sposobnosti da
+            prenose uzročnike denge, Zike i chikungunya, također domaći komarac (<em>Culex pipiens</em>) značajan je jer
+            može prenijeti uzročnike groznice Zapadnog Nila. Rizik koji komarci predstavljaju za javno zdravlje čini ih
+            dovoljno značajnima da se njihova populacija prati. S obzirom na kompleksnost problema, Mosquito Alert
+            otvara mogućnost nadzora i istraživanja nad komarcima za javnost i tako omogućava suradnju između različitih
+            činitelja preko aplikacije te drugih platformi i zajednica. </p>
+
+        <h2>Kakvi podaci se prikupljaju?</h2>
+        <p>Sakupljaju se podaci o pet različitih vrsta komaraca: tigrasti komarac (<em>Aedes albopictus</em>), komarac
+            žute groznice (<em>Aedes aegypti</em>), japanski komarac (<em>Aedes japonicus</em>), korejski komarac (<em>Aedes
+                koreicus</em>) i domaći komarac (<em>Culex pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>Za ove vrste sakupljaju se podaci o odraslim komarcima i njihovim leglima (razvojnim staništima) kao i
+            ubodima. Svi podaci su značajni za bolje razumijevanje ovih vrsta, kao i za njihovo praćenje i
+            suzbijanje.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+        <p>Mosquito Alert također sakuplja približne lokacije uređaja sudionika uzorkujući na tim lokacijama pet puta u
+            nasumičnim vremenskim intervalima svakog dana, osim ako je sudionik to onemogućio. Lokacije su označene na
+            koordinatnoj mreži za 0,025 x 0,025 stupnjeva geografske širine i dužine (otprilike 2x2 km) prije samog
+            slanja na server Mosquito Alert. Zbog zaštite privatnosti, jedino je identifikator kvadrata koordinate mreže
+            podijeljen s aplikacijom, a ne i precizna lokacija. Ova informacija je bitna sa znanstvene perspektive jer
+            omogućava znanstvenicima bolje procjene o populacijama komaraca, njihovoj rasprostranjenosti, npr. mjesta s
+            nekoliko komaraca od mjesta s puno komaraca. Lokacija sudionika omogućava informaciju o tome što je već
+            poznato u ekologiji, kao što su uzorkovanja.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+        <h2>Za što se koriste podaci?</h2>
+        <p>Ovo su neki primjeri:</p>
+        <ul>
+            <li type="disc">Izvještaji poslani posljednjih godina u aplikaciju Mosquito Alert su se pokazali efikasni za
+                rano upozorenje protiv invazije novih vrsta komaraca. Sustav je korišten za praćenje populacije komaraca
+                kao i otkrivanje novih populacija.
+            </li>
+            <li type="disc">Promatranje komaraca, legla komaraca (razvojnih staništa) i uboda pomažu znanstvenicima i
+                djelatnicima javnog zdravstva u procjeni rizika upravljanja vektorskom populacijom komaraca. U cilju
+                utvrđivanja brojnosti komaraca na određenom području potrebno je prilagoditi opažanja bazirana na
+                uzorkovanjima. Da bi se ovo postiglo aplikacija Mosquito Alert sakuplja podatke o približnim lokacijama
+                uređaja u nasumičnim vremenskim intervalima svakog dana. Položaj nije točan nego je uokviren u mrežu od
+                2x2 km. Trenutačno se radi da se razvije predviđajući sustav epidemiološkog rizika koji će biti u
+                realnom vremenu.
+            </li>
+        </ul>
+
+
+        <h2>Gdje se može pronaći više informacija?</h2>
+        <p>Više informacija možete pronaći na internet stranici projekta i društvenim mrežama.</p>
+        <p><a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a></p>
+        <p>U postavkama aplikacije pronaći ćete tutorial (uputstva) za sudionike, vodič koji će vam pomoći da
+            determinirate komarce, zatim politiku privatnosti i uvjete korištenja, kao i informacije o sudionicima koji
+            stoje iza projekta.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

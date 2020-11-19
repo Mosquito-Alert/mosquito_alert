@@ -35,11 +35,11 @@ msgstr "Mosquito level"
 
 #: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
 msgid "Reports"
-msgstr "Reports"
+msgstr "Sent data"
 
 #: stats/static/stats/user_ranking.js:30 stats/static/stats/user_ranking.js:40
 msgid "Score"
-msgstr "Score"
+msgstr "Attained score"
 
 #: stats/static/stats/user_ranking.js:34
 msgid "Site"

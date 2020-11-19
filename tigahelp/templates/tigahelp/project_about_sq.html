@@ -1,0 +1,49 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+    Në lidhje me projektin
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+    <div class='text_container'>
+    <div class="center">
+        <h1></h1>
+    </div>
+        <h2>Çfarë është Aplikacioni "Mosquito Alert"?</h2>
+        <p>Aplikacioni "Mosquito Alert" është një platformë e shkencës qytetare e cila lehtëson bashkëpunimin midis aktorëve të ndryshëm në një studim, monitoron dhe kontrollon llojet e mushkonjave që mbartin dhe transmetojnë sëmundje si dengue, Zika, chikungunya dhe virusi Nilit perëndimor.</p>
+        <p>Projekti u jep role kyçe qytetarëve, shkencëtarëve, ekspertëve të shëndeti publik dhe edukatorëve. Aplikacioni "Mosquito Alert" lejon gjithsecilin të mbledh dhe të shpërndajë të dhëna (1) dhe të angazhohet në vlerësimin e të dhënave midis profesionistëve entomologë, që etiketojnë/emërtojnë raportet e mushkonjave dhe u përgjigjen pjesëmarrësve (2). Pas vlerësimit, të dhënat bëhen të disponueshme për publikun e gjerë me anë të një harte interaktive në internet (3). Aplikacioni gjithashtu mbështetet tek shkencëtarët (4) dhe nga agjentët e shëndetit publik (5) për të studiuar dhe monitoruar mushkonjat vektorë të sëmundjeve.</p>
+        <p class="centeredImage">
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+        </p>
+
+        <h2>Përse është i nevojshëm Aplikacioni "Mosquito Alert"?</h2>
+        <p>Gjatë dekadave të fundit numri i llojeve të mushkonjave invazive dhe të sëmundjeve të shfaqura me origjinë nga mushkonjat, janë në rritje në të gjithë botën. Llojet invazive të reja, kryesisht të gjinisë Aedes, janë vendosur në zona të reja dhe vazhdojnë ta zgjerojnë përhapjen e tyre. Mushkonjat Aedes janë shumë të rëndësishme nga pikëpamja shëndetësore për shkak të aftësisë që ato kanë në transmetimin e sëmundjeve si dengue, Zika dhe chikungunya. Gjithashtu, mushkonja e zakonshme (<i>Culex pipiens</i>) është shumë e rëndësishme sepse mund të transmetojë virusin e Nilit perëndimor. Rreziku që mushkonjat paraqesin ndaj shëndetit publik, i bënë ato më të rëndësishme për të monitoruar popullatat e tyre.</p>
+        <p>Me gjithë kompleksitetin e problemit, Aplikacioni "Mosquito Alert" hap survejancën e mushkonjave dhe kërkimet në fushën e shëndetit publik, duke lejuar bashkëpunim midis aktorëve të ndryshëm nëpërmjet këtij aplikacioni dhe nëpërmjet platformës së tij dhe komunitetit.</p>
+
+        <h2>Çfarë të dhënash mblidhen?</h2>
+        <p>Të dhënat mblidhen mbi 5 lloje të ndryshme mushkonjash: mushkonja tigër (<i>Aedes albopictus</i>), mushkonja e ethes së verdhë (<i>Aedes aegypti</i>), mushkonja e gropave shkëmbore (<i>Aedes japonicus</i>), mushkonja Koreane (<i>Aedes koreicus</i>) dhe mushkonja e zakonshme (<i>Culex pipiens</i>).</p>
+        <p class="centeredImage">
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+        </p>
+        <p>Për lloje të tjera, të dhënat mblidhen mbi mushkonjat adulte, vendet ku ato rriten dhe pickimet e tyre. Të gjitha këto të dhëna janë të rëndësishme për të kuptuar më mirë këto lloje dhe për të monitoruar dhe kontrolluar ato.</p>
+        <p class="centeredImage">
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+        </p>
+        <p>Aplikacioni "Mosquito Alert" gjithashtu, mbledh dhe grumbullon vendndodhjet e përafërta të pajisjeve të pjesëmarrësve, marrjen e mostrës në këto vendndodhje në 5 kohë të rastësishme çdo ditë, përveçse nëse pjesëmarrësi nuk e zgjedh atë. Vendndodhjet do të maskohen në një rrjetë prej 0.025 x 0.025 gradë gjatësi dhe gjerësi gjeografike (përafërsisht 2x2 Km) para se të dërgohen tek server i Aplikacioni "Mosquito Alert". Për arsye privatësie, vetëm identifikuesi i katrorit të rrjetës do të shpërndahet me Aplikacionin "Mosquito Alert", dhe jo vendndodhja e saktë. Ky informacion është shumë i vlefshëm nga ana e një perspektive shkencore, sepse i’u mundëson kërkuesve për të bërë vlerësime më të mira për popullatat e mushkonjave, dallimin e tyre, për shembull, vendet me pak mushkonja nga vendet me pak pjesëmarrës (por mundësisht shumë mushkonja). Vendndodhjet e pjesëmarrësve sigurojnë informacion që njihet në ekologji si mundësia e marrjes së mostrës.</p>
+        <p class="centeredImage">
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+        </p>
+        <h2>Për çfarë përdoren të dhënat?</h2>
+        <p>Këtu janë disa shëmbuj:</p>
+        <ul> <li>Raportet që njerëzit dërgojnë tek Aplikacioni "Mosquito Alert", kanë provuar gjatë viteve të fundit se është një sistem i hershëm paralajmërimi shumë efektive kundër pushtimit nga llojet e reja të mushkonjave. Sistemi përdoret për të monitoruar popullatat e stabilizuara të mushkonjave dhe për të zbuluar popullatat e reja.</li> <li>Vëzhgimi i mushkonjave, vendet ku ato rriten dhe pickimet i ndihmojnë shkencëtarët dhe menaxhuesit e shëndetit publik për të arritur rrezikun dhe menaxhimin e popullatave të vektorëve të sëmundjeve. Në mënyrë që të vlerësohet bollëku i mushkonjave në një vend të dhënë, është e rëndësishme të përshtaten vëzhgimet bazuar në përpjekjet për marrjen e mostrës. Për të bërë këtë, Aplikacioni "Mosquito Alert" mbledh të dhëna në pozicione të përafërta në kohë të rastësishme gjatë ditës. Pozicionet maskohen në një rrjetë afërsisht 2x2 Km për të mbrojtur privatësinë.</li> <li>Puna është në zhvillim e sipër për të zhvilluar një sistem të parashikimit të riskut epidemiologjik në kohë reale, pjesëmarrëse dhe dinamike.</li> </ul>
+
+        <h2>Ku mund të gjejë më shumë informacione</h2>
+        <p>Më shumë informacione do të gjeni në faqen e internetit të projektit dhe në rrjetet sociale.</p>
+        <p><a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a></p>
+        <p>Tek cilësimet e aplikacionit do të gjeni pjesën praktike për pjesëmarrësit, një udhëzues për të ndihmuar në përcaktimin e mushkonjave, politikat e privatësisë dhe termat e përdorimit, si edhe informacione mbi entitetet pas këtij projekti.</p>
+    </div>
+</div>
+{% endblock %}
+

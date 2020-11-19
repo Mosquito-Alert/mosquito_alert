@@ -1,0 +1,54 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Mosquito Alert Score Informatie
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>SCORE INFORMATIE</h2>
+        <p>Voor het uitvoeren van acties in de Mosquito Alert applicatie worden beloningen uitgedeeld in de vorm van
+            punten. Het aantal punten per melding verschilt afhankelijk van de gedeelde informatie en de kwaliteit
+            daarvan.</p>
+        <p>Het maximum aantal punten dat per melding verkregen kan worden:</p>
+        <ul>
+            <li>Invasieve <em>Aedes</em> steekmug: 20 punten</li>
+            <li>Huissteekmug: 14 punten</li>
+            <li>Afwateringsput broedplaats: 20 punten</li>
+            <li>Andere broedplaats op een openbare locatie: 16 punten</li>
+        </ul>
+        <p>Daarnaast zijn er extra bonussen voor de eerste steekmug van het seizoen, de eerste melding van de dag of
+            wanneer herhaaldelijk wordt meegedaan. Wanneer u een specifiek aantal meldingen behaald, krijgt u niet
+            alleen extra punten, maar ook een speciale trofee. Er zijn verschillende trofeeën, afhankelijk van de
+            bereikte mijlpaal.</p>
+        <p>Voor meldingen die worden ingestuurd als steekmug, maar waar tijdens validatie door een expert blijkt dat het
+            niet om een steekmug gaat, worden geen punten toegekend. Een foto waarbij het voor de expert niet mogelijk
+            is om een steekmug of broedplaats te identificeren zullen ook geen score ontvangen.</p>
+        <p>Door het verzamelen van punten kunt u een <b>level</b> omhoog gaan:</p>
+        <ul>
+            <li>(1) <em>Novice</em> (beginner)</li>
+            <li>(2) <em>Contributor</em> (medewerker)</li>
+            <li>(3) <em>Expert</em> (expert)</li>
+            <li>(4) <em>Master</em> (meester)</li>
+            <li>(5) <em>Grandmaster</em> (grootmeester)</li>
+        </ul>
+        <p>Deze pictogrammen geven het bereikte niveau weer:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Punten paneel</h2>
+        <p>De wereldwijde ranglijst is toegankelijk door op de score op het hoofdscherm te klikken. Door op een <em>ranking</em>
+            positie te drukken, wordt de uitsplitsing van de door de gebruiker behaalde punten weergegeven.</p>
+        <p>Door te klikken op "Meer details" geeft toegang tot het paneel waar de punten zijn uitgesplitst.</p>
+        <p>In dit gedeelte vindt u een lijst van verzonden meldingen met de score die voor elk van hen is behaald. De
+            meldingen zijn interactief, door te klikken krijgt u de uitgesplitste score en een uitleg bij de score.</p>
+
+    </div>
+</div>
+{% endblock %}

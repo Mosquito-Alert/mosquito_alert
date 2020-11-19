@@ -1,0 +1,27 @@
+{% extends "tigaserver_app/award_notification.html" %}
+
+{% block title_block %}
+    <title>Dir krut grad e Punktepräis!</title>
+{% endblock %}
+
+{% block title_header_block %}
+
+{% endblock %}
+
+{% block amount_xp_awarded %}
+    <p>Dir krut just <b style="color:red;">{{ amount_awarded }} Punkten!</b></p>
+{% endblock %}
+
+{% block reason_awarded %}
+    <p>Wéinst: {{ reason_awarded }}</p>
+{% endblock %}
+
+{% block report_related %}
+    {% if picture_link %}
+        <img src="{{ picture_link }}" width=100%>
+    {% endif %}
+{% endblock %}
+
+{% block congratulations %}
+    <p>Gratulatioun!</p>
+{% endblock %}

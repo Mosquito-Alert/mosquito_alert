@@ -2,47 +2,64 @@
 {% load staticfiles %}
 
 {% block page_title %}
-    Mosquito Alert Info Puntuació
+Mosquito Alert Info Puntuació
 {% endblock %}
 
 
 {% block content %}
 
-    <h1>INFO PUNTUACIÓ</h1>
-    Les accions realitzades a Mosquito Alert ténen reconeixement i recompensa en forma de punts. El nombre de punts per informe varia en funció de la informació aportada i de la seva qualitat.
+<div class='main_container'>
 
-    <p>Els punts màxims que es poden obtenir per informe són:</p>
-    <ul>
-        <li>Mosquit <em>Aedes</em> invasor: 20 XP</li>
-        <li>Mosquit comú: 14 XP</li>
-        <li>Lloc de cria embornal: 20 XP</li>
-        <li>Un altre lloc de cria en la via pública: 16 XP</li>
-    </ul>
+    <div class='text_container'>
 
-    <p>A més existeixen bonificacions extra pel primer mosquit de la temporada, primer informe del dia o per participar amb freqüència.</p>
 
-    <p>Aquells informes que s'enviïn com a mosquit però resulten no ser mosquits no obtindran punts. Igual que tampoc es puntuarà una foto que no permet identificar el que hi apareix.</p>
+        <div class="center">
 
-    <p>L'acumulació de punts et permetrà anar ascendint de nivell:</p>
-    <ul>
-        <li>(1) principiant (novice)</li>
-        <li>(2) col·laborador (contributor)</li>
-        <li>(3) expert (expert)</li>
-        <li>(4) mestre (màster)</li>
-        <li>(5) gran mestre (grandmaster)</li>
-    </ul>
+            <h1></h1>
 
-    <p>Unes icones indiquen en tot moment el <b>nivell</b> en què et trobes.</p>
+        </div>
 
-    <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
 
-    <h2>El teu panell de punts</h2>
+        <h2>INFO PUNTUACIÓ</h2>
+        <p>Les accions realitzades a Mosquito Alert tenen reconeixement i recompensa en forma de punts. El nombre de
+            punts per informe varia en funció de la informació aportada i de la seva qualitat.</p>
+        <p>Els punts màxims que es poden obtenir per informe són:</p>
+        <ul>
+            <li>Mosquit <em>Aedes</em> invasor: 20 punts</li>
+            <li>Mosquit comú: 14 punts</li>
+            <li>Lloc de cria embornal: 20 punts</li>
+            <li>Un altre lloc de cria a la via pública: 16 punts</li>
+        </ul>
+        <p>A més, existeixen bonificacions extra pel primer mosquit de la temporada, primer informe del dia o per
+            participar amb freqüència. Quan s'aconsegueix un nombre concret d'informes, no sols s'obté uns punts extra,
+            sinó que s'aconsegueix un trofeu especial. Existeixen diferents trofeus segons les fites aconseguides.</p>
+        <p>Aquells informes que s'enviïn com a mosquit però resultin no ser mosquits, segons la validació experta, no
+            obtindran punts. Tampoc es puntuarà una foto que no permet identificar el mosquit o lloc de cria.</p>
+        <p>L'acumulació de punts et permetrà anar pujant de <b>nivell</b>:</p>
+        <ul>
+            <li>(1) Principiant (<em>beginner</em>)</li>
+            <li>(2) Col·laborador (<em>contributor</em>)</li>
+            <li>(3) Expert (<em>expert</em>)</li>
+            <li>(4) Mestre (<em>master</em>)</li>
+            <li>(5) Gran mestre (<em>grandmaster</em>)</li>
+        </ul>
+        <p>Aquestes icones indiquen el nivell assolit.</p>
 
-    <p>Pitjant el botó amb els punts de la pantalla principal podràs accedir al rànquing on veuràs en quina posició et situes. Si fas clic sobre la teva posició es desplegarà una taula desglossada amb els teus punts.</p>
 
-    <p>Segueix l'enllaç que hi ha al final de la taula (link!) que et portarà al teu panell de punts.</p>
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
 
-    <p>Aquí trobaràs una llista dels informes enviats amb la puntuació obtinguda en cadascun d'ells. Els informes són interactius, clicant en un veuràs la puntuació desglossada i el perquè de la puntuació.</p>
+
+        <h2>Panell de punts</h2>
+        <p>S’accedeix al rànquing global fent clic sobre la puntuació a la pantalla principal. Pressionant sobre una
+            posició del rànquing es desglossen els punts obtinguts per l’usuari.</p>
+        <p>Fent clic a “Més detalls” s’accedeix al panell de punts desglossat.</p>
+        <p>En aquest apartat hi ha una llista dels informes enviats amb la puntuació obtinguda a cadascun d’ells. Els
+            informes són interactius, en clicar s’obté la puntuació detallada i el perquè de la puntuació.</p>
+
+
+    </div>
+
+</div>
 
 {% endblock %}
 

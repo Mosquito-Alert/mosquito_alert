@@ -104,65 +104,51 @@ score metadata structure - json
 
 
 def is_thorax_answered(report):
-    '''
-    for response in report.responses:
+    for response in report.responses.all():
         if response.question_id == MOSQUITO_HOW_LOOKS_QUESTION_ID and response.answer_id in MOSQUITO_THORAX_ANSWER_IDS:
             return True
-    '''
     return False
 
 
 def is_abdomen_answered(report):
-    '''
-    for response in report.responses:
+    for response in report.responses.all():
         if response.question_id == MOSQUITO_HOW_LOOKS_QUESTION_ID and response.answer_id in MOSQUITO_ABDOMEN_ANSWER_IDS:
             return True
-    '''
     return False
 
 
 def is_leg_answered(report):
-    '''
-    for response in report.responses:
+    for response in report.responses.all():
         if response.question_id == MOSQUITO_HOW_LOOKS_QUESTION_ID and response.answer_id in MOSQUITO_LEG_ANSWER_IDS:
             return True
-    '''
     return False
 
 
 def is_water_answered(report):
-    '''
-    for response in report.responses:
-        if response.question_id == SITE_WATER_QUESTION_ID and response.answer_id in SITE_WATER_ANSWERS_ID:
+    for response in report.responses.all():
+        if response.question_id == SITE_WATER_QUESTION_ID and response.answer_id in SITE_WATER_ANSWER_IDS:
             return True
-    '''
     return False
 
 
 def is_bite_report_followed(report):
-    '''
-    for response in report.responses:
+    for response in report.responses.all():
         if response.question_id == MOSQUITO_BITE_QUESTION_ID and response.answer_id == MOSQUITO_BITE_ANSWER_ID:
             return True
-    '''
     return False
 
 
 def is_mosquito_report_followed(report):
-    '''
-    for response in report.responses:
+    for response in report.responses.all():
         if response.question_id == BREEDING_SITE_MOSQUITO_QUESTION_ID and response.answer_id == BREEDING_SITE_MOSQUITO_ANSWER_ID:
             return True
-    '''
     return False
 
 
 def is_storm_drain(report):
-    '''
-    for response in report.responses:
+    for response in report.responses.all():
         if response.question_id == STORM_DRAIN_QUESTION_ID and response.answer_id == STORM_DRAIN_ANSWER_ID:
             return True
-    '''
     return False
 
 
@@ -250,7 +236,7 @@ def get_site_report_score(report, result):
     local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
     picture = report.get_final_photo_html()
     if picture:
-        local_result['report_photo'] = picture.photo.url.replace('tigapics/', 'tigapics_small/')
+        local_result['report_photo'] = picture.get_small_url()
     else:
         local_result['report_photo'] = None
     local_result['report_score'] = 0
@@ -295,15 +281,16 @@ def get_adult_report_score(report, result):
     local_result['report_score'] = 0
     local_result['awards'] = []
     local_result['penalties'] = []
+    if picture is not None:
+        local_result['report_photo'] = picture.get_small_url()
 
     if is_aedes(validation_result) or is_culex(validation_result):
         if picture:
-            local_result['report_photo'] = picture.photo.url.replace('tigapics/', 'tigapics_small/')
             local_result['awards'].append({"reason": _("picture"), "xp_awarded": MOSQUITO_PICTURE_REWARD})
             local_result['report_score'] += MOSQUITO_PICTURE_REWARD
         else:
-            local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
             local_result['report_photo'] = None
+            local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
 
         if report.located:
             local_result['awards'].append({"reason": _("location"), "xp_awarded": MOSQUITO_LOCATION_REWARD})
@@ -620,8 +607,10 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     bite_number_below_rank = bite_sorted_df[bite_sorted_df['rank'] <= result['score_detail']['bite']['rank_value']].count()['rank']
     bite_number_total = bite_sorted_df.count()['rank']
     '''
-
-    result['overall_top_perc'] = (float(overall_number_below_rank)/float(overall_number_total)) * 100.0
+    if overall_number_total == 0:
+        result['overall_top_perc'] = 100.0
+    else:
+        result['overall_top_perc'] = (float(overall_number_below_rank) / float(overall_number_total)) * 100.0
     result['overall_ranked_users'] = overall_number_total
 
     if adult_number_below_rank == 0 and adult_number_total == 0:

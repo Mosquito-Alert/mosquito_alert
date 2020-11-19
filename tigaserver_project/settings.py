@@ -44,7 +44,6 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -64,6 +63,8 @@ INSTALLED_APPS = (
     'django_messages',
     'tigaserver_messages',
     'tigascoring',
+    'rest_framework_swagger',
+    'django.contrib.sites',
     'django_filters',
 )
 
@@ -131,6 +132,23 @@ LANGUAGES = (
     ('es', _('Spanish')),
     ('ca', _('Catalan')),
     ('en', _('English')),
+    ('de', _('German')),
+    ('sq', _('Albanian')),
+    ('el', _('Greek')),
+    ('hu', _('Hungarian')),
+    ('pt', _('Portuguese')),
+    ('sl', _('Slovenian')),
+    ('it', _('Italian')),
+    ('fr', _('French')),
+    ('bg', _('Bulgarian')),
+    ('bg', _('Bulgarian')),
+    ('ro', _('Romanian')),
+    ('hr', _('Croatian')),
+    ('mk', _('Macedonian')),
+    ('sr', _('Serbian')),
+    ('lb', _('Letzeburgesch')),
+    ('nl', _('Dutch')),
+    ('tr', _('Turkish')),
     ('zh-cn', _('Chinese')),
 )
 
@@ -235,13 +253,15 @@ SOUTH_MIGRATION_MODULES = {
     'django_messages': 'django_messages.south_migrations',
 }
 
-USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49]
+USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49, 130, 123, 126, 131, 129, 127, 124, 128, 125]
 
 #PUSH KILL SWITCHES
 DISABLE_PUSH_IOS = False
 DISABLE_PUSH_ANDROID = False
 #Completely disables notifications for achievements/rewards
-DISABLE_ACHIEVEMENT_NOTIFICATIONS = True
+DISABLE_ACHIEVEMENT_NOTIFICATIONS = False
+#Minimum package version for scoring notifications
+MINIMUM_PACKAGE_VERSION_SCORING_NOTIFICATIONS = 32
 
 # CELERY STUFF
 BROKER_URL = 'redis://localhost:6379'
@@ -280,3 +300,10 @@ HOST_NAME = 'webserver.mosquitoalert.com'
 
 SITE_ID = 1
 from tigaserver_project.settings_local import *
+
+# Disable notifications for messaging system. It falls back to email if pinax not present
+DJANGO_MESSAGES_NOTIFY = False
+
+# Mainly concerning files in media (i.e pictures). In some cases, the files have 0600 permissions, so they can't be
+# opened from a internet browser. This ensures that all files in media will be world (and group) readable
+FILE_UPLOAD_PERMISSIONS = 0o644

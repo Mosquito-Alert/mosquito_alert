@@ -1,0 +1,125 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About The Project
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>Wat is Mosquito Alert?</h2>
+        <p>Mosquito Alert is een burgerwetenschappelijk platform dat zorg draagt voor samenwerking tussen verschillende
+            actoren om steekmuggensoorten, die ziekten als dengue, Zika, chikungunya en West Nijl virus bij zich kunnen
+            dragen, te onderzoeken, monitoren en bestrijden.</p>
+        <p>Het project geeft burgers, wetenschappers, experts op het gebied van volksgezondheid en onderwijzers een
+            sleutelrol. Mosquito Alert maakt het mogelijk voor iedereen om gegevens te delen (1) en een rol te spelen in
+            het valideren van gegevens samen met professionele entomologen die steekmug meldingen labellen en een
+            terugkoppeling geven aan de deelnemer (2). Wanneer de gegevens zijn gevalideerd worden ze beschikbaar&nbsp;gemaakt
+            voor het publiek door middel van een interactieve online kaart (3). Wetenschappers (4) en
+            volksgezondheidsprofessionals (5) maken gebruik&nbsp;van deze gegevens&nbsp;bij het bestuderen en monitoren
+            van steekmuggen als vector van infectieziekten.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Waarom is Mosquito Alert nodig?</h2>
+        <p>In de afgelopen decennia is het aantal invasieve muggensoorten en de door deze muggen gedragen
+            infectieziekten op wereldwijde schaal toegenomen. Invasieve soorten, voornamelijk uit het geslacht
+            <em>Aedes</em>, hebben zich in nieuwe gebieden gevestigd en blijven hun&nbsp;leefgebied uitbreiden.
+            Steekmuggen uit het <em>Aedes</em> geslacht zijn belangrijk vanuit een gezondheidsperspectief omdat ze
+            ziekten als dengue, Zika en chikungunya kunnen overbrengen op de mens. Daarnaast is de huissteekmug (<em>Culex
+                pipiens</em>) van belang omdat het West Nijl virus kan overbrengen. Vanwege het risico dat muggen vormen
+            voor de volksgezondheid is het belangrijk om hun populaties te monitoren.</p>
+        <p>Vanwege de complexiteit van het probleem heeft Mosquito Alert de surveillance en het onderzoek naar deze
+            steekmuggen opengesteld&nbsp;voor het publiek, hierdoor wordt samenwerking tussen verschillende actoren
+            mogelijk gemaakt&nbsp;via de applicatie en andere platformen.</p>
+
+        <h2>Welke gegevens worden verzameld?</h2>
+        <p>Er worden gegevens over 5 verschillende steekmuggensoorten verzameld: De Aziatische tijgermug (<em>Aedes
+            albopictus</em>), de gele-koortsmug (<em>Aedes aegypti</em>), de Aziatische bosmug (<em>Aedes japonicus</em>)
+            en&nbsp;<em>Aedes koreicus</em> (welke geen goede Nederlandse naam heeft), en de huissteekmug (<em>Culex
+                pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>Voor deze soorten worden gegevens verzameld over de volwassen muggen, hun broedplaatsen en muggenbeten. Al
+            deze gegevens zijn belangrijk om de soorten beter te kunnen begrijpen en ze te monitoren en bestrijden.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>Mosquito Alert verzamelt ook de geschatte locaties van de apparaten van de deelnemers en verzamelt deze
+            locaties op 5 willekeurige tijdstippen per dag, tenzij de deelnemer zich hiervoor heeft afgemeld. Locaties
+            worden gemaskeerd op een raster van 0,025 x 0,025 graden lengte- en breedtegraad (ongeveer 2x2 km) voordat
+            ze naar de Mosquito Alert-server worden verzonden. Om privacy redenen wordt alleen het vierkant ID van het
+            raster daadwerkelijk gedeeld met Mosquito Alert, niet de exacte locatie. Deze informatie is wetenschappelijk
+            zeer waardevol, omdat het onderzoekers in staat stelt om betere schattingen te maken van muggenpopulaties,
+            waarbij bijvoorbeeld plaatsen met weinig muggen worden onderscheiden van plaatsen met weinig deelnemers
+            (maar mogelijk veel muggen). Deelnemerslocaties geven informatie over wat in de ecologie bekend staat als de
+            bemonsteringsinspanning.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Waarvoor worden deze gegevens gebruikt?</h2>
+        <p>Hier zijn een aantal voorbeelden:</p>
+        <ul>
+            <li type="disc">De meldingen die mensen naar Mosquito Alert sturen, zijn een effectief systeem gebleken voor
+                vroegtijdige signalering van nieuwe invasieve soorten. Het systeem wordt gebruikt om reeds gevestigde
+                muggenpopulaties te volgen en nieuwe populaties te ontdekken.
+            </li>
+            <li type="disc">Observaties van steekmuggen, broedplaatsen en muggenbeten helpen wetenschappers en
+                volksgezondheids-professionals de risico's te beoordelen en populaties te beheersen. Om de aanwezigheid
+                van muggen op een bepaalde locatie in te kunnen schatten is het belangrijk om observaties aan te passen
+                aan de bemonster inspanning. Om dit te kunnen doen, worden door Mosquito Alert gegevens verzameld over
+                de geschatte locatie van het apparaat op willekeurige momenten van de dag. De positie wordt gemaskeerd
+                op een raster van ongeveer 2x2 kilometer om de privacy te beschermen.
+            </li>
+            <li type="disc">Er wordt momenteel gewerkt aan de ontwikkeling van een real-time, participatief en dynamisch
+                voorspellingssysteem voor epidemiologische risico's.
+            </li>
+        </ul>
+
+        <h2>Waar kan ik meer informatie vinden?</h2>
+        <p>U kunt meer informatie vinden op de website en op sociale media.</p>
+        <p><a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a></p>
+        <p>In de instellingen van de applicatie vind u: een deelnemers handleiding, een gids om u te helpen steekmuggen
+            te identificeren, het privacybeleid, de gebruiksvoorwaarden en informatie over de entiteiten achter dit
+            project.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

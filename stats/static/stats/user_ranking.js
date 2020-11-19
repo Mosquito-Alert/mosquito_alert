@@ -90,7 +90,8 @@ $(document).ready(function() {
                 url: '/api/stats/user_xp_data/',
                 data:{
                     "user_id" : user_uuid,
-                    "locale" : current_locale
+                    "locale" : current_locale,
+                    "update" : true
                 },
                 method: 'GET',
                 beforeSend: function(xhr, settings) {

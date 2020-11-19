@@ -1,0 +1,1287 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mosquito Alert Server Po-files\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-05 11:02+0000\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"Last-Translator: Agusti Escobar\n"
+"Language-Team: Croatian (Croatia)\n"
+"Language: hr_HR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10 >= 2 && n"
+"%10<=4 &&(n%100<10||n%100 >= 20)? 1 : 2;\n"
+"X-Generator: Loco https://localise.biz\n"
+"X-Loco-Source-Locale: es-ES\n"
+"X-Loco-Project-Id: 95706\n"
+"X-Loco-Tagged: plain_po\n"
+"X-Loco-Lookup: id\n"
+"X-Loco-Api-Version: 1.0.25 20200901-1\n"
+
+#: stats/templates/stats/chart.html:64
+#: stats/templates/stats/fix_user_chart.html:78
+#: stats/templates/stats/report_user_chart.html:78
+msgid "cumulative-total"
+msgstr "Zbroj"
+
+#: stats/templates/stats/chart.html:85
+msgid "number-of-citizen-scientists"
+msgstr "Građani sudionici"
+
+#: stats/templates/stats/chart.html:94
+msgid "number-of-tiger-mosquito-reports"
+msgstr "Izvješća o tigrastom komarcu"
+
+#: stats/templates/stats/chart.html:103
+msgid "number-of-breeding-site-reports"
+msgstr "Izvješća o leglima komaraca"
+
+#: stats/templates/stats/fix_user_chart.html:99
+msgid "Participants with over 20 fixes"
+msgstr "Sudionici s više od 20 ispravaka"
+
+#: stats/templates/stats/fix_user_chart.html:108
+msgid "Participants with over 15 fixes"
+msgstr "Sudionici s više od 15 ispravaka"
+
+#: stats/templates/stats/fix_user_chart.html:117
+msgid "Participants with over 10 fixes"
+msgstr "Sudionici s više od 10 ispravaka"
+
+#: stats/templates/stats/fix_user_chart.html:126
+msgid "Participants with over 5 fixes"
+msgstr "Sudionici s više od 5 ispravaka"
+
+#: stats/templates/stats/fix_user_chart.html:135
+msgid "Participants with at least 1 fix"
+msgstr "Sudionici s najmanje jednim ispravkom"
+
+#: stats/templates/stats/report_user_chart.html:99
+msgid "Participants with at least 1 report"
+msgstr "Sudionici s najmanje jednim izvješćem"
+
+#: stats/templates/stats/report_user_chart.html:108
+msgid "Participants with over 1 reports"
+msgstr "Sudionici s više od jednog izvješća"
+
+#: stats/templates/stats/report_user_chart.html:117
+msgid "Participants with over 2 reports"
+msgstr "Sudionici s više od dva izvješća"
+
+#: stats/templates/stats/report_user_chart.html:126
+msgid "Participants with over 3 reports"
+msgstr "Sudionici s više od tri izvješća"
+
+#: stats/templates/stats/report_user_chart.html:135
+msgid "Participants with over 4 reports"
+msgstr "Sudionici s više od četiri izvješća"
+
+#: stats/templates/stats/user_ranking.html:30
+msgid "user_ranking_info_text_1"
+msgstr ""
+"Provjerite svoj rezultat i razinu postignuća. Detaljne informacije o sustavu "
+"bodovanja Mosquito Alert nalaze se u izborniku postavki."
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_2"
+msgstr "Više informacija o"
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_3"
+msgstr "Rezultat"
+
+#: stats/templates/stats/user_ranking.html:40
+msgid "no_score_yet"
+msgstr ""
+"Još uvijek nemate rezultat, zato vas nema na rang listi. Molimo vas, "
+"pošaljite neka opažanja i provjerite listu kasnije. Da biste saznali kako "
+"zaraditi bodove pratite link ispod."
+
+#: stats/templates/stats/user_ranking.html:68
+#: stats/templates/stats/user_ranking.html:156
+msgid "My position"
+msgstr "Moja pozicija"
+
+#: stats/templates/stats/user_ranking.html:72
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "of"
+msgstr "Od"
+
+#: stats/templates/stats/user_ranking.html:88
+msgid "Rank"
+msgstr "Rangiranje"
+
+#: stats/templates/stats/user_ranking.html:89
+msgid "User"
+msgstr "Korisnik"
+
+#: stats/templates/stats/user_ranking.html:90
+msgid "Overall class"
+msgstr "Ukupna lista"
+
+#: stats/templates/stats/user_ranking.html:91
+msgid "Score"
+msgstr "Rezultat"
+
+#: stats/templates/stats/user_ranking.html:97
+msgid "This is you!"
+msgstr "Vi ste ovdje"
+
+#: stats/templates/stats/user_ranking.html:134
+msgid "Score details"
+msgstr "Više detalja"
+
+#: stats/templates/stats/user_score.html:28
+msgid "Citizen Scientist"
+msgstr "Sažetak rezultata"
+
+#: stats/templates/stats/user_score.html:31
+msgid "this_is_your_personal_avatar"
+msgstr ""
+"Ovo je sudionikov avatar. S obzirom na vaš rezultat, trenutna razina je"
+
+#: stats/templates/stats/user_score.html:31
+msgid "there_are_5_levels"
+msgstr ""
+"Postoji pet mogućih razina: Početnik, Suradnik, Stručnjak, Majstor i "
+"Velemajstor."
+
+#: stats/templates/stats/user_score.html:32
+msgid "Joined"
+msgstr "Započeto sudjelovanje"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Last active"
+msgstr "Posljednja aktivnost"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Never"
+msgstr "Nikad"
+
+#: stats/templates/stats/user_score.html:34
+msgid "Overall rank - Unranked"
+msgstr "Ukupna pozicija - bez pozicije"
+
+#: stats/templates/stats/user_score.html:36
+msgid "Overall rank"
+msgstr "Ukupna pozicija"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "Top"
+msgstr "Vi ste na vrhu"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+msgid "participants"
+msgstr "Sudionici"
+
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
+#: stats/templates/stats/user_score.html:92
+#: stats/templates/stats/user_score.html:100
+#: stats/templates/stats/user_score.html:149
+#: stats/templates/stats/user_score.html:156
+msgid "XP"
+msgstr "Bodovi"
+
+#: stats/templates/stats/user_score.html:49
+msgid "Other awards"
+msgstr "Osvojene nagrade"
+
+#: stats/templates/stats/user_score.html:55
+msgid "awarded_on"
+msgstr "Odobreno je"
+
+#: stats/templates/stats/user_score.html:62
+msgid "XP, awarded on"
+msgstr "Bodovi, dodijeljeni"
+
+#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:138
+msgid "Level obtained for"
+msgstr "Razina osvojena za"
+
+#: stats/templates/stats/user_score.html:81
+msgid "Mosquito"
+msgstr "Komarac"
+
+#: stats/templates/stats/user_score.html:83
+msgid "Mosquito rank - Unranked"
+msgstr "Pozicija specifična za komarce - neklasificirana"
+
+#: stats/templates/stats/user_score.html:85
+msgid "Mosquito rank"
+msgstr "Specifična pozicija za komarce"
+
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:144
+msgid "click_score_instructions"
+msgstr ""
+"Kliknite na obojene kvadratiće kako biste vidjeli detalje poslanih podataka "
+"i zarađene bodove."
+
+#: stats/templates/stats/user_score.html:115
+#: stats/templates/stats/user_score.html:171
+msgid "xp awarded for"
+msgstr "Bodovi dodijeljeni za"
+
+#: stats/templates/stats/user_score.html:120
+msgid "No awards because"
+msgstr "Niste dobili bodove jer"
+
+#: stats/templates/stats/user_score.html:123
+#: stats/templates/stats/user_score.html:175
+msgid "No awards for this report!"
+msgstr "Ovo izvješće nema dodijeljenih bodova."
+
+#: stats/templates/stats/user_score.html:138
+msgid "Breeding site"
+msgstr "Legla komaraca (razvojna staništa)"
+
+#: stats/templates/stats/user_score.html:140
+msgid "Breeding site rank - Unranked"
+msgstr "Specifična pozicija legla komaraca - neklasificirano"
+
+#: stats/templates/stats/user_score.html:142
+msgid "Breeding site rank"
+msgstr "Specifična pozicija za leglo komaraca"
+
+#: templates/admin/base_site.html:4
+msgid "Tigaserver admin"
+msgstr "Tigaserver administrator"
+
+#: templates/admin/base_site.html:7
+msgid "Tigaserver administration"
+msgstr "Tigaserver administrator"
+
+#: templates/django_messages/base.html:40
+#: templates/django_messages/inbox.html:5
+msgid "Inbox"
+msgstr "Pretinac"
+
+#: templates/django_messages/base.html:41
+#: templates/django_messages/outbox.html:5
+msgid "Sent Messages"
+msgstr "Poslane poruke"
+
+#: templates/django_messages/base.html:42
+msgid "New Message"
+msgstr "Nova poruka"
+
+#: templates/django_messages/base.html:43
+msgid "Trash"
+msgstr "Smeće"
+
+#: templates/django_messages/compose.html:48
+msgid "Compose Message"
+msgstr "Sastavi poruku"
+
+#: templates/django_messages/compose.html:57
+msgid "Send"
+msgstr "Poslati"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/view.html:12
+msgid "Sender"
+msgstr "Pošiljatelj"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
+msgid "Subject"
+msgstr "Predmet"
+
+#: templates/django_messages/inbox.html:9
+msgid "Received"
+msgstr "Primljeno"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+msgid "Action"
+msgstr "Akcija"
+
+#: templates/django_messages/inbox.html:21
+#: templates/django_messages/outbox.html:18
+#: templates/django_messages/view.html:17
+msgid "DATETIME_FORMAT"
+msgstr "DATUM_FORMAT"
+
+#: templates/django_messages/inbox.html:22
+#: templates/django_messages/outbox.html:19
+msgid "delete"
+msgstr "Obriši"
+
+#: templates/django_messages/inbox.html:28
+#: templates/django_messages/outbox.html:25
+msgid "No messages."
+msgstr "Nema poruka"
+
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
+msgid "Recipient"
+msgstr "Primatelj"
+
+#: templates/django_messages/outbox.html:9
+msgid "Sent"
+msgstr "Poslati"
+
+#: templates/django_messages/view.html:5
+msgid "View Message"
+msgstr "Pogledajte poruku"
+
+#: templates/django_messages/view.html:16
+msgid "Date"
+msgstr "Datum"
+
+#: templates/django_messages/view.html:30
+msgid "Reply"
+msgstr "Odgovoriti"
+
+#: templates/django_messages/view.html:32
+msgid "Delete"
+msgstr "Obrisati"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:88
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:88
+msgid "Toggle navigation"
+msgstr "Navigacija"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:98
+msgid "Menu"
+msgstr "Izbornik"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:101
+msgid "New batch"
+msgstr "Nova skupina"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:102
+msgid "Photos you have taken notes on but not yet scored"
+msgstr "Fotografije za koje ste stavili bilješke, ali još nisu bodovane."
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:103
+msgid "Photos you have already scored"
+msgstr "Fotografije koje su bodovane"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:171
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:195
+msgid "Save"
+msgstr "Spremiti"
+
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:103
+msgid "Photos per page"
+msgstr "Fotografije po stranici"
+
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Vašu fotografiju potvrdio je stručnjak!"
+
+#: tigahelp/templates/tigahelp/policies.html:30
+#: tigahelp/templates/tigahelp/policies_en.html:29
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "user-agreement"
+msgstr "Korisnički ugovor"
+
+#: tigahelp/templates/tigahelp/policies.html:35
+#: tigahelp/templates/tigahelp/policies_en.html:34
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "privacy-policy"
+msgstr "Politika privatnosti"
+
+#: tigahelp/templates/tigahelp/policies.html:38
+msgid "app-license"
+msgstr "Licenca aplikacije"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "our-website-uses-cookies"
+msgstr ""
+"Naša web stranica koristi kolačiće. Ako nastavite pregledavati preuzimamo "
+"vašu dozvolu za korištenje kolačića. Dodatne informacije o pravilima naše "
+"web stranice potražite u našem"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "and"
+msgstr "i"
+
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
+#: tigamap/views.py:263
+msgid "adult-tiger-mosquitoes"
+msgstr "Izvješća o komarcima"
+
+#: tigamap/templates/tigamap/app.html:126
+#: tigamap/templates/tigamap/app_new.html:175
+msgid "all-reports"
+msgstr "Sva izvješća"
+
+#: tigamap/templates/tigamap/app.html:128
+msgid "medium-and-high-probability-reports-only"
+msgstr "Izvješća srednje i velike vjerojatnosti"
+
+#: tigamap/templates/tigamap/app.html:130
+msgid "high-probability-reports-only"
+msgstr "Izvješća velike vjerojatnosti"
+
+#: tigamap/templates/tigamap/app.html:134
+#: tigamap/templates/tigamap/app_new.html:183
+msgid "breeding-site-reports"
+msgstr "Izvješća o leglu"
+
+#: tigamap/templates/tigamap/app.html:138
+#: tigamap/templates/tigamap/app_new.html:187
+msgid "all-sites"
+msgstr "Sva legla"
+
+#: tigamap/templates/tigamap/app.html:141
+#: tigamap/templates/tigamap/app_new.html:190
+msgid "storm-drains-and-fountains"
+msgstr "Ulični slivnici i fontane"
+
+#: tigamap/templates/tigamap/app.html:144
+#: tigamap/templates/tigamap/app_new.html:193
+msgid "Basins"
+msgstr "Bazeni"
+
+#: tigamap/templates/tigamap/app.html:146
+#: tigamap/templates/tigamap/app_new.html:195
+msgid "buckets-and-wells"
+msgstr "Kante i udubine"
+
+#: tigamap/templates/tigamap/app.html:148
+#: tigamap/templates/tigamap/app_new.html:197
+#: tigamap/templates/tigamap/site_map.html:207
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:386
+#: tigaserver_app/models.py:582
+msgid "Other"
+msgstr "Drugo"
+
+#: tigamap/templates/tigamap/app.html:152
+#: tigamap/templates/tigamap/app_filtered.html:193
+#: tigamap/templates/tigamap/app_new.html:201
+#: tigamap/templates/tigamap/coverage_map_beta.html:82
+msgid "Coverage"
+msgstr "Istražena područja"
+
+#: tigamap/templates/tigamap/app.html:154
+msgid "http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014"
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
+
+#: tigamap/templates/tigamap/app_filtered.html:175
+#: tigamap/templates/tigamap/app_new.html:159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:816
+msgid "navbar_toggle_navigation"
+msgstr "Toggle navigacija"
+
+#: tigamap/templates/tigamap/app_filtered.html:195
+#: tigamap/templates/tigamap/app_new.html:203
+#: tigamap/templates/tigamap/coverage_map_new.html:383
+#: tigamap/templates/tigamap/validated_report_map.html:635
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:903
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1015
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1165
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
+msgid "map_help_url_new"
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
+
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+msgid "menu_adults_prob"
+msgstr "Tigrasti komarac, moguće i potvrđen"
+
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+msgid "menu_adults_definite"
+msgstr "Tigrasti komarac, potvrđen"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "low"
+msgstr "Nisko"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "medium"
+msgstr "Srednje"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "high"
+msgstr "Visoko"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:221
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:605
+msgid "fixes"
+msgstr "Opažanja"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:223
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:607
+msgid "fix"
+msgstr "Opažanje"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:336
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:967
+msgid "coverage_legend_main_title"
+msgstr "Broj promatranja"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:372
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1004
+msgid "coverage_legend_info_title"
+msgstr "Informacije o pokrivenosti"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:373
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
+msgid "coverage_legend_info_blurb"
+msgstr ""
+"Android verzija Tigatrapp uključuje pozadinsko praćenje lokacije po želji. "
+"Aplikacija bilježi korisnikovu lokaciju naizmjence pet puta dnevno. Bilježi "
+"samo približnu poziciju (crveni kvadrati na karti) kako bi se održala "
+"korisnikova anonimnost. Broj opažanja u datom kvadratu je prikupljen broj "
+"pozicija snimljenih u tom kvadratu za sve sudionike. Što je tamnije, "
+"područje je više istraženo."
+
+#: tigamap/templates/tigamap/coverage_map_new.html:377
+#: tigamap/templates/tigamap/validated_report_map.html:629
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1009
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1287
+msgid "more_info"
+msgstr "Više informacija"
+
+#: tigamap/templates/tigamap/report_map.html:112
+#: tigamap/templates/tigamap/report_map.html:125
+msgid "type"
+msgstr "Tip"
+
+#: tigamap/templates/tigamap/report_map.html:149
+#: tigamap/templates/tigamap/validated_photo_map.html:152
+msgid "clusters"
+msgstr "Razredi"
+
+#: tigamap/templates/tigamap/report_map.html:150
+#: tigamap/templates/tigamap/validated_photo_map.html:153
+msgid "points"
+msgstr "Bodovi"
+
+#: tigamap/templates/tigamap/site_map.html:192
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:371
+#: tigaserver_app/models.py:574
+msgid "storm-drain"
+msgstr "Ulični slivnik"
+
+#: tigamap/templates/tigamap/site_map.html:195
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:374
+#: tigaserver_app/models.py:576
+msgid "Fountain"
+msgstr "Fontana"
+
+#: tigamap/templates/tigamap/site_map.html:198
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:377
+#: tigaserver_app/models.py:578
+msgid "Basin"
+msgstr "Bazen"
+
+#: tigamap/templates/tigamap/site_map.html:201
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:380
+msgid "Bucket"
+msgstr "Kanta"
+
+#: tigamap/templates/tigamap/site_map.html:204
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:383
+#: tigaserver_app/models.py:580
+msgid "Well"
+msgstr "Udubina"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:169
+msgid "Photos"
+msgstr "Fotografije"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:173
+msgid "all-photos"
+msgstr "Sve fotografije"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:175
+msgid "medium-and-high-probability-photos-only"
+msgstr "Samo fotografije srednje i visoke vjerojatnosti"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:177
+msgid "high-probability-photos-only"
+msgstr "Samo fotografije visoke vjerojatnosti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:379
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:360
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "not_sure"
+msgstr "Ne znam"
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "yes"
+msgstr "Da"
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "no"
+msgstr "Ne"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:544
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1046
+msgid "expert_cat_tiger"
+msgstr "Potvrđen tigrasti komarac"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:552
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1062
+msgid "expert_cat_possible_tiger"
+msgstr "Vjerojatno je tigrasti komarac"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:570
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1087
+msgid "expert_cat_possible_other"
+msgstr "Vjerojatno nije Ae. albopictus niti Ae. aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:579
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1096
+msgid "expert_cat_other"
+msgstr "Potvrđeno je da nije Ae. albopictus niti Ae. aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:561
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1078
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1210
+msgid "expert_cat_unknown"
+msgstr "Nepoznato"
+
+#: tigamap/templates/tigamap/validated_report_map.html:405
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:489
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:502
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_title"
+msgstr "Rezultati stručne provjere valjanosti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_title"
+msgstr "Rezultati koje su provjerili građani"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+msgid "crowd_row_more_responses_needed"
+msgstr "Nedostaju odgovori"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q1"
+msgstr "Mali, crni, s bijelim prugama?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q2"
+msgstr "Pruga na glavi i prsima"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q3"
+msgstr "Pruge na trbuhu i nogama?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:535
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
+msgid "adult_report_legend_main_title"
+msgstr "Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:588
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1118
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1248
+msgid "adult_report_legend_info_title"
+msgstr "Popup legenda"
+
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_help"
+msgstr "Znanstvena klasifikacija na osnovi fotografija."
+
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_help"
+msgstr ""
+"Klasifikacija koju su izradili volonteri na <a href=\"http://crowdcrafting."
+"org/app/Tigafotos/\" target=\"_blank\">Crowdcrafting</a>  (ako je "
+"fotografija dostupna)"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_title"
+msgstr ""
+"Taksonomski opis: \n"
+"<a href=\"http://www.mosquitoalert.com/mosquitos/mosquito-tigre-ae-"
+"albopictus/\" target=\"_blank\">Ae. albopictus</a> i <a href=\"http://www."
+"mosquitoalert.com/mosquitos/mosquito-de-la-fiebre-amarilla-2/\" target="
+"\"_blank\">Ae. aegypti</a>"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_help"
+msgstr "Komentari sudionika"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_title"
+msgstr "Fotografije"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_help"
+msgstr "Poslano od sudionika (ako postoje fotografije)"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_title"
+msgstr "Bilješke"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_help"
+msgstr "Od stručnjaka ili promatrača (nije obavezno)"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:146
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_subtext_adults_high"
+msgstr "Potvrđeno: Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:147
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_subtext_adults_medium"
+msgstr "Moguće i potvrđeno: Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:148
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_subtext_adults_all"
+msgstr "Nema filtera"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:150
+msgid "validation_button_subtext_sites_high"
+msgstr "Potvrđena legla komaraca"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:151
+msgid "validation_button_subtext_sites_medium"
+msgstr "Moguća i potvrđena legla komaraca"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:152
+msgid "validation_button_subtext_sites_all"
+msgstr "Nema filtera"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1237
+msgid "expert_cat_unclassified"
+msgstr "Neklasificirano"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
+msgid "expert_cat_site"
+msgstr "Legla tigrastih komaraca"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
+msgid "expert_cat_possible_site"
+msgstr "Moguća legla tigrastog komarca"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
+msgid "expert_cat_possible_other_site"
+msgstr "Vjerojatno nije leglo tigrastog komarca"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
+msgid "expert_cat_other_site"
+msgstr "Nije leglo tigrastog komarca"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
+msgid "expert_cat_aegypti"
+msgstr "Potvrđen komarac žute groznice (Ae. aegypti)"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
+msgid "expert_cat_possible_aegypti"
+msgstr "Vjerojatno je komarac žute groznice (Ae, aegypti)"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_q_sitetype"
+msgstr "Vrsta legla"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q1"
+msgstr "Stajaća voda?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q2"
+msgstr "Ličinke ili kukuljice?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q1_new"
+msgstr "Javna površina?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q2_new"
+msgstr "Stajaća voda i/ili ličinke ili kukuljice?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q3_new"
+msgstr "Vidjeli ste komarce u blizini?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:833
+msgid "fmap_All_years"
+msgstr "Svake godine"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:844
+msgid "fmap_All_months"
+msgstr "Svaki mjesec"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:845
+msgid "January"
+msgstr "Siječanj"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:847
+msgid "February"
+msgstr "Veljača"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:849
+msgid "March"
+msgstr "Ožujak"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:850
+msgid "April"
+msgstr "Travanj"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:851
+msgid "May"
+msgstr "Svibanj"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:852
+msgid "June"
+msgstr "Lipanj"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:853
+msgid "July"
+msgstr "Srpanj"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:854
+msgid "August"
+msgstr "Kolovoz"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:855
+msgid "September"
+msgstr "Rujan"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:857
+msgid "October"
+msgstr "Listopad"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:859
+msgid "November"
+msgstr "Studeni"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:861
+msgid "December"
+msgstr "Prosinac"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adult_tiger_mosquitoes"
+msgstr "Odrasli Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adults"
+msgstr "Odrasli"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Tiger_mosquito_breeding_sites"
+msgstr "Legla vrsta Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Breeding_sites"
+msgstr "Legla"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Tigatrapp_coverage"
+msgstr "Napori tijekom uzorkovanja"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Coverage"
+msgstr "Pokrivenost"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_text_high"
+msgstr "Visoka pouzdanost"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_text_medium"
+msgstr "Srednja pokrivenost"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_text_all"
+msgstr "Sva izvješća"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1184
+msgid "site_report_legend_main_title"
+msgstr "Oznake"
+
+#: tigamap/views.py:147 tigamap/views.py:317
+msgid "coverage-map"
+msgstr "Karta pokrivenosti"
+
+#: tigamap/views.py:155
+msgid "Pseudo Occurrence-Exposure Map"
+msgstr "Lažna pojava - karta izloženosti"
+
+#: tigamap/views.py:162
+msgid "Adult tiger mosquitoes: Validated reports"
+msgstr "Odrasli tigrasti komarci: potvrđena izvješća"
+
+#: tigamap/views.py:171
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Odrasli tigrasti komarci: izvješća o srednjoj i visokoj vjerojatnosti"
+
+#: tigamap/views.py:177
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Odrasli tigrasti komarci: izvješća visoke vjerojatnosti"
+
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Komarci: sva izvješća"
+
+#: tigamap/views.py:189
+msgid "Breeding Sites: Validated reports"
+msgstr "Legla komaraca: provjerena izvješča"
+
+#: tigamap/views.py:199 tigamap/views.py:289
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Legla komaraca: slivnici i fontane"
+
+#: tigamap/views.py:202 tigamap/views.py:289
+msgid "breeding-sites-basins"
+msgstr "Legla komaraca: bazeni "
+
+#: tigamap/views.py:205 tigamap/views.py:289
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Legla komaraca: kante i bunari (udubine)"
+
+#: tigamap/views.py:208 tigamap/views.py:289
+msgid "breeding-sites-other"
+msgstr "Legla komaraca: drugo"
+
+#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+msgid "breeding-sites-all-reports"
+msgstr "Legla komaraca: sva izvješća"
+
+#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
+#: tigascoring/xp_scoring.py:176
+msgid "Novice"
+msgstr "Početnik"
+
+#: tigascoring/xp_scoring.py:178
+msgid "Contributor"
+msgstr "Suradnik"
+
+#: tigascoring/xp_scoring.py:180
+msgid "Expert"
+msgstr "Stručnjak"
+
+#: tigascoring/xp_scoring.py:182
+msgid "Master"
+msgstr "Majstor"
+
+#: tigascoring/xp_scoring.py:184
+msgid "Grandmaster"
+msgstr "Veliki majstor"
+
+#: tigascoring/xp_scoring.py:203
+msgid "start_of_season"
+msgstr "Početak sezone"
+
+#: tigascoring/xp_scoring.py:204
+msgid "daily_participation"
+msgstr "Prvo izvješće dana"
+
+#: tigascoring/xp_scoring.py:205
+msgid "fidelity_day_2"
+msgstr "Dodavanje izvješća tijekom DVA uzastopna dana"
+
+#: tigascoring/xp_scoring.py:206
+msgid "fidelity_day_3"
+msgstr "Dodavanje izvješća tijekom TRI uzastopna dana"
+
+#: tigascoring/xp_scoring.py:207
+msgid "achievement_10_reports"
+msgstr "10 učitanih podataka"
+
+#: tigascoring/xp_scoring.py:208
+msgid "achievement_20_reports"
+msgstr "20 učitanih podataka"
+
+#: tigascoring/xp_scoring.py:209
+msgid "achievement_50_reports"
+msgstr "50 učitanih podataka"
+
+#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
+msgid "picture"
+msgstr "Fotografija"
+
+#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
+msgid "location"
+msgstr "Podaci o geolokaciji "
+
+#: tigascoring/xp_scoring.py:253
+msgid "storm_drain"
+msgstr "To je ulični slivnik"
+
+#: tigascoring/xp_scoring.py:257
+msgid "water_question"
+msgstr "Odgovaranje na pitanja o vodi u izvješću o leglu"
+
+#: tigascoring/xp_scoring.py:261
+msgid "mosquito_report_follows_breeding_site"
+msgstr "Dodavanje izvješća o komarcima na kraju"
+
+#: tigascoring/xp_scoring.py:293
+msgid "no_picture"
+msgstr "Nema fotografije"
+
+#: tigascoring/xp_scoring.py:299
+msgid "no_location"
+msgstr "Izvješće nije geolocirano"
+
+#: tigascoring/xp_scoring.py:302
+msgid "thorax_question"
+msgstr "Odgovaranje na pitanja o prsima komarca u izvješću o komarcima"
+
+#: tigascoring/xp_scoring.py:305
+msgid "abdomen_question"
+msgstr "Odgovaranje na pitanja o abdomenu komarca u izvjesću o komarcima"
+
+#: tigascoring/xp_scoring.py:308
+msgid "leg_question"
+msgstr "Odgovaranje na pitanja o nogama komarca u izvješću o komarcima"
+
+#: tigascoring/xp_scoring.py:311
+msgid "other_species"
+msgstr ""
+"Nakon analize podataka koje ste poslali, stručnjaci su procijenili da "
+"navedeni komarac nije ni jedna od pet ciljanih vrsta komaraca. Za više "
+"informacija, pogledajte tutorial aplikacije."
+
+#: tigascoring/xp_scoring.py:318
+msgid "bite report follow"
+msgstr "Slijedeći trenutni izvještaj o ubodima komaraca"
+
+#: tigascoring/xp_scoring.py:358
+msgid " years ago"
+msgstr "Godina"
+
+#: tigascoring/xp_scoring.py:360
+msgid " months ago"
+msgstr "Mjesec"
+
+#: tigascoring/xp_scoring.py:362
+msgid " days ago"
+msgstr "Dan"
+
+#: tigaserver_app/models.py:557
+msgid "High"
+msgstr "Visoka"
+
+#: tigaserver_app/models.py:559
+msgid "Medium"
+msgstr "Srednja"
+
+#: tigaserver_app/models.py:561
+msgid "Low"
+msgstr "Niska"
+
+#: tigaserver_app/models.py:1234
+msgid "species_unclassified"
+msgstr "Nije moguće odrediti vrstu"
+
+#: tigaserver_app/models.py:1235
+msgid "species_other"
+msgstr "Druga vrsta"
+
+#: tigaserver_app/models.py:1236
+msgid "species_albopictus"
+msgstr "Aedes albopictus (tigrasti komarac)"
+
+#: tigaserver_app/models.py:1237
+msgid "species_aegypti"
+msgstr "Aedes aegypti"
+
+#: tigaserver_app/models.py:1238
+msgid "species_japonicus"
+msgstr "Aedes japonicus"
+
+#: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "Aedes koreicus"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Više vrsta"
+
+#: tigaserver_app/models.py:1241
+msgid "species_notsure"
+msgstr "Nisam suguran/sigurna"
+
+#: tigaserver_app/models.py:1242
+msgid "species_culex"
+msgstr "Domaći komarac (Culex sp.)"
+
+#: tigaserver_app/models.py:1255
+msgid "species_value_possible"
+msgstr "Vjerojatno"
+
+#: tigaserver_app/models.py:1256
+msgid "species_value_confirmed"
+msgstr "Potvrđeno"
+
+#: tigaserver_messages/fields.py:56
+#, python-format
+msgid "The following usernames are incorrect: %(users)s"
+msgstr ""
+
+#: tigaserver_messages/forms.py:20
+msgid "Body"
+msgstr "Tijelo"
+
+#: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
+#: tigaserver_messages/views.py:138
+msgid "Message successfully sent."
+msgstr "Poruka uspješno poslana"
+
+#: tigaserver_messages/views.py:120
+#, python-format
+msgid "Re: %(subject)s"
+msgstr ""
+
+#: tigaserver_project/settings.py:131
+msgid "Spanish"
+msgstr "Španjolski"
+
+#: tigaserver_project/settings.py:132
+msgid "Catalan"
+msgstr "Katalonski"
+
+#: tigaserver_project/settings.py:133
+msgid "English"
+msgstr "Engleski"
+
+#: tigaserver_project/settings.py:134
+msgid "German"
+msgstr ""
+
+#: tigaserver_project/settings.py:135
+msgid "Albanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:136
+msgid "Greek"
+msgstr ""
+
+#: tigaserver_project/settings.py:137
+msgid "Hungarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:138
+msgid "Portuguese"
+msgstr ""
+
+#: tigaserver_project/settings.py:139
+msgid "Slovenian"
+msgstr ""
+
+#: tigaserver_project/settings.py:140
+msgid "Italian"
+msgstr ""
+
+#: tigaserver_project/settings.py:141
+msgid "French"
+msgstr ""
+
+#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
+msgid "Bulgarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:144
+msgid "Romanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:145
+msgid "Croatian"
+msgstr ""
+
+#: tigaserver_project/settings.py:146
+msgid "Macedonian"
+msgstr ""
+
+#: tigaserver_project/settings.py:147
+msgid "Serbian"
+msgstr ""
+
+#: tigaserver_project/settings.py:148
+msgid "Letzeburgesch"
+msgstr ""
+
+#: tigaserver_project/settings.py:149
+msgid "Dutch"
+msgstr ""
+
+#: tigaserver_project/settings.py:150
+msgid "Turkish"
+msgstr ""
+
+#: tigaserver_project/settings.py:151
+msgid "Chinese"
+msgstr "Kineski"
+
+msgid "you_just_received_a_points_award"
+msgstr "Upravo ste dobili nagradu za bodove!"

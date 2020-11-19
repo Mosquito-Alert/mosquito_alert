@@ -1,0 +1,120 @@
+<!---->{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Sobre El Projecte
+{% endblock %}
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>Què és Mosquito Alert?</h2>
+        <p>Mosquito Alert és una plataforma de ciència ciutadana que permet la col·laboració de diversos actors en
+            l’estudi, seguiment i control d’espècies de mosquits vectors de malalties com el dengue, el Zika, la
+            chikungunya o la febre del Nil Occidental.</p>
+        <p>Tant la ciutadania, com el món científic, o els agents de la salut pública i els sectors educatius tenen un
+            paper clau en el projecte. A Mosquito Alert, qualsevol persona pot generar i compartir dades (1) i
+            participar en la seva validació; professionals de l’entomologia etiqueten aquestes dades i donen resposta a
+            qui participa (2); les dades, una vegada validades, es posen a la disposició del públic general mitjançant
+            un mapa web interactiu (3). Des de la ciència (4) i per part dels agents de salut pública (5) es té també
+            accés a elles, i es poden usar per a l’estudi, el seguiment i el control d’aquestes espècies.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Per què es necessari Mosquito Alert?</h2>
+        <p>En les últimes dècades el nombre de mosquits invasors i de malalties emergents transmeses per mosquits ha
+            augmentat a escala global. Noves espècies invasores, principalment del gènere <em>Aedes</em>, s’han
+            establert en noves àrees i segueixen en expansió. Aquests mosquits (<em>Aedes</em>) són d’importància
+            sanitaria per la seva capacitat de transmetre malalties con el dengue, el Zika o la chikungunya, mentre que
+            el mosquit comú (<em>Culex pipiens</em>) és d'importància perquè pot transmetre el virus de la febre del Nil
+            Occidental. El risc que suposen per a la salut pública requereix una vigilància de les seves poblacions.</p>
+        <p>Conscients de la complexitat del problema, Mosquito Alert permet obrir la vigilància i recerca d’aquests a la
+            ciutadania i permet la col·laboració entre diferents agents, a través de la seva app i resta de plataformes
+            i comunitats.</p>
+        <h2>Quines dades es recullen?</h2>
+        <p>Es recullen dades de 5 espècies diferents de mosquit: el mosquit tigre (<em>Aedes albopictus</em>), el
+            mosquit de la febre groga (<em>Aedes aegypti</em>), el mosquit del Japó (<em>Aedes japonicus</em>), el
+            mosquit de Corea (<em>Aedes koreicus</em>) i el mosquit comú (<em>Culex pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>D’aquestes espècies, es recullen dades de mosquits, dels seus llocs de cria, i de picades. Totes aquestes
+            dades són rellevants per a respondre a diferents preguntes relacionades amb la recerca d’aquestes espècies,
+            i també amb el seu seguiment i control.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>A més, de manera aleatòria, i no més de 5 vegades al dia, si la persona usuària ho permet, Mosquito Alert
+            recull la posició aproximada. Les ubicacions estan emmascarades en una graella de 0,025 x 0,025 graus de
+            latitud i longitud (aproximadament 2x2 km) abans de ser enviades al servidor Mosquito Alert. Per raons de
+            privacitat, només es comparteix l’identificador de la graella, no la posición exacta. Aquesta informació és
+            essencial per a la ciència: sense ella, no es pot saber si hi ha molts mosquits o, si en realitat, el que hi
+            ha és molta participació. Aquesta informació seria equivalent al que, en ecologia, es coneix com l’esforç de
+            mostreig.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Per a què serveixen les dades?</h2>
+        <p>Aquests són alguns exemples:</p>
+        <ul>
+            <li type="disc">Per a fer el seguiment de les poblacions de mosquits establertes, així com per a descobrir
+                noves poblacions. Les notificaciones que les persones envien a Mosquito Alert han demostrat en els
+                últims anys ser un eficaç sistema d’alerta primerenca davant la invasió de nous mosquits.
+            </li>
+            <li type="disc">Les observacions d’aquests mosquits, així com dels seus llocs de cria a la via pública i els
+                informes de picades, ajuden als científics i gestors de la salut pública a avaluar el risc i la gestió
+                de les seves poblacions. Per a poder estimar l’abundància de mosquits en un lloc, és necessari corregir
+                les observacions amb l’esforç de mostreig. A aquest efecte l’app Mosquito Alert recull dades de la
+                posició aproximada del dispositiu a intervals aleatoris. La posició no és exacta, sino que s’enquadra en
+                una cel·la de 2x2 km.
+            </li>
+            <li type="disc">Actualment s’està treballant per a desenvolupar un sistema de predicció de riscos
+                epidemiològics a temps real, participatiu i dinàmic.
+            </li>
+        </ul>
+        <h2>On puc trobar més informació?</h2>
+        <p>Trobaràs més informació a la pàgina web del projecte i a les xarxes socials.</p>
+        <p><a href="http://www.mosquitoalert.com/ca/">www.mosquitoalert.com</a></p>
+        <p>Als ajustos de l’app trobaràs el tutorial per a participar, la guia de mosquits per a aprendre a
+            identificar-los, la política de privacitat i termes d’ús i informació sobre les entitats que impulsen el
+            projecte.</p>
+
+    </div>
+
+</div>
+
+{% endblock %}

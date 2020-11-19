@@ -1,0 +1,1287 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mosquito Alert Server Po-files\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-05 11:02+0000\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"Last-Translator: Agusti Escobar\n"
+"Language-Team: Hungarian (Hungary)\n"
+"Language: hu_HU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Loco https://localise.biz\n"
+"X-Loco-Source-Locale: es-ES\n"
+"X-Loco-Project-Id: 95706\n"
+"X-Loco-Tagged: plain_po\n"
+"X-Loco-Lookup: id\n"
+"X-Loco-Api-Version: 1.0.25 20200901-1\n"
+
+#: stats/templates/stats/chart.html:64
+#: stats/templates/stats/fix_user_chart.html:78
+#: stats/templates/stats/report_user_chart.html:78
+msgid "cumulative-total"
+msgstr "Összesített érték"
+
+#: stats/templates/stats/chart.html:85
+msgid "number-of-citizen-scientists"
+msgstr "Civil tudós"
+
+#: stats/templates/stats/chart.html:94
+msgid "number-of-tiger-mosquito-reports"
+msgstr "Tigris szúnyog jelentések"
+
+#: stats/templates/stats/chart.html:103
+msgid "number-of-breeding-site-reports"
+msgstr "Tenyészőhely jelentések"
+
+#: stats/templates/stats/fix_user_chart.html:99
+msgid "Participants with over 20 fixes"
+msgstr "Résztvevők több mint 20 helyzetmegjelöléssel"
+
+#: stats/templates/stats/fix_user_chart.html:108
+msgid "Participants with over 15 fixes"
+msgstr "Résztvevők több mint 15 helyzetmegjelöléssel"
+
+#: stats/templates/stats/fix_user_chart.html:117
+msgid "Participants with over 10 fixes"
+msgstr "Résztvevők több mint 10 helyzetmegjelöléssel"
+
+#: stats/templates/stats/fix_user_chart.html:126
+msgid "Participants with over 5 fixes"
+msgstr "Résztvevők több mint 5 helyzetmegjelöléssel"
+
+#: stats/templates/stats/fix_user_chart.html:135
+msgid "Participants with at least 1 fix"
+msgstr "Résztvevők legalább 1 helyzetmegjelöléssel"
+
+#: stats/templates/stats/report_user_chart.html:99
+msgid "Participants with at least 1 report"
+msgstr "Résztvevők legalább 1 jelentéssel"
+
+#: stats/templates/stats/report_user_chart.html:108
+msgid "Participants with over 1 reports"
+msgstr "Résztvevők több mint 1 jelentéssel"
+
+#: stats/templates/stats/report_user_chart.html:117
+msgid "Participants with over 2 reports"
+msgstr "Résztvevők több mint 2 jelentéssel"
+
+#: stats/templates/stats/report_user_chart.html:126
+msgid "Participants with over 3 reports"
+msgstr "Résztvevők több mint 3 jelentéssel"
+
+#: stats/templates/stats/report_user_chart.html:135
+msgid "Participants with over 4 reports"
+msgstr "Résztvevők több mint 4 jelentéssel"
+
+#: stats/templates/stats/user_ranking.html:30
+msgid "user_ranking_info_text_1"
+msgstr ""
+"Nézd meg a jelenlegi pontszámod és szinted. A beállítások menüben részletes "
+"információt találsz a Mosquito Alert pontozási rendszeréről."
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_2"
+msgstr "Több infó"
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_3"
+msgstr "pontozás"
+
+#: stats/templates/stats/user_ranking.html:40
+msgid "no_score_yet"
+msgstr ""
+"Mivel még nincs pontod, így nem szerepelsz a rangsorban. Tölts fel pár "
+"jegyzetet és nézz vissza később. Az alábbi linkre kattintva megtudhatod, "
+"hogyan szerezhetsz pontokat."
+
+#: stats/templates/stats/user_ranking.html:68
+#: stats/templates/stats/user_ranking.html:156
+msgid "My position"
+msgstr "Helyzetem"
+
+#: stats/templates/stats/user_ranking.html:72
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "of"
+msgstr "nak"
+
+#: stats/templates/stats/user_ranking.html:88
+msgid "Rank"
+msgstr "Rangsor"
+
+#: stats/templates/stats/user_ranking.html:89
+msgid "User"
+msgstr "Felhasználó"
+
+#: stats/templates/stats/user_ranking.html:90
+msgid "Overall class"
+msgstr "Általános csoport"
+
+#: stats/templates/stats/user_ranking.html:91
+msgid "Score"
+msgstr "Pontozás"
+
+#: stats/templates/stats/user_ranking.html:97
+msgid "This is you!"
+msgstr "Ez vagy te!"
+
+#: stats/templates/stats/user_ranking.html:134
+msgid "Score details"
+msgstr "Részletek"
+
+#: stats/templates/stats/user_score.html:28
+msgid "Citizen Scientist"
+msgstr "Pontozás összegzése"
+
+#: stats/templates/stats/user_score.html:31
+msgid "this_is_your_personal_avatar"
+msgstr ""
+"Ez a résztvevő avatarja. A pontozás alapján, a jelenlegi tapasztalati szint"
+
+#: stats/templates/stats/user_score.html:31
+msgid "there_are_5_levels"
+msgstr ""
+"Öt szintet lehet elérni: Kezdő, Együttműködő, Szakértő, Mester és Nagy "
+"Mester."
+
+#: stats/templates/stats/user_score.html:32
+msgid "Joined"
+msgstr "Megkezdett részvétel"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Last active"
+msgstr "Utoljára aktív"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Never"
+msgstr "Soha"
+
+#: stats/templates/stats/user_score.html:34
+msgid "Overall rank - Unranked"
+msgstr "Általános pozíció - nem rangsorolt"
+
+#: stats/templates/stats/user_score.html:36
+msgid "Overall rank"
+msgstr "Általános pozíció"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "Top"
+msgstr "A csúcson vagy"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+msgid "participants"
+msgstr "résztvevők"
+
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
+#: stats/templates/stats/user_score.html:92
+#: stats/templates/stats/user_score.html:100
+#: stats/templates/stats/user_score.html:149
+#: stats/templates/stats/user_score.html:156
+msgid "XP"
+msgstr "Pontok"
+
+#: stats/templates/stats/user_score.html:49
+msgid "Other awards"
+msgstr "Díjak"
+
+#: stats/templates/stats/user_score.html:55
+msgid "awarded_on"
+msgstr "Díjazott"
+
+#: stats/templates/stats/user_score.html:62
+msgid "XP, awarded on"
+msgstr "pontok"
+
+#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:138
+msgid "Level obtained for"
+msgstr "Elért szint"
+
+#: stats/templates/stats/user_score.html:81
+msgid "Mosquito"
+msgstr "Szúnyog"
+
+#: stats/templates/stats/user_score.html:83
+msgid "Mosquito rank - Unranked"
+msgstr "Szúnyog alapján meghatározott pozíció- nem rangsorolt"
+
+#: stats/templates/stats/user_score.html:85
+msgid "Mosquito rank"
+msgstr "Szúnyog alapján meghatározott pozíció"
+
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:144
+msgid "click_score_instructions"
+msgstr ""
+"Kattints a színes négyzetekre az elküldött adatok és a kapott díjak "
+"részleteinek megtekintéséhez."
+
+#: stats/templates/stats/user_score.html:115
+#: stats/templates/stats/user_score.html:171
+msgid "xp awarded for"
+msgstr "elnyert pontok"
+
+#: stats/templates/stats/user_score.html:120
+msgid "No awards because"
+msgstr "Nem kaptál pontot, mert"
+
+#: stats/templates/stats/user_score.html:123
+#: stats/templates/stats/user_score.html:175
+msgid "No awards for this report!"
+msgstr "Ez a jelentés nem kapott pontokat!"
+
+#: stats/templates/stats/user_score.html:138
+msgid "Breeding site"
+msgstr "Tenyészőhelyek"
+
+#: stats/templates/stats/user_score.html:140
+msgid "Breeding site rank - Unranked"
+msgstr "Tenyészőhely alapján meghatározott rang - nem rangsorolt"
+
+#: stats/templates/stats/user_score.html:142
+msgid "Breeding site rank"
+msgstr "Tenyészőhely alapján meghatározott rang"
+
+#: templates/admin/base_site.html:4
+msgid "Tigaserver admin"
+msgstr "Tigaserver admin"
+
+#: templates/admin/base_site.html:7
+msgid "Tigaserver administration"
+msgstr "Tigaserver adminisztráció"
+
+#: templates/django_messages/base.html:40
+#: templates/django_messages/inbox.html:5
+msgid "Inbox"
+msgstr "Postaláda"
+
+#: templates/django_messages/base.html:41
+#: templates/django_messages/outbox.html:5
+msgid "Sent Messages"
+msgstr "Elküldött üzenetek"
+
+#: templates/django_messages/base.html:42
+msgid "New Message"
+msgstr "Új üzenet"
+
+#: templates/django_messages/base.html:43
+msgid "Trash"
+msgstr "Kuka"
+
+#: templates/django_messages/compose.html:48
+msgid "Compose Message"
+msgstr "Üzenet írása"
+
+#: templates/django_messages/compose.html:57
+msgid "Send"
+msgstr "Küldés"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/view.html:12
+msgid "Sender"
+msgstr "Küldő"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
+msgid "Subject"
+msgstr "Tárgy"
+
+#: templates/django_messages/inbox.html:9
+msgid "Received"
+msgstr "Beérkező"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+msgid "Action"
+msgstr "Akció"
+
+#: templates/django_messages/inbox.html:21
+#: templates/django_messages/outbox.html:18
+#: templates/django_messages/view.html:17
+msgid "DATETIME_FORMAT"
+msgstr "DÁTUM_FORMÁTUM"
+
+#: templates/django_messages/inbox.html:22
+#: templates/django_messages/outbox.html:19
+msgid "delete"
+msgstr "törlés"
+
+#: templates/django_messages/inbox.html:28
+#: templates/django_messages/outbox.html:25
+msgid "No messages."
+msgstr "Nincs üzenet"
+
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
+msgid "Recipient"
+msgstr "Befogadó"
+
+#: templates/django_messages/outbox.html:9
+msgid "Sent"
+msgstr "Elküldve"
+
+#: templates/django_messages/view.html:5
+msgid "View Message"
+msgstr "Üzenet megtekintése"
+
+#: templates/django_messages/view.html:16
+msgid "Date"
+msgstr "Dátum"
+
+#: templates/django_messages/view.html:30
+msgid "Reply"
+msgstr "Válasz"
+
+#: templates/django_messages/view.html:32
+msgid "Delete"
+msgstr "Törlés"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:88
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:88
+msgid "Toggle navigation"
+msgstr "Navigáció"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:98
+msgid "Menu"
+msgstr "Menü"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:101
+msgid "New batch"
+msgstr "Új tétel"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:102
+msgid "Photos you have taken notes on but not yet scored"
+msgstr "Fotók, amelyekhez jegyzeteket készítettél, de még nem lettek pontozva"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:103
+msgid "Photos you have already scored"
+msgstr " Pontozott fotóid"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:171
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:195
+msgid "Save"
+msgstr "Mentés"
+
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:103
+msgid "Photos per page"
+msgstr "Fotók oldalanként"
+
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Fotóját szakértő ellenőrizte!"
+
+#: tigahelp/templates/tigahelp/policies.html:30
+#: tigahelp/templates/tigahelp/policies_en.html:29
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "user-agreement"
+msgstr "Felhasználói szerződés"
+
+#: tigahelp/templates/tigahelp/policies.html:35
+#: tigahelp/templates/tigahelp/policies_en.html:34
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "privacy-policy"
+msgstr "Adatvédelmi irányelvek"
+
+#: tigahelp/templates/tigahelp/policies.html:38
+msgid "app-license"
+msgstr "Applikáció Licenc"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "our-website-uses-cookies"
+msgstr ""
+"Weboldalunk sütiket használ. A folytatással feltételezzük, hogy Ön "
+"engedélyezte a sütik telepítését. Az oldalunk irányelveivel kapcsolatos "
+"további információkért kérjük, olvassa el"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "and"
+msgstr "és"
+
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
+#: tigamap/views.py:263
+msgid "adult-tiger-mosquitoes"
+msgstr "Szúnyog jelentések"
+
+#: tigamap/templates/tigamap/app.html:126
+#: tigamap/templates/tigamap/app_new.html:175
+msgid "all-reports"
+msgstr "Minden jelentés"
+
+#: tigamap/templates/tigamap/app.html:128
+msgid "medium-and-high-probability-reports-only"
+msgstr "Csak közepes és magas valószínűségű jelentések"
+
+#: tigamap/templates/tigamap/app.html:130
+msgid "high-probability-reports-only"
+msgstr "Csak magas valószínűségű jelentések"
+
+#: tigamap/templates/tigamap/app.html:134
+#: tigamap/templates/tigamap/app_new.html:183
+msgid "breeding-site-reports"
+msgstr "Tenyészőhely jelentés"
+
+#: tigamap/templates/tigamap/app.html:138
+#: tigamap/templates/tigamap/app_new.html:187
+msgid "all-sites"
+msgstr "Minden helyszín"
+
+#: tigamap/templates/tigamap/app.html:141
+#: tigamap/templates/tigamap/app_new.html:190
+msgid "storm-drains-and-fountains"
+msgstr "Esőelvezető csatornák és szökőkutak"
+
+#: tigamap/templates/tigamap/app.html:144
+#: tigamap/templates/tigamap/app_new.html:193
+msgid "Basins"
+msgstr "Medencék"
+
+#: tigamap/templates/tigamap/app.html:146
+#: tigamap/templates/tigamap/app_new.html:195
+msgid "buckets-and-wells"
+msgstr "Vödrök és kutak"
+
+#: tigamap/templates/tigamap/app.html:148
+#: tigamap/templates/tigamap/app_new.html:197
+#: tigamap/templates/tigamap/site_map.html:207
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:386
+#: tigaserver_app/models.py:582
+msgid "Other"
+msgstr "Egyéb"
+
+#: tigamap/templates/tigamap/app.html:152
+#: tigamap/templates/tigamap/app_filtered.html:193
+#: tigamap/templates/tigamap/app_new.html:201
+#: tigamap/templates/tigamap/coverage_map_beta.html:82
+msgid "Coverage"
+msgstr "Lefedettség"
+
+#: tigamap/templates/tigamap/app.html:154
+msgid "http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014"
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
+
+#: tigamap/templates/tigamap/app_filtered.html:175
+#: tigamap/templates/tigamap/app_new.html:159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:816
+msgid "navbar_toggle_navigation"
+msgstr "Navigáció"
+
+#: tigamap/templates/tigamap/app_filtered.html:195
+#: tigamap/templates/tigamap/app_new.html:203
+#: tigamap/templates/tigamap/coverage_map_new.html:383
+#: tigamap/templates/tigamap/validated_report_map.html:635
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:903
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1015
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1165
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
+msgid "map_help_url_new"
+msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
+
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+msgid "menu_adults_prob"
+msgstr "Lehetséges és megerősített tigrisszúnyogok"
+
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+msgid "menu_adults_definite"
+msgstr "Megerősített tigrisszúnyogok"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "low"
+msgstr "alacsony"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "medium"
+msgstr "közepes"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "high"
+msgstr "magas"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:221
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:605
+msgid "fixes"
+msgstr "helyzetmegjelölések"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:223
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:607
+msgid "fix"
+msgstr "helyzetmegjelölés"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:336
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:967
+msgid "coverage_legend_main_title"
+msgstr "Megfigyelések száma"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:372
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1004
+msgid "coverage_legend_info_title"
+msgstr "Lefedettség Információk"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:373
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
+msgid "coverage_legend_info_blurb"
+msgstr ""
+"<p>A Tigatrapp Android verziója magába foglalja a háttérhely potenciális "
+"követését. Az alkalmazás naponta 5 véletlenszerű alkalommal rögzíti a "
+"felhasználók tartózkodási helyét. Csak a megközelítőleges helyzetet rögzíti "
+"(piros négyzetek a térképen) a felhasználók névtelenségének megőrzése "
+"érdekében.<br /><br />Egy adott négyzetben látható megfigyelések száma az a "
+"négyzeten belül, az összes résztvevő által rögzített összesített pozíciók "
+"számát jelöli. Minél sötétebb, annál jobban feltárt egy terület.</p>"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:377
+#: tigamap/templates/tigamap/validated_report_map.html:629
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1009
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1287
+msgid "more_info"
+msgstr "több infó"
+
+#: tigamap/templates/tigamap/report_map.html:112
+#: tigamap/templates/tigamap/report_map.html:125
+msgid "type"
+msgstr "Típus"
+
+#: tigamap/templates/tigamap/report_map.html:149
+#: tigamap/templates/tigamap/validated_photo_map.html:152
+msgid "clusters"
+msgstr "Csoportok"
+
+#: tigamap/templates/tigamap/report_map.html:150
+#: tigamap/templates/tigamap/validated_photo_map.html:153
+msgid "points"
+msgstr "Pontok"
+
+#: tigamap/templates/tigamap/site_map.html:192
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:371
+#: tigaserver_app/models.py:574
+msgid "storm-drain"
+msgstr "Esővízgyűjtő csatorna"
+
+#: tigamap/templates/tigamap/site_map.html:195
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:374
+#: tigaserver_app/models.py:576
+msgid "Fountain"
+msgstr "Szökőkút"
+
+#: tigamap/templates/tigamap/site_map.html:198
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:377
+#: tigaserver_app/models.py:578
+msgid "Basin"
+msgstr "Medence"
+
+#: tigamap/templates/tigamap/site_map.html:201
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:380
+msgid "Bucket"
+msgstr "Vödör"
+
+#: tigamap/templates/tigamap/site_map.html:204
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:383
+#: tigaserver_app/models.py:580
+msgid "Well"
+msgstr "Kút"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:169
+msgid "Photos"
+msgstr "Fotók"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:173
+msgid "all-photos"
+msgstr "Minden fotó"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:175
+msgid "medium-and-high-probability-photos-only"
+msgstr "Csak közepes és magas valószínűségű fotók"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:177
+msgid "high-probability-photos-only"
+msgstr "Csak magas valószínűségű fotók"
+
+#: tigamap/templates/tigamap/validated_report_map.html:379
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:360
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "not_sure"
+msgstr "nem biztos"
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "yes"
+msgstr "igen"
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "no"
+msgstr "nem"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:544
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1046
+msgid "expert_cat_tiger"
+msgstr "Megerősített albopictus"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:552
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1062
+msgid "expert_cat_possible_tiger"
+msgstr "Valószínűsített albopictus"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:570
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1087
+msgid "expert_cat_possible_other"
+msgstr "Feltehetően nem albopictus és nem aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:579
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1096
+msgid "expert_cat_other"
+msgstr "Biztosan nem albopictus és nem is aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:561
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1078
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1210
+msgid "expert_cat_unknown"
+msgstr "Ismeretlen"
+
+#: tigamap/templates/tigamap/validated_report_map.html:405
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:489
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:502
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_title"
+msgstr ""
+"Szakértő validálás <a href=\"http://www.mosquitoalert.com/en/map-results/"
+"tiger-mosquito-map/\" target=\"_blank\">eredmények</a>"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_title"
+msgstr "Civil validálás eredmények"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+msgid "crowd_row_more_responses_needed"
+msgstr "Több válasz szükséges"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q1"
+msgstr "Kicsi, fekete, fehér csíkok?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q2"
+msgstr "Csík a fejen és a toron?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q3"
+msgstr "Csíkok a potrohon és a lábakon?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:535
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
+msgid "adult_report_legend_main_title"
+msgstr "Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:588
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1118
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1248
+msgid "adult_report_legend_info_title"
+msgstr "Felugró ablakok"
+
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_help"
+msgstr "A tudósok osztályozása a rendelkezésre álló fotók alapján"
+
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_help"
+msgstr ""
+"Az önkéntesek osztályozása <a href='http://crowdcrafting.org/app/Tigafotos/' "
+"target='_blank'>Crowdcrafting</a>  (ha elérhető fotó)"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_title"
+msgstr ""
+"Taxonómiai leírás <a href=\"http://www.mosquitoalert.com/en/mosquitoes/tiger-"
+"mosquito-ae-albopictus/\" target=\"_blank\">Ae. albopictus</a> és <a href="
+"\"http://www.mosquitoalert.com/en/mosquitoes/yellow-fever-mosquito-ae-"
+"aegypti/\" target=\"_blank\">Ae. aegypti</a>"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_help"
+msgstr "Résztvevők megfigyelései"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_title"
+msgstr "Fotók"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_help"
+msgstr "A résztvevők által beküldve (ha vannak fotók)"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_title"
+msgstr "Megjegyzések"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_help"
+msgstr "Szakértőktől vagy megfigyelőktől (opcionális)"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:146
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_subtext_adults_high"
+msgstr "Megerősített Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:147
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_subtext_adults_medium"
+msgstr "Lehetséges és megerősített Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:148
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_subtext_adults_all"
+msgstr "Nincs szűrés"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:150
+msgid "validation_button_subtext_sites_high"
+msgstr "Megerősített tenyészőhelyek"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:151
+msgid "validation_button_subtext_sites_medium"
+msgstr "Lehetséges és megerősített tenyészőhelyek"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:152
+msgid "validation_button_subtext_sites_all"
+msgstr "Nincs szűrés"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1237
+msgid "expert_cat_unclassified"
+msgstr "Osztályozatlan"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
+msgid "expert_cat_site"
+msgstr "Tigrisszúnyog tenyészőhely"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
+msgid "expert_cat_possible_site"
+msgstr "Lehetséges tigrisszúnyog tenyészőhely"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
+msgid "expert_cat_possible_other_site"
+msgstr "Feltehetően nem tigrisszúnyog tenyészőhely"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
+msgid "expert_cat_other_site"
+msgstr "Nem tigrisszúnyog tenyészőhely"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
+msgid "expert_cat_aegypti"
+msgstr "Megerősített aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
+msgid "expert_cat_possible_aegypti"
+msgstr "Lehetséges aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_q_sitetype"
+msgstr "tenyészőhely típus"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q1"
+msgstr "Pangó víz?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q2"
+msgstr "Lárvák vagy bábok?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q1_new"
+msgstr "Közterület?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q2_new"
+msgstr "Pangó víz és/vagy lárvák vagy bábok?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q3_new"
+msgstr "Szúnyogok a közelben?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:833
+msgid "fmap_All_years"
+msgstr "Minden év"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:844
+msgid "fmap_All_months"
+msgstr "Minden hónap"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:845
+msgid "January"
+msgstr "Január"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:847
+msgid "February"
+msgstr "Február"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:849
+msgid "March"
+msgstr "Március"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:850
+msgid "April"
+msgstr "Április"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:851
+msgid "May"
+msgstr "Május"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:852
+msgid "June"
+msgstr "Június"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:853
+msgid "July"
+msgstr "Július"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:854
+msgid "August"
+msgstr "Augusztus"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:855
+msgid "September"
+msgstr "Szeptember"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:857
+msgid "October"
+msgstr "Október"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:859
+msgid "November"
+msgstr "November"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:861
+msgid "December"
+msgstr "December"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adult_tiger_mosquitoes"
+msgstr "Felnőtt Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adults"
+msgstr "Felnőttek"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Tiger_mosquito_breeding_sites"
+msgstr "Ae. albopictus/aegypti tenyészőhelyek"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Breeding_sites"
+msgstr "Tenyészőhelyek"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Tigatrapp_coverage"
+msgstr "Mintázásba fektetett erőfeszítések"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Coverage"
+msgstr "Lefedettség"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_text_high"
+msgstr "Magas megbízhatóság"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_text_medium"
+msgstr "Közepes megbízhatóság"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_text_all"
+msgstr "Minden jelentés"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1184
+msgid "site_report_legend_main_title"
+msgstr "Jelzések"
+
+#: tigamap/views.py:147 tigamap/views.py:317
+msgid "coverage-map"
+msgstr "Lefedettség térkép"
+
+#: tigamap/views.py:155
+msgid "Pseudo Occurrence-Exposure Map"
+msgstr "Pseudo Előfordulás-Expozíció Térkép"
+
+#: tigamap/views.py:162
+msgid "Adult tiger mosquitoes: Validated reports"
+msgstr "Felnőtt tigrisszúnyogok: Validált jelentések"
+
+#: tigamap/views.py:171
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Felnőtt tigrisszúnyogok: Közepes és magas valószínűségű jelentések"
+
+#: tigamap/views.py:177
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Felnőtt tigrisszúnyogok: Magas valószínűségű jelentések"
+
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Szúnyogok: Minden jelentés"
+
+#: tigamap/views.py:189
+msgid "Breeding Sites: Validated reports"
+msgstr "Tenyészőhelyek: Validált jelentések"
+
+#: tigamap/views.py:199 tigamap/views.py:289
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Tenyészőhelyek: Eső elvezető csatornák és szökőkutak"
+
+#: tigamap/views.py:202 tigamap/views.py:289
+msgid "breeding-sites-basins"
+msgstr "Tenyészőhelyek: Medencék"
+
+#: tigamap/views.py:205 tigamap/views.py:289
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Tenyészőhelyek: Vödrök és kutak"
+
+#: tigamap/views.py:208 tigamap/views.py:289
+msgid "breeding-sites-other"
+msgstr "Tenyészőhelyek: Egyéb"
+
+#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+msgid "breeding-sites-all-reports"
+msgstr "Tenyészőhelyek: Minden jelentés"
+
+#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
+#: tigascoring/xp_scoring.py:176
+msgid "Novice"
+msgstr "Kezdő"
+
+#: tigascoring/xp_scoring.py:178
+msgid "Contributor"
+msgstr "Együttműködő"
+
+#: tigascoring/xp_scoring.py:180
+msgid "Expert"
+msgstr "Szakértő"
+
+#: tigascoring/xp_scoring.py:182
+msgid "Master"
+msgstr "Mester"
+
+#: tigascoring/xp_scoring.py:184
+msgid "Grandmaster"
+msgstr "Nagy Mester"
+
+#: tigascoring/xp_scoring.py:203
+msgid "start_of_season"
+msgstr "Szezon kezdete"
+
+#: tigascoring/xp_scoring.py:204
+msgid "daily_participation"
+msgstr "a nap első jelentésének feltöltése"
+
+#: tigascoring/xp_scoring.py:205
+msgid "fidelity_day_2"
+msgstr "jelentések feltöltése KÉT egymást követő napon"
+
+#: tigascoring/xp_scoring.py:206
+msgid "fidelity_day_3"
+msgstr "jelentések feltöltése HÁROM egymást követő napon"
+
+#: tigascoring/xp_scoring.py:207
+msgid "achievement_10_reports"
+msgstr "10 feltöltött adat"
+
+#: tigascoring/xp_scoring.py:208
+msgid "achievement_20_reports"
+msgstr "20 feltöltött adat"
+
+#: tigascoring/xp_scoring.py:209
+msgid "achievement_50_reports"
+msgstr "50 feltöltött adat"
+
+#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
+msgid "picture"
+msgstr "a kép"
+
+#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
+msgid "location"
+msgstr "küldött adatok földrajzi helymeghatározása"
+
+#: tigascoring/xp_scoring.py:253
+msgid "storm_drain"
+msgstr "Egy esővíz elvezető csatorna"
+
+#: tigascoring/xp_scoring.py:257
+msgid "water_question"
+msgstr "a víz kérdés megválaszolása a tenyészőhely jelentésben"
+
+#: tigascoring/xp_scoring.py:261
+msgid "mosquito_report_follows_breeding_site"
+msgstr "szúnyog jelentés hozzáadása"
+
+#: tigascoring/xp_scoring.py:293
+msgid "no_picture"
+msgstr "nincs kép"
+
+#: tigascoring/xp_scoring.py:299
+msgid "no_location"
+msgstr "a jelentés földrajzi helyzete nincs meghatározva"
+
+#: tigascoring/xp_scoring.py:302
+msgid "thorax_question"
+msgstr "a tor kérdés megválaszolása a szúnyog jelentésben"
+
+#: tigascoring/xp_scoring.py:305
+msgid "abdomen_question"
+msgstr "a potroh kérdés megválaszolása a szúnyog jelentésben"
+
+#: tigascoring/xp_scoring.py:308
+msgid "leg_question"
+msgstr "a láb kérdés megválaszolása a szúnyog jelentésben"
+
+#: tigascoring/xp_scoring.py:311
+msgid "other_species"
+msgstr ""
+"a beküldött jelentésed elemzése alapján, a szakértők megállapították, hogy "
+"ez az 5 keresett szúnyog faj egyike sem. További információért olvasd el "
+"újra az alkalmazás útmutatóját."
+
+#: tigascoring/xp_scoring.py:318
+msgid "bite report follow"
+msgstr "a jelenlegi jelentés folytatása egy csípés jelentéssel"
+
+#: tigascoring/xp_scoring.py:358
+msgid " years ago"
+msgstr "évek"
+
+#: tigascoring/xp_scoring.py:360
+msgid " months ago"
+msgstr "hónapok"
+
+#: tigascoring/xp_scoring.py:362
+msgid " days ago"
+msgstr "napok"
+
+#: tigaserver_app/models.py:557
+msgid "High"
+msgstr "Magas"
+
+#: tigaserver_app/models.py:559
+msgid "Medium"
+msgstr "Közepes"
+
+#: tigaserver_app/models.py:561
+msgid "Low"
+msgstr "Alacsony"
+
+#: tigaserver_app/models.py:1234
+msgid "species_unclassified"
+msgstr "Nem azonosítható"
+
+#: tigaserver_app/models.py:1235
+msgid "species_other"
+msgstr "Egyéb faj"
+
+#: tigaserver_app/models.py:1236
+msgid "species_albopictus"
+msgstr "tigrisszúnyog (Aedes albopictus)"
+
+#: tigaserver_app/models.py:1237
+msgid "species_aegypti"
+msgstr "sárgaláz szúnyog (Aedes aegypti)"
+
+#: tigaserver_app/models.py:1238
+msgid "species_japonicus"
+msgstr "Japán bozótszúnyog (Aedes japonicus)"
+
+#: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "Aedes koreicus"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Kevert faj"
+
+#: tigaserver_app/models.py:1241
+msgid "species_notsure"
+msgstr "Nem biztos"
+
+#: tigaserver_app/models.py:1242
+msgid "species_culex"
+msgstr "közönséges házi szúnyog (Culex sp.)"
+
+#: tigaserver_app/models.py:1255
+msgid "species_value_possible"
+msgstr "Valószínű"
+
+#: tigaserver_app/models.py:1256
+msgid "species_value_confirmed"
+msgstr "Megerősített"
+
+#: tigaserver_messages/fields.py:56
+#, python-format
+msgid "The following usernames are incorrect: %(users)s"
+msgstr "The following usernames are incorrect: %(users)s"
+
+#: tigaserver_messages/forms.py:20
+msgid "Body"
+msgstr "Test"
+
+#: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
+#: tigaserver_messages/views.py:138
+msgid "Message successfully sent."
+msgstr "Üzenet sikeresen elküldve."
+
+#: tigaserver_messages/views.py:120
+#, python-format
+msgid "Re: %(subject)s"
+msgstr "Re: %(subject)s"
+
+#: tigaserver_project/settings.py:131
+msgid "Spanish"
+msgstr "Spanyol"
+
+#: tigaserver_project/settings.py:132
+msgid "Catalan"
+msgstr "Katalán"
+
+#: tigaserver_project/settings.py:133
+msgid "English"
+msgstr "Angol"
+
+#: tigaserver_project/settings.py:134
+msgid "German"
+msgstr ""
+
+#: tigaserver_project/settings.py:135
+msgid "Albanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:136
+msgid "Greek"
+msgstr ""
+
+#: tigaserver_project/settings.py:137
+msgid "Hungarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:138
+msgid "Portuguese"
+msgstr ""
+
+#: tigaserver_project/settings.py:139
+msgid "Slovenian"
+msgstr ""
+
+#: tigaserver_project/settings.py:140
+msgid "Italian"
+msgstr ""
+
+#: tigaserver_project/settings.py:141
+msgid "French"
+msgstr ""
+
+#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
+msgid "Bulgarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:144
+msgid "Romanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:145
+msgid "Croatian"
+msgstr ""
+
+#: tigaserver_project/settings.py:146
+msgid "Macedonian"
+msgstr ""
+
+#: tigaserver_project/settings.py:147
+msgid "Serbian"
+msgstr ""
+
+#: tigaserver_project/settings.py:148
+msgid "Letzeburgesch"
+msgstr ""
+
+#: tigaserver_project/settings.py:149
+msgid "Dutch"
+msgstr ""
+
+#: tigaserver_project/settings.py:150
+msgid "Turkish"
+msgstr ""
+
+#: tigaserver_project/settings.py:151
+msgid "Chinese"
+msgstr "Kínai"
+
+msgid "you_just_received_a_points_award"
+msgstr "Most pontdíjat kapott!"

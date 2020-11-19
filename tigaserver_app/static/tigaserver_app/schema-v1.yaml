@@ -1,0 +1,2323 @@
+openapi: 3.0.2
+info:
+  title: Mosquito Alert API
+  version: 1.0
+  description: Documentation for the Mosquito Alert server API
+paths:
+  /api/score_v2/:
+    get:
+      operationId: listuser_score_v2s
+      summary: 'Returns score v2 details for a user given its uuid'
+      description: 'Calculates and updates user score for a given user uuid. If the uuid is part of a profile, it updates the scores of all involved uuids'
+      tags:
+      - score
+      parameters:      
+      - name: user_id
+        required: true
+        in: query
+        description: 'User uuid for which the v2 score will be calculated'
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_score:
+                    type: integer
+                    description: 'Accumulated score of the user. Equals the sum of scores given by adult + site reports'
+                  user_uuid:
+                    type: string
+                    description: 'Uuid of the user for which the score is being asked'
+                  identicon:
+                    type: string
+                    description: 'Relative path to the user identicon'
+                  score_detail:
+                    type: object
+                    description: 'Contains the detailed info regarding the user score'
+                    properties:
+                      adult:
+                        type: object
+                        description: 'Score details in regard to (adult) mosquito reports'
+                        properties:                          
+                          score:
+                            type: integer
+                            description: 'Accumulated (adult) mosquito reports score. It''s the sum of all xp given by each of the awards, minus the sum of all penalties'
+                          score_items:
+                            type: array
+                            items:
+                              properties:
+                                report:                                  
+                                  type: string
+                                  description: 'Report uuid'
+                                report_date:
+                                  type: string
+                                  format: date-time
+                                  description: 'Report creation time'
+                                report_score:
+                                  type: integer
+                                  description: 'Accumulated score granted by this report'
+                                awards:
+                                  type: array
+                                  description: 'List of awards granted to this report'
+                                  items:
+                                    properties:
+                                      reason: 
+                                        type: string
+                                        description: 'brief description of why this award was given'
+                                      xp_awarded:
+                                        type: integer
+                                        description: 'number of xp awarded to this report according to the reason previously stated'
+                                penalties:
+                                  type: array
+                                  description: 'List of penalties granted to this report'
+                                  items:
+                                    properties:
+                                      reason: 
+                                        type: string
+                                        description: 'brief description of why this penalty was imposed'
+                                      xp_awarded:
+                                        type: integer
+                                        description: 'number of xp substracted from this report according to the reason previously stated'
+                                report_photo:
+                                  type: string
+                                  description: 'url to the photo associated with this report, if available (not hidden)'
+                  class_value:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                    description: 'number from 1 to 5, indicating the current user rank (beginner, etc) in respect to adult reports. The lower the number, the higher the rank'
+                  class_label:
+                    type: string
+                    description: 'Label corresponding to the class_value: i.e 1 for Grandmaster'
+                  rank_value:
+                    type: integer
+                    description: 'Ranking position of this user according to the adult score only'
+                  top_perc:
+                    type: number
+                    format: float
+                    description: 'Percentile of users that contains this user according to his mosquito rank'
+                  ranked_users:
+                    type: integer
+                    description: 'Number of users used to calculate the adult(mosquito) rank'
+
+          description: ''
+  /api/photos_user/:
+    get:
+      operationId: listget_photos
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/configuration/:
+    get:
+      operationId: listget_current_configurations
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/user_notifications/:
+    get:
+      operationId: listuser_notifications
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+    post:
+      operationId: Createuser_notifications
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+    put:
+      operationId: Updateuser_notifications
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+    delete:
+      operationId: Destroyuser_notifications
+      parameters: []
+      responses:
+        '204':
+          description: ''
+  /api/report_stats/:
+    get:
+      operationId: listreport_stats
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/user_count/:
+    get:
+      operationId: listuser_counts
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/user_score/:
+    get:
+      operationId: listuser_scores
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+    post:
+      operationId: Createuser_score
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/nearby_reports/:
+    get:
+      operationId: listnearby_reports
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/nearby_reports_fast/:
+    get:
+      operationId: listnearby_reports_fasts
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/nearby_reports_nod/:
+    get:
+      operationId: listnearby_reports_no_dwindows
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/reports_id_filtered/:
+    get:
+      operationId: listreports_id_filtereds
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/uuid_list_autocomplete/:
+    get:
+      operationId: listuuid_list_autocompletes
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/missions/:
+    get:
+      operationId: listget_new_missions
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/cfs_reports/:
+    get:
+      operationId: listforce_refresh_cfs_reports
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/cfa_reports/:
+    get:
+      operationId: listforce_refresh_cfa_reports
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/profile/:
+    get:
+      operationId: listprofile_details
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/stats/workload_data/user/:
+    get:
+      operationId: listworkload_stats_per_users
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/stats/workload_data/report_input/:
+    get:
+      operationId: listworkload_daily_report_inputs
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/stats/workload_data/pending/:
+    get:
+      operationId: listworkload_pending_per_users
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/stats/workload_data/available/:
+    get:
+      operationId: listworkload_available_reports
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/stats/speedmeter/:
+    get:
+      operationId: listspeedmeter_apis
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/stats/hashtag_map_data/:
+    get:
+      operationId: listget_hashtag_map_datas
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/stats/user_xp_data/:
+    get:
+      operationId: listget_user_xp_datas
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/users/:
+    get:
+      operationId: listTigaUsers
+      parameters:
+      - name: user_UUID
+        required: false
+        in: query
+        description: user_UUID
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    user_UUID:
+                      type: string
+                      description: UUID randomly generated on phone to identify each
+                        unique user. Must be exactly 36 characters (32 hex digits
+                        plus 4 hyphens).
+                      maxLength: 36
+                  required:
+                  - user_UUID
+          description: ''
+    post:
+      operationId: createTigaUser
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                user_UUID:
+                  type: string
+                  description: UUID randomly generated on phone to identify each unique
+                    user. Must be exactly 36 characters (32 hex digits plus 4 hyphens).
+                  maxLength: 36
+              required:
+              - user_UUID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  user_UUID:
+                    type: string
+                    description: UUID randomly generated on phone to identify each
+                      unique user. Must be exactly 36 characters (32 hex digits plus
+                      4 hyphens).
+                    maxLength: 36
+                required:
+                - user_UUID
+          description: ''
+  /api/addresses/:
+    get:
+      operationId: listUsers
+      parameters:
+      - name: first_name
+        required: false
+        in: query
+        description: first_name
+        schema:
+          type: string
+      - name: last_name
+        required: false
+        in: query
+        description: last_name
+        schema:
+          type: string
+      - name: name
+        required: false
+        in: query
+        description: name
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    first_name:
+                      type: string
+                      maxLength: 30
+                    last_name:
+                      type: string
+                      maxLength: 150
+                    username:
+                      type: string
+                      description: Required. 150 characters or fewer. Letters, digits
+                        and @/./+/-/_ only.
+                      pattern: ^[\w.@+-]+$
+                      maxLength: 150
+                  required:
+                  - username
+          description: ''
+  /api/reports/:
+    get:
+      operationId: listReports
+      parameters:
+      - name: user
+        required: false
+        in: query
+        description: user
+        schema:
+          type: string
+      - name: version_number
+        required: false
+        in: query
+        description: version_number
+        schema:
+          type: string
+      - name: report_id
+        required: false
+        in: query
+        description: report_id
+        schema:
+          type: string
+      - name: type
+        required: false
+        in: query
+        description: type
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    version_UUID:
+                      type: string
+                    version_number:
+                      type: integer
+                    report_id:
+                      type: string
+                    phone_upload_time:
+                      type: string
+                      format: date-time
+                    creation_time:
+                      type: string
+                      format: date-time
+                    version_time:
+                      type: string
+                      format: date-time
+                    type:
+                      type: string
+                    location_choice:
+                      type: string
+                    current_location_lon:
+                      type: number
+                    current_location_lat:
+                      type: number
+                    selected_location_lon:
+                      type: number
+                    selected_location_lat:
+                      type: number
+                    note:
+                      type: string
+                    package_name:
+                      type: string
+                    package_version:
+                      type: integer
+                    device_manufacturer:
+                      type: string
+                    device_model:
+                      type: string
+                    os:
+                      type: string
+                    os_version:
+                      type: string
+                    os_language:
+                      type: string
+                    app_language:
+                      type: string
+                    responses:
+                      type: array
+                      items:
+                        properties:
+                          question:
+                            type: string
+                            description: Question that the user responded to.
+                            maxLength: 1000
+                          answer:
+                            type: string
+                            description: Answer that user selected.
+                            maxLength: 1000
+                          question_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the question.
+                          answer_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the answer.
+                          answer_value:
+                            type: string
+                            nullable: true
+                            description: 'The value right now can contain 2 things:
+                              an integer representing the number or bites, or either
+                              a WKT representation of a point for a location answer.
+                              In all other cases, it will be blank'
+                            maxLength: 1000
+                        required:
+                        - question
+                        - answer
+                    server_upload_time:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                      description: Date and time on server when report uploaded. (Automatically
+                        generated by server.)
+                    hide:
+                      type: boolean
+                      description: Hide this report from public views?
+                    cached_visible:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: -2147483648
+                      nullable: true
+                      description: Precalculated value of show_on_map_function
+                    point:
+                      type: string
+                      nullable: true
+                    user:
+                      type: string
+                      description: user_UUID for the user sending this report. Must
+                        be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                        user must have already registered this ID.
+                    mission:
+                      type: integer
+                      nullable: true
+                      description: If this report was a response to a mission, the
+                        unique id field of that mission.
+                    country:
+                      type: string
+                      nullable: true
+                    session:
+                      type: integer
+                      nullable: true
+                      description: 'Session ID for session in which this report was
+                        created '
+                  required:
+                  - version_UUID
+                  - version_number
+                  - report_id
+                  - phone_upload_time
+                  - creation_time
+                  - version_time
+                  - type
+                  - location_choice
+                  - responses
+                  - user
+          description: ''
+    post:
+      operationId: createReport
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                version_UUID:
+                  type: string
+                version_number:
+                  type: integer
+                report_id:
+                  type: string
+                phone_upload_time:
+                  type: string
+                  format: date-time
+                creation_time:
+                  type: string
+                  format: date-time
+                version_time:
+                  type: string
+                  format: date-time
+                type:
+                  type: string
+                location_choice:
+                  type: string
+                current_location_lon:
+                  type: number
+                current_location_lat:
+                  type: number
+                selected_location_lon:
+                  type: number
+                selected_location_lat:
+                  type: number
+                note:
+                  type: string
+                package_name:
+                  type: string
+                package_version:
+                  type: integer
+                device_manufacturer:
+                  type: string
+                device_model:
+                  type: string
+                os:
+                  type: string
+                os_version:
+                  type: string
+                os_language:
+                  type: string
+                app_language:
+                  type: string
+                responses:
+                  type: array
+                  items:
+                    properties:
+                      question:
+                        type: string
+                        description: Question that the user responded to.
+                        maxLength: 1000
+                      answer:
+                        type: string
+                        description: Answer that user selected.
+                        maxLength: 1000
+                      question_id:
+                        type: integer
+                        maximum: 2147483647
+                        minimum: -2147483648
+                        nullable: true
+                        description: Numeric identifier of the question.
+                      answer_id:
+                        type: integer
+                        maximum: 2147483647
+                        minimum: -2147483648
+                        nullable: true
+                        description: Numeric identifier of the answer.
+                      answer_value:
+                        type: string
+                        nullable: true
+                        description: 'The value right now can contain 2 things: an
+                          integer representing the number or bites, or either a WKT
+                          representation of a point for a location answer. In all
+                          other cases, it will be blank'
+                        maxLength: 1000
+                    required:
+                    - question
+                    - answer
+                hide:
+                  type: boolean
+                  description: Hide this report from public views?
+                cached_visible:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  nullable: true
+                  description: Precalculated value of show_on_map_function
+                point:
+                  type: string
+                  nullable: true
+                user:
+                  type: string
+                  description: user_UUID for the user sending this report. Must be
+                    exactly 36 characters (32 hex digits plus 4 hyphens) and user
+                    must have already registered this ID.
+                mission:
+                  type: integer
+                  nullable: true
+                  description: If this report was a response to a mission, the unique
+                    id field of that mission.
+                country:
+                  type: string
+                  nullable: true
+                session:
+                  type: integer
+                  nullable: true
+                  description: 'Session ID for session in which this report was created '
+              required:
+              - version_UUID
+              - version_number
+              - report_id
+              - phone_upload_time
+              - creation_time
+              - version_time
+              - type
+              - location_choice
+              - responses
+              - user
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  version_UUID:
+                    type: string
+                  version_number:
+                    type: integer
+                  report_id:
+                    type: string
+                  phone_upload_time:
+                    type: string
+                    format: date-time
+                  creation_time:
+                    type: string
+                    format: date-time
+                  version_time:
+                    type: string
+                    format: date-time
+                  type:
+                    type: string
+                  location_choice:
+                    type: string
+                  current_location_lon:
+                    type: number
+                  current_location_lat:
+                    type: number
+                  selected_location_lon:
+                    type: number
+                  selected_location_lat:
+                    type: number
+                  note:
+                    type: string
+                  package_name:
+                    type: string
+                  package_version:
+                    type: integer
+                  device_manufacturer:
+                    type: string
+                  device_model:
+                    type: string
+                  os:
+                    type: string
+                  os_version:
+                    type: string
+                  os_language:
+                    type: string
+                  app_language:
+                    type: string
+                  responses:
+                    type: array
+                    items:
+                      properties:
+                        question:
+                          type: string
+                          description: Question that the user responded to.
+                          maxLength: 1000
+                        answer:
+                          type: string
+                          description: Answer that user selected.
+                          maxLength: 1000
+                        question_id:
+                          type: integer
+                          maximum: 2147483647
+                          minimum: -2147483648
+                          nullable: true
+                          description: Numeric identifier of the question.
+                        answer_id:
+                          type: integer
+                          maximum: 2147483647
+                          minimum: -2147483648
+                          nullable: true
+                          description: Numeric identifier of the answer.
+                        answer_value:
+                          type: string
+                          nullable: true
+                          description: 'The value right now can contain 2 things:
+                            an integer representing the number or bites, or either
+                            a WKT representation of a point for a location answer.
+                            In all other cases, it will be blank'
+                          maxLength: 1000
+                      required:
+                      - question
+                      - answer
+                  server_upload_time:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                    description: Date and time on server when report uploaded. (Automatically
+                      generated by server.)
+                  hide:
+                    type: boolean
+                    description: Hide this report from public views?
+                  cached_visible:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    nullable: true
+                    description: Precalculated value of show_on_map_function
+                  point:
+                    type: string
+                    nullable: true
+                  user:
+                    type: string
+                    description: user_UUID for the user sending this report. Must
+                      be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                      user must have already registered this ID.
+                  mission:
+                    type: integer
+                    nullable: true
+                    description: If this report was a response to a mission, the unique
+                      id field of that mission.
+                  country:
+                    type: string
+                    nullable: true
+                  session:
+                    type: integer
+                    nullable: true
+                    description: 'Session ID for session in which this report was
+                      created '
+                required:
+                - version_UUID
+                - version_number
+                - report_id
+                - phone_upload_time
+                - creation_time
+                - version_time
+                - type
+                - location_choice
+                - responses
+                - user
+          description: ''
+  /api/sessions/:
+    get:
+      operationId: listSessions
+      parameters:
+      - name: id
+        required: false
+        in: query
+        description: id
+        schema:
+          type: string
+      - name: user
+        required: false
+        in: query
+        description: user
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                      description: Unique identifier of the session. Automatically
+                        generated by server when session created.
+                    session_ID:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: -2147483648
+                      description: The session ID number. Should be an integer that
+                        increments by 1 for each session from a given user.
+                    user:
+                      type: string
+                      description: user_UUID for the user sending this report. Must
+                        be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                        user must have already registered this ID.
+                    session_start_time:
+                      type: string
+                      format: date-time
+                      description: Date and time on phone when the session was started.
+                        Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                    session_end_time:
+                      type: string
+                      format: date-time
+                      nullable: true
+                      description: Date and time on phone when the session was ended.
+                        Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  required:
+                  - session_ID
+                  - user
+                  - session_start_time
+          description: ''
+    post:
+      operationId: createSession
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                session_ID:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  description: The session ID number. Should be an integer that increments
+                    by 1 for each session from a given user.
+                user:
+                  type: string
+                  description: user_UUID for the user sending this report. Must be
+                    exactly 36 characters (32 hex digits plus 4 hyphens) and user
+                    must have already registered this ID.
+                session_start_time:
+                  type: string
+                  format: date-time
+                  description: Date and time on phone when the session was started.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                session_end_time:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Date and time on phone when the session was ended.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+              required:
+              - session_ID
+              - user
+              - session_start_time
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                    description: Unique identifier of the session. Automatically generated
+                      by server when session created.
+                  session_ID:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    description: The session ID number. Should be an integer that
+                      increments by 1 for each session from a given user.
+                  user:
+                    type: string
+                    description: user_UUID for the user sending this report. Must
+                      be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                      user must have already registered this ID.
+                  session_start_time:
+                    type: string
+                    format: date-time
+                    description: Date and time on phone when the session was started.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  session_end_time:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Date and time on phone when the session was ended.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                required:
+                - session_ID
+                - user
+                - session_start_time
+          description: ''
+  /api/sessions/{id}/:
+    get:
+      operationId: retrieveSession
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the session. Automatically generated by
+          server when session created.
+        schema:
+          type: string
+      - name: id
+        required: false
+        in: query
+        description: id
+        schema:
+          type: string
+      - name: user
+        required: false
+        in: query
+        description: user
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                    description: Unique identifier of the session. Automatically generated
+                      by server when session created.
+                  session_ID:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    description: The session ID number. Should be an integer that
+                      increments by 1 for each session from a given user.
+                  user:
+                    type: string
+                    description: user_UUID for the user sending this report. Must
+                      be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                      user must have already registered this ID.
+                  session_start_time:
+                    type: string
+                    format: date-time
+                    description: Date and time on phone when the session was started.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  session_end_time:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Date and time on phone when the session was ended.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                required:
+                - session_ID
+                - user
+                - session_start_time
+          description: ''
+    put:
+      operationId: updateSession
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the session. Automatically generated by
+          server when session created.
+        schema:
+          type: string
+      - name: id
+        required: false
+        in: query
+        description: id
+        schema:
+          type: string
+      - name: user
+        required: false
+        in: query
+        description: user
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                session_ID:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  description: The session ID number. Should be an integer that increments
+                    by 1 for each session from a given user.
+                user:
+                  type: string
+                  description: user_UUID for the user sending this report. Must be
+                    exactly 36 characters (32 hex digits plus 4 hyphens) and user
+                    must have already registered this ID.
+                session_start_time:
+                  type: string
+                  format: date-time
+                  description: Date and time on phone when the session was started.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                session_end_time:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Date and time on phone when the session was ended.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+              required:
+              - session_ID
+              - user
+              - session_start_time
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                    description: Unique identifier of the session. Automatically generated
+                      by server when session created.
+                  session_ID:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    description: The session ID number. Should be an integer that
+                      increments by 1 for each session from a given user.
+                  user:
+                    type: string
+                    description: user_UUID for the user sending this report. Must
+                      be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                      user must have already registered this ID.
+                  session_start_time:
+                    type: string
+                    format: date-time
+                    description: Date and time on phone when the session was started.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  session_end_time:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Date and time on phone when the session was ended.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                required:
+                - session_ID
+                - user
+                - session_start_time
+          description: ''
+    patch:
+      operationId: partial_updateSession
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the session. Automatically generated by
+          server when session created.
+        schema:
+          type: string
+      - name: id
+        required: false
+        in: query
+        description: id
+        schema:
+          type: string
+      - name: user
+        required: false
+        in: query
+        description: user
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                session_ID:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  description: The session ID number. Should be an integer that increments
+                    by 1 for each session from a given user.
+                user:
+                  type: string
+                  description: user_UUID for the user sending this report. Must be
+                    exactly 36 characters (32 hex digits plus 4 hyphens) and user
+                    must have already registered this ID.
+                session_start_time:
+                  type: string
+                  format: date-time
+                  description: Date and time on phone when the session was started.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                session_end_time:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Date and time on phone when the session was ended.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                    description: Unique identifier of the session. Automatically generated
+                      by server when session created.
+                  session_ID:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    description: The session ID number. Should be an integer that
+                      increments by 1 for each session from a given user.
+                  user:
+                    type: string
+                    description: user_UUID for the user sending this report. Must
+                      be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                      user must have already registered this ID.
+                  session_start_time:
+                    type: string
+                    format: date-time
+                    description: Date and time on phone when the session was started.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  session_end_time:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Date and time on phone when the session was ended.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                required:
+                - session_ID
+                - user
+                - session_start_time
+          description: ''
+    delete:
+      operationId: destroySession
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the session. Automatically generated by
+          server when session created.
+        schema:
+          type: string
+      - name: id
+        required: false
+        in: query
+        description: id
+        schema:
+          type: string
+      - name: user
+        required: false
+        in: query
+        description: user
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+  /api/photos/:
+    get:
+      operationId: listPhotos
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    photo:
+                      type: string
+                      description: Photo uploaded by user.
+                    report:
+                      type: string
+                      description: Report and version to which this photo is associated
+                        (36-digit report_UUID).
+                  required:
+                  - photo
+                  - report
+          description: ''
+    post:
+      operationId: createPhoto
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                photo:
+                  type: string
+                  description: Photo uploaded by user.
+                report:
+                  type: string
+                  description: Report and version to which this photo is associated
+                    (36-digit report_UUID).
+              required:
+              - photo
+              - report
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  photo:
+                    type: string
+                    description: Photo uploaded by user.
+                  report:
+                    type: string
+                    description: Report and version to which this photo is associated
+                      (36-digit report_UUID).
+                required:
+                - photo
+                - report
+          description: ''
+  /api/fixes/:
+    get:
+      operationId: listFixs
+      parameters:
+      - name: user_coverage_uuid
+        required: false
+        in: query
+        description: user_coverage_uuid
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    user_coverage_uuid:
+                      type: string
+                      nullable: true
+                      description: UUID randomly generated on phone to identify each
+                        unique user, but only within the coverage data so that privacy
+                        issues are not raised by linking this to the report data..
+                        Must be exactly 36 characters (32 hex digits plus 4 hyphens).
+                      maxLength: 36
+                    fix_time:
+                      type: string
+                      format: date-time
+                      description: Date and time when fix was recorded on phone. Format
+                        as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                    phone_upload_time:
+                      type: string
+                      format: date-time
+                      description: Date and time on phone when it uploaded fix. Format
+                        as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                    masked_lon:
+                      type: number
+                      description: Longitude rounded down to nearest 0.5 decimal degree
+                        (floor(lon/.5)*.5).
+                    masked_lat:
+                      type: number
+                      description: Latitude rounded down to nearest 0.5 decimal degree
+                        (floor(lat/.5)*.5).
+                    power:
+                      type: number
+                      nullable: true
+                      description: 'Power level of phone at time fix recorded, expressed
+                        as proportion of full charge. Range: 0-1.'
+                    mask_size:
+                      type: number
+                      nullable: true
+                      description: size of location mask used
+                  required:
+                  - fix_time
+                  - phone_upload_time
+                  - masked_lon
+                  - masked_lat
+          description: ''
+    post:
+      operationId: createFix
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                user_coverage_uuid:
+                  type: string
+                  nullable: true
+                  description: UUID randomly generated on phone to identify each unique
+                    user, but only within the coverage data so that privacy issues
+                    are not raised by linking this to the report data.. Must be exactly
+                    36 characters (32 hex digits plus 4 hyphens).
+                  maxLength: 36
+                fix_time:
+                  type: string
+                  format: date-time
+                  description: Date and time when fix was recorded on phone. Format
+                    as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                phone_upload_time:
+                  type: string
+                  format: date-time
+                  description: Date and time on phone when it uploaded fix. Format
+                    as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                masked_lon:
+                  type: number
+                  description: Longitude rounded down to nearest 0.5 decimal degree
+                    (floor(lon/.5)*.5).
+                masked_lat:
+                  type: number
+                  description: Latitude rounded down to nearest 0.5 decimal degree
+                    (floor(lat/.5)*.5).
+                power:
+                  type: number
+                  nullable: true
+                  description: 'Power level of phone at time fix recorded, expressed
+                    as proportion of full charge. Range: 0-1.'
+                mask_size:
+                  type: number
+                  nullable: true
+                  description: size of location mask used
+              required:
+              - fix_time
+              - phone_upload_time
+              - masked_lon
+              - masked_lat
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  user_coverage_uuid:
+                    type: string
+                    nullable: true
+                    description: UUID randomly generated on phone to identify each
+                      unique user, but only within the coverage data so that privacy
+                      issues are not raised by linking this to the report data.. Must
+                      be exactly 36 characters (32 hex digits plus 4 hyphens).
+                    maxLength: 36
+                  fix_time:
+                    type: string
+                    format: date-time
+                    description: Date and time when fix was recorded on phone. Format
+                      as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  phone_upload_time:
+                    type: string
+                    format: date-time
+                    description: Date and time on phone when it uploaded fix. Format
+                      as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  masked_lon:
+                    type: number
+                    description: Longitude rounded down to nearest 0.5 decimal degree
+                      (floor(lon/.5)*.5).
+                  masked_lat:
+                    type: number
+                    description: Latitude rounded down to nearest 0.5 decimal degree
+                      (floor(lat/.5)*.5).
+                  power:
+                    type: number
+                    nullable: true
+                    description: 'Power level of phone at time fix recorded, expressed
+                      as proportion of full charge. Range: 0-1.'
+                  mask_size:
+                    type: number
+                    nullable: true
+                    description: size of location mask used
+                required:
+                - fix_time
+                - phone_upload_time
+                - masked_lon
+                - masked_lat
+          description: ''
+  /api/coverage_month/:
+    get:
+      operationId: listCoverageAreaMonths
+      parameters:
+      - name: id_range_start
+        required: false
+        in: query
+        description: id_range_start
+        schema:
+          type: string
+      - name: id_range_end
+        required: false
+        in: query
+        description: id_range_end
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    lat:
+                      type: number
+                    lon:
+                      type: number
+                    year:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: -2147483648
+                    month:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: -2147483648
+                    n_fixes:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: 0
+                  required:
+                  - lat
+                  - lon
+                  - year
+                  - month
+                  - n_fixes
+          description: ''
+  /api/all_reports/:
+    get:
+      operationId: listReports
+      parameters:
+      - name: day
+        required: false
+        in: query
+        description: day
+        schema:
+          type: string
+      - name: week
+        required: false
+        in: query
+        description: week
+        schema:
+          type: string
+      - name: month
+        required: false
+        in: query
+        description: month
+        schema:
+          type: string
+      - name: year
+        required: false
+        in: query
+        description: year
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    version_UUID:
+                      type: string
+                    creation_time:
+                      type: string
+                      readOnly: true
+                    creation_date:
+                      type: string
+                      readOnly: true
+                    creation_day_since_launch:
+                      type: string
+                      readOnly: true
+                    creation_year:
+                      type: string
+                      readOnly: true
+                    creation_month:
+                      type: string
+                      readOnly: true
+                    site_cat:
+                      type: string
+                      readOnly: true
+                    type:
+                      type: string
+                    lon:
+                      type: string
+                      readOnly: true
+                    lat:
+                      type: string
+                      readOnly: true
+                    movelab_annotation:
+                      type: string
+                      readOnly: true
+                    movelab_annotation_euro:
+                      type: string
+                      readOnly: true
+                    tiger_responses:
+                      type: string
+                      readOnly: true
+                    tiger_responses_text:
+                      type: string
+                      readOnly: true
+                    site_responses:
+                      type: string
+                      readOnly: true
+                    site_responses_text:
+                      type: string
+                      readOnly: true
+                    tigaprob_cat:
+                      type: string
+                      readOnly: true
+                    visible:
+                      type: string
+                      readOnly: true
+                    latest_version:
+                      type: string
+                      readOnly: true
+                    n_photos:
+                      type: string
+                      readOnly: true
+                    final_expert_status_text:
+                      type: string
+                      readOnly: true
+                    responses:
+                      type: array
+                      items:
+                        properties:
+                          id:
+                            type: integer
+                            readOnly: true
+                          question_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the question.
+                          question:
+                            type: string
+                            description: Question that the user responded to.
+                            maxLength: 1000
+                          answer_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the answer.
+                          answer:
+                            type: string
+                            description: Answer that user selected.
+                            maxLength: 1000
+                          answer_value:
+                            type: string
+                            nullable: true
+                            description: 'The value right now can contain 2 things:
+                              an integer representing the number or bites, or either
+                              a WKT representation of a point for a location answer.
+                              In all other cases, it will be blank'
+                            maxLength: 1000
+                          report:
+                            type: string
+                            description: Report to which this response is associated.
+                        required:
+                        - question
+                        - answer
+                        - report
+                    cached_visible:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: -2147483648
+                      nullable: true
+                      description: Precalculated value of show_on_map_function
+                    point:
+                      type: string
+                      nullable: true
+                    country:
+                      type: string
+                      nullable: true
+                    session:
+                      type: integer
+                      nullable: true
+                      description: 'Session ID for session in which this report was
+                        created '
+                  required:
+                  - version_UUID
+                  - type
+                  - responses
+          description: ''
+  /api/all_reports_paginated/:
+    get:
+      operationId: listReports
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: day
+        required: false
+        in: query
+        description: day
+        schema:
+          type: string
+      - name: week
+        required: false
+        in: query
+        description: week
+        schema:
+          type: string
+      - name: month
+        required: false
+        in: query
+        description: month
+        schema:
+          type: string
+      - name: year
+        required: false
+        in: query
+        description: year
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      properties:
+                        version_UUID:
+                          type: string
+                        creation_time:
+                          type: string
+                          readOnly: true
+                        creation_date:
+                          type: string
+                          readOnly: true
+                        creation_day_since_launch:
+                          type: string
+                          readOnly: true
+                        creation_year:
+                          type: string
+                          readOnly: true
+                        creation_month:
+                          type: string
+                          readOnly: true
+                        site_cat:
+                          type: string
+                          readOnly: true
+                        type:
+                          type: string
+                        lon:
+                          type: string
+                          readOnly: true
+                        lat:
+                          type: string
+                          readOnly: true
+                        movelab_annotation:
+                          type: string
+                          readOnly: true
+                        movelab_annotation_euro:
+                          type: string
+                          readOnly: true
+                        tiger_responses:
+                          type: string
+                          readOnly: true
+                        tiger_responses_text:
+                          type: string
+                          readOnly: true
+                        site_responses:
+                          type: string
+                          readOnly: true
+                        site_responses_text:
+                          type: string
+                          readOnly: true
+                        tigaprob_cat:
+                          type: string
+                          readOnly: true
+                        visible:
+                          type: string
+                          readOnly: true
+                        latest_version:
+                          type: string
+                          readOnly: true
+                        n_photos:
+                          type: string
+                          readOnly: true
+                        final_expert_status_text:
+                          type: string
+                          readOnly: true
+                        responses:
+                          type: array
+                          items:
+                            properties:
+                              id:
+                                type: integer
+                                readOnly: true
+                              question_id:
+                                type: integer
+                                maximum: 2147483647
+                                minimum: -2147483648
+                                nullable: true
+                                description: Numeric identifier of the question.
+                              question:
+                                type: string
+                                description: Question that the user responded to.
+                                maxLength: 1000
+                              answer_id:
+                                type: integer
+                                maximum: 2147483647
+                                minimum: -2147483648
+                                nullable: true
+                                description: Numeric identifier of the answer.
+                              answer:
+                                type: string
+                                description: Answer that user selected.
+                                maxLength: 1000
+                              answer_value:
+                                type: string
+                                nullable: true
+                                description: 'The value right now can contain 2 things:
+                                  an integer representing the number or bites, or
+                                  either a WKT representation of a point for a location
+                                  answer. In all other cases, it will be blank'
+                                maxLength: 1000
+                              report:
+                                type: string
+                                description: Report to which this response is associated.
+                            required:
+                            - question
+                            - answer
+                            - report
+                        cached_visible:
+                          type: integer
+                          maximum: 2147483647
+                          minimum: -2147483648
+                          nullable: true
+                          description: Precalculated value of show_on_map_function
+                        point:
+                          type: string
+                          nullable: true
+                        country:
+                          type: string
+                          nullable: true
+                        session:
+                          type: integer
+                          nullable: true
+                          description: 'Session ID for session in which this report
+                            was created '
+                      required:
+                      - version_UUID
+                      - type
+                      - responses
+          description: ''
+  /api/hidden_reports/:
+    get:
+      operationId: listReports
+      parameters:
+      - name: day
+        required: false
+        in: query
+        description: day
+        schema:
+          type: string
+      - name: week
+        required: false
+        in: query
+        description: week
+        schema:
+          type: string
+      - name: month
+        required: false
+        in: query
+        description: month
+        schema:
+          type: string
+      - name: year
+        required: false
+        in: query
+        description: year
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    version_UUID:
+                      type: string
+                    creation_time:
+                      type: string
+                      readOnly: true
+                    creation_date:
+                      type: string
+                      readOnly: true
+                    creation_day_since_launch:
+                      type: string
+                      readOnly: true
+                    creation_year:
+                      type: string
+                      readOnly: true
+                    creation_month:
+                      type: string
+                      readOnly: true
+                    site_cat:
+                      type: string
+                      readOnly: true
+                    type:
+                      type: string
+                    lon:
+                      type: string
+                      readOnly: true
+                    lat:
+                      type: string
+                      readOnly: true
+                    movelab_annotation:
+                      type: string
+                      readOnly: true
+                    movelab_annotation_euro:
+                      type: string
+                      readOnly: true
+                    tiger_responses:
+                      type: string
+                      readOnly: true
+                    tiger_responses_text:
+                      type: string
+                      readOnly: true
+                    site_responses:
+                      type: string
+                      readOnly: true
+                    site_responses_text:
+                      type: string
+                      readOnly: true
+                    tigaprob_cat:
+                      type: string
+                      readOnly: true
+                    visible:
+                      type: string
+                      readOnly: true
+                    latest_version:
+                      type: string
+                      readOnly: true
+                    n_photos:
+                      type: string
+                      readOnly: true
+                    final_expert_status_text:
+                      type: string
+                      readOnly: true
+                    responses:
+                      type: array
+                      items:
+                        properties:
+                          id:
+                            type: integer
+                            readOnly: true
+                          question_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the question.
+                          question:
+                            type: string
+                            description: Question that the user responded to.
+                            maxLength: 1000
+                          answer_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the answer.
+                          answer:
+                            type: string
+                            description: Answer that user selected.
+                            maxLength: 1000
+                          answer_value:
+                            type: string
+                            nullable: true
+                            description: 'The value right now can contain 2 things:
+                              an integer representing the number or bites, or either
+                              a WKT representation of a point for a location answer.
+                              In all other cases, it will be blank'
+                            maxLength: 1000
+                          report:
+                            type: string
+                            description: Report to which this response is associated.
+                        required:
+                        - question
+                        - answer
+                        - report
+                    cached_visible:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: -2147483648
+                      nullable: true
+                      description: Precalculated value of show_on_map_function
+                    point:
+                      type: string
+                      nullable: true
+                    country:
+                      type: string
+                      nullable: true
+                    session:
+                      type: integer
+                      nullable: true
+                      description: 'Session ID for session in which this report was
+                        created '
+                  required:
+                  - version_UUID
+                  - type
+                  - responses
+          description: ''
+  /api/tags/:
+    get:
+      operationId: listTags
+      parameters:
+      - name: name
+        required: false
+        in: query
+        description: name
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    name:
+                      type: string
+                      maxLength: 100
+                  required:
+                  - name
+          description: ''
+  /en/stats/workload/:
+    get:
+      operationId: listworkload_stats
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /en/stats/workload/{country_id}/:
+    get:
+      operationId: Retrieveworkload_stats
+      parameters:
+      - name: country_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /en/experts/status/reports/pending:
+    get:
+      operationId: listexpert_report_pendings
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /en/experts/status/reports/complete:
+    get:
+      operationId: listexpert_report_completes
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /en/metadataPhotoInfo:
+    get:
+      operationId: listmetadataPhotos
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/token/:
+    post:
+      operationId: Createtoken
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/msg_ios/:
+    post:
+      operationId: Createmsg_ios
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/msg_android/:
+    post:
+      operationId: Createmsg_android
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/profile/new/:
+    post:
+      operationId: Createprofile_new
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/notification_content/:
+    put:
+      operationId: Updatenotification_content
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/send_notifications/:
+    put:
+      operationId: Updatesend_notifications
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/session_update/{id}/:
+    put:
+      operationId: UpdateSession
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the session. Automatically generated by
+          server when session created.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                session_ID:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  description: The session ID number. Should be an integer that increments
+                    by 1 for each session from a given user.
+                user:
+                  type: string
+                  description: user_UUID for the user sending this report. Must be
+                    exactly 36 characters (32 hex digits plus 4 hyphens) and user
+                    must have already registered this ID.
+                session_start_time:
+                  type: string
+                  format: date-time
+                  description: Date and time on phone when the session was started.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                session_end_time:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Date and time on phone when the session was ended.
+                    Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+              required:
+              - session_ID
+              - user
+              - session_start_time
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                    description: Unique identifier of the session. Automatically generated
+                      by server when session created.
+                  session_ID:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    description: The session ID number. Should be an integer that
+                      increments by 1 for each session from a given user.
+                  user:
+                    type: string
+                    description: user_UUID for the user sending this report. Must
+                      be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                      user must have already registered this ID.
+                  session_start_time:
+                    type: string
+                    format: date-time
+                    description: Date and time on phone when the session was started.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                  session_end_time:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Date and time on phone when the session was ended.
+                      Format as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+                required:
+                - session_ID
+                - user
+                - session_start_time
+          description: ''

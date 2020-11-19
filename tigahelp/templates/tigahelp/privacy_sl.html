@@ -1,0 +1,76 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Politika zasebnosti
+{% endblock %}
+
+
+{% block content %}
+
+<div class="center">
+    <h2>Politika zasebnosti</h2>
+</div>
+
+<p>Mosquito Alert (v katerem koli imenu, ki ga je morda imelo v preteklosti ali ga bo dobilo v prihodnosti) med drugim
+    zbira podatke in slike, ki jih delijo prostovoljci, in jih daje na voljo tretjim osebam in širši javnosti. Da bi
+    zaščitili zasebnost svojih prostovoljcev, se Mosquito Alert želi izogniti zbiranju osebnih podatkov, kar pomeni
+    informacije, ki jih je mogoče uporabiti za individualno identifikacijo določene fizične osebe. Tako Mosquito Alert
+    zahteva, da prostovoljci pri pošiljanju poročil ne posredujejo imen, naslovov, gesel in drugih osebnih podatkov.
+    Natančna mesta opazovanj se zberejo med oddajo poročila in ta lahko sovpadajo z natančno lokacijo prostovoljcev,
+    vendar so te informacije povezane samo s poročilom in naključno ustvarjenim ID-jem uporabnika. Metapodatki o
+    fotografiji niso zahtevani in če fotografije, poslane v projekt prek aplikacije, vsebujejo metapodatke, bodo ti
+    metapodatki izbrisani, ko bo slika prišla na strežnik projekta, z izjemo geolokacije fotografije, ki bo shranjena in
+    povezana s fotografijo ter bo morda bila objavljen.</p> <p>Mosquito Alert zbira tudi približno lokacijo
+    prostovoljcev v naključnih časovnih presledkih (za oceno geografskih območij, ki jih prostovoljci pokrivajo ali
+    raziskujejo), vendar so te informacije povezane tudi le z naključno ustvarjenim identifikatorjem uporabnika.
+    Prostovoljci lahko v svoja poročila vključijo opombe in fotografije, vendar je njihova odgovornost, da v te zapiske
+    in fotografije ne vključijo kakršnih koli informacij, ki jih želijo obdržati v zasebnosti, ali kakršnih koli
+    informacij, ki kršijo pravice do zasebnosti drugih ali niso v skladu z uporabniško pogodbo Mosquito Alert.</p> <p>
+    Mosquito Alert ima mehanizme, s katerimi v največji možni meri preprečuje, da bi se osebni podatki, ki so jih
+    uporabniki pomotoma poslali kljub ukrepom anonimizacije, delili s splošno javnostjo. Podobno Mosquito Alert
+    uporablja ukrepe za odkrivanje ali so bili osebni podatki v skupni rabi in kolikor je to mogoče njihovo odstranitev
+    iz baze podatkov. Kljub temu pa, če ti ukrepi v določenem primeru ne preprečujejo objave osebnih podatkov, se tiste
+    osebe, ki jih zaznajo, spodbuja, naj obvestijo odgovorne za Mosquito Alert, da bi po možnosti odpravili njegovo
+    pojavljanje v javnem prostoru. Mosquito Alert ne more zagotoviti odstranitve osebnih podatkov, ki bi jih Mosquito
+    Alert lahko pomotoma zbral kljub ukrepom za anonimizacijo, niti ne more zagotoviti, da takšni podatki ne bodo vidni
+    članom Mosquito Alert ali njegovim sodelavcem ali tretjim osebam.</p> <p>Poudarjamo, da če udeleženci svoja opažanja
+    (poročila) delijo v katerem koli javnem mediju, na primer v družabnih omrežjih, morda ta opažanja povezujejo s
+    svojimi osebnimi podatki (npr. osebnim računom na družbenih omrežjih), s čimer se prostovoljno odpovedujejo
+    anonimnosti, ki jo želi projekt zagotoviti.</p> <p>Mosquito Alert udeležencem omogoča, da obdržijo svoje podatke ob
+    ohranjanju anonimnosti preko sistema za avtentifikacijo z uporabo zunanjih računov (e-pošta, Facebook, Twitter) prek
+    sistema Firebase. To udeležencem omogoča sinhronizacijo več naprav in obnovo podatkov, če morajo aplikacijo
+    odstraniti. Ta možnost je prostovoljna in privzeto ni aktivirana. Vsekakor podatki, ki jih Firebase zbere v ta
+    namen, niso shranjeni na strežnikih Mosquito Alert, niso povezani z znanstvenimi podatki, ki jih zbira Mosquito
+    Alert, in jih Mosquito Alert ne obdeluje.</p> <p>Podroben seznam informacij, ki jih zbira Mosquito Alert, je
+    naslednji:</p>
+<ul>
+    <li>Poročila, ki so jih prostovoljci zbrali in poslali v zvezi z razmnoževalnimi mesti komarjev, ugrizi in
+        opazovanjem morebitnih komarjev (Mosquito Alert se trenutno osredotoča na 5 različnih vrst komarjev), pa tudi
+        odgovori prostovoljcev na vprašanja, ki so jim bila poslana prek aplikacije. To vključuje natančno lokacijo
+        opazovanj in fotografij prostovoljcev (pa tudi lokacijo metapodatkov fotografij, če obstajajo), zapiske ali
+        druge informacije, ki jih prostovoljec doda v poročilo.
+    </li>
+    <li>Podatki o približni lokaciji prostovoljcev, vzorčeni v ozadju in v naključnih časovnih intervalih. Ti podatki se
+        zbirajo v znanstvene namene, da se poznajo geografska območja, ki so jih raziskali prostovoljci (napor
+        vzorčenja, to je, na katerih območjih je prisotno sodeluje in v kakšnem obsegu, katerega povežemo s številom
+        opazovanj na istem območju na primer s tehnikami modeliranja ali statistiko) in za izboljšanje znanja o poteh
+        širjenja komarjev, povezanih s človeško mobilnostjo (to je za boljše razumevanje razmerja med ljudmi v velikem
+        obsegu in širjenjem teh vrst na ozemlju ). Te informacije so zelo znanstvene. Da bi se izognili zbiranju
+        natančnih lokacij prostovoljcev, so te lokacije postavljene na mrežo 0,025 stopinje zemljepisne širine in
+        dolžine, strežniku pa se pošlje le identifikator kvadratov mreže, v katere spadajo. Tako je nemogoče določiti
+        dejansko lokacijo na območju 0,025 stopinje zemljepisne širine in 0,025 stopinje zemljepisne dolžine (med
+        približno 3,1 in 7,7 kvadratnimi kilometri ali med 765 in 1901 nogometnimi igrišči). Prostovoljci lahko v
+        nastavitvah aplikacije to privzeto aktivirano možnost deaktivirajo.
+    </li>
+    <li>Informacije o modelu telefona, bateriji, jezikovnih nastavitvah in različici aplikacije (to je nameščena
+        različica ter operacijski sistem in različica, v kateri je nameščena). Ti podatki se uporabljajo za pomoč
+        raziskovalni skupini pri izboljšanju aplikacije.
+    </li>
+    <li>Če se prostovoljec odloči za preverjanje avtentifikacije prek zunanjega računa s pomočjo Firebasea, lahko
+        Firebase zbere e-poštni naslov, geslo, telefonsko številko, naslov IP in druge informacije, povezane s tem
+        zunanjim računom.
+    </li>
+</ul>
+
+{% endblock %}

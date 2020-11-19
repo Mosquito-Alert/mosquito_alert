@@ -1,0 +1,1286 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mosquito Alert Server Po-files\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-05 11:00+0000\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"Last-Translator: Agusti Escobar\n"
+"Language-Team: Bulgarian (Bulgaria)\n"
+"Language: bg-BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Loco https://localise.biz\n"
+"X-Loco-Source-Locale: es-ES\n"
+"X-Loco-Project-Id: 95706\n"
+"X-Loco-Tagged: plain_po\n"
+"X-Loco-Lookup: id\n"
+"X-Loco-Api-Version: 1.0.25 20200901-1\n"
+
+#: stats/templates/stats/chart.html:64
+#: stats/templates/stats/fix_user_chart.html:78
+#: stats/templates/stats/report_user_chart.html:78
+msgid "cumulative-total"
+msgstr "Кумулативно общо"
+
+#: stats/templates/stats/chart.html:85
+msgid "number-of-citizen-scientists"
+msgstr "Граждани-учени"
+
+#: stats/templates/stats/chart.html:94
+msgid "number-of-tiger-mosquito-reports"
+msgstr "Доклади за тигров комар"
+
+#: stats/templates/stats/chart.html:103
+msgid "number-of-breeding-site-reports"
+msgstr "Доклади за развъдни места"
+
+#: stats/templates/stats/fix_user_chart.html:99
+msgid "Participants with over 20 fixes"
+msgstr "Участници с повече от 20 корекции"
+
+#: stats/templates/stats/fix_user_chart.html:108
+msgid "Participants with over 15 fixes"
+msgstr "Участници с повече от 15 корекции"
+
+#: stats/templates/stats/fix_user_chart.html:117
+msgid "Participants with over 10 fixes"
+msgstr "Участници с повече от 10 корекции"
+
+#: stats/templates/stats/fix_user_chart.html:126
+msgid "Participants with over 5 fixes"
+msgstr "Участници с повече от 5 корекции"
+
+#: stats/templates/stats/fix_user_chart.html:135
+msgid "Participants with at least 1 fix"
+msgstr "Участници с поне 1 корекция"
+
+#: stats/templates/stats/report_user_chart.html:99
+msgid "Participants with at least 1 report"
+msgstr "Участници с поне 1 доклад"
+
+#: stats/templates/stats/report_user_chart.html:108
+msgid "Participants with over 1 reports"
+msgstr "Участници с повече от 1 доклад"
+
+#: stats/templates/stats/report_user_chart.html:117
+msgid "Participants with over 2 reports"
+msgstr "Участници с повече от 2 доклада"
+
+#: stats/templates/stats/report_user_chart.html:126
+msgid "Participants with over 3 reports"
+msgstr "Участници с повече от 3 доклада"
+
+#: stats/templates/stats/report_user_chart.html:135
+msgid "Participants with over 4 reports"
+msgstr "Участници с повече от 4 доклада"
+
+#: stats/templates/stats/user_ranking.html:30
+msgid "user_ranking_info_text_1"
+msgstr ""
+"Проверете текущия си резултат и ниво. В менюто с настройки ще намерите "
+"подробна информация за системата за оценка на Mosquito Alert."
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_2"
+msgstr "Повече информация за"
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_3"
+msgstr "оценката"
+
+#: stats/templates/stats/user_ranking.html:40
+msgid "no_score_yet"
+msgstr ""
+"Все още нямате резултат, следователно не се появявате в класацията. Моля, "
+"качете някакви съобщения и проверете отново по-късно. За да разберете как да "
+"печелите точки, последвайте връзката по-долу."
+
+#: stats/templates/stats/user_ranking.html:68
+#: stats/templates/stats/user_ranking.html:156
+msgid "My position"
+msgstr "Моята позиция"
+
+#: stats/templates/stats/user_ranking.html:72
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "of"
+msgstr "от"
+
+#: stats/templates/stats/user_ranking.html:88
+msgid "Rank"
+msgstr "Ранг"
+
+#: stats/templates/stats/user_ranking.html:89
+msgid "User"
+msgstr "Потребител"
+
+#: stats/templates/stats/user_ranking.html:90
+msgid "Overall class"
+msgstr "Общ клас"
+
+#: stats/templates/stats/user_ranking.html:91
+msgid "Score"
+msgstr "Точки"
+
+#: stats/templates/stats/user_ranking.html:97
+msgid "This is you!"
+msgstr "Това си ти!"
+
+#: stats/templates/stats/user_ranking.html:134
+msgid "Score details"
+msgstr "Подробности"
+
+#: stats/templates/stats/user_score.html:28
+msgid "Citizen Scientist"
+msgstr "Обобщение на резултата"
+
+#: stats/templates/stats/user_score.html:31
+msgid "this_is_your_personal_avatar"
+msgstr ""
+"Това е аватарът на участника. Според резултата, текущото ниво на опит е"
+
+#: stats/templates/stats/user_score.html:31
+msgid "there_are_5_levels"
+msgstr ""
+"Има 5 възможни нива: начинаещ, сътрудник, експерт, майстор и гросмайстор."
+
+#: stats/templates/stats/user_score.html:32
+msgid "Joined"
+msgstr "Започна да участва от"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Last active"
+msgstr "Последно активен"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Never"
+msgstr "Никога"
+
+#: stats/templates/stats/user_score.html:34
+msgid "Overall rank - Unranked"
+msgstr "Обща позиция - без класиране"
+
+#: stats/templates/stats/user_score.html:36
+msgid "Overall rank"
+msgstr "Обща позиция"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "Top"
+msgstr "Ти си сред първите"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+msgid "participants"
+msgstr "участници"
+
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
+#: stats/templates/stats/user_score.html:92
+#: stats/templates/stats/user_score.html:100
+#: stats/templates/stats/user_score.html:149
+#: stats/templates/stats/user_score.html:156
+msgid "XP"
+msgstr "Точки"
+
+#: stats/templates/stats/user_score.html:49
+msgid "Other awards"
+msgstr "Присъдени награди"
+
+#: stats/templates/stats/user_score.html:55
+msgid "awarded_on"
+msgstr "Присъдена на"
+
+#: stats/templates/stats/user_score.html:62
+msgid "XP, awarded on"
+msgstr "точки, присъдени на"
+
+#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:138
+msgid "Level obtained for"
+msgstr "Достигнато ниво за"
+
+#: stats/templates/stats/user_score.html:81
+msgid "Mosquito"
+msgstr "Комар"
+
+#: stats/templates/stats/user_score.html:83
+msgid "Mosquito rank - Unranked"
+msgstr "Специфично ниво за Комар - без ранг"
+
+#: stats/templates/stats/user_score.html:85
+msgid "Mosquito rank"
+msgstr "Специфично ниво за Комар"
+
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:144
+msgid "click_score_instructions"
+msgstr ""
+"Щракнете върху цветните квадратчета, за да видите подробностите за "
+"изпратените данни и получените награди."
+
+#: stats/templates/stats/user_score.html:115
+#: stats/templates/stats/user_score.html:171
+msgid "xp awarded for"
+msgstr "точки, присъдени за"
+
+#: stats/templates/stats/user_score.html:120
+msgid "No awards because"
+msgstr "Не получавате точки, защото"
+
+#: stats/templates/stats/user_score.html:123
+#: stats/templates/stats/user_score.html:175
+msgid "No awards for this report!"
+msgstr "Нямате точки за този доклад!"
+
+#: stats/templates/stats/user_score.html:138
+msgid "Breeding site"
+msgstr "Развъдни места"
+
+#: stats/templates/stats/user_score.html:140
+msgid "Breeding site rank - Unranked"
+msgstr "Специфично ниво за Развъдни места - без ранг"
+
+#: stats/templates/stats/user_score.html:142
+msgid "Breeding site rank"
+msgstr "Специфичен ранг за Развъдни места"
+
+#: templates/admin/base_site.html:4
+msgid "Tigaserver admin"
+msgstr "Администратор на Tigaserver"
+
+#: templates/admin/base_site.html:7
+msgid "Tigaserver administration"
+msgstr "Администрация на Tigaserver"
+
+#: templates/django_messages/base.html:40
+#: templates/django_messages/inbox.html:5
+msgid "Inbox"
+msgstr "Входящи съобщения"
+
+#: templates/django_messages/base.html:41
+#: templates/django_messages/outbox.html:5
+msgid "Sent Messages"
+msgstr "Изпратени съобщения"
+
+#: templates/django_messages/base.html:42
+msgid "New Message"
+msgstr "Ново съобщение"
+
+#: templates/django_messages/base.html:43
+msgid "Trash"
+msgstr "Кошче"
+
+#: templates/django_messages/compose.html:48
+msgid "Compose Message"
+msgstr "Съставяне на съобщение"
+
+#: templates/django_messages/compose.html:57
+msgid "Send"
+msgstr "Изпращане"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/view.html:12
+msgid "Sender"
+msgstr "Подател"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
+msgid "Subject"
+msgstr "Тема"
+
+#: templates/django_messages/inbox.html:9
+msgid "Received"
+msgstr "Получени съобщения"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+msgid "Action"
+msgstr "Действие"
+
+#: templates/django_messages/inbox.html:21
+#: templates/django_messages/outbox.html:18
+#: templates/django_messages/view.html:17
+msgid "DATETIME_FORMAT"
+msgstr ""
+
+#: templates/django_messages/inbox.html:22
+#: templates/django_messages/outbox.html:19
+msgid "delete"
+msgstr "изтриване"
+
+#: templates/django_messages/inbox.html:28
+#: templates/django_messages/outbox.html:25
+msgid "No messages."
+msgstr "Няма съобщения"
+
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
+msgid "Recipient"
+msgstr "Получател"
+
+#: templates/django_messages/outbox.html:9
+msgid "Sent"
+msgstr "Изпратени съобщения"
+
+#: templates/django_messages/view.html:5
+msgid "View Message"
+msgstr "Преглед на съобщение"
+
+#: templates/django_messages/view.html:16
+msgid "Date"
+msgstr "Дата"
+
+#: templates/django_messages/view.html:30
+msgid "Reply"
+msgstr "Отговор"
+
+#: templates/django_messages/view.html:32
+msgid "Delete"
+msgstr "Изтриване"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:88
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:88
+msgid "Toggle navigation"
+msgstr "Навигация"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:98
+msgid "Menu"
+msgstr "Меню"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:101
+msgid "New batch"
+msgstr "New batch"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:102
+msgid "Photos you have taken notes on but not yet scored"
+msgstr "Снимки, които сте направили, но все още нямат оценка"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:103
+msgid "Photos you have already scored"
+msgstr "Снимки, които вече имат оценка"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:171
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:195
+msgid "Save"
+msgstr "Запазване"
+
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:103
+msgid "Photos per page"
+msgstr "Снимки на страница"
+
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Вашата снимка е потвърдена от експерт!"
+
+#: tigahelp/templates/tigahelp/policies.html:30
+#: tigahelp/templates/tigahelp/policies_en.html:29
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "user-agreement"
+msgstr "Потребителско споразумение"
+
+#: tigahelp/templates/tigahelp/policies.html:35
+#: tigahelp/templates/tigahelp/policies_en.html:34
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "privacy-policy"
+msgstr "Политика за поверителност"
+
+#: tigahelp/templates/tigahelp/policies.html:38
+msgid "app-license"
+msgstr "Лиценз за приложения"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "our-website-uses-cookies"
+msgstr ""
+"Нашият уебсайт използва бисквитки. Продължавайки, ние приемаме разрешението "
+"Ви да записваме бисквитки. За повече информация относно политиките на нашия "
+"сайт, моля, вижте нашите"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "and"
+msgstr "и"
+
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
+#: tigamap/views.py:263
+msgid "adult-tiger-mosquitoes"
+msgstr "Доклади за комари"
+
+#: tigamap/templates/tigamap/app.html:126
+#: tigamap/templates/tigamap/app_new.html:175
+msgid "all-reports"
+msgstr "Всички доклади"
+
+#: tigamap/templates/tigamap/app.html:128
+msgid "medium-and-high-probability-reports-only"
+msgstr "Доклади само със средна и висока вероятност"
+
+#: tigamap/templates/tigamap/app.html:130
+msgid "high-probability-reports-only"
+msgstr "Доклади само с висока вероятност"
+
+#: tigamap/templates/tigamap/app.html:134
+#: tigamap/templates/tigamap/app_new.html:183
+msgid "breeding-site-reports"
+msgstr "Развъдни места"
+
+#: tigamap/templates/tigamap/app.html:138
+#: tigamap/templates/tigamap/app_new.html:187
+msgid "all-sites"
+msgstr "Всички"
+
+#: tigamap/templates/tigamap/app.html:141
+#: tigamap/templates/tigamap/app_new.html:190
+msgid "storm-drains-and-fountains"
+msgstr "Дъждовна канализация и чешми"
+
+#: tigamap/templates/tigamap/app.html:144
+#: tigamap/templates/tigamap/app_new.html:193
+msgid "Basins"
+msgstr "Малки изкуствени съдове"
+
+#: tigamap/templates/tigamap/app.html:146
+#: tigamap/templates/tigamap/app_new.html:195
+msgid "buckets-and-wells"
+msgstr "Кофи и кладенци"
+
+#: tigamap/templates/tigamap/app.html:148
+#: tigamap/templates/tigamap/app_new.html:197
+#: tigamap/templates/tigamap/site_map.html:207
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:386
+#: tigaserver_app/models.py:582
+msgid "Other"
+msgstr "Други"
+
+#: tigamap/templates/tigamap/app.html:152
+#: tigamap/templates/tigamap/app_filtered.html:193
+#: tigamap/templates/tigamap/app_new.html:201
+#: tigamap/templates/tigamap/coverage_map_beta.html:82
+msgid "Coverage"
+msgstr "Зони на покритие"
+
+#: tigamap/templates/tigamap/app.html:154
+msgid "http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014"
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
+
+#: tigamap/templates/tigamap/app_filtered.html:175
+#: tigamap/templates/tigamap/app_new.html:159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:816
+msgid "navbar_toggle_navigation"
+msgstr "Включване на навигацията"
+
+#: tigamap/templates/tigamap/app_filtered.html:195
+#: tigamap/templates/tigamap/app_new.html:203
+#: tigamap/templates/tigamap/coverage_map_new.html:383
+#: tigamap/templates/tigamap/validated_report_map.html:635
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:903
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1015
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1165
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
+msgid "map_help_url_new"
+msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
+
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+msgid "menu_adults_prob"
+msgstr "Възможни и потвърдени тигрови комари"
+
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+msgid "menu_adults_definite"
+msgstr "Потвърдени тигрови комари"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "low"
+msgstr "ниско"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "medium"
+msgstr "средно"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "high"
+msgstr "високо"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:221
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:605
+msgid "fixes"
+msgstr "корекции"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:223
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:607
+msgid "fix"
+msgstr "корекция"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:336
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:967
+msgid "coverage_legend_main_title"
+msgstr "Брой наблюдения"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:372
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1004
+msgid "coverage_legend_info_title"
+msgstr "Информация за зоните на покритие"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:373
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
+msgid "coverage_legend_info_blurb"
+msgstr ""
+"<p> Версията на Tigatrapp за Android включва допълнително проследяване на "
+"местоположението на заден план. Приложението записва местоположенията на "
+"потребителите по 5 произволни пъти всеки ден. То записва само "
+"приблизителната позиция (червени квадратчета на картата), за да запази "
+"анонимността на потребителя. <br /> <br /> Броят на наблюденията в даден "
+"квадрат е натрупаният брой позиции, записани в този квадрат за всички "
+"участници. Колкото е по-тъмен, толкова повече е проучен този район. </p>"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:377
+#: tigamap/templates/tigamap/validated_report_map.html:629
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1009
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1287
+msgid "more_info"
+msgstr "повече информация"
+
+#: tigamap/templates/tigamap/report_map.html:112
+#: tigamap/templates/tigamap/report_map.html:125
+msgid "type"
+msgstr "Тип"
+
+#: tigamap/templates/tigamap/report_map.html:149
+#: tigamap/templates/tigamap/validated_photo_map.html:152
+msgid "clusters"
+msgstr "Клъстер"
+
+#: tigamap/templates/tigamap/report_map.html:150
+#: tigamap/templates/tigamap/validated_photo_map.html:153
+msgid "points"
+msgstr "Точки"
+
+#: tigamap/templates/tigamap/site_map.html:192
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:371
+#: tigaserver_app/models.py:574
+msgid "storm-drain"
+msgstr "Дъждовна канализация"
+
+#: tigamap/templates/tigamap/site_map.html:195
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:374
+#: tigaserver_app/models.py:576
+msgid "Fountain"
+msgstr "Чешмичка"
+
+#: tigamap/templates/tigamap/site_map.html:198
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:377
+#: tigaserver_app/models.py:578
+msgid "Basin"
+msgstr "Малък изкуствен съд"
+
+#: tigamap/templates/tigamap/site_map.html:201
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:380
+msgid "Bucket"
+msgstr "Кофа"
+
+#: tigamap/templates/tigamap/site_map.html:204
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:383
+#: tigaserver_app/models.py:580
+msgid "Well"
+msgstr "Кладенец"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:169
+msgid "Photos"
+msgstr "Снимки"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:173
+msgid "all-photos"
+msgstr "Всички"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:175
+msgid "medium-and-high-probability-photos-only"
+msgstr "Само снимки със средна и висока вероятност"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:177
+msgid "high-probability-photos-only"
+msgstr "Само снимки с висока вероятност"
+
+#: tigamap/templates/tigamap/validated_report_map.html:379
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:360
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "not_sure"
+msgstr "не знам"
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "yes"
+msgstr "да"
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "no"
+msgstr "не"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:544
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1046
+msgid "expert_cat_tiger"
+msgstr "Потвърден albopictus"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:552
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1062
+msgid "expert_cat_possible_tiger"
+msgstr "Възможен albopictus"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:570
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1087
+msgid "expert_cat_possible_other"
+msgstr "Възможно нито albopictus, нито aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:579
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1096
+msgid "expert_cat_other"
+msgstr "Потвърден нито albopictus, нито aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:561
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1078
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1210
+msgid "expert_cat_unknown"
+msgstr "Неизвестен"
+
+#: tigamap/templates/tigamap/validated_report_map.html:405
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:489
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:502
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_title"
+msgstr ""
+"<a href=\"http://www.mosquitoalert.com/mapa-y-resultados/mapa/\" target="
+"\"_blank\">Резултат</a> от експертното валидиране"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_title"
+msgstr "Резултат от гражданското валидиране"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+msgid "crowd_row_more_responses_needed"
+msgstr "Липсват отговори"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q1"
+msgstr "Дребен, черен, с бели ивици?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q2"
+msgstr "Ивица по главата и гърба?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q3"
+msgstr "Ивици по коремчето и краката?"
+
+#: tigamap/templates/tigamap/validated_report_map.html:535
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
+msgid "adult_report_legend_main_title"
+msgstr "Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:588
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1118
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1248
+msgid "adult_report_legend_info_title"
+msgstr "Изскачаща Легенда"
+
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_help"
+msgstr "Класификация от учените по налични снимки"
+
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_help"
+msgstr ""
+"Класификация от участниците на <a href='http://crowdcrafting.org/app/"
+"Tigafotos/' target='_blank'>Crowdcrafting</a>  (ако има снимки)"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_title"
+msgstr ""
+"Таксономично описание на <a href=\"http://www.mosquitoalert.com/en/"
+"mosquitoes/tiger-mosquito-ae-albopictus/\" target=\"_blank\">Ae. albopictus</"
+"a> и <a href=\"http://www.mosquitoalert.com/en/mosquitoes/yellow-fever-"
+"mosquito-ae-aegypti/\" target=\"_blank\">Ae. aegypti</a>"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_help"
+msgstr "Наблюдения от участник"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_title"
+msgstr "Снимки"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_help"
+msgstr "Изпратени се от участници (ако има снимки)"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_title"
+msgstr "Бележки"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_help"
+msgstr "От експерти или наблюдатели (по избор)"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:146
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_subtext_adults_high"
+msgstr "Потвърдени Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:147
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_subtext_adults_medium"
+msgstr "Възможни и потвърдени Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:148
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_subtext_adults_all"
+msgstr "Без филтър"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:150
+msgid "validation_button_subtext_sites_high"
+msgstr "Потвърдени развъдни места"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:151
+msgid "validation_button_subtext_sites_medium"
+msgstr "Възможни и потвърдени развъдни места"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:152
+msgid "validation_button_subtext_sites_all"
+msgstr "Без филтър"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1237
+msgid "expert_cat_unclassified"
+msgstr "Некласифициран"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
+msgid "expert_cat_site"
+msgstr "Развъдно място на тигров комар"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
+msgid "expert_cat_possible_site"
+msgstr "Възможно развъдно място на тигров комар"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
+msgid "expert_cat_possible_other_site"
+msgstr "Вероятно развъдно място не на тигров комар"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
+msgid "expert_cat_other_site"
+msgstr "Развъдно място не на тигров комар"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
+msgid "expert_cat_aegypti"
+msgstr "Потвърден aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
+msgid "expert_cat_possible_aegypti"
+msgstr "Възможен aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_q_sitetype"
+msgstr "Тип развъдно място"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q1"
+msgstr "Със застояла вода?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q2"
+msgstr "С ларви или какаквиди?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q1_new"
+msgstr "На обществено място?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q2_new"
+msgstr "Със застояла вода и/или ларви или какавиди?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q3_new"
+msgstr "Има ли комари наблизо?"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:833
+msgid "fmap_All_years"
+msgstr "Всички години"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:844
+msgid "fmap_All_months"
+msgstr "Всички мессеци"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:845
+msgid "January"
+msgstr "януари"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:847
+msgid "February"
+msgstr "февруари"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:849
+msgid "March"
+msgstr "март"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:850
+msgid "April"
+msgstr "април"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:851
+msgid "May"
+msgstr "май"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:852
+msgid "June"
+msgstr "юни"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:853
+msgid "July"
+msgstr "юли"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:854
+msgid "August"
+msgstr "август"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:855
+msgid "September"
+msgstr "септември"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:857
+msgid "October"
+msgstr "октомври"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:859
+msgid "November"
+msgstr "ноември"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:861
+msgid "December"
+msgstr "декември"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adult_tiger_mosquitoes"
+msgstr "Възрастни Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adults"
+msgstr "Възрастни"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Tiger_mosquito_breeding_sites"
+msgstr "Развъдни места на Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Breeding_sites"
+msgstr "Развъдни места"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Tigatrapp_coverage"
+msgstr "Усилие за вземане на проби"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Coverage"
+msgstr "Покритие"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_text_high"
+msgstr "Висока надеждност"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_text_medium"
+msgstr "Средна надеждност"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_text_all"
+msgstr "Всички доклади"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1184
+msgid "site_report_legend_main_title"
+msgstr "Маркери"
+
+#: tigamap/views.py:147 tigamap/views.py:317
+msgid "coverage-map"
+msgstr "Карта на покритието"
+
+#: tigamap/views.py:155
+msgid "Pseudo Occurrence-Exposure Map"
+msgstr "Карта на псевдо поява и експозиция"
+
+#: tigamap/views.py:162
+msgid "Adult tiger mosquitoes: Validated reports"
+msgstr "Възрастни тигрови комари: Валидирани доклади"
+
+#: tigamap/views.py:171
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Възрастни тигрови комари: Доклади със средна и висока вероятност"
+
+#: tigamap/views.py:177
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Възрастни тигрови комари: Доклади с висока вероятност"
+
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Комари: Всички доклади"
+
+#: tigamap/views.py:189
+msgid "Breeding Sites: Validated reports"
+msgstr "Равъдни места: Валидирани доклади"
+
+#: tigamap/views.py:199 tigamap/views.py:289
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Развъдни места: Дъждовна канализация и чешми"
+
+#: tigamap/views.py:202 tigamap/views.py:289
+msgid "breeding-sites-basins"
+msgstr "Развъдни места: малки изкуствени съдове"
+
+#: tigamap/views.py:205 tigamap/views.py:289
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Развъдни места:  Кофи и кладенци"
+
+#: tigamap/views.py:208 tigamap/views.py:289
+msgid "breeding-sites-other"
+msgstr "Равъдни места: Други"
+
+#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+msgid "breeding-sites-all-reports"
+msgstr "Равъдни места: Всички доклади"
+
+#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
+#: tigascoring/xp_scoring.py:176
+msgid "Novice"
+msgstr "Начинаещ"
+
+#: tigascoring/xp_scoring.py:178
+msgid "Contributor"
+msgstr "Сътрудник"
+
+#: tigascoring/xp_scoring.py:180
+msgid "Expert"
+msgstr "Експерт"
+
+#: tigascoring/xp_scoring.py:182
+msgid "Master"
+msgstr "Майстор"
+
+#: tigascoring/xp_scoring.py:184
+msgid "Grandmaster"
+msgstr "Гросмайстор"
+
+#: tigascoring/xp_scoring.py:203
+msgid "start_of_season"
+msgstr "Начало на сезона"
+
+#: tigascoring/xp_scoring.py:204
+msgid "daily_participation"
+msgstr "качване на първия доклад за деня"
+
+#: tigascoring/xp_scoring.py:205
+msgid "fidelity_day_2"
+msgstr "качване на долкади през ДВА последователни дни"
+
+#: tigascoring/xp_scoring.py:206
+msgid "fidelity_day_3"
+msgstr "качване на доклади през ТРИ последователни дни"
+
+#: tigascoring/xp_scoring.py:207
+msgid "achievement_10_reports"
+msgstr "10 качени доклада"
+
+#: tigascoring/xp_scoring.py:208
+msgid "achievement_20_reports"
+msgstr "20 качени доклада"
+
+#: tigascoring/xp_scoring.py:209
+msgid "achievement_50_reports"
+msgstr "50 качени доклада"
+
+#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
+msgid "picture"
+msgstr "снимката"
+
+#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
+msgid "location"
+msgstr "изпратена геолокация на данни"
+
+#: tigascoring/xp_scoring.py:253
+msgid "storm_drain"
+msgstr "Това е дъждовен канал"
+
+#: tigascoring/xp_scoring.py:257
+msgid "water_question"
+msgstr "отговор на въпроса за водата в доклада за развъдно място"
+
+#: tigascoring/xp_scoring.py:261
+msgid "mosquito_report_follows_breeding_site"
+msgstr "добавяне на доклад за комари след"
+
+#: tigascoring/xp_scoring.py:293
+msgid "no_picture"
+msgstr "няма снимка"
+
+#: tigascoring/xp_scoring.py:299
+msgid "no_location"
+msgstr "този доклад няма геолокация"
+
+#: tigascoring/xp_scoring.py:302
+msgid "thorax_question"
+msgstr "отговор на въпроса за гърба в доклада за комари"
+
+#: tigascoring/xp_scoring.py:305
+msgid "abdomen_question"
+msgstr "отговор на въпроса за коремчето в доклада за комари"
+
+#: tigascoring/xp_scoring.py:308
+msgid "leg_question"
+msgstr "отговор на въпроса за краката в доклада за комари"
+
+#: tigascoring/xp_scoring.py:311
+msgid "other_species"
+msgstr ""
+"след анализ на Вашия доклад, експертите решиха, че той не съвпада с нито "
+"един от петте целеви вида комари. За повече информация прегледайте "
+"самоучителя на приложението."
+
+#: tigascoring/xp_scoring.py:318
+msgid "bite report follow"
+msgstr "последване на текущия доклад с доклад за ухапване"
+
+#: tigascoring/xp_scoring.py:358
+msgid " years ago"
+msgstr "години"
+
+#: tigascoring/xp_scoring.py:360
+msgid " months ago"
+msgstr "месец(а)"
+
+#: tigascoring/xp_scoring.py:362
+msgid " days ago"
+msgstr "дни"
+
+#: tigaserver_app/models.py:557
+msgid "High"
+msgstr "Висок"
+
+#: tigaserver_app/models.py:559
+msgid "Medium"
+msgstr "Среден"
+
+#: tigaserver_app/models.py:561
+msgid "Low"
+msgstr "Нисък"
+
+#: tigaserver_app/models.py:1234
+msgid "species_unclassified"
+msgstr "Неопределяем"
+
+#: tigaserver_app/models.py:1235
+msgid "species_other"
+msgstr "Друг вид"
+
+#: tigaserver_app/models.py:1236
+msgid "species_albopictus"
+msgstr "тигров комар (Aedes albopictus)"
+
+#: tigaserver_app/models.py:1237
+msgid "species_aegypti"
+msgstr "комар на жълтата треска (Aedes aegypti)"
+
+#: tigaserver_app/models.py:1238
+msgid "species_japonicus"
+msgstr "япоснки комар (Aedes japonicus)"
+
+#: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "корейски комар (Aedes koreicus)"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Смес от видове"
+
+#: tigaserver_app/models.py:1241
+msgid "species_notsure"
+msgstr "Не съм сигурен/а"
+
+#: tigaserver_app/models.py:1242
+msgid "species_culex"
+msgstr "обикновен комар (Culex sp.)"
+
+#: tigaserver_app/models.py:1255
+msgid "species_value_possible"
+msgstr "Вероятен"
+
+#: tigaserver_app/models.py:1256
+msgid "species_value_confirmed"
+msgstr "Потвърден"
+
+#: tigaserver_messages/fields.py:56
+#, python-format
+msgid "The following usernames are incorrect: %(users)s"
+msgstr "Следните потребителски имена са неправилни: %(users)s"
+
+#: tigaserver_messages/forms.py:20
+msgid "Body"
+msgstr "Съдържание"
+
+#: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
+#: tigaserver_messages/views.py:138
+msgid "Message successfully sent."
+msgstr "Съобщението е изпратено успешно."
+
+#: tigaserver_messages/views.py:120
+#, python-format
+msgid "Re: %(subject)s"
+msgstr "Re: %(subject)s"
+
+#: tigaserver_project/settings.py:131
+msgid "Spanish"
+msgstr "Испански"
+
+#: tigaserver_project/settings.py:132
+msgid "Catalan"
+msgstr "Каталонски"
+
+#: tigaserver_project/settings.py:133
+msgid "English"
+msgstr "Английски"
+
+#: tigaserver_project/settings.py:134
+msgid "German"
+msgstr ""
+
+#: tigaserver_project/settings.py:135
+msgid "Albanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:136
+msgid "Greek"
+msgstr ""
+
+#: tigaserver_project/settings.py:137
+msgid "Hungarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:138
+msgid "Portuguese"
+msgstr ""
+
+#: tigaserver_project/settings.py:139
+msgid "Slovenian"
+msgstr ""
+
+#: tigaserver_project/settings.py:140
+msgid "Italian"
+msgstr ""
+
+#: tigaserver_project/settings.py:141
+msgid "French"
+msgstr ""
+
+#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
+msgid "Bulgarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:144
+msgid "Romanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:145
+msgid "Croatian"
+msgstr ""
+
+#: tigaserver_project/settings.py:146
+msgid "Macedonian"
+msgstr ""
+
+#: tigaserver_project/settings.py:147
+msgid "Serbian"
+msgstr ""
+
+#: tigaserver_project/settings.py:148
+msgid "Letzeburgesch"
+msgstr ""
+
+#: tigaserver_project/settings.py:149
+msgid "Dutch"
+msgstr ""
+
+#: tigaserver_project/settings.py:150
+msgid "Turkish"
+msgstr ""
+
+#: tigaserver_project/settings.py:151
+msgid "Chinese"
+msgstr "Китайски"
+
+msgid "you_just_received_a_points_award"
+msgstr "Току-що получихте награда за точки!"

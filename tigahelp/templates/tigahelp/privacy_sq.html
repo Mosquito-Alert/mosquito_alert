@@ -1,0 +1,88 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Politikat e Privatësisë
+{% endblock %}
+
+
+{% block content %}
+<div class="center">
+    <h2>Politikat e Privatësisë</h2>
+</div>
+
+<p>Aplikacioni "Mosquito Alert" (në secilin emër që mund të ketë patur në të shkuarën ose që mund të kërkojë në të
+    ardhmen) mbledh, midis të tjerash, të dhëna dhe imazhe të shpërndara nga qytetarë vullnetarë dhe i bënë ato të
+    disponueshme për palët e treta dhe publikun e përgjithshëm. Në mënyrë mbrojtjen e privatësisë së qytetarëve
+    vullnetarë të saj, Aplikacioni "Mosquito Alert" ka për qëllim të shmang mbledhjen e informacioneve personale, që do
+    të thotë informacion që mund të përdoret për të identifikuar në mënyrë individuale një person specifik natyral.
+    Kështu që, Aplikacioni "Mosquito Alert" kërkon që qytetarët vullnetarë kur të dërgojnë raportet e tyre, të mos
+    transmetojnë emra, adresa, fjalëkalime dhe çdo informacion tjetër personal. Vendndodhjet e sakta të vëzhguesve
+    mblidhen gjatë dërgimit të raportit dhe këto mund të rastisin me vendndodhjen e saktë të qytetarëve vullnetarë, por
+    ky informacion lidhet vetëm me raportin dhe ID-n e përdoruesit të gjeneruar në mënyrë të rastësishme. Të dhënat e
+    fotografive nuk kërkohen; dhe nëse ndonjë fotografi e dërguar në projekt nëpërmjet aplikacionit përmban të dhëna,
+    këto të dhëna do të fshihen menjëherë sa imazhi arrin në serverin e projektit me përjashtim të fotografisë së
+    gjeo-vendndodhjes, e cila do të mbahet e lidhur me fotografinë dhe mund të publikohet.</p>
+<p>Aplikacioni "Mosquito Alert", gjithashtu mbledh vendndodhjen e përafërt të qytetarëve vullnetarë në intervale kohe të
+    rastësishme (në mënyrë që të arrijë zonat gjeografike të mbuluara ose ekspozuara nga qytetarët), por ky informacion
+    gjithashtu, është i lidhur vetëm me një përdorues identifikues të gjeneruar në mënyrë të rastësishme. Qytetarët
+    vullnetarë mund të përfshijnë shënime dhe fotografi në raportet e tyre, por është përgjegjësia e tyre të mos
+    përfshijnë në këto shënime dhe fotografi ndonjë informacion që ata duan t'a mbajnë privat ose ndonjë informacion që
+    shkel të drejtat e privatësisë të tjerëve ose që është në kundërshtim me marrëveshjen e përdoruesit të Aplikacionit
+    "Mosquito Alert".</p>
+<p>Aplikacioni "Mosquito Alert" ka një mekanizëm për të parandaluar, për aq gjatë sa është e mundshme, të dhënat
+    personale që përdoruesit mund të kenë dërguar gabimisht, përveç masave të anonimitetit, që mund të shpërndahen me
+    publikun e gjerë. Gjithashtu, Aplikacioni "Mosquito Alert" aplikon masa për të dalluar nëse të dhënat personale janë
+    shpërndarë dhe për t'i eleminuar ato nga baza e të dhënave, aq shpejt sa të jetë e mundur. Përveç kësaj, nëse në
+    ndonjë rast të veçantë këto masa nuk parandalojnë publikimin e të dhënave personale, ata që e dallojnë këtë
+    inkurajohen t'i njoftojnë ato tek personat përgjegjës të Aplikacionit "Mosquito Alert", në mënyrë që të vazhdohet me
+    eleminimin e paraqitjes së tyre në hapësirën publike nëse është e mundur. Aplikacioni "Mosquito Alert" nuk mund të
+    garantojë eleminimin e të dhënave pesonale që mund të mblidhen gabimisht nga Aplikacioni "Mosquito Alert",
+    pavarësisht masave të anonimitetit, po ashtu, as nuk mund të garantojë që të dhëna të tilla do të jenë të padukshme
+    për anëtarët e Aplikacionit "Mosquito Alert" ose për ndonjë nga bashkëpunëtorët e tij ose palëve të treta. </p>
+<p>Vihet re se nëse pjesëmarrësit shpërndajnë vëzhgimet (raportet) e tyre në ndonjë media publike, si rrjetet sociale,
+    ata mund të lidhin këto vëzhgime me të dhënat e tyre personale (p.sh.: llogari personale në rrjete sociale), duke
+    hequr dorë kështu, në mënyrë vullnetare, nga anonimiteti që projekti kërkon të sigurojë.</p> <p>Aplikacioni
+    "Mosquito Alert" u lejon pjesëmarrësit të ruajnë të dhënat e tyre ndërkohë që ruajnë anonimitetin e tyre, nëpërmjet
+    një sistemi vërtetimi që përdor llogari të jashtme (email, Facebook, Twitter), nëpërmjet Firebase (baza). Kjo i
+    lejon pjesëmarrësit që të sinkronizojnë shumë pajisje dhe të rikuperojnë të dhëna nëse do t'u duhet të ç'instalojnë
+    aplikacionin. Ky opsion është vullnetar dhe nuk aktivizohet nga opsioni i parazgjedhur (default). Në çdo rast,
+    informacioni i mbledhur nga Firebase (baza) për këtë qëllim nuk ruhet në serverin e Aplikacionit "Mosquito Alert",
+    nuk lidhet me të dhënat shkencore të mbledhura nga Aplikacioni "Mosquito Alert" dhe nuk përpunohet nga Aplikacioni
+    "Mosquito Alert".</p> <p>Një listë e detajuar e informacionit që Aplikacioni "Mosquito Alert" mbledh është
+    si më poshtë:</p>
+<ul>
+    <li>Raportet e mbledhura dhe dërguara nga qytetarët vullnetarë në lidhje me vendet ku rriten mushkonjat, pickimet
+        dhe shikimi me sy i mushkonjave adulte (Aplikacioni "Mosquito Alert" aktualisht është i fokusuar në 5 lloje
+        mushkonjash të ndryshme), po ashtu edhe përgjigjet e qytetarëve vullnetarë për pyetjet e dërguara tek ta
+        nëpërmjet aplikacionit. Kjo përfshin vendndodhjen e saktë të vëzhgimeve të qytetarëve vullnetarë dhe fotografi
+        (po ashtu të dhëna mbi fotografi të vendndodhjes, nëse ka), shënime ose ndonjë informacion që qytetarët
+        vullnetarë shtojnë në raport.
+    </li>
+    <li>Informacioni mbi vendndodhjen e përafërt të qytetarëve vullnetarë, të kampionuara në modalitetin e sfondit dhe
+        në intervale kohore të rastësishme. Informacioni mblidhet për qëllime shkencore, për të ditur zonën gjeografike
+        të eksploruar nga qytetarët vullnetarë (përpjekja e kampionimit, që do të thotë se në cilat zona ka ose nuk ka
+        pjesëmarrje dhe të çfarë shtrirje, për të qenë të mundshëm për t'a lidhur atë me numrin e vëzhgimeve në të
+        njëjtën zonë si shembull me teknika modelimi dhe statistike) dhe për të përmirësuar njohuritë mbi rrugët e
+        shpërndjarjes së mushkonjave të lidhura me lëvizjen e njerëzve (që është, për të kuptuar më mirë marëdhënien
+        midis asaj sesi njerëzit lëvizin në shkallë të gjerë dhe përhapja e këtyre llojeve të mushkonjave në territor).
+        Ky informacion ka vlerë të lartë shkencore. Për të shmangur mbledhjen e vendndodhjeve të sakta të qytetarë
+        vullnetarë, këto vendndodhje janë vendosur në rrjeta afërsisht 0.025 gradë gjerësi dhe gjatësi gjeografike dhe
+        vetëm identifikuesi i katrorëve të rrjetës tek të cilat ato bien do të transmetohet në server. Kështu, është e
+        pamundur të përcaktohet vendndodhja aktuale, brenda një zone prej 0.025 gradë gjerësi dhe 0.025 gjatësi
+        gjeografike (midis rreth 3.1 dhe rreth 7.7 km katror ose midis 765 dhe 1901 fusha futbolli). Në çdo rast,
+        qytetarët vullnetarë mund t'a ç'aktivizojnë këtë opsion, të aktivizuar nga opsioni i parazgjedhur (default), tek
+        cilësimet e aplikacionit.
+    </li>
+    <li>Informacioni mbi modelin e telefonit, fuqisë së baterisë, përcaktimet e gjuhës dhe instalimit të aplikacionit
+        (p.sh.: cili version i aplikacionit është instaluar, cili sistem operativ dhe cili version i sistemit operativ
+        është instaluar në të). Ky informacion përdoret për të ndihmuar grupet kërkimore për të përmirësuar më tej
+        aplikacionin.
+    </li>
+    <li>Nëse qytetarët vullnetarë zgjedhin të vërtetojnë nëpërmjet një llogarie të jashtme Firebase, pastaj Firebase
+        mund të mbedh adresën e email, fjalëkalimin, numrin e telefonit, adresën e IP-s dhe informacion tjetër të lidhur
+        me llogarinë e jashtme.
+    </li>
+</ul>
+
+{% endblock %}

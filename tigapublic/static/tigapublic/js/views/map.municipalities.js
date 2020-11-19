@@ -265,7 +265,8 @@ var MapView = MapView.extend({
           //removing virus layer is required because shares geometries with vector layer
           if (_this.munis_virus_prob_layer) {
               _this.map.removeLayer(_this.munis_virus_prob_layer);
-              _this.map.removeLayer(_this.biting_layer);
+              //This caused a crash
+              //_this.map.removeLayer(_this.biting_layer);
           }
 
           _this.prob_tileIndex = geojsonvt(data_geoms, tileOptions);
@@ -320,8 +321,8 @@ var MapView = MapView.extend({
       var file_name = MOSQUITO.config.MODELS_FILE_NAME;
       url_data = MOSQUITO.config.URL_MODELS_VECTOR_MUNICIPALITIES + vector + '/' + year + '/' + ("00"+month).slice (-2) + '/'+file_name
 
-      //url_munis_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_' + region + '.js'
-      //url_sd_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_sd_' + region + '.js'
+      /*url_munis_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_' + region + '.js'
+      url_sd_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_sd_' + region + '.js'*/
       url_munis_geoms = '/static/tigapublic/geoms/ccaa/ccaa_' + region + '.js'
       url_sd_geoms = '/static/tigapublic/geoms/ccaa/ccaa_sd_' + region + '.js'
 
@@ -400,7 +401,8 @@ var MapView = MapView.extend({
           };
 
           _this.map.removeLayer(_this.munis_vector_prob_layer);
-          _this.map.removeLayer(_this.biting_layer);
+          //Removed this because it crashed the layer
+          //_this.map.removeLayer(_this.biting_layer);
 
           _this.prob_tileIndex = geojsonvt(data_geoms, tileOptions);
           _this.sd_municipalities_data = data_sd_geoms
@@ -435,8 +437,9 @@ var MapView = MapView.extend({
 
       var file_name = MOSQUITO.config.MODELS_FILE_NAME;
       url_data = MOSQUITO.config.URL_MODELS_VIRUS_MUNICIPALITIES + virus + '/' + year + '/' + ("00"+month).slice (-2) + '/'+ file_name
-      //url_munis_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_' + region + '.js'
-      //url_sd_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_sd_' + region + '.js'
+
+      /*url_munis_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_' + region + '.js'
+      url_sd_geoms = MOSQUITO.config.URL_API + 'static/geoms/ccaa/ccaa_sd_' + region + '.js'*/
       url_munis_geoms = '/static/tigapublic/geoms/ccaa/ccaa_' + region + '.js'
       url_sd_geoms = '/static/tigapublic/geoms/ccaa/ccaa_sd_' + region + '.js'
 

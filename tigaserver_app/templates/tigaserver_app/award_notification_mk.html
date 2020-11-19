@@ -1,0 +1,27 @@
+{% extends "tigaserver_app/award_notification.html" %}
+
+{% block title_block %}
+    <title>Само што добивте награда за поени!</title>
+{% endblock %}
+
+{% block title_header_block %}
+
+{% endblock %}
+
+{% block amount_xp_awarded %}
+    <p>Само што добивте <b style="color:red;">{{ amount_awarded }} поени!</b></p>
+{% endblock %}
+
+{% block reason_awarded %}
+    <p>Бидејќи: {{ reason_awarded }}</p>
+{% endblock %}
+
+{% block report_related %}
+    {% if picture_link %}
+        <img src="{{ picture_link }}" width=100%>
+    {% endif %}
+{% endblock %}
+
+{% block congratulations %}
+    <p>Честитки</p>
+{% endblock %}

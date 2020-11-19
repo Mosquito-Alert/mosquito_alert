@@ -1,0 +1,120 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Sobre o projeto
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>O que é a Mosquito Alert?</h2>
+        <p>A Mosquito Alert é uma plataforma de ciência cidadã que permite a colaboração de diferentes entidades no
+            estudo, monitorização e controlo de espécies de mosquitos vetores de agentes de doenças como dengue, Zika,
+            chikungunya ou febre do Nilo Ocidental.</p>
+        <p>Tanto os cidadãos, o mundo científico, os agentes de saúde pública e o setor da educação têm um papel
+            fundamental no projeto. Na Mosquito Alert qualquer pessoa pode gerar e compartilhar dados (1) e participar
+            de sua validação; Os profissionais de entomologia rotulam esses dados e dão respostas a quem participa (2);
+            Os dados, uma vez validados, são disponibilizados ao público em geral por meio de um mapa interativo da web
+            (3). A ciência (4) e os agentes de saúde pública (5) também têm acesso a eles, podendo ser utilizados para o
+            estudo, monitorização e controlo dessas espécies de mosquito.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+        <h2>Por que a Mosquito Alert é necessária?</h2>
+        <p>Nas últimas décadas, o número de mosquitos invasores e doenças emergentes associadas a mosquitos aumentou
+            globalmente. Novas espécies invasoras, principalmente do género <em>Aedes</em>, estabeleceram-se em novas
+            áreas e estão atualmente em expansão. Esses mosquitos <em>(Aedes)</em> são de importância sanitária devido à
+            sua capacidade de transmitir doenças como dengue, Zika ou chikungunya, enquanto que o mosquito comum (<em>Culex</em>
+            <em>pipiens</em>) é importante por estar associado à transmissão do vírus da febre do Nilo Ocidental. O
+            risco que representam para a saúde pública requer a vigilância das populações de mosquitos vetores.</p>
+        <p>Consciente da complexidade do problema, a Mosquito Alert permite disponibilizar a vigilância e a investigação
+            destes mosquitos na esfera pública, permitindo a colaboração entre diferentes agentes através da sua
+            aplicação e de outras plataformas e comunidades.</p>
+        <h2>Que dados são recolhidos?</h2>
+        <p>São recolhidos dados relativos a 5 espécies de mosquito: o mosquito tigre (<em>Aedes albopictus</em>), o
+            mosquito da febre-amarela (<em>Aedes aegypti</em>), o mosquito do Japão (<em>Aedes japonicus</em>), o
+            mosquito da Coreia (<em>Aedes koreicus</em>) e o mosquito comum (<em>Culex pipiens</em> ).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>Relativoss a estas espécies, são coletados dados sobre os mosquitos, os seus criadouros e picadas. Todos
+            esses dados são relevantes para responder a diferentes questões relacionadas com a investigação dessas
+            espécies, como também à sua monitorização e controlo.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>Além disso, de forma aleatória, e no máximo de 5 vezes por dia, se a pessoa que usa a aplicação o permitir, a
+            Mosquito Alert recolhe a posição aproximada do dispositivo. Os locais são mascarados numa quadrícula de
+            0,025 x 0,025 graus de latitude e longitude (aproximadamente 2x2 km) antes de serem enviados para o servidor
+            da Mosquito Alert. Por motivos de privacidade, apenas o identificador da quadrícula é compartilhado com a
+            Mosquito Alert e não o local preciso. Estas informações são essenciais para a ciência: sem elas não é
+            possível saber se há muitos mosquitos ou se há muita participação cidadã. Estas informações equivalem ao
+            que, em ecologia, é conhecido como esforço de amostragem.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Para que servem os dados?</h2>
+        <p> Estes são alguns exemplos:</p>
+        <ul>
+            <li>Para acompanhar as populações de mosquitos estabelecidas, bem como para descobrir novas populações. As
+                notificações que as pessoas enviam para a Mosquito Alert provaram, nos últimos anos, ser um sistema de
+                alerta eficaz para a deteção de novos mosquitos.
+            </li>
+            <li>As observações destes mosquitos, bem como dos seus criadouros nas vias públicas e relatórios de picadas,
+                ajudam cientistas e gestores de saúde pública a avaliar o risco e a controlar as populações de mosquitos
+                vetores. Para estimar a abundância de mosquitos num local, é necessário corrigir as observações com o
+                esforço de amostragem. Para isso, o aplicativo Mosquito Alert recolhe dados sobre a posição aproximada
+                do dispositivo em intervalos aleatórios. A posição registrada não é exata, mas está enquadrada numa
+                célula de 2x2 km.
+            </li>
+            <li>Atualmente está em curso o desenvolvimento de um sistema de previsão de risco epidemiológico em tempo
+                real, participativo e dinâmico.
+            </li>
+        </ul>
+
+
+        <h2>Onde posso encontrar mais informações?</h2>
+        <p>Vai encontrar mais informações no site do projeto e nas redes sociais.</p>
+        <p><a href="http://www.mosquitoalert.com/en/"> www.mosquitoalert.com </a></p>
+        <p>Nas configurações do aplicativo vai encontrar o tutorial para participar, o guia de mosquitos para saber como
+            identificá-los, a política de privacidade e os termos de uso e informações sobre as entidades que promovem o
+            projeto.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

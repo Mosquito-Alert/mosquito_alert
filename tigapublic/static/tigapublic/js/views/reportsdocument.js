@@ -99,6 +99,7 @@ var ReportsdocumentView = MapView.extend({
                 if(row.expert_validation_result !== null &&
                     row.expert_validation_result.indexOf('#') !== -1){
                     row.expert_validation_result = row.expert_validation_result.split('#');
+                    console.log(row.category)
                 }
 
             }
@@ -114,12 +115,16 @@ var ReportsdocumentView = MapView.extend({
             var stuff = window.opener.document.getElementById("hashtag_filters").outerHTML;
             var hastag_opener_value = window.opener.document.getElementById("hashtag_search_text").value;
 
-            if (hastag_opener_value.length){
-               if (hastag_opener_value.trim()!=''){
-                 $('#hashtag_search_text').val(hastag_opener_value);
-                 $('#hashtag_search_text').prop('disabled',true);
-                }
-              }
+            // if (hastag_opener_value.length){
+            //    if (hastag_opener_value.trim()!=''){
+            //      $('#hashtag_search_text').val(hastag_opener_value);
+            //      $('#hashtag_search_text').prop('disabled',true);
+            //     }
+            //   }
+
+            //Disable hashtack and  municipalities boxes
+            $('#hashtag_search_text').prop('disabled',true);
+            $('#municipality_group').find('input').prop('disabled', true)
 
             //var stuff = window.opener.$("#notif_filters").clone();
             if (window.opener.document.getElementById("notif_filters")){
@@ -135,10 +140,7 @@ var ReportsdocumentView = MapView.extend({
               stuff.removeClass('active');
             }
 
-            //Disable municipalities checkbox
-            if ($('#municipalities-checkbox').length){
-              $('#municipalities-checkbox').prop('disabled', true)
-            }
+
             //Remove municipalities cancel x
             $('div.token a.close').remove()
             $('span.token-label').css('padding-right','4px')

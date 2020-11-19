@@ -1,0 +1,52 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Mosquito Alert Score Info
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>Informacije o točkovalnem sistemu</h2>
+        <p>Sodelovanje v sistemu Mosquito Alert je nagrajeno s priznanji in nagrado v obliki točk. Število točk na
+            poročilo se razlikuje glede na podane informacije in njihovo kakovost.</p>
+        <p>Največ točk, ki jih lahko dobite na poročilo, je:</p>
+        <ul>
+            <li>Invazivni <em> Aedes </em> komar: 20 točk</li>
+            <li>Navadni komar: 14 točk</li>
+            <li>Mesto razvoja ličnk - jašek meteornih voda: 20 točk</li>
+            <li>Druga mesta razvoja ličink na javnem območju: 16 točk</li>
+        </ul>
+        <p>Poleg tega obstajajo dodatni bonusi za prvega komarja v sezoni, prvo poročilo dneva ali pogosto udeležbo. Ko
+            dosežete določeno število poročil, ne dobite samo dodatnih točk, ampak dobite tudi poseben pokal. Glede na
+            dosežene mejnike obstajajo različni pokali.</p>
+        <p>Poročila, ki so poslana kot komar, vendar se izkažejo, da niso komarji, po strokovni potrditvi ne bodo
+            prinašala točk. Tudi fotografija, ki strokovnjakom ne omogoča identifikacije komarja ali razmnoževalnega
+            mesta, ne bo ocenjena.</p>
+        <p>Kopičenje točk vam bo omogočilo dvig na <b> nivo </b>:</p>
+        <ul>
+            <li>(1) Začetnik (začetnik)</li>
+            <li>(2) Sodelujoči (sodelavec)</li>
+            <li>(3) Strokovnjak (strokovnjak)</li>
+            <li>(4) Mojster (mojster)</li>
+            <li>(5) Grandmaster (velemojster)</li>
+        </ul>
+        <p>Te ikone označujejo doseženo raven:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Podokno s točkami</h2>
+        <p>Do globalne razvrstitve pridete tako, da kliknete na točke na glavnem zaslonu. S pritiskom na položaj na
+            lestvici se prikaže razčlenitev točk, ki jih je pridobil uporabnik.</p>
+        <p>S klikom na »Več podrobnosti« odprete razčlenjen točkovni seznam.</p>
+        <p>V tem razdelku je seznam poslanih poročil z oceno, pridobljeno v vsakem od njih. Poročila so interaktivna, s
+            klikom dobite razčlenjeno oceno in razlago o pridobljenih točkah.</p>
+
+    </div>
+</div>
+{% endblock %}

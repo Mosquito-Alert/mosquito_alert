@@ -146,4 +146,5 @@ def reply_w_data(request, message_id, form_class=ComposeForm,
             'subject': subject_template % {'subject': parent.subject},
             'recipient': [parent.sender,]
             })
-    return render_to_response(template_name, {'form': form,'tokenized_recipients': tokenized_recipients}, context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'tokenized_recipients': tokenized_recipients})
+    #return render_to_response(template_name, {'form': form,'tokenized_recipients': tokenized_recipients}, context_instance=RequestContext(request))

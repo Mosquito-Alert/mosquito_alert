@@ -1,0 +1,51 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Information über das Mosquito Alert Punktesystem
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>INFORMATION PUNKTESYSTEM</h2>
+        <p>Aktionen, die in Mosquito Alert ausgeführt werden, werden in Form von Punkten anerkannt und belohnt. Die
+            Anzahl der Punkte pro Bericht hängt von den bereitgestellten Informationen und ihrer Qualität ab.</p>
+        <p>Die maximalen Punkte, die pro Bericht erzielt werden können, sind:</p>
+        <ul>
+            <li>Invasive <em>Aedes</em> Stechmücken: 20 Punkte</li>
+            <li>Gemeine Hausmücke: 14 Punkte</li>
+            <li>Brutstätte - Gully: 20 Punkte</li>
+            <li>Andere Brutstätten öffentlicher Raum: 16 Punkte</li>
+        </ul>
+        <p>Darüber hinaus gibt es zusätzliche Boni für die erste Stechmücke der Saison, den ersten Bericht des Tages
+            oder für die häufige Teilnahme. Wenn Sie eine bestimmte Anzahl von Berichten erreichen, erhalten Sie nicht
+            nur zusätzliche Punkte, sondern auch eine spezielle Trophäe. Je nach erreichten Meilensteinen gibt es
+            unterschiedliche Trophäen.</p>
+        <p>Berichte, die als Berichte über eine Stechmücke verschickt werden, sich aber nach Expertenmeinung als keine
+            Stechmücken herausstellen, erhalten keine Punkte. Ein Foto, auf dem Experten die Stechmücke oder den
+            Brutplatz nicht identifizieren können, wird ebenfalls nicht bewertet.</p>
+        <p>Durch das Sammeln von Punkten kannst du ein <b>Level</b> aufsteigen :</p>
+        <ul>
+            <li>(1) Anfänger (Beginner)</li>
+            <li>(2) Fortgeschrittener (Contributor)</li>
+            <li>(3) Experte (Expert)</li>
+            <li>(4) Meister (Master)</li>
+            <li>(5) Großmeister (Grandmaster)</li>
+        </ul>
+        <p>Diese Symbole zeigen den erreichten Level an:</p>
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+        <h2>Punktefeld</h2>
+        <p>Das Ranking wird durch Klicken auf die Punktzahl im Hauptbildschirm aufgerufen. Durch Drücken auf eine
+            Rangliste wird die Aufschlüsselung der vom Benutzer erhaltenen Punkte angezeigt.</p>
+        <p>Wenn du auf "Weitere Details" klickst, wird das Fenster mit den aufgeschlüsselten Punkten aufgerufen.</p>
+        <p>In diesem Abschnitt findest du eine Liste der gesendeten Berichte mit der in jedem von ihnen erzielten
+            Punktzahl. Die Berichte sind interaktiv. Durch anklicken erhält man die aufgeschlüsselte Punktzahl und die
+            Begründung.</p>
+    </div>
+</div>
+{% endblock %}

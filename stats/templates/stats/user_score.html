@@ -33,8 +33,8 @@
                     {% if score_data.overall_rank_value == 0 %}
                         <p class="score_label">{% trans 'Overall rank - Unranked' %}</p>
                     {% else %}
-                        <p class="score_label">{% trans 'Overall rank' %} - #{{ score_data.overall_rank_value }}</p>
-                        <p><i>{% trans 'Top' %} {{ score_data.overall_top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.overall_ranked_users }} {% trans 'participants' %}</i></p>
+                        <p class="score_label">{% trans 'Overall rank' %} : {{ score_data.overall_rank_value }}</p>
+                        <!--<p><i>{% trans 'Top' %} {{ score_data.overall_top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.overall_ranked_users }} {% trans 'participants' %}</i></p>-->
                     {% endif %}
                 </div>
                 <div class="col-xs-3 class_image">
@@ -52,7 +52,7 @@
                         <div class="award_box">
                             <img src="{% static "stats/icon/" %}{{ item.media_label }}.png">
                             <p>{{ item.reason }}</p>
-                            <p>{{ item.awarded_on }}</p>
+                            <p>{% trans 'awarded_on' %} {{ item.awarded_on }}</p>
                             <p class="score_label_smallest">{{ item.xp_awarded }} {% trans 'XP' %}</p>
                         </div>
                         {% endfor %}
@@ -82,8 +82,9 @@
                     {% if score_data.score_detail.adult.rank_value == 0%}
                         <p class="score_label_smaller">{% trans 'Mosquito rank - Unranked' %}</p>
                     {% else %}
-                        <p class="score_label_smaller">{% trans 'Mosquito rank' %} - #{{ score_data.score_detail.adult.rank_value }}</p>
-                        <p><i>{% trans 'Top' %} {{ score_data.score_detail.adult.top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.score_detail.adult.ranked_users }} {% trans 'participants' %}</i></p>
+                        <p class="score_label_smaller">{% trans 'Mosquito rank' %} : {{ score_data.score_detail.adult.rank_value }}</p>
+                        <!--<p><i>{% trans 'Top' %} {{ score_data.score_detail.adult.top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.score_detail.adult.ranked_users }} {% trans 'participants' %}</i></p>-->
+                        <p><i>{% trans 'click_score_instructions' %}</i></p>
                     {% endif %}
                 </div>
                 <div class="col-xs-3 class_image">
@@ -111,7 +112,7 @@
                     {%if item.awards %}
                         <ul>
                         {% for award in item.awards %}
-                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}!</li>
+                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}</li>
                         {% endfor %}
                         </ul>
                     {% elif item.penalties %}
@@ -138,8 +139,9 @@
                     {% if score_data.score_detail.site.rank_value == 0%}
                         <p class="score_label_smaller">{% trans 'Breeding site rank - Unranked' %}</p>
                     {% else %}
-                        <p class="score_label_smaller">{% trans 'Breeding site rank' %} - #{{ score_data.score_detail.site.rank_value }}</p>
-                        <p><i>{% trans 'Top' %} {{ score_data.score_detail.site.top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.score_detail.site.ranked_users }}</i></p>
+                        <p class="score_label_smaller">{% trans 'Breeding site rank' %} : {{ score_data.score_detail.site.rank_value }}</p>
+                        <!--<p><i>{% trans 'Top' %} {{ score_data.score_detail.site.top_perc |floatformat:3 }} % {% trans 'of' %} {{ score_data.score_detail.site.ranked_users }}</i></p>-->
+                        <p><i>{% trans 'click_score_instructions' %}</i></p>
                     {% endif %}
                 </div>
                 <div class="col-xs-3 class_image">
@@ -166,7 +168,7 @@
                     {%if item.awards %}
                         <ul>
                         {% for award in item.awards %}
-                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}!</li>
+                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}</li>
                         {% endfor %}
                         </ul>
                     {% else %}

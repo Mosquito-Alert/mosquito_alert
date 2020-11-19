@@ -1,0 +1,1297 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mosquito Alert Server Po-files\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-05 11:01+0000\n"
+"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"Last-Translator: Agusti Escobar\n"
+"Language-Team: Greek (Greece)\n"
+"Language: el_GR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Loco https://localise.biz\n"
+"X-Loco-Source-Locale: es-ES\n"
+"X-Loco-Project-Id: 95706\n"
+"X-Loco-Tagged: plain_po\n"
+"X-Loco-Lookup: id\n"
+"X-Loco-Api-Version: 1.0.25 20200901-1\n"
+
+#: stats/templates/stats/chart.html:64
+#: stats/templates/stats/fix_user_chart.html:78
+#: stats/templates/stats/report_user_chart.html:78
+msgid "cumulative-total"
+msgstr "Αθροιστικό σύνολο"
+
+#: stats/templates/stats/chart.html:85
+msgid "number-of-citizen-scientists"
+msgstr "Συμμετέχοντες"
+
+#: stats/templates/stats/chart.html:94
+msgid "number-of-tiger-mosquito-reports"
+msgstr "Αναφορές για κουνούπι τίγρης"
+
+#: stats/templates/stats/chart.html:103
+msgid "number-of-breeding-site-reports"
+msgstr "Αναφορές για εστίες ανάπτυξης/αναπαραγωγής"
+
+#: stats/templates/stats/fix_user_chart.html:99
+msgid "Participants with over 20 fixes"
+msgstr "Συμμετέχοντες με περισσότερες από 20 διορθώσεις"
+
+#: stats/templates/stats/fix_user_chart.html:108
+msgid "Participants with over 15 fixes"
+msgstr "Συμμετέχοντες με περισσότερες από  15 διορθώσεις"
+
+#: stats/templates/stats/fix_user_chart.html:117
+msgid "Participants with over 10 fixes"
+msgstr "Συμμετέχοντες με περισσότερες από 10 διορθώσεις"
+
+#: stats/templates/stats/fix_user_chart.html:126
+msgid "Participants with over 5 fixes"
+msgstr "Συμμετέχοντες με περισσότερες από 5 διορθώσεις"
+
+#: stats/templates/stats/fix_user_chart.html:135
+msgid "Participants with at least 1 fix"
+msgstr "Συμμετέχοντες με τουλάχιστον 1 διόρθωση"
+
+#: stats/templates/stats/report_user_chart.html:99
+msgid "Participants with at least 1 report"
+msgstr "Συμμετέχοντες με τουλάχιστον 1 αναφορά"
+
+#: stats/templates/stats/report_user_chart.html:108
+msgid "Participants with over 1 reports"
+msgstr "Συμμετέχοντες με περισσότερες από 1 αναφορά"
+
+#: stats/templates/stats/report_user_chart.html:117
+msgid "Participants with over 2 reports"
+msgstr "Συμμετέχοντες με περισσότερες από 2 αναφορές"
+
+#: stats/templates/stats/report_user_chart.html:126
+msgid "Participants with over 3 reports"
+msgstr "Συμμετέχοντες με περισσότερες από 3 αναφορές"
+
+#: stats/templates/stats/report_user_chart.html:135
+msgid "Participants with over 4 reports"
+msgstr "Συμμετέχοντες με περισσότερες από 4 αναφορές"
+
+#: stats/templates/stats/user_ranking.html:30
+msgid "user_ranking_info_text_1"
+msgstr ""
+"Δείτε τη βαθμολογία σας και το επίπεδο που ανήκετε. Στο μενού των ρυθμίσεων "
+"μπορείτε να βρείτε αναλυτικές πληροφορίες για τον τρόπο βαθμολόγησης του "
+"Mosquito Alert."
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_2"
+msgstr "Περισσότερες πληροφορίες για"
+
+#: stats/templates/stats/user_ranking.html:36
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:46
+msgid "user_ranking_info_text_3"
+msgstr "τη βαθμολογία"
+
+#: stats/templates/stats/user_ranking.html:40
+msgid "no_score_yet"
+msgstr ""
+"Λόγω έλλειψης βαθμολογίας, δεν εμφανίζεστε στη σειρά κατάταξης. Παρακαλώ, "
+"υποβάλετε γνωστοποιήσεις/παρατηρήσεις και δείτε ξανά τη βαθμολογία σας. Για "
+"να μάθετε πώς να κερδίσετε βαθμούς, ακολουθήστε το σύνδεσμο παρακάτω."
+
+#: stats/templates/stats/user_ranking.html:68
+#: stats/templates/stats/user_ranking.html:156
+msgid "My position"
+msgstr "Η θέση μου"
+
+#: stats/templates/stats/user_ranking.html:72
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "of"
+msgstr "του"
+
+#: stats/templates/stats/user_ranking.html:88
+msgid "Rank"
+msgstr "Θέση κατάταξης"
+
+#: stats/templates/stats/user_ranking.html:89
+msgid "User"
+msgstr "Χρήστης"
+
+#: stats/templates/stats/user_ranking.html:90
+msgid "Overall class"
+msgstr "Γενική κατάταξη"
+
+#: stats/templates/stats/user_ranking.html:91
+msgid "Score"
+msgstr "Βαθμολογία"
+
+#: stats/templates/stats/user_ranking.html:97
+msgid "This is you!"
+msgstr "Είστε εδώ!"
+
+#: stats/templates/stats/user_ranking.html:134
+msgid "Score details"
+msgstr "Περισσότερες λεπτομέρειες"
+
+#: stats/templates/stats/user_score.html:28
+msgid "Citizen Scientist"
+msgstr "Σύνοψη βαθμολογίας"
+
+#: stats/templates/stats/user_score.html:31
+msgid "this_is_your_personal_avatar"
+msgstr ""
+"Προσωπικό είδωλο του συμμετέχοντα. Χάρη της βαθμολογίας που λάβατε, έχετε "
+"φτάσει στο επίπεδο εμπειρίας"
+
+#: stats/templates/stats/user_score.html:31
+msgid "there_are_5_levels"
+msgstr ""
+"Υπάρχουν 5 επίπεδα εμπειρίας: Αρχάριος, Συνεργάτης, Ειδικός, Δάσκαλος και "
+"Μέγα Δάσκαλος"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Joined"
+msgstr "Ξεκινήστε να συμμετέχετε "
+
+#: stats/templates/stats/user_score.html:32
+msgid "Last active"
+msgstr "Τελευταία δραστηριότητα έχει"
+
+#: stats/templates/stats/user_score.html:32
+msgid "Never"
+msgstr "Ποτέ"
+
+#: stats/templates/stats/user_score.html:34
+msgid "Overall rank - Unranked"
+msgstr "Συνολική κατάταξη - Χωρίς κατάταξη"
+
+#: stats/templates/stats/user_score.html:36
+msgid "Overall rank"
+msgstr "Συνολική κατάταξη"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143
+msgid "Top"
+msgstr "Είσαι μεταξύ του"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+msgid "participants"
+msgstr "συμμετέχοντες"
+
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
+#: stats/templates/stats/user_score.html:92
+#: stats/templates/stats/user_score.html:100
+#: stats/templates/stats/user_score.html:149
+#: stats/templates/stats/user_score.html:156
+msgid "XP"
+msgstr "Βαθμοί"
+
+#: stats/templates/stats/user_score.html:49
+msgid "Other awards"
+msgstr "Βραβεία που αποκτήθηκαν"
+
+#: stats/templates/stats/user_score.html:55
+msgid "awarded_on"
+msgstr "Χορηγείται στις"
+
+#: stats/templates/stats/user_score.html:62
+msgid "XP, awarded on"
+msgstr "βαθμοί που χορηγήθηκαν"
+
+#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:138
+msgid "Level obtained for"
+msgstr "Επίπεδο που επιτεύχθηκε για"
+
+#: stats/templates/stats/user_score.html:81
+msgid "Mosquito"
+msgstr "Κουνούπι"
+
+#: stats/templates/stats/user_score.html:83
+msgid "Mosquito rank - Unranked"
+msgstr "Ακριβής θέση για Κουνούπι - Χωρίς κατάταξη"
+
+#: stats/templates/stats/user_score.html:85
+msgid "Mosquito rank"
+msgstr "Ακριβής θέση για Κουνούπι"
+
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:144
+msgid "click_score_instructions"
+msgstr ""
+"Κάντε κλικ πάνω στα χρωματιστά τετράγωνα για να δείτε τις λεπτομέρειες των "
+"δεδομένων που στάλθηκαν και των βαθμών που αποκτήθηκαν."
+
+#: stats/templates/stats/user_score.html:115
+#: stats/templates/stats/user_score.html:171
+msgid "xp awarded for"
+msgstr "βαθμοί που αποκτήθηκαν από"
+
+#: stats/templates/stats/user_score.html:120
+msgid "No awards because"
+msgstr "Δεν έχεις αποκτήσει βαθμούς επειδή"
+
+#: stats/templates/stats/user_score.html:123
+#: stats/templates/stats/user_score.html:175
+msgid "No awards for this report!"
+msgstr "Αυτή η έκθεση δεν έχει βαθμούς!"
+
+#: stats/templates/stats/user_score.html:138
+msgid "Breeding site"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
+
+#: stats/templates/stats/user_score.html:140
+msgid "Breeding site rank - Unranked"
+msgstr ""
+"Ακριβής θέση για εστίες ανάπτυξης/αναπαραγωγής κουνουπιών - Χωρίς κατάταξη"
+
+#: stats/templates/stats/user_score.html:142
+msgid "Breeding site rank"
+msgstr "Ακριβής θέση για εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
+
+#: templates/admin/base_site.html:4
+msgid "Tigaserver admin"
+msgstr "Διαχειριστής Tigaserver"
+
+#: templates/admin/base_site.html:7
+msgid "Tigaserver administration"
+msgstr "Διαχείριση Tigaserver"
+
+#: templates/django_messages/base.html:40
+#: templates/django_messages/inbox.html:5
+msgid "Inbox"
+msgstr "Εισερχόμενα"
+
+#: templates/django_messages/base.html:41
+#: templates/django_messages/outbox.html:5
+msgid "Sent Messages"
+msgstr "Εξερχόμενα Μηνύματα"
+
+#: templates/django_messages/base.html:42
+msgid "New Message"
+msgstr "Νέο Μήνυμα"
+
+#: templates/django_messages/base.html:43
+msgid "Trash"
+msgstr "Καλάθι"
+
+#: templates/django_messages/compose.html:48
+msgid "Compose Message"
+msgstr "Σύνταξη Μηνύματος"
+
+#: templates/django_messages/compose.html:57
+msgid "Send"
+msgstr "Αποστολή"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/view.html:12
+msgid "Sender"
+msgstr "Αποστολέας"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
+msgid "Subject"
+msgstr "Θέμα"
+
+#: templates/django_messages/inbox.html:9
+msgid "Received"
+msgstr "Ληφθέντα"
+
+#: templates/django_messages/inbox.html:9
+#: templates/django_messages/outbox.html:9
+msgid "Action"
+msgstr "Δράση"
+
+#: templates/django_messages/inbox.html:21
+#: templates/django_messages/outbox.html:18
+#: templates/django_messages/view.html:17
+msgid "DATETIME_FORMAT"
+msgstr ""
+
+#: templates/django_messages/inbox.html:22
+#: templates/django_messages/outbox.html:19
+msgid "delete"
+msgstr "διαγραφή"
+
+#: templates/django_messages/inbox.html:28
+#: templates/django_messages/outbox.html:25
+msgid "No messages."
+msgstr "Χωρίς μηνύματα"
+
+#: templates/django_messages/outbox.html:9
+#: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
+msgid "Recipient"
+msgstr "Αποδέκτης"
+
+#: templates/django_messages/outbox.html:9
+msgid "Sent"
+msgstr "Απεστάλη"
+
+#: templates/django_messages/view.html:5
+msgid "View Message"
+msgstr "Προβολή Μηνύματος"
+
+#: templates/django_messages/view.html:16
+msgid "Date"
+msgstr "Ημερομηνία"
+
+#: templates/django_messages/view.html:30
+msgid "Reply"
+msgstr "Απάντηση"
+
+#: templates/django_messages/view.html:32
+msgid "Delete"
+msgstr "Διαγραφή"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:88
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:88
+msgid "Toggle navigation"
+msgstr "Πλοήγηση"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:98
+msgid "Menu"
+msgstr "Μενού"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:101
+msgid "New batch"
+msgstr "Νέα παρτίδα"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:102
+msgid "Photos you have taken notes on but not yet scored"
+msgstr ""
+"Φωτογραφίες που σχολιάσατε (σημειώσεις) αλλά δεν έχετε βαθμολογήσει ακόμη"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:103
+msgid "Photos you have already scored"
+msgstr "Φωτογραφίες που έχετε ήδη βαθμολογήσει"
+
+#: tigacrafting/templates/tigacrafting/expert_validation.html:171
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:195
+msgid "Save"
+msgstr "Αποθήκευση"
+
+#: tigacrafting/templates/tigacrafting/movelab_validation.html:103
+msgid "Photos per page"
+msgstr "Φωτογραφίες ανά σελίδα"
+
+#: tigacrafting/views.py:547
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Η φωτογραφία σας έχει επικυρωθεί από έναν ειδικό!"
+
+#: tigahelp/templates/tigahelp/policies.html:30
+#: tigahelp/templates/tigahelp/policies_en.html:29
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "user-agreement"
+msgstr "Αποδοχή χρήστη"
+
+#: tigahelp/templates/tigahelp/policies.html:35
+#: tigahelp/templates/tigahelp/policies_en.html:34
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "privacy-policy"
+msgstr "Πολιτική απορρήτου"
+
+#: tigahelp/templates/tigahelp/policies.html:38
+msgid "app-license"
+msgstr "Άδεια χρήσης της εφαρμογής"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "our-website-uses-cookies"
+msgstr ""
+"Η ιστοσελίδα μας χρησιμοποιεί cookies. Αν συνεχίσετε να περιηγείστε "
+"υποθέτουμε ότι δίνετε τη συγκατάθεσή σας για τη χρήση cookies. Για "
+"περισσότερες πληφορορίες σχετικά με την πολιτική της ιστοσελίδας μας, "
+"παρακαλώ να συμβουλευτείτε τη"
+
+#: tigamap/templates/tigamap/app.html:27
+#: tigamap/templates/tigamap/app_filtered.html:102
+#: tigamap/templates/tigamap/app_new.html:85
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+msgid "and"
+msgstr "και"
+
+#: tigamap/templates/tigamap/app.html:122
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
+#: tigamap/views.py:263
+msgid "adult-tiger-mosquitoes"
+msgstr "Εκθέσεις κουνουπιών"
+
+#: tigamap/templates/tigamap/app.html:126
+#: tigamap/templates/tigamap/app_new.html:175
+msgid "all-reports"
+msgstr "Όλες οι εκθέσεις"
+
+#: tigamap/templates/tigamap/app.html:128
+msgid "medium-and-high-probability-reports-only"
+msgstr "Επιλογή εκθέσεων με μεσαία και ψηλή πιθανότητα"
+
+#: tigamap/templates/tigamap/app.html:130
+msgid "high-probability-reports-only"
+msgstr "Επιλογή εκθέσεων με υψηλή πιθανότητα"
+
+#: tigamap/templates/tigamap/app.html:134
+#: tigamap/templates/tigamap/app_new.html:183
+msgid "breeding-site-reports"
+msgstr "Αναφορές για εστίες ανάπτυξης"
+
+#: tigamap/templates/tigamap/app.html:138
+#: tigamap/templates/tigamap/app_new.html:187
+msgid "all-sites"
+msgstr "Όλες οι εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
+
+#: tigamap/templates/tigamap/app.html:141
+#: tigamap/templates/tigamap/app_new.html:190
+msgid "storm-drains-and-fountains"
+msgstr "Αποχετευτικό σύστημα ομβρίων και συντριβάνια"
+
+#: tigamap/templates/tigamap/app.html:144
+#: tigamap/templates/tigamap/app_new.html:193
+msgid "Basins"
+msgstr "Μικρές τεχνητές λεκάνες συλλογής νερού"
+
+#: tigamap/templates/tigamap/app.html:146
+#: tigamap/templates/tigamap/app_new.html:195
+msgid "buckets-and-wells"
+msgstr "Κάδοι και πηγάδια"
+
+#: tigamap/templates/tigamap/app.html:148
+#: tigamap/templates/tigamap/app_new.html:197
+#: tigamap/templates/tigamap/site_map.html:207
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:386
+#: tigaserver_app/models.py:582
+msgid "Other"
+msgstr "Άλλο/Άλλη κατηγορία"
+
+#: tigamap/templates/tigamap/app.html:152
+#: tigamap/templates/tigamap/app_filtered.html:193
+#: tigamap/templates/tigamap/app_new.html:201
+#: tigamap/templates/tigamap/coverage_map_beta.html:82
+msgid "Coverage"
+msgstr "Περιοχή που ελέγχθηκε"
+
+#: tigamap/templates/tigamap/app.html:154
+msgid "http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014"
+msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
+
+#: tigamap/templates/tigamap/app_filtered.html:175
+#: tigamap/templates/tigamap/app_new.html:159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:816
+msgid "navbar_toggle_navigation"
+msgstr "Εναλλαγή πλοήγησης"
+
+#: tigamap/templates/tigamap/app_filtered.html:195
+#: tigamap/templates/tigamap/app_new.html:203
+#: tigamap/templates/tigamap/coverage_map_new.html:383
+#: tigamap/templates/tigamap/validated_report_map.html:635
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:903
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1015
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1165
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
+msgid "map_help_url_new"
+msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
+
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+msgid "menu_adults_prob"
+msgstr "Πιθανά και επιβεβαιωμένα δείγματα για το Ασιατικό κουνούπι τίγρης"
+
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+msgid "menu_adults_definite"
+msgstr "Επιβεβαιωμένα δείγματα για το Ασιατικό κουνούπι τίγρης"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "low"
+msgstr "Χαμηλή"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "medium"
+msgstr "Μεσαία"
+
+#: tigamap/templates/tigamap/coverage_map_beta.html:79
+msgid "high"
+msgstr "Υψηλή"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:221
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:605
+msgid "fixes"
+msgstr "Παρατηρήσεις/διορθώσεις"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:223
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:607
+msgid "fix"
+msgstr "Παρατήρηση/διόρθωση"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:336
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:967
+msgid "coverage_legend_main_title"
+msgstr "Αριθμός παρατηρήσεων"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:372
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1004
+msgid "coverage_legend_info_title"
+msgstr "Περιοχές που ελέγχθηκαν"
+
+#: tigamap/templates/tigamap/coverage_map_new.html:373
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
+msgid "coverage_legend_info_blurb"
+msgstr ""
+"<p> Η έκδοση Android του Tigatrapp περιλαμβάνει προαιρετική παρακολούθηση "
+"τοποθεσίας στο υπόβαθρο. Η εφαρμογή καταγράφει τυχαία τις τοποθεσίες των "
+"χρηστών 5 φορές κάθε μέρα. Καταγράφει μόνο την κατά προσέγγιση θέση (κόκκινα "
+"τετράγωνα στο χάρτη) προκειμένου να διατηρηθεί η ανωνυμία του χρήστη. <br /> "
+"<br /> Ο αριθμός των παρατηρήσεων σε ένα δεδομένο τετράγωνο είναι το "
+"άθροισμα των  θέσεων που καταγράφηκαν σε αυτό το τετράγωνο για όλους τους "
+"συμμετέχοντες. Η εμφάνιση σκουρόχρομων χρωμάτων σε μια περιοχή υποδηλώνει "
+"ότι έχουν εξερευνηθεί περισσότερο σε συγκριση με τις περιοχές με "
+"ανοικτόχρωμους χρωματισμούς."
+
+#: tigamap/templates/tigamap/coverage_map_new.html:377
+#: tigamap/templates/tigamap/validated_report_map.html:629
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1009
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1287
+msgid "more_info"
+msgstr "Περισσότερες πληροφορίες"
+
+#: tigamap/templates/tigamap/report_map.html:112
+#: tigamap/templates/tigamap/report_map.html:125
+msgid "type"
+msgstr "Είδος"
+
+#: tigamap/templates/tigamap/report_map.html:149
+#: tigamap/templates/tigamap/validated_photo_map.html:152
+msgid "clusters"
+msgstr "Συστάδες"
+
+#: tigamap/templates/tigamap/report_map.html:150
+#: tigamap/templates/tigamap/validated_photo_map.html:153
+msgid "points"
+msgstr "Βαθμοί"
+
+#: tigamap/templates/tigamap/site_map.html:192
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:371
+#: tigaserver_app/models.py:574
+msgid "storm-drain"
+msgstr "Όμβρια ύδατα"
+
+#: tigamap/templates/tigamap/site_map.html:195
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:374
+#: tigaserver_app/models.py:576
+msgid "Fountain"
+msgstr "Συντριβάνι"
+
+#: tigamap/templates/tigamap/site_map.html:198
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:377
+#: tigaserver_app/models.py:578
+msgid "Basin"
+msgstr "Λεκάνη"
+
+#: tigamap/templates/tigamap/site_map.html:201
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:380
+msgid "Bucket"
+msgstr "Κάδος"
+
+#: tigamap/templates/tigamap/site_map.html:204
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:383
+#: tigaserver_app/models.py:580
+msgid "Well"
+msgstr "Πηγάδι"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:169
+msgid "Photos"
+msgstr "Φωτογραφίες"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:173
+msgid "all-photos"
+msgstr "Όλες οι φωτογραφίες"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:175
+msgid "medium-and-high-probability-photos-only"
+msgstr "Φωτογραφίες με μέτρια και υψηλή πιθανότητα"
+
+#: tigamap/templates/tigamap/validated_photo_map.html:177
+msgid "high-probability-photos-only"
+msgstr "Φωτογραφίες με υψηλή πιθανότητα μόνο"
+
+#: tigamap/templates/tigamap/validated_report_map.html:379
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:360
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "not_sure"
+msgstr "Δεν είμαι σίγουρος/η."
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "yes"
+msgstr "Ναι"
+
+#: tigamap/templates/tigamap/validated_report_map.html:381
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+msgid "no"
+msgstr "Όχι"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:544
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1046
+msgid "expert_cat_tiger"
+msgstr "Επιβεβαιωμένο albopictus"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:552
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1062
+msgid "expert_cat_possible_tiger"
+msgstr "Πιθανόν albopictus"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:570
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1087
+msgid "expert_cat_possible_other"
+msgstr "Πιθανότατα δεν είναι ούτε albopictus ούτε aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:579
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1096
+msgid "expert_cat_other"
+msgstr "Επιβεβαιωμένα δεν είναι ούτε albopictus ούτε aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:400
+#: tigamap/templates/tigamap/validated_report_map.html:561
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1078
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1210
+msgid "expert_cat_unknown"
+msgstr "Άγνωστο"
+
+#: tigamap/templates/tigamap/validated_report_map.html:405
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:489
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:502
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_title"
+msgstr ""
+"Αποτελέσματα επιβεβαίωσης από ειδικό <a href=\"http://www.mosquitoalert.com/"
+"en/map-results/tiger-mosquito-map/\" target=\"_blank\">αποτελέσματα</a>"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_title"
+msgstr "Αποτελέσματα επιβεβαίωσης χρηστών"
+
+#: tigamap/templates/tigamap/validated_report_map.html:413
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+msgid "crowd_row_more_responses_needed"
+msgstr "Απαιτούνται περισσότερες απαντήσεις"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q1"
+msgstr "Μικρό, μαύρο με άσπρες γραμμές;"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q2"
+msgstr "Γραμμή στο κεφάλι και στο θώρακα;"
+
+#: tigamap/templates/tigamap/validated_report_map.html:422
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+msgid "user_response_row_q3"
+msgstr "Γραμμές στην κοιλία και στα πόδια;"
+
+#: tigamap/templates/tigamap/validated_report_map.html:535
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
+msgid "adult_report_legend_main_title"
+msgstr "Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map.html:588
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1118
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1248
+msgid "adult_report_legend_info_title"
+msgstr "Αναδυόμενο παράθυρο"
+
+#: tigamap/templates/tigamap/validated_report_map.html:595
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+msgid "expert_row_help"
+msgstr "Ταξινόμηση από επιστήμονες χρησιμοποιώντας τις διαθέσιμες φωτογραφίες"
+
+#: tigamap/templates/tigamap/validated_report_map.html:600
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+msgid "crowd_row_help"
+msgstr ""
+"Ταξινόμηση από εθελοντές στο <a href='http://crowdcrafting.org/app/"
+"Tigafotos/' target='_blank'>Χειροτεχνία</a>  αν υπάρχει διαθέσιμη φωτογραφία"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_title"
+msgstr ""
+"Ταξινομική περιγραφή <a href=\"http://www.mosquitoalert.com/en/mosquitoes/"
+"tiger-mosquito-ae-albopictus/\" target=\"_blank\"> Ae. albopictus </a> και "
+"<a href=\"http://www.mosquitoalert.com/en/mosquitoes/yellow-fever-mosquito-"
+"ae-aegypti/\" target=\"_blank\"> Ae. aegypti </a>"
+
+#: tigamap/templates/tigamap/validated_report_map.html:605
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+msgid "report_row_help"
+msgstr "Παρατηρήσεις από συμμετέχοντες/χρήστες"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_title"
+msgstr "Φωτογραφίες"
+
+#: tigamap/templates/tigamap/validated_report_map.html:610
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+msgid "photo_row_help"
+msgstr ""
+"Στάλθηκαν από συμμετέχοντες/χρήστες (αν υπάρχουν διαθέσιμες φωτογραφίες)"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_title"
+msgstr "Σημειώσεις"
+
+#: tigamap/templates/tigamap/validated_report_map.html:615
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+msgid "notes_row_help"
+msgstr "Από ειδικούς ή απλούς παρατηρητές (προαιρετικό)"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:146
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_subtext_adults_high"
+msgstr "Επιβεβαιωμένα Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:147
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_subtext_adults_medium"
+msgstr "Πιθανά και επιβεβαιωμένα Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:148
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_subtext_adults_all"
+msgstr "Χωρίς φίλτρο"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:150
+msgid "validation_button_subtext_sites_high"
+msgstr "Επιβεβαιωμένες εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:151
+msgid "validation_button_subtext_sites_medium"
+msgstr "Πιθανές και επιβεβαιωμένες εστίες ανάπτυξης/αναπαραγωγής κουνουπιών"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:152
+msgid "validation_button_subtext_sites_all"
+msgstr "Χωρίς φίλτρο"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:480
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1237
+msgid "expert_cat_unclassified"
+msgstr "Μη ταξινομημένα"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
+msgid "expert_cat_site"
+msgstr "Εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
+msgid "expert_cat_possible_site"
+msgstr "Πιθανή εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
+msgid "expert_cat_possible_other_site"
+msgstr "Μη πιθανή εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη "
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:482
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
+msgid "expert_cat_other_site"
+msgstr "Δεν είναι εστία ανάπτυξης/αναπαραγωγής του Ασιατικού κουνουπιού τίγρη"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:498
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
+msgid "expert_cat_aegypti"
+msgstr "Επιβεβαιωμένο aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:500
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
+msgid "expert_cat_possible_aegypti"
+msgstr "Πιθανό aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_q_sitetype"
+msgstr "Είδος εστίας ανάπτυξης"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q1"
+msgstr "Με στάσιμο νερό;"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+msgid "user_response_row_sites_q2"
+msgstr "Προνύμφες ή νύμφες;"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q1_new"
+msgstr "Σε δημόσιο χώρο;"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q2_new"
+msgstr "Σε στάσιμα νερά ή/και προνύμφες ή νύμφες;"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+msgid "user_response_row_sites_q3_new"
+msgstr "Έχετε εντοπίσει κουνούπια σε κοντινή απόσταση;"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:833
+msgid "fmap_All_years"
+msgstr "Όλα τα έτη"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:844
+msgid "fmap_All_months"
+msgstr "Όλους τους μήνες"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:845
+msgid "January"
+msgstr "Ιανουάριος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:847
+msgid "February"
+msgstr "Φεβρουάριος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:849
+msgid "March"
+msgstr "Μάρτιος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:850
+msgid "April"
+msgstr "Απρίλιος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:851
+msgid "May"
+msgstr "Μάιος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:852
+msgid "June"
+msgstr "Ιούνιος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:853
+msgid "July"
+msgstr "Ιούλιος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:854
+msgid "August"
+msgstr "Αύγουστος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:855
+msgid "September"
+msgstr "Σεπτέμβριος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:857
+msgid "October"
+msgstr "Οκτώβριος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:859
+msgid "November"
+msgstr "Νοέμβριος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:861
+msgid "December"
+msgstr "Δεκέμβριος"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adult_tiger_mosquitoes"
+msgstr "Ακμαία κουνούπια Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+msgid "fmap_Adults"
+msgstr "Ακμαία κουνούπια"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Tiger_mosquito_breeding_sites"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής Ae. albopictus/aegypti"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+msgid "fmap_Breeding_sites"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Tigatrapp_coverage"
+msgstr "Συχνότητα δειγματοληψίας"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+msgid "fmap_Coverage"
+msgstr "Περιοχές που διερευνήθηκαν"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+msgid "validation_button_text_high"
+msgstr "Αναφορές με ψηλή αξιοπιστία"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+msgid "validation_button_text_medium"
+msgstr "Αναφορές με μέτρια αξιοπιστία"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+msgid "validation_button_text_all"
+msgstr "Όλες οι αναφορές"
+
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:1184
+msgid "site_report_legend_main_title"
+msgstr "Δείκτες"
+
+#: tigamap/views.py:147 tigamap/views.py:317
+msgid "coverage-map"
+msgstr "Χάρτης περιοχής που καλύφθηκε"
+
+#: tigamap/views.py:155
+msgid "Pseudo Occurrence-Exposure Map"
+msgstr "Χάρτης ψευδοκατανομής"
+
+#: tigamap/views.py:162
+msgid "Adult tiger mosquitoes: Validated reports"
+msgstr "Ακμαπία κουνούπια τίγρη: Επιβεβαιωμένες εκθέσεις"
+
+#: tigamap/views.py:171
+msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
+msgstr "Ακμαία κουνούπια τίγρη: εκθέσεις με μέτρια και ψηλή πιθανότητα"
+
+#: tigamap/views.py:177
+msgid "adult-tiger-mosquitoes-high-probability-reports"
+msgstr "Κουνούπι τίγρης: Μόνο εκθέσεις yψηλής πιθανότητας"
+
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+msgid "adult-tiger-mosquitoes-all-reports"
+msgstr "Κουνούπια: όλες οι εκθέσεις"
+
+#: tigamap/views.py:189
+msgid "Breeding Sites: Validated reports"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: επιβεβαιωμένες εκθέσεις"
+
+#: tigamap/views.py:199 tigamap/views.py:289
+msgid "breeding-sites-storm-drains-and-fountains"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Αποχετεύσεις ομβρίων και συντριβάνια"
+
+#: tigamap/views.py:202 tigamap/views.py:289
+msgid "breeding-sites-basins"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Λεκάνες"
+
+#: tigamap/views.py:205 tigamap/views.py:289
+msgid "breeding-sites-buckets-and-wells"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: κουβάδες και πηγάδια"
+
+#: tigamap/views.py:208 tigamap/views.py:289
+msgid "breeding-sites-other"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Άλλoυ τύπου"
+
+#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+msgid "breeding-sites-all-reports"
+msgstr "Εστίες ανάπτυξης/αναπαραγωγής: Όλες οι εκθέσεις"
+
+#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
+#: tigascoring/xp_scoring.py:176
+msgid "Novice"
+msgstr "Αρχάριος"
+
+#: tigascoring/xp_scoring.py:178
+msgid "Contributor"
+msgstr "Συνεργάτης"
+
+#: tigascoring/xp_scoring.py:180
+msgid "Expert"
+msgstr "Ειδικός"
+
+#: tigascoring/xp_scoring.py:182
+msgid "Master"
+msgstr "Δάσκαλος"
+
+#: tigascoring/xp_scoring.py:184
+msgid "Grandmaster"
+msgstr "Μεγάλος δάσκαλος"
+
+#: tigascoring/xp_scoring.py:203
+msgid "start_of_season"
+msgstr "Έναρξη περιόδου"
+
+#: tigascoring/xp_scoring.py:204
+msgid "daily_participation"
+msgstr "Υποβολή πρώτης έκθεσης της ημέρας"
+
+#: tigascoring/xp_scoring.py:205
+msgid "fidelity_day_2"
+msgstr "υποβολή εκθέσεων για δύο συνεχόμενες ημέρες"
+
+#: tigascoring/xp_scoring.py:206
+msgid "fidelity_day_3"
+msgstr "υποβολή εκθέσεων για τρεις συνεχόμενες ημέρες"
+
+#: tigascoring/xp_scoring.py:207
+msgid "achievement_10_reports"
+msgstr "10 μεταφορτωμένα δεδομένα"
+
+#: tigascoring/xp_scoring.py:208
+msgid "achievement_20_reports"
+msgstr "20 μεταφορτωμένα δεδομένα"
+
+#: tigascoring/xp_scoring.py:209
+msgid "achievement_50_reports"
+msgstr "50 μεταφορτωμένα δεδομένα"
+
+#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
+msgid "picture"
+msgstr "η φωτογραφία"
+
+#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
+msgid "location"
+msgstr "γεωχωρικά δεδομένα που υποβλήθηκαν"
+
+#: tigascoring/xp_scoring.py:253
+msgid "storm_drain"
+msgstr "Είναι ένα αποχετευτικό ομβρίων"
+
+#: tigascoring/xp_scoring.py:257
+msgid "water_question"
+msgstr ""
+"Απάντηση στην ερώτηση για ύπαρξη νερού στην έκθεση για την εστία ανάπτυξη/"
+"αναπαραγωγής κουνουπιών"
+
+#: tigascoring/xp_scoring.py:261
+msgid "mosquito_report_follows_breeding_site"
+msgstr "υποβολή έκθεσης για κουνούπια αργότερα"
+
+#: tigascoring/xp_scoring.py:293
+msgid "no_picture"
+msgstr "χωρίς φωτογραφία"
+
+#: tigascoring/xp_scoring.py:299
+msgid "no_location"
+msgstr "η έκθεση δεν έχει γεωχωρική πληροφορία"
+
+#: tigascoring/xp_scoring.py:302
+msgid "thorax_question"
+msgstr "απαντώντας την ερώτηση για το θώρακα στην έκθεση για κουνούπια"
+
+#: tigascoring/xp_scoring.py:305
+msgid "abdomen_question"
+msgstr "απαντώντας την ερώτηση για την κοιλία στην έκθεση για τα κουνούπια"
+
+#: tigascoring/xp_scoring.py:308
+msgid "leg_question"
+msgstr "απαντώντας την ερώτηση για το πόδι στην έκθεση για το κουνούπι"
+
+#: tigascoring/xp_scoring.py:311
+msgid "other_species"
+msgstr ""
+"Μετά την ανάλυση της υποβολής σας, οι ειδικοί αποφάσισαν ότι δεν ταιριάζει "
+"με κανένα από τα 5 είδη κουνουπιών που στοχεύουμε. Για περισσότερες "
+"πληροφορίες, μπορείτε να μελετήσετε το εγχειρίδιο της εφαρμογής."
+
+#: tigascoring/xp_scoring.py:318
+msgid "bite report follow"
+msgstr "μετά την τρέχουσα αναφορά δώστε αναφορά τσιμπήματος"
+
+#: tigascoring/xp_scoring.py:358
+msgid " years ago"
+msgstr "χρόνια"
+
+#: tigascoring/xp_scoring.py:360
+msgid " months ago"
+msgstr "μήνες"
+
+#: tigascoring/xp_scoring.py:362
+msgid " days ago"
+msgstr "ημέρες"
+
+#: tigaserver_app/models.py:557
+msgid "High"
+msgstr "Υψηλή"
+
+#: tigaserver_app/models.py:559
+msgid "Medium"
+msgstr "Μέτρια"
+
+#: tigaserver_app/models.py:561
+msgid "Low"
+msgstr "Χαμηλή"
+
+#: tigaserver_app/models.py:1234
+msgid "species_unclassified"
+msgstr "Μη αναγνωρίσιμο"
+
+#: tigaserver_app/models.py:1235
+msgid "species_other"
+msgstr "Άλλα είδη"
+
+#: tigaserver_app/models.py:1236
+msgid "species_albopictus"
+msgstr "Ασιατικό κουνούπι τίγρης (Aedes albopictus)"
+
+#: tigaserver_app/models.py:1237
+msgid "species_aegypti"
+msgstr "κουνούπι του κίτρινου πυρετού (Aedes aegypti)"
+
+#: tigaserver_app/models.py:1238
+msgid "species_japonicus"
+msgstr "κουνούπι της Ιαπωνίας (Aedes japonicus)"
+
+#: tigaserver_app/models.py:1239
+msgid "species_koreicus"
+msgstr "κουνούπι της Κορέας (Aedes koreicus)"
+
+#: tigaserver_app/models.py:1240
+msgid "species_complex"
+msgstr "Περισσότερα του ενός είδους"
+
+#: tigaserver_app/models.py:1241
+msgid "species_notsure"
+msgstr "Δεν είναι ξεκάθαρο"
+
+#: tigaserver_app/models.py:1242
+msgid "species_culex"
+msgstr "κοινό κουνούπι (Culex sp.)"
+
+#: tigaserver_app/models.py:1255
+msgid "species_value_possible"
+msgstr "Πιθανόν"
+
+#: tigaserver_app/models.py:1256
+msgid "species_value_confirmed"
+msgstr "Επιβεβαιωμένο"
+
+#: tigaserver_messages/fields.py:56
+#, python-format
+msgid "The following usernames are incorrect: %(users)s"
+msgstr ""
+
+#: tigaserver_messages/forms.py:20
+msgid "Body"
+msgstr "Σώμα"
+
+#: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
+#: tigaserver_messages/views.py:138
+msgid "Message successfully sent."
+msgstr "Το μήνυμα στάλθηκε επιτυχώς"
+
+#: tigaserver_messages/views.py:120
+#, python-format
+msgid "Re: %(subject)s"
+msgstr ""
+
+#: tigaserver_project/settings.py:131
+msgid "Spanish"
+msgstr "Ισπανικά"
+
+#: tigaserver_project/settings.py:132
+msgid "Catalan"
+msgstr "Καταλανικά"
+
+#: tigaserver_project/settings.py:133
+msgid "English"
+msgstr "Αγγλικά"
+
+#: tigaserver_project/settings.py:134
+msgid "German"
+msgstr ""
+
+#: tigaserver_project/settings.py:135
+msgid "Albanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:136
+msgid "Greek"
+msgstr ""
+
+#: tigaserver_project/settings.py:137
+msgid "Hungarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:138
+msgid "Portuguese"
+msgstr ""
+
+#: tigaserver_project/settings.py:139
+msgid "Slovenian"
+msgstr ""
+
+#: tigaserver_project/settings.py:140
+msgid "Italian"
+msgstr ""
+
+#: tigaserver_project/settings.py:141
+msgid "French"
+msgstr ""
+
+#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
+msgid "Bulgarian"
+msgstr ""
+
+#: tigaserver_project/settings.py:144
+msgid "Romanian"
+msgstr ""
+
+#: tigaserver_project/settings.py:145
+msgid "Croatian"
+msgstr ""
+
+#: tigaserver_project/settings.py:146
+msgid "Macedonian"
+msgstr ""
+
+#: tigaserver_project/settings.py:147
+msgid "Serbian"
+msgstr ""
+
+#: tigaserver_project/settings.py:148
+msgid "Letzeburgesch"
+msgstr ""
+
+#: tigaserver_project/settings.py:149
+msgid "Dutch"
+msgstr ""
+
+#: tigaserver_project/settings.py:150
+msgid "Turkish"
+msgstr ""
+
+#: tigaserver_project/settings.py:151
+msgid "Chinese"
+msgstr "Κινέζικα"
+
+msgid "you_just_received_a_points_award"
+msgstr "Μόλις λάβατε ένα βραβείο πόντων!"

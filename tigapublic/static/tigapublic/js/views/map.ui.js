@@ -95,6 +95,7 @@ var MapView = MapView.extend({
         'id': 'time_group',
         'title': 'group.filters.time'
       });
+
       if (div_time) div_time.appendTo(section);
       // Create year select
       var select_years = $('<select multiple>')
@@ -600,12 +601,14 @@ var MapView = MapView.extend({
         .appendTo(toggleGrup);
 
         let question_mark = $('<a>', {
-          'href':'#',
-          'data-toggle':'popover-filters',
+          'tabindex':'0',
+          'role': 'button',
+          'data-trigger': 'focus',
           'data-placement':'left',
           'i18n': 'filters.description|data-content',
           'data-container': 'body',
-          'class':'fa fa-question question-mark-toc question-mark-filters'
+          'class':'fa fa-question question-mark-toc question-mark-filters',
+          'id': 'question_mark_filters'
         })
         var questionDiv = $('<div>')
           .attr('id', 'question_mark_container')
@@ -620,16 +623,9 @@ var MapView = MapView.extend({
        question_mark.appendTo(questionDiv)
        questionDiv.appendTo(parentDiv)
 
-       $(document).click(function(e) {
-         var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
-         if (isVisible){
-           question_mark.click()
-         }
-       });
-
        question_mark.on('click', function(event) {
-         // event.preventDefault();
-         event.stopPropagation();
+        event.stopPropagation();
+        return false;
        });
 
        $(question_mark).popover({

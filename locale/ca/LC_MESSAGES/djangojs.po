@@ -36,11 +36,11 @@ msgstr "Nivell Mosquit"
 
 #: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
 msgid "Reports"
-msgstr "Notificacions"
+msgstr "Dades enviades"
 
 #: stats/static/stats/user_ranking.js:30 stats/static/stats/user_ranking.js:40
 msgid "Score"
-msgstr "Puntuació"
+msgstr "Puntuació obtinguda"
 
 #: stats/static/stats/user_ranking.js:34
 msgid "Site"

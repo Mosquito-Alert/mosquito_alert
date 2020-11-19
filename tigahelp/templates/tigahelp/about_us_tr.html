@@ -1,0 +1,35 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About Us
+{% endblock %}
+
+{% block content %}
+
+<h2>Koordinatör Kurumlar:</h2>
+<p>Mosquito Alert aşağıdaki kamu araştırma kurumları tarafından yönetilmektedir: İspanya Ulusal Araştırma Konseyi'nin
+    Blanes İleri Araştırmalar Merkezi (<strong>CEAB-CSIC</strong>), Ekolojik Araştırma ve Ormancılık Uygulamaları
+    Merkezi (<strong>CREAF</strong>) ve Pompeu Fabra Üniversitesi (<strong>UPF</strong>). Katalan Araştırma ve
+    Geliştirme Enstitüsü (<strong>ICREA</strong>) da katılım göstermektedir.</p>
+<p class="centeredImage">
+    <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/colaboradors_about_us.jpg" %}">
+</p>
+
+<h2>Kolaboratörler</h2> <p>Mosquito Alert, bir dizi uzmanın (örneğin, vatandaş bilim insanlarının verilerini doğrulayan
+    profesyoneller) ve çeşitli ülkelerde bulunan halk sağlığı, istilacı türlerin kontrolü ve çevre eğitimi üzerinde
+    çalışan kişilerin katılımı sayesinde mümkün hale gelmiştir.</p>
+
+<h2>Projelere finansman ve katılım</h2>
+
+<p>Mosquito Alert, araştırmalar ve bilimsel iletişimin yaygınlaştırılmasına yönelik rekabetçi projelere katılım sağlar
+    (bunların arasında AB'nin Horizon 2020 desteği ile gerçekleşenİspanyol "Estal Planı" ve "la Caixa" Vakfı projeleri
+    bulunmaktadır). Mosquito Alert aynı zamanda önde gelen ve bizimle işbirliği yapan kuruluşlardan gelen kaynaklarla da
+    desteklenmektedir.</p>
+
+<p>Kurumlar, işbirlikleri ve projeler hakkında daha fazla bilgi <a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a>
+    adresinde ve sosyal ağlarda bulunabilir.</p>
+
+<p class="centeredImage"><img style="max-width: 100%; height: auto;" src="{% static "tigahelp/banner_web.jpg" %}"></p>
+
+{% endblock %}

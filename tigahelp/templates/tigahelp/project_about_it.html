@@ -1,0 +1,119 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Descrizione del progetto Mosquito Alert
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2> Che cos'è Mosquito Alert? </h2>
+        <p> Mosquito Alert è una piattaforma di scienza cittadina che consente la collaborazione di diversi attori nello
+            studio, monitoraggio e controllo di specie di zanzare vettori di malattie come dengue, Zika, chikungunya o
+            febbre del Nilo occidentale. </ p> <p> I cittadini, il mondo scientifico, gli agenti della sanità pubblica e
+        il settore dell'istruzione hanno un ruolo chiave nel progetto. In Mosquito Alert, chiunque può generare e
+        condividere dati (1) e partecipare alla sua validazione; I professionisti dell'entomologia etichettano questi
+        dati e danno risposte a chi partecipa (2); I dati, una volta validati, vengono messi a disposizione del grande
+        pubblico attraverso un mappa web interattivo (3). Anche gli scienziati (4) e gli agenti per la salute pubblica
+        (5) possono accedervi e possono essere utilizzati per lo studio, il monitoraggio e il controllo di queste
+        specie. </p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2> Perché è necessario Mosquito Alert? </h2>
+        <p> Negli ultimi decenni il numero di zanzare invasive e di malattie trasmesse dalle zanzare emergenti è
+            aumentato su scala globale. Nuove specie invasive, principalmente del genere <em> Aedes </em>, si sono
+            stabilite in nuove aree e sono ancora in espansione. Queste zanzare (<em> Aedes </em>) sono di importanza
+            sanitaria per la loro capacità di trasmettere malattie come dengue, Zika o chikungunya. Inoltre, la zanzara
+            comune (<em> Culex pipiens </em>) acquista importanza per essere in grado di trasmettere il virus della
+            febbre del Nilo occidentale. Il rischio che rappresentano per la salute pubblica richiede la sorveglianza
+            delle loro popolazioni. </p>
+        <p> Consapevole della complessità del problema, Mosquito Alert consente di aprire al pubblico la sorveglianza e
+            l'indagine su queste zanzare e consente la collaborazione tra diversi agenti, attraverso la sua applicazione
+            e altre piattaforme sociali. </p>
+        <h2> Quali dati vengono raccolti? </h2>
+        <p> Vengono raccolti dati su 5 diverse specie di zanzara: la zanzara tigre (<em> Aedes albopictus </em>), la
+            zanzara della febbre gialla (<em> Aedes aegypti </em>), la zanzara giapponese (<em> Aedes japonicus </em>),
+            la zanzara coreana (<em> Aedes koreicus </em>) e la zanzara comune (<em> Culex pipiens </em>). </p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p> Da queste specie vengono raccolti dati sulle zanzare, sui siti di riproduzione e sui morsi. Tutti questi
+            dati sono rilevanti per rispondere a diverse domande relative alla ricerca di queste specie e anche al loro
+            monitoraggio e controllo. </p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p> Inoltre, in modo casuale, e non più di 5 volte al giorno, se la persona che utilizza l'app lo consente,
+            Mosquito Alert raccoglie la posizione approssimativa del dispositivo. Le posizioni vengono mascherate su una
+            griglia di 0,025 x 0,025 gradi di latitudine e longitudine (circa 2x2 km) prima di essere inviate al server
+            Mosquito Alert. Per motivi di privacy, con Mosquito Alert viene condiviso solo l'identificatore della
+            griglia, non la posizione precisa. Questa informazione è essenziale per la scienza: senza di essa non si può
+            sapere se ci sono molte zanzare o se c'è effettivamente molta partecipazione. Questa informazione sarebbe
+            equivalente a ciò che, in ecologia, è noto come sforzo di campionamento. </p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2> A cosa servono i dati? </h2>
+        <p> Questi sono alcuni esempi: </p>
+        <ul>
+            <li type="disc"> Per monitorare le popolazioni di zanzare stabilite, nonché per scoprire nuove popolazioni.
+                Le notifiche che le persone inviano a Mosquito Alert negli ultimi anni si sono rivelate un efficace
+                sistema di allerta precoce per l'invasione di nuove zanzare.
+            </li>
+            <li type="disc"> Le osservazioni di queste zanzare, così come i loro siti di riproduzione sulle strade
+                pubbliche e le segnalazioni di punture, aiutano gli scienziati e i responsabili della salute pubblica a
+                valutare il rischio e la gestione delle loro popolazioni. Per stimare l'abbondanza di zanzare in un
+                luogo, è necessario correggere le osservazioni con lo sforzo di campionamento. A tal fine, l'app
+                Mosquito Alert raccoglie dati sulla posizione approssimativa del dispositivo a intervalli casuali. La
+                posizione registrata non è esatta, ma è racchiusa in una cella di 2x2 km.
+            </li>
+            <li type="disc"> Sono attualmente in corso lavori per sviluppare un sistema di previsione del rischio
+                epidemiologico in tempo reale, partecipativo e dinamico.
+            </li>
+        </ul>
+        <h2> Dove posso trovare ulteriori informazioni </h2>
+        <p> Troverai ulteriori informazioni sul sito web del progetto e sulle reti sociali. </p>
+        <p><a href="http://www.mosquitoalert.com/en/"> www.mosquitoalert.com </a></p>
+        <p> Nelle impostazioni dell'applicazione troverai il tutorial per partecipare, la guida alle zanzare per
+            imparare a identificarle, la politica di riservatezza, le condizioni di utilizzo e le informazioni sugli
+            enti che promuovono il progetto. </p>
+
+
+    </div>
+
+</div>
+{% endblock %}

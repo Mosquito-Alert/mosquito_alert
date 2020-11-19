@@ -1,0 +1,79 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Adatvédelmi irányelvek
+{% endblock %}
+
+
+{% block content %}
+
+<div class="center">
+    <h2>Adatvédelmi irányelvek</h2>
+</div>
+
+<p>Mosquito Alert (bármely korábbi vagy ezutáni elnevezése) többek közt, önkéntesek által megosztott adatokat és képeket
+    gyűjt és azokat harmadik fél és a nyilvánosság számára elérhetővé teszi. Az önkéntesek személyiségi jogainak védelme
+    érdekében, a Mosquito Alert kerüli a személyes információk gyűjtését, vagyis olyan információk gyűjtését, amely
+    alapján a résztvevő pontos személye azonosítható lenne. Így, a Mosquito Alert arra kéri az önkénteseket, hogy a
+    jelentések beküldésekor ne osszanak meg neveket, címeket, jelszavakat és egyéb személyes információkat. A
+    megfigyelések pontos helyszíneit a jelentés benyújtása során gyűjti össze a rendszer, és ezek egybeeshetnek az
+    önkéntesek pontos helyével, de ezek az információk csak a jelentéshez és egy random generált felhasználói
+    azonosítóhoz kapcsoltak. A fényképek metaadatait nem kérjük, és ha a projektbe beküldött fotók mégis tartalmaznak
+    metaadatot, az azonnal törlésre kerül, amint a kép eljutott a projekt serverre, kivéve a fotó földrajzi helyzetét,
+    ami a fényképhez kapcsoltan marad és közzétehető.</p> <p>A Mosquito Alert ezenkívül véletlenszerű időközönként
+    összegyűjti az önkéntesek hozzávetőleges helyét (az önkéntesek által lefedett vagy feltárt földrajzi területek
+    felmérése érdekében), de ez az információ is csak egy véletlenszerűen generált felhasználói azonosítóhoz
+    kapcsolódik. Az önkéntesek jegyzeteket és fényképeket csatolhatnak a beszámolóikhoz, de az az ő felelősségük, hogy
+    ezek a jegyzetek és fotók ne tartalmazzanak semmi olyan információt, ami magán jellegű vagy amely sérti mások
+    adatvédelmi jogait, vagy ellentétes a Mosquito Alert felhasználói megállapodással.</p> <p>A Mosquito Alert olyan
+    mechanizmusokkal rendelkezik, amelyek a lehető legnagyobb mértékben próbálják megóvni a felhasználók által
+    tévedésből, az anonimizálási intézkedések ellenére, elküldött személyes adatokat a nyilvánosság elől. Hasonlóképpen,
+    a Mosquito Alert intézkedéseket alkalmaz a személyes adatok megosztásának felderítésére és az adatbázisból történő
+    eltávolítására, amennyire csak lehetséges. Ennek ellenére, ha ezek az intézkedések egy adott esetben mégsem
+    akadályoznák meg a személyes adatok közzétételét, a hibát észlelőket arra ösztönzik, hogy értesítsék a Mosquito
+    Alert felelős személyeit annak érdekében, hogy lehetőség szerint megakadályozzák az adatok nyilvános térben való
+    további megjelenését. A Mosquito Alert nem tudja garantálni a tévedésből, anonimizálási intézkedések ellenére,
+    begyűjtött személyes adatok törlését, sem azt, hogy az ilyen adatok nem lesznek láthatóak a Mosquito Alert tagjai
+    vagy bármely együttműködője, vagy harmadik fél számára.</p> <p>Meg kell jegyezni, hogy ha a résztvevők megosztják
+    észrevételeiket (jelentéseiket) bármilyen nyilvános médiumban, például a közösségi hálózatokon, akkor ezeket a
+    megfigyeléseket személyes adataikkal társíthatják (pl. személyes fiók vagy közösségi hálózatok), így önként feladva
+    a projekt által kínált névtelenséget.</p> <p>A Mosquito Alert lehetővé teszi a résztvevők számára, hogy az
+    anonimitás fenntartása mellett megőrizzék adataikat, külső fiókok (e-mail, Facebook, Twitter) hitelesítési
+    rendszeren keresztül, a Firebase segítségével. Ez lehetővé teszi a résztvevők számára, hogy több eszközt
+    szinkronizáljanak és adatokat gyűjtsenek akkor is, ha el kell távolítaniuk az alkalmazást. Ez az opció önkéntes, és
+    az alapértelmezett beállításokban nincs aktiválva. Mindenesetre a Firebase által e célból gyűjtött információkat nem
+    tárolják a Mosquito Alert szerverek, nem kapcsolódik a Mosquito Alert által gyűjtött tudományos adatokhoz, és a
+    Mosquito Alert sem dolgozza fel.</p> <p>A Mosquito Alert által gyűjtött információk részletes listája a
+    következő:</p>
+<ul>
+    <li>Az önkéntesek által gyűjtött és elküldött jelentések a tenyészőhelyekről, a lehetséges szúnyog csípésekről és
+        szúnyogok megfigyeléséről (a Mosquito Alert jelenleg 5 különféle szúnyogfajra összpontosít), valamint az
+        önkéntesek válaszai az alkalmazáson keresztül feltett kérdésekre. Ez magában foglalja az önkéntes megfigyelések
+        és fényképek pontos helyét (valamint a fénykép metaadatainak helyét, ha vannak ilyenek), feljegyzéseket vagy
+        bármilyen más információt, amelyet az önkéntes hozzáad a jelentéshez.
+    </li>
+    <li>Információ az önkéntesek hozzávetőleges helyzetéről, véletlenszerű időközönkénti mintavételezéssel. Ezeket az
+        információkat tudományos célokból gyűjtik össze, hogy megismerjék az önkéntesek által feltárt földrajzi
+        területeket (mintavételi erőfeszítések, azaz mely területeken van vagy nincs részvétel, és milyen mértékben,
+        hogy össze lehessen kapcsolni azokat a megfigyelések számával ugyanazon a területen, modellezési technikákkal
+        vagy statisztikákkal), valamint az emberi mobilitással kapcsolatos szúnyogok terjedési útjaival kapcsolatos
+        ismeretek bővítésére (vagyis az emberek nagyléptékű mozgása és e fajok terjedése közötti kapcsolat jobb
+        megértése érdekében). Ezek az információk nagy tudományos érdeklődésre tartanak számot. Az önkéntesek pontos
+        helyének összegyűjtésének elkerülése érdekében ezeket a helyeket 0,025 fok szélességi és hosszúsági rácsra
+        helyezzük, és csak a rács négyzetek azonosítóját továbbítjuk a szerverre. Így lehetetlen meghatározni a
+        tényleges helyet 0,025 szélességi fok és 0,025 fok hosszúságú területen belül (körülbelül 3,1 és 7,7
+        négyzetkilométer között, vagy 765 és 1901 futballpálya között). Az önkéntesek mindenesetre kikapcsolhatják ezt
+        az alapértelmezés szerint aktivált opciót az alkalmazás beállításaiban.
+    </li>
+    <li>Információ a telefonmodellről, az akkumulátorról, a nyelvi beállításokról és az alkalmazás verziójáról (vagyis a
+        telepített verzióról, valamint az operációs rendszerről és a verzióról, amelyre telepítve van). Ezeket az
+        információk a fejlesztő csoport munkáját segítik.
+    </li>
+    <li>Ha az önkéntes úgy dönt, hogy egy külső felhasználói fiókot hitelesít a Firebase segítségével, akkor a Firebase
+        összegyűjti az e-mail címét, jelszavát, telefonszámát, IP-címét és a külső fiókhoz kapcsolódó egyéb
+        információkat.
+    </li>
+</ul>
+
+{% endblock %}

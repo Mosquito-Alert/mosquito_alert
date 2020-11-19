@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db import connection
+from matplotlib.pyplot import switch_backend
+
 from tigaserver_app.models import *
 from tigacrafting.models import UserStat
 from datetime import date, timedelta, datetime
@@ -21,11 +23,11 @@ import datetime
 from django.utils import timezone
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
 from rest_framework.exceptions import ParseError
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import math
 from django.utils import translation
 
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data, compute_user_score_in_xp_v2_fast
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
@@ -77,7 +79,7 @@ def workload_pending_per_user(request):
         if last_activity is not None:
             pending = { 'current_pending_n' : current_pending.count(), 'current_pending': pending_detail, 'last_activity': last_activity.strftime('%d/%m/%Y') }
         else:
-            pending = {'current_pending_n': current_pending, 'last_activity': 'Never'}
+            pending = {'current_pending_n': current_pending.count(), 'current_pending': pending_detail, 'last_activity': 'Never'}
         return Response(pending)
 
 @api_view(['GET'])
@@ -111,12 +113,29 @@ def workload_daily_report_input(request):
         return Response(daily_report_input)
 
 
+def user_ids_string_to_int_array(user_ids_str):
+    user_ids_str_array = user_ids_str.split(',')
+    user_ids_int_array = []
+    for id in user_ids_str_array:
+        try:
+            int_id = int(id)
+            user_ids_int_array.append(int_id)
+        except ValueError:
+            user_ids_int_array = []
+    return user_ids_int_array
+
+
 @api_view(['GET'])
 def workload_available_reports(request):
     if request.method == 'GET':
+        user_id_filter = settings.USERS_IN_STATS
+        user_ids_str = request.query_params.get('user_ids', None)
+        if user_ids_str is not None:
+            user_ids_arr = user_ids_string_to_int_array(user_ids_str)
+            if len(user_ids_arr) > 0:
+                user_id_filter = user_ids_arr
         current_pending = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
         current_progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
-        user_id_filter = settings.USERS_IN_STATS
         overall_pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
         current_pending = filter_reports(current_pending)
         current_progress = filter_reports(current_progress)
@@ -628,6 +647,7 @@ def get_page_of_index(index, page_size):
 
 def stats_user_ranking(request, page=1, user_uuid=None):
     current_locale = request.LANGUAGE_CODE
+    user_has_score = False
     try:
         info_url = reverse('scoring_' + current_locale)
     except NoReverseMatch:
@@ -636,6 +656,11 @@ def stats_user_ranking(request, page=1, user_uuid=None):
     if user_uuid is not None:
         try:
             user = TigaUser.objects.get(pk=user_uuid)
+            user.get_identicon()
+            user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+            if user_score['total_score'] > 0:
+                user_has_score = True
+
         except TigaUser.DoesNotExist:
             pass
     seek = request.GET.get('seek', 'f')
@@ -658,10 +683,11 @@ def stats_user_ranking(request, page=1, user_uuid=None):
             nextp = current_page.next_page_number()
         objects = current_page.object_list
         context = {
-                  'data': objects,
-                      'pagination':
-                          {
-                              'page': int(page),
+                    'data': objects,
+                    'user_has_score': user_has_score,
+                    'pagination':
+                        {
+                            'page': int(page),
                               'total': p.num_pages,
                               'start': current_page.start_index(),
                               'end': current_page.end_index(),
@@ -670,7 +696,7 @@ def stats_user_ranking(request, page=1, user_uuid=None):
                               'next': nextp,
                               'first': 1,
                               'last': p.num_pages
-                          }
+                        }
                   }
         if user is not None:
             context['user_id'] = user_uuid
@@ -712,7 +738,160 @@ def report_stats_ccaa(request):
     return render(request, 'stats/report_stats_ccaa.html', context)
 
 
-@api_view(['GET'])
+@login_required
+def global_assignments(request):
+    this_user = request.user
+    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    if this_user_is_superexpert:
+        national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
+        keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
+        report_id_table = {}
+        for row in keys:
+            report_id_table[row['report_id']] = {'max_version': row['version_number__max'],
+                                                 'min_version': row['version_number__min'],
+                                                 'num_versions': row['version_number__count']}
+        data = []
+        total_unassigned = 0
+        total_progress = 0
+        total_pending = 0
+        # manually add spain
+        current_country = 17
+        unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+            hide=True).exclude(photos=None).filter(type='adult').filter(
+            Q(country_id=current_country) | Q(country_id__isnull=True)).annotate(
+            n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+        unassigned_filtered = filter(lambda x:
+                                     report_id_table[x.report_id]['num_versions'] == 1 or
+                                     (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned)
+        progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+            hide=True).exclude(photos=None).filter(type='adult').filter(
+            Q(country_id=current_country) | Q(country_id__isnull=True)).annotate(
+            n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+        progress_filtered = filter(lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (
+                    report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
+                    report_id_table[x.report_id]['max_version']), progress)
+        user_id_filter = settings.USERS_IN_STATS
+        pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(
+            validation_complete=False).filter(report__type='adult').values('report')
+        n_unassigned = len(list(unassigned_filtered))
+        n_progress = len(list(progress_filtered))
+        n_pending = pending.count()
+        data.append(
+            {
+                "ns_id": 'N/A',
+                "ns_username": 'N/A',
+                "ns_country_id": 17,
+                "ns_country_code": 'ESP',
+                "ns_country_name": 'Spain',
+                "unassigned": n_unassigned,
+                "progress": n_progress,
+                "pending": n_pending
+            }
+        )
+        total_unassigned += n_unassigned
+        total_progress += n_progress
+        total_pending += n_pending
+        for user in national_supervisors:
+            current_country = user.userstat.national_supervisor_of.gid
+            unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+            unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
+            progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+            progress_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), progress )
+            user_id_filter = UserStat.objects.filter(native_of__gid=current_country).values('user__id')
+            pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
+            n_unassigned = len(list(unassigned_filtered))
+            n_progress = len(list(progress_filtered))
+            n_pending = pending.count()
+            data.append(
+                {
+                    "ns_id":user.id,
+                    "ns_username":user.username,
+                    "ns_country_id":user.userstat.national_supervisor_of.gid,
+                    "ns_country_code": user.userstat.national_supervisor_of.iso3_code,
+                    "ns_country_name":user.userstat.national_supervisor_of.name_engl,
+                    "unassigned": n_unassigned,
+                    "progress": n_progress,
+                    "pending": n_pending
+                }
+            )
+            total_unassigned += n_unassigned
+            total_progress += n_progress
+            total_pending += n_pending
+        summary = { 'total_unassigned':total_unassigned, 'total_progress':total_progress, 'total_pending':total_pending }
+        context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary}
+        return render(request, 'stats/global_assignments.html', context)
+    else:
+        return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+
+@login_required
+def global_assignments_list(request, country_code=None, status=None):
+    countryID = EuropeCountry.objects.filter(iso3_code=country_code)
+    user_id_filter = settings.USERS_IN_STATS
+    keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
+
+    for c in countryID:
+        countryGID = c.gid
+
+    print(countryGID)
+
+    '''national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()'''
+    national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of=countryGID).order_by('userstat__national_supervisor_of__name_engl').all()
+
+    for u in national_supervisors:
+        idUser = u.id
+
+    report_id_table = {}
+    for row in keys:
+        report_id_table[row['report_id']] = {'max_version': row['version_number__max'],
+                                             'min_version': row['version_number__min'],
+                                             'num_versions': row['version_number__count']}
+    if status == 'unassigned':
+        unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+            hide=True).exclude(photos=None).filter(type='adult').filter(country_id=countryGID).annotate(
+            n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+
+        reportList = list(filter(lambda x:
+                                 report_id_table[x.report_id]['num_versions'] == 1 or
+                                 (report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
+                                  report_id_table[x.report_id]['max_version']), unassigned))
+
+    elif status == 'progress':
+
+        progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+            hide=True).exclude(photos=None).filter(type='adult').filter(
+            Q(country_id=countryGID) | Q(country_id__isnull=True)).annotate(
+            n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+
+        reportList = list(filter(lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (
+                report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
+                report_id_table[x.report_id]['max_version']), progress))
+
+    elif status == 'pending':
+        reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
+
+    #ExpertReportAnnotation
+
+    print(len(reportList))
+
+    listas = []
+    i = 0
+    while i < len(reportList):
+    #for t in reportList:
+        print(reportList[i].get_expert_recipients())
+        listas.append({
+            'idReports': reportList[i].__unicode__(),
+            'experts': reportList[i].get_expert_recipients(),
+        })
+        i += 1
+        print(listas)
+    context = {'data': listas, 'country': country_code, 'status': status}
+
+    return render(request, 'stats/global_assignments_list.html', context)
+
+
+
+
 @login_required
 def workload_stats(request, country_id=None):
     this_user = request.user
@@ -796,6 +975,7 @@ def get_user_xp_data(request):
     user_id = request.query_params.get('user_id', '-1')
     locale = request.query_params.get('locale', 'en')
     update = request.query_params.get('update', False)
+    u = None
     try:
         u = TigaUser.objects.get(pk=user_id)
     except TigaUser.DoesNotExist:
@@ -805,7 +985,7 @@ def get_user_xp_data(request):
     translation.activate(locale)
 
     if update == False:
-        retval = compute_user_score_in_xp_v2(user_id)
+        retval = { "total_score": u.score_v2 }
     else:
         retval = compute_user_score_in_xp_v2(user_id, True)
     return Response(retval)
@@ -841,3 +1021,42 @@ def get_hashtag_map_data(request):
         max_date = max(dates)
         max_date_str = max_date.strftime('%d-%m-%Y / %H:%M:%S')
     return Response({ 'stats':{ 'earliest_date': min_date_str, 'latest_date': max_date_str, 'n': n }, 'data': data})
+
+
+@login_required
+def expert_report_assigned_data(request):
+
+    report_list = []
+
+    a = ExpertReportAnnotation.objects.all().order_by('-created')
+
+    paginator = Paginator(a, 50)
+    page = request.GET.get('page', 1)
+    try:
+        reports = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        reports = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        reports = paginator.page(paginator.num_pages)
+
+
+    for t in reports:
+        if t.report.country is None:
+            report_list.append({
+                'assignedExpert': str(t.user),
+                'codiReport': str(t.report),
+                'ubication': 'Null',
+                'assignationDate': t.created.strftime("%Y-%m-%d")
+            })
+        else:
+            report_list.append({
+                'assignedExpert': str(t.user),
+                'codiReport': str(t.report),
+                'ubication': str(t.report.country.name_engl),
+                'assignationDate': t.created.strftime("%Y-%m-%d")
+            })
+    pages = range(1, reports.paginator.num_pages + 1)
+
+    return render(request, 'tigacrafting/expert_report_assigned_data.html', {'list': report_list, 'pages': pages, 'reports': reports})

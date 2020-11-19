@@ -106,7 +106,7 @@ def give_retroactive_awards_to_user(user, granter):
     print("Starting new user")
     user_reports = get_all_user_reports(user).order_by('creation_time')
     first_of_season_awarded_for_year = []
-    last_versions = filter(lambda x: not x.deleted and x.latest_version, user_reports)
+    last_versions = list(filter(lambda x: not x.deleted and x.latest_version, user_reports))
     if len(last_versions) > 0:
         if len(last_versions) > 1:
             two_consecutives = False

@@ -231,7 +231,7 @@ var MOSQUITO = (function (m) {
                           _this.addBitingsUI(layer,item, options)
                           break;
                         case 'F': // user fixes
-                            _this.addLayerFixesUI(layer,item)
+                            _this.addLayerFixesUI(layer,item);
                             break;
                         case 'M': // Forecast models
                             options={
@@ -249,7 +249,12 @@ var MOSQUITO = (function (m) {
                               'kindSelectorText': 'layer.models.vector'
                             }
                             mode = 'vector'
-                            modelDates=MOSQUITO.config.vector_municipalities
+                            //if logged default is municipalities models
+                            if (MOSQUITO.app.headerView.logged){
+                              modelDates=MOSQUITO.config.vector_municipalities
+                            }else{
+                              modelDates=MOSQUITO.config.vector_grid
+                            }
 
                             if (MOSQUITO.config.availableVectorData){
                               _this.modelsUI(layer, item, options, mode, modelDates)
@@ -257,7 +262,7 @@ var MOSQUITO = (function (m) {
                             break;
                         case 'N': // Forecast models
                             options={
-                              'infoPopup': 'layer.predictionmodels.description',
+                              'infoPopup': 'layer.predictionmodels.viruscontent',
                               'infoIcon': 'fa fa-question question-mark-toc',
                               'infoIconId': 'virusToolTip',
                               'forecastMonthId': 'monthVirusMunicipalityProb',
@@ -654,8 +659,10 @@ var MOSQUITO = (function (m) {
             this.setActiveClass();
 
     		    this._map.on('layeradd', function(layer) {
+
               if('_meta' in layer.layer){
                 var item = section.find('#layer_'+ layer.layer._meta.key) ;
+
                 item.addClass('active');
                 item.parent().parent().prev().find('.layer-group').addClass('active');
                 if (typeof MOSQUITO.app.mapView !== 'undefined'){
@@ -693,6 +700,49 @@ var MOSQUITO = (function (m) {
              .attr('class','group-title')
          .appendTo(parentDiv)
 
+//////////////////////////
+        //Question mark (popover text) only for certain accordion groups
+        var excludedGroups=['tiger', 'zika','koreicus', 'japonicus', 'culex']
+        if (excludedGroups.indexOf(group_name)===-1 ){
+            let question_mark = $('<a>', {
+              'tabindex':'0',
+              'role': 'button',
+              'data-trigger': 'focus',
+              // 'data-toggle':'popover-filters',
+              'data-placement':'left',
+              'i18n': group_name + '.description|data-content',
+              'data-container': 'body',
+              'class':'fa fa-question question-mark-toc question-mark-filters',
+              'id': 'question_mark_filters',
+            })
+            var questionDiv = $('<div>')
+              .attr('id', 'question_mark_container')
+
+            question_mark.appendTo(questionDiv)
+            questionDiv.appendTo(parentDiv)
+
+            // $(document).click(function(e) {
+            //   var isVisible = $("[data-toggle='popover-filters']").data('bs.popover').tip().hasClass('in');
+            //   if (isVisible){
+            //     question_mark.click()
+            //     return false;
+            //   }
+            // });
+
+            question_mark.on('click', function(event) {
+             event.stopPropagation();
+             return false;
+            });
+
+            $(question_mark).popover({
+              html: true,
+              // trigger: 'focus',
+              content: function() {
+                return true;
+                }
+            })
+        };
+//////////////////////////
           var icon = $('<div/>')
               .attr('class', 'layer-group-icon')
               .attr('aria-hidden','true')
@@ -716,7 +766,9 @@ var MOSQUITO = (function (m) {
 
           // QUESTION MARK
           let question_mark = $('<a>', {
-            'href':'#',
+            'tabindex':'0',
+            'role': 'button',
+            'data-trigger': 'focus',
             'id': options.infoIconId,
             'data-toggle':'popover',
             'data-placement':'left',
@@ -728,6 +780,7 @@ var MOSQUITO = (function (m) {
           question_mark.appendTo(labelContainer)
           question_mark.on('click', function(event) {
             event.stopPropagation();
+            return false;
           });
 
           $(question_mark).popover({
@@ -738,15 +791,15 @@ var MOSQUITO = (function (m) {
           });
 
           // LISTEN ANY CLICK TO HIDE POPOVER
-          $(document).click(function(e) {
-            var isVisible = $("#"+options.infoIconId).data('bs.popover').tip().hasClass('in');
-            if (isVisible){
-              question_mark.click()
-            }
-            if (_this.highlight_layer){
-              _this.map.removeLayer(_this.highlight_layer)
-            }
-          });
+          // $(document).click(function(e) {
+          //   var isVisible = $("#"+options.infoIconId).data('bs.popover').tip().hasClass('in');
+          //   if (isVisible){
+          //     question_mark.click()
+          //   }
+          //   if (_this.highlight_layer){
+          //     _this.map.removeLayer(_this.highlight_layer)
+          //   }
+          // });
 
           //when user is not logged, print species selector for vector municipalities model
           var date_selector = $('<div>', {'id': 'forecast_date_selector'})
@@ -832,7 +885,40 @@ var MOSQUITO = (function (m) {
         },
 
         addLayerFixesUI: function(layer,item){
-          $('<label i18n="'+layer.title+'" class="multiclass">').appendTo(item);
+
+          //question mark (popover info text)
+          var labelContainer = $('<div>')
+            .attr('id', 'layer_F')
+            .appendTo(item)
+
+          $('<label i18n="'+layer.title+'" class="multiclass">').appendTo(labelContainer);
+
+          // QUESTION MARK
+          let question_mark = $('<a>', {
+            'tabindex':'0',
+            'role': 'button',
+            'data-trigger': 'focus',
+            'id': options.infoIconId,
+            'data-toggle':'popover',
+            'data-placement':'left',
+            'i18n': 'layer.userfixes.description|data-content',
+            'data-container': 'body',
+            'class':options.infoIcon
+          })
+
+          question_mark.appendTo(labelContainer)
+          question_mark.on('click', function(event) {
+            event.stopPropagation();
+            return false;
+          });
+
+          $(question_mark).popover({
+            html: true,
+            content: function() {
+              return true;
+              }
+          });
+
           var sublist = $('<ul>').attr('class', 'sub-sites').appendTo(item);
           // get the segments for the legend
           for (i=0;i<layer.segments.length;++i) {
@@ -869,7 +955,9 @@ var MOSQUITO = (function (m) {
 
           // QUESTION MARK
           let question_mark = $('<a>', {
-            'href':'#',
+            'tabindex':'0',
+            'role': 'button',
+            'data-trigger': 'focus',
             'id': options.infoIconId,
             'data-toggle':'popover',
             'data-placement':'left',
@@ -881,6 +969,7 @@ var MOSQUITO = (function (m) {
           question_mark.appendTo(labelContainer)
           question_mark.on('click', function(event) {
             event.stopPropagation();
+            return false;
           });
 
           $(question_mark).popover({
@@ -943,20 +1032,24 @@ var MOSQUITO = (function (m) {
                       var vector_select = $('#' + options.selectId);
                       var vectorValue = $('#'+options.selectId).val()
 
-                      var newAvailableValue=''
-                      $('#' + options.selectId +' option').each(function(){
-                        var disabled='false'
-                        if (availableDates[this.value]===undefined){
-                            $(this).attr('disabled','true');
-                        }else{
-                          $(this).removeAttr('disabled');
-                          newAvailableValue = this.value
-                          $('#' + options.selectId).val(newAvailableValue)
-                        }
-                      });
+                      if (availableDates[vectorValue]===null){
+                        var newAvailableValue=''
+                        $('#' + options.selectId +' option').each(function(){
+                          var disabled='false'
+                          if (availableDates[this.value]===undefined){
+                              $(this).attr('disabled','true');
+                          }else{
+                            $(this).removeAttr('disabled');
+                            newAvailableValue = this.value
+                            $('#' + options.selectId).val(newAvailableValue)
+                          }
+                        });
+                        vectorValue = newAvailableValue
+                      }
+
                       vector_select.selectpicker('refresh')
                       if (newAvailableValue!=''){
-                        _this.rebuildSelectPicker(options.forecastYearId, options.forecastMonthId, availableDates[newAvailableValue])
+                        _this.rebuildSelectPicker(options.forecastYearId, options.forecastMonthId, availableDates[vectorValue])
                       }else{
                         //if no mosquito dates available then remove layer from map
                         e.stopPropagation();
@@ -1044,7 +1137,7 @@ var MOSQUITO = (function (m) {
 
             $(vector_select).on("changed.bs.select",
                   function(e, clickedIndex, newValue, oldValue) {
-                newDatesAvailable = MOSQUITO.config.vector_municipalities[this.value]
+                newDatesAvailable = modelDates[this.value]
                 _this.rebuildSelectPicker(options.forecastYearId, options.forecastMonthId, newDatesAvailable)
 
             })

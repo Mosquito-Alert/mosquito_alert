@@ -1,0 +1,44 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Mosquito Alert Score Info
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>Informacije o bodovanju</h2>
+        <p>Radnje koje se obavljaju na Mosquito Alert imaju priznanje i nagradu u obliku bodova. Broj bodova po izvještaju varira ovisno o informaciji koju je sudionik omogućio i o njezinoj kvaliteti.</p>
+        <p>Maksimalni broj bodova koji može biti ostvaren po izvješću je:</p>
+        <ul>
+            <li>Invazivna vrsta komaraca iz roda<em> Aedes</em>: 20 bodova</li>
+            <li>Domaći komarac: 14 bodova</li>
+            <li>Ulični slivnik u kojem se razvijaju komarci: 20 bodova</li>
+            <li>Druga legla (razvojna staništa) na javnim površinama: 16 bodova</li>
+        </ul>
+        <p>Dodatno, moguće je osvojiti bonus bodove za prvog komarca u sezoni, prvi izvještaj dana ili za česta sudjelovanja. Kad se postigne određeni broj izvješća, ne samo da dobivate dodatni broj bodova, već možete osvojiti poseban trofej. Postoje različiti trofeji koje možete osvojiti u ovisnosti od postignutih rezultata.</p>
+        <p>Izvještaji koji su poslani kao komarci, ali se uspostavilo nakon ocjene stručnjaka da ipak nisu komarci, neće dobiti nikakve bodove. Fotografija koja ne omogućava stručnjacima determinaciju komaraca ili legla također neće biti bodovana.</p>
+        <p>Akumuliranje bodova omogućiti će dostizanje viših razina:</p>
+        <ul>
+            <li>(1) početnik</li>
+            <li>(2) suradnik</li>
+            <li>(3) stručnjak</li>
+            <li>(4) majstor</li>
+            <li>(5) velemajstor</li>
+        </ul>
+        <p>Ove ikonice pokazuju postignuti nivo:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Ploča bodova</h2>
+        <p>Globalnom rangiranju se pristupa tako što čete kliknuti na bodove na glavnom ekranu izbornika. Odabirom rang pozicije na ekranu se pojavljuje presjek bodova koje je osvojio korisnik. Klikom na opcije ''više podataka'' pristupit ćete ploči prosjeka bodova. </p>
+        <p>U ovoj sekciji nalazi se lista poslanih izvješča s osvojenim bodovima sa svakim poslanim izvješćem. Izvješća su interaktivna i klikom ćete pristupiti prosjeku bodova i informaciji za što je koji bod osvojen.</p>
+
+    </div>
+</div>
+{% endblock %}

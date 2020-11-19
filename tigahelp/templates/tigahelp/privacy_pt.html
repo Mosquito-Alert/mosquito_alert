@@ -1,0 +1,79 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Política de Privacidade
+{% endblock %}
+
+
+{% block content %}
+
+<div class="center">
+    <h2>Política de Privacidade</h2>
+</div>
+
+<p>A Mosquito Alert (seja qual for o nome que já teve no passado ou que venha a adquirir no futuro) recolhe, entre
+    outras coisas, dados e imagens compartilhados por voluntários e disponibiliza-os a terceiros e ao público em geral.
+    Para proteger a privacidade dos seus voluntários, a Mosquito Alert visa evitar a recolha de informações pessoais, ou
+    seja, informações que possam ser utilizadas para identificar individualmente uma pessoa física específica. Portanto,
+    a Mosquito Alert solicita que os voluntários não transmitam nomes, endereços, senhas e qualquer outra informação
+    pessoal ao enviar relatórios. As localizações exatas das observações são recolhidas durante o envio do relatório e
+    podem corresponder à localização exata dos voluntários, mas essas informações estão vinculadas apenas ao relatório e
+    a uma ID de usuário gerada aleatoriamente. Nenhum metadado da foto é solicitado, e se as fotos enviadas para o
+    projeto através do aplicativo contiverem metadados, estes metadados serão removidos assim que a imagem chegar ao
+    servidor do projeto, exceto para a geolocalização da foto, que permanecerá associada à fotografia e pode ser
+    publicada.</p> <p>A Mosquito Alert também coleta em segundo plano a localização aproximada dos voluntários em
+    intervalos aleatórios no tempo (para avaliar as áreas geográficas cobertas ou exploradas pelos voluntários), mas
+    essa informação também está ligada exclusivamente a uma ID de usuário gerada aleatoriamente. Os voluntários podem
+    incluir notas e fotografias em seus relatórios, mas é da sua responsabilidade não incluir nessas notas e fotografias
+    quaisquer informações que desejem manter privadas ou quaisquer informações que violem os direitos de privacidade de
+    terceiros, ou sejam inconsistentes com o Acordo do Utilizador da Mosquito Alert .</p> <p>A Mosquito Alert possui
+    mecanismos para evitar, na medida do possível, que os dados pessoais que os utilizadores tenham enviado por engano,
+    apesar das medidas de anonimato, sejam compartilhados com o público em geral. Da mesma forma, a Mosquito Alert
+    aplica medidas para detectar se dados pessoais foram compartilhados e removê-los do banco de dados, na medida do
+    possível. Apesar disso, se em algum caso específico essas medidas não impedirem a publicação de dados pessoais,
+    aqueles que o detectarem são incentivados a notificar os responsáveis ​​pela Mosquito Alert<span>, a fim de proceder à eliminação do seu aparecimento no espaço público, assim que possível. </span>A
+    Mosquito Alert <span> não pode garantir a eliminação de dados pessoais que poderão ser coletados pela Mosquito Alert por engano, apesar das medidas de anonimato, nem pode garantir que tais dados não serão visíveis para os membros da Mosquito Alert ou para qualquer um de seus colaboradores ou terceiros para usar.</span>
+</p> <p>Note-se que se os participantes compartilharem as suas observações (relatórios) em qualquer meio público, como
+    as redes sociais, eles podem estar associando essas observações aos seus dados pessoais (por exemplo, conta pessoal
+    nas redes sociais), renunciando voluntariamente ao anonimato que o projeto deseja proporcionar.</p> <p>A Mosquito
+    Alert permite que os participantes mantenham os seus dados mantendo o anonimato, por meio de um sistema de
+    autenticação por contas externas (e-mail, Facebook, Twitter), através da Firebase. Isso permite que os participantes
+    sincronizem vários dispositivos e recuperem os dados caso precisem desinstalar o aplicativo. Esta opção é voluntária
+    e não é ativada por padrão. Em qualquer caso, as informações coletadas pelo Firebase para essa finalidade não são
+    armazenadas nos servidores da Mosquito Alert, não estão vinculadas aos dados científicos coletados pela Mosquito
+    Alert e não são processadas pela Mosquito Alert.</p> <p>Uma lista detalhada das informações que a Mosquito Alert
+    recolhe é a seguinte:</p>
+<ul>
+    <li>Relatórios efetuados e enviados por voluntários com informações relacionadas a focos de reprodução, picadas e
+        avistamentos de possíveis mosquitos (a Mosquito Alert o atualmente está focada em 5 espécies diferentes de
+        mosquitos), bem como as respostas dos voluntários às perguntas que lhes são enviadas através do aplicativo. Isso
+        inclui a localização precisa das observações e fotografias tiradas pelos voluntários (bem como a localização dos
+        metadados das fotografias, se aplicável), notas ou qualquer outra informação que o voluntário acrescente ao
+        relatório.
+    </li>
+    <li>Informações sobre a localização aproximada dos voluntários, amostradas em segundo plan e em intervalos de tempo
+        aleatórios. Esta informação é recolhida para fins científicos, para conhecer as áreas geográficas exploradas
+        pelos voluntários (esforço de amostragem, isto é, em que áreas há ou não participação e em que medida, se pode
+        relacioná-lo com o número de observações nessa mesma área, por exemplo com técnicas de modelação ou
+        estatísticas) e para melhorar o conhecimento sobre as vias de dispersão do mosquito relacionadas com a
+        mobilidade humana (ou seja, para entender melhor a relação entre a mobilidade das pessoas em grande escala e a
+        dispersão dessas espécies de mosquitos no território). Esta informação é de elevado interesse científico. Para
+        evitar a recolha dos locais exatos dos voluntários, esses locais são colocados numa quadrícula de 0,025 graus de
+        latitude e longitude, e apenas o identificador dos quadrados na quadrícula em que pousam é transmitido ao
+        servidor. Portanto, é impossível determinar a localização real, dentro de uma área de 0,025 graus de latitude
+        por 0,025 graus de longitude (entre aproximadamente 3,1 e aproximadamente 7,7 km quadrados, ou entre 765 e 1.901
+        campos de futebol). Em qualquer caso, os voluntários podem desativar esta opção, ativada por padrão, nas
+        configurações do aplicativo.
+    </li>
+    <li>Informações sobre o modelo do telefone, a bateria, as configurações de idioma e a versão do aplicativo (ou seja,
+        a versão instalada e o sistema operacional e a versão do mesmo em que está instalado). Essas informações são
+        usadas para ajudar a equipe de investigação a melhorar o aplicativo.
+    </li>
+    <li>Se o voluntário optar por se autenticar por meio de uma conta externa usando o Firebase, o Firebase pode
+        recolher o endereço de e-mail, senha, número de telefone, endereço IP e outras informações associadas a essa
+        conta externa.
+    </li>
+</ul>
+
+{% endblock %}

@@ -1,0 +1,7 @@
+.asyncload-big {
+    background-image: url(/static/tigacrafting/css/PDFLoader.gif);
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 100px;
+    padding: 19px;
+}

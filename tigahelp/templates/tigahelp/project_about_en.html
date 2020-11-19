@@ -1,0 +1,116 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About The Project
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>What is Mosquito Alert?</h2>
+        <p>Mosquito Alert is a citizen science platform that facilitates collaboration between various actors to study,
+            monitor and control mosquito species that carry diseases like dengue, Zika, chikungunya and West Nile
+            virus.</p>
+        <p>The project gives key roles to citizens, scientists, public health experts and educators. Mosquito Alert lets
+            anyone collect and share data (1) and engage in data validation alongside professional entomologists, who
+            label mosquito reports and respond to participants (2). Once validated, data is made available to the
+            general public through an interactive web map (3). It is also relied on by scientists (4) and by public
+            health agents (5) to study and monitor disease vector mosquitoes.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Why is Mosquito Alert needed?</h2>
+        <p>In recent decades the number of invasive mosquitoes and emerging mosquito-borne diseases has increased on a
+            global scale. New invasive species, mainly of the genus Aedes , have settled in new areas and continue to
+            expand. Aedes mosquitoes are important from a health perspective because of their ability to transmit
+            diseases like dengue, Zika and chikungunya. Likewise, the common mosquito (Culex pipiens) is important
+            because it can transmit the West Nile virus. The risk mosquitoes pose to public health makes it important to
+            monitor their populations.</p>
+        <p>Given the complexity of the problem, Mosquito Alert opens up mosquito surveillance and research to the
+            public, allowing collaboration between different actors through its app and its other platforms and
+            communities.</p>
+        <h2>What data is collected?</h2>
+        <p>Data is collected on 5 different mosquito species: the tiger mosquito (<em>Aedes albopictus</em>), the yellow
+            fever mosquito (<em>Aedes aegypti</em>), the Asian bush mosquito (<em>Aedes japonicus</em>), the Korean
+            mosquito (<em>Aedes koreicus</em>), and the common mosquito (<em>Culex pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>For these species, data is collected on adult mosquitoes and their breeding sites and bites. All of this data
+            is important for better understanding these species, and for monitoring and controlling them.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>Mosquito Alert also collects the approximate locations of participants' devices, sampling these locations at
+            5 random times each day unless the participant has opted out of this. Locations are masked on a grid of
+            0.025 x 0.025 degrees latitude and longitude (approximately 2x2 km) before being sent to the Mosquito Alert
+            server. For privacy reasons, only the grid square identifier is actually shared with Mosquito Alert, not the
+            precise location. This information is highly valuable from a scientific perspective, as it enables
+            researchers to make better estimates about mosquito populations, distinguishing, for example, places with
+            few mosquitoes from places with few participants (but potentially many mosquitoes). Participant locations
+            provide information about what is known in ecology as the sampling effort.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>What is the data used for?</h2>
+        <p>Here are some examples:</p>
+        <ul>
+            <li type="disc">The reports people send to Mosquito Alert have proven in recent years to be an effective
+                early warning system against the invasion of new mosquitoes. The system is used to monitor established
+                mosquito populations and discover new populations.
+            </li>
+            <li type="disc">Observations of mosquitoes, breeding sites and bites help scientists and public health
+                managers to assess the risk and manage disease vector populations. In order to estimate the abundance of
+                mosquitoes in a given site, it is important to adjust observations based on sampling effort. To do this,
+                the Mosquito Alert app collects data on the approximate position of the device at random times of the
+                day. Positions are masked on a grid of approximately 2x2 km to protect privacy.
+            </li>
+            <li type="disc">Work is currently underway to develop a real-time, participatory and dynamic epidemiological
+                risk prediction system.
+            </li>
+        </ul>
+        <h2>Where can I find more information?</h2>
+        <p>You will find more information on the project website and on social media.</p>
+        <p><a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a></p>
+        <p>In the settings of the app you will find a participant tutorial, a guide to help you identify mosquitos, the
+            privacy policy and terms of use, and information about the entities behind this project.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

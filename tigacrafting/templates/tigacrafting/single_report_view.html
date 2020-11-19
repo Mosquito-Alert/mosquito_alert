@@ -170,6 +170,9 @@
                     <h4>
                         <strong>{{ report.type|capfirst }} Report {{ report.version_UUID }} </strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC - {{ report.country_label }} - {{ report.language }}
                     </h4>
+                    <h5>
+                        <strong>Report code - {{ report.report_id }}</strong>
+                    </h5>
                 </div>
             </div>
             <div class="row" style="padding-top:10px;padding-bottom:10px;">

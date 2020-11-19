@@ -1,0 +1,56 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Mosquito Alert Score Info
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+    <div class='text_container'>
+
+        <h2>INFORMACION MBI PIKËT</h2>
+        <p>Veprimet e kryera tek Aplikacioni "Mosquito Alert" kanë njohje dhe shpërblime në formën e pikëve. Numri i
+            pikëve për raport ndryshon në varësi të informacionit të siguruar dhe cilësisë së tij.</p>
+        <p>Pikët maksimale që mund të fitohet për raport janë:</p>
+        <ul>
+            <li>Mushkonja invazive Aedes: 20 pikë</li>
+            <li>Mushkonja e zakonshme: 14 pikë</li>
+            <li>Vende ku rriten si puseta/kanalizime: 20 pikë</li>
+            <li>Vende ku rriten të tjera në zona publike: 16 pikë</li>
+        </ul>
+        <p></p>
+        <p>Përveç kësaj, ka bonuse shtesë për mushkonjën e parë të sezonit, raportin e parë të ditës ose për
+            pjesëmarrësit e shpeshtë. Kur arrini një numër specifik raportesh, jo vetëm që merrni pikë shtesë, por
+            merrni edhe një trofe të veçantë. Ka trofe të ndryshme sipas pikave të arritura.</p>
+        <p>Ato raporte që dërgohen si mushkonja, por që sipas vlerësimit të ekspertëve dalin që nuk janë të tilla, nuk
+            do të fitojnë pikë. Një fotografi që nuk i lejon ekspertët të përcaktojnë mushkonjën ose vendin ku ato
+            rriten, gjithashtu, nuk do të fitojë pikë.</p>
+        <p>Grumbullimi i pikëve do ju lejojë që të shkoni një <strong>nivel</strong> më sipër:</p>
+        <ul>
+            <li>(1) Rishtazi (fillestar)</li>
+            <li>(2) Kontribues (kontribues)</li>
+            <li>(3) Ekspert (ekspert)</li>
+            <li>(4) Master (master)</li>
+            <li>(5) Master Kryesor (master kryesor)</li>
+        </ul>
+        <p>Këto ikona tregojnë nivelin e arritur:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Paneli i pikëve</h2>
+        <p>Renditja globale arrihet duke klikuar tek pikët në ekranin kryesor. Shtypja e një pozicioni renditës do të
+            shfaq numrin e proporcionit të pikëve maksimale dhe minimale që janë fituar nga përdoruesi.</p>
+        <p>Po të klikoni mbi "Më shumë detaje" do të arrini panelin e numrit të proporcionit të pikëve maksimale dhe
+            minimale.</p>
+        <p>Në këtë seksion gjendet lista e raporteve të dërguara me pikët e fituara në secilin prej tyre. Raportet janë
+            interaktive, duke klikuar, ju do të merrni proporcionin midis pikëve maksimale dhe minimale dhe përse keni
+            fituar pikë.</p>
+
+    </div>
+</div>
+
+{% endblock %}
+

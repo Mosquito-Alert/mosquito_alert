@@ -1,0 +1,52 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Mosquito Alert Pontozás Info
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>PONTOZÁS INFO</h2>
+        <p>A Mosquito Alertben végrehajtott tevékenységek elismerést és jutalmakat kapnak pontok formájában. A
+            jelentésenként kapott pontok száma a nyújtott információktól és azok minőségétől függően változik.</p>
+        <p>A jelentésekért megszerezhető maximális pontok:</p>
+        <ul>
+            <li>Invazív <em>Aedes</em> Szúnyog: 20 pont</li>
+            <li>Közönséges szúnyog: 14 pont</li>
+            <li>Esőelvezető csatorna tenyészőhely: 20 pont</li>
+            <li>Egyéb tenyészőhely közterületen: 16 pont</li>
+        </ul>
+        <p>Ezenkívül extra bónuszok járnak a szezon első szúnyogaira, a nap első jelentésére vagy a gyakori részvételre.
+            Amikor elérsz egy meghatározott számú jelentést, nemcsak extra pontokat kapsz, hanem egy különleges trófeát
+            is. Különböző trófeák érhetők el a megtett mérföldkövek szerint.</p>
+        <p>Azok a jelentések, amelyeket szúnyogként küldenek, de a szakértői validálás során kiderül, hogy nem
+            szúnyogok, nem fognak pontokat szerezni. Nem kap pontot egy olyan fénykép sem, amely nem teszi lehetővé a
+            szakértők számára a szúnyog vagy a tenyészhely azonosítását.</p>
+        <p>A pontok felhalmozása lehetővé teszi, hogy feljebb lépj egy <b>szintet</b>:</p>
+        <ul>
+            <li>(1) Kezdő (kezdő)</li>
+            <li>(2) Együttműködő (együttműködő)</li>
+            <li>(3) Szakértő (szakértő)</li>
+            <li>(4) Mester (mester)</li>
+            <li>(5) Nagymester (nagymester)</li>
+        </ul>
+        <p>Ezek az ikonok jelölik az elért szintet:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Pont panel</h2>
+        <p>A globális rangsor eléréséhez kattintson a pontszámra a fő képernyőn. A rangsor pozíció megnyomásakor
+            megjelenik a felhasználó által megszerzett pontok lebontása.</p>
+        <p>A "további részletek"-re kattintva hozzáférsz a lebontott pontok panelhez.</p>
+        <p>Ebben a részben található a beküldött jelentések listája, valamint az azokra kapott pontszámok minden
+            esetben. A jelentések interaktívak, rákattintva megkapja a lebontott pontszámot és a pontszám miértjét.</p>
+
+    </div>
+</div>
+{% endblock %}

@@ -2,21 +2,22 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.generics import mixins
+from rest_framework.generics import mixins, GenericAPIView
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.exceptions import ParseError
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django_filters import rest_framework as filters
-import django_filters
+#import django_filters
 from datetime import datetime, timedelta
 import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -35,6 +36,10 @@ import tigaserver_project.settings as conf
 import copy
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
+from django.db import connection
+from django.core.paginator import Paginator, EmptyPage
+import time
+
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
@@ -333,6 +338,31 @@ API endpoint for getting and posting masked location fixes.
     filter_fields = ('user_coverage_uuid', )
 
 
+class SessionPartialUpdateView(GenericAPIView, mixins.UpdateModelMixin):
+    '''
+    You just need to provide the field which is to be modified.
+    '''
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
+
+    def put(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+
+class SessionViewSet(viewsets.ModelViewSet):
+    """
+API endpoint for sessions
+A session is the full set of information uploaded by a user, usually in form of several reports
+    """
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
+    filter_fields = ('id', 'user' )
+
+    def filter_queryset(self, queryset):
+        queryset = super(SessionViewSet, self).filter_queryset(queryset)
+        return queryset.order_by('-session_ID')
+
+
 def lookup_photo(request, token, photo_uuid, size):
     if token == settings.PHOTO_SECRET_KEY:
         this_photo = Photo.objects.get(uuid=photo_uuid)
@@ -476,16 +506,16 @@ class MapDataFilter(filters.FilterSet):
         fields = ['day', 'week', 'month', 'year']
 
 
-class CoverageMapFilter(django_filters.FilterSet):
-    id_range_start = django_filters.NumberFilter(field_name='id', lookup_type='gte')
-    id_range_end = django_filters.NumberFilter(field_name='id', lookup_type='lte')
+class CoverageMapFilter(filters.FilterSet):
+    id_range_start = filters.NumberFilter(field_name='id', lookup_type='gte')
+    id_range_end = filters.NumberFilter(field_name='id', lookup_type='lte')
 
     class Meta:
         model = CoverageArea
         fields = ['id_range_start', 'id_range_end']
 
 
-class CoverageMonthMapFilter(django_filters.FilterSet):
+class CoverageMonthMapFilter(filters.FilterSet):
     id_range_start = filters.NumberFilter(field_name='id', lookup_expr='gte')
     id_range_end = filters.NumberFilter(field_name='id', lookup_expr='lte')
 
@@ -591,6 +621,7 @@ class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
 
 
+'''
 class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
         non_visible_report_id = []
@@ -602,6 +633,23 @@ class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
+'''
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
+class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
+    if conf.FAST_LOAD and conf.FAST_LOAD == True:
+        non_visible_report_id = []
+    else:
+        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    serializer_class = MapDataSerializer
+    filter_class = MapDataFilter
+    pagination_class = StandardResultsSetPagination
 
 
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
@@ -722,8 +770,14 @@ def filter_partial_name(queryset, name):
         return queryset
     return queryset.filter(name__icontains=name)
 
-class TagFilter(django_filters.FilterSet):
-    name = django_filters.Filter(action=filter_partial_name)
+class TagFilter(filters.FilterSet):
+    name = filters.Filter(method='filter_partial_name')
+
+    def filter_partial_name(self, qs, name, value):
+        name = value
+        if not name:
+            return qs
+        return qs.filter(name__icontains=name)
 
     class Meta:
         model = Tag
@@ -891,6 +945,7 @@ def user_score_v2(request):
     user_id = request.query_params.get('user_id', -1)
     if user_id == -1:
         raise ParseError(detail='user_id is mandatory')
+    user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
     result = compute_user_score_in_xp_v2(user_id, update=True)
     return Response(result)
 
@@ -962,7 +1017,7 @@ def custom_render_notification_queryset(queryset,locale):
 @api_view(['GET','POST','DELETE','PUT'])
 def user_notifications(request):
     if request.method == 'GET':
-        locale = request.query_params.get('locale', 'es')
+        locale = request.query_params.get('locale', 'en')
         user_id = request.query_params.get('user_id', -1)
         acknowledged = 'ignore'
         if request.query_params.get('acknowledged') != None:
@@ -1110,6 +1165,209 @@ def send_notifications(request):
         results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
         return Response(results)
 
+@api_view(['GET'])
+def nearby_reports_no_dwindow(request):
+    if request.method == 'GET':
+
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 10)
+        show_hidden = request.query_params.get('show_hidden', 0)
+        show_versions = request.query_params.get('show_versions', 0)
+
+        center_buffer_lat = request.query_params.get('lat', None)
+        center_buffer_lon = request.query_params.get('lon', None)
+
+        user = request.query_params.get('user', None)
+        tigauser = None
+        user_uuids = None
+        if user is not None:
+            tigauser = get_object_or_404(TigaUser.objects.all(), pk=user)
+            if tigauser.profile is not None:
+                user_uuids = TigaUser.objects.filter(profile=tigauser.profile).values('user_UUID')
+
+        radius = request.query_params.get('radius', 5000)
+        try:
+            int(radius)
+            if int(radius) > 10000:
+                raise ParseError(detail='Values above 10000 not allowed for radius')
+        except ValueError:
+            raise ParseError(detail='invalid radius number must be integer')
+
+        try:
+            int(page_size)
+            if int(page_size) > 200:
+                raise ParseError(detail='page size can\'t be greater than 200')
+            if int(page_size) < 1:
+                raise ParseError(detail='page size can\'t be lower than 1')
+        except ValueError:
+            raise ParseError(detail='invalid radius number must be integer')
+
+        if center_buffer_lat is None or center_buffer_lon is None:
+            raise ParseError(detail='invalid parameters')
+
+        '''
+        sql = "SELECT \"version_UUID\"  " + \
+            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
+            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
+        '''
+
+        #Older postgis versions didn't like the second ::geography cast
+        sql = "SELECT \"version_UUID\"  " + \
+              "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
+              "ORDER BY point <-> 'SRID=4326;POINT({3} {4})'"
+
+        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+
+        cursor = connection.cursor()
+        cursor.execute(sql_formatted)
+        data = cursor.fetchall()
+        flattened_data = [element for tupl in data for element in tupl]
+
+        reports_adult = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True)\
+            .exclude(photos__isnull=True)\
+            .filter(type='adult')\
+            .annotate(n_annotations=Count('expert_report_annotations'))\
+            .filter(n_annotations__gte=3)
+        if user is not None:
+            if tigauser.profile is None:
+                reports_adult = reports_adult.exclude(user=user)
+            else:
+                reports_adult = reports_adult.exclude(user__user_UUID__in=user_uuids)
+        if show_hidden == 0:
+            reports_adult = reports_adult.exclude(version_number=-1)
+
+        reports_bite = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True) \
+            .filter(type='bite')
+        if user is not None:
+            if tigauser.profile is None:
+                reports_bite = reports_bite.exclude(user=user)
+            else:
+                reports_bite = reports_bite.exclude(user__user_UUID__in=user_uuids)
+        if show_hidden == 0:
+            reports_bite = reports_bite.exclude(version_number=-1)
+
+        reports_site = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True) \
+            .filter(type='site')
+        if user is not None:
+            if tigauser.profile is None:
+                reports_site = reports_site.exclude(user=user)
+            else:
+                reports_site = reports_site.exclude(user__user_UUID__in=user_uuids)
+        if show_hidden == 0:
+            reports_site = reports_site.exclude(version_number=-1)
+
+        if show_versions == 0:
+            #classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 and x.latest_version, reports_adult)
+            classified_reports_in_max_radius = filter(lambda x: x.latest_version and x.show_on_map, reports_adult)
+        else:
+            # classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 , reports_adult)
+            classified_reports_in_max_radius = filter(lambda x: x.show_on_map, reports_adult)
+
+
+        if user is not None:
+            if tigauser.profile is None:
+                user_reports = Report.objects.filter(user=user)
+            else:
+                user_reports = Report.objects.filter(user__user_UUID__in=user_uuids)
+            if show_hidden == 0:
+                user_reports = user_reports.exclude(version_number=-1)
+            if show_versions == 0:
+                user_reports = filter(lambda x: x.latest_version, user_reports)
+            all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site) + list(user_reports)
+        else:
+            all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site)
+
+        all_reports_sorted = sorted(all_reports, key=lambda x: x.creation_time, reverse=True)
+
+        paginator = Paginator( all_reports_sorted, int(page_size) )
+
+        try:
+            current_page = paginator.page(page)
+        except EmptyPage:
+            raise ParseError(detail='Empty page')
+
+        serializer = NearbyReportSerializer(current_page.object_list, many=True)
+
+        next = current_page.next_page_number() if current_page.has_next() else None
+
+        previous = current_page.previous_page_number() if current_page.has_previous() else None
+
+        if user_uuids is None:
+            if user is not None:
+                response = { "user_uuids": [user], "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+            else:
+                response = {"count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+        else:
+            user_uuids_flat = [x['user_UUID'] for x in user_uuids]
+            response = { "user_uuids": user_uuids_flat, "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+
+        return Response(response)
+
+
+@api_view(['GET'])
+def nearby_reports_fast(request):
+    if request.method == 'GET':
+        dwindow = request.query_params.get('dwindow', 90)
+        try:
+            int(dwindow)
+        except ValueError:
+            raise ParseError(detail='Invalid dwindow integer value')
+        if int(dwindow) > 365:
+            raise ParseError(detail='Values above 365 not allowed for dwindow')
+
+        date_n_days_ago = datetime.now() - timedelta(days=int(dwindow))
+
+        center_buffer_lat = request.query_params.get('lat', None)
+        center_buffer_lon = request.query_params.get('lon', None)
+
+        radius = request.query_params.get('radius', 5000)
+        if radius >= 10000:
+            raise ParseError(detail='Values above 10000 not allowed for radius')
+
+        if center_buffer_lat is None or center_buffer_lon is None:
+            return Response(status=400,data='invalid parameters')
+
+        sql = "SELECT \"version_UUID\"  " + \
+            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
+            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
+
+        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+
+        cursor = connection.cursor()
+        cursor.execute(sql_formatted)
+        data = cursor.fetchall()
+        flattened_data = [element for tupl in data for element in tupl]
+
+        reports = Report.objects.exclude(cached_visible=0)\
+            .filter(version_UUID__in=flattened_data)\
+            .exclude(creation_time__year=2014)\
+            .exclude(note__icontains="#345")\
+            .exclude(hide=True)\
+            .exclude(photos__isnull=True)\
+            .filter(type='adult')\
+            .annotate(n_annotations=Count('expert_report_annotations'))\
+            .filter(n_annotations__gte=3)\
+            .exclude(creation_time__lte=date_n_days_ago)
+
+        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
+
+        if len(classified_reports_in_max_radius) < 10:
+            serializer = NearbyReportSerializer(classified_reports_in_max_radius)
+        else:
+            serializer = NearbyReportSerializer(classified_reports_in_max_radius[:10])
+        return Response(serializer.data)
 
 # This is the old method which used a Window. It is now deprecated
 
@@ -1165,7 +1423,7 @@ def filter_partial_name_address(queryset, name):
         return queryset
     return queryset.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
 
-class UserAddressFilter(django_filters.FilterSet):
+class UserAddressFilter(filters.FilterSet):
     name = filters.Filter(method='filter_partial_name_address')
 
     def filter_partial_name_address(self, qs, name, value):
@@ -1296,19 +1554,58 @@ def profile_new(request):
 def profile_detail(request):
     if request.method == 'GET':
         firebase_token = request.query_params.get('fbt', -1)
+        uuid = request.query_params.get('usr_uuid', -1)
         if firebase_token == -1:
-            raise ParseError(detail='firebase token is mandatory')
-        profile = get_object_or_404(TigaProfile.objects,firebase_token=firebase_token)
-        serializer = DetailedTigaProfileSerializer(profile)
+            if uuid == -1:
+                raise ParseError(detail='either firebase token or usr_uuid are mandatory')
+            else:
+                user = get_object_or_404(TigaUser,user_UUID=uuid)
+                reports = Report.objects.filter(user=user).exclude(type='bite').exclude(type='mission')
+                serializer = DetailedReportSerializer(reports, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            profile = get_object_or_404(TigaProfile.objects,firebase_token=firebase_token)
+            serializer = DetailedTigaProfileSerializer(profile)
 
-        #This is probably very wrong. We filter a copy of the serialized data to exclude missions
-        copied_data = copy.deepcopy(serializer.data)
-        for device in copied_data['profile_devices']:
-            for idx, report in reversed(list(enumerate(device['user_reports']))):
-                if report['type'] == 'mission':
-                    del device['user_reports'][idx]
-                r = Report.objects.get(pk=report['version_UUID'])
-                if not r.latest_version:
-                    del device['user_reports'][idx]
+            #This is probably very wrong. We filter a copy of the serialized data to exclude missions
+            copied_data = copy.deepcopy(serializer.data)
+            for device in copied_data['profile_devices']:
+                for idx, report in reversed(list(enumerate(device['user_reports']))):
+                    if report['type'] == 'mission':
+                        del device['user_reports'][idx]
+                    r = Report.objects.get(pk=report['version_UUID'])
+                    if not r.latest_version:
+                        del device['user_reports'][idx]
 
-        return Response(copied_data, status=status.HTTP_200_OK)
+            return Response(copied_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def reports_id_filtered(request):
+    if request.method == 'GET':
+        report_id = request.query_params.get('report_id', -1)
+        if report_id == -1:
+            raise ParseError(detail='report_id is mandatory')
+        qs = Report.objects.filter(type='adult').exclude(version_number=-1).filter(report_id__startswith=report_id).order_by('-version_time')
+        serializer = ReportSerializer(qs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def uuid_list_autocomplete(request):
+    if request.method == 'GET':
+        loc = request.query_params.get('loc', -1)
+        user = request.user
+        uuid = request.query_params.get('uuid', -1)
+
+        if uuid == -1:
+            raise ParseError(detail='uuid is mandatory')
+
+        qs = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').filter(report__version_UUID__startswith=uuid)
+        if loc == 'spain':
+            qs = qs.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        elif loc == 'europe':
+            qs = qs.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        else:
+            qs = qs.values('report__version_UUID').distinct()
+        return Response(qs, status=status.HTTP_200_OK)

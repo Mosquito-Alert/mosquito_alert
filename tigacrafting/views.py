@@ -13,7 +13,7 @@ import dateutil.parser
 from django.db.models import Count
 import pytz
 from datetime import datetime, date
-from django.db.models import Max
+from django.db.models import Max,Min
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
@@ -42,6 +42,10 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
 import logging
+from common.translation import get_translation_in, get_locale_for_en
+import html.entities
+from django.template.loader import TemplateDoesNotExist
+from django.utils.translation import gettext as _
 
 #----------Metadades fotos----------#
 
@@ -233,6 +237,16 @@ def filter_false_validated(reports, sort=True):
         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports),key=attrgetter('n_annotations'), reverse=True)
     else:
         reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
+    return reports_filtered
+
+def fast_filter_reports(reports):
+    #these are all the report_id in reports, with its max version number and the number of versions
+    #the values at the end drops everything into a dictionary
+    keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
+    report_id_table = {}
+    for row in keys:
+        report_id_table[row['report_id']] = {'max_version':row['version_number__max'],'min_version':row['version_number__min'],'num_versions': row['version_number__count']}
+    reports_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), reports )
     return reports_filtered
 
 
@@ -537,46 +551,63 @@ def issue_notification(report_annotation,current_domain):
     context_es = {}
     context_ca = {}
     context_en = {}
+    locale_for_en = get_locale_for_en(report_annotation.report)
+
     notification_content.title_es = "¡Tu foto ha sido validada por un experto!"
     notification_content.title_ca = "La teva foto ha estat validada per un expert!"
-    notification_content.title_en = "Your picture has been validated by an expert!"
+    title_en = _("your_picture_has_been_validated_by_an_expert")
+    notification_content.title_en = get_translation_in("your_picture_has_been_validated_by_an_expert", locale_for_en)
+
     if report_annotation.report.get_final_photo_url_for_notification():
         context_es['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
         context_en['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
         context_ca['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+
     if report_annotation.edited_user_notes:
-        clean_annotation = django.utils.html.escape(report_annotation.edited_user_notes)
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        #clean_annotation = django.utils.html.escape(report_annotation.edited_user_notes)
+        #clean_annotation = report_annotation.edited_user_notes.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
+        clean_annotation = report_annotation.edited_user_notes
         context_es['expert_note'] = clean_annotation
         context_en['expert_note'] = clean_annotation
         context_ca['expert_note'] = clean_annotation
+
     if report_annotation.message_for_user:
-        clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        #clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
+        #clean_annotation = report_annotation.message_for_user.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
+        clean_annotation = report_annotation.message_for_user
         context_es['message_for_user'] = clean_annotation
         context_en['message_for_user'] = clean_annotation
         context_ca['message_for_user'] = clean_annotation
+
     if report_annotation.report:
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('es'))
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('es'))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         context_es['validation_category'] = clean_annotation
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('en'))
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro(locale_for_en))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         context_en['validation_category'] = clean_annotation
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map('ca'))
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace')
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('ca'))
+        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         context_ca['validation_category'] = clean_annotation
         map_data = get_sigte_map_info(report_annotation.report)
+
         if map_data:
             context_es['map_link'] = get_sigte_report_link(report_annotation.report, "es", current_domain)
             context_en['map_link'] = get_sigte_report_link(report_annotation.report, "en", current_domain)
             context_ca['map_link'] = get_sigte_report_link(report_annotation.report, "ca", current_domain)
-    notification_content.body_html_es = render_to_string('tigacrafting/validation_message_template_es.html', context_es)
-    notification_content.body_html_ca = render_to_string('tigacrafting/validation_message_template_ca.html', context_ca)
-    notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en)
+
+    notification_content.body_html_es = render_to_string('tigacrafting/validation_message_template_es.html', context_es).replace('&amp;', '&')
+    notification_content.body_html_ca = render_to_string('tigacrafting/validation_message_template_ca.html', context_ca).replace('&amp;', '&')
+
+    try:
+        notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_' + locale_for_en + '.html', context_en).replace('&amp;', '&')
+    except TemplateDoesNotExist:
+        notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en).replace('&amp;', '&')
+
     notification_content.save()
     notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
+
     recipient = report_annotation.report.user
     if recipient.device_token is not None and recipient.device_token != '':
         if (recipient.user_UUID.islower()):
@@ -843,7 +874,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             page = request.POST.get('page')
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&loc=' + loc + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.quote_plus(tags_filter)) if tags_filter else ''))
+            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&loc=' + loc + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             note_language = request.GET.get('note_language', note_language)
@@ -965,15 +996,15 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 for this_report in new_reports:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                     new_annotation.save()
-        #all_annotations = ExpertReportAnnotation.objects.filter(user=this_user)
+
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
 
-        if loc == 'spain':
-            my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        elif loc == 'europe':
-            my_version_uuids = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        else:
-            my_version_uuids = all_annotations.values('report__version_UUID').distinct()
+        # if loc == 'spain':
+        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        # elif loc == 'europe':
+        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
+        # else:
+        #     my_version_uuids = all_annotations.values('report__version_UUID').distinct()
 
         my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:
@@ -1024,7 +1055,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
             # any expert has put on the report
             # these are all (not only yours, but also) the reports that contain the filtered tag
-            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct
+            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct()
             # we want the annotations of the reports which contain the tag(s)
             all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
         if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter or tags_filter == 'na' or tags_filter==''):
@@ -1131,7 +1162,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['version_uuid'] = version_uuid
         args['linked_id'] = linked_id
         args['tags_filter'] = tags_filter
-        args['my_version_uuids'] = my_version_uuids
+        #args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page
         args['note_language'] = note_language
@@ -1178,7 +1209,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
         version_uuid = request.GET.get('version_uuid', version_uuid)
         reports_per_page = request.GET.get('reports_per_page', reports_per_page)
         #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
-        all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
+        #all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
         #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
         these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('-creation_time')
         if version_uuid and version_uuid != 'na':
@@ -1188,7 +1219,8 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            reports = filter_reports(these_reports, sort=False)
+            #reports = list(filter_reports(these_reports, sort=False))
+            reports = list(fast_filter_reports(these_reports))
             n_reports = len(reports)
         paginator = Paginator(reports, int(reports_per_page))
         page = request.GET.get('page', 1)
@@ -1200,7 +1232,8 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             objects = paginator.page(paginator.num_pages)
         paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
         reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
-        context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
+        #context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
+        context = {'reports': paged_reports, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
         context['objects'] = objects
         context['pages'] = range(1, objects.paginator.num_pages+1)
 
@@ -1214,14 +1247,73 @@ def expert_status(request):
     this_user = request.user
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         groups = Group.objects.filter(name__in=['expert', 'superexpert'])
-        for group in groups:
-            for user in group.user_set.all():
-                if not UserStat.objects.filter(user=user).exists():
-                    us = UserStat(user=user)
-                    us.save()
         return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
     else:
         return HttpResponseRedirect(reverse('login'))
+
+# var is an ExpertReportAnnotation
+def reportannotation_formatter(var):
+    if var.report.type == 'site':
+        return {
+            'report_id': var.report.version_UUID,
+            'report_type': var.report.type,
+            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
+            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
+            'draftStatus': var.get_status_bootstrap(),
+            'getScore': var.get_score(),
+            'getCategory': var.get_category()
+        }
+    elif var.report.type == 'adult':
+        return {
+            'report_id': var.report.version_UUID,
+            'report_type': var.report.type,
+            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
+            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
+            'draftStatus': var.get_status_bootstrap(),
+            'getScore': var.get_score(),
+            'getCategory': var.get_category_euro()
+        }
+    else:
+        return {
+            'report_id': var.report.version_UUID,
+            'report_type': var.report.type,
+            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
+            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
+            'draftStatus': var.get_status_bootstrap(),
+            'getScore': var.get_score(),
+            'getCategory': var.get_category()
+        }
+
+
+
+@api_view(['GET'])
+def expert_report_pending(request):
+    user = request.query_params.get('u', None)
+    u = User.objects.get(username=user)
+    x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=False)
+
+    reports = []
+    for var in x:
+        reports.append(reportannotation_formatter(var))
+
+    context = {'pendingReports': reports}
+
+    return Response(context)
+
+
+@api_view(['GET'])
+def expert_report_complete(request):
+    user = request.query_params.get('u', None)
+    u = User.objects.get(username=user)
+    x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=True)
+
+    reports = []
+    for var in x:
+        reports.append(reportannotation_formatter(var))
+
+    context = {'completeReports': reports}
+
+    return Response(context)
 
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
     new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(
@@ -1246,7 +1338,10 @@ def get_reports_imbornal():
             question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site',
                                                                       answer='Storm drain') | Q(
             question='Type of breeding site', answer='Storm drain or similar receptacle')).values('report').distinct()
-    return  reports_imbornal
+
+    reports_imbornal_new = ReportResponse.objects.filter(question_id=12).filter(answer_id=121).values('report').distinct()
+
+    return  reports_imbornal | reports_imbornal_new
 
 def get_reports_unfiltered_adults_except_being_validated():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
@@ -1298,7 +1393,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 
             if not page:
                 page = '1'
-            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.quote_plus(usr_note) + '&type=' + type)
+            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type)
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             type = request.GET.get('type', type)
@@ -1332,6 +1427,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
 
         new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
+
+        new_reports_unfiltered = list(new_reports_unfiltered)
 
         paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
         page = request.GET.get('page', 1)

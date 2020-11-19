@@ -8,7 +8,7 @@ from operator import itemgetter, attrgetter
 from math import log
 from sklearn.preprocessing import minmax_scale
 
-import tigascoring.ma
+import tigascoring.ma as ma
 
 # using 4 prior expertise-categories
 _catK = 4
@@ -409,14 +409,14 @@ class Dsmmry(dict):
 
     # output exCls distribution line
     def shwLine(self, headLbl=None, rowLbl=None, nExCls=None):
-        if headLbl != None:
+        if headLbl is not None:
             print
             print ('+++  %s ' % headLbl),
             for k in range(self.k): print ('    %1.0i  ' % (k + 1)),
             print
             print ('-' * 60)
-        if nExCls != None:
-            if rowLbl != None:
+        if nExCls is not None:
+            if rowLbl is not None:
                 print ('%s' % rowLbl.center(11, ' ')),
             else:
                 print (' ' * 11),

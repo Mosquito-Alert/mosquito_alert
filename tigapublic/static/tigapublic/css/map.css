@@ -674,7 +674,7 @@ div#map canvas.leaflet-heatmap-layer {
 .question-mark-toc {
   position: absolute;
 	min-width: 5%;
-  /* right: 6px; */
+  right: 6px;
 	margin-left:5px;
 	top: 10px;
   border: 1px solid #cacaca;

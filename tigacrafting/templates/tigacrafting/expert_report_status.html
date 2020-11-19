@@ -1,9 +1,7 @@
-{% load staticfiles %}
+{% load static %}
 {% load leaflet_tags %}
 {% load i18n %}
 {% load floppyforms %}
-
-
 <!DOCTYPE html>
 <html lang={% block language %}"en"{% endblock %}>
 <head>
@@ -20,17 +18,31 @@
     {% block bootstrap_css %}
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
-    {% endblock %}
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>    {% endblock %}
+
+    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
 
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+    <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
 
     <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
     <style>
         #ex1Slider .slider-selection {
             background: #BABABA;
+        }
+
+        .tokenize-dropdown{
+            z-index: 9999;
+        }
+
+        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-uuid{
+            display: none;
+        }
+
+        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-id{
+            display: none;
         }
 
     </style>
@@ -87,9 +99,15 @@
             }
         {%  endfor %}
 
+
     </script>
 {% endblock %}
 
+{% block js %}
+{% endblock %}
+
+{% block css %}
+{% endblock %}
 </head>
 
 <body>
@@ -203,9 +221,17 @@
     {% for report in reports %}
         <div class="row row_for_{{ forloop.counter }}" style="background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
             <div class="col-md-12">
-                <h4><strong>{{ report.type|capfirst }}
-                    Report {{ report.version_UUID }}</strong>
-                    {{ report.creation_time|date:"d/m/y H:i" }} UTC</h4>
+                <h4>
+                    <strong>
+                        {{ report.type|capfirst }}
+                    Report {{ report.version_UUID }}
+                    </strong>
+                    {{ report.creation_time|date:"d/m/y H:i" }} UTC
+                    - {{ report.country_label }} - {{ report.language }}
+                </h4>
+                <h5>
+                    <strong>Report code - {{ report.report_id }}</strong>
+                </h5>
             </div>
         </div>
 {% if report.deleted %}
@@ -230,7 +256,8 @@
             {{ report.get_final_expert_status_bootstrap | safe }}
             <!--<strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}-->
             <!--<strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score_aegypti text=report.get_final_expert_category_aegypti %}-->
-            <strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_combined_expert_score text=report.get_final_combined_expert_category %}
+            <!--<strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_combined_expert_score text=report.get_final_combined_expert_category %}-->
+            <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
         {% else %}
             <strong>Status:</strong> Not yet validated by three experts.
         {% endif %}
@@ -303,7 +330,7 @@
                                    aria-controls="expert_collapse' + forloop.counter + str(ano.id) + '"><i
                                     class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
                             </td>
-                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>
+                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}</td>
                         </tr>
                         <tr>
                             <td colspan="12" class="hiddenRow">
@@ -370,12 +397,14 @@
 
 
                 <br>
+                <!--
                 <strong>User Responses</strong><br>
 
                 <div style="overflow: auto;height: 120px;border:1px solid #333333;padding:2px;">
                     {{ report.response_html  | safe }}
                 </div>
                 <br>
+                -->
                 <strong>User Notes</strong><br>
 
                 <div style="overflow: auto;height: 100px;border:1px solid #333333;padding:2px;">
@@ -447,7 +476,7 @@
         </div>
     {% endif %}
 
-
+<input id="version_uuid_input" type="text" name="version_uuid" style="display: none;" value="">
 
 </div>
 
@@ -466,6 +495,32 @@
                         <h4 class="modal-title" id="searchModalLabel">Search</h4>
                     </div>
                     <div class="modal-body">
+                        <table style="width:100%;">
+                            <colgroup>
+                                <col span="1" style="width: 25%;">
+                                <col span="1" style="width: 60%;">
+                                <col span="1" style="width: 15%;">
+                            </colgroup>
+                            <tr>
+                                <td><label for="uuid_autocomplete"><small>Report UUID (write in the text box the first 3 characters of the uuid for a list):</small></label></td>
+                                <td>
+                                    <select id="uuid_autocomplete" class="tokenize-report-uuid" multiple></select>
+                                </td>
+                                <td>
+                                    <button type="button" id="search_uuid_autocomplete" class="btn btn-default">Search</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label for="id_autocomplete"><small>Report Code (write in the text box the first 2 characters of the report id for a list):</small></label></td>
+                                <td>
+                                    <select id="id_autocomplete" class="tokenize-report-id" multiple></select>
+                                </td>
+                                <td>
+                                    <button type="button" id="search_id_autocomplete" class="btn btn-default">Search</button>
+                                </td>
+                            </tr>
+                        </table>
+                        <!--
                         <form role="form" class="form-inline">
 
                             <div class="form-group">
@@ -475,7 +530,7 @@
                                         data-live-search="true">
                                     <option value=""></option>
                                     {% for version_uuid in all_reports_version_uuids %}
-                                        <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
+                                        <option value="{{ version_uuid.version_UUID }}">{{ version_uuid.version_UUID }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -484,6 +539,7 @@
                             </button>
 
                         </form>
+                        -->
 
 
                     </div>
@@ -564,6 +620,66 @@
                 width: 'auto'
             });
 
+            var format_report_label = function(r){
+                return r.report_id + ' - version:' + r.version_number + ' - date:' + r.version_time.substring(0,10);
+            }
+
+            $('.tokenize-report-id').tokenize2({
+                dropdownMaxItems: 15,
+                searchMinLength: 2,
+                tokensMaxItems: 1,
+                zIndexMargin: 9999,
+                dataSource: function(term, object){
+                    $.ajax('/api/reports_id_filtered/', {
+                        data: { report_id: term, start: 0 },
+                        dataType: 'json',
+                        success: function(data){
+                            var $items = [];
+                            $.each(data, function(k, v){
+                                $items.push({"text": format_report_label(v),"value": v.version_UUID });
+                            });
+                            object.trigger('tokenize:dropdown:fill', [$items]);
+                        }
+                    });
+                }
+            });
+
+            $('.tokenize-report-uuid').tokenize2({
+                dropdownMaxItems: 15,
+                searchMinLength: 3,
+                tokensMaxItems: 1,
+                zIndexMargin: 9999,
+                dataSource: function(term, object){
+                    $.ajax('/api/uuid_list_autocomplete/', {
+                        data: { uuid: term, loc: $('#loc_input').val(), start: 0 },
+                        dataType: 'json',
+                        success: function(data){
+                            var $items = [];
+                            $.each(data, function(k, v){
+                                $items.push({"text": v.report__version_UUID,"value": v.report__version_UUID });
+                            });
+                            object.trigger('tokenize:dropdown:fill', [$items]);
+                        }
+                    });
+                }
+            });
+
+            $('.tokenize-report-uuid').on('tokenize:tokens:add', function(e, value, text){
+                $("#version_uuid_input").val(value);
+            });
+
+            $('.tokenize-report-uuid').on('tokenize:tokens:remove', function(e, value){
+                $("#version_uuid_input").val('');
+            });
+
+            $('.tokenize-report-id').on('tokenize:tokens:add', function(e, value, text){
+                $("#version_uuid_input").val(value);
+            });
+
+            $('.tokenize-report-id').on('tokenize:tokens:remove', function(e, value){
+                $("#version_uuid_input").val('');
+            });
+
           {% for report in reports %}
 
                 jQuery('#qrcode{{ forloop.counter }}').qrcode({
@@ -580,9 +696,14 @@
 
         function submit_search_version_uuid() {
             gear.show();
-            var this_version_uuid = $("#version_uuid_select").val();
+            /*var this_version_uuid = $("#version_uuid_select").val();*/
+            var this_version_uuid = $("#version_uuid_input").val();
             window.location.href = '?version_uuid=' + this_version_uuid;
         }
+
+        $("#search_uuid_autocomplete").on('click', submit_search_version_uuid);
+
+        $("#search_id_autocomplete").on('click', submit_search_version_uuid);
 
         $("#search_version_uuid_submit_button").on('click', submit_search_version_uuid);
 
@@ -613,6 +734,8 @@
 
     </script>
 
+    {% block extra_js %}
+    {% endblock %}
 
 </body>
 </html>

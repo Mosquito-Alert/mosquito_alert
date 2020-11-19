@@ -1,15 +1,17 @@
 {% extends "tigaserver_app/award_notification.html" %}
-
+{% block language %}
+<html lang="es">
+{% endblock %}
 {% block title_block %}
-    <title>¡Acabas de recibir una recompensa de XP!</title>
+    <title>¡Acabas de recibir una recompensa de puntos!</title>
 {% endblock %}
 
 {% block title_header_block %}
-    <h2>¡Acabas de recibir una recompensa de XP!</h2>
+
 {% endblock %}
 
 {% block amount_xp_awarded %}
-    <p>Has recibido <b style="color:red;">{{ amount_awarded }} XP!</b></p>
+    <p>Has recibido <b style="color:red;">{{ amount_awarded }} puntos!</b></p>
 {% endblock %}
 
 {% block reason_awarded %}
@@ -17,7 +19,7 @@
 {% endblock %}
 
 {% block report_related %}
-    {% if report %}
+    {% if picture_link %}
         <img src="{{ picture_link }}" width=100%>
     {% endif %}
 {% endblock %}

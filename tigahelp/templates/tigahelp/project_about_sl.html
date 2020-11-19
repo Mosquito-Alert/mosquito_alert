@@ -1,0 +1,113 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+O projektu
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>Kaj je Mosquito Alert?</h2>
+        <p>Mosquito Alert je platforma ljubiteljske znanosti, ki omogoča sodelovanje med različnimi akterji za
+            preučevanje, spremljanje in nadzor vrst komarjev, ki prenašajo bolezni, kot so denga, zika, čikungunja in
+            virus Zahodnega Nila.</p>
+        <p>Projekt daje ključno vlogo državljanom, znanstvenikom, strokovnjakom za javno zdravje in učiteljem. Mosquito
+            Alert omogoča vsem, da zbirajo in delijo podatke (1) ter sodelujejo pri preverjanju podatkov skupaj s
+            poklicnimi entomologi, ki označujejo poročila o komarjih in se odzivajo udeležencem (2). Po potrditvi so
+            podatki na voljo širši javnosti prek interaktivnega spletnega zemljevida (3). Nanjo se zanašajo tudi
+            znanstveniki (4) in agenti za javno zdravje (5) za preučevanje in spremljanje komarjev, ki prenašajo
+            bolezni.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Zakaj je potrebno opozorilo proti komarjem?</h2>
+        <p>V zadnjih desetletjih se je število invazivnih komarjev in nastajajočih bolezni, ki se prenašajo s komarji, v
+            svetovnem merilu povečalo<span>. Nove invazivne vrste, večinoma iz rodu Aedes, so se naselile na novih območjih in se še naprej širijo. Komarji iz rodu Aedes so z zdravstvenega vidika pomembni zaradi svoje sposobnosti prenašanja bolezni, kot so denga, zika in čikungunja. Prav tako je navaden komar (Culex pipiens) pomemben, ker lahko prenaša virus Zahodnega Nila. Zaradi nevarnosti komarjev za javno zdravje je pomembno spremljati njihove populacije.</span>
+        </p>
+        <p>Glede na zapletenost problema, Mosquito Alert javnosti odpira nadzor in raziskavo komarjev ter omogoča
+            sodelovanje med različnimi akterji prek svoje aplikacije in drugih platform in skupnosti.</p>
+        <h2>Kateri podatki se zbirajo?</h2>
+        <p>Podatki se zbirajo o 5 različnih vrstah komarjev: tigrasti komar (<em> Aedes albopictus </em>), komar ščitar
+            (<em>Aedes aegypti</em>), japonski komar (<em>Aedes japonicus</em>), korejski komar (<em>Aedes
+                koreicus)</em>&nbsp;in navadni komar (<em>Culex pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>Za te vrste se zbirajo podatki o odraslih komarjih ter mesta razvoja ličink in mesta vbodov. Vsi ti podatki
+            so pomembni za boljše razumevanje teh vrst ter za njihovo spremljanje in nadzor.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>Mosquito Alert zbira tudi približne lokacije naprav udeležencev, tako da vzorči te lokacije naključno petkrat
+            vsak dan, razen če se udeleženec za to ni odločil. Lokacije so maskirane na mreži 0,025 x 0,025 stopinje
+            zemljepisne širine in dolžine (približno 2x2 km), preden so poslane na strežnik Mosquito Alert. Zaradi
+            varovanja zasebnosti se z Mosquito Alert dejansko deli samo identifikator kvadrata mreže, ne pa tudi
+            natančna lokacija. Te informacije so z znanstvenega vidika zelo dragocene, saj raziskovalcem omogočajo
+            boljše ocene populacije komarjev, pri čemer ločijo na primer lokacije z malo komarji od lokacij z malo
+            udeleženci (a potencialno veliko komarjev). Lokacije udeležencev nudijo informacije o tem, kar je v
+            ekologiji znano kot postopek vzorčenja.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Za kaj se uporabljajo podatki?</h2>
+        <p>Tu je nekaj primerov:</p>
+        <ul>
+            <li type="disc">Poročila, ki jih ljudje pošiljajo Mosquito Alert, so se v zadnjih letih izkazala za
+                učinkovit sistem zgodnjega opozarjanja pred invazijo novih komarjev. Sistem se uporablja za spremljanje
+                uveljavljenih populacij komarjev in odkrivanje novih populacij.
+            </li>
+            <li type="disc">Opazovanja komarjev, mest razvoja in vbodov pomagajo znanstvenikom in vodjem javnega
+                zdravja, da ocenijo tveganje in obvladujejo populacije vektorjev bolezni. Da bi ocenili številčnost
+                komarjev na določenem območju, je pomembno prilagoditi opazovanja na podlagi vzorčenja. V ta namen
+                aplikacija Mosquito Alert zbira podatke o približnem položaju naprave v naključnih urah dneva. Položaji
+                so za zaščito zasebnosti prikriti na mreži približno 2x2 km.
+            </li>
+            <li type="disc">Trenutno potekajo prizadevanja za razvoj sistema za napovedovanje epidemiološkega tveganja v
+                realnem času, ki bo partecipativen in dinamičen.
+            </li>
+        </ul>
+        <h2>Kje najdem več informacij?</h2>
+        <p>Več informacij boste našli na spletni strani projekta in v družabnih medijih.</p>
+        <p><a href="http://www.mosquitoalert.com/en/"> www.mosquitoalert.com </a></p>
+        <p>V nastavitvah aplikacije boste našli navodila za udeležence, vodnik za lažje prepoznavanje komarjev, politiko
+            zasebnosti in pogoje uporabe ter informacije o subjektih, ki stojijo za tem projektom.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

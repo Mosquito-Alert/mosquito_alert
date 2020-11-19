@@ -1,0 +1,74 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Privatnost
+{% endblock %}
+
+
+{% block content %}
+
+<div class="center">
+    <h2>Privatnost</h2>
+</div>
+
+<p>Mosquito Alert (pod bilo kojim imenom u prošlosti ili novo ime koje će biti dodijeljeno u budućnosti) sakuplja,
+    između ostalog, podatke i fotografije koje su podijelili volonteri i omoguća njihovu dostupnost trećim strankama i
+    javnosti. U cilju zaštite privatnosti svojih volontera, aplikacija Mosquito Alert nastoji izbjeći sakupljanje
+    osobnih informacija. Mosquito Alert zahtijeva da volonteri ne daju osobna imena, adrese, lozinke ili bilo koju drugu
+    osobnu informaciju prilikom slanja izvješća. Precizne lokacije promatranja sakupljaju se tijekom slanja izvješća i
+    one se mogu poklopiti s preciznom lokacijom volontera, ali ova informacija je vezana samo za izvješće i nasumično
+    generiranu korisničku šifru (ID).</p> <p>Ne zahtijevaju se fotografski podaci, a ako su fotografije koje sadrže
+    podatke poslane na projekt preko aplikacije, podaci će biti obrisani odmah po dolasku slike na server projekta, s
+    izuzetkom lokacije fotografije, što će biti pridruženo fotografiji i može biti objavljeno.</p> <p>Mosquito Alert
+    također sakuplja približne lokacije volontera u nasumičnim vremenskim intervalima (u cilju pristupa pokrivenoj
+    geografskoj površini ili površini koju proučava volonter), ali ova informacija je također povezana i s nasumičnim
+    generiranim korisničkim identifikatorom. Volonteri u izvještaje mogu uključiti napomene i fotografije, ali na svoju
+    odgovornost, u te napomene i fotografije ne treba uključiti informacije koje narušavaju prava privatnosti drugih ili
+    se ne slažu s korisničkim ugovorom aplikacije Mosquito Alert.</p> <p>Aplikacija Mosquito Alert posjeduje mehanizam
+    za sprječavanje širenja, što je više moguće, osobnih podataka s javnošću, a koje su korisnici poslali greškom,
+    usprkos mjerama anonimizacije. Također, aplikacija Mosquito Alert primjenjuje mjere da otkrije jesu li osobni podaci
+    podijeljeni i da ih eliminira iz baze podataka što je više moguće. Usprkos tome, ukoliko se nekim slučajem dogodi da
+    ove mjere ne spriječe objavljivanje osobnih podataka, svi oni koji su ih detektirali se mole da obavijeste odgovorne
+    osobe za aplikaciju Mosquito Alert u cilju eliminiranja njihove pojave u javnosti, ukoliko je to moguće. Aplikacija
+    Mosquito Alert ne može garantirati uklanjanje osobnih podataka koje je Mosquito Alert sakupio pogreškom, usprkos
+    mjerama anonimizacije, niti može garantirati da takvi podaci neće biti vidljivi za članove aplikacije Mosquito Alert
+    ili za druge suradnike.</p> <p>Primijećeno je da ako sudionici dijele izvješća u bilo kojem javnom mediju, kao što
+    su društvene mreže, i pridružuju svoje osobne podatke, tada odustaju dobrovoljno od anonimnosti koju projekt nastoji
+    sačuvati.</p> <p>Aplikacija Mosquito Alert dozvoljava sudionicima da zadrže svoje podatke tijekom održavanja
+    anonimnosti, kroz autentifikacijski sistem korištenjem e-maila, Facebook-a, Twitter-a. Ovo omogućava sudionicima
+    sinkronizaciju na više uređaja i vraćanje podataka ukoliko deinstaliraju aplikaciju. Ova opcija je dobrovoljna i
+    nije zadano aktivirana. U svakom slučaju, informacije sakupljene u Firebase za ovu namjenu ne čuvaju se na serverima
+    Mosquito Alarm-a, nisu povezani sa znanstvenim podacima sakupljenim od aplikacije Mosquito Alert i nisu procesuirani
+    u Mosquito Alert.</p> <p>Detaljna lista informacija koje sakuplja aplikacija Mosquito Alert:</p>
+<ul>
+    <li>Izvješća koje su sakupili i poslali volonteri u vezi s leglima komaraca (razvojnim staništima), ubodima i
+        mogućem prisustvu komaraca (aplikacija Mosquito Alert je trenutno fokusirana na pet različitih invazivnih vrsta
+        komaraca), kao i odgovori volontera na pitanja koja su im poslana preko aplikacije. To uključuje preciznu
+        lokaciju volonterskih promatranja i fotografija, napomene ili bilo kakve informacije koje je volonter dao u
+        izvješću.
+    </li>
+    <li>Informacije o približnoj lokaciji volontera, uzorkovane u pozadinskom modu i u nasumičnim vremenskim
+        intervalima. Ove informacije su sakupljene u znanstvene svrhe kako bi se znala geografska površina koju su
+        istražili volonteri (u kojim područjima se sudjeluje ili ne i u kojem opsegu kako bi se moglo povezati s brojem
+        opažanja na istom području npr. s tehnikama modeliranja ili statistički...) i radi poboljšanja saznanja o
+        putevima širenja komaraca koji su povezani s čovjekovom mobilnošću (u cilju razumijevanja veze između mobilnosti
+        ljudi u velikim razmjerima i širenje ovih vrsta komaraca na danom teritoriju). Ova informacija je od velikog
+        znanstvenog interesa. Da bi se izbjeglo sakupljanje precizne lokacije volontera, te lokacije su smještene na
+        koordinatnu mrežu od 0,025 stupnjeva geografske širine i dužine i samo se identifikator kvadrata mreže prenositi
+        do servera. Stoga je nemoguće precizno utvrditi lokaciju koja pripada području od 0,025 stupnjeva geografske
+        širine i 0,025 stupnjeva geografske dužine (između 3,1 i 7,7 km kvadratnih ili između 765 i 1901 nogometnih
+        igrališta). U svakom slučaju, volonteri mogu deaktivirati ovu opciju u opcijama aplikacije koja je po zadanim
+        postavkama automatski aktivirana.
+    </li>
+    <li>Informacije o modelu telefona, bateriji, postavkama jezika i verziji aplikacije (koja je verzija instalirana,
+        koji je operativni sustav i verzija u kojoj je instaliran). Ove informacije se koriste da pomognu istraživačkom
+        timu u poboljšanju aplikacije.
+    </li>
+    <li>Ukoliko volonter odabere da se autentificira preko vanjskog računa koristeći Firebase, u tom slučaju Firebase
+        može sakupiti email adresu, lozinku, broj telefona, IP adresu i druge informacije koje su povezane s vanjskim
+        računom.
+    </li>
+</ul>
+
+{% endblock %}

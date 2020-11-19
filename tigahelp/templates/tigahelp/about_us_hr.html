@@ -1,0 +1,31 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About Us
+{% endblock %}
+
+{% block content %}
+
+<h2>Koordinirajući subjekti</h2> <p>Mosquito Alert aplikacijom upravljaju sljedeće javne istraživačke institucije:
+    Španjolski nacionalni istraživački senat Centra za napredne studije Blanes (CEAB - CSIC), Centar za ekološka
+    istraživanja i primjene u šumarstvu (CREAF) i Sveučilište Pompeu Fabra (UPF). Također sudjeluje i Katalonski
+    institut za istraživanja i napredne studije (ICREA).</p>
+<p class="centeredImage">
+    <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/colaboradors_about_us.jpg" %}">
+</p>
+
+<h2>Suradnici</h2>
+<p>Mosquito Alert napravljen je zahvaljujući sudjelovanju različitih stručnjaka (profesionalaca koji ocjenjuju poslane
+    podatke) i subjekata iz različitih zemalja koji rade na dobrobiti javnog zdravlja, suzbijanja invazivnih vrsta i
+    edukaciji o životnoj sredini.</p>
+<h2>Financiranja i sudjelovanja u projektima</h2>
+<p>Mosquito Alert sudjeluje u konkurentnim istraživačkim i znanstvenim komunikacijskim projektima (uključujući Državni
+    nacionalni plan, EU horizon 2020 liniju financiranja i "la Caixa" fondaciju projekata, između ostalih), a financira
+    se i doprinosom resursa subjekata koji vode projekt i subjekata koji surađuju.</p>
+<p>Više informacija o subjektima, suradnji i projektima možete naći na <a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a>
+    i na društvenim mrežama.</p>
+
+<p class="centeredImage"><img style="max-width: 100%; height: auto;" src="{% static "tigahelp/banner_web.jpg" %}"></p>
+
+{% endblock %}

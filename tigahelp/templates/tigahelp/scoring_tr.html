@@ -1,0 +1,45 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Mosquito Alert Score Info
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>PUAN BİLGİSİ</h2>
+        <p>Mosquito Alert'te gerçekleştirilen eylemler, puan şeklinde takdir ve ödüllere sahiptir. Rapor başına puan sayısı, sağlanan bilgilere ve kalitesine bağlı olarak değişir.</p>
+        <p>Rapor başına alınabilecek maksimum puanlar şunlardır:</p>
+        <ul>
+            <li>İstilacı Aedes Sivrisinek: 20 puan</li>
+            <li>Yaygın (yerli) Sivrisinek: 14 puan</li>
+            <li>Mazgallardaki üreme alanı: 20 puan</li>
+            <li>Halka açık alandaki diğer üreme alanları: 16 puan</li>
+        </ul>
+        <p>Ayrıca sezonun ilk sivrisineği, günün ilk raporu veya sık sık katılım için ekstra bonuslar vardır. Belirli sayıda rapora ulaştığınızda, sadece ekstra puan almakla kalmaz, özel bir kupa da alırsınız. Ulaşılan kilometre taşlarına göre farklı kupalar vardır.</p>
+        <p>Uzman doğrulamasına göre sivrisinek olarak gönderilen ancak sivrisinek olmadığı ortaya çıkan raporlardan puan kazanılmayacaktır. Uzmanların sivrisineği veya üreme yerini belirlemesine imkan vermeyen kalitedeki fotoğraflar da puanlanmayacaktır.</p>
+        <p>Puan birikimi, uygulamada seviye atlamanızı sağlayacaktır:</p>
+        <ul>
+            <li>(1) Acemi (başlangıç)</li>
+            <li>(2) Katılımcı (katkıda bulunan)</li>
+            <li>(3) Uzman (uzman)</li>
+            <li>(4) Usta (usta)</li>
+            <li>(5) Büyük Usta (büyük usta)</li>
+        </ul>
+        <p>Bu simgeler, ulaşılan seviyeyi gösterir:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Puan paneli</h2>
+        <p>Küresel sıralamaya, ana ekrandaki puana tıklayarak erişilir. Bir sıralama pozisyonuna basmak, kullanıcı tarafından elde edilen puanların dökümünü görüntüler.</p>
+        <p>"Daha fazla ayrıntı" kısmına tıklandığında, puan dökümü paneline erişilir.</p>
+        <p>Bu bölümde, gönderilen her bir raporun kazanılan puan ile bir listesi bulunmaktadır. Raporlar interaktiftir, tıkladığınızda puan dökümünü ve nerden puan kazanıldığını görebilirsiniz.</p>
+
+    </div>
+</div>
+{% endblock %}

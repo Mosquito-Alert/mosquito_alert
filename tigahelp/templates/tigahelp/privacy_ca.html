@@ -2,41 +2,80 @@
 {% load staticfiles %}
 
 {% block page_title %}
-    Política de privacitat
+Política de privacitat
 {% endblock %}
 
 
 {% block content %}
 
-    <div class="center">
-        <h2>Política de privacitat</h2>
-    </div>
+<div class="center">
+    <h2>Política de privacitat</h2>
+</div>
 
-    <p>
-        El projecte Mosquit Alert (d'ara en endavant, "el Projecte", en qualsevol dels noms que hagi pogut tenir en el passat o pugui adquirir en el futur) recull, entre altres, dades i imatges compartides pels voluntaris i els posa a disposició de terceres parts i del públic general. Per tal de protegir la privacitat dels seus voluntaris, s'evita la recopilació d'informació que pugui identificar de manera individual a una persona física determinada. Així, en l'enviament de dades i fotografies, no es demanen noms, adreces, contrasenyes o qualsevol altra informació personal dels voluntaris. Sí que es recullen les ubicacions exactes de les observacions ciutadanes durant l'enviament d'informes, que poden coincidir amb la ubicació exacta dels voluntaris, però aquesta informació es vincula només a l'informe i a un identificador d'usuari generat de forma aleatòria. El Projecte també recull la ubicació aproximada dels voluntaris a intervals aleatoris en el temps (per tal d'avaluar les àrees geogràfiques cobertes o explorades pels voluntaris), però aquesta informació també es vincula únicament a un identificador d'usuari generat de manera aleatòria. Els voluntaris poden incloure notes i fotografies en els seus informes, però és la seva responsabilitat no incloure en aquestes notes i fotografies, qualsevol informació que desitgin mantenir en privat o qualsevol informació que violi els drets de privacitat dels altres o sigui incompatible amb l'acord de l'usuari del Projecte.
-    </p>
-
-    <p>
-        El Projecte disposa de mecanismes per evitar que les dades de caràcter personal que poguessin haver enviat els usuaris per error, tot i les mesures d'anonimització, no siguin compartits amb el públic general. Tot i això, si en algun cas particular aquestes mesures no evitessin, per error, la publicació d'una dada de caràcter personal, s'anima a les persones que així ho detectin a notificar-ho als responsables del Projecte, per a procedir a eliminar la seva aparició de l'espai públic si fos possible. El Projecte no pot garantir l'eliminació de les dades de caràcter personal que puguin ser recopilades pel Projecte malgrat les mesures d'anonimització, ni que aquests no siguin visibles pels integrants del Projecte o per qualsevol dels seus col·laboradors o terceres persones amb accés al conjunt de les dades del Projecte.
-    </p>
-
-    <p>
-        S'adverteix que en el cas de compartir les seves observacions (informes) en qualsevol mitjà públic, com per exemple en xarxes socials, els voluntaris estarien relacionant les seves observacions amb les seves dades personals (ex. compte personal en xarxes socials), invalidant per decisió del propi voluntari, el fet que la seva participació al Projecte és anònima.
-    </p>
-
-    <p>
-        La llista detallada de la informació recopilada és la següent:
-    </p>
-    <ul>
-        <li>
-            Informes recollits i enviats pels voluntaris en relació a llocs de cria i albiraments de possibles mosquits tigre o de la febre groga, així com les missions específiques i les seves respostes. Això inclou la ubicació precisa de les observacions dels voluntaris i les fotografies, notes o qualsevol altra informació que el voluntari afegeixi a l'informe.
-        </li>
-        <li>
-            Informació sobre la ubicació aproximada dels voluntaris, mostrejada a intervals de temps aleatoris. Aquesta informació es recull amb finalitats científiques, per conèixer les àrees geogràfiques explorades pels voluntaris (esforç de mostreig, és a dir, en quines zones hi ha o no participació i en quina mesura, per poder-ho relacionar amb el nombre d'observacions en aquesta mateixa zona, per exemple amb tècniques de modelització o estadístiques), i per millorar el coneixement sobre vies de dispersió del mosquit tigre relacionades amb la mobilitat humana (és a dir, entendre millor la relació entre la mobilitat de les persones a gran escala i la dispersió d'aquestes espècies en el territori). Aquesta informació és de gran interès científic. Per evitar la recol·lecció precisa de la ubicació dels voluntaris, les latituds i longituds s'arrodoneixen als 0,025 graus més propers abans de transmetre la ubicació des del dispositiu. Així, és impossible determinar la ubicació real, dins d'una àrea de 0,025 graus de latitud per 0,025 graus de longitud (~4 km2, aproximadament la mida d'una ciutat petita com Blanes). En qualsevol cas, els voluntaris poden desactivar aquesta opció, activada per defecte, en la configuració de l'aplicació.
-        </li>
-        <li>
-            Informació sobre el model de telèfon, bateria, configuració d'idioma, i la instal·lació de l'app del Projecte (és a dir, la versió instal·lada, el sistema operatiu i la versió en la qual s'instal·la). Aquesta informació s'utilitza per ajudar l'equip d'investigació a millorar l'aplicació.
-        </li>
-    </ul>
+<p>Mosquito Alert (en qualsevol dels noms que hagi tingut en el passat o que pugui adquirir en el futur) recopila, entre
+    altres coses, dades i imatges compartits per voluntaris i els posa a la disposició de tercers i del públic en
+    general. Per a protegir la privacitat dels seus voluntaris, Mosquito Alert té com a objectiu evitar la recopilació
+    d'informació personal, és a dir, informació que es pot utilitzar per a identificar individualment a una persona
+    física específica. Per tant, Mosquito Alert sol·licita que els voluntaris no transmetin noms, adreces, contrasenyes
+    i qualsevol altra informació personal en enviar informes. Les ubicacions exactes de les observacions es recopilen
+    durant l'enviament de l'informe, i poden coincidir amb la ubicació exacta dels voluntaris, però aquesta informació
+    està vinculada només a l'informe i a una identificació d'usuari generada aleatòriament. No se sol·liciten metadades
+    de fotografies, i si les fotografies enviades al projecte a través de l'aplicació contenen metadades, aquestes
+    metadades s'eliminaran una vegada que la imatge arribi al servidor del projecte, a excepció de la geolocalització de
+    la fotografia, que es mantindrà associada a la fotografia i pot ser publicada.</p> <p>Mosquito Alert també recopila
+    en un segon pla la ubicació aproximada dels voluntaris a intervals aleatoris en el temps (per a avaluar les àrees
+    geogràfiques cobertes o explorades pels voluntaris), però aquesta informació també està vinculada únicament a un
+    identificador d'usuari generat aleatòriament. Els voluntaris poden incloure notes i fotografies en els seus
+    informes, però és la seva responsabilitat no incloure en aquestes notes i fotografies qualsevol informació que
+    desitgin mantenir en privat o qualsevol informació que violi els drets de privacitat d'uns altres, és a dir
+    inconsistent amb l'acord d'usuari de Mosquito Alert.</p> <p>Mosquito Alert disposa de mecanismes per a evitar, en la
+    mesura que sigui possible, que les dades personals que els usuaris hagin enviat per error, malgrat les mesures
+    d'anonimització, siguin compartits amb el públic en general. Així mateix, Mosquito Alert aplica mesures per a
+    detectar si s'han compartit dades personals i eliminar-los de la base de dades, en la mesura que sigui possible.
+    Malgrat això, si en algun cas concret aquestes mesures no impedeixen la publicació d'una dada personal, s'anima als
+    qui el detectin que ho notifiquin als responsables de Mosquito Alert, amb la finalitat de procedir a eliminar la
+    seva aparició en l'espai públic si és possible. Mosquito Alert no pot garantir l'eliminació de les dades personals
+    que poguessin ser recaptats per Mosquito Alert per error malgrat les mesures d'anonimització, ni pot garantir que
+    aquestes dades no seran visibles per als membres de Mosquito Alert o per a qualsevol dels seus col·laboradors o
+    tercers a l'ús.</p> <p>Es fa notar que si els participants comparteixen les seves observacions (informes) en
+    qualsevol mitjà públic, com per exemple en les xarxes socials, poden estar associats a aquestes observacions amb les
+    seves dades personals (per exemple, compte personal en xarxes socials), renunciant així, voluntàriament, a
+    l'anonimat que el projecte busca brindar.</p> <p>Mosquito Alert permet als participants mantenir les seves dades
+    mantenint l'anonimat, mitjançant un sistema d'autenticació mitjançant comptes externs (correu electrònic, Facebook,
+    Twitter), a través de Firebase. Això permet als participants sincronitzar diversos dispositius i recuperar dades si
+    han de desinstal·lar l'aplicació. Aquesta opció és voluntària i no està activada per defecte. En qualsevol cas, la
+    informació recopilada per Firebase per a aquest fi no s'emmagatzema en els servidors de Mosquito Alert, no està
+    vinculada a les dades científiques recopilades per Mosquito Alert, i no és processada per Mosquito Alert.</p> <p>Una
+    llista detallada de la informació que recopila Mosquito Alert és la següent:</p>
+<ul>
+    <li>Informes recopilats i enviats per voluntaris amb informació relativa a focus de cria, picades i albiraments de
+        possibles mosquits (Mosquito Alert actualment es focalitza en 5 espècies diferents de mosquits), així com les
+        respostes dels voluntaris a les preguntes que se'ls envíen a través de l'aplicació. Això inclou la ubicació
+        precisa de les observacions i fotografies fetes pels voluntaris (així com la ubicació de les metadades de les
+        fotografies, si correspon), notes o qualsevol altra informació que el voluntari agregui a l'informe.
+    </li>
+    <li>Informació sobre la ubicació aproximada dels voluntaris, mostrejada en segon pla i a intervals de temps
+        aleatoris. Aquesta informació es recol·lecta amb finalitats científiques, per a conèixer les àrees geogràfiques
+        explorades pels voluntaris (esforç de mostreig, és a dir, en quines àrees hi ha o no participació i en quina
+        mesura, per a poder relacionar-ho amb el nombre d'observacions en aquesta mateixa àrea per exemple amb tècniques
+        de modelatge o estadístiques), i per a millorar el coneixement sobre les vies de dispersió de mosquits
+        relacionades amb la mobilitat humana (és a dir, per a comprendre millor la relació entre com es mouen les
+        persones a gran escala i la dispersió d'aquestes espècies en el territori). Aquesta informació és de gran
+        interès científic. Per a evitar la recopilació de les ubicacions exactes dels voluntaris, aquestes ubicacions es
+        col·loquen en una quadrícula de 0,025 graus de latitud i longitud i només es transmet al servidor
+        l'identificador dels quadrats de la quadrícula en els quals cauen. Per tant, és impossible determinar la
+        ubicació real, dins d'una àrea de 0,025 graus de latitud per 0,025 graus de longitud (entre aproximadament 3,1 i
+        aproximadament 7,7 km quadrats, o entre 765 i 1901 camps de futbol). En qualsevol cas, els voluntaris poden
+        desactivar aquesta opció, activada per defecte, en la configuració de l'aplicació.
+    </li>
+    <li>Informació sobre el model del telèfon, la bateria, la configuració de l'idioma i la versió de l'aplicació (és a
+        dir, la versió instal·lada i el sistema operatiu i la versió del mateix en la qual està instal·lada). Aquesta
+        informació s'utilitza per a ajudar l'equip de recerca a millorar l'aplicació.
+    </li>
+    <li>Si el voluntari tria autenticar-se a través d'un compte extern usant Firebase, Firebase pot recopilar l'adreça
+        de correu electrònic, contrasenya, número de telèfon, adreça IP i una altra informació associada amb aquest
+        compte extern.
+    </li>
+</ul>
 
 {% endblock %}

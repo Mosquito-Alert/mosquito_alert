@@ -1,0 +1,53 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Mosquito Alert Score Info
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>Informacije o bodovanju</h2>
+        <p>Aktivnosti peduzete u Alarmu za komarce se prepoznaju i nagrađuju u formi poena. Broj poena po izveštaju
+            varira od informacije koju je učesnik omogućio i od njenog kvaliteta. </p>
+        <p>Maksimalan broj bodova po izveštaju koji može biti osvojen je:</p>
+        <ul>
+            <li>Invazivna vrsta komaraca iz roda Aedes: 20 poena</li>
+            <li>Kućni komarac: 14 poena</li>
+            <li>Ulični šaht u kome se komarci razvijaju: 20 poena</li>
+            <li>Druga razvojna staništa na javnim povšinama: 16 poena</li>
+        </ul>
+        <p>Dodatno, moguće je osvojiti ekstra bonus poene za prvog komarca u sezoni, prvi izveštaj dana ili za
+            mnogobrojna učešća. Kada ostvarite specifičan broj izveštaja, ne dobijate samo ekstra poene, nego i
+            specijalan trofej. Postoje različiti trofeji koje možete osvojiti u zavisnosti od postignutih
+            rezultata. </p>
+        <p>Ovi izveštaji u kojima su poslati komarci, ali se ispostavilo nakon ocene stručnjaka da ipak nisu komarci,
+            neće dati nikakve poene. Fotografija koja onemogućava stručnjacima identifikaciju komarca ili razvojnog
+            staništa takođe neće biti bodovani. </p>
+        <p>Akumulisanje poena će omogućiti dostizanje viših nivoa: </p>
+        <ul>
+            <li>(1) Novajlija (početnik)</li>
+            <li>(2) Saradnik</li>
+            <li>(3) Stručnjak</li>
+            <li>(4) Majstor</li>
+            <li>(5) Veliki majstor</li>
+        </ul>
+        <p>Ove ikonice ukazuju na postignuti nivo: </p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Panel poena</h2>
+        <p>Globalnom rangiranju se pristupa tako što ćete klinknuti na poene na glavnom ekranu menija. Odabirom rang
+            pozicije na ekranu se pojavljuje presek poena koje je osvojio korisnik. </p>
+        <p>Klikom na opciju "Više podataka" pristupićete panelu preseka poena. </p>
+        <p>U ovoj sekciji nalazi se lista poslatih izveštaja sa bodovima osvojenim svakim poslatim izveštajem. Izveštaji
+            su interaktivni i klikom ćete pristupiti preseku poena i za šta je koji poen osvojen. </p>
+
+    </div>
+</div>
+{% endblock %}

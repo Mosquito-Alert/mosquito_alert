@@ -1,0 +1,88 @@
+﻿{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Gizlilik Politikası
+{% endblock %}
+
+
+{% block content %}
+
+<div class="center">
+    <h2>Gizlilik Politikası</h2>
+</div>
+
+<p>
+    Mosquito Alert (geçmişte almış olabileceği veya gelecekte edinebileceği isimlerden herhangi biriyle), diğer şeylerin
+    yanı sıra, gönüllüler tarafından paylaşılan verileri ve görüntüleri toplar ve bunları üçüncü şahısların ve genel
+    halkın kullanımına sunar. Mosqutio Alert, gönüllülerinin mahremiyetini korumak için kişisel bilgileri, yani belirli
+    bir gerçek kişiyi bireysel olarak tanımlamak için kullanılabilecek bilgileri toplamaktan kaçınmayı amaçlamaktadır.
+    Bu nedenle Mosquito Alert, gönüllülerin rapor gönderirken isim, adres, şifre ve diğer kişisel bilgileri iletmemesini
+    talep eder. Gözlemlerin tam konumları, raporun sunulması sırasında toplanır ve bunlar, gönüllülerin tam konumuyla
+    çakışabilir, ancak bu bilgi yalnızca raporla ve rastgele oluşturulmuş bir kullanıcı kimliğiyle bağlantılıdır.
+    Fotoğraf üst verisi talep edilmez ve uygulama aracılığıyla projeye gönderilen fotoğraflar üst veri içeriyorsa, bu
+    meta veriler, fotoğrafla ilişkili tutulacak olan fotoğraf coğrafi konumu hariç olmak üzere, görüntü proje sunucusuna
+    ulaştığında silinecektir.
+</p>
+<p>
+    Mosquito Alert aynı zamanda zaman içinde rastgele aralıklarla gönüllülerin yaklaşık konumlarını da toplar
+    (gönüllüler tarafından kapsanan veya keşfedilen coğrafi alanları değerlendirmek için), ancak bu bilgi aynı zamanda
+    yalnızca rastgele oluşturulmuş bir kullanıcı tanımlayıcısıyla bağlantılıdır. Gönüllüler raporlarına notlar ve
+    fotoğraflar ekleyebilir, ancak bu notlara ve fotoğraflara gizli tutmak istedikleri herhangi bir bilgiyi veya
+    başkalarının gizlilik haklarını ihlal eden veya Mosquito Alert kullanıcı sözleşmesine aykırı olan herhangi bir
+    bilgiyi eklememek onların sorumluluğundadır. Mosquito Alert, anonimleştirme önlemlerine rağmen kullanıcıların
+    yanlışlıkla göndermiş olabilecekleri kişisel verilerin genel halkla paylaşılmasını mümkün olduğunca engelleyen
+    mekanizmalara sahiptir. Aynı şekilde, Mosquito Alert, kişisel verilerin paylaşılıp paylaşılmadığını tespit etmek ve
+    mümkün olduğunca veri tabanından çıkarmak için önlemler uygular. Buna rağmen, herhangi bir özel durumda bu tedbirler
+    bir kişisel verinin yayınlanmasını engellemiyorsa, bunu tespit edenlerin, mümkünse kamusal alandaki görünümünü
+    ortadan kaldırmaya devam etmek için Mosquito Alert uygulamasından sorumlu olanları bilgilendirmesi teşvik edilir.
+    Mosquito Alert, anonimleştirme önlemlerine rağmen Mosquito Alert tarafından yanlışlıkla toplanabilecek kişisel
+    verilerin ortadan kaldırılmasını garanti edemez ve bu tür verilerin Mosquito Alert üyelerine veya ortaklarından
+    herhangi biri veya üçüncü şahıslar tarafından görülemeyeceğini garanti edemez.
+</p>
+<p>
+    Katılımcılar gözlemlerini (raporlarını) sosyal ağlar gibi herhangi bir kamuya açık ortamda paylaşırlarsa, bu
+    gözlemlerini kişisel verileriyle (örneğin sosyal ağlardaki kişisel hesaplar) ilişkilendirerek anonimlikten gönüllü
+    olarak vazgeçebilecekleri belirtilmektedir.
+</p>
+<p>
+    Mosquito Alert, katılımcıların Firebase aracılığıyla diğer hesapları (e-posta, Facebook, Twitter) kullanan bir
+    kimlik doğrulama sistemi aracılığıyla anonim kalırken, verilerini tutmalarına olanak tanır. Bu, katılımcıların
+    uygulamayı kaldırmaları gerekiyorsa birden fazla cihazı senkronize etmelerine ve verileri kurtarmalarına olanak
+    tanır. Bu seçenek isteğe bağlıdır ve varsayılan olarak etkinleştirilmemiştir. Her durumda, Firebase tarafından bu
+    amaçla toplanan bilgiler Mosquito Alert sunucularında saklanmaz, Mosquito Alert tarafından toplanan bilimsel
+    verilere bağlanmaz ve Mosquito Alert tarafından işlenmez.
+</p>
+<p>
+    Mosquito Alert uygulamasının topladığı bilgilerin ayrıntılı bir listesi aşağıdaki gibidir:
+</p>
+<ul>
+    <li>Olası sivrisineklerin üreme alanları, sokmaları ve görülmesi ile ilgili olarak gönüllüler tarafından toplanan ve
+        gönderilen raporlar (Mosquito Alert şu anda 5 farklı sivrisinek türüne odaklanmaktadır) ve uygulama aracılığıyla
+        kendilerine gönderilen sorulara gönüllülerin yanıtları. Bu bilgi, gönüllü gözlemlerinin ve fotoğraflarının
+        (varsa fotoğraf üst veri konumunun yanı sıra), notların veya gönüllünün rapora eklediği diğer bilgilerin tam
+        konumunu içerir.
+    </li>
+    <li>Arka plan modunda ve rastgele zaman aralıklarında örneklenen gönüllülerin yaklaşık konumu hakkında bilgi alır.
+        Bu bilgiler, gönüllüler tarafından keşfedilen coğrafi alanları bilmek için (örnekleme çabası, yani hangi
+        alanlarda katılımın olduğu veya olmadığı ve ne ölçüde gözlem sayısıyla ilişkilendirilebilmesi için) bilimsel
+        amaçlarla toplanır. Modelleme teknikleri veya istatistiklerle örnek olarak aynı alan ve insan hareketliliğiyle
+        ilgili sivrisinek yayılma yolları hakkındaki bilgileri geliştirmek (yani, insanların büyük ölçekte nasıl hareket
+        ettiği ve bu türlerin bölgedeki dağılımı arasındaki ilişkiyi daha iyi anlamak için). Bu bilgi büyük bilimsel
+        ilgi çekmektedir. Gönüllülerin kesin konumlarının toplanmasını önlemek için, bu konumlar 0,025 derece enlem ve
+        boylam ızgarasına yerleştirilir ve yalnızca içine düştükleri ızgara karelerinin tanımlayıcısı sunucuya iletilir.
+        Bu nedenle, 0.025 derece enlemli bir alanda 0.025 derece boylamda (yaklaşık 3.1 ile yaklaşık 7.7 km kare
+        arasında) gerçek konumu belirlemek imkansızdır. Her durumda, gönüllüler uygulama ayarlarında varsayılan olarak
+        etkinleştirilen bu seçeneği devre dışı bırakabilir.
+    </li>
+    <li>Telefon modeli, pil, dil ayarları ve uygulama sürümü hakkında bilgiler (yani, yüklü sürüm ve yüklü olduğu
+        işletim sistemi ve sürüm). Bu bilgiler, araştırma ekibinin uygulamayı iyileştirmesine yardımcı olmak için
+        kullanılır.
+    </li>
+    <li>Gönüllü, Firebase kullanarak harici bir hesap üzerinden kimlik doğrulamayı seçerse, Firebase e-posta adresini,
+        şifreyi, telefon numarasını, IP adresini ve bu harici hesapla ilişkili diğer bilgileri toplayabilir.
+    </li>
+</ul>
+
+
+{% endblock %}

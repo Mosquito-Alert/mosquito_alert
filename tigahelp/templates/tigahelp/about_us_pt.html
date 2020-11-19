@@ -1,0 +1,32 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About Us
+{% endblock %}
+
+{% block content %}
+
+<h2>Entidades Coordenadoras</h2>
+<p>A Mosquito Alert é liderada por diferentes instituições públicas de investigação: o Centro de Estudos Avançados de
+    Blanes do Conselho Superior de Investigação Científica (CEAB-CSIC), o Centro de Investigação Ecológica e Aplicações
+    Florestais (CREAF) e a Universidade Pompeu Fabra (UPF). O Instituto Catalão de Investigação e Estudos Avançados
+    (ICREA) também participa.</p>
+<p class="centeredImage">
+    <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/colaboradors_about_us.jpg" %}">
+</p>
+
+<h2>Colaboradores</h2>
+<p>A Mosquito Alert também é possível graças à participação de diversos especialistas (profissionais que, por exemplo,
+    validam dados de cidadãos) e entidades de vários países que trabalham na área da saúde pública, no controlo de
+    espécies invasoras ou entidades de educação ambiental.</p>
+<h2>Financiamento e participação em projetos</h2>
+<p>A Mosquito Alert participa em projetos competitivos de investigação, comunicação científica e divulgação (Plano
+    Nacional de Estado, Horizonte 2020 da União Europeia, Fundação "la Caixa", entre outros), sendo também um projeto
+    financiado com o aporte de recursos das entidades que dirigem o projeto e entidades colaboradoras.</p>
+<p>Mais informações sobre entidades, colaborações e projetos em <a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a>
+    e nas redes sociais.</p>
+
+<p class="centeredImage"><img style="max-width: 100%; height: auto;" src="{% static "tigahelp/banner_web.jpg" %}"></p>
+
+{% endblock %}

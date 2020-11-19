@@ -1,0 +1,29 @@
+{% extends "tigacrafting/validation_message_template.html" %}
+
+{% block lang %}
+<html lang="ca">
+{% endblock %}
+
+{% block title_block %}
+    <title>Вашата снимка е потвърдена от експерт!</title>
+{% endblock %}
+
+{% block title_header_block %}
+    <h1>Вашата снимка е потвърдена от експерт!</h1>
+{% endblock %}
+
+{% block validation_category_block %}
+    <p><strong>Вашето наблюдение е:</strong> {{ validation_category }}</p>
+{% endblock %}
+
+{% block map_link_block %}
+    <!--<p><a href="{{ map_link }}" target="_blank">Mira-ho al mapa</a></p>-->
+{% endblock %}
+
+{% block expert_note_block %}
+    <p><strong>Експертна бележка:</strong> <i>{{ expert_note }}</i></p>
+{% endblock %}
+
+{% block message_for_user_block %}
+    <p><strong>Съобщение от експерта:</strong> <i>{{ message_for_user }}</i></p>
+{% endblock %}

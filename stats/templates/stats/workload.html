@@ -21,8 +21,10 @@
         var expert_color = ["#c0ce76","#7f4ed5","#4fdf89","#ed0d82","#01bb91","#ff5245","#00d0f3","#ff8324","#0099fc","#508500","#ff66b6","#3d5b12","#ff6d87","#87c9ff","#b20028","#d2a07a","#893169","#ad6e00","#79452c","#ff8d4e"];
         var users = [];
         var report_input_data = [];
+        var user_ids = [];
         {% for user in users %}
             users.push({ 'username':'{{user.username}}','name':'{{user.first_name}} {{user.last_name}}'});
+            user_ids.push('{{user.id}}');
         {% endfor %}
         var user_data = {};
         for(var i = 0; i < users.length; i++){
@@ -34,7 +36,7 @@
             load_on_start = true;
         {% endif %}
     </script>
-    <script src="{% static 'stats/workload.js' %}"></script>
+    <script src="{% static 'stats/workload.js' %}?1660"></script>
   </head>
   <div class="navbar-wrapper">
         <div class="container">
@@ -94,7 +96,32 @@
         </div>
       </div>
       <div class="row solid-border">
-        <div id="container_gauge" class="col-md-2" style="height: 200px; margin: 0 auto"></div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div id="container_gauge" style="height: 250px; margin: 0 auto"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="pending_gauge" style="height: 250px; margin: 0 auto"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div id="container_overall_pending" style="height: 250px; margin: 0 auto"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 solid-border">
+                <p><strong>Unassigned reports</strong></p>
+                <p>Unassigned reports are reports that have not been yet assigned to any user. Reports which are hidden or missing pictures are not included in this count.</p>
+                <p><strong>Reports in progress</strong></p>
+                <p>Reports in progress are reports which have not yet been assigned to at least 3 experts. Therefore, they are considered work in progress. This count exludes unassigned reports.</p>
+                <p><strong>Overall pending reports</strong></p>
+                <p>This is the total pending (assigned but not yet validated) reports of all users. This number should be equal to the sum of all the pending reports in the 'Pending reports per expert' graph.</p>
+            </div>
+        </div>
+        <!--<div id="container_gauge" class="col-md-2" style="height: 200px; margin: 0 auto"></div>
         <div id="pending_gauge" class="col-md-2" style="height: 200px; margin: 0 auto"></div>
         <div id="container_overall_pending" class="col-md-2" style="height: 200px; margin: 0 auto"></div>
         <div class="col-md-2 solid-border">
@@ -104,7 +131,7 @@
             <p>Reports in progress are reports which have not yet been assigned to at least 3 experts. Therefore, they are considered work in progress. This count exludes unassigned reports.</p>
             <p><strong>Overall pending reports</strong></p>
             <p>This is the total pending (assigned but not yet validated) reports of all users. This number should be equal to the sum of all the pending reports in the 'Pending reports per expert' graph.</p>
-        </div>
+        </div>-->
       </div>
   </div>
   </body>

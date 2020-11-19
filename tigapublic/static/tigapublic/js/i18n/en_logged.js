@@ -193,5 +193,41 @@ add = {
   'group.koreicus': 'Aedes koreicus',
   'group.culex': 'Culex pipiens',
   'group.mix': 'Aedes jap/kor',
+
+  'header.motto': 'Mosquito Alert Private Map',
+
+  'modal.firstvisit.title': 'Welcome to Mosquito Alert Private Map',
+  'modal.firstvisit.content': '<p>On the private map you can check the mosquito data sent by citizens, through the Mosquito Alert app, and validated by entomologists. You can also explore data that have not yet been validated by experts, and data that is not public because it contains sensitive information. Not public data or not yet validated data might be relevant for surveillance and control. The tool allows you to <b>view, filter and download data</b>, according to your interests and prepare <b>personalized reports</b>. You can also <b>send notifications</b> to citizens through the Mosquito Alert app, selecting observations on the map.</p>' +
+    '<ul>' +
+      '<li><i class="fa fa-bars" aria-hidden="true"></i> Open the different data layers, filter them by date, hashtag or municipality and consult the Mosquito Alert models</li>' +
+      '<li><i class="fa fa-info" aria-hidden="true"></i> Check the map information</li>' +
+      '<li><i class="fa fa-share-alt" aria-hidden="true"></i> Share the map view</li>' +
+      '<li><i class="fa fa-file-text-o" aria-hidden="true"></i> Create custom reports</li>' +
+      '<li><i class="fa fa-download" aria-hidden="true"></i> Download the data</li>' +
+      '<li><i class="fa fa-bell" aria-hidden="true"></i> Issue notifications to participants</li>' +
+    '</ul>' +
+    '<p>The map contains information on 5 species of disease-vector mosquitoes: the <b>tiger mosquito</b> (<em>Aedes albopictus</em>), the <b>yellow fever mosquito</b> (<em>Aedes aegypti</em>), the <b>Asian bush mosquito</b> (<em>Aedes japonicus</em>), <em>Aedes koreicus</em> and the <b>common house mosquito</b> (<em>Culex pipiens</em>). In addition, you can visualize possible <b>breeding places</b> for these insects on public spaces. This information is complemented with <b>probability models</b>, elaborated from the citizen data and considering the <b>sampling effort</b> or <b>distribution of participants</b>.</p>' +
+    '<p>Click the <b>[?] Button</b> for each layer or group of layers, where you will find details of the different data available and the meaning of the models.</p>'  +
+    '<p>For more information, visit <a href="http://www.mosquitoalert.com">www.mosquitoalert.com</a> or contact profs@mosquitoalert.com.</p>',
+  'observations.description': '<ul class="info_list">' +
+    '<li class="tiger_mosquito"> <b>Tiger mosquito</b>: According to experts, the pictures of this observation could be tiger mosquito (Aedes albopictus). If its taxonomic features are seen very clearly, especially the white stripe on the head and thorax, it will be "confirmed". If some traits are not appreciated, it will be "possible".</li>' +
+    '<li class="yellow_fever_mosquito"> <b>Yellow fever mosquito</b>: According to experts, the pictures of this observation could be yellow fever mosquito (Aedes aegypti). If its taxonomic features, especially the lyre on the head and thorax, are very clearly seen, it will be “confirmed”. If some traits are not appreciated, it will be "possible".</li>' +
+    '<li class="aedes_japonicus"> <b>Aedes japonicus</b>: According to experts, the pictures of this observation could be Aedes japonicus. If its taxonomic features are seen very clearly, especially the golden strips on the thorax and the last section of the third pair of legs is uniformly black, it will be "confirmed". If some traits are not appreciated, it will be "possible".</li>' +
+    '<li class="aedes_koreicus"> <b>Aedes koreicus</b>: According to experts, the pictures of this observation could be Aedes koreicus. If its taxonomic features are seen very clearly, especially the golden stripes on the thorax and the last section of the third pair of legs with a white band, it will be "confirmed". If some traits are not appreciated, it will be "possible".</li>' +
+    '<li class="culex"> <b>Culex pipiens</b>: According to experts, the pictures of this observation could be Culex pipiens. It will be “confirmed” when the yellowish color and size of the mosquito, short maxillary palps and the rounded end of the abdomen are appreciated. If some traits are not appreciated, it will be "possible".</li>' +
+    '<li class="aedes_jap_kor"> <b>Aedes jap/kor</b>: According to experts, the pictures of this observation could be Aedes japonicus or Aedes koreicus. Experts cannot determine with certainty which of the two species it is, as they cannot appreciate the character that distinguishes them in the photo.</li>' +
+    '<li class="aedes_albo_cret"> <b>Aedes albo/cret</b>: According to experts, the pictures of this observation could be Aedes albopictusor Aedes cretinus. Experts cannot determine with certainty which of the two species it is, as they cannot appreciate the character that distinguishes them in the photo.</li>' +
+    '<li class="other_species"> <b>Other species</b>: According to experts, the pictures of this observation may be of other species of mosquito.</li>' +
+    '<li class="unidentified"> <b>Unidentifiable</b>: According to experts, these observations and their photos do not identify any species of mosquito.</li>' +
+    '<li class="unclassified private"><b>Pending validation</b>: Observations with picture which still haven\'t been validated by experts.</li>' +
+    '<li class="site"> <b>Breeding sites</b>: Citizen’ observations of possible breeding sites (storm drainers and sewers) of the five species studied by Mosquito Alert.</li>' +
+    '<li class="trash_layer private"> <b>Other observations</b>: Observations not belonging to any other category but which could contain interesting info for the private map users.</li>' +
+    '</ul>',
+  'models.description': '<ul class="info_list">' +
+    '<li><b>Mosquito Alert Probability</b>: Probability of encountering a tiger mosquito (Aedes albopictus) or an Asian bush mosquito (Aedes japonicus) based on the observations received in Mosquito Alert. More details on the map layer, [?] button.</li>' +
+    '<li><b>Bites probability</b>: Probability of receiving a mosquito bite based on notifications received in Mosquito Alert. More details on the map layer, [?] button.</li>' +
+    '<li><b>Disease probability</b>: Prediction models for arboviral diseases in Catalan municipalities. More details on the map layer, [?] button.</li>' +
+    '</ul>',
+  'layer.predictionmodels.viruscontent' : 'Risk prediction models for arboviral diseases in Catalan municipalities. Probabilities are estimated considering information about imported cases as well as climate variables, mosquito abundance and socio economical factors. The models have been developed on the project Plataforma Integral per al Control d’Arbovirosis a Catalunya (PICAT), coordinated by Vall d’Hebron Institut de Recerca (VHIR) in collaboration with the Agencia de Salud Pública de Cataluña (ASPCAT), ISGlobal and Mosquito Alert.',
 };
 _.extend(trans.en, add);

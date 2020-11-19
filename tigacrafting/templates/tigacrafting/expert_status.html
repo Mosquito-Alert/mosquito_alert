@@ -1,9 +1,7 @@
 {% extends "tigacrafting/expert_report_status.html" %}
 {% load staticfiles %}
 {% load i18n %}
-
-
-{% block leaflet_stuff %}
+<!--{% block leaflet_stuff %}
 {% endblock %}
 
 
@@ -12,242 +10,205 @@
 {% endblock %}
 
 {% block search_btn %}
+{% endblock %}-->
+
+
+{% block js %}
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+{% endblock %}
+
+
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'tigacrafting/css/expert_status.css' %}">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
 {% endblock %}
 
 {% block main_body %}
-
     <div class="container">
-
-    <div class="starter-template">
-
+        <div class="starter-template">
             <h1>Expert Validation Status: People</h1>
-
         </div>
-
-{% for group in groups %}
+    {% for group in groups %}
         <div class="row" >
             <div class="col-md-12" style="background-color: #99ff99">
                 <h2>{{ group.name | capfirst }}s</h2>
             </div>
         </div>
-
-    {% for user in group.user_set.all %}
-        <div class="row">
-            <div class="col-md-12">
-                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
-            <table>
-            <tbody>
-            <tr>
-                <td style="padding-right:5px"><strong>Username:</strong></td><td>{{ user.username }}</td>
-            </tr>
-
-            <tr>
-            <td style="padding-right:5px"><strong>Team:</strong></td><td>{% if user.userstat.is_team_bcn %}Barcelona{% elif user.userstat.is_team_not_bcn %}Outside Barcelona{% elif user.userstat.is_team_everywhere %}Global{% endif %}</td>
-            </tr>
-
-            <tr>
-            <td style="padding-right:5px"><strong>Email:</strong></td><td><a href="mailto:{{ user.email }}" target="_top">{{ user.email }}</a></td>
-            </tr>
-            </tbody>
-            </table>
-
-            <br>
-
-             <p><a role="button" data-toggle="collapse" href="#current_status_collapse_pending{{ user.userstat.username_nopoint }}"
-               aria-expanded="false" aria-controls="current_status_collapse_pending{{ user.username }}"><i
-                    class="fa fa-plus-square-o"></i></a> <strong>Pending Reports</strong> <span class="badge">{{ user.userstat.n_pending_annotations }}</span></p>
-
-            <div class="collapse" id="current_status_collapse_pending{{ user.userstat.username_nopoint }}">
-                <div class="well">
-                    <div class="table-responsive">
-        <table class="table table-condensed borderless" style="font-size: smaller;">
-            <thead>
-            <tr>
-            <th>Report ID</th>
-            <th>Given to Expert</th>
-            <th>Last Modified by Expert</th>
-            <th>Draft Status</th>
-            </tr>
-            </thead>
-            <tbody>
-                    {% for ano in user.expert_report_annotations.all %}
-                        {% if not ano.validation_complete %}
+        {% for user in group.user_set.all %}
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                    <table>
+                        <tbody>
                             <tr>
-                    <td><a href="{% url 'expert_report_status' %}?version_uuid={{ ano.report.version_UUID }}">{{ ano.report.version_UUID }}</a></td>
-                            <td>{{ ano.created }}</td>
-                            <td>{{ ano.last_modified }}</td>
-                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td></tr>
-                        {% endif %}
-                    {% endfor %}
-        </tbody>
-        </table>
-                    </div>
-                </div>
-            </div>
+                                <td style="padding-right:5px"><strong>Username:</strong></td><td>{{ user.username }}</td>
+                            </tr>
 
-        <p><a role="button" data-toggle="collapse" href="#current_status_collapse_complete{{ user.userstat.username_nopoint }}"
-               aria-expanded="false" aria-controls="current_status_collapse_complete{{ user.username }}"><i
-                    class="fa fa-plus-square-o"></i></a> <strong>Complete Reports</strong> <span class="badge">{{ user.userstat.n_completed_annotations }}</span></p>
-
-            <div class="collapse" id="current_status_collapse_complete{{ user.userstat.username_nopoint }}">
-                <div class="well">
-        <table class="table table-condensed borderless" style="font-size: smaller;">
-            <thead>
-            <tr>
-            <th>Report ID</th>
-            <th>Given to Expert</th>
-            <th>Last Modified by Expert</th>
-            <th>Status</th>
-            </tr>
-            </thead>
-            <tbody>
-                    {% for ano in user.expert_report_annotations.all %}
-                        {% if ano.validation_complete %}
                             <tr>
-                    <td><a href="{% url 'expert_report_status' %}?version_uuid={{ ano.report.version_UUID }}">{{ ano.report.version_UUID }}</a></td>
-                            <td>{{ ano.created }}</td>
-                            <td>{{ ano.last_modified }}</td>
-                            <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td></tr>
-                        {% endif %}
-                    {% endfor %}
-        </tbody>
-        </table>
-                    </div>
-                </div>
-            </div>
+                                <!--<td style="padding-right:5px"><strong>Team:</strong></td><td>{% if user.userstat.is_team_bcn %}Barcelona{% elif user.userstat.is_team_not_bcn %}Outside Barcelona{% elif user.userstat.is_team_everywhere %}Global{% endif %}</td>-->
+                                <td style="padding-right:5px"><strong>Team:</strong></td><td>{{ user.userstat.formatted_country_info }}</td>
+                            </tr>
 
+                            <tr>
+                                <td style="padding-right:5px"><strong>Email:</strong></td><td><a href="mailto:{{ user.email }}" target="_top">{{ user.email }}</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-        </div>
-
-<br>
-        <div class="border-row"></div>
                     <br>
+                    <p>
+                        <a role="button" data-toggle="collapse"
+                            href="#current_status_collapse_pending{{ user.userstat.username_nopoint }}_{{ group.name }}"
+                            aria-expanded="false" aria-controls="current_status_collapse_pending{{ user.userstat.username_nopoint }}"
+                            onClick="getPendingReports('{{ user.username }}','{{ group.name }}')">
+                            <i class="fa fa-plus-square-o"></i>
+                        </a>
+                        <strong>Pending Reports</strong>
+                        <span class="badge">{{ user.userstat.n_pending_annotations }}</span>
+                    </p>
 
+                    <div id="loading_{{ user.userstat.username_nopoint }}_{{ group.name }}_pending"></div>
+                    <div class="collapse" id="current_status_collapse_pending{{ user.userstat.username_nopoint }}_{{ group.name }}">
+
+
+                            <div class="table-responsive">
+                                <table class="table table-condensed borderless display nowrap"
+                                       data-page-length='25' style="font-size: smaller;"
+                                       id="current_status_collapse_pending_{{ user.userstat.username_nopoint }}_{{ group.name }}">
+                                    <thead>
+                                    <tr>
+                                    <th>Report ID</th>
+                                    <th>Report Type</th>
+                                    <th>Given to Expert</th>
+                                    <th>Last Modified by Expert</th>
+                                    <th>Classification</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+
+                    <p>
+                        <a role="button" data-toggle="collapse"
+                           href="#current_status_collapse_complete{{ user.userstat.username_nopoint }}_{{ group.name }}"
+                           aria-expanded="false"
+                           aria-controls="current_status_collapse_complete{{ user.userstat.username_nopoint }}"
+                           onClick="getCompleteReports('{{ user.username }}','{{ group.name }}')">
+                            <i class="fa fa-plus-square-o"></i>
+                        </a>
+                        <strong>Complete Reports</strong>
+                        <span class="badge">{{ user.userstat.n_completed_annotations }}</span>
+                    </p>
+                    <div id="loading_{{ user.userstat.username_nopoint }}_{{ group.name }}_complete"></div>
+                    <div class="collapse" id="current_status_collapse_complete{{ user.userstat.username_nopoint }}_{{ group.name }}">
+
+                        <div class="table-responsive">
+                                <table class="table table-condensed borderless display nowrap"
+                                       data-page-length='25' style="font-size: smaller;"
+                                       id="current_status_collapse_complete_{{ user.userstat.username_nopoint }}_{{ group.name }}">
+                                    <thead>
+                                    <tr>
+                                    <th>Report ID</th>
+                                    <th>Report Type</th>
+                                    <th>Given to Expert</th>
+                                    <th>Last Modified by Expert</th>
+                                    <th>Draft Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                                <div class="row">
+                                    <div class="col-lg-offset-5 col-lg-3">
+                                        <ul class="pagination">
+                                            {% if reports.has_previous %}
+                                                <li class="paginationButtons"><a href="?page={{ reports.previous_page_number }}">Previous</a></li>
+                                            {% endif %}
+                                                <li class="disabled paginationButtons"><a>Page {{ reports.number }} of {{ reports.paginator.num_pages }}</a></li>
+                                            {% if reports.has_next %}
+                                                <li class="paginationButtons"><a href="?page={{ reports.next_page_number }}">Next</a></li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                </div>
+            </div>
+            <br>
+            <div class="border-row"></div>
+            <br>
+        {% endfor %}
     {% endfor %}
-
-
-
-    {% endfor %}
-
-        </div>
-
-
+    </div>
 {% endblock %}
 
-    {% block search_modal %}
-        <!-- Modal -->
-        <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="searchModalLabel">Search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form role="form" class="form-inline">
+{% block search_modal %}
+    <!-- Modal -->
+    <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" class="form-inline">
 
-                            <div class="form-group">
-                                <label for="version_uuid_select">Report ID:</label>
+                        <div class="form-group">
+                            <label for="version_uuid_select">Report ID:</label>
 
-                                <select id="version_uuid_select" class="selectpicker show-tick form-control"
-                                        data-live-search="true">
-                                    <option value=""></option>
-                                    {% for version_uuid in all_reports_version_uuids %}
-                                        <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="button" id="search_version_uuid_submit_button" class="btn btn-default">
-                                Search
-                            </button>
+                            <select id="version_uuid_select" class="selectpicker show-tick form-control"
+                                    data-live-search="true">
+                                <option value=""></option>
+                                {% for version_uuid in all_reports_version_uuids %}
+                                    <option value="{{ version_uuid.values | first }}">{{ version_uuid.values | first }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="button" id="search_version_uuid_submit_button" class="btn btn-default">
+                            Search
+                        </button>
 
-                        </form>
-
-
-                    </div>
-                    <div class="modal-footer">
-                        {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}
-                            <a class="btn btn-primary" href="{% url 'expert_report_status' %}">Clear Search</a>
-                        {% endif %}
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' %}
+                        <a class="btn btn-primary" href="{% url 'expert_report_status' %}">Clear Search</a>
+                    {% endif %}
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
-
-
-    {% endblock %}
-
-
-
-
+    </div>
+{% endblock %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
 
-    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js' %}"></script>
 
-    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
 
-    <script type="text/javascript">
-
-        {% block map_js %}
-
-        (function () {
-            function loadmap() {
-
-                {% for report in reports %}
-
-                    var centerLat = {{ report.lat }};
-                    var centerLng = {{ report.lon }};
-                    var initialZoom = 6;
-                    var djoptions = {"layers": [
-                                ["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                    "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
-                            ],
-                                "minimap": true, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                                "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
-                                    [-90,
-                                        -180],
-                                    [90,
-                                        180]
-                                ], "resetview": true, "srid": null, "fitextent": true},
-                            options = {djoptions: djoptions, initfunc: loadmap,
-                                globals: false, callback: window.map_init_basic};
-
-                    L.Map.djangoMap('map{{ forloop.counter }}', {djoptions: djoptions, initfunc: loadmap,
-                        globals: false, callback: eval("window.map_init_basic{{ forloop.counter }}")});
-                {% endfor %}
-
-            }
-
-            var loadevents = ["load"];
-            if (loadevents.length === 0) loadmap();
-            else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
-            else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
-        })();
-
-        {% endblock %}
-
-        var gear = $("#gear").hide();
-
-        $(document).ready(function () {
-
-            $('[data-toggle="tooltip"]').tooltip();
-
-            $("select").selectpicker({
-                width: 'auto'
-            });
-
-        });
-
+{% block extra_js %}
+    <script>
+        var _expert_report_status = "{% url 'expert_report_status' %}";
     </script>
-
+    <script src="{% static 'tigacrafting/javascript/expert_status.js' %}"></script>
+{% endblock %}
 
 </body>
 </html>

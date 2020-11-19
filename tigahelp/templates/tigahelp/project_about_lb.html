@@ -1,0 +1,124 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About The Project
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <p>Umierkung: Well all Lëtzebuerger/-in Däitsch versteet, iwwersetze mir dës laang Texter net.</p>
+
+        <h2>Was ist Mosquito Alert?</h2>
+        <p>Mosquito Alert ist eine Citizen Science Plattform, die die Zusammenarbeit zwischen verschiedenen Akteuren
+            erleichtert, um Stechmückenarten, die Krankheiten wie Dengue-Fieber, Zika, Chikungunya und das
+            West-Nil-Virus übertragen, zu untersuchen, zu überwachen und zu kontrollieren.</p>
+        <p>Das Projekt gibt Bürgern, Wissenschaftlern, Experten für öffentliche Gesundheit und Pädagogen
+            Schlüsselrollen. Mit Mosquito Alert kann jeder Daten sammeln und austauschen (1) und gemeinsam mit
+            professionellen Entomologen Daten validieren, die die Stechmückenberichte kennzeichnen und auf Teilnehmer
+            reagieren (2). Nach der Validierung werden die Daten über eine interaktive Webkarte der Öffentlichkeit
+            zugänglich gemacht (3). Wissenschaftler (4) und Vertreter des öffentlichen Gesundheitswesens (5) stützen
+            sich auch darauf, um Stechmücken, die potentiell Krankheiten übertragen können, zu untersuchen und zu
+            überwachen.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Warum wird Mosquito Alert gebraucht?</h2>
+        <p>In den letzten Jahrzehnten hat die Zahl der invasiven Stechmücken und neue Krankheiten, die durch Stechmücken
+            übertragenen werden, weltweit zugenommen. Neue invasive Arten, hauptsächlich der Gattung Aedes, haben sich
+            in neuen Gebieten niedergelassen und expandieren weiter. Aedes-Mücken sind aus gesundheitlicher Sicht
+            wichtig, da sie Krankheiten wie Dengue-Fieber, Zika und Chikungunya übertragen können. Ebenso ist die
+            gemeine Stechmücke (Culex pipiens) wichtig, da sie das West-Nil-Virus übertragen kann. Das Stechmücken somit
+            ein Risiko für die öffentliche Gesundheit darstellen, ist es wichtig, ihre Populationen zu überwachen.</p>
+        <p>Angesichts der Komplexität des Problems eröffnet Mosquito Alert der Öffentlichkeit die Überwachung und
+            Forschung von Mücken und ermöglicht die Zusammenarbeit zwischen verschiedenen Akteuren über seine App und
+            seine anderen Plattformen und Communities.</p>
+        <h2>Welche Daten werden gesammelt?</h2>
+        <p>Daten über 5 verschiedene Stechmücken werden gesammelt: der Asiatischen Tigermücke (<em>Aedes albopictus</em>),
+            der Gelbfiebermücke (<em>Aedes aegypti</em>), der Japanischen Buschmücke (<em>Aedes japonicus</em>), der
+            Koreanischen Buschmücke (<em>Aedes koreicus</em>), und der Gemeinen Hausmücke (<em>Culex pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>Für diese Arten werden Daten zu ausgewachsener Stechmücken und ihren Brutstätten und über Stiche gesammelt.
+            All diese Daten sind wichtig, um diese Arten besser zu verstehen, zu überwachen und zu kontrollieren.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>Mosquito Alert sammelt auch die ungefähren Standorte der Geräte der Teilnehmer und tastet diese Standorte
+            täglich zu 5 zufälligen Zeiten ab, sofern der Teilnehmer dies nicht deaktiviert hat. Standorte werden in
+            einem Raster von 0,025 x 0,025 Grad Breite und Länge (ca. 2 x 2 km) maskiert, bevor sie an den Mosquito
+            Alert-Server gesendet werden. Aus Datenschutzgründen wird nur die Rasterquadratkennung tatsächlich mit
+            Mosquito Alert geteilt, nicht der genaue Standort. Diese Informationen sind aus wissenschaftlicher Sicht
+            sehr wertvoll, da sie es Forschern ermöglichen, bessere Schätzungen über Stechmückenpopulationen vorzunehmen
+            und beispielsweise Orte mit wenigen Stechmücken von Orten mit wenigen Teilnehmern (aber möglicherweise
+            vielen Stechmücken) zu unterscheiden. Die Standorte der Teilnehmer geben Auskunft darüber, was in der
+            Ökologie als Stichprobenaufwand bekannt ist.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Wofür werden die Daten verwendent?</h2>
+        <p>Hier sind einige Beispiele:</p>
+        <ul>
+            <li type="disc">Die Berichte, die Menschen an Mosquito Alert senden, haben sich in den letzten Jahren als
+                wirksames Frühwarnsystem gegen das Eindringen neuer Stechmücken erwiesen. Das System wird verwendet, um
+                etablierte Stechmückenpopulationen zu überwachen und neue Populationen zu entdecken.
+            </li>
+            <li type="disc">Beobachtungen von Stechmücken, Brutstätten und Stichen helfen Wissenschaftlern und Managern
+                des öffentlichen Gesundheitswesens, das Risiko einzuschätzen und Krankheitsüberträgerpopulationen zu
+                verwalten. Um die Häufigkeit von Stechmücken an einem bestimmten Standort abzuschätzen, ist es wichtig,
+                die Beobachtungen basierend dem Probenahmeaufwand anzupassen. Zu diesem Zweck sammelt die Mosquito
+                Alert-App zu zufälligen Tageszeiten Daten zur ungefähren Position des Geräts. Die Positionen sind in
+                einem Raster von ca. 2 x 2 km maskiert, um die Privatsphäre zu schützen.
+            </li>
+            <li type="disc">Derzeit wird an der Entwicklung eines partizipativen und dynamischen epidemiologischen
+                Risikoprognosesystems in Echtzeit gearbeitet.
+            </li>
+        </ul>
+        <h2>Wo kann ich weitere Informationen finden?</h2>
+        <p>Weitere Informationen findest du auf der Projektwebsite und in den sozialen Medien.</p>
+        <p><a href="http://www.mosquitoalert.com/en/"> www.mosquitoalert.com </a></p>
+        <p>In den Einstellungen der App findet sich einTeilnehmer-Tutorial, eine Anleitung zur Identifizierung von
+            Stechmücken, die Datenschutzrichtlinien und Nutzungsbedingungen sowie Informationen zu den Entitäten, die
+            hinter diesem Projekt stehen.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

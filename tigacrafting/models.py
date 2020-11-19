@@ -335,6 +335,28 @@ class UserStat(models.Model):
     def is_national_supervisor_for_country(self, country):
         return self.is_national_supervisor() and self.national_supervisor_of.gid == country.gid
 
+    @property
+    def formatted_country_info(self):
+        this_user = self.user
+        this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
+        this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
+        this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
+        this_user_is_team_everywhere = self.is_team_everywhere()
+        this_user_is_spain = not this_user_is_europe
+        if this_user_is_spain:
+            if this_user_is_team_bcn:
+                return "Spain - Barcelona"
+            elif this_user_is_team_not_bcn:
+                return "Spain - Outside Barcelona"
+            else:
+                return "Spain - Global"
+        else:
+            if self.is_national_supervisor():
+                return "Europe - National supervisor - " + self.national_supervisor_of.name_engl
+            else:
+                return "Europe - " + self.native_of.name_engl
+
+
     # this method returns the username, changing any '.' character to a '_'. This is used to avoid usernames used
     # as id or class names in views to break jquery selector queries
     @property

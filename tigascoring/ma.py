@@ -15,6 +15,7 @@ _HOST_ip = conf.DATABASES['default']['HOST']  # posrgresql ver 1.18.1
 _DB_USER = conf.DATABASES['default']['USER']
 _DB_PASSWORD = conf.DATABASES['default']['PASSWORD']
 _DB_NAME = conf.DATABASES['default']['NAME']
+_DB_PORT = conf.DATABASES['default']['PORT']
 #Apparently unused
 #_LOCAL_data = '/home/jgarriga/mosquitoAlert/data/'
 
@@ -22,7 +23,7 @@ _DB_NAME = conf.DATABASES['default']['NAME']
 # +++ mosquitoAlert data base connect/disconnect functions
 
 def connect():
-    dbConn = psycopg2.connect(host=_HOST_ip, user=_DB_USER, password=_DB_PASSWORD, database=_DB_NAME)
+    dbConn = psycopg2.connect(host=_HOST_ip, user=_DB_USER, password=_DB_PASSWORD, database=_DB_NAME, port=_DB_PORT)
     return dbConn
 
 

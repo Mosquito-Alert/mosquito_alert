@@ -2,46 +2,51 @@
 {% load staticfiles %}
 
 {% block page_title %}
-    Mosquito Alert Score Info
+Mosquito Alert Score Info
 {% endblock %}
 
 
 {% block content %}
 
-    <h1>SCORE INFO</h1>
-    Actions taken in Mosquito Alert have recognition and rewards in the form of points. The number of points per report varies depending on the information provided and its quality.
+<div class='main_container'>
 
-    <p>The maximum points that can be obtained per report are:</p>
-    <ul>
-        <li>Invasive <em>Aedes</em> Mosquito: 20 XP</li>
-        <li>Common mosquito: 14 XP</li>
-        <li>Storm drain breeding site: 20 XP</li>
-        <li>Other breeding site in a public area: 16 XP</li>
-    </ul>
+    <div class='text_container'>
 
-    <p>There are also extra bonuses for the first mosquito of the season, first report of the day or for participating frequently.</p>
+        <h2>SCORE INFO</h2>
+        <p>Actions taken in Mosquito Alert have recognition and rewards in the form of points. The number of points per
+            report varies depending on the information provided and its quality.</p>
+        <p>The maximum points that can be obtained per report are:</p>
+        <ul>
+            <li>Invasive <em>Aedes</em> Mosquito: 20 points</li>
+            <li>Common mosquito: 14 points</li>
+            <li>Storm drain breeding site: 20 points</li>
+            <li>Other breeding site in a public area: 16 points</li>
+        </ul>
+        <p>In addition, there are extra bonuses for the first mosquito of the season, the first report of the day or for
+            participating frequently. When you reach a specific number of reports, you not only get extra points, but
+            you get a special trophy. There are different trophies according to the milestones reached.</p>
+        <p>Those reports that are sent as a mosquito but turn out not to be mosquitoes, according to expert validation,
+            will not earn points. A photo that does not allow experts to identify the mosquito or breeding place will
+            not be scored either.</p>
+        <p>The accumulation of points will allow you to go up a <b>level</b>:</p>
+        <ul>
+            <li>(1) Novice (beginner)</li>
+            <li>(2) Contributor (contributor)</li>
+            <li>(3) Expert (expert)</li>
+            <li>(4) Master (master)</li>
+            <li>(5) Grandmaster (grandmaster)</li>
+        </ul>
+        <p>These icons indicate the level reached:</p>
 
-    <p>Reports that are submitted as a mosquito but turn out not to be mosquitoes will not earn points. Likewise, a photo that does not allow experts to identify what appears in it will not be scored.</p>
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
 
-    <p>The accumulation of points will allow you to go up a <b>level</b>:</p>
-    <ul>
-        <li>(1) Novice (novice)</li>
-        <li>(2) Contributor (contributor)</li>
-        <li>(3) Expert (expert)</li>
-        <li>(4) Master (master)</li>
-        <li>(5) Grandmaster (grandmaster)</li>
-    </ul>
+        <h2>Points panel</h2>
+        <p>The global ranking is accessed by clicking on the score on the main screen. Pressing on a ranking position
+            displays the breakdown of points obtained by the user.</p>
+        <p>Clicking on "More details" accesses the broken down points panel.</p>
+        <p>In this section there is a list of the reports sent with the score obtained in each one of them. The reports
+            are interactive, by clicking you get the broken down score and why the score.</p>
 
-    <p>Icons always indicate the level you are at.</p>
-
-    <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
-
-    <h2>Your points panel</h2>
-
-    <p>Pressing the button with the points on the main screen you can access the ranking where you will see your position.. If you click on your profile in the ranking, a broken down table with your points will be displayed.</p>
-
-    <p>Follow the link at the end of the table (link!) That will take you to your points panel.</p>
-
-    <p>Here you will find a list of the reports sent with the score obtained in each of them. The reports are interactive, clicking on one and you will see the broken down score and the explanation for the score.</p>
-
+    </div>
+</div>
 {% endblock %}

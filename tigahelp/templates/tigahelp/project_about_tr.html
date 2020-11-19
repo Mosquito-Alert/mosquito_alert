@@ -1,0 +1,118 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About The Project
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>Mosquito Alert nedir?</h2>
+        <p>Mosquito Alert, dang humması, Zika, chikungunya ve Batı Nil ateşi gibi hastalıkları taşıyan sivrisinek
+            türlerini incelemek, izlemek ve kontrol etmek için çeşitli katılımcılar arasında işbirliğini kolaylaştıran
+            bir vatandaş bilimi platformudur.</p>
+        <p>Bu proje, vatandaşlara, bilim insanlarına, halk sağlığı uzmanlarına ve eğitimcilere kilit roller vermektedir.
+            Mosquito Alert, herkesin veri toplayıp paylaşmasına (1) sivrisinek raporlarını etiketleyip katılımcılara
+            geri dönüş yapan profesyonel entomologlarla birlikte veri doğrulamasına izin verir (2). Veriler
+            doğrulandıktan sonra, etkileşimli bir web haritası (3) aracılığıyla genel kamuoyuna sunulur. Hastalık
+            vektörü sivrisinekleri incelemek ve izlemek için bilim insanları (4) ve halk sağlığı çalışanları (5)
+            tarafından güvenilir bir kaynak yaratmaktadır.</p>
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Mosquito Alert neden gereklidir?</h2>
+        <p>Son yıllarda, istilacı sivrisineklerin ve yeni ortaya çıkan sivrisinek kaynaklı hastalıkların sayısı küresel
+            ölçekte artmıştır. Başta <em>Aedes</em> cinsi olmak üzere yeni istilacı türler yeni alanlara yerleşmekte ve
+            buralarda yayılmaya devam etmektedir. <em>Aedes</em> sivrisinekler, dang humması, Zika ve chikungunya gibi
+            hastalıkları bulaştırma yeteneklerinden dolayı sağlık açısından önemlidir. Aynı şekilde, ev sivrisineği
+            (<em>Culex pipiens</em>), Batı Nil virüsünü bulaştırabildiği için önemlidir. Sivrisineklerin halk sağlığı
+            için oluşturduğu risk, popülasyonlarının izlenmesini önemli kılar.</p>
+        <p>Sorunun karmaşıklığı göz önüne alındığında, Mosquito Alert, sivrisinek sürveyansı ve ilgili araştırmaları
+            halka açan, çeşitli platformların, toplulukların ve buradaki katılımcıların arasında işbirliğine olanak
+            tanıyan bir uygulamadır.</p>
+        <h2>Uygulama ile hangi veri toplanır?</h2>
+        <p>Beş farklı sivrisinek türüne ait veri toplanır: Asya Kaplan Sivrisineği (<i>Aedes albopictus</i>), Sarı humma
+            sivrisineği (<i>Aedes aegypti</i>), Asya çalı sivrisineği (<em>Aedes japonicus</em>), Kore sivrisineği (<i>Aedes
+                koreicus)</i> ve ev sivrisineği (<em>Culex pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>Bu türler kapsamında, ergin sivrisinekler, üreme alanları ve sokmalar ile ilgili veri toplar. Tüm bu veriler,
+            bu türleri daha iyi anlayıp onları izlemek ve kontrol etmek için önemlidir.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>Mosquito Alert ayrıca katılımcıların cihazlarının yaklaşık konumlarını da toplar ve katılımcı aksini tercih
+            etmemişse bu konumları her gün rastgele 5 kez örnekler. Konumlar, Mosquito Alert sunucusuna gönderilmeden
+            önce 0,025 x 0,025 derece enlem ve boylam (yaklaşık 2x2 km) ızgarada maskelenir. Gizlilik nedenleriyle, tam
+            konum değil yalnızca ızgara kare tanımlayıcısı Mosquito Alert ile paylaşılır. Bu bilgiler, araştırmacıların
+            sivrisinek popülasyonları hakkında daha iyi tahminler yapmalarına olanak tanır, örneğin potansiyel olarak
+            çok sayıda sivrisinek bulunan ancak az sayıda katılım olan yerlerden çok sayıda katılım gelen yerlerin ayırt
+            edilmesine olanak sağladığından, bilimsel açıdan oldukça değerlidir. Katılımcı lokasyonları, ekolojide
+            "örnekleme çabası" olarak geçen konu hakkında bilgi sağlar.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Veri ne için kullanılır?</h2>
+        <p>Bazı örnekler:</p>
+        <ul>
+            <li type="disc">İnsanların Mosquito Alert uygulaması'na gönderdiği raporların, yeni sivrisinek istilasına
+                karşı etkili bir erken uyarı sistemi olduğu son yıllarda kanıtlanmıştır. Sistem, yerleşik sivrisinek
+                popülasyonlarını izlemek ve yeni popülasyonları keşfetmek için kullanılır.
+            </li>
+            <li type="disc">Sivrisineklerin, üreme alanlarının ve sokmalarının gözlemlenmesi, bilim insanlarının ve halk
+                sağlığı yöneticilerinin riski değerlendirmesine ve hastalık vektörü popülasyonlarını yönetmesine
+                yardımcı olur. Belirli bir alandaki sivrisineklerin bolluğunu tahmin etmek için, örnekleme çabasına
+                dayalı olarak gözlemleri ayarlamak önemlidir. Bunu yapmak için Mosquito Alert uygulaması, günün rastgele
+                saatlerinde cihazın yaklaşık konumu hakkında veri toplar. Mahremiyeti korumak için pozisyonlar yaklaşık
+                2x2 km'lik bir ızgara üzerinde maskelenmiştir.
+            </li>
+            <li type="disc">Gerçek zamanlı, katılım teşvikli ve dinamik bir epidemiyolojik risk tahmin sistemi
+                geliştirme çalışmaları şu anda devam etmektedir.
+            </li>
+        </ul>
+        <h2>Daha fazla bilgiyi nerede bulabilirim?</h2>
+        <p>Proje web sitesinde ve sosyal medyada daha fazla bilgi bulabilirsiniz.</p>
+        <p><a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a></p>
+        <p>Uygulamanın ayarlarında bir katılımcı eğitimi, sivrisinekleri belirlemenize yardımcı olacak bir rehber,
+            gizlilik politikası, kullanım koşulları ve bu projenin arkasındaki tüzel kişiler hakkında bilgiler
+            bulacaksınız.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

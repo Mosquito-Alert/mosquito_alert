@@ -125,7 +125,8 @@
         <div id="map-ui" class="map-sidebar"></div>
         <div id="map" class="map"></div>
     </div>
-    <!-- Modal -->
+
+    <!-- Modal SHARING URL-->
     <div id="control-share" class="modal fade" role="dialog">
       <div class="modal-dialog">
         <!-- Modal content-->
@@ -136,6 +137,23 @@
           </div>
           <div class="modal-body content">
 
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Modal FIRST MESSAGE-->
+    <div id="modal-firstvisit" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title" i18n="modal.firstvisit.title"></h4>
+          </div>
+          <div class="modal-body content">
+              <p i18n="modal.firstvisit.content"></p>
           </div>
         </div>
 
@@ -857,7 +875,8 @@
         <div>
 
         <h3 i18n="map.controlmoreinfo_title"></h3>
-        <!--<span i18n="map.controlmoreinfo_desc_es"></span>-->
+        <span i18n="modal.firstvisit.content"></span>
+        <!--
         <ul id="legend-container" class="info_list">
             <li class="tiger_mosquito">
                 <span i18n="layer.tiger" class="bold"></span>:
@@ -910,19 +929,16 @@
             </li>
             <li class="">
                 <object id="info_vector_models" type="image/svg+xml" data="./img/predictionmodels_info_icon.svg"></object>
-                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
                 <span i18n="layer.predictionmodels.vector" class="bold"></span>:
                 <span i18n="layer.predictionmodels.description"></span>
             </li>
             <li class="">
                 <object id="info_biting_models" type="image/svg+xml" data="./img/biting_info_icon.svg"></object>
-                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
                 <span i18n="layer.biting" class="bold"></span>:
                 <span i18n="layer.biting.description"></span>
-            </li>            
+            </li>
             <li class="" id="info-virus-models-li" style="display:none">
                 <object id="info_virus_models" type="image/svg+xml" data="./img/predictionmodels_info_icon.svg"></object>
-                <!-- <img src="./img/predictionmodels_info_icon.svg"> -->
                 <span i18n="layer.predictionmodels.virus" class="bold"></span>:
                 <span i18n="layer.predictionmodels-virus.description"></span>
             </li>
@@ -933,8 +949,10 @@
         </ul>
         <p i18n="map.to_know_more"></p>
         <p i18n="map.more_info"></p>
+        -->
         </div>
         <script>
+
         $('#info_vector_models').one('load', function() {
           function changeSVG(svg_id, layer_key){
             var svgObject = document.getElementById(svg_id).contentDocument;
@@ -961,8 +979,12 @@
             svgObject.getElementById("circle_4").style.fill =sdColors[3];
           }
 
-          changeSVG('info_biting_models', 'R')
-          changeSVG('info_vector_models', 'M')
+          if ( MOSQUITO.app.mapView.getLayerFromKey('R')) {
+            changeSVG('info_biting_models', 'R')
+          }
+          if ( MOSQUITO.app.mapView.getLayerFromKey('M')) {
+            changeSVG('info_vector_models', 'M')
+          }
 
           //Virus layer if logged
           if (MOSQUITO.app.headerView.logged){
@@ -1245,7 +1267,7 @@
                           <% } else if ( row.expert_validation_result[0]=='site' && row.expert_validation_result[1]=='-4') {%>
                               <span class="tolower" i18n="layer.filtered"></span>
                           <% } else { %>
-                              <span class="tolower" i18n="layer.<%=row.category%>"></span>
+                              <span class="tolower" i18n="layer.<%=row.private_webmap_layer%>"></span>
                           <% } %>
                         </h3>
                     </div>
@@ -1488,6 +1510,7 @@
     <script src="lib/tinymce/tinymce.min.js"></script>
 
     <script src="lib/daterangepicker/jquery.comiseo.daterangepicker.min.js"></script>
+    <script src="lib/js-cookie-latest/src/js.cookie.js"></script>
 
 
     <!-- endbuild -->
@@ -1511,7 +1534,7 @@
 
      <script src="js/leaflet/control-sidebar-button.js"></script>
      <script src="lib/L.CanvasOverlay.js"></script>
-     <script src="js/leaflet/control-layers.js"></script>
+     <script src="js/leaflet/control-layers.js?1500"></script>
      <script src="js/leaflet/control-download.js"></script>
      <script src="js/leaflet/control-notification.js"></script>
      <script src="js/leaflet/control-moreinfo.js"></script>
@@ -1530,6 +1553,15 @@
 
      <!-- endinject -->
     <!-- endbuild -->
+    <script>
+    $(document).ready(function(){
+        if (Cookies.get('first-visit')===undefined){
+          Cookies.set('first-visit', 'false');
+          $('#modal-firstvisit').modal('show')
+        }
+       })
+    </script>
+   });
 
 </body>
 </html>

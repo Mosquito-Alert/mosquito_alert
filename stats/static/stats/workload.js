@@ -17,8 +17,9 @@ $(function () {
         gaugeChart.showLoading();
         pendingGaugeChart.showLoading();
         overallPendingChart.showLoading();
+        var additional_params = "?user_ids=" + user_ids.join(",");
         $.ajax({
-            url: '/api/stats/workload_data/available/',
+            url: '/api/stats/workload_data/available/' + additional_params,
             type: "GET",
             dataType: "json",
             success: function(data) {
@@ -82,9 +83,11 @@ $(function () {
     };
 
     pending_report_list = function(key,data){
-        $("#pending_detail").append('<li class="list-group-item small-font"><p style="color:white;background-color:' + user_data[key].color + '">' + user_data[key].name + '</p><ul id="pending_r_' + key +'" class="list-inline"></ul></li>');
+        var alias_key = key.replace(".","_");
+        //$("#pending_detail").append('<li class="list-group-item small-font"><p style="color:white;background-color:' + user_data[key].color + '">' + user_data[key].name + '</p><ul id="pending_r_' + key +'" class="list-inline"></ul></li>');
+        $("#pending_detail").append('<li class="list-group-item small-font"><p style="color:white;background-color:' + user_data[key].color + '">' + user_data[key].name + '</p><ul id="pending_r_' + alias_key +'" class="list-inline"></ul></li>');
         for(var i = 0; i < data.current_pending.length; i++){
-            $("#pending_r_" + key).append('<li class="list-group-item small-font"><a target="_blank" href="/experts/status/reports/?version_uuid=' + data.current_pending[i].report_id + '">' + data.current_pending[i].report_id + ' - ' + data.current_pending[i].created + '</a></li>')
+            $("#pending_r_" + alias_key).append('<li class="list-group-item small-font"><a target="_blank" href="/experts/status/reports/?version_uuid=' + data.current_pending[i].report_id + '">' + data.current_pending[i].report_id + ' - ' + data.current_pending[i].created + '</a></li>')
         }
     };
 

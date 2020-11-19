@@ -1,0 +1,1 @@
+Files obtained from https://github.com/ianare/exif-samples

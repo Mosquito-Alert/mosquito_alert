@@ -1,0 +1,121 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+A Projektről
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>Mi az a Mosquito Alert?</h2>
+        <p>A Mosquito Alert egy citizen science felület, ami lehetővé teszi különböző résztvevők együttműködését,
+            különböző betegségeket terjesztő szúnyogok monitorozása és kontrollja, mint például a dengue, Zika,
+            chikungunya vagy Nyugat Nílusi láz.</p>
+        <p>A projekt kulcsszerepet tölt be a polgárok, a tudósok, a közegészségügyi szakemberek és az oktatók számára. A
+            Mosquito Alert bárki számára lehetővé teszi, hogy adatokat gyűjtsön és osszon meg (1), és hogy részt vegyen
+            az adatok validálásában olyan hivatásos entomológusok mellett, akik a jelentéseket ellenőrzik és válaszolnak
+            a résztvevőknek (2). A validálást követően az adatokat egy interaktív webtérképen teszik elérhetővé a
+            nagyközönség számára (3). Ezekre az adatokra tudósok (4) és közegészségügyi hatóságok (5) is támaszkodnak a
+            betegségeket terjesztő szúnyogok tanulmányozásához és megfigyeléséhez.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Miért van szükség a Mosquito Alertre?</h2>
+        <p>Az elmúlt évtizedekben az invazív szúnyogok és az újonnan megjelenő szúnyogok által terjesztett betegségek
+            száma globális szinten nőtt. Új, főként az Aedes nemzetségbe tartozó invazív fajok új területeken telepedtek
+            meg és tovább terjeszkednek. Az Aedes szúnyogok egészségügyi szempontból fontosak, mivel képesek átadni
+            olyan betegségeket, mint a dengue, a Zikaand és a chikungunya. Hasonlóképpen, a közönséges szúnyog (Culex
+            pipiens) is fontos, mert képes tovább adni a Nyugat-Nílusi vírust. Ezért, a közegészségügyi kockázatot
+            jelentő szúnyogok populációinak figyelemmel kísérése szükséges.</p>
+        <p> Tekintettel a probléma összetettségére, a Mosquito Alert megnyitja a szúnyog megfigyelést és a kutatást a
+            nyilvánosság előtt, lehetővé téve az együttműködést a különböző szereplők között az alkalmazás, valamint más
+            platformjai és közösségei révén.</p>
+        <h2>Milyen adatokat gyűjtünk?</h2>
+        <p>Az adatokat 5 különböző szúnyogfajról gyűjtjük: a tigrisszúnyog (<em>Aedes albopictus</em>), a sárgaláz
+            szúnyog (<em>Aedes aegypti</em>), a japán bozótszúnyog (<em>Aedes japonicus</em>), a koreai szúnyog (<em>Aedes
+                koreicus</em>), és a közönséges házi szúnyog (<em>Culex pipiens</em>).</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>Ezeknek a szúnyog fajoknak a felnőtt példányairól, azok szaporodási helyeiről (tenyészőhelyeiről) és
+            csípéseikről gyűjtünk adatokat. Mindezek az adatok fontosak e fajok jobb megismeréséhez, valamint
+            megfigyelésükhöz és kontrolljukhoz.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>A Mosquito Alert a résztvevők eszközének hozzávetőleges helyéről is gyűjt adatokat, minden nap 5
+            véletlenszerű alkalommal vesz mintát ezekből a helyekből, hacsak a résztvevő másképp nem rendelkezett. A
+            helyeket 0,025 x 0,025 fok szélességi és hosszúsági fokon (kb. 2x2 km) maszkolják, mielőtt elküldenék őket a
+            Mosquito Alert szerverre. Adatvédelmi okokból csak a rács négyzet azonosítója van megosztva a Mosquito
+            Alerttel, nem pedig a pontos hely. Ez az információ tudományos szempontból rendkívül értékes, mivel lehetővé
+            teszi a kutatók számára, hogy jobb becsléseket készítsenek a szúnyogpopulációkról, megkülönböztetve például
+            a kevés szúnyoggal rendelkező helyeket a kevés résztvevővel (de potenciálisan sok szúnyoggal) rendelkező
+            helyektől. A résztvevők helyszínei arról nyújtanak információt, amit az ökológiában mintavételi
+            erőfeszítésekként ismerünk.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Mire használják az adatokat?</h2>
+        <p>Itt van néhány példa:</p>
+        <ul>
+            <li type="disc">Az emberek által a Mosquito Alertnek küldött jelentések az elmúlt években bebizonyították,
+                hogy ez egy hatékony korai figyelmeztető rendszer lehet az új szúnyogok inváziója ellen. A rendszert a
+                már megtelepedett szúnyog populációk nyomon követésére és új populációk felfedezésére használják.
+            </li>
+            <li type="disc">A szúnyogok, a szaporodási helyek és a csípések megfigyelése segít a tudósoknak és a
+                közegészségügyi vezetőknek a kockázat felmérésében és a betegséget terjesztő populációk kezelésében.
+                Annak érdekében, hogy megbecsüljük a szúnyogok mennyiségét egy adott helyen, fontos, hogy a
+                megfigyeléseket a mintavételi erőfeszítések alapján állítsuk be. Ehhez a Mosquito Alert alkalmazás a nap
+                véletlenszerű időszakain adatokat gyűjt az eszköz hozzávetőleges helyzetéről. A pozíciókat körülbelül
+                2x2 km-es rácsra maszkolják a személyiségi jogok védelme érdekében.
+            </li>
+            <li type="disc">Jelenleg egy valós idejű, részvételen alapuló és dinamikus epidemiológiai
+                kockázat-előrejelző rendszer kidolgozása folyik.
+            </li>
+        </ul>
+        <h2>Hol találok több információt?</h2>
+        <p>További információt a projekt weboldalán és a közösségi médiában találsz.</p>
+        <p><a href="http://www.mosquitoalert.com/en/"> www.mosquitoalert.com </a></p>
+        <p>Az alkalmazás beállításainál találsz egy általános útmutatót a részvételhez, egy útmutatót, amely segít
+            beazonosítani a szúnyogokat, az adatvédelmi irányelveket és a felhasználási feltételeket, valamint további
+            információkat a projekt mögött álló entitásokról.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}

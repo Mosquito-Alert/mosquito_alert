@@ -111,6 +111,13 @@ def check_users_by_email(comparison_file, output_file_name):
                     print("User with name {0} - {1} is not in database".format(row[0],row[1]))
 
 
+def inactivate_euro_users():
+    euro_users = User.objects.filter(groups__name='eu_group_europe')
+    for user in euro_users:
+        user.is_active = False
+        user.save()
+
+
 def create_users(add_users_to_euro_groups=True, ignore_regional_managers = False):
     perform_checks()
     experts_group = Group.objects.get(name="expert")

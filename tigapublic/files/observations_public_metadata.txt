@@ -2,15 +2,25 @@ DETAILED LEGEND DESCRIPTION
 
 Description of the categories assigned to each citizen report in the map (see map legend).
 
-*Tiger mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus): their taxonomic features can be clearly seen in the picture/s, especially the white stripe on head and thorax; or only some characteristic features can be observed, but it could be this species nonetheless.
+*Tiger mosquito*: it includes reports from citizens sent as “mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus): their taxonomic features can be clearly seen in the picture/s, especially the white stripe on head and thorax; or only some characteristic features can be observed, but it could be this species nonetheless.
 
-*Yellow fever mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be yellow fever mosquito (Aedes aegypti): their taxonomic features can be clearly seen in the picture/s, especially the lyre in the head and thorax; or only some characteristic features can be observed, but it could be this species nonetheless.
+*Yellow fever mosquito*: it includes reports from citizens sent as "mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the picture/s of this observation could be yellow fever mosquito (Aedes aegypti): their taxonomic features can be clearly seen in the picture/s, especially the lyre in the head and thorax; or only some characteristic features can be observed, but it could be this species nonetheless.
 
-*Other species*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the pictures of this observation may be of other species of mosquito.
+*Aedes japonicus*: it includes reports from citizens sent as “mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the picture/s of this observation could be Aedes japonicus: their taxonomic features can be clearly seen in the picture/s; or only some characteristic features can be observed, but it could be this species nonetheless.
 
-*Unidentifiable*: it includes all reports from citizen tagged by them as "adult mosquito" that don't contain any picture attached and therefore, could not be evaluated by entomological experts. It also includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, these observations and their photo/s do not help identify any particular species of mosquito (experts cannot decide on any other category according to the content of the pictures).
+*Aedes koreicus*: it includes reports from citizens sent as “mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the picture/s of this observation could be Aedes koreicus: their taxonomic features can be clearly seen in the picture/s; or only some characteristic features can be observed, but it could be this species nonetheless.
 
-*Breeding sites*: storm drain with or without water*: citizens' observations of possible breeding sites (storm drain) of tiger or yellow fever mosquitoes. It includes reports that contain at least one picture and that it has been evaluated by entomological experts, reports with at least one picture that have not been evaluated by experts and it might also contain reports without pictures. 
+*Culex pipiens*: it includes reports from citizens sent as "mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the picture/s of this observation could be Culex pipiens: their taxonomic features can be clearly seen in the picture/s; or only some characteristic features can be observed, but it could be this species nonetheless.
+
+*Combo species: Aedes jap/kor*: it includes reports from citizens sent as "mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the picture/s of this observation could be either Aedes japonicus or Aedes koreicus: the pictures show mixed characteristic features.
+
+*Combo species: Aedes albo/cret*: it includes reports from citizens sent as "mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the picture/s of this observation could be either Aedes albopictus or Aedes cretinus: the pictures show mixed characteristic features.
+
+*Other species*: it includes reports from citizens sent as "mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, the pictures of this observation may be of other species of mosquito.
+
+*Unidentifiable*: it includes all reports from citizens sent as "mosquito" that don't contain any picture attached and therefore, could not be evaluated by entomological experts. It also includes reports from citizens sent as "mosquito", that contain at least one picture and have been evaluated by entomological experts. According to these experts, these observations and their photo/s do not help identify any particular species of mosquito (experts cannot decide on any other category according to the content of the pictures).
+
+*Breeding sites*: storm drain with or without water*: citizens' observations of possible breeding sites (storm drain) of the (mosquito) target species of the project. It includes reports that contain at least one picture and have been evaluated by entomological experts, reports with at least one picture that have not been evaluated by experts and it might also contain reports without pictures.
 
 
 DETAILED FIELD DESCRIPTION
@@ -33,7 +43,7 @@ Description of each field found in the downloadable data base
 
 *Expert validated*: it is a zero if the report has not been validated by entomology experts and 1, if yes. More information on the validation method on the project website. Example: 0.
 
-*Expert validation result*: Possible values are "mosquito_tiger_confirmed", "mosquito_tiger_probable", "yellow_fever_confirmed", "yellow_fever_probable", "other_species", "unidentified", "storm_drain_water", "storm_drain_dry"
+*Expert validation result*: Possible values are "mosquito_tiger_confirmed", "mosquito_tiger_probable", "yellow_fever_confirmed", "yellow_fever_probable",”japonicus_confirmed”,”japonicus_probable”,”koreicus_confirmed”,”koreicus_probable”,”culex_confirmed”,”culex_probable”,”japonicus_koreicus”,”albopictus_cretinus”, "other_species", "unidentified", "storm_drain_water", "storm_drain_dry"
 
 *Map link*: an HTML string that produces a small version of the selected report. Example:
 http://webserver.mosquitoalert.com/spain.html#/es/19/40.83933/14.24665/0/all/all/5979
