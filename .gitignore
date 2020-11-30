@@ -7,6 +7,8 @@ tigapublic/files/models/
 *.log.*
 *.log
 *.json
+*.script
+*.txt
 *pyc
 *.egg-info
 .idea/*
