@@ -5,6 +5,7 @@ from rest_framework.authtoken.models import Token
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
+from django.utils.html import mark_safe
 
 
 def export_full_csv(modeladmin, request, queryset):
@@ -189,17 +190,37 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
 export_csv_photo_crowdcrafting.short_description = u"Export Crowdcrafting CSV"
 
 
+def hide_photos(modeladmin, request, queryset):
+    queryset.update(hide=True)
+
+
+hide_photos.short_description = u"Hide selected photos"
+
+
+def show_photos(modeladmin, request, queryset):
+    queryset.update(hide=False)
+
+
+show_photos.short_description = u"Unhide selected photos"
+
+
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ('id', 'date', 'deleted', 'hide', 'small_image_', 'user', 'date', 'report_link', 'map_link')
     list_filter = ['hide', 'report__package_name', 'report__package_version']
     readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
     fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
-    actions = [export_csv_photo, export_csv_photo_crowdcrafting]
+    actions = [export_csv_photo, export_csv_photo_crowdcrafting, hide_photos, show_photos]
     list_max_show_all = 6000
     list_per_page = 400
 
+    def user(self, obj):
+        return obj.user.user_UUID
+
+    def small_image_(self, obj):
+        return mark_safe(obj.small_image_())
+
     def report_link(self, obj):
-        return '<a href="/admin/tigaserver_app/report/%s">%s</a>' % (obj.report, obj.report)
+        return mark_safe('<a href="/admin/tigaserver_app/report/%s" target="_blank">%s</a>' % (obj.report.version_UUID, obj.report.version_UUID))
     report_link.allow_tags = True
 
     def other_report_versions(self, obj):
@@ -207,7 +228,7 @@ class PhotoAdmin(admin.ModelAdmin):
     other_report_versions.allow_tags = True
 
     def map_link(self, obj):
-        return '<a href="/single_report_map/%s/">Show map</a>' % obj.report
+        return mark_safe('<a href="/single_report_map/%s/" target="_blank">Show map</a>' % obj.report.version_UUID)
     map_link.allow_tags = True
 
     def deleted(self, obj):
