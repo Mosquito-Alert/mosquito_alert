@@ -6,6 +6,7 @@ tigapublic/files/models/
 *.csv
 *.log.*
 *.log
+*.json
 *pyc
 *.egg-info
 .idea/*
