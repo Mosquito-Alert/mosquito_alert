@@ -1542,6 +1542,8 @@ def get_decimal_coordinates(info):
             if v1 in info.keys() and v2 in info.keys():
                 e = info['GPS' + key]
                 ref = info['GPS' + key + 'Ref']
+                # IMPRIMIR e PARA VER POR QUE DICE QUE NO ES ITERABLE
+
                 info[v1] = (Decimal(e[0][0] / e[0][1]) + Decimal(e[1][0] / e[1][1]) / 60 + Decimal(e[2][0] / e[2][1]) / 3600) * (-1 if ref in ['S', 'W'] else 1)
         if 'GPSLatitude' in info and 'GPSLongitude' in info:
             return [float(info['GPSLatitude']), float(info['GPSLongitude'])]
@@ -1564,3 +1566,8 @@ def get_exif(filename):
         return exif
     except:
         return None
+
+def imageIdentifier(request):
+
+    return render(request, 'tigacrafting/image_identifier.html')
+

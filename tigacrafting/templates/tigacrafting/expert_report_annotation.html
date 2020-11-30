@@ -20,22 +20,22 @@
 
     {% block bootstrap_css %}
         <!-- Bootstrap core CSS -->
-        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
     {% endblock %}
 
     <!--script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script-->
-    <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
+    <script src="{% static 'tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js' %}"></script>
     <!--script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script-->
-    <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
-    <script src={% static "tigacrafting/tag-it/tag-it.min.js" %}></script>
+    <script src="{% static 'tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/tag-it/tag-it.min.js' %}"></script>
     <!--link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}-->
-    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/tag-it/jquery.tagit.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
+    <link rel="stylesheet" href="{% static 'tigacrafting/jquery-ui-1.8.24/jquery-ui.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/tag-it/jquery.tagit.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/tokenize2/tokenize2.min.css' %}">
 
-    <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
-    <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
+    <script type="text/javascript" src="{% static 'tigacrafting/jquery-qrcode/jquery.qrcode.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/tokenize2/tokenize2.min.js' %}"></script>
     <style>
         #ex1Slider .slider-selection {
             background: #BABABA;
@@ -61,7 +61,7 @@
 
     {% block fa_css %}
         <!-- FA CSS -->
-        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+        <link rel="stylesheet" href="{% static 'tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css' %}">
     {% endblock %}
 
 
@@ -78,7 +78,7 @@
     {% leaflet_css %}
 
 
-    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href="{% static 'tigacrafting/tigacrafting_style.css' %}">
 
     <script type="text/javascript">
 
@@ -267,9 +267,7 @@
 
 
         <div style="text-align: left">
-
             {% block instructions %}
-
                 {% if pending == 'pending' %}
                     <h4> Instructions <button data-toggle="tooltip" id="details" type="button" class="btn btn-primary">Show</button></h4>
                     <div class="persiana" style="display: none;">
@@ -355,14 +353,12 @@
     {% endif %}
 
     {% if objects %}
-
         {% if pending == 'pending' or checked == 'unchecked' or edit_mode == 'edit' %}
             <form id="formset_forms" class="form-vertical" method="post">{% csrf_token %}
         {% endif %}
+        {{ formset.management_form }}
 
-    {{ formset.management_form }}
-
-    {% for form in formset %}
+        {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
             <div class="col-md-10">
                 <h4>
@@ -616,7 +612,7 @@
                             My Responses <span class="glyphicon glyphicon-edit"></span></a>
                     {% endif %}
 
-{% endif %}
+        {% endif %}
             </div>
 
             <div class="col-md-4">
@@ -2408,8 +2404,8 @@
 
     </script>
 
-    <script src={% static "tigacrafting/categories_combo.js" %}></script>
-    <script src={% static "tigacrafting/macro_messages.js" %}></script>
+    <script src="{% static 'tigacrafting/categories_combo.js' %}"></script>
+    <script src="{% static 'tigacrafting/macro_messages.js' %}"></script>
 
 
 {% endblock %}
