@@ -1570,3 +1570,4 @@ def get_exif(filename):
 def imageIdentifier(request):
 
     return render(request, 'tigacrafting/image_identifier.html')
+

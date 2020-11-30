@@ -33,6 +33,8 @@ from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
+from django.forms.models import modelformset_factory
+from tigacrafting.forms import ExpertReportAnnotationForm
 
 
 @xframe_options_exempt
@@ -827,65 +829,98 @@ def global_assignments(request):
 @login_required
 def global_assignments_list(request, country_code=None, status=None):
     countryID = EuropeCountry.objects.filter(iso3_code=country_code)
-    user_id_filter = settings.USERS_IN_STATS
     keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
 
     for c in countryID:
         countryGID = c.gid
+        countryName = c.name_engl
 
-    print(countryGID)
-
-    '''national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()'''
     national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of=countryGID).order_by('userstat__national_supervisor_of__name_engl').all()
 
-    for u in national_supervisors:
-        idUser = u.id
-
     report_id_table = {}
+    listas = []
+    reportStatus = ''
     for row in keys:
         report_id_table[row['report_id']] = {'max_version': row['version_number__max'],
                                              'min_version': row['version_number__min'],
                                              'num_versions': row['version_number__count']}
-    if status == 'unassigned':
-        unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
-            hide=True).exclude(photos=None).filter(type='adult').filter(country_id=countryGID).annotate(
-            n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+    if status != 'pending':
+        if status == 'unassigned':
+            if countryGID == 17:
+                unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+                    hide=True).exclude(photos=None).filter(type='adult').filter(
+                    Q(country_id=countryGID) | Q(country_id__isnull=True)).annotate(
+                    n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+            else:
+                unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+                hide=True).exclude(photos=None).filter(type='adult').filter(country_id=countryGID).annotate(
+                n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
 
-        reportList = list(filter(lambda x:
-                                 report_id_table[x.report_id]['num_versions'] == 1 or
-                                 (report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
-                                  report_id_table[x.report_id]['max_version']), unassigned))
+            reportList = list(filter(lambda x:
+                                     report_id_table[x.report_id]['num_versions'] == 1 or
+                                     (report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
+                                      report_id_table[x.report_id]['max_version']), unassigned))
+            reportStatus = 'Unassigned'
+        elif status == 'progress':
+            if countryGID == 17:
+                progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+                    hide=True).exclude(photos=None).filter(type='adult').filter(
+                    Q(country_id=countryGID) | Q(country_id__isnull=True)).annotate(
+                    n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(
+                    n_annotations=0)
+            else:
+                progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
+                    hide=True).exclude(photos=None).filter(type='adult').filter(country_id=countryGID).annotate(
+                    n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(
+                    n_annotations=0)
+            reportList = list(filter(lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (
+                    report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
+                    report_id_table[x.report_id]['max_version']), progress))
 
-    elif status == 'progress':
 
-        progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
-            hide=True).exclude(photos=None).filter(type='adult').filter(
-            Q(country_id=countryGID) | Q(country_id__isnull=True)).annotate(
-            n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
 
-        reportList = list(filter(lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (
-                report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
-                report_id_table[x.report_id]['max_version']), progress))
+
+            reportStatus = 'In progress'
+
+        i = 0
+        while i < len(reportList):
+            t = reportList[i].get_expert_recipients()
+
+            expNames = t.split("+")
+            expNamesJoined = ' and '.join(expNames)
+
+            listas.append({
+                'idReports': reportList[i].__unicode__(),
+                'experts': expNamesJoined,
+            })
+            i += 1
 
     elif status == 'pending':
-        reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
+        if countryGID == 17:
+            user_id_filter = settings.USERS_IN_STATS
+            reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(
+                validation_complete=False).filter(report__type='adult')
+        else:
+            user_id_filter = UserStat.objects.filter(native_of__gid=countryGID).values('user__id')
+            reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
 
-    #ExpertReportAnnotation
+        reportStatus = 'Pending'
+        i = 0
+        while i < len(reportList):
 
-    print(len(reportList))
+            t = reportList[i].report.get_expert_recipients()
 
-    listas = []
-    i = 0
-    while i < len(reportList):
-    #for t in reportList:
-        print(reportList[i].get_expert_recipients())
-        listas.append({
-            'idReports': reportList[i].__unicode__(),
-            'experts': reportList[i].get_expert_recipients(),
-        })
-        i += 1
-        print(listas)
-    context = {'data': listas, 'country': country_code, 'status': status}
+            expNames = t.split("+")
+            expNamesJoined = ' and '.join(expNames)
+
+            listas.append({
+                'idReports': reportList[i].report.__unicode__(),
+                #'experts': reportList[i].report.get_expert_recipients()
+                'experts': expNamesJoined
+            })
+            i += 1
+
+    context = {'data': listas, 'country': country_code, 'status': status, 'countryName': countryName, 'reportStatus': reportStatus}
 
     return render(request, 'stats/global_assignments_list.html', context)
 

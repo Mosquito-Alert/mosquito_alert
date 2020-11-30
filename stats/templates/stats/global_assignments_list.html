@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <style>
+       .starter-template {
+            padding: 40px 15px;
+            text-align: center;
+       }
+    </style>
 </head>
 <body>
 <div class="navbar-wrapper">
@@ -31,7 +37,12 @@
     </div>
 </div>
 <div class="container">
+
     <div class="row" style="margin-top:60px">
+        <div class="starter-template">
+            <h1>{{ reportStatus }} expert reports from {{ countryName }}</h1>
+        </div>
+
         <div class="col-lg-offset-2 col-lg-8">
             <table class="table table-striped">
                 <tr>
@@ -40,8 +51,12 @@
                 </tr>
                 {% for t in data %}
                     <tr>
-                        <td><a href="{% url 'expert_report_annotation' %}?version_uuid={{ t.idReports }}" >{{ t.idReports }}</a></td>
-                        <td>{{ t.experts }}</td>
+                        <td><a href="{% url 'single_report_view' version_uuid=t.idReports %}" >{{ t.idReports }}</a></td>
+                        {% if t.experts %}
+                            <td>{{ t.experts }}</td>
+                        {% else %}
+                            <td>No expert assigned</td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             </table>
