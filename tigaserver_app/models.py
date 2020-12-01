@@ -1866,6 +1866,20 @@ class Report(models.Model):
                 result.append(ano.user.username)
         return '+'.join(result)
 
+    def get_expert_recipients_names(self):
+        result = []
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+
+        for ano in these_annotations:
+            if not ano.user.userstat.is_superexpert():
+                if ano.user.first_name and ano.user.last_name:
+                    result.append(ano.user.first_name + ' ' + ano.user.last_name)
+                else:
+                    result.append(ano.user.username)
+        return '+'.join(result)
+
+
+
     def get_who_has_bootstrap(self):
         result = ''
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
