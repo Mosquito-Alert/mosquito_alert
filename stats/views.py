@@ -877,17 +877,14 @@ def global_assignments_list(request, country_code=None, status=None):
                     report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
                     report_id_table[x.report_id]['max_version']), progress))
 
-
-
-
             reportStatus = 'In progress'
 
         i = 0
         while i < len(reportList):
-            t = reportList[i].get_expert_recipients()
+            t = reportList[i].get_expert_recipients_names()
 
             expNames = t.split("+")
-            expNamesJoined = ' and '.join(expNames)
+            expNamesJoined = ' / '.join(expNames)
 
             listas.append({
                 'idReports': reportList[i].__unicode__(),
@@ -908,14 +905,13 @@ def global_assignments_list(request, country_code=None, status=None):
         i = 0
         while i < len(reportList):
 
-            t = reportList[i].report.get_expert_recipients()
+            t = reportList[i].report.get_expert_recipients_names()
 
             expNames = t.split("+")
-            expNamesJoined = ' and '.join(expNames)
+            expNamesJoined = ' / '.join(expNames)
 
             listas.append({
                 'idReports': reportList[i].report.__unicode__(),
-                #'experts': reportList[i].report.get_expert_recipients()
                 'experts': expNamesJoined
             })
             i += 1
