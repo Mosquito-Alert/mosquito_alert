@@ -582,6 +582,26 @@ def getMunicipalities(request, search):
                         content_type='application/json')
 
 
+def getSpainRegionFromCoords(request, lon, lat):
+    """Get the CCAA id from a coordinate."""
+    qs = Municipalities.objects.all()
+    cadena = ("St_Distance(ST_SetSRID(ST_Point(%s, %s), 4326),geom)" %
+              (lon, lat))
+    qs = qs.extra(select={'dist': cadena})
+    qs = qs.order_by('dist')[:1]
+    qs = qs[:1]
+
+    results = []
+    for r in qs:
+        # Javascript autoco  mplete requires id, text
+        results.append({
+            'id': str(r.gid),
+            'cod_ccaa': r.cod_ccaa
+        })
+    return HttpResponse(json.dumps(results, cls=CustomJSONEncoder),
+                        content_type='application/json')
+
+
 @csrf_exempt
 @cross_domain_ajax
 def getMunicipalitiesById(request,):

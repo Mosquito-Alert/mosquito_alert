@@ -1070,6 +1070,7 @@
                         <h4 class="modal-title" id="searchModalLabel">Search</h4>
                     </div>
                     <div class="modal-body">
+<<<<<<< HEAD
                         <table>
                             <tr>
                                 <td><label for="uuid_autocomplete"><small>Report UUID (write in the text box the first 3 characters of the uuid for a list):</small></label></td>
@@ -1106,6 +1107,48 @@
                             <tr>
                                 <td><label for="tags_filter" class="col-sm-2 control-label">Tags:</label></td>
                                 <td>
+=======
+                        <form role="form" class="form-inline">
+
+                            <div class="form-group">
+                                <label for="version_uuid_select">Report ID:</label>
+
+                                <select id="version_uuid_select" class="selectpicker show-tick form-control"
+                                        data-live-search="true">
+                                    <option value=""></option>
+                                    {% for version_uuid in my_version_uuids %}
+                                        <option value="{{ version_uuid }}">{{ version_uuid }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button" id="search_version_uuid_submit_button" class="btn btn-default">
+                                Search
+                            </button>
+
+                        </form>
+
+                        <form role="form" class="form-inline">
+
+                            <div class="form-group">
+                                <label for="linked_id_select">Linked ID:</label>
+
+                                <select id="linked_id_select" class="selectpicker show-tick form-control"
+                                        data-live-search="true">
+                                    <option value=""></option>
+                                    {% for linked_id in my_linked_ids %}
+                                        <option value="{{ linked_id }}">{{ linked_id }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button" id="search_linked_id_submit_button" class="btn btn-default">Search
+                            </button>
+                        </form>
+
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                <label for="tags_filter" class="col-sm-2 control-label">Tags:</label>
+                                <div class="col-sm-10">
+>>>>>>> 43e508a5... Successfully integrated and moved to python 3
                                     <ul class="tagit ui-widget ui-widget-content ui-corner-all" style="max-width: 300px; min-width: 300px;" id="tags_filter">
                                     </ul>
                                 </td>

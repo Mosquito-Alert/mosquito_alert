@@ -1463,3 +1463,23 @@ div#layer-title-container{
   line-height: 2;
   display:block;
 }
+
+#info_vector_models,
+#info_virus_models{
+  float: left;
+  padding-right:5px;
+}
+
+div#filters_accordion{
+  width: 90%;
+}
+
+div#layer-title-container label{
+  margin-bottom:0px;
+  min-width: 85%;
+}
+div#layer-title-container{
+  margin-bottom:10px;
+  line-height: 2;
+  display:block;
+}

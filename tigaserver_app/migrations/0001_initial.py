@@ -7,6 +7,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 import tigaserver_app.models
 
+    initial = True
 
 class Migration(migrations.Migration):
 
