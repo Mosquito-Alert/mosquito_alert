@@ -33,8 +33,6 @@ from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
-from django.forms.models import modelformset_factory
-from tigacrafting.forms import ExpertReportAnnotationForm
 
 
 @xframe_options_exempt
@@ -877,6 +875,9 @@ def global_assignments_list(request, country_code=None, status=None):
                     report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
                     report_id_table[x.report_id]['max_version']), progress))
 
+
+
+
             reportStatus = 'In progress'
 
         i = 0
@@ -912,6 +913,7 @@ def global_assignments_list(request, country_code=None, status=None):
 
             listas.append({
                 'idReports': reportList[i].report.__unicode__(),
+                #'experts': reportList[i].report.get_expert_recipients()
                 'experts': expNamesJoined
             })
             i += 1

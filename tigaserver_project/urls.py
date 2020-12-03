@@ -10,9 +10,9 @@ from tigahelp.views import show_help, show_about, show_license, show_policies, s
 from tigamap.views import show_filterable_report_map, show_single_report_map
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
-    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments
+    adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, imageIdentifier
 from tigaserver_messages.views import compose_w_data, reply_w_data, compose
 from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
@@ -136,6 +136,7 @@ urlpatterns = [
     path('project_about/tr/', RedirectView.as_view(url='/tr/project_about/', permanent=False), name="project_about_tr"),
     path('tigapublic/', include('tigapublic.urls')),
     path('get_photo/<token>/<photo_uuid>/<size>', lookup_photo),
+    path('imageIdentifier', imageIdentifier, name='image_identifier')
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
@@ -163,6 +164,8 @@ urlpatterns += i18n_patterns(
     path('stats/workload/', workload_stats, name='workload_stats'),
     path('stats/workload/<country_id>/', workload_stats, name='workload_stats'),
     path('stats/global_assignments/', global_assignments, name='global_assignments'),
+    path('stats/global_assignments_list/<country_code>/<status>/', global_assignments_list, name='global_assignments_list'),
+
     path('stats/report_stats_ccaa/', report_stats_ccaa, name='report_stats_ccaa'),
     path('stats/report_stats_ccaa_pie/', report_stats_ccaa_pie, name='report_stats_ccaa_pie'),
     path('stats/report_stats_ccaa_pie_sites/', report_stats_ccaa_pie_sites, name='report_stats_ccaa_pie_sites'),
@@ -219,4 +222,6 @@ urlpatterns += i18n_patterns(
     path('messages/reply/<int:message_id>/', reply_w_data, name='messages_reply'),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     path('metadataPhotoInfo', metadataPhoto, name='metadataPhotoInfo'),
+
+
 )
