@@ -68,21 +68,3 @@ class BaseManager(object):
         response['Content-Encoding'] = 'gzip'
         response['Content-Length'] = str(len(compressed_content))
         return response
-
-    def _end_gz(self):
-        """Finish the process.
-
-        ZIP Output an HttpResponse with self.response as the content and
-        self.status as status code.
-        """
-        zbuf = BytesIO()
-        zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
-        content = json.dumps(self.response, cls=CustomJSONEncoder)
-        zfile.write(content.encode('utf-8'))
-        zfile.close()
-
-        compressed_content = zbuf.getvalue()
-        response = HttpResponse(compressed_content)
-        response['Content-Encoding'] = 'gzip'
-        response['Content-Length'] = str(len(compressed_content))
-        return response
