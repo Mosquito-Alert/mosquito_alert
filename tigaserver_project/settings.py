@@ -65,7 +65,7 @@ INSTALLED_APPS = (
     'tigaserver_messages',
     'tigascoring',
     'rest_framework_swagger',
-    'django.contrib.sites',
+    #'django.contrib.sites',
     'django_filters',
 )
 
