@@ -1,0 +1,68 @@
+{% load staticfiles %}
+{% load i18n %}
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>MosquitoAlert Stats</title>
+
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <style>
+       .starter-template {
+            padding: 40px 15px;
+            text-align: center;
+       }
+    </style>
+</head>
+<body>
+<div class="navbar-wrapper">
+    <div class="container">
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div id="navbar" class="container">
+                <div class="navbar-brand">
+                    <span style="color:#ff9900; font-size: small">MosquitoAlert Global Report Assignment Stats</span>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="{% url 'expert_report_annotation' %} ">Back to Entolab</a></li>
+                        <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                        <li><a href="{% url 'auth_logout' %}">logout</a>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+
+    <div class="row" style="margin-top:60px">
+        <div class="starter-template">
+            <h1>{{ reportStatus }} expert reports from {{ countryName }}</h1>
+        </div>
+
+        <div class="col-lg-offset-2 col-lg-8">
+            <table class="table table-striped">
+                <tr>
+                    <th>Report Code</th>
+                    <th>Assigned experts</th>
+                </tr>
+                {% for t in data %}
+                    <tr>
+                        <td><a target="_blank" href="{% url 'single_report_view' version_uuid=t.idReports %}" >{{ t.idReports }}</a></td>
+                        {% if t.experts %}
+                        <td>{{ t.experts }}</td>
+                        {% else %}
+                            <td>No expert assigned</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
