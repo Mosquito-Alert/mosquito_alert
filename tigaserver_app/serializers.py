@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns
 from django.contrib.auth.models import User
 
 def score_label(score):
@@ -459,3 +459,17 @@ class DetailedTigaProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TigaProfile
         fields = ('id', 'firebase_token', 'score', 'profile_devices')
+
+
+class EuropeCountrySimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EuropeCountry
+        fields = ('gid', 'name_engl')
+
+
+class OWCampaignsSerializer(serializers.ModelSerializer):
+    country = EuropeCountrySimpleSerializer(many=False)
+
+    class Meta:
+        model = OWCampaigns
+        fields = '__all__'

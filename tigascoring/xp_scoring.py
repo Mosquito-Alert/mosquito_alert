@@ -234,13 +234,17 @@ def get_site_report_score(report, result):
     local_result = {}
     local_result['report'] = report.version_UUID
     local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
+    local_result['report_score'] = 0
+    local_result['awards'] = []
+    if report.hide == True:
+        local_result['penalties'].append({"reason": _("other_species"), "xp_awarded": 0})
+        result['score_detail']['site']['score_items'].append(local_result)
+        return result
     picture = report.get_final_photo_html()
     if picture:
         local_result['report_photo'] = picture.get_small_url()
     else:
         local_result['report_photo'] = None
-    local_result['report_score'] = 0
-    local_result['awards'] = []
     if report.n_visible_photos > 0:
         local_result['awards'].append({"reason": _("picture"), "xp_awarded": BREEDING_SITE_PICTURE_REWARD})
         local_result['report_score'] += BREEDING_SITE_PICTURE_REWARD
@@ -275,12 +279,16 @@ def get_adult_report_score(report, result):
     local_result = {}
     local_result['report'] = report.version_UUID
     local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
-    picture = report.get_final_photo_html()
-    if picture is None:
-        picture = report.get_first_visible_photo()
     local_result['report_score'] = 0
     local_result['awards'] = []
     local_result['penalties'] = []
+    if report.hide == True:
+        local_result['penalties'].append({"reason": _("other_species"), "xp_awarded": 0})
+        result['score_detail']['adult']['score_items'].append(local_result)
+        return result
+    picture = report.get_final_photo_html()
+    if picture is None:
+        picture = report.get_first_visible_photo()
     if picture is not None:
         local_result['report_photo'] = picture.get_small_url()
 
@@ -626,10 +634,16 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     result['score_detail']['site']['ranked_users'] = site_number_total
 
     if update:
-        user.score_v2 = result['total_score']
-        user.score_v2_adult = result['score_detail']['adult']['score']
-        user.score_v2_site = result['score_detail']['site']['score']
-        user.save()
+        if user_uuids is not None:
+            all_users_in_profile = TigaUser.objects.filter(user_UUID__in=user_uuids)
+            all_users_in_profile.update(score_v2=result['total_score'])
+            all_users_in_profile.update(score_v2_adult=result['score_detail']['adult']['score'])
+            all_users_in_profile.update(score_v2_site=result['score_detail']['site']['score'])
+        else:
+            user.score_v2 = result['total_score']
+            user.score_v2_adult = result['score_detail']['adult']['score']
+            user.score_v2_site = result['score_detail']['site']['score']
+            user.save()
 
     '''
     if bite_number_below_rank == 0 and bite_number_total == 0:

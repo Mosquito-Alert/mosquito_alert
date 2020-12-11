@@ -1,7 +1,8 @@
 from django.test import TestCase
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Award, AwardCategory, \
+from tigaserver_app.models import EuropeCountry, TigaUser, TigaProfile, Report, ExpertReportAnnotation, Award, AwardCategory, \
     Notification, NotificationContent, get_translation_in, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
+from tigacrafting.models import Categories
 from tigaserver_project import settings as conf
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from django.utils import timezone
@@ -10,10 +11,14 @@ import pytz
 from random import seed, random
 from django.template.loader import render_to_string
 import html.entities
+from django.contrib.auth.models import User, Group
+
+VALIDATION_VALUE_POSSIBLE = 1
+VALIDATION_VALUE_CONFIRMED = 2
 
 
 class ScoringTestCase(TestCase):
-    fixtures = ['awardcategory.json', 'tigausers.json', 'europe_countries.json', 'granter_user.json']
+    fixtures = ['awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
@@ -43,12 +48,48 @@ class ScoringTestCase(TestCase):
             current_location_lat=lat,
             type='adult',
             app_language=report_app_language,
-            package_version=32
+            package_version=32 #This is important for notifications: no notifs issued for null or <32 package version numbers
         )
         return r
 
     def test_compute_score_for_new_user(self):
         user_id = '00000000-0000-0000-0000-000000000000'
+        retval = compute_user_score_in_xp_v2(user_id)
+        self.assertEqual(retval['total_score'], 0)
+
+    def test_score_non_validated_adult_report(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+        report_in_season = self.create_single_report(conf.SEASON_START_DAY, conf.SEASON_START_MONTH, 2020, user,
+                                                     '00000000-0000-0000-0000-000000000002')
+        report_in_season.save()
+        retval = compute_user_score_in_xp_v2(user_id)
+        # 6 points first of season
+        # 6 points first of day
+        # no awards for mosquito. not yet classified
+        self.assertEqual(retval['total_score'], 12)
+
+    def test_score_for_aedes_adult_report(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        user = TigaUser.objects.get(pk=user_id)
+        report_in_season = self.create_single_report(conf.SEASON_START_DAY, conf.SEASON_START_MONTH, 2020, user,
+                                                     '00000000-0000-0000-0000-000000000002')
+        report_in_season.save()
+        reritja_user = User.objects.get(pk=25)
+        superexperts_group = Group.objects.create(name='superexpert')
+        superexperts_group.user_set.add(reritja_user)
+        c_4 = Categories.objects.get(pk=4)  # Aedes albopictus
+        anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=report_in_season, category=c_4,
+                                                             validation_complete=True, revise=True,
+                                                             validation_value=VALIDATION_VALUE_CONFIRMED)
+        retval = compute_user_score_in_xp_v2(user_id)
+        # 6 points first of season
+        # 6 points first of day
+        # 6 points geolocated
+        self.assertEqual(retval['total_score'], 18)
+        # we hide the report, it does not yield any points
+        report_in_season.hide = True
+        report_in_season.save()
         retval = compute_user_score_in_xp_v2(user_id)
         self.assertEqual(retval['total_score'], 0)
 
@@ -258,20 +299,18 @@ class ScoringTestCase(TestCase):
     @staticmethod
     def get_notification_body_es(category_label, xp):
         context_es = {}
-        table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
         context_es['amount_awarded'] = xp
-        context_es['reason_awarded'] = get_translation_in(category_label, 'es').translate(table)
-        return render_to_string('tigaserver_app/award_notification_es.html', context_es).replace('&amp;','&')
+        context_es['reason_awarded'] = get_translation_in(category_label, 'es')
+        return render_to_string('tigaserver_app/award_notification_es.html', context_es).encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
 
     @staticmethod
     def get_notification_body_for_locale(category_label, xp, locale):
         context = {}
-        table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
         context['amount_awarded'] = xp
-        context['reason_awarded'] = get_translation_in(category_label, locale).translate(table)
-        return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context).replace('&amp;','&')
+        context['reason_awarded'] = get_translation_in(category_label, locale)
+        return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context).encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
 
-    def test_10_day_achievement(self):
+    def test_10_report_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
         user = TigaUser.objects.get(pk=user_id)
 
@@ -287,7 +326,7 @@ class ScoringTestCase(TestCase):
             notification_body = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
             self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body).count(), 1)
 
-    def test_20_day_achievement(self):
+    def test_20_report_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
         user = TigaUser.objects.get(pk=user_id)
 
@@ -307,7 +346,7 @@ class ScoringTestCase(TestCase):
             self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
             self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
 
-    def test_50_day_achievement(self):
+    def test_50_report_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
         user = TigaUser.objects.get(pk=user_id)
 
@@ -348,7 +387,7 @@ class ScoringTestCase(TestCase):
         report_1_user_2.save()
 
         self.assertEqual(Award.objects.filter(category__id=1).count(),2)  # Daily participation given to each of the reports
-        self.assertEqual(Award.objects.filter(category__id=1).count(),2)  # First of season given to each of the reports
+        self.assertEqual(Award.objects.filter(category__id=2).count(),2)  # First of season given to each of the reports
         self.assertEqual(Award.objects.filter(category__id=1).filter(report__version_UUID=report_1_user_1.version_UUID).count(), 1)
         self.assertEqual(Award.objects.filter(category__id=1).filter(report__version_UUID=report_1_user_2.version_UUID).count(), 1)
 
@@ -368,22 +407,146 @@ class ScoringTestCase(TestCase):
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
             notification_body = self.get_notification_body_for_locale(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP,'sq')
             #The english notification should be in Albanian
+            # for n in Notification.objects.all():
+            #     print("<---- SEPARATOR ---->")
+            #     print(n.notification_content.body_html_en)
+            #     print("<---- END SEPARATOR ---->")
             self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
 
-    def test_10_day_achievement_for_el_locale(self):
-        user_id = '00000000-0000-0000-0000-000000000000'
-        user = TigaUser.objects.get(pk=user_id)
+    def test_profile_first_of_season(self):
+        user_id_1 = '00000000-0000-0000-0000-000000000002'
+        user_id_2 = '00000000-0000-0000-0000-000000000003'
+
+        day_1 = 30  # --> Daily participation, first of season
+        month_1 = 4
+        year = 2020
+
+        user_1 = TigaUser.objects.get(pk=user_id_1)
+        user_2 = TigaUser.objects.get(pk=user_id_2)
+
+        report_1_user_1 = self.create_single_report(day_1, month_1, year, user_1,
+                                                    '00000000-0000-0000-0000-000000000001')
+        report_1_user_1.save()
+        report_1_user_2 = self.create_single_report(day_1, month_1, year, user_2,
+                                                    '00000000-0000-0000-0000-000000000002')
+        report_1_user_2.save()
+        # only user_1 should have any awards
+        self.assertEqual(Award.objects.filter(category__id=1).count(),
+                         1)  # Only one award given for two qualifyable reports of the same profile
+        a = Award.objects.filter(category__id=1).first()
+        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
+
+    def test_profile_first_of_day(self):
+        user_id_1 = '00000000-0000-0000-0000-000000000002'
+        user_id_2 = '00000000-0000-0000-0000-000000000003'
+
+        day_1 = 30  # --> Daily participation, first of season
+        month_1 = 4
+        year = 2020
+
+        user_1 = TigaUser.objects.get(pk=user_id_1)
+        user_2 = TigaUser.objects.get(pk=user_id_2)
+
+        report_1_user_1 = self.create_single_report(day_1, month_1, year, user_1,
+                                                    '00000000-0000-0000-0000-000000000001')
+        report_1_user_1.save()
+        report_1_user_2 = self.create_single_report(day_1, month_1, year, user_2,
+                                                    '00000000-0000-0000-0000-000000000002')
+        report_1_user_2.save()
+        # only user_1 should have any awards
+        self.assertEqual(Award.objects.filter(category__id=2).count(),
+                         1)  # Only one award given for two qualifyable reports of the same profile
+        a = Award.objects.filter(category__id=1).first()
+        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
+
+    def test_10_day_achievement_across_profiles(self):
+        user_id_1 = '00000000-0000-0000-0000-000000000002'
+        user_id_2 = '00000000-0000-0000-0000-000000000003'
+
+        user_1 = TigaUser.objects.get(pk=user_id_1)
+        user_2 = TigaUser.objects.get(pk=user_id_2)
 
         month_1 = 1
         year = 2020
 
-        for i in range(1,11,1):
-            r = self.create_single_report(i, month_1, year, user, '00000000-0000-0000-0000-0000000000' + str(i), report_app_language='el')
+        for i in range(1, 11, 1):
+            if i <= 4:
+                r = self.create_single_report(i, month_1, year, user_1, '00000000-0000-0000-0000-0000000000' + str(i))
+            else:
+                r = self.create_single_report(i, month_1, year, user_2, '00000000-0000-0000-0000-0000000000' + str(i))
             r.save()
-        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(),1)  # Ten report achievement granted
+        a = Award.objects.get(special_award_text='achievement_10_reports')
+        self.assertEqual(a.given_to, user_2)  # Should have been given to user_2
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body = self.get_notification_body_for_locale(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP,'el')
-            print(notification_body)
-            #The english notification should be in Albanian
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
+            notification_body = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body).count(),1)
+
+    def test_20_report_achievement_across_profiles(self):
+        user_id_1 = '00000000-0000-0000-0000-000000000002'
+        user_id_2 = '00000000-0000-0000-0000-000000000003'
+
+        user_1 = TigaUser.objects.get(pk=user_id_1)
+        user_2 = TigaUser.objects.get(pk=user_id_2)
+
+        month_1 = 1
+        year = 2020
+
+        for i in range(1,21,1):
+            if i <= 12:
+                r = self.create_single_report(i, month_1, year, user_1, '00000000-0000-0000-0000-0000000000' + str(i))
+            else:
+                r = self.create_single_report(i, month_1, year, user_2, '00000000-0000-0000-0000-0000000000' + str(i))
+            r.save()
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_20_reports').count(), 1)  # Ten report achievement granted
+        a = Award.objects.get(special_award_text='achievement_10_reports')
+        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
+        a = Award.objects.get(special_award_text='achievement_20_reports')
+        self.assertEqual(a.given_to, user_2)  # Should have been given to user_2
+
+        # emulate notifications
+        if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
+            notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
+
+    def test_50_report_achievement_across_profiles(self):
+        user_id_1 = '00000000-0000-0000-0000-000000000002'
+        user_id_2 = '00000000-0000-0000-0000-000000000003'
+
+        user_1 = TigaUser.objects.get(pk=user_id_1)
+        user_2 = TigaUser.objects.get(pk=user_id_2)
+
+        year = 2020
+
+        global_report_counter = 1
+        for i in range(1, 3, 1):
+            for j in range(1, 27 , 1):
+                if global_report_counter < 30:
+                    r = self.create_single_report(j, i, year, user_1, '00000000-0000-0000-0000-000000000' + str(j) + str(i))
+                else:
+                    r = self.create_single_report(j, i, year, user_2, '00000000-0000-0000-0000-000000000' + str(j) + str(i))
+                r.save()
+                global_report_counter += 1
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_20_reports').count(), 1)  # Ten report achievement granted
+        self.assertEqual(Award.objects.filter(special_award_text='achievement_50_reports').count(), 1)  # Ten report achievement granted
+
+        a = Award.objects.get(special_award_text='achievement_10_reports')
+        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
+        a = Award.objects.get(special_award_text='achievement_20_reports')
+        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
+        a = Award.objects.get(special_award_text='achievement_50_reports')
+        self.assertEqual(a.given_to, user_2)  # Should have been given to user_2
+
+        # emulate notifications
+        if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
+            notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+            notification_body_50 = self.get_notification_body_es(ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_50).count(), 1)

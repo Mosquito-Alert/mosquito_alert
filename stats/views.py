@@ -1007,7 +1007,7 @@ def hashtag_map(request):
 def get_user_xp_data(request):
     user_id = request.query_params.get('user_id', '-1')
     locale = request.query_params.get('locale', 'en')
-    update = request.query_params.get('update', False)
+    update = request.query_params.get('update', True)
     u = None
     try:
         u = TigaUser.objects.get(pk=user_id)

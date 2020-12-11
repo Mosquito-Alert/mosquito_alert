@@ -4,6 +4,63 @@ info:
   version: 1.0
   description: Documentation for the Mosquito Alert server API
 paths:
+  /api/owcampaigns/:
+    get:
+      operationId: listOWCampaigns
+      summary: Returns a list of all the overwintering campaigns
+      description: Each overwintering campaigns takes place in a given european country between a start and end dates. 
+        There can be multiple campaigns for each country, but the start and end dates should never overlap.
+      tags:
+      - overwintering
+      parameters:      
+      - name: country_id
+        required: false
+        in: query
+        description: The returned list will include only campaigns in countries with the supplied id
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    country:
+                      properties:
+                        gid:
+                          type: integer
+                          maximum: 2147483647
+                          minimum: -2147483648
+                        name_engl:
+                          type: string
+                          maxLength: 44
+                      required:
+                      - gid
+                      type: object
+                    posting_address:
+                      type: string
+                      description: 'Full posting address of the place where the samples
+                        will be sent'
+                    campaign_start_date:
+                      type: string
+                      format: date-time
+                      description: 'Date when the campaign starts. No samples should
+                        be collected BEFORE this date.'
+                    campaign_end_date:
+                      type: string
+                      format: date-time
+                      description: 'Date when the campaign ends. No samples should
+                        be collected AFTER this date.'
+                  required:
+                  - country
+                  - posting_address
+                  - campaign_start_date
+                  - campaign_end_date          
   /api/score_v2/:
     get:
       operationId: listuser_score_v2s

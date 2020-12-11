@@ -16,8 +16,8 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -1581,3 +1581,14 @@ def uuid_list_autocomplete(request):
         else:
             qs = qs.values('report__version_UUID').distinct()
         return Response(qs, status=status.HTTP_200_OK)
+
+
+class OWCampaignsViewSet(ReadOnlyModelViewSet):
+    serializer_class = OWCampaignsSerializer
+
+    def get_queryset(self):
+        qs = OWCampaigns.objects.all()
+        country_id = self.request.query_params.get('country_id', None)
+        if country_id is not None:
+            qs = qs.filter(country__gid=country_id)
+        return qs

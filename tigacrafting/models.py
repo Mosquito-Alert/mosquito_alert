@@ -408,4 +408,3 @@ class OtherSpecies(models.Model):
 #     species = models.ForeignKey(Species, related_name='validations', blank=True, null=True)
 #     #species = models.ManyToManyField(Species)
 #     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure')
-

@@ -30,7 +30,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/', include('tigaserver_app.urls')),
     #This is used for dynamic schema generation
-    #path('openapi/',get_schema_view(title="Mosquito Alert API",description="API developers hpoing to use our service"), name='openapi-schema'),
+    #path('openapi/',get_schema_view(title="Mosquito Alert API",description="Dynamic API schema generator"), name='openapi-schema'),
     path('api-docs/', TemplateView.as_view(template_name='swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
     path('help/<platform>/<language>/', show_help),
     path('about/<platform>/<language>/', show_about),
