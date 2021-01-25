@@ -55,4 +55,15 @@ def get_data():
     write_csv_file('/tmp/users.csv', users, ['date', 'n'])
 
 
-get_data()
+def get_daily_data():
+    real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
+    csv_columns = ["user_UUID","registration_time"]
+    with open("register_data_tigausers.csv", 'w') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+        writer.writeheader()
+        for data in real_tigausers:
+            row_data = {"user_UUID": data.user_UUID,"registration_time":data.registration_time}
+            writer.writerow(row_data)
+
+
+get_daily_data()
