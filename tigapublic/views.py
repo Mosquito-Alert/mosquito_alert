@@ -20,6 +20,7 @@ from .libs.stormdrains import (StormDrainData, StormDrainUploader,
 from .libs.userfixes import UserfixesManager
 from .libs.upload import ExcelUploader
 from .libs.epidemiology import EpidemiologyData
+from .libs.irideon import irideonData
 from .libs.predictionmodels import predictionModels
 from .models import MapAuxReports, Municipalities, Epidemiology
 from .utils import CustomJSONEncoder
@@ -376,6 +377,23 @@ def epidemiologyData(request):
                 )
         return uploader.put()
 
+@csrf_exempt
+@cross_domain_ajax
+def IrideonData(request):
+    """Manage irideon data.
+
+    Only for registered users.
+
+    GET:
+    Get epidemiology data.
+
+    POST:
+    Upload a epidemiology data file (XLS or CSV).
+
+    """
+    if request.method == 'GET':
+        data_provider = irideonData(request)
+        return data_provider.get()
 
 def getEpidemiologyTemplate(request):
     """Return the template used to import data."""

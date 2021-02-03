@@ -9,7 +9,8 @@ from django.contrib.auth.models import User
 import re
 from .constants import (managers_group, superusers_group, user_roles,
                        epidemiologist_editor_group,
-                       epidemiologist_viewer_group)
+                       epidemiologist_viewer_group,
+                       irideon_traps_viewer)
 
 
 ###################
@@ -72,6 +73,22 @@ class ExtendedUser(User):
                             name=superusers_group
                             ).exists()
                 )
+
+    def is_irideon_traps_viewer(self):
+        """Return True if user can view irideon data.
+
+        User must be valid and belong to the groups
+        irideon_traps_viewer or superuser
+        """
+        return (
+                self.groups.filter(
+                            name=irideon_traps_viewer
+                            ).exists()
+                or
+                self.groups.filter(
+                            name=superusers_group
+                            ).exists()
+            )
 
     def is_root(self):
         """Return True if user is root/superadmin.

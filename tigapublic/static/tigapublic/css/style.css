@@ -1463,3 +1463,14 @@ div#layer-title-container{
   line-height: 2;
   display:block;
 }
+
+#trap-chart-filters {
+  font-family: sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#trap-chart-filters label {
+  cursor: pointer;
+}
+

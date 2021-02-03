@@ -1215,6 +1215,17 @@ var MapView = MapView.extend({
 
     },
 
+    addTrapReport: function(){
+        var _this = this;
+        this.trap_panel = $('<div>')
+          .attr('class', 'sidebar-report trap-report');
+        this.controls.sidebar.addPane(this.trap_panel);
+        this.trap_panel.on('hide', function(){
+            $('.irideon-marker').removeClass('selected');
+        });
+
+    },
+
     addPanelReport: function(){
         var _this = this;
         this.report_panel = $('<div>')
@@ -1476,7 +1487,7 @@ var MapView = MapView.extend({
       var xMarker = _this.map.latLngToContainerPoint(marker.getLatLng()).x
 
       var mapIconsWidth = parseInt($('.leaflet-control-zoom-out').css('width')) + 40 //20px padding;
-      var barWidth = parseInt($('.sidebar-report').css('width')) + mapIconsWidth;
+      var barWidth = parseInt($('.sidebar-report:visible').css('width')) + mapIconsWidth;
 
       //if marker underneath future popup panel, then movie it
       var ne = _this.map.containerPointToLatLng([x - (barWidth + mapIconsWidth), 0]) ;

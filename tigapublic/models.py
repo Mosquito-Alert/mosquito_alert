@@ -433,3 +433,39 @@ class Epidemiology(models.Model):
         """Meta."""
 
         db_table = 'tigapublic_epidemiology'
+
+class Irideon(models.Model):
+    """Irideon traps model."""
+
+    id = models.CharField(max_length=30,
+                          primary_key=True)
+
+    record_time = models.DateTimeField(blank=True,
+                                       null=True,
+                                       default=None)
+
+    classification = models.CharField(max_length=255,
+                                      blank=True,
+                                      null=True)
+
+    client_name = models.CharField(max_length=30,
+                                   blank=True,
+                                   null=True)
+
+    client_type = models.CharField(max_length=20,
+                                   blank=True,
+                                   null=True)
+
+    lon = models.FloatField(db_column='lng',)
+
+    lat = models.FloatField()
+
+    nice_name = models.CharField(max_length=255,
+                                 blank=True,
+                                 null=True)
+
+    processed_time = models.DateTimeField(blank=True,
+                                          null=True,
+                                          default=None)
+    class Meta:
+        managed = False

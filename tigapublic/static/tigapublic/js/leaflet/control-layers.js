@@ -282,6 +282,24 @@ var MOSQUITO = (function (m) {
                               _this.modelsUI(layer, item, options, mode, modelDates)
                             }
                             break;
+                        case 'Y': // Forecast models
+                            options={
+                              'infoPopup': 'layer.iridion_traps_description',
+                              'infoIcon': 'fa fa-question question-mark-toc',
+                              'infoIconId': 'IrideonToolTip',
+                              'iconColor': layer.iconColor,
+                              'kindSelectorText': 'layer.models.vector',
+                              'sexSelectorText': 'layer.irideon.species-sex',
+                              'species': layer.species,
+                              'selectId': 'irideon_species',
+                              'sexSelectId': 'irideon_species_sex',
+                              'sex': layer.sex,
+                            }
+                            var irideonGroup = MOSQUITO.config.logged.irideon_traps_view_group;
+                            if  (MOSQUITO.app.user.groups.indexOf(irideonGroup[0]) !== -1 ||  isSuperUser ){
+                                _this.irideonTrapsUI(layer, item, options)
+                            }
+                            break;
                         case 'Q': //DrainStorm
                             //Only for loggend and manager_group users
                             if (MOSQUITO.app.headerView.logged)
@@ -340,6 +358,7 @@ var MOSQUITO = (function (m) {
 
                             //only some groups can view this layer
                             if (!isEpidemiologist_view && !isEpidemiologist_edit && !isSuperUser) {
+                              $(item).css('display','none')
                               return false
                             }
 
@@ -402,7 +421,14 @@ var MOSQUITO = (function (m) {
 
                     //when click on a layer selector
                 		item.on('click', function(event) {
-                      // layerLI = $('label[i18n="'+layer.title+'"]').parent();
+                      // When we unfold a select
+                      var option = event.target;
+                      if ($(option).hasClass('filter-option') ||
+                            $(option).hasClass('caret') ||
+                            $(option).hasClass('dropdown-toggle')) {
+                              return;
+                            }
+
                       layerLI = $('li#layer_'+layer.key)
                          if (layer.key === 'M') {
                           //When logged, models layers loads on municipality format
@@ -441,13 +467,13 @@ var MOSQUITO = (function (m) {
                             };
                           }
 
-                          // When we unfold the select
-                          var option = event.target;
-                          if ($(option).hasClass('filter-option') ||
-                                $(option).hasClass('caret') ||
-                                $(option).hasClass('dropdown-toggle')) {
-                                  return;
-                                }
+                          // When we unfold a select
+                          // var option = event.target;
+                          // if ($(option).hasClass('filter-option') ||
+                          //       $(option).hasClass('caret') ||
+                          //       $(option).hasClass('dropdown-toggle')) {
+                          //         return;
+                          //       }
                           // when we pick an option
                           // ... because we clicked on the span.text
 
@@ -464,12 +490,12 @@ var MOSQUITO = (function (m) {
                             };
 
                             // When we unfold the select
-                            var option = event.target;
-                            if ($(option).hasClass('filter-option') ||
-                                  $(option).hasClass('caret') ||
-                                  $(option).hasClass('dropdown-toggle')) {
-                                    return;
-                                  }
+                            // var option = event.target;
+                            // if ($(option).hasClass('filter-option') ||
+                            //       $(option).hasClass('caret') ||
+                            //       $(option).hasClass('dropdown-toggle')) {
+                            //         return;
+                            //       }
                             // when we pick an option
                             // ... because we clicked on the span.text
 
@@ -486,12 +512,12 @@ var MOSQUITO = (function (m) {
                             };
 
                             // When we unfold the select
-                            var option = event.target;
-                            if ($(option).hasClass('filter-option') ||
-                                  $(option).hasClass('caret') ||
-                                  $(option).hasClass('dropdown-toggle')) {
-                                    return;
-                                  }
+                            // var option = event.target;
+                            // if ($(option).hasClass('filter-option') ||
+                            //       $(option).hasClass('caret') ||
+                            //       $(option).hasClass('dropdown-toggle')) {
+                            //         return;
+                            //       }
                             // when we pick an option
                             // ... because we clicked on the span.text
 
@@ -521,6 +547,21 @@ var MOSQUITO = (function (m) {
                           };
                           theLayer = MOSQUITO.app.mapView.epidemiology_layer;
                       }
+                      else if (layer.key == 'Y') {
+                          MOSQUITO.app.mapView.irideon_layer._meta = {
+                            'key': 'Y',
+                            'icon': "img/epi_confirmed.svg",
+                            'layer': MOSQUITO.app.mapView.irideon_layer
+                          };
+                          theLayer = MOSQUITO.app.mapView.irideon_layer;
+                          // var option = event.target;
+                          // if ($(option).hasClass('filter-option') ||
+                          //       $(option).hasClass('caret') ||
+                          //       $(option).hasClass('dropdown-toggle')) {
+                          //         return;
+                          //       }
+                      }
+
                       else {
                           theLayer = layer.layer;
                       }
@@ -565,6 +606,15 @@ var MOSQUITO = (function (m) {
                           else if (layer.key === 'R') {
                                   if ( $(option).hasClass('text')) {
                                     MOSQUITO.app.mapView.refreshBitingLayer();
+                                  }
+                                  else{
+                                    _this._map.removeLayer(theLayer);
+                                  }
+                                }
+                          else if (layer.key === 'Y') {
+                                  var option = event.target;
+                                  if ( $(option).hasClass('text')) {
+                                    MOSQUITO.app.mapView.irideon_filter();
                                   }
                                   else{
                                     _this._map.removeLayer(theLayer);
@@ -617,6 +667,7 @@ var MOSQUITO = (function (m) {
                                 MOSQUITO.app.mapView.refreshBitingLayer()
                           }
                           else if (layer.key === 'P') MOSQUITO.app.mapView.addEpidemiologyLayer();
+                          else if (layer.key === 'Y') MOSQUITO.app.mapView.addIrideonLayer();
                           else { //Just adding a simple observations layer. Show loading here
                             loadLayer=false
                             MOSQUITO.app.mapView.loading.on(layerLI);
@@ -942,6 +993,106 @@ var MOSQUITO = (function (m) {
               else label = layer.segments[i].from+' - '+layer.segments[i].to;
               $('<label>').html(label).appendTo(subitem);
           }
+        },
+
+        irideonTrapsUI: function (layer, item, options){
+          var _this = this
+
+          var labelContainer = $('<div>')
+            .attr('id', 'layer-title-container')
+            .appendTo(item)
+
+          // circle icon
+          // var layerLegend = '<div style="width: 20px; height: 20px; background: '+options.iconColor+' none repeat scroll 0% 0%;  border-radius: 50%; float: left; margin: 3px 10px 0px 0px;"></div>'
+
+          // marker icon
+          var layerLegend = '<div class="leaflet-marker-icon custom-div-icon leaflet-zoom-animated leaflet-clickable" style="margin-left: -6px; margin-top: -6px; width: 12px; height: 12px; transform: translate3d(15px, 15px, 0px); z-index: 502;" tabindex="0"><div class="irideon-size-0" style="background-color:'+options.iconColor+'">'
+
+          $(layerLegend).appendTo(labelContainer);
+          $('<label i18n="'+layer.title+'" class="multiclass" style="margin-left:30px">').appendTo(labelContainer);
+
+          // QUESTION MARK
+          let question_mark = $('<a>', {
+            'tabindex':'0',
+            'role': 'button',
+            'data-trigger': 'focus',
+            'id': options.infoIconId,
+            'data-toggle':'popover',
+            'data-placement':'left',
+            'i18n': options.infoPopup+'|data-content',
+            'data-container': 'body',
+            'class':options.infoIcon
+          })
+
+          question_mark.appendTo(labelContainer)
+          question_mark.on('click', function(event) {
+            event.stopPropagation();
+            return false;
+          });
+
+          $(question_mark).popover({
+            html: true,
+            content: function() {
+              return true;
+              }
+          });
+
+          var date_selector = $('<div>', {
+              'id': 'forecast_date_selector',
+              'class': 'cara'
+            })
+            .appendTo(item);
+
+          //SPECIES SELECT
+          $('<div>', {'i18n': options.kindSelectorText}).css('padding', '5px')
+            .css('width', 45)
+            .appendTo(date_selector);
+          var v_select = $('<select>', {
+              'name': options.selectId,
+              'multiple': "true",
+              'id': options.selectId,
+              'class': 'selectpicker dropup'})
+            .appendTo(date_selector)
+
+          //add options to selectIdtypes.forEach(function(ele) {
+          let types = options.species;
+          types.forEach(function(ele) {
+            let attrs = {'value': ele.k, 'i18n': ele.v, 'selected': 'true'};
+            v_select.append($('<option>',  attrs).html(ele.v));
+          });
+
+          $(v_select).on("changed.bs.select",
+              function(e, clickedIndex, newValue, oldValue) {
+                MOSQUITO.app.mapView.irideon_filter()
+              })
+
+          $(v_select).selectpicker('refresh');
+
+          //MOSQUITO SEX SELECT
+          //SPECIES SELECT
+          $('<div>', {'i18n': options.sexSelectorText}).css('padding', '5px')
+            .css('width', 45)
+            .appendTo(date_selector);
+          var v_select = $('<select>', {
+              'name': options.sexSelectId,
+              'multiple': "true",
+              'id': options.sexSelectId,
+              'class': 'selectpicker dropup'})
+            .appendTo(date_selector)
+
+          //add options to selectIdtypes.forEach(function(ele) {
+          let sexes = options.sex;
+          sexes.forEach(function(ele) {
+            let attrs = {'value': ele.k, 'i18n': ele.v, 'selected': 'true'};
+            v_select.append($('<option>',  attrs).html(ele.v));
+          });
+
+          $(v_select).on("changed.bs.select",
+              function(e, clickedIndex, newValue, oldValue) {
+                MOSQUITO.app.mapView.irideon_filter()
+              })
+
+          $(v_select).selectpicker('refresh');
         },
 
         modelsUI: function (layer, item, options, mode, modelAvailableDates){

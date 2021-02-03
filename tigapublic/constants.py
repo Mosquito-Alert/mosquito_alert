@@ -9,6 +9,7 @@ superusers_group = 'supermosquito'
 epidemiologist_editor_group = 'epidemiologist'
 epidemiologist_viewer_group = 'epidemiologist_viewer'
 epidemiologist_group = 'epidemiologist'
+irideon_traps_viewer = 'iridion_traps_viewer'
 
 """
 All roles allowed

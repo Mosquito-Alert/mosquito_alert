@@ -734,3 +734,187 @@ div#map canvas.leaflet-heatmap-layer {
   bottom: 0px;
   top: auto;
 } */
+
+.irideon-marker {
+	/* border-radius: 50%; */
+	border-radius: 6px;
+	border: 1px solid black;
+	color: white;
+	font-weight: bold;
+	/* center the content */
+	display: flex;
+  align-items: center;
+  justify-content: center;
+	flex-direction: column;
+}
+.irideon-marker div.title {
+	white-space: nowrap;
+	position: absolute;
+	top: -15px;
+	background: white;
+	color: black;
+	border-radius: 5px;
+	border: 1px solid black;
+	padding: 0px 10px;
+	transition: padding .3s linear, background .3s linear;
+}
+.irideon-marker.selected {
+	background-color: #ffff00 !important;
+	color: black;
+	border-color: #c3bc0f;
+}
+.irideon-marker.selected::after {
+	border-top-color: #ffff00 !important;
+}
+
+.irideon-marker::after {
+	content: " ";
+	position: absolute;
+	left: 50%;
+	margin-left: -15px;
+	border: 15px solid transparent;
+	border-top-color: black;
+}
+
+.irideon-size-0 {/*TOC */
+	border-radius:3px;
+	height: 20px;
+	width: 20px;
+}
+.irideon-size-0::after {
+	top: 15px;
+	margin-left: -6px;
+	position:absolute;
+	content: " ";
+	position: absolute;
+	left: 50%;
+	border: 10px solid transparent;
+	border-top-color: #ee1ef3;
+}
+
+.irideon-size-1 {
+	height: 30px;
+	width: 30px;
+	transform: translate(-9px, -36px); /* height/2 - parentHeight/2 */
+}
+.irideon-size-1::after {
+	top: 26px;
+	margin-left: -10px;
+	border: 10px solid transparent;
+}
+.irideon-size-2 {
+	height: 40px;
+	width: 40px;
+	transform: translate(-14px, -46px); /* height/2 - parentHeight/2 */
+}
+.irideon-size-2::after {
+	top: 36px;
+	margin-left: -12px;
+	border: 12px solid transparent;
+}
+.irideon-size-3 {
+	height: 50px;
+	width: 50px;
+	transform: translate(-19px, -56px); /* height/2 - parentHeight/2 */
+	font-size: 1.1em;
+}
+.irideon-size-3::after {
+	top: 45px;
+	margin-left: -15px;
+	border: 15px solid transparent;
+}
+.irideon-size-4 {
+	height: 60px;
+	width: 60px;
+	transform: translate(-24px, -66px); /* height/2 - parentHeight/2 */
+	font-size: 1.2em;
+}
+.irideon-size-4::after {
+	top: 54px;
+	margin-left: -18px;
+	border: 18px solid transparent;
+}
+.irideon-size-5 {
+	height: 80px;
+	width: 80px;
+	transform: translate(-34px, -86px); /* height/2 - parentHeight/2 */
+	font-size: 1.3em;
+}
+.irideon-size-5::after {
+	top: 67px;
+	margin-left: -30px;
+	border: 30px solid transparent;
+}
+#trap-count {
+	position: relative;
+	overflow: hidden;
+}
+#trap-count.visible {
+	position: relative;
+	overflow: visible;
+}
+body #add_trap_stations {
+	position: absolute;
+  background: white;
+  z-index: 0;
+	top: 0px;
+	/* transform: translateX(-500px); */
+	transform: translateY(-170px);
+	border: 1px solid black;
+	padding: 7px;
+	opacity: 0;
+	box-shadow: none;
+	transition: box-shadow .3s, display .1s, transform .6s, opacity .6s;
+	margin-right: 10px;
+	width: 95%;
+  left: 1%;
+}
+#add_trap_stations.visible {
+	opacity: 1;
+	z-index: 9;
+	margin-right: 10px;
+	/* transform: translateX(0px); */
+	transform: translateY(-15px);
+	box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+	transition: box-shadow .6s, display .1s, transform .6s, opacity .3s;
+	width: 95%;
+  left: 1%;
+}
+#add_trap_stations.visible::after {
+	content: " ";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-bottom-color: black;
+}
+table th, table td {
+	padding: 4px;
+}
+.right {
+	text-align: right;
+}
+.center {
+	text-align: center;
+}
+.left {
+	text-align: left;
+}
+.trap-details {
+	padding-right: 10px;
+}
+.trap-details hr {
+	border-top: 1px solid #999;
+	width: 50%;
+}
+.trap-details table {
+	margin: 20px 0 20px 0;
+}
+.trap-details tbody tr:nth-child(even) {
+	background: #FFF
+}
+.trap-details tbody tr:nth-child(odd) {
+	background: #CCC
+}
+

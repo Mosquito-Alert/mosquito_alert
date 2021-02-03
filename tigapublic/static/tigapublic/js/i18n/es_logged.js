@@ -231,5 +231,37 @@ add = {
         '<li><b>Probabilidad enfermedad</b>: Modelos de predicción de riesgo de enfermedades arbovirales para los municipios de Cataluña. Más detalles en la capa del mapa, botón [?].</li>' +
         '</ul>',
     'layer.predictionmodels.viruscontent' : 'Modelos de predicción de riesgo de enfermedades arbovirales para los municipios de Cataluña. Las probabilidades se estiman considerando tanto información de casos importados de las enfermedades como de variables climáticas, abundancia de mosquitos y factores socioeconómicos. Los modelos se han desarrollado dentro del proyecto Plataforma Integral per al Control d’Arbovirosis a Catalunya (PICAT) coordinado por el Vall d’Hebron Institut de Recerca (VHIR) en colaboración con la Agencia de Salud Pública de Cataluña (ASPCAT), ISGlobal y Mosquito Alert.',
+
+    //Irideon traps
+    'layer.iridion_traps': 'Trampas Irideon',
+    'layer.iridion_traps_description':'....',
+    'layer.irideon.species-sex':'Sexo',
+    'map.trap-details-title': 'Capturas de mosquitos',
+    'map.station-label': 'Estación',
+    'map.filters-label': 'Filtros',
+    'map.species-label': 'Especie',
+    'map.m-sex-label': 'Macho',
+    'map.f-sex-label': 'Hembra',
+    'layer.tig': 'Mosquito tigre',
+    'layer.cul': 'Culex pipiens',
+    'layer.zik': 'Mosquito fiebre amarilla',
+    'map.period-label': 'Periodo',
+    'map.total':'Total',
+    'map.trap-number-captures': 'Número de capturas por especie y sexo',
+    'map.global-chart': 'Número de capturas por especie y día',
+    'map.global-chart-add-stations-title': 'Añade estaciones a este informe',
+    'map.global-chart-add-view-stations': 'Usa las estaciones de la vista actual del mapa',
+    'map.global-chart-add-map-stations-help': 'Puedes añadir y eliminar estaciones directamente desde el mapa con Ctrl+Click. También puedes hacerlo en el siguiente listado:',
+    'map.all-label': 'Todos',
+    'map.download-csv': 'Descarga los datos (CSV)',
+    'map.trap-download-metadata': `
+      Això és una prova per veure si va així.
+
+      Posant salts de línia i tal.
+    `,
+    'layer.irideon.number': 'Número de capturas',
+    'layer.iriden.uptime-chart': 'Porcentaje de funcionamiento por estación y día',
+    'layer.irideon.uptime': 'Funcionamiento',
+    'label.mean': 'Media'
 };
 _.extend(trans.es, add);

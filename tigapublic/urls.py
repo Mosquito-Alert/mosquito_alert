@@ -235,6 +235,13 @@ epi_urls = [
 
 ]
 
+"""Irideon traps layer."""
+irideon_urls = [
+    # Manage StormDrain Data
+    url(r'^irideon/data/$',
+        views.IrideonData),
+]
+
 """Get municipalities geometry by region."""
 ccaa_geom_urls = [
 #     # Manage StormDrain Data
@@ -282,6 +289,7 @@ urlpatterns = [
     url(r'', include(notif_urls)),
     url(r'', include(drain_urls)),
     url(r'', include(epi_urls)),
+    url(r'', include(irideon_urls)),
     url(r'', include(muni_urls)),
     url(r'', include(ufix_urls)),
     url(r'', include(ccaa_geom_urls)),

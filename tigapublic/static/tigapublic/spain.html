@@ -38,7 +38,13 @@
           vectors of Zika, Dengue and Chikungunya."/>
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="./lib/bootstrap-tokenfield-master/dist/css/bootstrap-tokenfield.min.css">
+
     <link href="lib/daterangepicker/jquery.comiseo.daterangepicker.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js" integrity="sha512-+IpCthlNahOuERYUSnKFjzjdKXIbJ/7Dd6xvUp+7bEw0Jp2dg6tluyxLs+zq9BMzZgrLv8886T4cBSqnKiVgUw==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.css" integrity="sha512-cznfNokevSG7QPA5dZepud8taylLdvgr0lDqw/FEZIhluFsSwyvS81CMnRdrNSKwbsmc43LtRd2/WMQV+Z85AQ==" crossorigin="anonymous" />
+
 </head>
 <body>
 <div id="page-map" class="page">
@@ -1065,6 +1071,60 @@
         </div>
     </script>
 
+    <script type = "text/template" id="content-trap-details-tpl">
+      <div class="trap-details">
+        <!-- Report title -->
+        <h3 i18n="map.trap-details-title" style="text-align:center;"></h3>
+        <!-- Report summary -->
+        <div align="center" style="position: relative; z-index: 10;"><label i18n="map.station-label"></label>: <%= trap_name %> (<a href="javascript:void(null);" i18n="label.addremove" id="add_trap_stations_button">add/remove</a>)</div>
+        <div id="trap-count">
+          <hr>
+          <h4 i18n="map.trap-number-captures">Número de capturas por especie y sexo</h4>
+          <% if (filter_date) { %>
+            <div><label i18n="map.period-label"></label>:
+              <%= filter_date %>
+            </div>
+          <% } %>
+          <div class="table-details"><%= data_table %></div>
+          <div align="center">
+            <button class="download" i18n="map.download-csv"></button>
+          </div>
+          <!-- add/remove stations -->
+          <div id="add_trap_stations">
+            <h4 i18n="map.global-chart-add-stations-title">Add stations to this report</h4>
+            <p i18n="map.global-chart-add-map-stations-help">Use ctrl+click on the map to add or remove stations individually to this report.</p>
+            <p>
+              <select id="trap_stations" multiple size="5">
+                <% for (station in stations) { %>
+                  <option name="<%= stations[station] %>"><%= stations[station] %></option>
+                <% } %>
+              </select>
+            </p>
+            <div align="center">
+              <button id="traps_in_view" i18n="map.global-chart-add-view-stations"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <hr>
+        <h4 i18n="map.global-chart"></h4>
+        <div id="traps-chart"></div>
+        <div id="trap-chart-filters" align="center">
+          <label><input type="radio" name="sex-chart-filter" value="female"> <span i18n="map.f-sex-label"></span></label>
+          <label><input type="radio" name="sex-chart-filter" value="male"> <span i18n="map.m-sex-label"></span></label>
+          <label><input type="radio" name="sex-chart-filter" value="all" checked> <span i18n="map.all-label"></span></label>
+        </div>
+        <hr>
+        <h4 i18n="layer.iriden.uptime-chart"></h4>
+        <div id="traps-uptime-chart"></div>
+
+        <!-- <div class="viewreports_button">
+            <button id="button-reportsdocument-tpl" class="btn btn-success btn-block" disabled><span i18n="map.viewreports_btn"><span></button>
+        </div> -->
+      </div>
+    </script>
+
     <script type = "text/template" id="content-report-tpl">
 
         <div id="popup_expert_validated">
@@ -1497,6 +1557,8 @@
 
     <script src="js/latlon-geohash.js"></script>
 
+    <script src="js/FileSaver.js"></script>
+
     <script src="lib/leaflet/dist/leaflet.js"></script>
     <script src="lib/leaflet.sidebar.js"></script>
     <script src="lib/Leaflet.markercluster-leaflet-0.7/dist/leaflet.markercluster-src.js"></script>
@@ -1518,8 +1580,8 @@
     <!-- build:js js/app.min.js -->
      <!-- inject:js -->
      <script src="js/config.js"></script>
-     <script src="js/config_spain.js"></script>
-     <script src="js/utils.js"></script>
+     <script src="js/config_spain.js?1501"></script>
+     <script src="js/utils.js?1501"></script>
      <script src="js/i18n/ca.js"></script>
      <script src="js/i18n/en.js"></script>
      <script src="js/i18n/es.js"></script>
@@ -1534,7 +1596,7 @@
 
      <script src="js/leaflet/control-sidebar-button.js"></script>
      <script src="lib/L.CanvasOverlay.js"></script>
-     <script src="js/leaflet/control-layers.js?1500"></script>
+     <script src="js/leaflet/control-layers.js?1501"></script>
      <script src="js/leaflet/control-download.js"></script>
      <script src="js/leaflet/control-notification.js"></script>
      <script src="js/leaflet/control-moreinfo.js"></script>
@@ -1542,10 +1604,10 @@
      <script src="js/leaflet/control-reportsdocument.js"></script>
      <script src="js/views/base.js"></script>
      <script src="js/views/header.js"></script>
-     <script src="js/views/map.js"></script>
-     <script src="js/views/map.ui.js"></script>
+     <script src="js/views/map.js?1501"></script>
+     <script src="js/views/map.ui.js?1501"></script>
      <script src="js/views/map.ui.markers.js"></script>
-     <script src="js/views/map.layers.js"></script>
+     <script src="js/views/map.layers.js?1501"></script>
      <script src="js/views/map.municipalities.js"></script>
      <script src="js/views/map.biting.js"></script>
      <script src="js/views/reportsdocument.js"></script>
@@ -1554,14 +1616,13 @@
      <!-- endinject -->
     <!-- endbuild -->
     <script>
-    $(document).ready(function(){
-        if (Cookies.get('first-visit')===undefined){
-          Cookies.set('first-visit', 'false');
+      $(document).ready(function(){
+        if (Cookies.get('first-visit') === undefined) {
+          Cookies.set('first-visit', 'false', { expires: 7 });
           $('#modal-firstvisit').modal('show')
         }
-       })
+      });
     </script>
-   });
 
 </body>
 </html>

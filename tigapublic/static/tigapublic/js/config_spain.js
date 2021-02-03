@@ -14,6 +14,12 @@ var MOSQUITO = (function (m, _) {
         URL_MODELS_VIRUS_MUNICIPALITIES: '/static/tigapublic/models/virus/municipalities/',
         URL_MODELS_BITING: '/static/tigapublic/models/biting/',
         MODELS_FILE_NAME: 'mascp_monthly.csv',
+        /*
+          TRAPS_DOWNLOAD_FILENAME
+          The name of the downloaded ZIP and CSV file.
+          Do not include the extension.
+        */
+        TRAPS_DOWNLOAD_FILE_NAME: 'mosquito_traps',
         // BITING_FILE: 'mascp_monthly.csv',
 
         min_length_region_search: 4,
@@ -248,6 +254,7 @@ var MOSQUITO = (function (m, _) {
             "superusers_group":['supermosquito'],
             "epidemiologist_edit_group":['epidemiologist'],
             "epidemiologist_view_group":['epidemiologist_viewer'],
+            "irideon_traps_view_group":['iridion_traps_viewer'],
             "lngs": ['es'],
             "groups":[
                 {'name': 'observations', 'icon': 'fa fa-mobile'},
@@ -445,6 +452,24 @@ var MOSQUITO = (function (m, _) {
                   {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
                 ]
               },*/
+              {
+                  key: 'Y',
+                  group: 'userdata',
+                  title: 'layer.iridion_traps',
+                  radius:{'15':3, '17':4, '18':6, '19':8},//PAir values: zoom level, px size,
+                  iconColor: '#ee1ef3',
+                  strokewidth: 1,
+                  species: [
+                      {'k': 'tig', 'v': 'layer.tiger'},
+                      {'k': 'zik', 'v': 'layer.zika'},
+                      {'k': 'cul', 'v': 'layer.culex'},
+                  ],
+                  sex: [
+                      {'k': 'f', 'v': 'map.f-sex-label'},
+                      {'k': 'm', 'v': 'map.m-sex-label'},
+                  ],
+                  metadata_file: '/mosquito/files/trap-metadata.txt'
+              },
               {
                   key: 'Q',
                   group: 'userdata',

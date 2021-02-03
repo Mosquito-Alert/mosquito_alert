@@ -235,5 +235,37 @@ add = {
     '<li><b>Probabilitat malaltia</b>: Models de predicció de risc de malalties arbovirals per als municipis de Catalunya. Més detalls en la capa del mapa, botó [?].</li>' +
     '</ul>',
   'layer.predictionmodels.viruscontent' : 'Models de predicció de risc de malalties arbovirals per als municipis de Catalunya. Les probabilitats s\'estimen considerant tant informació de casos importats de les malalties com de variables climàtiques, abundància de mosquits i factors socioeconòmics. Els models s\'han desenvolupat dins del projecte Plataforma Integral per al Control d’Arbovirosis a Catalunya (PICAT) coordinat pel Vall d\'Hebron Institut de Recerca (VHIR) en col·laboració amb l\'Agència de Salut Pública de Catalunya (ASPCAT), ISGlobal i Mosquito Alert.',
+
+  //Irideon traps
+  'layer.iridion_traps': 'Trampes Irideon',
+  'layer.iridion_traps_description':'....',
+  'layer.irideon.species-sex':'Sexe',
+  'map.trap-details-title': 'Captures de mosquits',
+  'map.station-label': 'Estació',
+  'map.filters-label': 'Filtres',
+  'map.species-label': 'Espècie',
+  'map.m-sex-label': 'Mascle',
+  'map.f-sex-label': 'Femella',
+  'layer.tig': 'Mosquit tigre',
+  'layer.cul': 'Culex pipiens',
+  'layer.zik': 'Mosquit febre groga',
+  'map.period-label': 'Període',
+  'map.total':'Total',
+  'map.trap-number-captures': 'Número de captures per espècie i sexe',
+  'map.global-chart': 'Número de captures per espècie i dia',
+  'map.global-chart-add-stations-title': 'Afegeix estacions a aquest informe',
+  'map.global-chart-add-view-stations': 'Usa les estacions de la vista actual del mapa',
+  'map.global-chart-add-map-stations-help': 'Pots afegir i eliminar estacions directamente des del mapa amb Ctrl+Click. També pots fer-ho des d\'aquesta llista:',
+  'map.all-label': 'Tots',
+  'map.download-csv': 'Descarrega les dades (CSV)',
+  'map.trap-download-metadata': `
+    Això és una prova per veure si va així.
+
+    Posant salts de línia i tal.
+  `,
+  'layer.irideon.number': 'Número de captures',
+  'layer.iriden.uptime-chart': 'Percentatge de funcionament per estació i dia',
+  'layer.irideon.uptime': 'Funcionament',
+  'label.mean': 'Mitjana'
 };
 _.extend(trans.ca, add);

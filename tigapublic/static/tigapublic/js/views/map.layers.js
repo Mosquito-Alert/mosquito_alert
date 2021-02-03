@@ -14,6 +14,8 @@ var MapView = MapView.extend({
         indexMaxZoom: 0,        // max zoom in the initial tile index
         indexMaxPoints: 100000, // max number of points per tile in the index
     },
+    irideon_data_by_station: {},
+    irideon_pulses_by_station: {},
 
     addBaseLayer: function(){
         this.layers = this.layers || {};
@@ -138,6 +140,12 @@ var MapView = MapView.extend({
 
         bitingLayer = this.getLayerPositionFromKey('R');
         if (bitingLayer!==null) this.addBitingLayer(bitingLayer);
+
+        irideonLayer = this.getLayerPositionFromKey('Y');
+        if (irideonLayer!==null) {
+          // this.irideon_layer = L.layerGroup()
+          this.irideon_layer = L.featureGroup()
+        };
 
         //empty layergroup for epidemiology data
         epilayer = this.LAYERS_CONF[this.getLayerPositionFromKey('P')];
@@ -303,6 +311,729 @@ var MapView = MapView.extend({
             }
         }
       return isValid;
+    },
+
+    addIrideonLayer: function(autozoom, callback){
+      _this = this;
+      if (typeof autozoom === 'undefined') autozoom = true;
+      //Icon properties
+      $.ajax({
+          type: "GET",
+          url: MOSQUITO.config.URL_API + 'irideon/data/', // + _this.dateParamsToString(),
+          dataType: 'json',
+          cache: true,
+          success: function (response) {
+              _this.irideon_data = response.rows;
+              if ('irideon_data' in _this &&
+                  typeof _this.irideon_data !== 'undefined')
+                  _this.irideon_filter(autozoom)
+
+              if (response.rows.length==0){
+                // alert(t('epidemiology.empty-layer'))
+                _this.map.removeLayer(_this.irideon_layer)
+              }
+              if (callback) {
+                callback();
+              }
+          },
+          error: function (e){
+            item = $('#layer_Y')
+            MOSQUITO.app.mapView.loading.off(item);
+            _this.map.removeLayer(_this.irideon_layer)
+          }
+      });
+    },
+
+    irideon_filter: function(autozoom) {
+      _this = this;
+        if (!'irideon_data' in this || typeof this.irideon_data === 'undefined') {
+          this.addIrideonLayer()
+          return;
+        }
+        var start_date = 0, end_date = 0, years = 0, months = 0;
+
+        //Get time filters from MAP
+        if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
+          start_date = moment(this.filters.daterange.start);
+          end_date = moment(this.filters.daterange.end);
+        } else {
+          if(this.filters.years.length !== 0){
+              years = this.filters.years;
+          }
+          if(this.filters.months.length !== 0){
+              months = this.filters.months;
+          }
+        }
+
+        this.irideon_layer.clearLayers();
+        var selected_species = $('#irideon_species').val()
+        var selected_sex = $('#irideon_species_sex').val()
+        // selected_species.push('pulse');
+
+        //TO-DO count number of mosquitos shown in map (check species and date selections)
+        var irideonLabels={}
+        var estations={}
+        if (selected_species!==null && selected_sex!==null){
+
+          this.irideon_data.forEach(function(val, index, arr){
+          //check if irideon data should show in map
+          if (val.record_time!==null
+                && selected_species.indexOf(val.spc)!==-1
+                && selected_sex.indexOf(val.sex)!==-1
+             ){
+
+              let client_name = val.client_name;
+              if (val.client_name.indexOf(' (') !== -1) {
+                  //remove parenthesis content from client_name
+                  client_name = val.client_name.substring(0, val.client_name.indexOf(' ('));
+              }
+              if (!(client_name in irideonLabels)){
+                  irideonLabels[client_name] = 0;
+                  estations[client_name]={'lat': val.lat, 'lon': val.lon}
+                  _this.irideon_data_by_station[client_name] = [];
+              }
+
+              if (_this.irideonDataPassesFilters(val, years, months, start_date, end_date)){
+                  //update counter
+                  irideonLabels[client_name] = irideonLabels[client_name] + 1;
+                  _this.irideon_data_by_station[client_name].push(val);
+              }
+          } else {
+            if (_this.irideonDataPassesFilters(val, years, months, start_date, end_date)){
+              let client_name = val.client_name;
+              if (val.client_name.indexOf(' (') !== -1) {
+                  //remove parenthesis content from client_name
+                  client_name = val.client_name.substring(0, val.client_name.indexOf(' ('));
+              }
+              if (!(client_name in _this.irideon_pulses_by_station)) {
+                  _this.irideon_pulses_by_station[client_name] = [];
+              }
+              _this.irideon_pulses_by_station[client_name].push(val);
+            }
+          }
+        });
+
+        this.irideon_stations = estations;
+          this.drawIrideonMarkers(irideonLabels, estations, autozoom)
+        }
+    },
+
+    drawIrideonMarkers: function(counters, estations, autozoom){
+      var nradius = 10
+      if (typeof autozoom === 'undefined') autozoom = true;
+      function createClass(name,rules){
+          var style = document.createElement('style');
+          style.type = 'text/css';
+          document.getElementsByTagName('head')[0].appendChild(style);
+          if(!(style.sheet||{}).insertRule)
+              (style.styleSheet || style.sheet).addRule(name, rules);
+          else
+              style.sheet.insertRule(name+"{"+rules+"}",0);
+      }
+      var color = this.LAYERS_CONF[this.getLayerPositionFromKey('Y')].iconColor;
+      createClass('.irideon-marker::after',"border-top-color: " + color + ";");
+      for (var key in estations) {
+          var val = estations[key]
+          var digits = counters[key].toString().length
+          var icon = L.divIcon({
+                  className: 'custom-div-icon',
+                  html: "<div class=\"irideon-marker irideon-size-" + digits + "\" style='background-color:"+color+";'><div class=\"title\">"+ key + "</div><div>"+counters[key]+"</div></div>",
+              });
+
+          const marker = L.marker([val.lat, val.lon], { icon: icon, station: key });
+
+          marker.on('click', function(event) {
+            if(this.trap_panel.is(':visible') === false){
+                this.controls.sidebar.togglePane(this.trap_panel, $('<div>'));
+            }
+
+            // this.loading.show(this.map.latLngToContainerPoint(event.latlng));
+            const station = event.target.options.station;
+            if (event.originalEvent.ctrlKey) {
+              let option = $('select#trap_stations option[name="' + station + '"]');
+              if (option.attr('selected') === 'selected') {
+                option.removeAttr('selected');
+              } else {
+                option.attr('selected', 'selected');
+              }
+              this.irideonShowReport($('select#trap_stations').val());
+            } else {
+              this.irideonShowReport([station]);
+            }
+            this.moveMarkerIfNecessary(marker);
+
+          }.bind(this));
+          marker.addTo(this.irideon_layer);
+      }
+
+      this.irideon_layer.addTo(this.map);
+      // if (autozoom) this.map.fitBounds(this.irideon_layer.getBounds().pad(1));
+    },
+
+    irideonDataPassesFilters: function (val, years, months, start_date, end_date){
+      var elementDate = moment(val.record_time)
+      var passesFilters = false;
+       if (start_date && end_date) {
+         passesFilters = ( (elementDate >= start_date) && (elementDate <= end_date) )
+       }
+       else{
+           //some months
+           if (months) {
+             if (months.indexOf((1+elementDate.month()))!==-1){
+                 //and some years
+                 if (years) {
+                   if (years.indexOf(elementDate.year())!==-1){
+                     //month OK , year OK
+                     passesFilters = true
+                   }
+                 }
+                 //this month all years
+                 else{
+                     passesFilters = true
+                 }
+               }
+           }
+           else{
+               //all months, some years
+               if (years) {
+                 if (years.indexOf(elementDate.year())!==-1){
+                   passesFilters = true
+                 }
+               }
+               else{
+                 passesFilters = true;
+               }
+           }
+       }
+      return passesFilters;
+    },
+
+    isDayInFilter: function(day) {
+      var time_windows = this.convertTimeFiltersToTimeWindows();
+      if (time_windows.length === 0) return true;
+      var exists = time_windows.find(function(item) {
+        return (day.isSameOrAfter(moment(item[0])) && day.isSameOrBefore(moment(item[1])))
+      });
+      return typeof exists !== 'undefined';
+    },
+
+    convertTimeFiltersToTimeWindows: function() {
+      var windows = [];
+      if (this.filters.months.length !== 0) {
+        var years = this.filters.years;
+        // Si no hem indicat cap any, agafa'ls tots des del 2014.
+        if (this.filters.years.length === 0) {
+          years = [];
+          year = 2014;
+          while (year <= new Date().getFullYear()) {
+            years.push(year);
+            year = year + 1;
+          }
+        }
+        years.forEach(function(year) {
+          this.filters.months.forEach(function(month) {
+            month = ('00'+month).slice(-2);
+             var start = year + '/' + month + '/01';
+             var end = moment(start).endOf('month').format('YYYY/MM/DD');
+            windows.push([start, end]);
+          });
+        }.bind(this));
+      }
+      if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
+        windows.push([this.filters.daterange.start.format('YYYY/MM/DD'),
+                      this.filters.daterange.end.format('YYYY/MM/DD')]);
+      }
+      return windows;
+    },
+
+    irideonAggregateStations: function(station, data, totals, labels) {
+      if (typeof this.irideon_data_by_station[station] === 'undefined' || this.irideon_data_by_station[station].length === 0) {
+        return {'data': data, 'totals': totals, 'labels': labels};
+      }
+      var raw_data = this.irideon_data_by_station[station];
+      var oldest = moment(raw_data[0].record_time);
+      var pointer = 0;
+      var today = moment();
+      if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
+        oldest = moment(this.filters.daterange.start);
+        today = moment(this.filters.daterange.end);
+      }
+      if (this.filters.months.length !== 0) {
+        var today = moment();
+        var months = this.filters.months;
+        var years = this.filters.years;
+        if (!years.length) {
+          if (new Date().getMonth() < months[0])
+          years = [new Date().getFullYear()];
+        }
+        var oldest = moment(years[0] + '/' + ("0"+months[0]).slice(-2) + '/01');
+        if (oldest.isAfter(today)) {
+          years[0] = years[0] - 1;
+          oldest = moment(years[0] + '/' + ("0"+months[0]).slice(-2) + '/01');
+        }
+        var today = moment(years[years.length -1] + '/' + ("0"+months[months.length - 1]).slice(-2) + '/01').endOf('month');
+      }
+      while (oldest.isSameOrBefore(today)) {
+        var initial = null;
+        if (this.isDayInFilter(oldest)) {
+          initial = 0;
+        }
+        // store the day with initial values of 0
+        if (labels.indexOf(oldest.format('YYYY-MM-DD')) === -1) {
+          labels.push(oldest.format('YYYY-MM-DD'));
+          Object.keys(data).forEach(function(species){
+            data[species].push(initial);
+          });
+        }
+        // search the data for this day
+        let day = moment(raw_data[pointer].record_time);
+        while (day.format('YYYY-MM-DD') == oldest.format('YYYY-MM-DD')) {
+          if (pointer < raw_data.length) {
+            let record = raw_data[pointer];
+            var index = labels.indexOf(moment(record.record_time).format('YYYY-MM-DD'));
+            if (index !== -1) {
+              if (record.sex === 'm') data[record.spc + '.male'][index] += 1;
+              if (record.sex === 'f') data[record.spc + '.female'][index] += 1;
+              totals[record.spc][record.sex] += 1;
+            } else {
+              console.error('no date found on data')
+            }
+
+          }
+          ++pointer;
+          if (pointer < raw_data.length) {
+            day = moment(raw_data[pointer].record_time);
+          } else {
+            pointer = raw_data.length - 1;
+            day = moment();
+          }
+        }
+        oldest = oldest.add(1, 'day');
+      }
+      return {'data': data, 'totals': totals, 'labels': labels};
+    },
+
+    irideonAgregatePulses: function(station, trap_data, labels) {
+      var raw_data = this.irideon_pulses_by_station[station];
+      var oldest = moment(trap_data[1], 'YYYY-MM-DD');
+      var pointer = 0;
+      var data = [station];
+      var today = moment(trap_data[trap_data.length - 1], 'YYYY-MM-DD');
+      if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
+        oldest = moment(this.filters.daterange.start);
+        today = moment(this.filters.daterange.end);
+      }
+      if (this.filters.months.length !== 0) {
+        var today = moment();
+        var months = this.filters.months;
+        var years = this.filters.years;
+        if (!years.length) {
+          if (new Date().getMonth() < months[0])
+          years = [new Date().getFullYear()];
+        }
+        var oldest = moment(years[0] + '/' + ("0"+months[0]).slice(-2) + '/01');
+        if (oldest.isAfter(today)) {
+          years[0] = years[0] - 1;
+          oldest = moment(years[0] + '/' + ("0"+months[0]).slice(-2) + '/01');
+        }
+        var today = moment(years[years.length -1] + '/' + ("0"+months[months.length - 1]).slice(-2) + '/01').endOf('month');
+      }
+      while (oldest.isBefore(today, 'day') || oldest.isSame(today, 'day')) {
+        var initial = null;
+        if (this.isDayInFilter(oldest)) {
+          initial = 0;
+        }
+        // store the day with initial values of 0
+        if (labels.indexOf(oldest.format('YYYY-MM-DD')) === -1) {
+          data[labels.length] = initial;
+          labels.push(oldest.format('YYYY-MM-DD'));
+        } else {
+          var index = labels.indexOf(oldest.format('YYYY-MM-DD'));
+          data[index] = initial;
+        }
+
+        // search the data for this day
+        let day = moment(raw_data[pointer].record_time);
+        while (day.isBefore(oldest, 'day')) {
+          ++pointer;
+          if (pointer < raw_data.length) {
+            day = moment(raw_data[pointer].record_time);
+          } else {
+            pointer = raw_data.length - 1;
+            day = moment().add(1, 'day');
+          }
+        }
+        while (day.isSame(oldest, 'day')) {
+          if (pointer < raw_data.length) {
+            let record = raw_data[pointer];
+            var index = labels.indexOf(day.format('YYYY-MM-DD'));
+            if (index !== -1 && initial === 0) {
+              data[index] += 1;
+            } else {
+              console.error(day.format('YYYY-MM-DD') + ' not found on data')
+            }
+          }
+          ++pointer;
+          if (pointer < raw_data.length) {
+            day = moment(raw_data[pointer].record_time);
+          } else {
+            pointer = raw_data.length - 1;
+            day = moment().add(1, 'day');
+          }
+        }
+        oldest = oldest.add(1, 'day');
+      }
+      data = data.map(function(value) {
+        if (typeof value === 'number') return Math.round((value / 48) * 100) / 100;
+        else return value;
+      });
+      return {data: data, labels: labels};
+    },
+
+    irideonShowReport: function (stations) {
+      if (!stations) stations = [];
+      // highlight markers
+      this.map.eachLayer( function(layer) {
+        if(layer instanceof L.Marker) {
+          if (typeof layer.options.station !== 'undefined') {
+            if (stations.indexOf(layer.options.station) !== -1) {
+              $(layer._icon).find('.irideon-marker').addClass('selected');
+            } else {
+              $(layer._icon).find('.irideon-marker').removeClass('selected');
+            }
+          }
+        }
+      });
+
+      this.trap_panel.html('');
+      a = new L.Control.SidebarButton();
+      a.getCloseButton().appendTo(this.trap_panel);
+      // prepare data
+      var data = {};
+      var pulses = [];
+      var totals = {};
+      var labels = ['x'];
+      var labels_pulses = ['x'];
+      $('#irideon_species').val().forEach(function (species) {
+        data[species + '.male'] = [window.t('layer.' + species) + ' - ' + window.t('map.m-sex-label')];
+        data[species + '.female'] = [window.t('layer.' + species) + ' - ' + window.t('map.f-sex-label')];
+        totals[species] = {'m': 0, 'f': 0};
+      });
+      stations.forEach(function(station) {
+        var count = this.irideonAggregateStations(station, data, totals, labels);
+        data = count.data;
+        totals = count.totals;
+        labels = count.labels;
+      }.bind(this));
+      var new_labels = Object.assign([], labels);
+      var label_label = new_labels.shift();
+      new_labels = [label_label].concat(new_labels.sort());
+      stations.forEach(function(station) {
+        var pulses_aggregated = this.irideonAgregatePulses(station, new_labels, labels_pulses);
+        pulses.push(pulses_aggregated.data);
+        labels_pulses = pulses_aggregated.labels;
+      }.bind(this));
+      // Calculate absolute total
+      var total = Object.keys(totals).reduce(function(acc, species){
+        if (typeof acc === 'string') return totals[acc]['m'] + totals[acc]['f'] + totals[species]['m'] + totals[species]['f'];
+        else {
+          return acc + totals[species]['m'] + totals[species]['f'];
+        }
+      });
+      if (typeof total === 'string') total = totals[total]['m'] + totals[total]['f'];
+      // show the report
+      if(!('content-trap-details' in this.templates)){
+          this.templates[
+              'content-trap-details'] = $('#content-trap-details-tpl').html();
+      }
+      var tpl = _.template(this.templates['content-trap-details']);
+      //Get time filters from MAP
+      var period = false;
+      var month_names = [
+        ['all', t('All months')],
+        ['1', t('January')], ['2', t('February')], ['3', t('March')],
+        ['4', t('April')], ['5', t('May')], ['6', t('June')],
+        ['7', t('July')], ['8',t('August')], ['9', t('September')],
+        ['10', t('October')], ['11', t('November')],
+        ['12', t('December')]
+      ];
+      if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
+        start_date = moment(this.filters.daterange.start);
+        end_date = moment(this.filters.daterange.end);
+        period = start_date.format('DD-MM-YYYY') + ' <==> ' + end_date.format('DD-MM-YYYY')
+      } else {
+        period = ''
+        if(this.filters.months.length !== 0){
+            months = this.filters.months;
+            period = months.map(function(month){return month_names[month][1]}).join(', ')
+        }
+        if(this.filters.years.length !== 0){
+            years = this.filters.years;
+            if (period !== '') period += ' <==> '
+            period += years.join(', ')
+        }
+      }
+      var all_stations = Object.keys(this.irideon_data_by_station);
+      all_stations.sort();
+      var show_total = $('#irideon_species').val().length > 1;
+      var data_table = '<table>';
+      // table header
+      table_header = '<thead>';
+      table_header += '<tr><th></th>';
+      var species_header = $('#irideon_species').val().map(function(val){
+        return '<th i18n="layer.' + val + '" class="center">' + val + '</th>';
+      }).join('');
+      table_header += species_header ;
+      if (show_total) table_header += '<th i18n="map.total" class="center">Total</th>';
+      table_header += '</tr></thead>';
+      // body
+      var table_body = '<tbody>';
+      var total_by_species = [];
+      var table_data = $('#irideon_species_sex').val().map(function(val) {
+        var tr = '<tr><td i18n="map.' + val + '-sex-label" class="right">' + val + '</td>';
+        var total_by_sex = 0;
+        $('#irideon_species').val().forEach(function(item, idx) {
+          total_by_sex += totals[item][val];
+          if (typeof total_by_species[idx] === 'undefined') total_by_species[idx] = 0;
+          total_by_species[idx] += totals[item][val];
+          tr += '<td class="center">' + totals[item][val] + '</td>';
+        });
+        if (show_total) tr += '<th class="center">' + total_by_sex + '</th></tr>';
+        return tr;
+      }).join('');
+      if ($('#irideon_species_sex').val().length > 1) {
+        table_data += '<tr><th class="right" i18n="map.total">Total</th><th class="center">';
+        table_data += total_by_species.join('</th><th class="center">');
+        if (show_total) table_data += '</th><th class="center">' + total_by_species.reduce(function(a, b) {return a + b});
+        table_data += '</th></tr>';
+      }
+      table_body += table_data + '</tbody>';
+      data_table += table_header + table_body + '</table>';
+      this.trap_panel.append(tpl({
+        'trap_name': stations.join(', '),
+        'data_table': data_table,
+        'filter_date': period,
+        'total': total,
+        'stations': all_stations
+      }));
+      // select active stations on the station picker
+      $('select#trap_stations option').each(function(idx, station) {
+        let title = $(station).html();
+        if (stations.indexOf(title) !== -1) {
+          $(station).attr('selected', 'true');
+        }
+      });
+      // Do all traps in view
+      $('#traps_in_view').on('click', function(event) {
+        var features = [];
+        this.map.eachLayer( function(layer) {
+          if(layer instanceof L.Marker) {
+            if (typeof layer.options.station !== 'undefined') {
+              if(map.getBounds().contains(layer.getLatLng())) {
+                features.push(layer.options.station);
+              }
+            }
+          }
+        });
+        this.irideonShowReport(features.sort());
+      }.bind(this));
+      var columns = [labels];
+      Object.keys(data).forEach(function(species){
+        columns.push(data[species]);
+      });
+      this.trap_chart_data = columns;
+      var colors = {}
+      colors[window.t('layer.tig')] = '#e10f21';
+      colors[window.t('layer.tig') + ' - ' + window.t('map.m-sex-label')] = '#e10f21';
+      colors[window.t('layer.tig') + ' - ' + window.t('map.f-sex-label')] = '#e10f21';
+      colors[window.t('layer.cul')] = '#a24f96';
+      colors[window.t('layer.cul') + ' - ' + window.t('map.m-sex-label')] = '#a24f96';
+      colors[window.t('layer.cul') + ' - ' + window.t('map.f-sex-label')] = '#a24f96';
+      colors[window.t('layer.zik')] = '#008c3a';
+      colors[window.t('layer.zik') + ' - ' + window.t('map.m-sex-label')] = '#008c3a';
+      colors[window.t('layer.zik') + ' - ' + window.t('map.f-sex-label')] = '#008c3a';
+
+      var species = $('#irideon_species').val();
+      var legend = true;
+      if (species.length === 1) legend = false;
+
+      this.trap_chart = c3.generate({
+        bindto: '#traps-chart',
+        size: {width: 460, height: 240},
+        legend: { show: legend },
+        data: {
+          x: 'x',
+          columns: [],
+          colors: colors,
+        },
+        axis: {
+            x: {
+              label: {
+                text: t('map.observation_date'),
+                position: 'outer-center'
+              },
+              type: 'timeseries',
+              tick: {
+                  format: '%Y-%m-%d',
+                  rotate: -30,
+              }
+            },
+            y: {
+              label: {
+                text: t('layer.irideon.number'),
+                position: 'outer-middle'
+              }
+            }
+        },
+      });
+      var sex = $('#irideon_species_sex').val();
+      if (sex.length === 1) {
+        $('#trap-chart-filters').css('display', 'none');
+      }
+      else $('#trap-chart-filters').css('display', 'block');
+
+      setTimeout(function() {
+        this.irideonLoadChartData(sex);
+      }.bind(this), 300);
+
+      $('#trap-chart-filters input').on('click', function(event) {
+        const selection = $(event.currentTarget).val();
+        this.irideonLoadChartData(selection);
+      }.bind(this));
+      this.trap_uptime_chart_data = pulses;
+
+      // add the mean values of each uptime serie
+      var uptime_data = [];
+      var colors = ['#191970', '#ffb6c1', '#ff0000', '#ffd700', '#00ff00', '#00ffff', '#ff00ff', '#006400'];
+      var used_colors = {};
+      pulses.forEach(function(serie, idx) {
+        var total = serie.reduce(function(o, i) {
+          if (typeof o === 'string') o = 0;
+          return i + o;
+        });
+        var number = serie.reduce(function(a, b) {
+          if (a !== null && b !== null) {
+            if (typeof a === 'string') return 1;
+            else return a + 1;
+          } else {
+            return a;
+          }
+        });
+        var mean = Math.round(total/number * 100);
+        serie[0] = serie[0] + ' (' + t('label.mean').toLowerCase() + ' = ' + (mean) + '%)';
+        used_colors[serie[0]] = colors[idx];
+      });
+
+      this.uptime_trap_chart = c3.generate({
+        bindto: '#traps-uptime-chart',
+        size: {width: 460, height: 240},
+        legend: { show: true },
+        data: {
+          x: 'x',
+          columns: [labels_pulses].concat(pulses).concat(uptime_data),
+          colors: used_colors,
+        },
+        axis: {
+            x: {
+              label: {
+                text: t('map.observation_date'),
+                position: 'outer-center'
+              },
+              type: 'timeseries',
+              tick: {
+                  format: '%Y-%m-%d',
+                  rotate: -30,
+              }
+            },
+            y: {
+              label: {
+                text: t('layer.irideon.uptime'),
+                position: 'outer-middle'
+              },
+              max: 1,
+              min: 0,
+              padding: {top: 5, bottom: 5},
+              tick:{
+                  format: d3.format(',.0%')
+              }
+            }
+        }
+      });
+
+      window.t().translate($('html').attr('lang'), this.trap_panel);
+      $('select#trap_stations').selectpicker({liveSearch: true});
+      $('select#trap_stations').on('hide.bs.select', function(event) {
+        let selected_stations = $('select#trap_stations').val();
+        this.irideonShowReport(selected_stations);
+      }.bind(this));
+
+      $('.trap-details .download').on('click', function(event) {
+        // saveCSV(this.trap_chart_data);
+        var metadata_file = this.LAYERS_CONF[this.getLayerPositionFromKey('Y')].metadata_file;
+        $.ajax(metadata_file, {
+          'complete': function(result) {
+            var metadata = result.responseText;
+            if (result.status !== 200) {
+              metadata = t('map.trap-download-metadata');
+            }
+            saveTrapData(this.trap_chart_data.concat(this.trap_uptime_chart_data), metadata);
+          }.bind(this)
+        });
+      }.bind(this));
+      $('#add_trap_stations_button').on('click', function(event) {
+        $('#add_trap_stations').toggleClass('visible');
+        $('#trap-count').toggleClass('visible');
+      });
+    },
+
+    irideonLoadChartData: function(filter) {
+      var columns = [];
+      if (typeof filter === 'undefined') filter = 'all';
+      if (typeof filter === 'object') {
+        if (filter.length === 2) filter = 'all';
+        if (filter.length === 1) {
+          if (filter[0] === 'm') filter = 'male';
+          if (filter[0] === 'f') filter = 'female';
+        }
+      }
+      if (filter === 'all' || true) {
+        var title = false;
+        var data_copy = $.extend(true, [], this.trap_chart_data);
+        data_copy.forEach(function(serie, idx) {
+          if (idx === 0) columns.push(serie);
+          else {
+            let label = serie[0];
+            let sex = 'all';
+            if (label.indexOf(' - ') !== -1) {
+              sex = label.substring(label.indexOf(' - ') + 3);
+              if (sex.trim() === window.t('map.m-sex-label')) sex = 'male';
+              if (sex.trim() === window.t('map.f-sex-label')) sex = 'female';
+              if (filter === 'all') {
+                label = label.substring(0, label.indexOf(' - '));
+              }
+            }
+            serie[0] = label;
+            if (label !== title) {
+              title = label;
+              if (filter === 'all' || filter === sex) {
+                columns.push(serie);
+              }
+            } else {
+              serie.forEach(function(data, idx2) {
+                if (idx2 !== 0) {
+                  if (filter === 'all' || filter === sex) {
+                    columns[columns.length - 1][idx2] = parseInt(columns[columns.length - 1][idx2]) + parseInt(data);
+                  }
+                }
+              })
+            }
+          }
+        });
+      }
+      this.trap_chart.load({
+        columns: columns,
+        unload: true,
+      })
     },
 
     epidemiology_filter: function() {

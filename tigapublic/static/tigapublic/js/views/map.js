@@ -103,6 +103,7 @@
 
         this.addPanelMoreinfoControl();
         this.addPanelReport();
+        this.addTrapReport();
         this.addPanelEpidemiology();
         this.addPanelShareControl();
 
@@ -213,10 +214,15 @@
 
         this.filters.on('changed', function(filter) {
           //filter epidata
-          if (this.hasDateFilterChanged(filter)
-              && (this.map.hasLayer(this.epidemiology_layer)) ) {
-              this.epidemiology_filter();
+          if (this.hasDateFilterChanged(filter)){
+              if (this.map.hasLayer(this.epidemiology_layer))  {
+                  this.epidemiology_filter();
+              }
+              if (this.map.hasLayer(this.irideon_layer))  {
+                  this.irideon_filter();
+              }
           }
+
           var newCallFilters = [
             'notif', 'hashtag', 'notif_types', 'municipalities', 'daterange'
           ];

@@ -229,5 +229,37 @@ add = {
     '<li><b>Disease probability</b>: Prediction models for arboviral diseases in Catalan municipalities. More details on the map layer, [?] button.</li>' +
     '</ul>',
   'layer.predictionmodels.viruscontent' : 'Risk prediction models for arboviral diseases in Catalan municipalities. Probabilities are estimated considering information about imported cases as well as climate variables, mosquito abundance and socio economical factors. The models have been developed on the project Plataforma Integral per al Control d’Arbovirosis a Catalunya (PICAT), coordinated by Vall d’Hebron Institut de Recerca (VHIR) in collaboration with the Agencia de Salud Pública de Cataluña (ASPCAT), ISGlobal and Mosquito Alert.',
+
+  //Irideon traps
+  'layer.iridion_traps': 'Irideon Traps',
+  'layer.iridion_traps_description':'....',
+  'layer.irideon.species-sex':'Sex',
+  'map.trap-details-title': 'Mosquito captures',
+  'map.station-label': 'Station',
+  'map.filters-label': 'Filters',
+  'map.species-label': 'Species',
+  'map.m-sex-label':'Male',
+  'map.f-sex-label':'Female',
+  'layer.tig': 'Tiger mosquito',
+  'layer.cul': 'Culex pipiens',
+  'layer.zik': 'Yellow fever mosquito',
+  'map.period-label': 'Period',
+  'map.total':'Total',
+  'map.trap-number-captures': 'Number of captures by species and sex',
+  'map.global-chart': 'Number of captures by species and day',
+  'map.global-chart-add-stations-title': 'Add stations to this report',
+  'map.global-chart-add-view-stations': 'Use the stations on the current map view',
+  'map.global-chart-add-map-stations-help': 'You can add and remove stations by selecting them with Crtl+Click on the map. You can also add and remove them with the following list:',
+  'map.all-label': 'All',
+  'map.download-csv': 'Download the data (CSV)',
+  'map.trap-download-metadata': `
+    Això és una prova per veure si va així.
+
+    Posant salts de línia i tal.
+  `,
+  'layer.irideon.number': 'Number of captures',
+  'layer.iriden.uptime-chart': 'Stations\' uptime percentage',
+  'layer.irideon.uptime': 'Uptime',
+  'label.mean': 'Mean'
 };
 _.extend(trans.en, add);
