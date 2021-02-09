@@ -376,44 +376,37 @@ var MapView = MapView.extend({
         if (selected_species!==null && selected_sex!==null){
 
           this.irideon_data.forEach(function(val, index, arr){
-          //check if irideon data should show in map
-          if (val.record_time!==null
-                && selected_species.indexOf(val.spc)!==-1
-                && selected_sex.indexOf(val.sex)!==-1
-             ){
-
-              let client_name = val.client_name;
-              if (val.client_name.indexOf(' (') !== -1) {
-                  //remove parenthesis content from client_name
-                  client_name = val.client_name.substring(0, val.client_name.indexOf(' ('));
-              }
-              if (!(client_name in irideonLabels)){
-                  irideonLabels[client_name] = 0;
-                  estations[client_name]={'lat': val.lat, 'lon': val.lon}
-                  _this.irideon_data_by_station[client_name] = [];
-              }
-
-              if (_this.irideonDataPassesFilters(val, years, months, start_date, end_date)){
-                  //update counter
-                  irideonLabels[client_name] = irideonLabels[client_name] + 1;
-                  _this.irideon_data_by_station[client_name].push(val);
-              }
-          } else {
-            if (_this.irideonDataPassesFilters(val, years, months, start_date, end_date)){
-              let client_name = val.client_name;
-              if (val.client_name.indexOf(' (') !== -1) {
-                  //remove parenthesis content from client_name
-                  client_name = val.client_name.substring(0, val.client_name.indexOf(' ('));
-              }
-              if (!(client_name in _this.irideon_pulses_by_station)) {
-                  _this.irideon_pulses_by_station[client_name] = [];
-              }
-              _this.irideon_pulses_by_station[client_name].push(val);
+            //check if irideon data should show in map
+            let client_name = val.client_name;
+            if (val.client_name.indexOf(' (') !== -1) {
+                //remove parenthesis content from client_name
+                client_name = val.client_name.substring(0, val.client_name.indexOf(' ('));
             }
-          }
-        });
+            if (!(client_name in irideonLabels)){
+                irideonLabels[client_name] = 0;
+                estations[client_name]={'lat': val.lat, 'lon': val.lon}
+                _this.irideon_data_by_station[client_name] = [];
+                _this.irideon_pulses_by_station[client_name] = [];
+            }
+            // Si són dades de captures de mosquits:
+            if (val.record_time!==null
+                  && selected_species.indexOf(val.spc)!==-1
+                  && selected_sex.indexOf(val.sex)!==-1
+               ) {
+                if (_this.irideonDataPassesFilters(val, years, months, start_date, end_date)){
+                    //update counter
+                    irideonLabels[client_name] = irideonLabels[client_name] + 1;
+                    _this.irideon_data_by_station[client_name].push(val);
+                }
+            // Si són pulses:
+            } else {
+              if (_this.irideonDataPassesFilters(val, years, months, start_date, end_date)){
+                _this.irideon_pulses_by_station[client_name].push(val);
+              }
+            }
+          });
 
-        this.irideon_stations = estations;
+          this.irideon_stations = estations;
           this.drawIrideonMarkers(irideonLabels, estations, autozoom)
         }
     },
@@ -540,8 +533,8 @@ var MapView = MapView.extend({
         }.bind(this));
       }
       if (this.filters.daterange && typeof this.filters.daterange !== 'undefined') {
-        windows.push([this.filters.daterange.start.format('YYYY/MM/DD'),
-                      this.filters.daterange.end.format('YYYY/MM/DD')]);
+        windows.push([moment(this.filters.daterange.start).format('YYYY/MM/DD'),
+                      moment(this.filters.daterange.end).format('YYYY/MM/DD')]);
       }
       return windows;
     },
@@ -653,6 +646,7 @@ var MapView = MapView.extend({
         }
 
         // search the data for this day
+        if (!raw_data.length) return {data: data, labels: labels};
         let day = moment(raw_data[pointer].record_time);
         while (day.isBefore(oldest, 'day')) {
           ++pointer;
@@ -1101,7 +1095,6 @@ var MapView = MapView.extend({
 
     addEpidemiologyLayer: function(){
       _this = this;
-
       //Icon properties
       $.ajax({
           type: "GET",
@@ -1897,5 +1890,4 @@ var MapView = MapView.extend({
       else value='N';
       return value;
     }
-
 });
