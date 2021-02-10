@@ -253,9 +253,25 @@ add = {
   'map.all-label': 'All',
   'map.download-csv': 'Download the data (CSV)',
   'map.trap-download-metadata': `
-    Això és una prova per veure si va així.
+      DETAILED FIELD DESCRIPTION
 
-    Posant salts de línia i tal.
+        1. Description of each field found in the chart_data.csv table downloaded from "User Layers" in MA' map.
+
+            *date* text type,  daily date relative to the species counting. Format as YYYY-MM-DD. Example: "2020-08-07"
+            *albopictus_male* integer type, daily count of Aedes Albopictus male
+            *albopictus_female* integer type, daily count of Aedes Albopictus female
+            *aegypti_male* integer type, daily count of Aedes Aegypti male (vector of Zika virus)
+            *aegypti_female* integer type, daily count of Aedes Aegypti female (vector of Zika virus)
+            *culex_male* integer type, daily count of Culex Pipiens male
+            *culex_female* integer type, daily count of Culex Pipiens female
+            *"station"* number type, fraction value of daily operation time of a "station". "station" is substituted by name identifier for the selected station (sensor). An active station sends every 30 min a test-pulse to inform if it is working properly. For example, if a station is working properly 100% of the day, this means that 48 test-pulses are registered. Mobile connection problems may lower sensor's operation to 95-80%, while maintenance could imply a short period of 0% operation.
+
+        2. Source and authorship of data
+
+            URL: https://senscape.eu
+            Creator name: Irideon S.L.
+            Creator address: Av. Josep Tarradellas 38, 08029, Barcelona, Spain
+            Licence: This data set is owned by the Barcelona Public Health Agency (ASPB) and is considered confidential. Only uses explicitly allowed by the ASPB are permitted. Therefore, to use this dataset you need the specific consent of the ASPB. Contact tmontal@aspb.cat.
   `,
   'layer.irideon.number': 'Number of captures',
   'layer.iriden.uptime-chart': 'Stations\' uptime percentage',
