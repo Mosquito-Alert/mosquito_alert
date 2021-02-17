@@ -2614,8 +2614,24 @@ class Award(models.Model):
         else:
             return self.special_award_text
 
+
 class OWCampaigns(models.Model):
+    """
+    This model contains the information about Overwintering campaigns. Each campaign takes place in a given country,
+    over a period of time. In a given country at a given period, only one campaign can be active.
+    """
     country = models.ForeignKey('tigaserver_app.EuropeCountry', related_name="campaigns", help_text='Country in which the campaign is taking place', on_delete=models.DO_NOTHING, )
     posting_address = models.TextField(help_text='Full posting address of the place where the samples will be sent')
     campaign_start_date = models.DateTimeField(help_text='Date when the campaign starts. No samples should be collected BEFORE this date.')
     campaign_end_date = models.DateTimeField(help_text='Date when the campaign ends. No samples should be collected AFTER this date.')
+
+
+class OrganizationPin(models.Model):
+    """
+    This model is queryable via API, it's meant to represent a list of organizations with a geographical location.
+    Each of these organizations has a link to a web page with the detailed information. The text in textual_description
+    should be shown in a pin dialog in a map
+    """
+    point = models.PointField(srid=4326)
+    textual_description = models.TextField(help_text='Text desription on the pin. This text is meant to be visualized as the text body of the dialog on the map')
+    page_url = models.URLField(help_text='URL link to the organization page')

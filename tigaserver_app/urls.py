@@ -15,6 +15,7 @@ router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_repor
 router.register(r'all_reports_paginated', views.AllReportsMapViewSetPaginated, base_name='all_reports_paginated')
 router.register(r'hidden_reports', views.NonVisibleReportsMapViewSet, base_name='hidden_reports')
 router.register(r'owcampaigns', views.OWCampaignsViewSet, base_name='owcampaigns')
+router.register(r'organizationpins', views.OrganizationsPinViewSet, base_name='organizationpins')
 # There was some sort of uncontrolled caching happening here. To avoid it, I build the resultset
 # record by record. This is slower. I don't care.
 #router.register(r'cfa_reports', views.CoarseFilterAdultReports, base_name='cfa_reports')
