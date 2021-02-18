@@ -3,6 +3,7 @@ from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns
 from django.contrib.auth.models import User
+from tigaserver_app.questions_table import data as the_translation_key
 
 def score_label(score):
     if score > 66:
@@ -127,15 +128,30 @@ class ReportListingField(serializers.RelatedField):
 
 
 class FullReportResponseSerializer(serializers.ModelSerializer):
+
+    translated_question = serializers.SerializerMethodField()
+    translated_answer = serializers.SerializerMethodField()
+
     class Meta:
         model = ReportResponse
         fields = '__all__'
+
+    def get_translated_question(self, obj):
+        report_lang = obj.report.app_language
+        lang_table = the_translation_key.get(report_lang, the_translation_key['en'])
+        return lang_table.get(obj.question,'')
+
+    def get_translated_answer(self, obj):
+        report_lang = obj.report.app_language
+        lang_table = the_translation_key.get(report_lang, the_translation_key['en'])
+        return lang_table.get(obj.answer, '')
 
 
 class ReportResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportResponse
         fields = ['question', 'answer', 'question_id', 'answer_id', 'answer_value']
+
 
 class ReportSerializer(serializers.ModelSerializer):
 
