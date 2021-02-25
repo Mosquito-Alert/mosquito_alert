@@ -13,7 +13,10 @@ router.register(r'fixes', views.FixViewSet)
 router.register(r'coverage_month', views.CoverageMonthMapViewSet, base_name='coverage_month')
 router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_reports')
 router.register(r'all_reports_paginated', views.AllReportsMapViewSetPaginated, base_name='all_reports_paginated')
-router.register(r'hidden_reports', views.NonVisibleReportsMapViewSet, base_name='hidden_reports')
+# This is no longer used, see url('hidden_reports/$', views.non_visible_reports),
+# This line caused the NonVisibleReportsMapViewSet to be executed on app start. This is avoided
+# by using the new non_visible_reports endpoint, which does exactly the same
+#router.register(r'hidden_reports', views.NonVisibleReportsMapViewSet, base_name='hidden_reports')
 router.register(r'owcampaigns', views.OWCampaignsViewSet, base_name='owcampaigns')
 # There was some sort of uncontrolled caching happening here. To avoid it, I build the resultset
 # record by record. This is slower. I don't care.
@@ -22,6 +25,7 @@ router.register(r'owcampaigns', views.OWCampaignsViewSet, base_name='owcampaigns
 router.register(r'tags', views.TagViewSet, base_name='tags')
 
 urlpatterns = [
+    url('hidden_reports/$', views.non_visible_reports),
     url('time_info/$', views.get_data_time_info),
     url('score_v2/$', views.user_score_v2),
     url('photos/$', views.post_photo),
