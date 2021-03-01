@@ -2597,7 +2597,8 @@ class Notification(models.Model):
 class AcknowledgedNotification(models.Model):
     user = models.ForeignKey(TigaUser, related_name="user_acknowledgements",help_text='User which has acknowledged the notification', on_delete=models.DO_NOTHING, )
     notification = models.ForeignKey(Notification, related_name="notification_acknowledgements",help_text='The notification which has been acknowledged or not', on_delete=models.DO_NOTHING, )
-    acknowledged = models.BooleanField(default=True, help_text='This is set to True through the public API, when the user signals that the message has been received')
+    # no explicit ack field. If there is a row in this table, it has been acked
+    #acknowledged = models.BooleanField(default=True, help_text='This is set to True through the public API, when the user signals that the message has been received')
 
 
 class NotificationTopic(models.Model):

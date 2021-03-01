@@ -17,7 +17,7 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, SentNotification, AcknowledgedNotification
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -987,6 +987,30 @@ def custom_render_notification_queryset(queryset,locale):
         content.append(custom_render_notification(notification,locale))
     return content
 
+def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
+    content = []
+    ack_ids = [ a.notification.id for a in acknowledged_queryset ]
+    for sent_notif in queryset:
+        notification = sent_notif.notification
+        expert_comment = notification.notification_content.get_title_locale_safe(locale)
+        expert_html = notification.notification_content.get_body_locale_safe(locale)
+        this_content = {
+            'id': notification.id,
+            'report_id': notification.report.version_UUID,
+            'user_id': sent_notif.sent_to_user.user_UUID,
+            'user_score': sent_notif.sent_to_user.score,
+            'user_score_label': score_label(sent_notif.sent_to_user.score),
+            'expert_id': notification.expert.id,
+            'date_comment': notification.date_comment,
+            'expert_comment': expert_comment,
+            'expert_html': expert_html,
+            'acknowledged': True if sent_notif.notification.id in ack_ids else False,
+            'public': notification.public,
+        }
+        content.append(this_content)
+    return content
+
+
 @api_view(['GET','POST','DELETE','PUT'])
 def user_notifications(request):
     if request.method == 'GET':
@@ -995,16 +1019,22 @@ def user_notifications(request):
         acknowledged = 'ignore'
         if request.query_params.get('acknowledged') != None:
             acknowledged = request.query_params.get('acknowledged', False)
-        all_notifications = Notification.objects.all()
+        #all_notifications = Notification.objects.all()
+        all_notifications = SentNotification.objects.all().select_related('notification')
         if user_id == -1:
             raise ParseError(detail='user_id is mandatory')
         else:
-            all_notifications = all_notifications.filter(user_id=user_id).order_by('-date_comment')
+            all_notifications = all_notifications.filter(sent_to_user__user_UUID=user_id).order_by('-notification__date_comment')
+        acknowledgements = AcknowledgedNotification.objects.filter(user__user_UUID=user_id)
         if acknowledged != 'ignore':
             ack_bool = string_par_to_bool(acknowledged)
-            all_notifications = all_notifications.filter(acknowledged=ack_bool).order_by('-date_comment')
+            acknowledged_notifs = acknowledgements.values('notification')
+            if ack_bool is True:
+                all_notifications = all_notifications.filter(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
+            else:
+                all_notifications = all_notifications.exclude(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
         #serializer = NotificationSerializer(all_notifications)
-        content = custom_render_notification_queryset(all_notifications,locale)
+        content = custom_render_sent_notifications(all_notifications, acknowledgements, locale)
         #return Response(serializer.data)
         return Response(content)
     if request.method == 'POST':
