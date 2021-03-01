@@ -2537,6 +2537,7 @@ class NotificationContent(models.Model):
     title_es = models.TextField(help_text='Title of the comment, shown in non-detail view, in spanish')
     title_ca = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in catalan')
     title_en = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in english')
+    predefined_available_to = models.ForeignKey(User, blank=True, null=True, related_name="predefined_notifications", help_text='If this field is not null, this notification is predefined - the predefined map notifications will go here. This field indicates the expert to which the notification is available', on_delete=models.DO_NOTHING, )
 
     def get_title_locale_safe(self, locale):
         if locale.lower().startswith('es'):
@@ -2578,9 +2579,9 @@ class NotificationContent(models.Model):
         # else:
         #     return self.body_html_es
 
+
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.DO_NOTHING, )
-    user = models.ForeignKey(TigaUser, related_name="user_notifications", help_text='User to which the notification will be sent', on_delete=models.DO_NOTHING, )
     expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification', on_delete=models.DO_NOTHING, )
     date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
@@ -2589,8 +2590,32 @@ class Notification(models.Model):
     expert_comment = models.TextField('Expert comment', help_text='Text message sent to user')
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
-    acknowledged = models.BooleanField(default=False,help_text='This is set to True through the public API, when the user signals that the message has been received')
-    public = models.BooleanField(default=False,help_text='Whether the notification is shown in the public map or not')
+    public = models.BooleanField(default=False, help_text='Whether the notification is shown in the public map or not')
+    map_notification = models.BooleanField(default=False, help_text='Flag field to help discriminate notifications which have been issued from the map')
+
+
+class AcknowledgedNotification(models.Model):
+    user = models.ForeignKey(TigaUser, related_name="user_acknowledgements",help_text='User which has acknowledged the notification', on_delete=models.DO_NOTHING, )
+    notification = models.ForeignKey(Notification, related_name="notification_acknowledgements",help_text='The notification which has been acknowledged or not', on_delete=models.DO_NOTHING, )
+    acknowledged = models.BooleanField(default=True, help_text='This is set to True through the public API, when the user signals that the message has been received')
+
+
+class NotificationTopic(models.Model):
+    topic_code = models.CharField(max_length=100, help_text='Code for the topic.')
+    topic_description = models.TextField(help_text='Description for the topic, in english.')
+
+
+class UserSubscription(models.Model):
+    user = models.ForeignKey(TigaUser, related_name="user_subscriptions", help_text='User which is subscribed to the topic', on_delete=models.DO_NOTHING, )
+    topic = models.ForeignKey(NotificationTopic, related_name="topic_users", help_text='Topics to which the user is subscribed', on_delete=models.DO_NOTHING, )
+
+
+class SentNotification(models.Model):
+    sent_to_user = models.ForeignKey(TigaUser, null=True, blank=True, related_name="user_sentnotifications", help_text='User to which the notification was sent', on_delete=models.DO_NOTHING, )
+    sent_to_topic = models.ForeignKey(NotificationTopic, null=True, blank=True, related_name="topic_sentnotifications", help_text='Topic to which the notification was sent.', on_delete=models.DO_NOTHING, )
+    #both sent_to_user and sent_to_topic can be null, but they can't be null at the same time. In other words, a sending
+    #you either send a notification to a user, or to a group of users via topics
+    notification = models.ForeignKey(Notification, related_name="notification_sendings", help_text='The notification which has been sent', on_delete=models.DO_NOTHING, )
 
 
 class AwardCategory(models.Model):

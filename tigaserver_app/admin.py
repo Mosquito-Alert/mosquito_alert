@@ -276,7 +276,8 @@ class CoverageAreaAdmin(admin.ModelAdmin):
 
 
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('report', 'user', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url', 'acknowledged')
+    #list_display = ('report', 'user', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url', 'acknowledged')
+    list_display = ('report', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url')
     search_fields = ['report__version_UUID','user__user_UUID']
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
