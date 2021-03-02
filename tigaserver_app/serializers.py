@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, AcknowledgedNotification
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 
@@ -419,6 +419,12 @@ class TigaProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TigaProfile
         fields = ('id', 'firebase_token', 'score', 'profile_devices')
+
+
+class AcknowledgedNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcknowledgedNotification
+        fields = '__all__'
 
 
 class DetailedReportSerializer(serializers.ModelSerializer):

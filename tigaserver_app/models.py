@@ -2600,6 +2600,9 @@ class AcknowledgedNotification(models.Model):
     # no explicit ack field. If there is a row in this table, it has been acked
     #acknowledged = models.BooleanField(default=True, help_text='This is set to True through the public API, when the user signals that the message has been received')
 
+    class Meta:
+        unique_together = ( 'user', 'notification', )
+
 
 class NotificationTopic(models.Model):
     topic_code = models.CharField(max_length=100, help_text='Code for the topic.')

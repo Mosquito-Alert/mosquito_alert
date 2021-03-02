@@ -16,7 +16,7 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, AcknowledgedNotificationSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, SentNotification, AcknowledgedNotification
 from math import ceil
 from taggit.models import Tag
@@ -614,6 +614,39 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+class AcknowledgedNotificationFilter(filters.FilterSet):
+    class Meta:
+        model = AcknowledgedNotification
+        fields = ['user', 'notification']
+
+
+class AcknowledgedNotificationViewSetPaginated(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet ):
+    queryset = AcknowledgedNotification.objects.all().select_related('notification').select_related('user')
+    serializer_class = AcknowledgedNotificationSerializer
+    filter_class = AcknowledgedNotificationFilter
+    pagination_class = StandardResultsSetPagination
+
+
+
+@api_view(['DELETE'])
+def mark_notif_as_ack(request):
+    user = request.query_params.get('user','-1')
+    notif = request.query_params.get('notif', -1)
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    if notif == -1:
+        raise ParseError(detail='notif param is mandatory')
+    try:
+        ack_notif = AcknowledgedNotification.objects.get(user=user,notification=notif)
+        ack_notif.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except AcknowledgedNotification.DoesNotExist:
+        raise ParseError(detail='Acknowledged not found')
+
+
+
+
+
 class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
         non_visible_report_id = []
@@ -1046,9 +1079,6 @@ def user_notifications(request):
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
         notification_content = this_notification.notification_content
-        ack = 'ignore'
-        if request.query_params.get('acknowledged') is not None:
-            ack = request.query_params.get('acknowledged', True)
         body_html_es = request.query_params.get('body_html_es', '-1')
         title_es = request.query_params.get('title_es', '-1')
         body_html_ca = request.query_params.get('body_html_ca', '-1')
@@ -1068,9 +1098,6 @@ def user_notifications(request):
             notification_content.body_html_es = body_html_es
         if title_es != '-1':
             notification_content.title_es = title_es
-        if ack != 'ignore':
-            ack_bool = string_par_to_bool(ack)
-            this_notification.acknowledged = ack_bool
         if public != '-1':
             public_bool = string_par_to_bool(public)
             this_notification.public = public_bool
