@@ -16,8 +16,8 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, AcknowledgedNotificationSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, SentNotification, AcknowledgedNotification
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -36,6 +36,8 @@ import tigaserver_project.settings as conf
 import copy
 from django.db import connection
 from django.core.paginator import Paginator, EmptyPage
+from django.db import transaction
+from django.db.utils import IntegrityError
 import time
 
 from celery.task.schedules import crontab
@@ -645,6 +647,49 @@ def mark_notif_as_ack(request):
 
 
 
+@api_view(['POST'])
+def subscribe_to_topic(request):
+    code = request.query_params.get('code','-1')
+    user = request.query_params.get('user','-1')
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    if code == '-1':
+        raise ParseError(detail='code param is mandatory')
+    n = None
+    usr = None
+    try:
+        n = NotificationTopic.objects.get(topic_code=code)
+    except NotificationTopic.DoesNotExist:
+        n = NotificationTopic(topic_code=code)
+        n.save()
+    try:
+        usr = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='no user with id')
+
+    try:
+        with transaction.atomic():
+            sub = UserSubscription(user=usr, topic=n)
+            sub.save()
+            serializer = UserSubscriptionSerializer(sub)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+    except IntegrityError:
+        raise ParseError(detail='Subscription already exists')
+
+
+@api_view(['GET'])
+def topics_subscribed(request):
+    user = request.query_params.get('user', '-1')
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    usr = None
+    try:
+        usr = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='no user with this id')
+    subs = UserSubscription.objects.filter(user=user)
+    serializer = UserSubscriptionSerializer(subs,many=True)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, AcknowledgedNotification
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, AcknowledgedNotification, UserSubscription
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 
@@ -400,11 +400,24 @@ class NotificationSerializer(serializers.ModelSerializer):
     acknowledged = serializers.BooleanField()
     notification_content = NotificationContentSerializer()
     public = serializers.BooleanField()
+    map_notification = serializers.BooleanField()
 
     class Meta:
         model = Notification
         #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
-        fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
+        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
+        fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'map_notification')
+
+
+class UserSubscriptionSerializer(serializers.ModelSerializer):
+    topic_code = serializers.SerializerMethodField()
+
+    def get_topic_code(self,obj):
+        return obj.topic.topic_code
+
+    class Meta:
+        model = UserSubscription
+        fields = ('id','user','topic','topic_code')
 
 
 class TigaUserSerializer(serializers.ModelSerializer):

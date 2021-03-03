@@ -2206,8 +2206,11 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
                 print(notification_content.body_html_en)
             '''
             notification_content.save()
-            notification = Notification(report=report, user=report.user, expert=super_movelab, notification_content=notification_content)
+            notification = Notification(report=report, expert=super_movelab, notification_content=notification_content)
             notification.save()
+
+            sent_notification = SentNotification(sent_to_user=report.user, notification=notification)
+            sent_notification.save()
 
             recipient = report.user
             if recipient.device_token is not None and recipient.device_token != '':
@@ -2612,6 +2615,9 @@ class NotificationTopic(models.Model):
 class UserSubscription(models.Model):
     user = models.ForeignKey(TigaUser, related_name="user_subscriptions", help_text='User which is subscribed to the topic', on_delete=models.DO_NOTHING, )
     topic = models.ForeignKey(NotificationTopic, related_name="topic_users", help_text='Topics to which the user is subscribed', on_delete=models.DO_NOTHING, )
+
+    class Meta:
+        unique_together = ( 'user', 'topic', )
 
 
 class SentNotification(models.Model):

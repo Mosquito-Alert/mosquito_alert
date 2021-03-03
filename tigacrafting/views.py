@@ -26,7 +26,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -555,7 +555,6 @@ def issue_notification(report_annotation,current_domain):
 
     notification_content.title_es = "¡Tu foto ha sido validada por un experto!"
     notification_content.title_ca = "La teva foto ha estat validada per un expert!"
-    title_en = _("your_picture_has_been_validated_by_an_expert")
     notification_content.title_en = get_translation_in("your_picture_has_been_validated_by_an_expert", locale_for_en)
 
     if report_annotation.report.get_final_photo_url_for_notification():
@@ -605,8 +604,13 @@ def issue_notification(report_annotation,current_domain):
         notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en).replace('&amp;', '&')
 
     notification_content.save()
-    notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
+    #notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
+    #no user in the notification, first we create the notification
+    notification = Notification(report=report_annotation.report, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
+    #and then we send it
+    sent_notification = SentNotification(sent_to_user=report_annotation.report.user,notification=notification)
+    sent_notification.save()
 
     recipient = report_annotation.report.user
     if recipient.device_token is not None and recipient.device_token != '':

@@ -2,7 +2,7 @@ from django.test import TestCase
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import Report, EuropeCountry
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic
 from django.core.management import call_command
 import PIL.Image
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -13,11 +13,16 @@ from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 from django.urls import reverse
 import io
 from rest_framework import status
+from tigacrafting.views import issue_notification
+from rest_framework.test import APIRequestFactory
+from django.db import transaction
+from django.db.utils import IntegrityError
 
+'''
 class PictureTestCase(APITestCase):
 
     def create_report_pool(self):
@@ -80,3 +85,160 @@ class PictureTestCase(APITestCase):
             img = PIL.Image.open(photo.photo.path)
             self.assertEqual(img._getexif(), None)
 
+'''
+
+class NotificationTestCase(APITestCase):
+
+    fixtures = ['reritja_like.json', 'awardcategory.json', 'europe_countries.json']
+
+    def setUp(self):
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        self.regular_user = t
+        non_naive_time = timezone.now()
+        a = 1
+        for country in EuropeCountry.objects.all():
+            point_on_surface = country.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+        self.reritja_user = User.objects.get(pk=25)
+        c_1 = Categories.objects.create(pk=1, name="Unclassified", specify_certainty_level=False)
+        c_1.save()
+        c_2 = Categories.objects.create(pk=2, name="Other species", specify_certainty_level=False)
+        c_2.save()
+        c_3 = Categories.objects.create(pk=3, name="Aedes albopictus", specify_certainty_level=True)
+        c_3.save()
+        c_4 = Categories.objects.create(pk=4, name="Aedes aegypti", specify_certainty_level=True)
+        c_4.save()
+        c_5 = Categories.objects.create(pk=5, name="Aedes japonicus", specify_certainty_level=True)
+        c_5.save()
+        c_6 = Categories.objects.create(pk=6, name="Aedes koreicus", specify_certainty_level=True)
+        c_6.save()
+        c_7 = Categories.objects.create(pk=7, name="Complex", specify_certainty_level=False)
+        c_7.save()
+        c_8 = Categories.objects.create(pk=8, name="Not sure", specify_certainty_level=False)
+        c_8.save()
+        c_9 = Categories.objects.create(pk=9, name="Culex sp.", specify_certainty_level=True)
+        c_9.save()
+
+        self.categories = [c_1, c_2, c_3, c_4, c_5, c_6, c_7, c_8, c_9]
+
+        self.validation_value_possible = 1
+        self.validation_value_confirmed = 2
+
+        t = NotificationTopic(topic_code="topic", topic_description="This is a test topic")
+        t.save()
+        self.topic = t
+
+
+    def test_auto_notification_report_is_issued_and_readable_via_api(self):
+        r = Report.objects.get(pk='1')
+
+        # this should cause issue_notification to be called
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r, category=self.categories[2], validation_complete=True, revise=True, validation_value=self.validation_value_confirmed)
+        anno_reritja.save()
+
+        issue_notification(anno_reritja, "http://127.0.0.1:8000")
+
+        # there should be a new Notification
+        self.assertEqual(Notification.objects.all().count(), 1)
+        # with its associated NotificationContent
+        self.assertEqual(NotificationContent.objects.all().count(), 1)
+
+        self.client.force_authenticate(user=self.reritja_user)
+        response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
+        self.client.logout()
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # it should answer with just one notification
+        self.assertEqual(len(response.data), 1)
+
+    def test_ack_notification(self):
+        r = Report.objects.get(pk='1')
+
+        # this should cause issue_notification to be called
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r,
+                                                             category=self.categories[2], validation_complete=True,
+                                                             revise=True,
+                                                             validation_value=self.validation_value_confirmed)
+        anno_reritja.save()
+
+        issue_notification(anno_reritja, "http://127.0.0.1:8000")
+        self.client.force_authenticate(user=self.reritja_user)
+        response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
+        # response should be ok
+        self.assertEqual( response.status_code, 200 )
+        # and the notification should be unread
+        self.assertEqual(response.data[0]['acknowledged'], False)
+        # mark it as read
+        notification_id = response.data[0]['id']
+        response = self.client.post('/api/ack_notif/',{'user':'00000000-0000-0000-0000-000000000000','notification':notification_id},format='json')
+        # should respond created
+        self.assertEqual(response.status_code, 201)
+        # try again
+        response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # and the notification should be read
+        self.assertEqual(response.data[0]['acknowledged'], True)
+        self.client.logout()
+
+    def test_subscribe_user_to_topic(self):
+        self.client.force_authenticate(user=self.reritja_user)
+        code = self.topic.topic_code
+        user = self.regular_user.user_UUID
+        response = self.client.post('/api/subscribe_to_topic/?code=' + code + '&user=' + user)
+        # should respond created
+        self.assertEqual(response.status_code, 201)
+        # try resubscribing
+        response = None
+        # this strange stuff is here because resubscribing throws an IntegrityError exception, which locks
+        # the database and breaks subsequent tests. To avoid this, we add the with transaction, which rolls back
+        # in case of exception
+        try:
+            with transaction.atomic():
+                response = self.client.post('/api/subscribe_to_topic/?code=' + code + '&user=' + user)
+        except IntegrityError:
+            pass
+        #should fail
+        self.assertEqual(response.status_code, 400)
+        self.client.logout()
+
+    def test_list_user_subscriptions(self):
+        self.client.force_authenticate(user=self.reritja_user)
+        user = self.regular_user.user_UUID
+        # we make up some topics
+        n1 = NotificationTopic(topic_code="ru", topic_description="This is a test topic")
+        n1.save()
+        n2 = NotificationTopic(topic_code="es", topic_description="This is a test topic")
+        n2.save()
+        n3 = NotificationTopic(topic_code="en", topic_description="This is a test topic")
+        n3.save()
+        n4 = NotificationTopic(topic_code="global", topic_description="This is a test topic")
+        n4.save()
+        topics = [self.topic, n1, n2, n3, n4]
+        for t in topics:
+            response = self.client.post('/api/subscribe_to_topic/?code=' + t.topic_code + '&user=' + user)
+            # should respond created
+            self.assertEqual(response.status_code, 201)
+
+        response = self.client.get('/api/topics_subscribed/?user=' + user)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # should be subscribed to t, n1, n2, n3 and n4
+        self.assertEqual(len(response.data), 5)
