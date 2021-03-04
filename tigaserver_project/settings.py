@@ -141,7 +141,6 @@ LANGUAGES = (
     ('it', _('Italian')),
     ('fr', _('French')),
     ('bg', _('Bulgarian')),
-    ('bg', _('Bulgarian')),
     ('ro', _('Romanian')),
     ('hr', _('Croatian')),
     ('mk', _('Macedonian')),
