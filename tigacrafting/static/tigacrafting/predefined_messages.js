@@ -1,7 +1,20 @@
 $(document).ready(function() {
+    function getTitleThroughId(id){
+        var btn_id = "#btn_" + id;
+        return $(btn_id).attr("title");
+    }
+
+    function copyToClipboard(element) {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(element).text()).select();
+        document.execCommand("copy");
+        $temp.remove();
+        var message_title = getTitleThroughId($(element)[0].id);
+        toastr.info("Message '" + message_title + "' copied to clipboard!");
+    }
     $('#lang_select option[value=en]').prop('selected', true);
     $('#species_select option[value=all]').prop('selected', true);
-    var boxes = ['nice_picture','yes_thorax_pattern','no_thorax_pattern','not_sure_photo','other_species','other_insect','conflict'];
     var set_messages = function(lang,species){
         for(var i = 0; i < boxes.length; i++){
             var key = boxes[i];
@@ -28,4 +41,9 @@ $(document).ready(function() {
         set_messages( lang, sp );
     });
     set_messages('en','all');
+    boxes.forEach(function(item,index){
+        $('#btn_' + item).click(function(){
+            copyToClipboard(document.getElementById(item));
+        })
+    });
 });
