@@ -2,7 +2,7 @@ from django.test import TestCase
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, SentNotification
 from django.core.management import call_command
 import PIL.Image
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -141,9 +141,9 @@ class NotificationTestCase(APITestCase):
         self.validation_value_possible = 1
         self.validation_value_confirmed = 2
 
-        t = NotificationTopic(topic_code="topic", topic_description="This is a test topic")
+        t = NotificationTopic(topic_code="global", topic_description="This is the global topic")
         t.save()
-        self.topic = t
+        self.global_topic = t
 
 
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
@@ -200,7 +200,7 @@ class NotificationTestCase(APITestCase):
 
     def test_subscribe_user_to_topic(self):
         self.client.force_authenticate(user=self.reritja_user)
-        code = self.topic.topic_code
+        code = self.global_topic.topic_code
         user = self.regular_user.user_UUID
         response = self.client.post('/api/subscribe_to_topic/?code=' + code + '&user=' + user)
         # should respond created
@@ -229,9 +229,7 @@ class NotificationTestCase(APITestCase):
         n2.save()
         n3 = NotificationTopic(topic_code="en", topic_description="This is a test topic")
         n3.save()
-        n4 = NotificationTopic(topic_code="global", topic_description="This is a test topic")
-        n4.save()
-        topics = [self.topic, n1, n2, n3, n4]
+        topics = [self.global_topic, n1, n2, n3]
         for t in topics:
             response = self.client.post('/api/subscribe_to_topic/?code=' + t.topic_code + '&user=' + user)
             # should respond created
@@ -240,5 +238,104 @@ class NotificationTestCase(APITestCase):
         response = self.client.get('/api/topics_subscribed/?user=' + user)
         # response should be ok
         self.assertEqual(response.status_code, 200)
-        # should be subscribed to t, n1, n2, n3 and n4
-        self.assertEqual(len(response.data), 5)
+        # should be subscribed to t, n1, n2 and n3
+        self.assertEqual(len(response.data), 4)
+        self.client.logout()
+
+    def test_user_subscripted_to_topic_sees_notifications_sent_to_global_topic(self):
+        nc = NotificationContent(
+            body_html_es="<p>Cuerpo Notificacion</p>",
+            body_html_ca="<p>Cos Notificació</p>",
+            body_html_en="<p>Notification Body</p>",
+            title_es="Titulo notificacion",
+            title_ca="Títol notificació",
+            title_en="Notification title"
+        )
+        nc.save()
+        n = Notification(expert=self.reritja_user, notification_content=nc)
+        n.save()
+        # send notif to global topic
+        sn = SentNotification(sent_to_topic=self.global_topic, notification=n)
+        sn.save()
+        # the regular user should see this notification
+        some_user = self.regular_user
+        self.client.force_authenticate(user=self.reritja_user)
+        response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # should only receive the notification from the global topic
+        self.assertEqual(len(response.data), 1)
+        # acknowledge the notification
+        response = self.client.post('/api/ack_notif/', {'user': '00000000-0000-0000-0000-000000000000', 'notification': n.id}, format='json')
+        # should respond created
+        self.assertEqual(response.status_code, 201)
+        # now the notification should be acknowledged
+        response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # should only receive the notification from the global topic
+        self.assertEqual(len(response.data), 1)
+        # AND it should be ack=True
+        self.assertEqual(response.data[0]['acknowledged'], True)
+        self.client.logout()
+
+    def test_direct_notifs_and_topic_sort_okay(self):
+        some_user = self.regular_user
+        nc1 = NotificationContent(
+            body_html_es="<p>Cuerpo Notificacion 1</p>",
+            body_html_ca="<p>Cos Notificació 1</p>",
+            body_html_en="<p>Notification Body 1</p>",
+            title_es="Titulo notificacion 1",
+            title_ca="Títol notificació 1",
+            title_en="Notification title 1"
+        )
+        nc1.save()
+
+        nc2 = NotificationContent(
+            body_html_es="<p>Cuerpo Notificacion 2</p>",
+            body_html_ca="<p>Cos Notificació 2</p>",
+            body_html_en="<p>Notification Body 2</p>",
+            title_es="Titulo notificacion 2",
+            title_ca="Títol notificació 2",
+            title_en="Notification title 2"
+        )
+        nc2.save()
+
+        # FIRST direct NOTIFICATION
+        n1 = Notification(expert=self.reritja_user, notification_content=nc1)
+        n1.save()
+
+        # send notif to user
+        sn1 = SentNotification(sent_to_user=some_user, notification=n1)
+        sn1.save()
+
+        # GLOBAL notification
+        n3 = Notification(expert=self.reritja_user, notification_content=nc1)
+        n3.save()
+        # send notif to global topic
+        sn3 = SentNotification(sent_to_topic=self.global_topic, notification=n3)
+        sn3.save()
+
+        # SECOND direct  NOTIFICATION
+        n2 = Notification(expert=self.reritja_user, notification_content=nc2)
+        n2.save()
+
+        # send notif to user
+        sn2 = SentNotification(sent_to_user=some_user, notification=n2)
+        sn2.save()
+
+        self.client.force_authenticate(user=self.reritja_user)
+        response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # should receive both direct notifications and global
+        self.assertEqual(len(response.data), 3)
+        # global should be in the middle
+        self.assertEqual(response.data[1]['topic'], 'global')
+        # most recent should be 2
+        self.assertEqual(response.data[0]['expert_comment'], nc2.title_en)
+        # 0 should be more recent than 1
+        self.assertTrue( response.data[0]['date_comment'] > response.data[1]['date_comment'] )
+        # 1 should be more recent than 2
+        self.assertTrue(response.data[1]['date_comment'] > response.data[2]['date_comment'])
+        self.client.logout()

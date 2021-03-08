@@ -1074,10 +1074,11 @@ def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
         expert_html = notification.notification_content.get_body_locale_safe(locale)
         this_content = {
             'id': notification.id,
-            'report_id': notification.report.version_UUID,
-            'user_id': sent_notif.sent_to_user.user_UUID,
-            'user_score': sent_notif.sent_to_user.score,
-            'user_score_label': score_label(sent_notif.sent_to_user.score),
+            'report_id': notification.report.version_UUID if notification.report is not None else None,
+            'user_id': sent_notif.sent_to_user.user_UUID if sent_notif.sent_to_user is not None else None,
+            'topic': sent_notif.sent_to_topic.topic_code if sent_notif.sent_to_topic is not None else None,
+            'user_score': sent_notif.sent_to_user.score if sent_notif.sent_to_user is not None else None,
+            'user_score_label': score_label(sent_notif.sent_to_user.score) if sent_notif.sent_to_user is not None else None,
             'expert_id': notification.expert.id,
             'date_comment': notification.date_comment,
             'expert_comment': expert_comment,
@@ -1103,16 +1104,22 @@ def user_notifications(request):
             raise ParseError(detail='user_id is mandatory')
         else:
             all_notifications = all_notifications.filter(sent_to_user__user_UUID=user_id).order_by('-notification__date_comment')
+
+        #global_topic notifications
+        global_notifications = SentNotification.objects.filter(sent_to_topic__topic_code='global').select_related('notification')
+
+        notifications_all_of_them = all_notifications | global_notifications
+
         acknowledgements = AcknowledgedNotification.objects.filter(user__user_UUID=user_id)
         if acknowledged != 'ignore':
             ack_bool = string_par_to_bool(acknowledged)
             acknowledged_notifs = acknowledgements.values('notification')
             if ack_bool is True:
-                all_notifications = all_notifications.filter(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
+                notifications_all_of_them = notifications_all_of_them.filter(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
             else:
-                all_notifications = all_notifications.exclude(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
+                notifications_all_of_them = notifications_all_of_them.exclude(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
         #serializer = NotificationSerializer(all_notifications)
-        content = custom_render_sent_notifications(all_notifications, acknowledgements, locale)
+        content = custom_render_sent_notifications(notifications_all_of_them, acknowledgements, locale)
         #return Response(serializer.data)
         return Response(content)
     if request.method == 'POST':

@@ -2584,7 +2584,7 @@ class NotificationContent(models.Model):
 
 
 class Notification(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.DO_NOTHING, )
+    report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.DO_NOTHING, )
     expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification', on_delete=models.DO_NOTHING, )
     date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
@@ -2608,7 +2608,7 @@ class AcknowledgedNotification(models.Model):
 
 
 class NotificationTopic(models.Model):
-    topic_code = models.CharField(max_length=100, help_text='Code for the topic.')
+    topic_code = models.CharField(max_length=100, unique=True, help_text='Code for the topic.')
     topic_description = models.TextField(help_text='Description for the topic, in english.')
 
 
