@@ -141,9 +141,13 @@ class NotificationTestCase(APITestCase):
         self.validation_value_possible = 1
         self.validation_value_confirmed = 2
 
-        t = NotificationTopic(topic_code="global", topic_description="This is the global topic")
-        t.save()
-        self.global_topic = t
+        t1 = NotificationTopic(topic_code="global", topic_description="This is the global topic")
+        t1.save()
+        self.global_topic = t1
+
+        t2 = NotificationTopic(topic_code="some_topic", topic_description="This is a topic, not the global")
+        t2.save()
+        self.some_topic = t2
 
 
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
@@ -200,7 +204,7 @@ class NotificationTestCase(APITestCase):
 
     def test_subscribe_user_to_topic(self):
         self.client.force_authenticate(user=self.reritja_user)
-        code = self.global_topic.topic_code
+        code = self.some_topic.topic_code
         user = self.regular_user.user_UUID
         response = self.client.post('/api/subscribe_to_topic/?code=' + code + '&user=' + user)
         # should respond created
@@ -229,7 +233,7 @@ class NotificationTestCase(APITestCase):
         n2.save()
         n3 = NotificationTopic(topic_code="en", topic_description="This is a test topic")
         n3.save()
-        topics = [self.global_topic, n1, n2, n3]
+        topics = [n1, n2, n3]
         for t in topics:
             response = self.client.post('/api/subscribe_to_topic/?code=' + t.topic_code + '&user=' + user)
             # should respond created
@@ -239,7 +243,7 @@ class NotificationTestCase(APITestCase):
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # should be subscribed to t, n1, n2 and n3
-        self.assertEqual(len(response.data), 4)
+        self.assertEqual(len(response.data), 3)
         self.client.logout()
 
     def test_user_subscripted_to_topic_sees_notifications_sent_to_global_topic(self):

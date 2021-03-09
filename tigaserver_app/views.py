@@ -655,6 +655,8 @@ def subscribe_to_topic(request):
         raise ParseError(detail='user param is mandatory')
     if code == '-1':
         raise ParseError(detail='code param is mandatory')
+    if code == 'global':
+        raise ParseError(detail='subscription to global not allowed')
     n = None
     usr = None
     try:
