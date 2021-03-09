@@ -246,7 +246,7 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(len(response.data), 3)
         self.client.logout()
 
-    def test_user_subscripted_to_topic_sees_notifications_sent_to_global_topic(self):
+    def test_user_sees_notifications_sent_to_global_topic(self):
         nc = NotificationContent(
             body_html_es="<p>Cuerpo Notificacion</p>",
             body_html_ca="<p>Cos Notificació</p>",
@@ -282,6 +282,61 @@ class NotificationTestCase(APITestCase):
         # AND it should be ack=True
         self.assertEqual(response.data[0]['acknowledged'], True)
         self.client.logout()
+
+    def test_subscription_and_unsubscription(self):
+        nc = NotificationContent(
+            body_html_es="<p>Cuerpo Notificacion</p>",
+            body_html_ca="<p>Cos Notificació</p>",
+            body_html_en="<p>Notification Body</p>",
+            title_es="Titulo notificacion",
+            title_ca="Títol notificació",
+            title_en="Notification title"
+        )
+        nc.save()
+        n = Notification(expert=self.reritja_user, notification_content=nc)
+        n.save()
+
+        self.client.force_authenticate(user=self.reritja_user)
+        # list notifications for regular user
+        response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # no notifications should be available
+        self.assertEqual(len(response.data), 0)
+
+        # subscribe user to regular topic
+        response = self.client.post('/api/subscribe_to_topic/?code=' + self.some_topic.topic_code + '&user=' + self.regular_user.user_UUID)
+        # should respond created
+        self.assertEqual(response.status_code, 201)
+
+        # send notif to regular topic
+        sn = SentNotification(sent_to_topic=self.some_topic, notification=n)
+        sn.save()
+
+        # list notifications for regular user again
+        response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # only the topic notification should be available
+        self.assertEqual(len(response.data), 1)
+        # the only notification should be about the topic
+        self.assertEqual(response.data[0]['topic'], 'some_topic')
+
+        # now, unsubscribe!
+        response = self.client.post('/api/unsub_from_topic/?code=' + self.some_topic.topic_code + '&user=' + self.regular_user.user_UUID)
+        # response should be no content
+        self.assertEqual(response.status_code, 204)
+
+        # list notifications for regular user again!
+        response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)
+        # no notifications available
+        self.assertEqual(len(response.data), 0)
+        self.client.logout()
+
+
+
 
     def test_direct_notifs_and_topic_sort_okay(self):
         some_user = self.regular_user

@@ -646,7 +646,34 @@ def mark_notif_as_ack(request):
         raise ParseError(detail='Acknowledged not found')
 
 
+@api_view(['POST'])
+def unsub_from_topic(request):
+    code = request.query_params.get('code', '-1')
+    user = request.query_params.get('user', '-1')
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    if code == '-1':
+        raise ParseError(detail='code param is mandatory')
+    if code == 'global':
+        raise ParseError(detail='unsubscription from global not allowed')
+    n = None
+    usr = None
+    try:
+        n = NotificationTopic.objects.get(topic_code=code)
+    except NotificationTopic.DoesNotExist:
+        raise ParseError(detail='topic with this code does not exist')
+    try:
+        usr = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='no user with id')
 
+    try:
+        sub = UserSubscription.objects.get(user=usr, topic=n)
+        sub.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except UserSubscription.DoesNotExist:
+        raise ParseError(detail="this user is not subscribed to this topic")
+    
 @api_view(['POST'])
 def subscribe_to_topic(request):
     code = request.query_params.get('code','-1')
@@ -1110,7 +1137,13 @@ def user_notifications(request):
         #global_topic notifications
         global_notifications = SentNotification.objects.filter(sent_to_topic__topic_code='global').select_related('notification')
 
-        notifications_all_of_them = all_notifications | global_notifications
+        #other notifications
+        this_user = TigaUser.objects.get(pk=user_id)
+        user_subscriptions = this_user.user_subscriptions.all()
+        subscribed_topics = [ a.topic for a in  user_subscriptions]
+        other_topic_notifications = SentNotification.objects.filter(sent_to_topic__in=subscribed_topics).select_related('notification')
+
+        notifications_all_of_them = all_notifications | global_notifications | other_topic_notifications
 
         acknowledgements = AcknowledgedNotification.objects.filter(user__user_UUID=user_id)
         if acknowledged != 'ignore':
