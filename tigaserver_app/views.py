@@ -673,7 +673,7 @@ def unsub_from_topic(request):
         return Response(status=status.HTTP_204_NO_CONTENT)
     except UserSubscription.DoesNotExist:
         raise ParseError(detail="this user is not subscribed to this topic")
-    
+
 @api_view(['POST'])
 def subscribe_to_topic(request):
     code = request.query_params.get('code','-1')
