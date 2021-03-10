@@ -1311,49 +1311,56 @@
         }
 
         function inputToCategorySelectionRevise(input_id,data){
-            var category = data.category_id;
-            var value = data.value;
-            var complex = data.complex_id;
-            //var other = $('#id_form-' + id_to_index[input_id] + '-other_species').val();
-            var species_categories = [];
-            {% for cat in category_list %}
-                {% if cat.specify_certainty_level %}
-                    species_categories.push('{{ cat.id }}');
-                {% endif %}
-            {% endfor %}
-            if( category == "8" ){ //complex
-                $('#container_mix_' + input_id).show();
-                $('#container_value_' + input_id).hide();
-                $('#container_other_' + input_id).hide();
-                $('#complex_' + input_id).val(complex);
-                $('#category_' + input_id).selectpicker("val","8");
-            }else if ( category == "2" ){ //other species
-                $('#container_mix_' + input_id).hide();
-                $('#container_value_' + input_id).hide();
-                $('#container_other_' + input_id).show();
-                $('#category_' + input_id).selectpicker("val","2");
-            }else if ( species_categories.indexOf(category) >= 0 ){
+            if(data.conflict && data.conflict == true){
                 $('#container_value_' + input_id).show();
                 $('#container_mix_' + input_id).hide();
-                $('#categoryvalue_' + input_id).selectpicker("val",value);
-                $('#category_' + input_id).selectpicker("val",category);
+                $('#id_form-' + id_to_index[input_id] + '-category').val("");
+                $('#id_form-' + id_to_index[input_id] + '-validation_value').val("");
             }else{
-                $('#container_mix_' + input_id).hide();
-                $('#container_value_' + input_id).hide();
+                var category = data.category_id;
+                var value = data.value;
+                var complex = data.complex_id;
+                //var other = $('#id_form-' + id_to_index[input_id] + '-other_species').val();
+                var species_categories = [];
+                {% for cat in category_list %}
+                    {% if cat.specify_certainty_level %}
+                        species_categories.push('{{ cat.id }}');
+                    {% endif %}
+                {% endfor %}
+                if( category == "8" ){ //complex
+                    $('#container_mix_' + input_id).show();
+                    $('#container_value_' + input_id).hide();
+                    $('#container_other_' + input_id).hide();
+                    $('#complex_' + input_id).val(complex);
+                    $('#category_' + input_id).selectpicker("val","8");
+                }else if ( category == "2" ){ //other species
+                    $('#container_mix_' + input_id).hide();
+                    $('#container_value_' + input_id).hide();
+                    $('#container_other_' + input_id).show();
+                    $('#category_' + input_id).selectpicker("val","2");
+                }else if ( species_categories.indexOf(category) >= 0 ){
+                    $('#container_value_' + input_id).show();
+                    $('#container_mix_' + input_id).hide();
+                    $('#categoryvalue_' + input_id).selectpicker("val",value);
+                    $('#category_' + input_id).selectpicker("val",category);
+                }else{
+                    $('#container_mix_' + input_id).hide();
+                    $('#container_value_' + input_id).hide();
+                }
+                do_translate_classification(input_id);
+
+                var selected_other = $('#other_' + input_id).find(':selected').val();
+                $('#id_form-' + id_to_index[input_id] + '-other_species').val(selected_other);
+
+                var selected_complex = $('#complex_' + input_id).find(':selected').val();
+                $('#id_form-' + id_to_index[input_id] + '-complex').val(selected_complex);
+
+                var selected_category = $('#category_' + input_id).find(':selected').val();
+                $('#id_form-' + id_to_index[input_id] + '-category').val(selected_category);
+
+                var selected_category_value = $('#categoryvalue_' + input_id).find(':selected').val();
+                $('#id_form-' + id_to_index[input_id] + '-validation_value').val(selected_category_value);
             }
-            do_translate_classification(input_id);
-
-            var selected_other = $('#other_' + input_id).find(':selected').val();
-            $('#id_form-' + id_to_index[input_id] + '-other_species').val(selected_other);
-
-            var selected_complex = $('#complex_' + input_id).find(':selected').val();
-            $('#id_form-' + id_to_index[input_id] + '-complex').val(selected_complex);
-
-            var selected_category = $('#category_' + input_id).find(':selected').val();
-            $('#id_form-' + id_to_index[input_id] + '-category').val(selected_category);
-
-            var selected_category_value = $('#categoryvalue_' + input_id).find(':selected').val();
-            $('#id_form-' + id_to_index[input_id] + '-validation_value').val(selected_category_value);
         }
 
         function inputToCategorySelection(input_id){
@@ -1895,11 +1902,15 @@
                         }
                     }
                 }
+                // This is here to avoid that the "flagged without..." validation message pops up when the SUPERexpert is
+                // revising an autoflagged conflicting report
+                {% if request.user.userstat.is_expert %}
                 if ( flag_title == 'flagged' ){
                     if( $("#id_form-" + id_string + "-tiger_certainty_notes").val() == "" ) {
                         reports_list.append('<li>' + report_id + ' <span style="color:red">Flagged without internal species certainty comments</span></li>');
                     }
                 }
+                {% endif %}
                 if($("#id_form-" + index + "-status").val() == "-1" && $("#id_form-" + index + "-tiger_certainty_notes").val() == ''){
                     reports_list.append('<li>' + report_id + ' <span style="color:red">Hidden without internal species certainty comments</span></li>');
                 }
@@ -2072,7 +2083,11 @@
                         setup_and_launch_save_warning();
                     }
                     {% else %}
-                        setup_and_launch_save_warning();
+                        if(validated_without_aedes_input || complex_without_class || simple_without_value){
+                            setup_and_launch_mustfix_dialog();
+                        }else{
+                            setup_and_launch_save_warning();
+                        }
                     {% endif %}
                 } else {
                     gear.show();
