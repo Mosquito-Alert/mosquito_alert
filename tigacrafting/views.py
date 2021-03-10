@@ -810,6 +810,13 @@ def entolab_license_agreement(request):
         form = LicenseAgreementForm()
     return render(request, 'tigacrafting/entolab_license_agreement.html', {'form': form})
 
+@login_required
+def predefined_messages(request):
+    langs = []
+    for elem in settings.LANGUAGES:
+        langs.append({"val":elem[0],"txt":elem[1]})
+    langs.sort(key=lambda x: x.get("txt"))
+    return render(request, 'tigacrafting/predefined_messages.html', {'langs': langs})
 
 @transaction.atomic
 @login_required

@@ -779,6 +779,12 @@ class Report(models.Model):
             return trans_info['name']
         return 'English'
 
+    def get_report_language_code(self):
+        app_language = self.app_language
+        if app_language is not None and app_language != '':
+            return app_language
+        return 'en'
+
     def get_is_crowd_validated(self):
         if self.get_crowdcrafting_score():
             return self.get_crowdcrafting_score() > settings.CROWD_VALIDATION_CUTOFF
@@ -2098,6 +2104,7 @@ class Report(models.Model):
     is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
     country_label = property(get_country_label)
     language = property(get_report_language)
+    language_code = property(get_report_language_code)
     located = property(has_location)
     is_spain_p = property(is_spain)
 

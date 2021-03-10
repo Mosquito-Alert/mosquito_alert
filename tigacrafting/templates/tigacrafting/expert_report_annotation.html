@@ -199,14 +199,11 @@
 
 
                         <ul class="nav navbar-nav navbar-right">
-                                <li>
-                                    <select class="selectpicker show-tick form-control" id="note_language_select" class="selectpicker show-tick form-control">
-                                            <option id="note_language_select_es" value="es">Public note lang. - es</option>
-                                            <option id="note_language_select_en" value="en">Public note lang. - en</option>
-                                    </select>
-                                </li>
                             {% block navbar_right_items %}
                             {% endblock %}
+                            <li>
+                                <a href="{% url 'predefined_messages' %}" target="_blank">Predefined texts</a>
+                            </li>
                             {% if tasks_per_page_choices %}
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports per page<span class="caret"></span></a>
@@ -231,8 +228,7 @@
 
 
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
-                            <li><a href="{% url "auth_logout" %}">logout</a>
-                            </li>
+                            <li><a href="{% url "auth_logout" %}">logout</a></li>
                         </ul>
 
 
@@ -841,8 +837,6 @@
            value="{{ load_new_reports }}">
     <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;"
            value="{{ tasks_per_page }}">
-    <input id="note_language" type="text" name="note_language" style="display: none;"
-           value="{{ note_language }}">
     <input id="next_page_input" type="text" name="page" style="display: none;" value="">
 
     <input id="tags_filter_input" type="text" name="tags_filter" style="display: none;" value="{{ tags_filter }}">
@@ -1622,8 +1616,6 @@
                     user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
                 };
 
-                $('#note_language_select').val($('#note_language').val());
-
                 final_status_table[{{ form.instance.id }}] = final_status;
 
                 var hidden_photo_fields{{ form.instance.id }} = $("#div_for_photo_to_display_report_" + "{{ form.instance.report.version_UUID }}," + "#clear_button_" + "{{ form.instance.id }}");
@@ -1652,21 +1644,30 @@
                     //var message = "La foto es espectacular y se ven muchos detalles del cuerpo del mosquito. Gracias por participar. ¡Gran trabajo!";
                     //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
                     var species_label = 'all';
-                    var message = macro_messages[species_label]["nice_picture"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["nice_picture"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["nice_picture"]["en"];
+                    }
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_yes_thorax_pattern_{{ form.instance.id }}").click(function() {
                     //var message = "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!";
                     var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
-                    var message = macro_messages[species_label]["yes_thorax_pattern"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["yes_thorax_pattern"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["yes_thorax_pattern"]["en"];
+                    }
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_no_thorax_pattern_{{ form.instance.id }}").click(function() {
                     //var message = "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
                     var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
-                    var message = macro_messages[species_label]["no_thorax_pattern"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["no_thorax_pattern"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["no_thorax_pattern"]["en"];
+                    }
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
@@ -1674,28 +1675,40 @@
                     //var message = "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas del mosquito tigre ni de ninguna otra especie. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!";
                     //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
                     var species_label = 'all';
-                    var message = macro_messages[species_label]["not_sure_photo"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["not_sure_photo"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["not_sure_photo"]["en"];
+                    }
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_other_{{ form.instance.id }}").click(function() {
                     //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
-                    var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
-                    var message = macro_messages[species_label]["other_species"][$('#note_language').val()];
+                    var species_label = 'all';
+                    var message = macro_messages[species_label]["other_species"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["other_species"]["en"];
+                    }
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_other_insect_{{ form.instance.id }}").click(function() {
                     //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
                     var species_label = 'all';
-                    var message = macro_messages[species_label]["other_insect"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["other_insect"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["other_insect"]["en"];
+                    }
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
                 $("#btn_conflict_{{ form.instance.id }}").click(function() {
                     //var message = "Esta foto parece ser de otra especie de mosquito, ya que no se parece ni al mosquito tigre ni al mosquito de la fiebre amarilla. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!";
                     var species_label = 'all';
-                    var message = macro_messages[species_label]["conflict"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["conflict"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["conflict"]["en"];
+                    }
                     $("#public_note_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-edited_user_notes").val(message);
                 });
@@ -1703,7 +1716,10 @@
                     //var message = "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito tigre en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!";
                     //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
                     var species_label = 'all';
-                    var message = macro_messages[species_label]["discovery"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["discovery"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["discovery"]["en"];
+                    }
                     $("#message_to_user_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
                 });
@@ -1711,7 +1727,10 @@
                     //var message = "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!";
                     //var species_label = getMacroMessageLabelForSpecies($('#category_{{ form.instance.id }}'));
                     var species_label = 'all';
-                    var message = macro_messages[species_label]["contact"][$('#note_language').val()];
+                    var message = macro_messages[species_label]["contact"]["{{ form.instance.report.language_code }}"];
+                    if(message == null){
+                        message = macro_messages[species_label]["contact"]["en"];
+                    }
                     $("#message_to_user_{{ form.instance.id }}").val(message);
                     $("#id_form-" + id_to_index[{{ form.instance.id }}] + "-message_for_user").val(message);
                 });
@@ -2005,11 +2024,6 @@
 
 
             $('[data-toggle="tooltip"]').tooltip();
-
-            $('#note_language_select').change(function(){
-                //alert($('#note_language_select').val());
-                $('#note_language').val($('#note_language_select').val());
-            });
 
             $("select").selectpicker({
                 width: 'auto'

@@ -1,0 +1,136 @@
+{% load staticfiles %}
+{% load i18n %}
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Predefined EntoLab Messages</title>
+
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="{% static 'tigacrafting/toastr/toastr.min.css' %}"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <style>
+        .container-custom{
+            margin: 20px 0 0 0;
+        }
+        .solid-border{
+            border-style: solid;
+            border-width: 0px 0px 1px 0px;
+            padding: 5px 5px 5px 5px;
+            margin: 5px 5px 5px 5px;
+        }
+    </style>
+    <script src="{% static 'tigacrafting/macro_messages.js' %}"></script>
+  </head>
+<body>
+  <div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-brand">
+                        <span style="color:#ff9900; font-size: small">Predefined EntoLab Messages</span>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url 'auth_logout' %}">logout</a>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  <div style="margin-top:60px"></div>
+  <div class="container">
+      <div class="row">
+          <div class="col-md-12">
+          <h4>How to use this page</h4>
+          <p>In this page, you can browse the predefined EntoLab messages in any language. By default, the predefined
+              message buttons in EntoLab paste the message in the language that the concerning report was uploaded, or English
+              if the translation is not available. If you want to use any other language, you can see all of them here and use
+              the buttons in the list below to copy the message to the clipboard. You can then go back to EntoLab and paste
+              this message in the text box.
+          </p>
+          <p>
+              You can choose the language you want to see on the first drop down control. The thumbs down and thumbs up
+              buttons (Yes and No Thorax patterns) change depending on the species. You can choose the species from
+              the second drop down control.
+          </p>
+          </div>
+      </div>
+      <div class="row">
+          <div class="col-md-2"><h4>Language:</h4></div>
+          <div class="col-md-10">
+              <select id="lang_select">
+                  {% for l in langs %}
+                  <option value="{{ l.val }}">{{ l.txt }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      </div>
+      <div class="row">
+          <div class="col-md-2"><h4>Species:</h4></div>
+          <div class="col-md-10">
+              <select id="species_select">
+                  <option value="all">Generic</option>
+                  <option value="albopictus">Aedes albopictus</option>
+                  <option value="aegypti">Aedes aegypti</option>
+                  <option value="japonicus">Aedes japonicus</option>
+                  <option value="koreicus">Aedes koreicus</option>
+                  <option value="culex">Culex sp.</option>
+              </select>
+          </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_nice_picture" class="btn btn-success btn-sm" title="Nice picture"><span class="glyphicon glyphicon-star-empty"></span></button></div>
+          <div class="col-md-11" id="nice_picture"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_yes_thorax_pattern" class="btn btn-success btn-sm" title="Yes thorax pattern"><span class="glyphicon glyphicon-thumbs-up"></span></button></div>
+          <div class="col-md-11" id="yes_thorax_pattern"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_no_thorax_pattern" class="btn btn-success btn-sm" title="No thorax pattern"><span class="glyphicon glyphicon-thumbs-down"></span></button></div>
+          <div class="col-md-11" id="no_thorax_pattern"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_not_sure_photo" class="btn btn-success btn-sm" title="Not sure photo"><span class="glyphicon glyphicon-camera"></span></button></div>
+          <div class="col-md-11" id="not_sure_photo"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_other_species" class="btn btn-success btn-sm" title="Other species"><span class="glyphicon glyphicon-remove"></span></button></div>
+          <div class="col-md-11" id="other_species"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_other_insect" class="btn btn-success btn-sm" title="Other insect"><span class="glyphicon glyphicon-arrow-right"></span></button></div>
+          <div class="col-md-11" id="other_insect"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_conflict" class="btn btn-success btn-sm" title="Conflict"><span class="glyphicon glyphicon-resize-small"></span></button></div>
+          <div class="col-md-11" id="conflict"></div>
+      </div>
+      {% if request.user.userstat.is_superexpert %}
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_discovery" class="btn btn-success btn-sm" title="Discovery"><span class="glyphicon glyphicon-map-marker"></span></button></div>
+          <div class="col-md-11" id="discovery"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-md-1"><button type="button" id="btn_contact" class="btn btn-success btn-sm" title="Contact"><span class="glyphicon glyphicon-envelope"></span></button></div>
+          <div class="col-md-11" id="contact"></div>
+      </div>
+      {% endif %}
+  </div>
+  </body>
+    <script>
+    {% if request.user.userstat.is_superexpert %}
+        var boxes = ['nice_picture','yes_thorax_pattern','no_thorax_pattern','not_sure_photo','other_species','other_insect','conflict','discovery','contact'];
+    {% else %}
+        var boxes = ['nice_picture','yes_thorax_pattern','no_thorax_pattern','not_sure_photo','other_species','other_insect','conflict'];
+    {% endif %}
+    </script>
+    <script src="{% static 'tigacrafting/predefined_messages.js' %}"></script>
+    <script src="{% static 'tigacrafting/toastr/toastr.min.js' %}"></script>
+</html>
