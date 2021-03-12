@@ -26,7 +26,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -1478,6 +1478,31 @@ def notifications(request,user_uuid=None):
     user_uuid = request.GET.get('user_uuid',None)
     total_users = TigaUser.objects.all().count()
     return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
+
+@login_required
+def notifications_version_two(request,user_uuid=None):
+    this_user = request.user
+    user_uuid = request.GET.get('user_uuid',None)
+    #total_users = TigaUser.objects.all().count()
+    total_users = TigaUser.objects.select_related('profile').filter(profile__firebase_token__isnull=False).count()
+    # TOPIC_GROUPS = ((0, 'General'), (1, 'Language topics'), (2, 'Country topics'))
+    languages = []
+    sorted_langs = sorted(settings.LANGUAGES, key=lambda tup: tup[1])
+    for lang in sorted_langs:
+        languages.append({'code':lang[0],'name':str(lang[1])})
+    all_topics = []
+    for group in TOPIC_GROUPS:
+        current_topics = []
+        for topic in NotificationTopic.objects.filter(topic_group=group[0]).order_by('topic_description'):
+            current_topics.append({ 'topic_text': topic.topic_description, 'topic_value': topic.topic_code})
+        topic_info = {
+            'topic_group_text': group[1],
+            'topic_group_value': group[0],
+            'topics': current_topics
+        }
+        all_topics.append(topic_info)
+
+    return render(request, 'tigacrafting/notifications_version_two.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid, 'topics_info': json.dumps(all_topics), 'languages': languages})
 
 
 @api_view(['GET'])
