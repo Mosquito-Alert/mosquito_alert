@@ -248,12 +248,11 @@ class NotificationTestCase(APITestCase):
 
     def test_user_sees_notifications_sent_to_global_topic(self):
         nc = NotificationContent(
-            body_html_es="<p>Cuerpo Notificacion</p>",
-            body_html_ca="<p>Cos Notificació</p>",
             body_html_en="<p>Notification Body</p>",
-            title_es="Titulo notificacion",
-            title_ca="Títol notificació",
-            title_en="Notification title"
+            body_html_native="<p>Native Notification Body</p>",
+            title_en="Notification title",
+            title_native="Títol notificació",
+            native_locale="ca"
         )
         nc.save()
         n = Notification(expert=self.reritja_user, notification_content=nc)
@@ -285,12 +284,11 @@ class NotificationTestCase(APITestCase):
 
     def test_subscription_and_unsubscription(self):
         nc = NotificationContent(
-            body_html_es="<p>Cuerpo Notificacion</p>",
-            body_html_ca="<p>Cos Notificació</p>",
             body_html_en="<p>Notification Body</p>",
-            title_es="Titulo notificacion",
-            title_ca="Títol notificació",
-            title_en="Notification title"
+            body_html_native="<p>Native Notification Body</p>",
+            title_en="Notification title",
+            title_native="Títol notificació",
+            native_locale="ca"
         )
         nc.save()
         n = Notification(expert=self.reritja_user, notification_content=nc)
@@ -341,22 +339,20 @@ class NotificationTestCase(APITestCase):
     def test_direct_notifs_and_topic_sort_okay(self):
         some_user = self.regular_user
         nc1 = NotificationContent(
-            body_html_es="<p>Cuerpo Notificacion 1</p>",
-            body_html_ca="<p>Cos Notificació 1</p>",
             body_html_en="<p>Notification Body 1</p>",
-            title_es="Titulo notificacion 1",
-            title_ca="Títol notificació 1",
-            title_en="Notification title 1"
+            body_html_native="<p>Native Notification Body 1</p>",
+            title_en="Notification title 1",
+            title_native="Títol notificació 1",
+            native_locale="ca"
         )
         nc1.save()
 
         nc2 = NotificationContent(
-            body_html_es="<p>Cuerpo Notificacion 2</p>",
-            body_html_ca="<p>Cos Notificació 2</p>",
             body_html_en="<p>Notification Body 2</p>",
-            title_es="Titulo notificacion 2",
-            title_ca="Títol notificació 2",
-            title_en="Notification title 2"
+            body_html_native="<p>Native Notification Body 2</p>",
+            title_en="Notification title 2",
+            title_native="Títol notificació 2",
+            native_locale="ca"
         )
         nc2.save()
 
@@ -398,3 +394,17 @@ class NotificationTestCase(APITestCase):
         # 1 should be more recent than 2
         self.assertTrue(response.data[1]['date_comment'] > response.data[2]['date_comment'])
         self.client.logout()
+
+    def test_post_notification_content_via_api(self):
+        some_user = self.regular_user
+        notif_content = {
+            'body_html_en': '<p>Hello world body</p>',
+            'title_en': 'Hello world title',
+            'body_html_native': '<p>Hola món cos</p>',
+            'title_native': 'Hola món títol',
+            'native_locale': 'ca'
+        }
+        self.client.force_authenticate(user=self.reritja_user)
+        response = self.client.post('/api/notification_content/',notif_content)
+        # response should be ok
+        self.assertEqual(response.status_code, 200)

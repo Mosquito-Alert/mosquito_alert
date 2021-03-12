@@ -123,7 +123,7 @@ $( document ).ready(function() {
         if($("#accordion").accordion( "option", "active" ) == SELECTED_ALL && some_field_in_tinymce_is_missing()){
             return false;
         }
-        if($("#accordion").accordion( "option", "active" ) == SELECTED_SOME_FILTER && criteria_is_unchecked()){
+        if($("#accordion").accordion( "option", "active" ) == SELECTED_SOME_FILTER && no_topic_selected()){
             return false;
         }
         return true;
@@ -136,49 +136,7 @@ $( document ).ready(function() {
         }
     });
 
-    var clear_everything = function(){
-        clear_criteria();
-        clear_tokens();
-        $("#accordion").accordion("option","active",0);
-        $("#radio-1").prop("checked", true);
-        $("#title_es").val("");
-        $("#title_ca").val("");
-        $("#title_en").val("");
-        if(tinymce.get('body_es')){
-            tinymce.get('body_es').setContent('');
-        }
-        if(tinymce.get('body_ca')){
-            tinymce.get('body_ca').setContent('');
-        }
-        if(tinymce.get('body_en')){
-            tinymce.get('body_en').setContent('');
-        }
-    };
 
-    $( "#clear_form" ).click(function() {
-        $('<div></div>').appendTo('body')
-            .html('<div><h6>Proceed?</h6></div>')
-            .dialog({
-                modal: true,
-                title: 'The form will be cleared and all fields will be set to default state',
-                zIndex: 10000,
-                autoOpen: true,
-                width: 600,
-                resizable: false,
-                buttons: {
-                    Yes: function () {
-                        clear_everything();
-                        $(this).dialog("close");
-                    },
-                    No: function () {
-                        $(this).dialog("close");
-                    }
-                },
-                close: function (event, ui) {
-                    $(this).remove();
-                }
-            });
-    });
     $('#gear').hide();
     $( "#accordion" ).accordion({
         heightStyle: "content",
@@ -232,28 +190,26 @@ $( document ).ready(function() {
     };
     jsonify_notification_content = function(){
         var data = {};
-        var body_html_es = tinyMCE.get('body_es').getContent();
-        var body_html_ca = tinyMCE.get('body_ca').getContent();
         var body_html_en = tinyMCE.get('body_en').getContent();
-        var title_es = $('#title_es').val();
-        var title_ca = $('#title_ca').val();
+        var body_html_native = tinyMCE.get('body_native').getContent();
         var title_en = $('#title_en').val();
-        data.body_html_es = body_html_es;
-        if(body_html_ca != ''){
-            data.body_html_ca = body_html_ca;
+        var title_native = $('#title_native').val();
+
+        data.body_html_en = body_html_en;
+        if(body_html_native != ''){
+            data.body_html_native = body_html_native;
         }
-        if(body_html_en != ''){
-            data.body_html_en = body_html_en;
+        data.title_en = title_en;
+        if(title_native != ''){
+            data.title_native = title_native;
         }
-        data.title_es = title_es;
-        if(title_ca != ''){
-            data.title_ca = title_ca;
-        }
-        if(title_en != ''){
-            data.title_en = title_en;
+        var native_code_lang = $('#native_lang').val();
+        if(native_code_lang != ''){
+            data.native_locale = native_code_lang;
         }
         return data;
     };
+
     $( "#dialog-message-error" ).dialog({
         modal: true,
         autoOpen: false,
@@ -333,6 +289,12 @@ $( document ).ready(function() {
         $('#number_estimate').hide();
         $('.radioop').prop('checked', false);
     };
+    no_topic_selected = function(){
+        if($('#topic').val() != ""){
+            return false;
+        }
+        return true;
+    }
     criteria_is_unchecked = function(){
         var retVal = true;
         $('.radioop').each(function(){
@@ -342,8 +304,6 @@ $( document ).ready(function() {
         });
         return retVal;
     };
-    $("#radio-1").prop("checked", true);
-    clear_everything();
     if(user_uuid!=''){
         $('.tokenize-user-uuid').tokenize2().trigger('tokenize:tokens:add', [user_uuid, user_uuid, true]);
     }
@@ -392,4 +352,49 @@ $( document ).ready(function() {
             init_topics(data[parseInt(value)].topics);
         }
     });
+
+    var clear_topic = function(){
+        $('#topic_group').val("");
+        init_topics([]);
+    }
+
+    var clear_everything = function(){
+        clear_topic();
+        clear_tokens();
+        $("#accordion").accordion("option","active",0);
+        $("#title_en").val("");
+        $("#title_native").val("");
+        if(tinymce.get('body_en')){
+            tinymce.get('body_en').setContent('');
+        }
+        if(tinymce.get('body_native')){
+            tinymce.get('body_native').setContent('');
+        }
+    };
+
+    $( "#clear_form" ).click(function() {
+        $('<div></div>').appendTo('body')
+            .html('<div><h6>Proceed?</h6></div>')
+            .dialog({
+                modal: true,
+                title: 'The form will be cleared and all fields will be set to default state',
+                zIndex: 10000,
+                autoOpen: true,
+                width: 600,
+                resizable: false,
+                buttons: {
+                    Yes: function () {
+                        clear_everything();
+                        $(this).dialog("close");
+                    },
+                    No: function () {
+                        $(this).dialog("close");
+                    }
+                },
+                close: function (event, ui) {
+                    $(this).remove();
+                }
+            });
+    });
+    clear_everything();
 });
