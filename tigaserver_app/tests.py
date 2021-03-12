@@ -396,7 +396,6 @@ class NotificationTestCase(APITestCase):
         self.client.logout()
 
     def test_post_notification_content_via_api(self):
-        some_user = self.regular_user
         notif_content = {
             'body_html_en': '<p>Hello world body</p>',
             'title_en': 'Hello world title',
@@ -405,6 +404,14 @@ class NotificationTestCase(APITestCase):
             'native_locale': 'ca'
         }
         self.client.force_authenticate(user=self.reritja_user)
-        response = self.client.post('/api/notification_content/',notif_content)
+        response = self.client.put('/api/notification_content/',notif_content)
         # response should be ok
         self.assertEqual(response.status_code, 200)
+        notif_id = response.data['id']
+        # retrieve notification written to db
+        nc = NotificationContent.objects.get(pk=notif_id)
+        # sould be the same as written to database
+        self.assertEqual(response.data['body_html_en'], nc.body_html_en)
+        # sould be the same as params
+        self.assertEqual(response.data['body_html_en'], notif_content['body_html_en'])
+        self.client.logout()

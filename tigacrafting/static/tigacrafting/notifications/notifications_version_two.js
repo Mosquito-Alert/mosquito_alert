@@ -109,27 +109,62 @@ $( document ).ready(function() {
         return body_html_en_editor_content == '' || body_html_en_editor_content == '' || title_en == '';
     }
     validate_data = function(){
+        /*
+            error conditions
+            - title_en or body_html_en missing
+            - sent to single user and no tokens selected
+            - sent to group and no topic selected
+            - missing one or more native fields (missing all is ok)
+        */
+        var retVal = {
+            'validation': true,
+            'errors': []
+        };
         var title_en = $("#title_en").val();
         if(title_en == null || title_en == ''){
-            return false;
+            retVal.validation = false;
+            retVal.errors.push('<li class="text-danger">Missing english title text</li>')
         }
         var body_html_en_editor_content = tinyMCE.get('body_en').getContent();
         if(body_html_en_editor_content == ''){
-            return false;
+            retVal.validation = false;
+            retVal.errors.push('<li class="text-danger">Missing english body text</li>')
         }
+        var body_html_native_editor_content = tinyMCE.get('body_native').getContent();
+        var title_native = $("#title_native").val();
+        var selected_native_locale = $('#native_lang').val()
+
+        if( body_html_native_editor_content != "" || title_native != "" || selected_native_locale != "" ){
+            if( body_html_native_editor_content == "" ){
+                retVal.validation = false;
+                retVal.errors.push('<li class="text-danger">Missing native body text</li>')
+            }
+            if( title_native == "" ){
+                retVal.validation = false;
+                retVal.errors.push('<li class="text-danger">Missing native title text</li>')
+            }
+            if(selected_native_locale == ""){
+                retVal.validation = false;
+                retVal.errors.push('<li class="text-danger">Missing native locale</li>')
+            }
+
+        }
+
         if(get_selected_tokens() == '' && $("#accordion").accordion( "option", "active" ) == 0){
-            return false;
-        }
-        if($("#accordion").accordion( "option", "active" ) == SELECTED_ALL && some_field_in_tinymce_is_missing()){
-            return false;
+            retVal.validation = false;
+            retVal.errors.push('<li class="text-danger">No user uuids selected in manual selection</li>')
         }
         if($("#accordion").accordion( "option", "active" ) == SELECTED_SOME_FILTER && no_topic_selected()){
-            return false;
+            retVal.validation = false;
+            retVal.errors.push('<li class="text-danger">No topics selected in choose filter</li>')
         }
-        return true;
+        return retVal;
     };
     $( "#save_button" ).click(function() {
-        if(!validate_data()){
+        var validation_result = validate_data();
+        if(!validation_result.validation){
+            $('#dialog-message-validation').empty();
+            $('#dialog-message-validation').html("<p>You can't send the notification(s) yet because:</p><ul>" + validation_result.errors.join("") + "</ul><p>Correct these problems and try again please.</p>")
             $('#dialog-message-validation').dialog('open');
         }else{
             ajax_post_notification_content();
@@ -361,6 +396,7 @@ $( document ).ready(function() {
     var clear_everything = function(){
         clear_topic();
         clear_tokens();
+        $("#radio-1").prop("checked", true);
         $("#accordion").accordion("option","active",0);
         $("#title_en").val("");
         $("#title_native").val("");
