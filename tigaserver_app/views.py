@@ -1088,11 +1088,13 @@ def custom_render_notification(notification,locale):
     return content
 '''
 
+'''
 def custom_render_notification_queryset(queryset,locale):
     content = []
     for notification in queryset:
         content.append(custom_render_notification(notification,locale))
     return content
+'''
 
 def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
     content = []
@@ -1231,18 +1233,57 @@ def send_notifications(request):
         sender = data['user_id']
         push = data['ppush']
         # report with oldest creation date
-        r = data['report_id']
+        # r = data['report_id']
         queryset = NotificationContent.objects.all()
         notification_content = get_object_or_404(queryset, pk=id)
         recipients = data['recipients']
         topic = None
+        send_to = None
+
         if recipients == 'all':
             topic = NotificationTopic.objects.get(topic_code='global')
         elif "$" in recipients:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
-        else: #it's a topic
-            topic = NotificationTopic.objects.get(topic_code=recipients)
+        else: #it's either a topic or a single UUID
+            try:
+                topic = NotificationTopic.objects.get(topic_code=recipients)
+            except NotificationTopic.DoesNotExist:
+                send_to = [TigaUser.objects.get(pk=recipients)]
+
+        n = Notification(expert_id=sender, notification_content=notification_content)
+        n.save()
+
+        if topic is not None:
+            # send to topic
+            send_notification = SentNotification(send_to_topic=topic,notification=n)
+            send_notification.save()
+        else:
+            #send to recipient(s)
+            for recipient in send_to:
+                send_notification = SentNotification(sent_to_user=recipient, notification=n)
+                send_notification.save()
+                if push and recipient.device_token is not None and recipient.device_token != '':
+                    if (recipient.user_UUID.islower()):
+                        json_notif = custom_render_notification(send_notification, recipient, 'en')
+                        try:
+                            send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+                            push_issued_android = push_issued_android + 1
+                        except Exception as e:
+                            pass
+                    else:
+                        try:
+                            send_message_ios(recipient.device_token, notification_content.title_es, '', json_notif)
+                            push_issued_ios = push_issued_ios + 1
+                        except Exception as e:
+                            pass
+
+
+        results = {'notifications_issued': 0, 'notifications_failed': 0,
+                   'push_issued_ios': 0, 'push_issued_android': 0,
+                   'push_failed_android': 0, 'push_failed_ios': 0}
+        return Response(results)
+
         '''
         elif recipients.startswith("uploaded"):
             if(recipients=='uploaded_pictures'):
@@ -1257,7 +1298,7 @@ def send_notifications(request):
         else:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
-        '''
+        
         notifications_issued = 0
         notifications_failed = 0
         push_issued_android = 0
@@ -1289,6 +1330,7 @@ def send_notifications(request):
                         pass
         results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
         return Response(results)
+        '''
 
 @api_view(['GET'])
 def nearby_reports_no_dwindow(request):

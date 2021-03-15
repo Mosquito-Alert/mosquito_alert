@@ -13,23 +13,30 @@ def score_label(score):
     else:
         return "user_score_beginner"
 
-def custom_render_notification(notification,locale):
-    expert_comment = notification.notification_content.get_title_locale_safe(locale)
-    expert_html = notification.notification_content.get_body_locale_safe(locale)
-    content = {
-        'id':notification.id,
-        'report_id':notification.report.version_UUID,
-        'user_id':notification.user.user_UUID,
-        'user_score':notification.user.score,
-        'user_score_label': score_label(notification.user.score),
-        'expert_id':notification.expert.id,
-        'date_comment':notification.date_comment,
-        'expert_comment':expert_comment,
-        'expert_html':expert_html,
-        'acknowledged':notification.acknowledged,
-        'public':notification.public,
+'''
+recipient is the TigaUser to which the notification will be displayed
+'''
+def custom_render_notification(sent_notification, recipìent, locale):
+    expert_comment = sent_notification.notification.notification_content.get_title_locale_safe(locale)
+    expert_html = sent_notification.notification.notification_content.get_body_locale_safe(locale)
+
+    ack = AcknowledgedNotification.objects.filter(user=recipìent,notification=sent_notification.notification).exists()
+
+    this_content = {
+        'id': sent_notification.notification.id,
+        'report_id': sent_notification.notification.report.version_UUID if sent_notification.notification.report is not None else None,
+        'user_id': sent_notification.sent_to_user.user_UUID if sent_notification.sent_to_user is not None else None,
+        'topic': sent_notification.sent_to_topic.topic_code if sent_notification.sent_to_topic is not None else None,
+        'user_score': sent_notification.sent_to_user.score if sent_notification.sent_to_user is not None else None,
+        'user_score_label': score_label(sent_notification.sent_to_user.score) if sent_notification.sent_to_user is not None else None,
+        'expert_id': sent_notification.notification.expert.id,
+        'date_comment': sent_notification.notification.date_comment,
+        'expert_comment': expert_comment,
+        'expert_html': expert_html,
+        'acknowledged': ack,
+        'public': sent_notification.notification.public,
     }
-    return content
+    return this_content
 
 class UserSerializer(serializers.ModelSerializer):
 

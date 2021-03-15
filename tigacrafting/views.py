@@ -615,7 +615,7 @@ def issue_notification(report_annotation,current_domain):
     recipient = report_annotation.report.user
     if recipient.device_token is not None and recipient.device_token != '':
         if (recipient.user_UUID.islower()):
-            json_notif = custom_render_notification(notification, 'es')
+            json_notif = custom_render_notification(sent_notification, recipient, 'en')
             try:
                 send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
             except Exception as e:
