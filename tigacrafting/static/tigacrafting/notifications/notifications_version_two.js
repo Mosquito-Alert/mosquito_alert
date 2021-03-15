@@ -212,13 +212,11 @@ $( document ).ready(function() {
         }else{
             recipients = get_selected_radio_op();
         }
-        report_id = "42e2521d-9e08-4ad6-82da-7d8e0b68e960";
         ppush = get_push();
 
         some_data.recipients = recipients;
         some_data.notification_content_id = content_id;
         some_data.user_id = user_id;
-        some_data.report_id = report_id;
         some_data.ppush = ppush;
 
         return some_data;
@@ -400,6 +398,7 @@ $( document ).ready(function() {
         $("#accordion").accordion("option","active",0);
         $("#title_en").val("");
         $("#title_native").val("");
+        $("#native_lang").val("");
         if(tinymce.get('body_en')){
             tinymce.get('body_en').setContent('');
         }

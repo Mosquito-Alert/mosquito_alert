@@ -2610,7 +2610,7 @@ class AcknowledgedNotification(models.Model):
         unique_together = ( 'user', 'notification', )
 
 
-TOPIC_GROUPS = ((0, 'General'), (1, 'Language topics'), (2, 'Country topics'))
+TOPIC_GROUPS = ((0, 'General'), (1, 'Language topics'), (2, 'Country topics'), (3, 'Special'))
 
 
 class NotificationTopic(models.Model):

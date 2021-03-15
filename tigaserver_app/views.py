@@ -1235,8 +1235,15 @@ def send_notifications(request):
         queryset = NotificationContent.objects.all()
         notification_content = get_object_or_404(queryset, pk=id)
         recipients = data['recipients']
+        topic = None
         if recipients == 'all':
-            send_to = TigaUser.objects.all()
+            topic = NotificationTopic.objects.get(topic_code='global')
+        elif "$" in recipients:
+            ids_list = recipients.split('$')
+            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
+        else: #it's a topic
+            topic = NotificationTopic.objects.get(topic_code=recipients)
+        '''
         elif recipients.startswith("uploaded"):
             if(recipients=='uploaded_pictures'):
                 send_to = users_with_pictures()
@@ -1250,6 +1257,7 @@ def send_notifications(request):
         else:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
+        '''
         notifications_issued = 0
         notifications_failed = 0
         push_issued_android = 0

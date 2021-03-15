@@ -1492,15 +1492,16 @@ def notifications_version_two(request,user_uuid=None):
         languages.append({'code':lang[0],'name':str(lang[1])})
     all_topics = []
     for group in TOPIC_GROUPS:
-        current_topics = []
-        for topic in NotificationTopic.objects.filter(topic_group=group[0]).order_by('topic_description'):
-            current_topics.append({ 'topic_text': topic.topic_description, 'topic_value': topic.topic_code})
-        topic_info = {
-            'topic_group_text': group[1],
-            'topic_group_value': group[0],
-            'topics': current_topics
-        }
-        all_topics.append(topic_info)
+        if group[0] != 3: # exclude special topics i.e. global
+            current_topics = []
+            for topic in NotificationTopic.objects.filter(topic_group=group[0]).order_by('topic_description'):
+                current_topics.append({ 'topic_text': topic.topic_description, 'topic_value': topic.topic_code})
+            topic_info = {
+                'topic_group_text': group[1],
+                'topic_group_value': group[0],
+                'topics': current_topics
+            }
+            all_topics.append(topic_info)
 
     return render(request, 'tigacrafting/notifications_version_two.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid, 'topics_info': json.dumps(all_topics), 'languages': languages})
 

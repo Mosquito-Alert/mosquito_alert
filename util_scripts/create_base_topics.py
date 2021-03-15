@@ -18,6 +18,8 @@ from django.utils.translation import ugettext_lazy as _
 def create_topics():
     # cleanup
     NotificationTopic.objects.all().delete()
+    t = NotificationTopic(topic_code="global", topic_description='Global topic', topic_group=3)
+    t.save()
     # language topics
     for lang in settings.LANGUAGES:
         language_name = str(lang[1])
