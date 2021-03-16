@@ -18,7 +18,7 @@ def run():
     OrganizationPin.objects.all().delete()
 
     countries = ['Austria', 'Cyprus', 'Portugal', 'Greece', 'Hungary', 'Serbia', 'Luxembourg', 'Netherlands', 'Spain',
-                 'Bulgaria', 'Turkey', 'Croatia', 'North Macedonia', 'Albania', 'Italy', 'Romania']
+                 'Bulgaria', 'Turkey', 'Croatia', 'North Macedonia', 'Albania', 'Italy', 'Romania', 'Switzerland']
 
     for c in countries:
         if c == 'Spain':
