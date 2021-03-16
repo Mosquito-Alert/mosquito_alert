@@ -15,17 +15,21 @@ from django.contrib.gis.geos import GEOSGeometry
 
 
 def run():
-
     OrganizationPin.objects.all().delete()
 
-    countries = ['Austria', 'Cyprus', 'Portugal', 'Greece', 'Hungary', 'Serbia', 'Luxembourg', 'Netherlands', 'Spain', 'Bulgaria']
+    countries = ['Austria', 'Cyprus', 'Portugal', 'Greece', 'Hungary', 'Serbia', 'Luxembourg', 'Netherlands', 'Spain',
+                 'Bulgaria', 'Turkey', 'Croatia', 'North Macedonia', 'Albania', 'Italy', 'Romania']
 
     for c in countries:
-        if c == 'spain':
+        if c == 'Spain':
             url = 'http://www.mosquitoalert.com/en/espana/'
+        elif c == 'North Macedonia':
+            url = 'http://www.mosquitoalert.com/en/macedonia/'
         else:
             url = 'http://www.mosquitoalert.com/en/{0}/'.format(c.lower())
-        op = OrganizationPin(point=EuropeCountry.objects.get(name_engl=c).geom.centroid,textual_description=c,page_url=url)
+        op = OrganizationPin(point=EuropeCountry.objects.get(name_engl=c).geom.centroid, textual_description=c,
+                             page_url=url)
         op.save()
+
 
 run()
