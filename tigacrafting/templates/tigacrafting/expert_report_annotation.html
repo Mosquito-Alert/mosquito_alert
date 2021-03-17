@@ -2097,11 +2097,7 @@
                         setup_and_launch_save_warning();
                     }
                     {% else %}
-                        if(validated_without_aedes_input || complex_without_class || simple_without_value){
-                            setup_and_launch_mustfix_dialog();
-                        }else{
-                            setup_and_launch_save_warning();
-                        }
+                    setup_and_launch_save_warning();
                     {% endif %}
                 } else {
                     gear.show();
