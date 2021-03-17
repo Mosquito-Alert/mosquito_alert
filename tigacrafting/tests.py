@@ -13,6 +13,7 @@ from operator import attrgetter
 from tigacrafting.views import assign_reports_to_user, issue_notification
 import tigaserver_project.settings as conf
 from django.utils import timezone
+from common.translation import get_translation_in
 import pytz
 
 ###                 HELPER STUFF                ########################################################################
@@ -336,8 +337,6 @@ class UserTestCase(TestCase):
                                                                      validation_value=validation_value_confirmed)
                 anno_reritja.save()
                 issue_notification(anno_reritja, "http://127.0.0.1:8000")
-                nc = NotificationContent.objects.first()
-                print(nc.title_en)
-                Notification.objects.all().delete()
-                NotificationContent.objects.all().delete()
-        pass
+                nc = NotificationContent.objects.order_by('-id').first()
+                # native title should be in the same language as the report
+                self.assertEqual( get_translation_in("your_picture_has_been_validated_by_an_expert", locale), nc.title_native )

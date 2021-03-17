@@ -135,13 +135,17 @@ def generic_send(recipient_token, title, message, json_notif=None):
     data_message = {
         "message": message,
         "title": title,
-        "notification": notification
+        "notif": notification
     }
     dry_run = True
     if not settings_local.DEBUG:
         dry_run = False
-    result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message, dry_run=dry_run)
-    return result
+    try:
+        result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message, dry_run=dry_run)
+        return result
+    except Exception as e:
+        return {'exception': str(e) }
+
 
 
 def send_message_android(tokens, title, message, notification=None):
@@ -156,3 +160,39 @@ def send_message_ios(tokens, alert_message, link_url, notification=None):
         return "DISABLED"
     else:
         return generic_send(tokens, alert_message, link_url, notification)
+
+
+def generic_multiple_send(token_list, title, message, json_notif=None):
+    push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
+    if json_notif:
+        notification = stringify_date(json_notif)
+    else:
+        notification = json_notif
+    data_message = {
+        "message": message,
+        "title": title,
+        "notif": notification
+    }
+    dry_run = True
+    if not settings_local.DEBUG:
+        dry_run = False
+    try:
+        result = push_service.notify_multiple_devices(registration_ids=token_list, data_message=data_message, dry_run=dry_run)
+        return result
+    except Exception as e:
+        return {'exception': str(e)}
+
+
+def send_messages_android(token_list, title, message, notification=None):
+    if settings.DISABLE_PUSH_ANDROID:
+        return "DISABLED"
+    else:
+        return generic_multiple_send(token_list,title,message,notification)
+
+
+def send_messages_ios(token_list, title, message, notification=None):
+    if settings.DISABLE_PUSH_IOS:
+        return "DISABLED"
+    else:
+        return generic_multiple_send(token_list,title,message,notification)
+
