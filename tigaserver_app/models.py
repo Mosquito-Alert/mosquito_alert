@@ -44,7 +44,7 @@ from django.template.loader import TemplateDoesNotExist
 from io import BytesIO
 from django.core.files import File
 import html.entities
-from common.translation import get_locale_for_en, get_translation_in
+from common.translation import get_locale_for_en, get_translation_in, get_locale_for_native
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -2155,48 +2155,57 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
         if package_number_allows_notification(report):
             #table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
             notification_content = NotificationContent()
-            context_es = {}
-            context_ca = {}
+            # context_es = {}
+            # context_ca = {}
             context_en = {}
-            locale_for_en = get_locale_for_en(report)
-
+            context_native = {}
+            # locale_for_en = get_locale_for_en(report)
+            locale_for_native = get_locale_for_native(report)
+            notification_content.native_locale = locale_for_native
             super_movelab = User.objects.get(pk=24)
-            notification_content.title_es = "¡Acabas de recibir una recompensa de puntos!"
-            notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
-            notification_content.title_en = get_translation_in("you_just_received_a_points_award",locale_for_en)
+            # notification_content.title_es = "¡Acabas de recibir una recompensa de puntos!"
+            # notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
+            notification_content.title_en = get_translation_in("you_just_received_a_points_award",'en')
+            notification_content.title_native = get_translation_in("you_just_received_a_points_award", locale_for_native)
             if report is not None:
                 if report.get_final_photo_url_for_notification():
-                    context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                    #context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
                     context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                    context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                    context_native['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
+                    #context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
                 else:
                     pic = report.get_first_visible_photo()
                     if pic:
                         pic_url = pic.get_medium_url()
                         if pic_url is not None:
-                            context_es['picture_link'] = 'http://' + current_domain + pic_url
+                            # context_es['picture_link'] = 'http://' + current_domain + pic_url
                             context_en['picture_link'] = 'http://' + current_domain + pic_url
-                            context_ca['picture_link'] = 'http://' + current_domain + pic_url
+                            context_native['picture_link'] = 'http://' + current_domain + pic_url
+                            # context_ca['picture_link'] = 'http://' + current_domain + pic_url
 
-            context_es['amount_awarded'] = xp_amount
+            # context_es['amount_awarded'] = xp_amount
             context_en['amount_awarded'] = xp_amount
-            context_ca['amount_awarded'] = xp_amount
+            context_native['amount_awarded'] = xp_amount
+            # context_ca['amount_awarded'] = xp_amount
 
-            context_es['reason_awarded'] = get_translation_in(reason_label, 'es')
-            context_en['reason_awarded'] = get_translation_in(reason_label, locale_for_en)
-            context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca')
+            # context_es['reason_awarded'] = get_translation_in(reason_label, 'es')
+            context_en['reason_awarded'] = get_translation_in(reason_label, 'en')
+            context_native['reason_awarded'] = get_translation_in(reason_label, locale_for_native)
+            # context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca')
 
-            notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
-            notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
+            #notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
+            #notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
+            notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
             try:
-                notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_' + locale_for_en + '.html', context_en)
+                notification_content.body_html_native = render_to_string('tigaserver_app/award_notification_' + locale_for_native + '.html', context_native)
             except TemplateDoesNotExist:
-                notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html',context_en)
+                notification_content.body_html_native = render_to_string('tigaserver_app/award_notification_en.html',context_en)
 
 
-            notification_content.body_html_es = notification_content.body_html_es.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-            notification_content.body_html_ca = notification_content.body_html_ca.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+            #notification_content.body_html_es = notification_content.body_html_es.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+            #notification_content.body_html_ca = notification_content.body_html_ca.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
             notification_content.body_html_en = notification_content.body_html_en.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+            notification_content.body_html_native = notification_content.body_html_native.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
 
 
             '''
@@ -2217,13 +2226,13 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
                 if (recipient.user_UUID.islower()):
                     try:
                         #print(recipient.user_UUID)
-                        send_message_android(recipient.device_token, notification_content.title_es, '')
+                        send_message_android(recipient.device_token, notification_content.title_en, '')
                     except Exception as e:
                         pass
                 else:
                     try:
                         #print(recipient.user_UUID)
-                        send_message_ios(recipient.device_token, notification_content.title_es, '')
+                        send_message_ios(recipient.device_token, notification_content.title_en, '')
                     except Exception as e:
                         pass
 

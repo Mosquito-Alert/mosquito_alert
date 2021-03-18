@@ -297,11 +297,11 @@ class ScoringTestCase(TestCase):
         self.assertEqual(Award.objects.filter(category__id=3).filter(report__version_UUID=report_of_day_2.version_UUID).count(),1)  # Check second report has 2 day streak
 
     @staticmethod
-    def get_notification_body_es(category_label, xp):
-        context_es = {}
-        context_es['amount_awarded'] = xp
-        context_es['reason_awarded'] = get_translation_in(category_label, 'es')
-        return render_to_string('tigaserver_app/award_notification_es.html', context_es).encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
+    def get_notification_body_en(category_label, xp):
+        context_en = {}
+        context_en['amount_awarded'] = xp
+        context_en['reason_awarded'] = get_translation_in(category_label, 'en')
+        return render_to_string('tigaserver_app/award_notification_en.html', context_en).encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
 
     @staticmethod
     def get_notification_body_for_locale(category_label, xp, locale):
@@ -323,8 +323,8 @@ class ScoringTestCase(TestCase):
         self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body).count(), 1)
+            notification_body = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
 
     def test_20_report_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
@@ -341,10 +341,10 @@ class ScoringTestCase(TestCase):
 
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
+            notification_body_10 = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            notification_body_20 = self.get_notification_body_en(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_10).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_20).count(), 1)
 
     def test_50_report_achievement(self):
         user_id = '00000000-0000-0000-0000-000000000000'
@@ -362,12 +362,12 @@ class ScoringTestCase(TestCase):
 
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
-            notification_body_50 = self.get_notification_body_es(ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_50).count(), 1)
+            notification_body_10 = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            notification_body_20 = self.get_notification_body_en(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+            notification_body_50 = self.get_notification_body_en(ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_10).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_20).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_50).count(), 1)
 
 
     def test_corner_cases_first_of_season_different_users(self):
@@ -411,7 +411,7 @@ class ScoringTestCase(TestCase):
             #     print("<---- SEPARATOR ---->")
             #     print(n.notification_content.body_html_en)
             #     print("<---- END SEPARATOR ---->")
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_native=notification_body).count(), 1)
 
     def test_profile_first_of_season(self):
         user_id_1 = '00000000-0000-0000-0000-000000000002'
@@ -480,8 +480,8 @@ class ScoringTestCase(TestCase):
         self.assertEqual(a.given_to, user_2)  # Should have been given to user_2
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body).count(),1)
+            notification_body = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(),1)
 
     def test_20_report_achievement_across_profiles(self):
         user_id_1 = '00000000-0000-0000-0000-000000000002'
@@ -508,10 +508,10 @@ class ScoringTestCase(TestCase):
 
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
+            notification_body_10 = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            notification_body_20 = self.get_notification_body_en(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_10).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_20).count(), 1)
 
     def test_50_report_achievement_across_profiles(self):
         user_id_1 = '00000000-0000-0000-0000-000000000002'
@@ -544,9 +544,9 @@ class ScoringTestCase(TestCase):
 
         # emulate notifications
         if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body_10 = self.get_notification_body_es(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            notification_body_20 = self.get_notification_body_es(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
-            notification_body_50 = self.get_notification_body_es(ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_50).count(), 1)
+            notification_body_10 = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
+            notification_body_20 = self.get_notification_body_en(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
+            notification_body_50 = self.get_notification_body_en(ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_10).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_20).count(), 1)
+            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_50).count(), 1)
