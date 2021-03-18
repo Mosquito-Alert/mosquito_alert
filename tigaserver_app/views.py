@@ -27,7 +27,7 @@ from django.contrib.gis.measure import Distance
 from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
-from tigacrafting.messaging import send_message_ios, send_message_android
+from tigacrafting.messaging import send_message_ios, send_message_android, send_messages_ios, send_messages_android
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
 from tigascoring.maUsers import smmry
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
@@ -906,6 +906,24 @@ def force_refresh_cfs_reports(request):
 
 
 @api_view(['POST'])
+def msgs_ios(request):
+    data = request.data
+    user_ids = data.get('user_ids', [])
+    alert_message = data.get('alert_message', -1)
+    link_url = data.get('link_url', -1)
+    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
+    tokens = [ u.profile.firebase_token for u in queryset ]
+    if alert_message != -1 and link_url != -1:
+        if len(tokens) > 0:
+            resp = send_messages_ios(tokens, alert_message, link_url)
+            return Response({'tokens': tokens, 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': resp})
+        else:
+            return Response({'tokens': [], 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': 'no_tokens'})
+    else:
+        raise ParseError(detail='Invalid parameters')
+
+
+@api_view(['POST'])
 def msg_ios(request):
     user_id = request.query_params.get('user_id', -1)
     alert_message = request.query_params.get('alert_message', -1)
@@ -924,6 +942,25 @@ def msg_ios(request):
             raise ParseError(detail='Token not set for user')
     else:
         raise ParseError(detail='Invalid parameters')
+
+
+@api_view(['POST'])
+def msgs_android(request):
+    data = request.data
+    user_ids = data.get('user_ids', [])
+    message = data.get('message', -1)
+    title = data.get('title', -1)
+    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
+    tokens = [ u.profile.firebase_token for u in queryset ]
+    if message != -1 and title != -1:
+        if len(tokens) > 0:
+            resp = send_messages_android(tokens, message, title)
+            return Response({'tokens': tokens, 'message': message, 'title': title, 'push_status_msg': resp})
+        else:
+            return Response({'tokens': [], 'message': message, 'title': title, 'push_status_msg': 'no_tokens'})
+    else:
+        raise ParseError(detail='Invalid parameters')
+
 
 @api_view(['POST'])
 def msg_android(request):
@@ -945,6 +982,7 @@ def msg_android(request):
     else:
         raise ParseError(detail='Invalid parameters')
 
+
 @api_view(['POST'])
 def token(request):
     token = request.query_params.get('token', -1)
@@ -957,6 +995,7 @@ def token(request):
         return Response({'token' : token})
     else:
         raise ParseError(detail='Invalid parameters')
+
 
 @api_view(['GET'])
 @cache_page(60 * 5)
