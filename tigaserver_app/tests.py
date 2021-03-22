@@ -21,6 +21,7 @@ from tigacrafting.views import issue_notification
 from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
+import urllib
 
 '''
 class PictureTestCase(APITestCase):
@@ -93,6 +94,7 @@ class NotificationTestCase(APITestCase):
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.device_token = 'caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
         t.save()
         self.regular_user = t
         non_naive_time = timezone.now()
@@ -414,4 +416,16 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.data['body_html_en'], nc.body_html_en)
         # sould be the same as params
         self.assertEqual(response.data['body_html_en'], notif_content['body_html_en'])
+        self.client.logout()
+
+    def test_push_notifications_single_user(self):
+        # send push to android
+        self.client.force_authenticate(user=self.reritja_user)
+        data = {
+            'user_id': self.regular_user.user_UUID,
+            'message': 'This is a test message',
+            'title': 'This is the message title'
+        }
+        response = self.client.post('/api/msg_android/?' + urllib.parse.urlencode(data))
+        print(response)
         self.client.logout()

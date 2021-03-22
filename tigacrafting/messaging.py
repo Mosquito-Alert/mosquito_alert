@@ -137,9 +137,7 @@ def generic_send(recipient_token, title, message, json_notif=None):
         "title": title,
         "notif": notification
     }
-    dry_run = True
-    if not settings_local.DEBUG:
-        dry_run = False
+    dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
     try:
         result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message, dry_run=dry_run)
         return result
@@ -173,9 +171,7 @@ def generic_multiple_send(token_list, title, message, json_notif=None):
         "title": title,
         "notif": notification
     }
-    dry_run = True
-    if not settings_local.DEBUG:
-        dry_run = False
+    dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
     try:
         result = push_service.notify_multiple_devices(registration_ids=token_list, data_message=data_message, dry_run=dry_run)
         return result

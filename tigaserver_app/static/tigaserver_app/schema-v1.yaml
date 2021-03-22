@@ -4,6 +4,205 @@ info:
   version: 1.0
   description: Documentation for the Mosquito Alert server API
 paths:
+  /api/mark_notif_as_ack/:    
+    delete:
+      operationId: Destroymark_notif_as_ack
+      summary: Marks a notification as read by a certain user
+      tags:
+      - notifications
+      parameters: 
+        - name: user
+          required: true
+          in: query
+          description: User id for which the notification will be marked as read
+          schema:
+            type: string
+        - name: notif
+          required: true
+          in: query
+          description: Id of the notification which will be marked as read
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'If successful, the operation returns "no content"'
+        '400':
+          description: 'If either of both params was not supplied or if the ack defined by the combination of user and notif ids does not exist'
+  /api/subscribe_to_topic/:
+      post:
+        operationId: Createsubscribe_to_topic
+        summary: Subscribes a user to a given topic
+        tags:
+        - notifications
+        description: This endpoint subscribes a user to a given topic. A topic behaves like a mail list,
+          and if a push notification is sent to a topic, all users subscribed to this topic will receive the
+          notification.
+        parameters: 
+        - name: user
+          required: true
+          in: query
+          description: User id for which the subscription will be performed
+          schema:
+            type: string
+        - name: code
+          required: true
+          in: query
+          description: Code of the topic the user will be subscribed to
+          schema:
+            type: string
+        responses:
+          '201':
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: integer
+                        description: The id of the subscription
+                      user:
+                        type: string
+                        description: UUID of the subscribed user
+                      topic:
+                        type: integer
+                        description: Id of the subscribed topic
+                      topic_code:
+                        type: string
+                        description: String with the topic code
+            description: 'Subscription correctly performed'
+          '400':
+            description: 'In any of the following cases: user indicated by user id param does not exist, or if the user is already subscribed'
+  /api/unsub_from_topic/:
+      post:
+        summary: Unsubscribes a user from a topic
+        description: This call removes the subscription of a user to a given topic, meaning that the user will not receive any more push notifications
+          sent to the topic.
+        tags:
+          - notifications
+        operationId: Createunsub_from_topic
+        parameters: 
+        - name: user
+          required: true
+          in: query
+          description: User id for which the subscription will be removed
+          schema:
+            type: string
+        - name: code
+          required: true
+          in: query
+          description: Code of the topic the user will be removed from
+          schema:
+            type: string
+        responses:
+          '204':
+            description: 'In case the user is successfully unsubscribed'
+          '400':
+            description: 'In case any of the parameters is missing, or the user was not subscibed to the topic, or the user indicated by user param does not exist'
+  /api/topics_subscribed/:
+    get:
+      summary: List the topics a user is subscribed to
+      description: A user can be subscribed to any number of topics. This endpoint lists all current subscriptions of a given user.
+      tags:
+        - notifications
+      operationId: listtopics_subscribeds
+      parameters: 
+        - name: user
+          required: true
+          in: query
+          description: User id for which the subscriptions will be listed
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                      description: 'Subscription id'
+                    user:                      
+                      type: string
+                      description: 'User uuid of the user'
+                    topic:                      
+                      type: integer
+                      description: 'topic id'
+                    topic_code:                      
+                      type: string
+                      description: 'Topic code'
+          description: 'Success and returns a list of the subscriptions'
+        '400':
+          description: 'Either the user param was not supplied or the user associated with it does not exist'
+  /api/user_notifications/:
+    get:
+      operationId: listuser_notifications
+      summary: Returns a list of notifications sent to a given user, by uuid
+      tags:
+        - notifications
+      description: Returns a list of notifications sent to a given user, by uuid. All the notifications are at least translated to english and maybe to a second
+        language. If this is the case and the locale parameter is sent, the text will be shown in this locale. If not, the language will default to english.
+      parameters: 
+        - name: user_id
+          required: true
+          in: query
+          description: The returned list will include only notifications sent to the user represented with the supplied id
+          schema:
+            type: string
+        - name: locale
+          required: false
+          in: query
+          description: Two letter language code in which the notification list will be shown. If the notification has not been translated to
+            the desired language, it defaults to english (which is mandatory and always present)
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    report_id:                      
+                      type: integer                          
+                      description: 'Id of the report which originated this notification. Can be null.'
+                    user_id:
+                      type: string
+                      description: 'Id of the user to which the notification was sent. Can be null, if the notification was sent to a topic.'
+                    topic:
+                      type: string                      
+                      description: 'Topic code (lower case, no special chars) to which the notification was sent. Can be null, if the notification was sent to a user.'
+                    user_score:
+                      type: integer
+                      description: 'Value for old user score. Ignore this field because it is deprecated and only present for backwards compatibility'
+                    user_score_label:
+                      type: string
+                      description: 'Can be user_score_pro, user_score_advanced or user_score_beginner. Categorized string for user_score. Also deprecated'
+                    expert_id:
+                      type: integer
+                      description: 'User id for the user(expert) that sent the notification.'
+                    date_comment:
+                      type: date
+                      description: 'ISO timestamp for when the notification was issued, server time.'
+                    expert_comment:
+                      type: string
+                      description: 'Plain text with the notification title.'                  
+                    expert_html:
+                      type: string
+                      description: 'HTML Text with the full notification body.'
+                    acknowledged:
+                      type: boolean
+                      description: 'Boolean fields which says if the user tapped on the notification in the mobile apps. If true, the user opened the notification. If false, the notification is unread.'
+                    public:
+                      type: boolean
+                      description: 'Boolean fields which indicates if this notification can be shown on the public map.'    
   /api/owcampaigns/:
     get:
       operationId: listOWCampaigns
@@ -184,43 +383,7 @@ paths:
               schema:
                 type: array
                 items: {}
-          description: ''
-  /api/user_notifications/:
-    get:
-      operationId: listuser_notifications
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
-    post:
-      operationId: Createuser_notifications
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: {}
-          description: ''
-    put:
-      operationId: Updateuser_notifications
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: {}
-          description: ''
-    delete:
-      operationId: Destroyuser_notifications
-      parameters: []
-      responses:
-        '204':
-          description: ''
+          description: ''  
   /api/report_stats/:
     get:
       operationId: listreport_stats

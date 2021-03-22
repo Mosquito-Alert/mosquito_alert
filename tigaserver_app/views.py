@@ -1160,7 +1160,7 @@ def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
     return content
 
 
-@api_view(['GET','POST','DELETE','PUT'])
+@api_view(['GET'])
 def user_notifications(request):
     if request.method == 'GET':
         locale = request.query_params.get('locale', 'en')
@@ -1198,6 +1198,7 @@ def user_notifications(request):
         content = custom_render_sent_notifications(notifications_all_of_them, acknowledgements, locale)
         #return Response(serializer.data)
         return Response(content)
+    '''
     if request.method == 'POST':
         id = request.query_params.get('id', -1)
         try:
@@ -1207,25 +1208,26 @@ def user_notifications(request):
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
         notification_content = this_notification.notification_content
-        body_html_es = request.query_params.get('body_html_es', '-1')
-        title_es = request.query_params.get('title_es', '-1')
-        body_html_ca = request.query_params.get('body_html_ca', '-1')
-        title_ca = request.query_params.get('title_ca', '-1')
+        #body_html_es = request.query_params.get('body_html_es', '-1')
+        #title_es = request.query_params.get('title_es', '-1')
+        #body_html_ca = request.query_params.get('body_html_ca', '-1')
+        #title_ca = request.query_params.get('title_ca', '-1')
         body_html_en = request.query_params.get('body_html_en', '-1')
         title_en = request.query_params.get('title_en', '-1')
+        body_html_native = request.query_params.get('body_html_native', '-1')
+        title_native = request.query_params.get('title_native', '-1')
+        native_locale = request.query_params.get('native_locale', '-1')
         public = request.query_params.get('public', '-1')
-        if body_html_ca != '-1':
-            notification_content.body_html_ca = body_html_ca
-        if title_ca != '-1':
-            notification_content.title_ca = title_ca
         if body_html_en != '-1':
             notification_content.body_html_en = body_html_en
         if title_en != '-1':
             notification_content.title_en = title_en
-        if body_html_es != '-1':
-            notification_content.body_html_es = body_html_es
-        if title_es != '-1':
-            notification_content.title_es = title_es
+        if body_html_native != '-1':
+            notification_content.body_html_native = body_html_native
+        if title_native != '-1':
+            notification_content.title_native = title_native
+        if native_locale != '-1':
+            notification_content.native_locale = native_locale
         if public != '-1':
             public_bool = string_par_to_bool(public)
             this_notification.public = public_bool
@@ -1252,6 +1254,7 @@ def user_notifications(request):
         this_notification.delete()
         notification_content.delete()
         return HttpResponse(status=204)
+    '''
 
 @api_view(['PUT'])
 def notification_content(request):
