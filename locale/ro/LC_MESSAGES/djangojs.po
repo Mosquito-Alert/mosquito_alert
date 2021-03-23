@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"PO-Revision-Date: 2021-03-23 10:50+0100\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Romanian (Romania)\n"
 "Language: ro-RO\n"
@@ -17,22 +17,22 @@ msgstr ""
 "X-Loco-Project-Id: 95706\n"
 "X-Loco-Tagged: js_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.25 20200901-1"
+"X-Loco-Api-Version: 1.0.25 20210310-1"
 
 #: stats/templates/stats/user_ranking.html:78 loco:5f3558c334e29c5953399559
 #| msgid "Puntuación"
 msgid "Score"
-msgstr "Score"
+msgstr "Scor"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
 #| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Started contributing"
+msgstr "Participarea a început"
 
 #: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
 #| msgid "Última actividad hace"
 msgid "Last active"
-msgstr "Last active"
+msgstr "Ultima data activ"
 
 #: tigamap/templates/tigamap/app.html:148
 #: tigamap/templates/tigamap/app_new.html:197
@@ -41,28 +41,28 @@ msgstr "Last active"
 #: tigaserver_app/models.py:567 loco:5f3558c334e29c595339959f
 #| msgid "Otros"
 msgid "Other"
-msgstr "Other"
+msgstr "Alte"
 
 #: stats/static/stats/user_ranking.js:20 loco:5f355e391e841656806f0f12
 #| msgid "Nivel General"
 msgid "Overall"
-msgstr "Overall level"
+msgstr "Nivel general"
 
 #: stats/static/stats/user_ranking.js:24 loco:5f355e391e841656806f0f13
 #| msgid "Nivel Mosquito"
 msgid "Adult"
-msgstr "Mosquito level"
+msgstr "Nivelul țânțarilor"
 
 #: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
 #: loco:5f355e391e841656806f0f14
 #| msgid "Datos enviados"
 msgid "Reports"
-msgstr "Sent data"
+msgstr "Date trimise"
 
 #: stats/static/stats/user_ranking.js:34 loco:5f355e391e841656806f0f15
 #| msgid "Nivel Lugares de cría"
 msgid "Site"
-msgstr "Site level"
+msgstr "Nivelul terenului"
 
 #: tigacrafting/static/tigacrafting/jquery-ui/jquery-ui.min.js:10
 #: loco:5f355e391e841656806f0f16

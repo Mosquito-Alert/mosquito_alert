@@ -1,0 +1,45 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+Informații despre scor
+{% endblock %}
+
+
+{% block content %}
+
+<div class='main_container'>
+
+    <div class='text_container'>
+
+        <h2>Informații despre scor</h2>
+        <p>Acțiunile întreprinse în Mosquito Alert au recunoaștere și recompense sub formă de puncte. Numărul de puncte per raport variază în funcție de informațiile furnizate și de calitatea acestora.</p>
+        <p>Punctele maxime care pot fi obținute pe raport sunt:</p>
+        <ul>
+            <li>Țânțarul invaziv <em>Aedes</em>: 20 de puncte</li>
+            <li>Țânțar comun: 14 puncte</li>
+            <li>Locuri de reproducere în șiroaie de apă: 20 de puncte</li>
+            <li>Alte situri de reproducere în zona publică: 16 puncte</li>
+        </ul>
+        <p>În plus, există bonusuri suplimentare pentru primul țânțar al sezonului, primul raport al zilei sau pentru participarea frecventă. Când ajungeți la un anumit număr de rapoarte, nu numai că obțineți puncte suplimentare, dar primiți și un trofeu special. Există diferite trofee în funcție de etapele atinse.</p>
+        <p>Rapoartele care sunt trimise ca a fi țânțari, dar se dovedesc că nu sunt țânțari conform validării experților, nu vor câștiga puncte. Nici o fotografie care nu permite experților să identifice țânțarul sau locul de reproducere nu va fi nici marcată.</p>
+        <p>Acumularea de puncte vă va permite să urcați la un <strong>nivel</strong>:</p>
+        <ul>
+          <li>(1) Novice (începător)</li>
+          <li>(2) Colaborator (colaborator)</li>
+          <li>(3) Expert (expert)</li>
+          <li>(4) Master (master)</li>
+          <li>(5) Mare maestru (mare maestru)</li>
+        </ul>
+        <p>Aceste pictograme indică nivelul atins:</p>
+
+        <img src="{% static "tigahelp/InfoScoring_half.png" %}" width="100%">
+
+        <h2>Panoul de puncte</h2>
+        <p>Clasamentul global poate fi accesat făcând clic pe scor pe ecranul principal. Apăsând pe o poziție de clasare se afișează defalcarea punctelor obținute de utilizator.</p>
+        <p>Dând clic pe "Mai multe detalii" se accesează panoul de puncte defalcate.</p>
+        <p>În această secțiune există o listă a rapoartelor trimise cu scorul obținut în fiecare dintre ele. Rapoartele sunt interactive, făcând clic pentru a obține scorul defalcat și de ce ați primit scorul.</p>
+
+    </div>
+</div>
+{% endblock %}

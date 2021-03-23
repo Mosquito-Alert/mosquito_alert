@@ -2,188 +2,226 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 11:02+0000\n"
-"PO-Revision-Date: 2020-09-21 14:25+0200\n"
+"POT-Creation-Date: 2020-08-13 16:44+0200\n"
+"PO-Revision-Date: 2021-03-23 10:50+0100\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Romanian (Romania)\n"
 "Language: ro-RO\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 :(((n%100>19)||(( n%100==0)&&(n!"
+"=0)))? 2 : 1));\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 :(((n%100>19)||(( n%100==0)&&(n!"
-"=0)))? 2 : 1));\n"
 "X-Generator: Loco https://localise.biz\n"
 "X-Loco-Source-Locale: es-ES\n"
 "X-Loco-Project-Id: 95706\n"
 "X-Loco-Tagged: plain_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.25 20200901-1\n"
+"X-Loco-Api-Version: 1.0.25 20210310-1"
 
 #: stats/templates/stats/chart.html:64
 #: stats/templates/stats/fix_user_chart.html:78
 #: stats/templates/stats/report_user_chart.html:78
+#: loco:5f3558c334e29c5953399542
+#| msgid "Total acumulado"
 msgid "cumulative-total"
-msgstr "Cumulative Total"
+msgstr "Total cumulativ"
 
-#: stats/templates/stats/chart.html:85
+#: stats/templates/stats/chart.html:85 loco:5f3558c334e29c5953399543
+#| msgid "Participantes"
 msgid "number-of-citizen-scientists"
 msgstr "Citizen scientists"
 
-#: stats/templates/stats/chart.html:94
+#: stats/templates/stats/chart.html:94 loco:5f3558c334e29c5953399544
+#| msgid "Informes de mosquito tigre"
 msgid "number-of-tiger-mosquito-reports"
-msgstr "Tiger mosquito reports"
+msgstr "Rapoarte de țânțar tigru"
 
-#: stats/templates/stats/chart.html:103
+#: stats/templates/stats/chart.html:103 loco:5f3558c334e29c5953399545
+#| msgid "Informes de lugares de cría"
 msgid "number-of-breeding-site-reports"
-msgstr "Breeding site reports"
+msgstr "Rapoarte de locație de reproducere"
 
-#: stats/templates/stats/fix_user_chart.html:99
+#: stats/templates/stats/fix_user_chart.html:99 loco:5f3558c334e29c5953399546
 msgid "Participants with over 20 fixes"
-msgstr "Participants with over 20 fixes"
+msgstr "Participanți cu peste 20 de indicații de poziție"
 
-#: stats/templates/stats/fix_user_chart.html:108
+#: stats/templates/stats/fix_user_chart.html:108 loco:5f3558c334e29c5953399547
 msgid "Participants with over 15 fixes"
-msgstr "Participants with over 15 fixes"
+msgstr "Participanți cu peste 15 de indicații de poziție"
 
-#: stats/templates/stats/fix_user_chart.html:117
+#: stats/templates/stats/fix_user_chart.html:117 loco:5f3558c334e29c5953399548
 msgid "Participants with over 10 fixes"
-msgstr "Participants with over 10 fixes"
+msgstr "Participanți cu peste 10 indicații de poziție"
 
-#: stats/templates/stats/fix_user_chart.html:126
+#: stats/templates/stats/fix_user_chart.html:126 loco:5f3558c334e29c5953399549
 msgid "Participants with over 5 fixes"
-msgstr "Participants with over 5 fixes"
+msgstr "Participanți cu peste 5 indicații de poziție"
 
-#: stats/templates/stats/fix_user_chart.html:135
+#: stats/templates/stats/fix_user_chart.html:135 loco:5f3558c334e29c595339954a
 msgid "Participants with at least 1 fix"
-msgstr "Participants with at least 1 fix"
+msgstr "Participanți cu doar 1 indicație de poziție"
 
 #: stats/templates/stats/report_user_chart.html:99
+#: loco:5f3558c334e29c595339954b
 msgid "Participants with at least 1 report"
-msgstr "Participants with at least 1 report"
+msgstr "Participanți cu 1 raport"
 
 #: stats/templates/stats/report_user_chart.html:108
+#: loco:5f3558c334e29c595339954c
 msgid "Participants with over 1 reports"
-msgstr "Participants with over 1 reports"
+msgstr "Participanți cu peste 1 raport"
 
 #: stats/templates/stats/report_user_chart.html:117
+#: loco:5f3558c334e29c595339954d
 msgid "Participants with over 2 reports"
-msgstr "Participants with over 2 reports"
+msgstr "Participanți cu peste 2 rapoarte"
 
 #: stats/templates/stats/report_user_chart.html:126
+#: loco:5f3558c334e29c595339954e
 msgid "Participants with over 3 reports"
-msgstr "Participants with over 3 reports"
+msgstr "Participanți cu peste 3 rapoarte"
 
 #: stats/templates/stats/report_user_chart.html:135
+#: loco:5f3558c334e29c595339954f
 msgid "Participants with over 4 reports"
-msgstr "Participants with over 4 reports"
+msgstr "Participanți cu peste 4 rapoarte"
 
-#: stats/templates/stats/user_ranking.html:30
+#: stats/templates/stats/user_ranking.html:30 loco:5f3558c334e29c5953399550
+#| msgid ""
+#| "Consulta tu puntuación y nivel alcanzados. En el menú de ajustes "
+#| "encontrarás información detallada sobre el sistema de puntuación de "
+#| "Mosquito Alert."
 msgid "user_ranking_info_text_1"
 msgstr ""
-"Check your current score and level. In the settings menu you will find "
-"detailed information about Mosquito Alert scoring system."
+"Verificați scorul și nivelul curent. În meniul de setări veți găsi "
+"informații detaliate despre sistemul de punctare Mosquito Alert."
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399551
+#| msgid "Más información sobre"
 msgid "user_ranking_info_text_2"
-msgstr "More info about"
+msgstr "Mai multe informații despre"
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399552
+#| msgid "la puntuación"
 msgid "user_ranking_info_text_3"
-msgstr "scoring"
+msgstr "punctaj"
 
-#: stats/templates/stats/user_ranking.html:40
+#: stats/templates/stats/user_ranking.html:40 loco:5f3558c334e29c5953399553
+#| msgid ""
+#| "Todavía no tienes puntuación, así que no apareces en el ranking. Por "
+#| "favor, sube algunas observaciones y vuelve a consultar el ranking más "
+#| "tarde. Para saber cómo ganar puntos, sigue el enlace más abajo."
 msgid "no_score_yet"
 msgstr ""
-"You don't have a score yet therefore you don't appear in the ranking. "
-"Please, upload some notifications and check back later. To know how to earn "
-"points, follow the link below."
+"Nu aveți încă un scor, prin urmare nu apareți în clasament. Vă rugăm, "
+"încărcați câteva notificări și reveniți mai târziu. Pentru a afla cum să "
+"câștigați puncte, urmăriți linkul de mai jos."
 
-#: stats/templates/stats/user_ranking.html:68
-#: stats/templates/stats/user_ranking.html:156
+#: stats/templates/stats/user_ranking.html:55
+#: stats/templates/stats/user_ranking.html:143 loco:5f3558c334e29c5953399554
+#| msgid "Mi posición"
 msgid "My position"
-msgstr "My position"
+msgstr "Poziția mea"
 
-#: stats/templates/stats/user_ranking.html:72
+#: stats/templates/stats/user_ranking.html:59
 #: stats/templates/stats/user_score.html:37
 #: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_score.html:143 loco:5f3558c334e29c5953399555
+#| msgid "de"
 msgid "of"
-msgstr ""
+msgstr "de"
 
-#: stats/templates/stats/user_ranking.html:88
+#: stats/templates/stats/user_ranking.html:75 loco:5f3558c334e29c5953399556
+#| msgid "Posición"
 msgid "Rank"
-msgstr "Rank"
+msgstr "Rang"
 
-#: stats/templates/stats/user_ranking.html:89
+#: stats/templates/stats/user_ranking.html:76 loco:5f3558c334e29c5953399557
+#| msgid "Usuario"
 msgid "User"
-msgstr "User"
+msgstr "Utilizator"
 
-#: stats/templates/stats/user_ranking.html:90
+#: stats/templates/stats/user_ranking.html:77 loco:5f3558c334e29c5953399558
+#| msgid "Rango general"
 msgid "Overall class"
-msgstr "Overall class"
+msgstr "Clasa generală"
 
-#: stats/templates/stats/user_ranking.html:91
+#: stats/templates/stats/user_ranking.html:78 loco:5f3558c334e29c5953399559
+#| msgid "Puntuación"
 msgid "Score"
-msgstr "Score"
+msgstr "Scor"
 
-#: stats/templates/stats/user_ranking.html:97
+#: stats/templates/stats/user_ranking.html:84 loco:5f3558c334e29c595339955a
+#| msgid "¡Tú estás aquí!"
 msgid "This is you!"
-msgstr "This is you!"
+msgstr "Acesta esti tu!"
 
-#: stats/templates/stats/user_ranking.html:134
+#: stats/templates/stats/user_ranking.html:121 loco:5f3558c334e29c595339955b
+#| msgid "Más detalles"
 msgid "Score details"
-msgstr "Details"
+msgstr "Detalii"
 
-#: stats/templates/stats/user_score.html:28
+#: stats/templates/stats/user_score.html:28 loco:5f3558c334e29c595339955c
+#| msgid "Resumen de la puntuación"
 msgid "Citizen Scientist"
-msgstr "Score summary"
+msgstr "Scor total"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:31 loco:5f3558c334e29c595339955d
+#| msgid ""
+#| "Avatar personal del participante. Gracias a la puntuación obtenida, se ha "
+#| "alcanzado el nivel de experiencia general de "
 msgid "this_is_your_personal_avatar"
 msgstr ""
-"This is the participant's avatar. According to the score, the current "
-"experience level is "
+"Acesta este avatarul participantului. Conform scorului, nivelul actual de "
+"experiență este"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:31 loco:5f3558c334e29c595339955e
+#| msgid ""
+#| "Hay 5 niveles posibles: Principiante, Colaborador, Experto, Maestro y "
+#| "Gran Maestro."
 msgid "there_are_5_levels"
 msgstr ""
-"There are 5 possible levels: Beginner, Collaborator, Expert, Master and "
-"Grand Master."
+"Există 5 niveluri posibile: Începător, Colaborator, Expert, Maestru și Mare "
+"Maestru."
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
+#| msgid "Empezó a participar hace"
 msgid "Joined"
-msgstr "Started contributing"
+msgstr "Participarea a început"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
+#| msgid "Última actividad hace"
 msgid "Last active"
-msgstr "Last active"
+msgstr "Ultima data activ"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399561
+#| msgid "Nunca"
 msgid "Never"
-msgstr ""
+msgstr "Niciodată"
 
-#: stats/templates/stats/user_score.html:34
+#: stats/templates/stats/user_score.html:34 loco:5f3558c334e29c5953399562
+#| msgid "Posición global - Sin posición"
 msgid "Overall rank - Unranked"
-msgstr "Overall position - unranked"
+msgstr "Poziția generală - nereclasată"
 
-#: stats/templates/stats/user_score.html:36
+#: stats/templates/stats/user_score.html:36 loco:5f3558c334e29c5953399563
+#| msgid "Posición global"
 msgid "Overall rank"
-msgstr "Overall position"
+msgstr "Poziția generală"
 
 #: stats/templates/stats/user_score.html:37
 #: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_score.html:143 loco:5f3558c334e29c5953399564
+#| msgid "Estás entre el"
 msgid "Top"
-msgstr "You are in the top"
+msgstr "Ești în top"
 
 #: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:86 loco:5f3558c334e29c5953399565
+#| msgid "participantes"
 msgid "participants"
-msgstr "participants"
+msgstr "participanți"
 
 #: stats/templates/stats/user_score.html:42
 #: stats/templates/stats/user_score.html:56
@@ -191,202 +229,223 @@ msgstr "participants"
 #: stats/templates/stats/user_score.html:92
 #: stats/templates/stats/user_score.html:100
 #: stats/templates/stats/user_score.html:149
-#: stats/templates/stats/user_score.html:156
+#: stats/templates/stats/user_score.html:156 loco:5f3558c334e29c5953399566
+#| msgid "Puntos"
 msgid "XP"
-msgstr "Points"
+msgstr "Puncte"
 
-#: stats/templates/stats/user_score.html:49
+#: stats/templates/stats/user_score.html:49 loco:5f3558c334e29c5953399567
+#| msgid "Premios obtenidos"
 msgid "Other awards"
-msgstr "Granted awards"
+msgstr "Premii acordate"
 
-#: stats/templates/stats/user_score.html:55
+#: stats/templates/stats/user_score.html:55 loco:5f3558c334e29c5953399568
+#| msgid "Concedido el"
 msgid "awarded_on"
-msgstr "Granted on"
+msgstr "Acordat pe"
 
-#: stats/templates/stats/user_score.html:62
+#: stats/templates/stats/user_score.html:62 loco:5f3558c334e29c5953399569
+#| msgid "puntos, concedidos"
 msgid "XP, awarded on"
-msgstr "points, awarded on"
+msgstr "puncte, acordate pe"
 
 #: stats/templates/stats/user_score.html:81
-#: stats/templates/stats/user_score.html:138
+#: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c595339956a
+#| msgid "Nivel alcanzado para"
 msgid "Level obtained for"
-msgstr "Level obtained for"
+msgstr "Nivelul obținut pentru"
 
-#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:81 loco:5f3558c334e29c595339956b
 msgid "Mosquito"
-msgstr ""
+msgstr "Ţânţar"
 
-#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:83 loco:5f3558c334e29c595339956c
+#| msgid "Posición específica para Mosquito - Sin clasificar"
 msgid "Mosquito rank - Unranked"
-msgstr "Specific position for Mosquito - unranked"
+msgstr "Poziție specifică pentru țânțari - fără clasificare"
 
-#: stats/templates/stats/user_score.html:85
+#: stats/templates/stats/user_score.html:85 loco:5f3558c334e29c595339956d
+#| msgid "Posición específica para Mosquito"
 msgid "Mosquito rank"
-msgstr "Specific position for Mosquito"
+msgstr "Poziție specifică pentru țânțari"
 
 #: stats/templates/stats/user_score.html:87
-#: stats/templates/stats/user_score.html:144
+#: stats/templates/stats/user_score.html:144 loco:5f3558c334e29c595339956e
+#| msgid ""
+#| "Clica encima de los cuadros para ver los detalles de los datos enviados y "
+#| "los puntos conseguidos."
 msgid "click_score_instructions"
 msgstr ""
-"Click the colored squares to see the details of sent data and awards "
-"received."
+"Faceți clic pe pătratele colorate pentru a vedea detaliile datelor trimise "
+"și premiile primite."
 
 #: stats/templates/stats/user_score.html:115
-#: stats/templates/stats/user_score.html:171
+#: stats/templates/stats/user_score.html:171 loco:5f3558c334e29c595339956f
+#| msgid "puntos concedidos por"
 msgid "xp awarded for"
-msgstr "points awarded for"
+msgstr "puncte acordate pentru"
 
-#: stats/templates/stats/user_score.html:120
+#: stats/templates/stats/user_score.html:120 loco:5f3558c334e29c5953399570
+#| msgid "No has obtenido puntos ya que"
 msgid "No awards because"
-msgstr "You have gained no points because"
+msgstr "Nu ai câștigat niciun punct pentru că"
 
 #: stats/templates/stats/user_score.html:123
-#: stats/templates/stats/user_score.html:175
+#: stats/templates/stats/user_score.html:175 loco:5f3558c334e29c5953399571
+#| msgid "¡Este informe no tiene puntos concedidos!"
 msgid "No awards for this report!"
-msgstr ""
+msgstr "Nu există premii pentru acest raport!"
 
-#: stats/templates/stats/user_score.html:138
-#, fuzzy
+#: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c5953399572
 #| msgid "Lugares de cría"
 msgid "Breeding site"
-msgstr "Breeding sites"
+msgstr "Locații de reproducere"
 
-#: stats/templates/stats/user_score.html:140
+#: stats/templates/stats/user_score.html:140 loco:5f3558c334e29c5953399573
+#| msgid "Posición específica para Lugares de cría - Sin clasificar"
 msgid "Breeding site rank - Unranked"
-msgstr "Specific Breeding site rank - Unranked"
+msgstr "Clasamentul locului de reproducere specific - Neclasificat"
 
-#: stats/templates/stats/user_score.html:142
+#: stats/templates/stats/user_score.html:142 loco:5f3558c334e29c5953399574
+#| msgid "Posición específica para Lugares de cría"
 msgid "Breeding site rank"
-msgstr "Specific Breeding site rank"
+msgstr "Clasament specific locului de reproducere"
 
-#: templates/admin/base_site.html:4
+#: templates/admin/base_site.html:4 loco:5f3558c334e29c5953399575
 msgid "Tigaserver admin"
-msgstr "Tigaserver admin"
+msgstr "Administrator Tigaserver"
 
-#: templates/admin/base_site.html:7
+#: templates/admin/base_site.html:7 loco:5f3558c334e29c5953399576
 msgid "Tigaserver administration"
-msgstr "Tigaserver administration"
+msgstr "Administrarea Tigaserver"
 
 #: templates/django_messages/base.html:40
-#: templates/django_messages/inbox.html:5
+#: templates/django_messages/inbox.html:5 loco:5f3558c334e29c5953399577
 msgid "Inbox"
 msgstr ""
 
 #: templates/django_messages/base.html:41
-#: templates/django_messages/outbox.html:5
+#: templates/django_messages/outbox.html:5 loco:5f3558c334e29c5953399578
 msgid "Sent Messages"
 msgstr ""
 
-#: templates/django_messages/base.html:42
+#: templates/django_messages/base.html:42 loco:5f3558c334e29c5953399579
 msgid "New Message"
 msgstr ""
 
-#: templates/django_messages/base.html:43
+#: templates/django_messages/base.html:43 loco:5f3558c334e29c595339957a
 msgid "Trash"
 msgstr ""
 
-#: templates/django_messages/compose.html:48
+#: templates/django_messages/compose.html:48 loco:5f3558c334e29c595339957b
 msgid "Compose Message"
 msgstr ""
 
-#: templates/django_messages/compose.html:57
+#: templates/django_messages/compose.html:57 loco:5f3558c334e29c595339957c
 msgid "Send"
 msgstr ""
 
 #: templates/django_messages/inbox.html:9
-#: templates/django_messages/view.html:12
+#: templates/django_messages/view.html:12 loco:5f3558c334e29c595339957d
 msgid "Sender"
 msgstr ""
 
 #: templates/django_messages/inbox.html:9
 #: templates/django_messages/outbox.html:9
 #: templates/django_messages/view.html:8 tigaserver_messages/forms.py:19
+#: loco:5f3558c334e29c595339957e
 msgid "Subject"
 msgstr ""
 
-#: templates/django_messages/inbox.html:9
+#: templates/django_messages/inbox.html:9 loco:5f3558c334e29c595339957f
 msgid "Received"
 msgstr ""
 
 #: templates/django_messages/inbox.html:9
-#: templates/django_messages/outbox.html:9
+#: templates/django_messages/outbox.html:9 loco:5f3558c334e29c5953399580
 msgid "Action"
 msgstr ""
 
 #: templates/django_messages/inbox.html:21
 #: templates/django_messages/outbox.html:18
-#: templates/django_messages/view.html:17
+#: templates/django_messages/view.html:17 loco:5f3558c334e29c5953399581
 msgid "DATETIME_FORMAT"
 msgstr ""
 
 #: templates/django_messages/inbox.html:22
-#: templates/django_messages/outbox.html:19
+#: templates/django_messages/outbox.html:19 loco:5f3558c334e29c5953399582
 msgid "delete"
 msgstr ""
 
 #: templates/django_messages/inbox.html:28
-#: templates/django_messages/outbox.html:25
+#: templates/django_messages/outbox.html:25 loco:5f3558c334e29c5953399583
 msgid "No messages."
 msgstr ""
 
 #: templates/django_messages/outbox.html:9
 #: templates/django_messages/view.html:20 tigaserver_messages/forms.py:18
+#: loco:5f3558c334e29c5953399584
 msgid "Recipient"
 msgstr ""
 
-#: templates/django_messages/outbox.html:9
+#: templates/django_messages/outbox.html:9 loco:5f3558c334e29c5953399585
 msgid "Sent"
 msgstr ""
 
-#: templates/django_messages/view.html:5
+#: templates/django_messages/view.html:5 loco:5f3558c334e29c5953399586
 msgid "View Message"
 msgstr ""
 
-#: templates/django_messages/view.html:16
+#: templates/django_messages/view.html:16 loco:5f3558c334e29c5953399587
 msgid "Date"
 msgstr ""
 
-#: templates/django_messages/view.html:30
+#: templates/django_messages/view.html:30 loco:5f3558c334e29c5953399588
 msgid "Reply"
 msgstr ""
 
-#: templates/django_messages/view.html:32
+#: templates/django_messages/view.html:32 loco:5f3558c334e29c5953399589
 msgid "Delete"
 msgstr ""
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:88
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:88
+#: loco:5f3558c334e29c595339958a
+#| msgid "Navegación"
 msgid "Toggle navigation"
-msgstr "Toggle navigation"
+msgstr "Comutare navigare"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:98
+#: loco:5f3558c334e29c595339958b
 msgid "Menu"
-msgstr "Menu"
+msgstr "Meniu"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:101
+#: loco:5f3558c334e29c595339958c
 msgid "New batch"
-msgstr "New batch"
+msgstr "Lot nou"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:102
+#: loco:5f3558c334e29c595339958d
 msgid "Photos you have taken notes on but not yet scored"
-msgstr "Photos you have taken notes on but not yet scored"
+msgstr "Fotografii pe care ați luat notițe, dar încă nu le-ați marcat"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:103
+#: loco:5f3558c334e29c595339958e
 msgid "Photos you have already scored"
-msgstr "Photos you have already scored"
+msgstr "Fotografii pe care le-ați marcat deja"
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:171
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:195
+#: loco:5f3558c334e29c595339958f
+#| msgid "Guardar"
 msgid "Save"
-msgstr "Save"
+msgstr "Salvează"
 
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:103
+#: loco:5f3558c334e29c5953399590
 msgid "Photos per page"
-msgstr "Photos per page"
-
-#: tigacrafting/views.py:547
-msgid "your_picture_has_been_validated_by_an_expert"
-msgstr "Fotografia dvs. a fost validată de un expert!"
+msgstr "Fotografii pe pagină"
 
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
@@ -394,8 +453,10 @@ msgstr "Fotografia dvs. a fost validată de un expert!"
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+#: loco:5f3558c334e29c5953399591
+#| msgid "Acuerdo del usuario"
 msgid "user-agreement"
-msgstr "User Agreement"
+msgstr "Acordul Utilizatorului"
 
 #: tigahelp/templates/tigahelp/policies.html:35
 #: tigahelp/templates/tigahelp/policies_en.html:34
@@ -403,97 +464,123 @@ msgstr "User Agreement"
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+#: loco:5f3558c334e29c5953399592
+#| msgid "Política de privacidad"
 msgid "privacy-policy"
-msgstr "Privacy Policy"
+msgstr "Politica de Confidențialitate"
 
-#: tigahelp/templates/tigahelp/policies.html:38
+#: tigahelp/templates/tigahelp/policies.html:38 loco:5f3558c334e29c5953399593
+#| msgid "Llicència Apps"
 msgid "app-license"
-msgstr "Apps License"
+msgstr "Licență pentru aplicație"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+#: loco:5f3558c334e29c5953399594
+#| msgid ""
+#| "Nuestro sitio web utiliza cookies. Si continuas navegando asumimos tu "
+#| "permiso para utilizar cookies. Para más información sobre las políticas "
+#| "de nuestro sitio web, por favor consulta nuestra"
 msgid "our-website-uses-cookies"
 msgstr ""
-"Our website uses cookies. By continuing we assume your permission to deploy "
-"cookies. For more information on our site policies, please see our"
+"Site-ul nostru web folosește cookie-uri. Continuând, ne asumăm permisiunea "
+"dvs. de a implementa cookie-uri. Pentru mai multe informații despre "
+"politicile site-ului nostru, vă rugăm să consultați"
 
 #: tigamap/templates/tigamap/app.html:27
 #: tigamap/templates/tigamap/app_filtered.html:102
 #: tigamap/templates/tigamap/app_new.html:85
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:175
+#: loco:5f3558c334e29c5953399595
+#| msgid "y"
 msgid "and"
-msgstr "and"
+msgstr "și"
 
 #: tigamap/templates/tigamap/app.html:122
 #: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
-#: tigamap/views.py:263
+#: tigamap/views.py:263 loco:5f3558c334e29c5953399596
+#| msgid "Informes de mosquitos"
 msgid "adult-tiger-mosquitoes"
-msgstr "Mosquito reports"
+msgstr "Rapoarte de țânțari"
 
 #: tigamap/templates/tigamap/app.html:126
-#: tigamap/templates/tigamap/app_new.html:175
+#: tigamap/templates/tigamap/app_new.html:175 loco:5f3558c334e29c5953399597
+#| msgid "Todos"
 msgid "all-reports"
-msgstr "All reports"
+msgstr "Toate rapoartele"
 
-#: tigamap/templates/tigamap/app.html:128
+#: tigamap/templates/tigamap/app.html:128 loco:5f3558c334e29c5953399598
+#| msgid "Sólo probabilidad media y alta"
 msgid "medium-and-high-probability-reports-only"
-msgstr "Medium and high probability reports only"
+msgstr "Doar rapoarte de probabilitate medie și mare"
 
-#: tigamap/templates/tigamap/app.html:130
+#: tigamap/templates/tigamap/app.html:130 loco:5f3558c334e29c5953399599
+#| msgid "Sólo probabilidad alta"
 msgid "high-probability-reports-only"
-msgstr "High probability reports only"
+msgstr "Doar rapoarte cu probabilitate ridicată"
 
 #: tigamap/templates/tigamap/app.html:134
-#: tigamap/templates/tigamap/app_new.html:183
+#: tigamap/templates/tigamap/app_new.html:183 loco:5f3558c334e29c595339959a
+#| msgid "Lugares de cría"
 msgid "breeding-site-reports"
-msgstr "Breeding site reports"
+msgstr "Rapoarte de locații de reproducere"
 
 #: tigamap/templates/tigamap/app.html:138
-#: tigamap/templates/tigamap/app_new.html:187
+#: tigamap/templates/tigamap/app_new.html:187 loco:5f3558c334e29c595339959b
+#| msgid "Todos"
 msgid "all-sites"
-msgstr "All sites"
+msgstr "Toate locațiile"
 
 #: tigamap/templates/tigamap/app.html:141
-#: tigamap/templates/tigamap/app_new.html:190
+#: tigamap/templates/tigamap/app_new.html:190 loco:5f3558c334e29c595339959c
+#| msgid "Sumideros y fuentes"
 msgid "storm-drains-and-fountains"
-msgstr "Storm drains and fountains"
+msgstr "Șiroaie de apă și fântâni"
 
 #: tigamap/templates/tigamap/app.html:144
-#: tigamap/templates/tigamap/app_new.html:193
+#: tigamap/templates/tigamap/app_new.html:193 loco:5f3558c334e29c595339959d
+#| msgid "Pequeñas balsas artificiales"
 msgid "Basins"
-msgstr "Basins"
+msgstr "Bazine"
 
 #: tigamap/templates/tigamap/app.html:146
-#: tigamap/templates/tigamap/app_new.html:195
+#: tigamap/templates/tigamap/app_new.html:195 loco:5f3558c334e29c595339959e
+#| msgid "Bidones y pozos"
 msgid "buckets-and-wells"
-msgstr "Buckets and wells"
+msgstr "Găleți și puțuri"
 
 #: tigamap/templates/tigamap/app.html:148
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:582
+#: tigaserver_app/models.py:567 loco:5f3558c334e29c595339959f
+#| msgid "Otros"
 msgid "Other"
-msgstr "Other"
+msgstr "Alte"
 
 #: tigamap/templates/tigamap/app.html:152
 #: tigamap/templates/tigamap/app_filtered.html:193
 #: tigamap/templates/tigamap/app_new.html:201
 #: tigamap/templates/tigamap/coverage_map_beta.html:82
+#: loco:5f3558c334e29c59533995a0
+#| msgid "Zonas exploradas"
 msgid "Coverage"
-msgstr "Coverage"
+msgstr "Acoperire"
 
-#: tigamap/templates/tigamap/app.html:154
+#: tigamap/templates/tigamap/app.html:154 loco:5f3558c334e29c59533995a1
+#| msgid "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 msgid "http-atrapaeltigre-com-web-el-mapa-del-mosquit-tigre-2014"
 msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 
 #: tigamap/templates/tigamap/app_filtered.html:175
 #: tigamap/templates/tigamap/app_new.html:159
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:816
+#: loco:5f3558c334e29c59533995a2
+#| msgid "navbar toggle"
 msgid "navbar_toggle_navigation"
-msgstr "Toggle navigation"
+msgstr "Comutare navigare"
 
 #: tigamap/templates/tigamap/app_filtered.html:195
 #: tigamap/templates/tigamap/app_new.html:203
@@ -503,172 +590,236 @@ msgstr "Toggle navigation"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1015
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1165
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1292
+#: loco:5f3558c334e29c59533995a3
+#| msgid "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
 
 #: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+#: loco:5f3558c334e29c59533995a4
+#| msgid "Mosquitos tigre confirmados y posibles"
 msgid "menu_adults_prob"
-msgstr "Possible and confirmed tiger mosquitoes"
+msgstr "Țânțari tigru posibili și confirmați"
 
 #: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+#: loco:5f3558c334e29c59533995a5
+#| msgid "Mosquitos tigre confirmados"
 msgid "menu_adults_definite"
-msgstr "Confirmed tiger mosquitoes"
+msgstr "Țânțari tigru confirmați"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
+#: loco:5f3558c334e29c59533995a6
+#| msgid "Baja"
 msgid "low"
-msgstr "low"
+msgstr "scăzut"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
+#: loco:5f3558c334e29c59533995a7
+#| msgid "Media"
 msgid "medium"
-msgstr "medium"
+msgstr "mediu"
 
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
+#: loco:5f3558c334e29c59533995a8
 msgid "high"
-msgstr "high"
+msgstr "ridicat"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:221
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:605
+#: loco:5f3558c334e29c59533995a9
+#| msgid "observaciones"
 msgid "fixes"
-msgstr "fixes"
+msgstr "poziții"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:223
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:607
+#: loco:5f3558c334e29c59533995aa
+#| msgid "observación"
 msgid "fix"
-msgstr "fix"
+msgstr "poziție"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:336
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:967
+#: loco:5f3558c334e29c59533995ab
+#| msgid "Número de observaciones"
 msgid "coverage_legend_main_title"
-msgstr "Number of observations"
+msgstr "Numărul de observații"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:372
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1004
+#: loco:5f3558c334e29c59533995ac
+#| msgid "Zonas exploradas"
 msgid "coverage_legend_info_title"
-msgstr "Coverage Information"
+msgstr "Informații despre acoperire"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:373
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1005
+#: loco:5f3558c334e29c59533995ad
+#| msgid ""
+#| "<p>La versi&oacute;n Android de Tigatrapp recoge en background (si el "
+#| "usuario lo permite), 5 datos de posici&oacute;n al d&iacute;a. Solamente "
+#| "se recoge la posici&oacute;n aproximada (los recuadros rojos del mapa) "
+#| "para preservar el anonimato de los participantes.<br /><br />El n&uacute;"
+#| "mero de observaciones en un recuadro determinado es el n&uacute;mero "
+#| "acumulado de datos de posici&oacute;n recogidos en ese recuadro de todos "
+#| "los participantes. Los colores oscuros indican zonas m&aacute;s "
+#| "exploradas.</p>"
 msgid "coverage_legend_info_blurb"
 msgstr ""
-"<p>The Android version of Tigatrapp includes optional background location "
-"tracking. The app records users' locations at 5 random times each day. It "
-"records only the approximate position (red squares on the map) in order to "
-"maintain user anonymity.<br /><br />The number of observations in a given "
-"square is the accumulated number of positions recorded in that square for "
-"all participants. The darker it is, the more an area has been explored.</p>"
+"<p> Versiunea Android pentru Tigatrapp include urmărirea opțională a "
+"locației în fundal. Aplicația înregistrează locațiile utilizatorilor de 5 "
+"ori aleatoriu în fiecare zi. Înregistrează doar poziția aproximativă "
+"(pătrate roșii pe hartă) pentru a menține anonimatul utilizatorului. <br /> "
+"<br /> Numărul de observații într-un pătrat dat este numărul acumulat de "
+"poziții înregistrate în acel pătrat pentru toți participanții. Cu cât este "
+"mai întunecată, cu atât mai mult a fost explorată o zonă. </p>"
 
 #: tigamap/templates/tigamap/coverage_map_new.html:377
 #: tigamap/templates/tigamap/validated_report_map.html:629
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1009
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1159
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1287
+#: loco:5f3558c334e29c59533995ae
+#| msgid "más información"
 msgid "more_info"
-msgstr "more info"
+msgstr "mai multe informatii"
 
 #: tigamap/templates/tigamap/report_map.html:112
-#: tigamap/templates/tigamap/report_map.html:125
+#: tigamap/templates/tigamap/report_map.html:125 loco:5f3558c334e29c59533995af
+#| msgid "Tipo"
 msgid "type"
-msgstr "Type"
+msgstr "Tip"
 
 #: tigamap/templates/tigamap/report_map.html:149
 #: tigamap/templates/tigamap/validated_photo_map.html:152
+#: loco:5f3558c334e29c59533995b0
+#| msgid "Valores agregados"
 msgid "clusters"
-msgstr "Clusters"
+msgstr "Clustere"
 
 #: tigamap/templates/tigamap/report_map.html:150
 #: tigamap/templates/tigamap/validated_photo_map.html:153
+#: loco:5f3558c334e29c59533995b1
+#| msgid "Puntos"
 msgid "points"
-msgstr "Points"
+msgstr "Puncte"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:574
+#: tigaserver_app/models.py:559 loco:5f3558c334e29c59533995b2
+#| msgid "Sumidero"
 msgid "storm-drain"
-msgstr "Storm drain"
+msgstr "Șiroaie de apă"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:576
+#: tigaserver_app/models.py:561 loco:5f3558c334e29c59533995b3
+#| msgid "Fuente"
 msgid "Fountain"
-msgstr "Fountain"
+msgstr "Fântână"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:578
+#: tigaserver_app/models.py:563 loco:5f3558c334e29c59533995b4
+#| msgid "Pequeña balsa artificial"
 msgid "Basin"
-msgstr "Basin"
+msgstr "Bazin"
 
 #: tigamap/templates/tigamap/site_map.html:201
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:380
+#: loco:5f3558c334e29c59533995b5
+#| msgid "Bidón"
 msgid "Bucket"
-msgstr "Bucket"
+msgstr "Găleată"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:580
+#: tigaserver_app/models.py:565 loco:5f3558c334e29c59533995b6
+#| msgid "Pozo"
 msgid "Well"
-msgstr "Well"
+msgstr "puț"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:169
+#: loco:5f3558c334e29c59533995b7
+#| msgid "Fotos"
 msgid "Photos"
-msgstr "Photos"
+msgstr "Fotografii"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:173
+#: loco:5f3558c334e29c59533995b8
+#| msgid "Todos"
 msgid "all-photos"
-msgstr "All Photos"
+msgstr "Toate fotografiile"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:175
+#: loco:5f3558c334e29c59533995b9
+#| msgid "Sólo probabilidad media y alta"
 msgid "medium-and-high-probability-photos-only"
-msgstr "Medium and high probability photos only"
+msgstr "Numai fotografii cu probabilitate medie și mare"
 
 #: tigamap/templates/tigamap/validated_photo_map.html:177
+#: loco:5f3558c334e29c59533995ba
+#| msgid "Sólo probabilidad alta"
 msgid "high-probability-photos-only"
-msgstr "High probability photos only"
+msgstr "Numai fotografii cu probabilitate ridicată"
 
 #: tigamap/templates/tigamap/validated_report_map.html:379
 #: tigamap/templates/tigamap/validated_report_map.html:381
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:360
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+#: loco:5f3558c334e29c59533995bb
+#| msgid "no lo sé"
 msgid "not_sure"
-msgstr "not sure"
+msgstr "nu este sigur"
 
 #: tigamap/templates/tigamap/validated_report_map.html:381
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+#: loco:5f3558c334e29c59533995bc
+#| msgid "sí"
 msgid "yes"
-msgstr "yes"
+msgstr "da"
 
 #: tigamap/templates/tigamap/validated_report_map.html:381
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:362
+#: loco:5f3558c334e29c59533995bd
 msgid "no"
-msgstr "no"
+msgstr "nu"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:544
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1046
+#: loco:5f3558c334e29c59533995be
+#| msgid "Confirmado albopictus"
 msgid "expert_cat_tiger"
-msgstr "Confirmed albopictus"
+msgstr "Albopictus confirmat"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:552
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1062
+#: loco:5f3558c334e29c59533995bf
+#| msgid "Posible albopictus"
 msgid "expert_cat_possible_tiger"
-msgstr "Possible albopictus"
+msgstr "Posibil albopictus"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:570
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1087
+#: loco:5f3558c334e29c59533995c0
+#| msgid "Posiblemente ni albopictus ni aegypti"
 msgid "expert_cat_possible_other"
-msgstr "Possibly neither albopictus nor aegypti"
+msgstr "Posibil nici albopictus, nici aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:579
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1096
+#: loco:5f3558c334e29c59533995c1
+#| msgid "Confirmado ni albopictus ni aegypti"
 msgid "expert_cat_other"
-msgstr "Confirmed neither albopictus nor aegypti"
+msgstr "Nu s-a confirmat nici albopictus, nici aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:400
 #: tigamap/templates/tigamap/validated_report_map.html:561
@@ -676,8 +827,10 @@ msgstr "Confirmed neither albopictus nor aegypti"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1078
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1210
+#: loco:5f3558c334e29c59533995c2
+#| msgid "No se sabe"
 msgid "expert_cat_unknown"
-msgstr "Unknown"
+msgstr "Necunoscut"
 
 #: tigamap/templates/tigamap/validated_report_map.html:405
 #: tigamap/templates/tigamap/validated_report_map.html:595
@@ -687,611 +840,683 @@ msgstr "Unknown"
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:502
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+#: loco:5f3558c334e29c59533995c3
+#| msgid ""
+#| "<a href=\"http://www.mosquitoalert.com/mapa-y-resultados/mapa/\" "
+#| "target=\"_blank\">Resultado</a> validación experta "
 msgid "expert_row_title"
 msgstr ""
-"Expert validation <a href=\"http://www.mosquitoalert.com/en/map-results/"
-"tiger-mosquito-map/\" target=\"_blank\">results</a>"
+"Validarea expertului <a href=\"http://www.mosquitoalert.com/en/map-"
+"results/tiger-mosquito-map/\" target=\"_blank\">results</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map.html:600
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:511
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+#: loco:5f3558c334e29c59533995c4
+#| msgid "Resultado validación ciudadana"
 msgid "crowd_row_title"
-msgstr "Citizen validation results"
+msgstr "Rezultatele validării cetățenești"
 
 #: tigamap/templates/tigamap/validated_report_map.html:413
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:511
+#: loco:5f3558c334e29c59533995c5
+#| msgid "Faltan respuestas"
 msgid "crowd_row_more_responses_needed"
-msgstr "More responses needed"
+msgstr "Sunt necesare mai multe răspunsuri"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+#: loco:5f3558c334e29c59533995c6
+#| msgid "¿Pequeño, negro, con rayas blancas?"
 msgid "user_response_row_q1"
-msgstr "Small, black, white stripes?"
+msgstr "Mic, negru, dungi albe?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+#: loco:5f3558c334e29c59533995c7
+#| msgid " ¿Raya blanca en cabeza y tórax?"
 msgid "user_response_row_q2"
-msgstr "Stripe on head and thorax?"
+msgstr "Dungi pe cap și pe torace?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:422
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:520
+#: loco:5f3558c334e29c59533995c8
+#| msgid "¿Rayas blancas en abdomen y patas?"
 msgid "user_response_row_q3"
-msgstr "Stripes on abdomen and legs?"
+msgstr "Dungi pe abdomen și picioare?"
 
 #: tigamap/templates/tigamap/validated_report_map.html:535
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1037
+#: loco:5f3558c334e29c59533995c9
+#| msgid "Ae. albopictus/aegypti"
 msgid "adult_report_legend_main_title"
-msgstr "Ae. albopictus/aegypti"
+msgstr "Ae. albopictus / aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map.html:588
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1118
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1248
+#: loco:5f3558c334e29c59533995ca
+#| msgid "Contenido del marcador"
 msgid "adult_report_legend_info_title"
-msgstr "Popup Legend"
+msgstr "Legendă pop-up"
 
 #: tigamap/templates/tigamap/validated_report_map.html:595
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1125
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1255
+#: loco:5f3558c334e29c59533995cb
+#| msgid "Clasificación hecha por científicos con las fotos disponibles"
 msgid "expert_row_help"
-msgstr "Classification by scientists using available photos"
+msgstr ""
+"Clasificare de către oamenii de știință folosind fotografiile disponibile"
 
 #: tigamap/templates/tigamap/validated_report_map.html:600
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1130
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1260
+#: loco:5f3558c334e29c59533995cc
+#| msgid ""
+#| "Clasificación hecha por voluntarios en <a href=\"http://crowdcrafting."
+#| "org/app/Tigafotos/\" target=\"_blank\">Crowdcrafting</a>  (si hay fotos)"
 msgid "crowd_row_help"
 msgstr ""
-"Classification by volunteers at <a href='http://crowdcrafting.org/app/"
-"Tigafotos/' target='_blank'>Crowdcrafting</a>  (if photo available)"
+"Clasificare de către voluntari la <a href='http://crowdcrafting."
+"org/app/Tigafotos/' target='_blank'>Crowdcrafting</a> (dacă fotografia este "
+"disponibilă)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+#: loco:5f3558c334e29c59533995cd
+#| msgid ""
+#| "Descripción taxonómica <a href=\"http://www.mosquitoalert."
+#| "com/mosquitos/mosquito-tigre-ae-albopictus/\" target=\"_blank\">Ae. "
+#| "albopictus</a> y <a href=\"http://www.mosquitoalert."
+#| "com/mosquitos/mosquito-de-la-fiebre-amarilla-2/\" target=\"_blank\">Ae. "
+#| "aegypti</a>"
 msgid "report_row_title"
 msgstr ""
-"Taxonomic description <a href=\"http://www.mosquitoalert.com/en/mosquitoes/"
-"tiger-mosquito-ae-albopictus/\" target=\"_blank\">Ae. albopictus</a> and <a "
-"href=\"http://www.mosquitoalert.com/en/mosquitoes/yellow-fever-mosquito-ae-"
-"aegypti/\" target=\"_blank\">Ae. aegypti</a>"
+"Descriere taxonomică <a href=\"http://www.mosquitoalert."
+"com/en/mosquitoes/tiger-mosquito-ae-albopictus/\" target=\"_blank\">Ae. "
+"albopictus</a> și <a href=\"http://www.mosquitoalert."
+"com/en/mosquitoes/yellow-fever-mosquito-ae-aegypti/\" target=\"_blank\">Ae. "
+"aegypti</a>"
 
 #: tigamap/templates/tigamap/validated_report_map.html:605
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1135
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1265
+#: loco:5f3558c334e29c59533995ce
+#| msgid "Observaciones hechas por los participantes"
 msgid "report_row_help"
-msgstr "Observations by participant"
+msgstr "Observații de către participant"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+#: loco:5f3558c334e29c59533995cf
+#| msgid "Fotos"
 msgid "photo_row_title"
-msgstr "Photos"
+msgstr "Fotografii"
 
 #: tigamap/templates/tigamap/validated_report_map.html:610
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1140
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1270
+#: loco:5f3558c334e29c59533995d0
+#| msgid "Hechas por los participantes (si hay fotos)"
 msgid "photo_row_help"
-msgstr "Sent by participants (if there are photos)"
+msgstr "Trimis de participanți (dacă există fotografii)"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+#: loco:5f3558c334e29c59533995d1
+#| msgid "Notas"
 msgid "notes_row_title"
-msgstr "Notes"
+msgstr "Notițe"
 
 #: tigamap/templates/tigamap/validated_report_map.html:615
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1145
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1275
+#: loco:5f3558c334e29c59533995d2
+#| msgid "Escritas por expertos o participantes (optativo)"
 msgid "notes_row_help"
-msgstr "From experts or observers (optional)"
+msgstr "De la experți sau observatori (opțional)"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:146
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+#: loco:5f3558c334e29c59533995d3
+#| msgid "Ae. albopictus/aegypti confirmados"
 msgid "validation_button_subtext_adults_high"
-msgstr "Confirmed Ae. albopictus/aegypti"
+msgstr "A confirmat Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:147
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+#: loco:5f3558c334e29c59533995d4
+#| msgid "Ae. albopictus/aegypti posibles y confirmados"
 msgid "validation_button_subtext_adults_medium"
-msgstr "Possible and confirmed Ae. albopictus/aegypti"
+msgstr "Posibil și confirmat Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:148
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+#: loco:5f3558c334e29c59533995d5
+#| msgid "Sin filtro"
 msgid "validation_button_subtext_adults_all"
-msgstr "No filter"
+msgstr "Fără filtru"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:150
+#: loco:5f3558c334e29c59533995d6
+#| msgid "Lugares de cría confirmados"
 msgid "validation_button_subtext_sites_high"
-msgstr "Confirmed breeding sites"
+msgstr "Locuri de reproducere confirmate"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:151
+#: loco:5f3558c334e29c59533995d7
+#| msgid "Lugares de cría posibles y confirmados"
 msgid "validation_button_subtext_sites_medium"
-msgstr "Possible and confirmed breeding sites"
+msgstr "Posibile locuri de reproducere și confirmate"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:152
+#: loco:5f3558c334e29c59533995d8
+#| msgid "Sin filtro"
 msgid "validation_button_subtext_sites_all"
-msgstr "No filter"
+msgstr "Fără filtru"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:480
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1105
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1237
+#: loco:5f3558c334e29c59533995d9
+#| msgid "Sin clasificar"
 msgid "expert_cat_unclassified"
-msgstr "Unclassified"
+msgstr "Neclasificat"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1193
+#: loco:5f3558c334e29c59533995da
+#| msgid "Lugar de cría de mosquito tigre"
 msgid "expert_cat_site"
-msgstr "Tiger mosquito breeding site"
+msgstr "Sit de reproducere a țânțarilor tigru"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1201
+#: loco:5f3558c334e29c59533995db
+#| msgid "Posible lugar de cría de mosquito tigre"
 msgid "expert_cat_possible_site"
-msgstr "Possible tiger mosquito breeding site"
+msgstr "Posibil loc de reproducere a țânțarilor tigru"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1219
+#: loco:5f3558c334e29c59533995dc
+#| msgid "Seguramente no lugar de cría de mosquito tigre"
 msgid "expert_cat_possible_other_site"
-msgstr "Probably not tiger mosquito breeding site"
+msgstr "Probabil nu este locul de reproducere a țânțarilor tigru"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:482
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1228
+#: loco:5f3558c334e29c59533995dd
+#| msgid "No lugar de cría de mosquito tigre"
 msgid "expert_cat_other_site"
-msgstr "Not tiger mosquito breeding site"
+msgstr "Nu este un loc de reproducere a țânțarilor tigru"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:498
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1054
+#: loco:5f3558c334e29c59533995de
+#| msgid "Confirmado aegypti"
 msgid "expert_cat_aegypti"
-msgstr "Confirmed aegypti"
+msgstr "Aegypti confirmat"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:500
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1070
+#: loco:5f3558c334e29c59533995df
+#| msgid "Posible aegypti"
 msgid "expert_cat_possible_aegypti"
-msgstr "Possible aegypti"
+msgstr "Posibil aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:530
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+#: loco:5f3558c334e29c59533995e0
+#| msgid "Tipo de lugar de cría"
 msgid "user_response_row_q_sitetype"
-msgstr "Site type"
+msgstr "Tipul site-ului"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+#: loco:5f3558c334e29c59533995e1
+#| msgid " ¿Con agua estancada?"
 msgid "user_response_row_sites_q1"
-msgstr "Stagnant water?"
+msgstr "Apă stătătoare?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:530
+#: loco:5f3558c334e29c59533995e2
+#| msgid " ¿Larvas o pupas?"
 msgid "user_response_row_sites_q2"
-msgstr "Larvae or pupae?"
+msgstr "Larve sau pupe?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+#: loco:5f3558c334e29c59533995e3
+#| msgid "¿En la vía pública?"
 msgid "user_response_row_sites_q1_new"
-msgstr "Public area?"
+msgstr "Spațiu public?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+#: loco:5f3558c334e29c59533995e4
+#| msgid " ¿Con agua estancada y/o larvas o pupas?"
 msgid "user_response_row_sites_q2_new"
-msgstr "Stagnant water and/or larvae or pupae?"
+msgstr "Apă stătătoare și/sau larve sau pupe?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:532
+#: loco:5f3558c334e29c59533995e5
+#| msgid "¿Has visto mosquitos cerca?"
 msgid "user_response_row_sites_q3_new"
-msgstr "Mosquitoes nearby?"
+msgstr "Țânțari din apropiere?"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:833
+#: loco:5f3558c334e29c59533995e6
+#| msgid "Todos los años"
 msgid "fmap_All_years"
-msgstr "All years"
+msgstr "Toți anii"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:844
+#: loco:5f3558c334e29c59533995e7
+#| msgid "Todos los meses"
 msgid "fmap_All_months"
-msgstr "All months"
+msgstr "Toate lunile"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:845
+#: loco:5f3558c334e29c59533995e8
+#| msgid "enero"
 msgid "January"
-msgstr "January"
+msgstr "Ianuarie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:847
+#: loco:5f3558c334e29c59533995e9
+#| msgid "febrero"
 msgid "February"
-msgstr "February"
+msgstr "Februarie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:849
+#: loco:5f3558c334e29c59533995ea
+#| msgid "marzo"
 msgid "March"
-msgstr "March"
+msgstr "Martie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:850
+#: loco:5f3558c334e29c59533995eb
+#| msgid "abril"
 msgid "April"
-msgstr "April"
+msgstr "Aprilie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:851
+#: loco:5f3558c334e29c59533995ec
+#| msgid "mayo"
 msgid "May"
-msgstr "May"
+msgstr "Mai"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:852
+#: loco:5f3558c334e29c59533995ed
+#| msgid "junio"
 msgid "June"
-msgstr "June"
+msgstr "Iunie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:853
+#: loco:5f3558c334e29c59533995ee
+#| msgid "julio"
 msgid "July"
-msgstr "July"
+msgstr "Iulie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:854
+#: loco:5f3558c334e29c59533995ef
+#| msgid "agosto"
 msgid "August"
 msgstr "August"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:855
+#: loco:5f3558c334e29c59533995f0
+#| msgid "septiembre"
 msgid "September"
-msgstr "September"
+msgstr "Septembrie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:857
+#: loco:5f3558c334e29c59533995f1
+#| msgid "octubre"
 msgid "October"
-msgstr "October"
+msgstr "Octombrie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:859
+#: loco:5f3558c334e29c59533995f2
+#| msgid "noviembre"
 msgid "November"
-msgstr "November"
+msgstr "Noiembrie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:861
+#: loco:5f3558c334e29c59533995f3
+#| msgid "diciembre"
 msgid "December"
-msgstr "December"
+msgstr "Decembrie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+#: loco:5f3558c334e29c59533995f4
+#| msgid "Adultos Ae. albopictus/aegypti"
 msgid "fmap_Adult_tiger_mosquitoes"
 msgstr "Adult Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:873
+#: loco:5f3558c334e29c59533995f5
+#| msgid "Adultos"
 msgid "fmap_Adults"
-msgstr "Adults"
+msgstr "Adulți"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+#: loco:5f3558c334e29c59533995f6
+#| msgid "Lugares de cría de Ae. albopictus/aegypti"
 msgid "fmap_Tiger_mosquito_breeding_sites"
-msgstr "Ae. albopictus/aegypti breeding sites"
+msgstr "Locuri de reproducere pentru Ae. albopictus/aegypti"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:875
+#: loco:5f3558c334e29c59533995f7
+#| msgid "Lugares de cría"
 msgid "fmap_Breeding_sites"
-msgstr "Breeding sites"
+msgstr "Situri de reproducere"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+#: loco:5f3558c334e29c59533995f8
+#| msgid " Esfuerzo de muestreo"
 msgid "fmap_Tigatrapp_coverage"
-msgstr " Sampling effort"
+msgstr "Efort de eșantionare"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:878
+#: loco:5f3558c334e29c59533995f9
+#| msgid "Zonas exploradas"
 msgid "fmap_Coverage"
-msgstr "Coverage"
+msgstr "Acoperire"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:888
+#: loco:5f3558c334e29c59533995fa
+#| msgid "Informes de fiabilidad alta"
 msgid "validation_button_text_high"
-msgstr "High reliability"
+msgstr "Fiabilitate ridicată"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:891
+#: loco:5f3558c334e29c59533995fb
+#| msgid "Informes de fiabilidad media"
 msgid "validation_button_text_medium"
-msgstr "Medium reliability"
+msgstr "Fiabilitate medie"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:894
+#: loco:5f3558c334e29c59533995fc
+#| msgid "Todos los informes"
 msgid "validation_button_text_all"
-msgstr "All reports"
+msgstr "Toate rapoartele"
 
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:1184
+#: loco:5f3558c334e29c59533995fd
+#| msgid "Marcadores"
 msgid "site_report_legend_main_title"
-msgstr "Markers"
+msgstr "Marcatori"
 
-#: tigamap/views.py:147 tigamap/views.py:317
+#: tigamap/views.py:147 tigamap/views.py:317 loco:5f3558c334e29c59533995fe
+#| msgid "Zonas exploradas"
 msgid "coverage-map"
-msgstr "Coverage Map"
+msgstr "Harta acoperirii"
 
-#: tigamap/views.py:155
+#: tigamap/views.py:155 loco:5f3558c334e29c59533995ff
 msgid "Pseudo Occurrence-Exposure Map"
-msgstr "Pseudo Occurrence-Exposure Map"
+msgstr "Harta de pseudo-apariție-expunere"
 
-#: tigamap/views.py:162
+#: tigamap/views.py:162 loco:5f3558c334e29c5953399600
+#| msgid "Mosquitos: Todos"
 msgid "Adult tiger mosquitoes: Validated reports"
-msgstr "Adult tiger mosquitoes: Validated reports"
+msgstr "Țânțari tigri adulți: Rapoarte validate"
 
-#: tigamap/views.py:171
+#: tigamap/views.py:171 loco:5f3558c334e29c5953399601
+#| msgid "Mosquitos tigre: Sólo probabilidad media y alta"
 msgid "adult-tiger-mosquitoes-medium-and-high-probability-reports"
-msgstr "Adult tiger mosquitoes: Medium and high probability reports"
+msgstr "Țânțari tigri adulți: rapoarte de probabilitate medie și mare"
 
-#: tigamap/views.py:177
+#: tigamap/views.py:177 loco:5f3558c334e29c5953399602
+#| msgid "Mosquitos tigre: Sólo probabilidad alta"
 msgid "adult-tiger-mosquitoes-high-probability-reports"
-msgstr "Adult tiger mosquitoes: High probability reports"
+msgstr "Țânțari tigri adulți: rapoarte cu probabilitate ridicată"
 
 #: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+#: loco:5f3558c334e29c5953399603
+#| msgid "Informes de mosquitos: Todos"
 msgid "adult-tiger-mosquitoes-all-reports"
-msgstr "Mosquitoes: All reports"
+msgstr "Țânțari: toate rapoartele"
 
-#: tigamap/views.py:189
+#: tigamap/views.py:189 loco:5f3558c334e29c5953399604
+#| msgid "Lugares de cría: Todos"
 msgid "Breeding Sites: Validated reports"
-msgstr "Breeding Sites: Validated reports"
+msgstr "Locații de reproducere: Rapoarte validate"
 
-#: tigamap/views.py:199 tigamap/views.py:289
+#: tigamap/views.py:199 tigamap/views.py:289 loco:5f3558c334e29c5953399605
+#| msgid "Lugares de cría: Sumideros y fuentes"
 msgid "breeding-sites-storm-drains-and-fountains"
-msgstr "Breeding sites: Storm drains and fountains"
+msgstr "Locații de reproducere: Șiroaie de apă și fântâni"
 
-#: tigamap/views.py:202 tigamap/views.py:289
+#: tigamap/views.py:202 tigamap/views.py:289 loco:5f3558c334e29c5953399606
+#| msgid "Lugares de cría: Pequeñas balsas artificiales"
 msgid "breeding-sites-basins"
-msgstr "Breeding sites: Basins"
+msgstr "Locații de reproducere: Bazine"
 
-#: tigamap/views.py:205 tigamap/views.py:289
+#: tigamap/views.py:205 tigamap/views.py:289 loco:5f3558c334e29c5953399607
+#| msgid "Lugares de cría: Bidones y pozos"
 msgid "breeding-sites-buckets-and-wells"
-msgstr "Breeding sites: Buckets and wells"
+msgstr "Locații de reproducere: Găleți și puțuri"
 
-#: tigamap/views.py:208 tigamap/views.py:289
+#: tigamap/views.py:208 tigamap/views.py:289 loco:5f3558c334e29c5953399608
+#| msgid "Lugares de cría: Otros"
 msgid "breeding-sites-other"
-msgstr "Breeding sites: Other"
+msgstr "Locații de reproducere: Alte"
 
 #: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+#: loco:5f3558c334e29c5953399609
+#| msgid "Lugares de cría: Todos"
 msgid "breeding-sites-all-reports"
-msgstr "Breeding sites: All repors"
+msgstr "Locații de reproducere: Toate rapoartele"
 
-#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
-#: tigascoring/xp_scoring.py:176
+#: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
+#: tigascoring/xp_scoring.py:190 loco:5f3558c334e29c595339960a
+#| msgid "Principiante"
 msgid "Novice"
-msgstr "Beginner"
+msgstr "Începător"
 
-#: tigascoring/xp_scoring.py:178
+#: tigascoring/xp_scoring.py:192 loco:5f3558c334e29c595339960b
+#| msgid "Colaborador"
 msgid "Contributor"
-msgstr ""
+msgstr "Colaborator"
 
-#: tigascoring/xp_scoring.py:180
+#: tigascoring/xp_scoring.py:194 loco:5f3558c334e29c595339960c
+#| msgid "Experto"
 msgid "Expert"
-msgstr ""
+msgstr "Expert"
 
-#: tigascoring/xp_scoring.py:182
+#: tigascoring/xp_scoring.py:196 loco:5f3558c334e29c595339960d
+#| msgid "Maestro"
 msgid "Master"
-msgstr ""
+msgstr "Maestru"
 
-#: tigascoring/xp_scoring.py:184
+#: tigascoring/xp_scoring.py:198 loco:5f3558c334e29c595339960e
+#| msgid "Gran maestro"
 msgid "Grandmaster"
-msgstr ""
+msgstr "Marele Maestru"
 
-#: tigascoring/xp_scoring.py:203
+#: tigascoring/xp_scoring.py:217 loco:5f3558c334e29c595339960f
+#| msgid "Primer informe de la temporada"
 msgid "start_of_season"
-msgstr "Start of season"
+msgstr "Începutul sezonului"
 
-#: tigascoring/xp_scoring.py:204
+#: tigascoring/xp_scoring.py:218 loco:5f3558c334e29c5953399610
+#| msgid "ser el primer informe del día"
 msgid "daily_participation"
-msgstr "uploading the first report of the day"
+msgstr "încărcarea primului raport al zilei"
 
-#: tigascoring/xp_scoring.py:205
+#: tigascoring/xp_scoring.py:219 loco:5f3558c334e29c5953399611
+#| msgid "haber mandado datos durante DOS días seguidos"
 msgid "fidelity_day_2"
-msgstr "uploading reports during TWO consecutive days"
+msgstr "încărcarea rapoartelor în DOUĂ zile consecutive"
 
-#: tigascoring/xp_scoring.py:206
+#: tigascoring/xp_scoring.py:220 loco:5f3558c334e29c5953399612
+#| msgid "haber mandado datos durante TRES días seguidos"
 msgid "fidelity_day_3"
-msgstr "uploading reports during THREE consecutive days"
+msgstr "încărcarea rapoartelor în TREI zile consecutive"
 
-#: tigascoring/xp_scoring.py:207
+#: tigascoring/xp_scoring.py:221 loco:5f3558c334e29c5953399613
+#| msgid "10 datos enviados"
 msgid "achievement_10_reports"
-msgstr "10 uploaded data"
+msgstr "10 date încărcate"
 
-#: tigascoring/xp_scoring.py:208
+#: tigascoring/xp_scoring.py:222 loco:5f3558c334e29c5953399614
+#| msgid "20 datos enviados"
 msgid "achievement_20_reports"
-msgstr "20 uploaded data"
+msgstr " 20 de date încărcate"
 
-#: tigascoring/xp_scoring.py:209
+#: tigascoring/xp_scoring.py:223 loco:5f3558c334e29c5953399615
+#| msgid "50 datos enviados"
 msgid "achievement_50_reports"
-msgstr "50 uploaded data"
+msgstr "50 de date încărcate"
 
-#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
+#: tigascoring/xp_scoring.py:259 tigascoring/xp_scoring.py:302
+#: loco:5f3558c334e29c5953399616
+#| msgid "la foto"
 msgid "picture"
-msgstr "the picture"
+msgstr "fotografia"
 
-#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
+#: tigascoring/xp_scoring.py:263 tigascoring/xp_scoring.py:309
+#: loco:5f3558c334e29c5953399617
+#| msgid "la geolocalización de los datos"
 msgid "location"
-msgstr "sent data geolocation"
+msgstr "geolocalizarea datelor trimise"
 
-#: tigascoring/xp_scoring.py:253
+#: tigascoring/xp_scoring.py:267 loco:5f3558c334e29c5953399618
+#| msgid "Es un sumidero"
 msgid "storm_drain"
-msgstr "It's a storm drain"
+msgstr "Este un șiroi de apă"
 
-#: tigascoring/xp_scoring.py:257
+#: tigascoring/xp_scoring.py:271 loco:5f3558c334e29c5953399619
+#| msgid "haber respondido la pregunta del agua del lugar de cría"
 msgid "water_question"
-msgstr "answering the water question in the breeding site report"
+msgstr "răspunde la întrebarea privind apa din raportul locului de reproducere"
 
-#: tigascoring/xp_scoring.py:261
+#: tigascoring/xp_scoring.py:275 loco:5f3558c334e29c595339961a
+#| msgid "haber añadido un informe de mosquito al final"
 msgid "mosquito_report_follows_breeding_site"
-msgstr "adding a mosquito report after"
+msgstr "adăugă un raport de țânțari după"
 
-#: tigascoring/xp_scoring.py:293
+#: tigascoring/xp_scoring.py:305 loco:5f3558c334e29c595339961b
+#| msgid "no hay foto"
 msgid "no_picture"
-msgstr "no picture"
+msgstr "fără poză"
 
-#: tigascoring/xp_scoring.py:299
+#: tigascoring/xp_scoring.py:312 loco:5f3558c334e29c595339961c
+#| msgid "el informe no está geolocalizado"
 msgid "no_location"
-msgstr "the report is not geolocated"
+msgstr "raportul nu este geolocalizat"
 
-#: tigascoring/xp_scoring.py:302
+#: tigascoring/xp_scoring.py:315 loco:5f3558c334e29c595339961d
+#| msgid "haber respondido el formulario del tórax del mosquito"
 msgid "thorax_question"
-msgstr "answering the thorax question in the mosquito report"
+msgstr "răspunde la întrebarea despre torace din raportul de țânțari"
 
-#: tigascoring/xp_scoring.py:305
+#: tigascoring/xp_scoring.py:318 loco:5f3558c334e29c595339961e
+#| msgid "haber respondido el formulario del abdomen del mosquito"
 msgid "abdomen_question"
-msgstr "answering the abdomen question in the mosquito report"
+msgstr "răspunde la întrebarea despre abdomen în raportul de țânțari"
 
-#: tigascoring/xp_scoring.py:308
+#: tigascoring/xp_scoring.py:321 loco:5f3558c334e29c595339961f
+#| msgid "haber respondido el formulario de las patas del mosquito"
 msgid "leg_question"
-msgstr "answering the leg question in the mosquito report"
+msgstr "răspunde la întrebarea despre picior în raportul de țânțari"
 
-#: tigascoring/xp_scoring.py:311
+#: tigascoring/xp_scoring.py:324 loco:5f3558c334e29c5953399620
+#| msgid ""
+#| "después de analizar la notificación, los expertos consideran que no "
+#| "corresponde a ninguna de las 5 especies objetivo de mosquito. Para más "
+#| "info, revisa el tutorial de la app."
 msgid "other_species"
 msgstr ""
-"after analyzing your submission, the experts have decided that it does not "
-"match any of the 5 target mosquito species. For more info, revise the app "
-"tutorial."
+"după analiza raportului dvs., experții au decis că nu se potrivește cu "
+"niciuna dintre cele 5 specii țânțari țintă. Pentru mai multe informații, "
+"revizuiți tutorialul aplicației."
 
-#: tigascoring/xp_scoring.py:318
+#: tigascoring/xp_scoring.py:331 loco:5f3558c334e29c5953399621
+#| msgid "Lugares de cría"
 msgid "bite report follow"
-msgstr "following current report with a bite report"
+msgstr "în urma raportului actual cu un raport de mușcătură"
 
-#: tigascoring/xp_scoring.py:358
+#: tigascoring/xp_scoring.py:371 loco:5f3558c334e29c5953399622
+#| msgid " años"
 msgid " years ago"
-msgstr ""
+msgstr "cu ani în urmă"
 
-#: tigascoring/xp_scoring.py:360
+#: tigascoring/xp_scoring.py:373 loco:5f3558c334e29c5953399623
+#| msgid " meses"
 msgid " months ago"
-msgstr ""
+msgstr "cu luni în urmă"
 
-#: tigascoring/xp_scoring.py:362
+#: tigascoring/xp_scoring.py:375 loco:5f3558c334e29c5953399624
+#| msgid " días"
 msgid " days ago"
-msgstr ""
+msgstr "zile în urmă"
 
-#: tigaserver_app/models.py:557
+#: tigaserver_app/models.py:542 loco:5f3558c334e29c5953399625
+#| msgid "Alta"
 msgid "High"
-msgstr "High"
+msgstr "Ridicat"
 
-#: tigaserver_app/models.py:559
+#: tigaserver_app/models.py:544 loco:5f3558c334e29c5953399626
+#| msgid "Media"
 msgid "Medium"
-msgstr "Medium"
+msgstr "Medie"
 
-#: tigaserver_app/models.py:561
+#: tigaserver_app/models.py:546 loco:5f3558c334e29c5953399627
+#| msgid "Baja"
 msgid "Low"
-msgstr "Low"
+msgstr "Scăzut"
 
-#: tigaserver_app/models.py:1234
-#, fuzzy
-#| msgid "expert_cat_unclassified"
-msgid "species_unclassified"
-msgstr "Unclassified"
-
-#: tigaserver_app/models.py:1235
-#, fuzzy
-#| msgid "expert_cat_other"
-msgid "species_other"
-msgstr "Confirmed neither albopictus nor aegypti"
-
-#: tigaserver_app/models.py:1236
-msgid "species_albopictus"
-msgstr ""
-
-#: tigaserver_app/models.py:1237
-#, fuzzy
-#| msgid "expert_cat_aegypti"
-msgid "species_aegypti"
-msgstr "Confirmed aegypti"
-
-#: tigaserver_app/models.py:1238
-msgid "species_japonicus"
-msgstr ""
-
-#: tigaserver_app/models.py:1239
-msgid "species_koreicus"
-msgstr ""
-
-#: tigaserver_app/models.py:1240
-msgid "species_complex"
-msgstr ""
-
-#: tigaserver_app/models.py:1241
-#, fuzzy
-#| msgid "not_sure"
-msgid "species_notsure"
-msgstr "not sure"
-
-#: tigaserver_app/models.py:1242
-msgid "species_culex"
-msgstr ""
-
-#: tigaserver_app/models.py:1255
-msgid "species_value_possible"
-msgstr ""
-
-#: tigaserver_app/models.py:1256
-msgid "species_value_confirmed"
-msgstr ""
-
-#: tigaserver_messages/fields.py:56
+#: tigaserver_messages/fields.py:56 loco:5f3558c334e29c5953399628
 #, python-format
 msgid "The following usernames are incorrect: %(users)s"
 msgstr ""
 
-#: tigaserver_messages/forms.py:20
+#: tigaserver_messages/forms.py:20 loco:5f3558c334e29c5953399629
 msgid "Body"
 msgstr ""
 
 #: tigaserver_messages/views.py:45 tigaserver_messages/views.py:78
-#: tigaserver_messages/views.py:138
+#: tigaserver_messages/views.py:138 loco:5f3558c334e29c595339962a
 msgid "Message successfully sent."
 msgstr ""
 
-#: tigaserver_messages/views.py:120
+#: tigaserver_messages/views.py:120 loco:5f3558c334e29c595339962b
 #, python-format
 msgid "Re: %(subject)s"
 msgstr ""
 
-#: tigaserver_project/settings.py:131
+#: tigaserver_project/settings.py:131 loco:5f3558c334e29c595339962c
+#| msgid "Español"
 msgid "Spanish"
-msgstr "Spanish"
+msgstr "Spaniolă"
 
-#: tigaserver_project/settings.py:132
+#: tigaserver_project/settings.py:132 loco:5f3558c334e29c595339962d
+#| msgid "Catalán"
 msgid "Catalan"
-msgstr "Catalan"
+msgstr "Catalană"
 
-#: tigaserver_project/settings.py:133
+#: tigaserver_project/settings.py:133 loco:5f3558c334e29c595339962e
+#| msgid "Inglés"
 msgid "English"
-msgstr "English"
+msgstr "Engleză"
 
-#: tigaserver_project/settings.py:134
-msgid "German"
-msgstr ""
-
-#: tigaserver_project/settings.py:135
-msgid "Albanian"
-msgstr ""
-
-#: tigaserver_project/settings.py:136
-msgid "Greek"
-msgstr ""
-
-#: tigaserver_project/settings.py:137
-msgid "Hungarian"
-msgstr ""
-
-#: tigaserver_project/settings.py:138
-msgid "Portuguese"
-msgstr ""
-
-#: tigaserver_project/settings.py:139
-msgid "Slovenian"
-msgstr ""
-
-#: tigaserver_project/settings.py:140
-msgid "Italian"
-msgstr ""
-
-#: tigaserver_project/settings.py:141
-msgid "French"
-msgstr ""
-
-#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
-msgid "Bulgarian"
-msgstr ""
-
-#: tigaserver_project/settings.py:144
-msgid "Romanian"
-msgstr ""
-
-#: tigaserver_project/settings.py:145
-msgid "Croatian"
-msgstr ""
-
-#: tigaserver_project/settings.py:146
-msgid "Macedonian"
-msgstr ""
-
-#: tigaserver_project/settings.py:147
-msgid "Serbian"
-msgstr ""
-
-#: tigaserver_project/settings.py:148
-msgid "Letzeburgesch"
-msgstr ""
-
-#: tigaserver_project/settings.py:149
-msgid "Dutch"
-msgstr ""
-
-#: tigaserver_project/settings.py:150
-msgid "Turkish"
-msgstr ""
-
-#: tigaserver_project/settings.py:151
+#: tigaserver_project/settings.py:134 loco:5f3558c334e29c595339962f
 msgid "Chinese"
 msgstr ""
 
+#: loco:5f6c4cd56b0ff67fdb48fc13
+#| msgid "¡Acabas de recibir una recompensa de puntos!"
 msgid "you_just_received_a_points_award"
 msgstr "Tocmai ai primit un premiu de puncte!"
+
+#: loco:5f7ac940d2929203275da372
+#| msgid "¡Tu foto ha sido validada por un experto!"
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Fotografia dvs. a fost validată de un expert!"
