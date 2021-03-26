@@ -31,37 +31,44 @@ $( document ).ready(function() {
         }
     });
     format_report = function(data){
-        var notifications_failed = data.notifications_failed;
-        var notifications_issued = data.notifications_issued;
-        var push_issued_android = data.push_issued_android;
-        var push_failed_android = data.push_failed_android;
-        var push_issued_ios = data.push_issued_ios;
-        var push_failed_ios = data.push_failed_ios;
+        /*
+            {
+                'non_push_estimate_num': número de notificacions aprox,
+                'push_success': 'ALL' | 'NONE' | 'SOME' | 'NO_PUSH'
+                'push_results': List of status
+            }
+        */
+        var pushes = [];
+        for(var i = 0; i < data.push_results.length; i++){
+            pushes.push('<li>' + JSON.stringify(data.push_results[i]) + '</li>');
+        }
+        var detail_message = '<ul>' + pushes.join('') + '</ul>';
+        var push_message;
+        switch(data.push_success){
+            case 'ALL':
+                push_message = '<li style="color:green;">All pushes sent successfully</li>';
+                break;
+            case 'NONE':
+                push_message = '<li style="color:red;">All pushes failed</li>';
+                break;
+            case 'SOME':
+                push_message = '<li style="color:orange;">Some pushes failed</li>';
+                break;
+            default:
+                push_message = '<li>No push notifications were issued</li>';
+                break;
+        }
         var message = '<ul>' +
             '	<li><h3>Notifications</h3>' +
             '		<ul>' +
-            '			<li style="color:green;">Success:'+ notifications_issued +'</li>' +
-            '			<li style="color:red;">Fail:'+ notifications_failed +'</li>' +
+            '			<li style="color:green;">Success:'+ data.non_push_estimate_num +'</li>' +
             '		</ul>' +
             '	</li>' +
             '	<li><h3>Push</h3>' +
-            '		<ul>' +
-            '			<li><h4>Android</h4>' +
-            '				<ul>' +
-            '					<li style="color:green;">Success:'+ push_issued_android +'</li>' +
-            '					<li style="color:red;">Fail:'+ push_failed_android +'</li>' +
-            '				</ul>' +
-            '			</li>' +
-            '			<li><h4>IOS</h4>' +
-            '				<ul>' +
-            '					<li style="color:green;">Success:' + push_issued_ios + '</li>' +
-            '					<li style="color:red;">Fail:' + push_failed_ios + '</li>' +
-            '				</ul>' +
-            '			</li>' +
-            '		</ul>' +
+            '		<ul>' + push_message + '</ul>' +
             '	</li>' +
             '</ul>';
-            return message;
+        return message;
     };
 
     ajax_post_send_notifications = function(notificationcontent_id){
@@ -297,13 +304,7 @@ $( document ).ready(function() {
         $('#number_estimate_text').html(message);
     };
     get_selected_radio_op = function(){
-        var selected = $('input[type=radio][name=criteriarb]:checked').attr('id');
-        if(selected == 'score_arbitrary'){
-            ranges = $('#amount').val();
-            min = ranges.split('-')[0].trim();
-            max = ranges.split('-')[1].trim();
-            selected = selected + '-' + min + '-' + max;
-        }
+        var selected = $('#topic').val();
         return selected;
     };
     $('input[type=radio][name=criteriarb]').change(function() {
@@ -379,10 +380,11 @@ $( document ).ready(function() {
 
     $('#topic_group').change(function(e){
         var value = $(this).val();
+        var index = parseInt(value);
         if(value == ''){
             init_topics([]);
         }else{
-            init_topics(data[parseInt(value)].topics);
+            init_topics(data[index].topics);
         }
     });
 

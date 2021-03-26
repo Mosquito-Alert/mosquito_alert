@@ -27,7 +27,7 @@ from django.contrib.gis.measure import Distance
 from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
-from tigacrafting.messaging import send_message_ios, send_message_android, send_messages_ios, send_messages_android
+from tigacrafting.messaging import send_message_ios, send_message_android, send_messages_ios, send_messages_android, generic_send_to_topic
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
 from tigascoring.maUsers import smmry
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
@@ -1281,16 +1281,34 @@ def send_notifications(request):
         recipients = data['recipients']
         topic = None
         send_to = None
+        push_results = []
+
+        # Can be
+        # ALL if all pushes were successful
+        # SOME if some pushes were successful
+        # NONE if no pushes were successful
+        # NO_PUSH
+        push_success = ''
+        if not push:
+            push_success = 'NO_PUSH'
+
+        notification_estimate = 0
 
         if recipients == 'all':
             topic = NotificationTopic.objects.get(topic_code='global')
+            #if global, estimate is all users with token
+            notification_estimate = TigaUser.objects.exclude(device_token='').filter(device_token__isnull=False).count()
         elif "$" in recipients:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
+            notification_estimate = len(ids_list)
         else: #it's either a topic or a single UUID
             try:
                 topic = NotificationTopic.objects.get(topic_code=recipients)
+                #users subscribed to topic
+                notification_estimate = UserSubscription.objects.filter(topic=topic).count()
             except NotificationTopic.DoesNotExist:
+                notification_estimate = 1
                 send_to = [TigaUser.objects.get(pk=recipients)]
 
         n = Notification(expert_id=sender, notification_content=notification_content)
@@ -1298,8 +1316,15 @@ def send_notifications(request):
 
         if topic is not None:
             # send to topic
-            send_notification = SentNotification(send_to_topic=topic,notification=n)
+            send_notification = SentNotification(sent_to_topic=topic,notification=n)
             send_notification.save()
+            json_notif = custom_render_notification(sent_notification=send_notification, recipìent=None, locale='en')
+            if push:
+                try:
+                    push_result = generic_send_to_topic(topic_code=topic.topic_code, title=notification_content.title_en, message='',json_notif=json_notif)
+                    push_results.append(push_result)
+                except Exception as e:
+                    pass
         else:
             #send to recipient(s)
             for recipient in send_to:
@@ -1309,21 +1334,34 @@ def send_notifications(request):
                     if (recipient.user_UUID.islower()):
                         json_notif = custom_render_notification(send_notification, recipient, 'en')
                         try:
-                            send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-                            push_issued_android = push_issued_android + 1
+                            push_result = send_message_android(recipient.device_token, notification_content.title_en, '', json_notif)
+                            push_results.append(push_result)
                         except Exception as e:
                             pass
                     else:
                         try:
-                            send_message_ios(recipient.device_token, notification_content.title_es, '', json_notif)
-                            push_issued_ios = push_issued_ios + 1
+                            push_result = send_message_ios(recipient.device_token, notification_content.title_en, '', json_notif)
+                            push_results.append(push_result)
                         except Exception as e:
                             pass
 
+        if push:
+            all_successes = True
+            all_failures = True
+            for result in push_results:
+                if result['failure'] > 0:
+                    all_successes = False
+                if result['success'] > 0:
+                    all_failures = False
+            if all_successes:
+                push_success = 'ALL'
+            elif all_failures:
+                push_success = 'NONE'
+            else:
+                push_success = 'SOME'
 
-        results = {'notifications_issued': 0, 'notifications_failed': 0,
-                   'push_issued_ios': 0, 'push_issued_android': 0,
-                   'push_failed_android': 0, 'push_failed_ios': 0}
+
+        results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success, 'push_results': push_results}
         return Response(results)
 
         '''

@@ -124,6 +124,23 @@ def send_message_android(token,title, message, notification=None):
             return "No app id available in config"
 '''
 
+def generic_send_to_topic(topic_code, title, message, json_notif=None):
+    push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
+    if json_notif:
+        notification = stringify_date(json_notif)
+    else:
+        notification = json_notif
+    data_message = {
+        "message": message,
+        "title": title,
+        "notif": notification
+    }
+    dry_run = getattr(settings_local, 'DRY_RUN_PUSH', True)
+    try:
+        result = push_service.notify_topic_subscribers(topic_name=topic_code, message_body=message, message_title=title, data_message=data_message)
+        return result
+    except Exception as e:
+        return {'exception': str(e) }
 
 def generic_send(recipient_token, title, message, json_notif=None):
     push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)

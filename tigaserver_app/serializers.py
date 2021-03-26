@@ -20,7 +20,9 @@ def custom_render_notification(sent_notification, recipìent, locale):
     expert_comment = sent_notification.notification.notification_content.get_title_locale_safe(locale)
     expert_html = sent_notification.notification.notification_content.get_body_locale_safe(locale)
 
-    ack = AcknowledgedNotification.objects.filter(user=recipìent,notification=sent_notification.notification).exists()
+    ack = False
+    if recipìent is not None:
+        ack = AcknowledgedNotification.objects.filter(user=recipìent,notification=sent_notification.notification).exists()
 
     this_content = {
         'id': sent_notification.notification.id,

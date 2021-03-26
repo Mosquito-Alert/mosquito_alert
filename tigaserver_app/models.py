@@ -150,7 +150,7 @@ class TigaUser(models.Model):
                                                                       'registered and consented to sharing '
                                                                  'data. Automatically set by '
                                                                  'server when user uploads registration.')
-    device_token = models.TextField('Url to picture that originated the comment', null=True, blank=True,help_text='Device token, used in messaging. Must be supplied by the client')
+    device_token = models.TextField(help_text='Device token, used in messaging. Must be supplied by the client', null=True, blank=True)
 
     score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
 

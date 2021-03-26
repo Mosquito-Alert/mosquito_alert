@@ -1467,8 +1467,7 @@ def notifications(request,user_uuid=None):
 def notifications_version_two(request,user_uuid=None):
     this_user = request.user
     user_uuid = request.GET.get('user_uuid',None)
-    #total_users = TigaUser.objects.all().count()
-    total_users = TigaUser.objects.select_related('profile').filter(profile__firebase_token__isnull=False).count()
+    total_users = TigaUser.objects.exclude(device_token='').filter(device_token__isnull=False).count()
     # TOPIC_GROUPS = ((0, 'General'), (1, 'Language topics'), (2, 'Country topics'))
     languages = []
     sorted_langs = sorted(settings.LANGUAGES, key=lambda tup: tup[1])
