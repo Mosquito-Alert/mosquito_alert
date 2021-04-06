@@ -1009,6 +1009,7 @@ def report_stats(request):
     content = {'report_count' : r_count}
     return Response(content)
 
+
 @api_view(['GET'])
 @cache_page(60)
 def user_count(request):
@@ -1067,6 +1068,7 @@ def user_score_v2(request):
     user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
     result = compute_user_score_in_xp_v2(user_id, update=True)
     return Response(result)
+
 
 @api_view(['GET', 'POST'])
 def user_score(request):
@@ -1134,6 +1136,7 @@ def custom_render_notification_queryset(queryset,locale):
         content.append(custom_render_notification(notification,locale))
     return content
 '''
+
 
 def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
     content = []
@@ -1255,6 +1258,7 @@ def user_notifications(request):
         notification_content.delete()
         return HttpResponse(status=204)
     '''
+
 
 @api_view(['PUT'])
 def notification_content(request):
@@ -1411,6 +1415,7 @@ def send_notifications(request):
         results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
         return Response(results)
         '''
+
 
 @api_view(['GET'])
 def nearby_reports_no_dwindow(request):
