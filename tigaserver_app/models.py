@@ -2543,16 +2543,16 @@ class CoverageAreaMonth(models.Model):
         unique_together = ("lat", "lon", "year", "month")
 
 class NotificationContent(models.Model):
-    body_html_es = models.TextField(help_text='Expert comment, expanded and allows html, in spanish')
-    body_html_ca = models.TextField(default=None,blank=True,null=True,help_text='Expert comment, expanded and allows html, in catalan')
-    body_html_en = models.TextField(default=None,blank=True,null=True,help_text='Expert comment, expanded and allows html, in english')
-    title_es = models.TextField(help_text='Title of the comment, shown in non-detail view, in spanish')
-    title_ca = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in catalan')
-    title_en = models.TextField(default=None,blank=True,null=True,help_text='Title of the comment, shown in non-detail view, in english')
+    body_html_es = models.TextField(default=None, blank=True, null=True, help_text='Expert comment, expanded and allows html, in spanish')
+    body_html_ca = models.TextField(default=None, blank=True, null=True, help_text='Expert comment, expanded and allows html, in catalan')
+    body_html_en = models.TextField(default='', help_text='Expert comment, expanded and allows html, in english')
+    title_es = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in spanish')
+    title_ca = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in catalan')
+    title_en = models.TextField(default='', help_text='Title of the comment, shown in non-detail view, in english')
     predefined_available_to = models.ForeignKey(User, blank=True, null=True, related_name="predefined_notifications", help_text='If this field is not null, this notification is predefined - the predefined map notifications will go here. This field indicates the expert to which the notification is available', on_delete=models.DO_NOTHING, )
     body_html_native = models.TextField(default=None,blank=True,null=True, help_text='Expert comment, expanded and allows html, in the language indicated by the field native_locale')
     title_native = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in the language indicated by the field title_native')
-    native_locale = models.CharField(max_length=10, blank=True, help_text='Locale code for text in body_html_native and title_native')
+    native_locale = models.CharField(default=None, blank=True, null=True, max_length=10, help_text='Locale code for text in body_html_native and title_native')
 
     def get_title_locale_safe(self, locale):
         if locale.lower().strip() == self.native_locale.lower().strip():
