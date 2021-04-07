@@ -47,6 +47,7 @@ pathlib2==2.2.1
 pexpect==4.2.1
 pickleshare==0.7.4
 Pillow==2.4.0
+progress==1.5
 prompt-toolkit==1.0.14
 psycopg2==2.8.4
 ptyprocess==0.5.1
