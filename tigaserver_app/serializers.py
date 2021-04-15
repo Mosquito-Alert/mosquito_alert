@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, OrganizationPin
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 
@@ -489,3 +489,17 @@ class OWCampaignsSerializer(serializers.ModelSerializer):
     class Meta:
         model = OWCampaigns
         fields = '__all__'
+
+
+class OrganizationPinsSerializer(serializers.ModelSerializer):
+    point = serializers.SerializerMethodField(method_name='get_point')
+
+    class Meta:
+        model = OrganizationPin
+        fields = '__all__'
+
+    def get_point(self,obj):
+        if obj.point is not None:
+            return { "lat": obj.point.y, "long": obj.point.x}
+        else:
+            return None

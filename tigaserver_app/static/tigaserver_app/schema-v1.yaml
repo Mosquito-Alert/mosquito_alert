@@ -4,6 +4,49 @@ info:
   version: 1.0
   description: Documentation for the Mosquito Alert server API
 paths:
+  /api/organizationpins/:
+    get:
+      operationId: listOrganizationPins
+      summary: Returns a list of organizations with a text description and URL, to be drawn in a map.
+      description: List of organizations with a geographical location. Each of these organizations has a link to a
+            web page with the detailed information. The text in textual_description should be shown in a pin dialog in a map
+      tags:
+      - apps
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    point:
+                      type: string
+                      readOnly: true
+                      description: Geographical location of the point. Lat is latitude, Lon is longitude. All coordinates
+                        are in EPSG:4326 projection.
+                    textual_description:
+                      type: string
+                      description: Text desription on the pin. This text is meant
+                        to be visualized as the text body of the dialog on the map
+                    page_url:
+                      type: string
+                      format: uri
+                      description: URL link to the organization page
+                      maxLength: 200
+                      pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                        d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                        [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                        -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\\
+                        .(?!-)(?:[a-z\xA1-\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\\
+                        .?|localhost))(?::\\d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+                  required:
+                  - textual_description
+                  - page_url
   /api/owcampaigns/:
     get:
       operationId: listOWCampaigns
@@ -12,6 +55,7 @@ paths:
         There can be multiple campaigns for each country, but the start and end dates should never overlap.
       tags:
       - overwintering
+      - apps
       parameters:      
       - name: country_id
         required: false
@@ -67,6 +111,7 @@ paths:
       summary: 'Returns score v2 details for a user given its uuid'
       description: 'Calculates and updates user score for a given user uuid. If the uuid is part of a profile, it updates the scores of all involved uuids'
       tags:
+      - apps
       - score
       parameters:      
       - name: user_id

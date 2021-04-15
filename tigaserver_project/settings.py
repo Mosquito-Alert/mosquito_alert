@@ -66,6 +66,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'django.contrib.sites',
     'django_filters',
+    'corsheaders',
 )
 
 '''
@@ -80,6 +81,7 @@ MIDDLEWARE_CLASSES = (
 )
 '''
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -87,6 +89,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://webserver.mosquitoalert.com",
+    "http://www.mosquitoalert.com",
 ]
 
 ROOT_URLCONF = 'tigaserver_project.urls'

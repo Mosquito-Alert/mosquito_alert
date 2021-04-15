@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.contrib.gis.admin import OSMGeoAdmin
 from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, OWCampaigns
+    Fix, Configuration, CoverageArea, OWCampaigns, OrganizationPin
 from rest_framework.authtoken.models import Token
 import csv
 from django.utils.encoding import smart_str
@@ -291,6 +292,12 @@ class OWCampaignsAdmin(admin.ModelAdmin):
     ordering = ['country', 'campaign_start_date', 'campaign_end_date']
 
 
+class OrganizationPinAdmin(OSMGeoAdmin):
+    list_display = ('id', 'point', 'textual_description', 'page_url')
+    list_filter = ['textual_description', 'page_url']
+    search_fields = ['textual_description', 'page_url']
+
+
 admin.site.register(TigaUser, UserAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(Fix, FixAdmin)
@@ -301,3 +308,4 @@ admin.site.register(ReportResponse, ReportResponseAdmin)
 admin.site.register(CoverageArea, CoverageAreaAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(OWCampaigns, OWCampaignsAdmin)
+admin.site.register(OrganizationPin, OrganizationPinAdmin)
