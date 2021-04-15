@@ -491,6 +491,21 @@ class Report(models.Model):
             #country nuts3
             candidates = NutsEurope.objects.filter(europecountry=country).filter(levl_code=3)
             nuts3 = candidates.filter(geom__contains=point)
+            if len(nuts3) == 0:
+                cursor = connection.cursor()
+                # K nearest neighbours,
+                # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
+                cursor.execute("""
+                                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d, name_latn, gid
+                                    FROM nuts_europe
+                                    where levl_code = 3
+                                    ORDER BY d limit 1
+                                """, (point.x, point.y,))
+                row = cursor.fetchone()
+                if row[0] < 0.1:
+                    n = NutsEurope.objects.get(pk=row[2])
+                    return n.nuts_id
+                cursor.close()
             if len(nuts3) == 1:
                 return nuts3[0].nuts_id
             elif len(nuts3) > 1:
@@ -502,6 +517,21 @@ class Report(models.Model):
             #country nuts3
             candidates = NutsEurope.objects.filter(europecountry=country).filter(levl_code=2)
             nuts2 = candidates.filter(geom__contains=point)
+            if len(nuts2) == 0:
+                cursor = connection.cursor()
+                # K nearest neighbours,
+                # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
+                cursor.execute("""
+                                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d, name_latn, gid
+                                    FROM nuts_europe
+                                    where levl_code = 2
+                                    ORDER BY d limit 1
+                                """, (point.x, point.y,))
+                row = cursor.fetchone()
+                if row[0] < 0.1:
+                    n = NutsEurope.objects.get(pk=row[2])
+                    return n.nuts_id
+                cursor.close()
             if len(nuts2) == 1:
                 return nuts2[0].nuts_id
             elif len(nuts2) > 1:
