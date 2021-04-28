@@ -624,7 +624,7 @@ class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     filter_class = MapDataFilter
     pagination_class = StandardResultsSetPagination
 
-
+'''
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
         non_visible_report_id = []
@@ -633,7 +633,7 @@ class AllReportsMapViewSet(ReadOnlyModelViewSet):
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
-
+'''
 
 def lon_function(this_lon, these_lons, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
     n_fixes = len([l for l in these_lons if l == this_lon])
@@ -1583,6 +1583,41 @@ def uuid_list_autocomplete(request):
             qs = qs.values('report__version_UUID').distinct()
         return Response(qs, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def all_reports_paginated(request):
+    if request.method == 'GET':
+        if conf.FAST_LOAD and conf.FAST_LOAD == True:
+            non_visible_report_id = []
+        else:
+            non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+        queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
+            version_UUID__in=non_visible_report_id).filter(
+            Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(
+                package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(
+                package_name='Mosquito Alert')).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+        f = MapDataFilter(request.GET, queryset=queryset)
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(f.qs, request)
+        serializer = MapDataSerializer(result_page, many=True, context={'request':request})
+        return paginator.get_paginated_response(serializer.data)
+        #return Response(serializer.data)
+
+
+@api_view(['GET'])
+def all_reports(request):
+    if request.method == 'GET':
+        if conf.FAST_LOAD and conf.FAST_LOAD == True:
+            non_visible_report_id = []
+        else:
+            non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+        queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
+            version_UUID__in=non_visible_report_id).filter(
+            Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(
+                package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(
+                package_name='Mosquito Alert')).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+        f = MapDataFilter(request.GET, queryset=queryset)
+        serializer = MapDataSerializer(f.qs, many=True)
+        return Response(serializer.data)
 
 @api_view(['GET'])
 def non_visible_reports(request):
