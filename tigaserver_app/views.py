@@ -545,6 +545,7 @@ def get_latest_validated_reports(reports):
 # UNION
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
+'''
 class CoarseFilterAdultReports(ReadOnlyModelViewSet):
     new_reports_unfiltered_adults = get_reports_unfiltered_adults()
     unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
@@ -565,6 +566,7 @@ class CoarseFilterSiteReports(ReadOnlyModelViewSet):
     # there seems to be some kind of caching issue .all() forces the queryset to refresh
     queryset = unfiltered_clean_reports_query.all()
     serializer_class = ReportIdSerializer
+'''
 
 '''
 class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
@@ -614,6 +616,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+'''
 class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
         non_visible_report_id = []
@@ -623,6 +626,7 @@ class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
     pagination_class = StandardResultsSetPagination
+'''
 
 '''
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
