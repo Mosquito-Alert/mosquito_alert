@@ -26,6 +26,10 @@ class irideonData(BaseManager):
         data = Irideon.objects.all().values(
                 'record_time', 'client_name', 'lat', 'lon'
             ).exclude(
+                lat=None
+            ).exclude(
+                lon=None
+            ).exclude(
                 classification='Non-target'
             ).annotate(
                 spc=Case(
