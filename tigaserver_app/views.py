@@ -619,7 +619,7 @@ class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
         non_visible_report_id = []
     else:
         non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
     pagination_class = StandardResultsSetPagination
