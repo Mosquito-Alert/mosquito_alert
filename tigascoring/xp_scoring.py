@@ -236,6 +236,7 @@ def get_site_report_score(report, result):
     local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
     local_result['report_score'] = 0
     local_result['awards'] = []
+    local_result['penalties'] = []
     if report.hide == True:
         local_result['penalties'].append({"reason": _("other_species"), "xp_awarded": 0})
         result['score_detail']['site']['score_items'].append(local_result)
