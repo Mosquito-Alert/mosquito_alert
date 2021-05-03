@@ -2626,10 +2626,10 @@ class CoverageAreaMonth(models.Model):
 class NotificationContent(models.Model):
     body_html_es = models.TextField(default=None, blank=True, null=True, help_text='Expert comment, expanded and allows html, in spanish')
     body_html_ca = models.TextField(default=None, blank=True, null=True, help_text='Expert comment, expanded and allows html, in catalan')
-    body_html_en = models.TextField(default='', help_text='Expert comment, expanded and allows html, in english')
+    body_html_en = models.TextField(default=None, blank=True, null=True, help_text='Expert comment, expanded and allows html, in english')
     title_es = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in spanish')
     title_ca = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in catalan')
-    title_en = models.TextField(default='', help_text='Title of the comment, shown in non-detail view, in english')
+    title_en = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in english')
     predefined_available_to = models.ForeignKey(User, blank=True, null=True, related_name="predefined_notifications", help_text='If this field is not null, this notification is predefined - the predefined map notifications will go here. This field indicates the expert to which the notification is available', on_delete=models.DO_NOTHING, )
     body_html_native = models.TextField(default=None,blank=True,null=True, help_text='Expert comment, expanded and allows html, in the language indicated by the field native_locale')
     title_native = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in the language indicated by the field title_native')
@@ -2690,6 +2690,9 @@ class NotificationContent(models.Model):
 
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.DO_NOTHING, )
+    # The field 'user' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
+    # and in all other cases is given a default value (null user 00000000-0000-0000-0000-000000000000)
+    user = models.ForeignKey(TigaUser, default='00000000-0000-0000-0000-000000000000', related_name="user_notifications", help_text='User to which the notification will be sent', on_delete=models.DO_NOTHING, )
     expert = models.ForeignKey(User, blank=True, related_name="expert_notifications", help_text='Expert sending the notification', on_delete=models.DO_NOTHING, )
     date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
@@ -2699,7 +2702,9 @@ class Notification(models.Model):
     expert_html = models.TextField('Expert comment, expanded and allows html', help_text='Expanded message information goes here. This field can contain HTML')
     photo_url = models.TextField('Url to picture that originated the comment', null=True, blank=True, help_text='Relative url to the public report photo')
     public = models.BooleanField(default=False, help_text='Whether the notification is shown in the public map or not')
-    map_notification = models.BooleanField(default=False, help_text='Flag field to help discriminate notifications which have been issued from the map')
+    # The field 'acknowledged' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
+    acknowledged = models.BooleanField(default=False, help_text='This is set to True through the public API, when the user signals that the message has been received')
+    # map_notification = models.BooleanField(default=False, help_text='Flag field to help discriminate notifications which have been issued from the map')
 
 
 class AcknowledgedNotification(models.Model):

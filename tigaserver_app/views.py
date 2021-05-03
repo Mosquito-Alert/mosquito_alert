@@ -641,6 +641,9 @@ def mark_notif_as_ack(request):
     try:
         ack_notif = AcknowledgedNotification.objects.get(user=user,notification=notif)
         ack_notif.delete()
+        map_notif = Notification.objects.get(id=notif)
+        map_notif.acknowledged = True
+        map_notif.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
     except AcknowledgedNotification.DoesNotExist:
         raise ParseError(detail='Acknowledged not found')
@@ -1137,6 +1140,29 @@ def custom_render_notification_queryset(queryset,locale):
     return content
 '''
 
+def custom_render_map_notifications(map_notification):
+    expert_comment = map_notification.notification_content.title_es
+    expert_html = map_notification.notification_content.body_html_es
+    content = {
+        'id': map_notification.id,
+        'report_id': map_notification.report.version_UUID,
+        'user_id': map_notification.user.user_UUID,
+        'user_score': map_notification.user.score,
+        'user_score_label': score_label(map_notification.user.score),
+        'expert_id': map_notification.expert.id,
+        'date_comment': map_notification.date_comment,
+        'expert_comment': expert_comment,
+        'expert_html': expert_html,
+        'acknowledged': map_notification.acknowledged,
+        'public': map_notification.public,
+    }
+    return content
+
+def custom_render_mapnotification_queryset(queryset):
+    content = []
+    for notification in queryset:
+        content.append(custom_render_map_notifications(notification))
+    return content
 
 def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
     content = []
@@ -1178,6 +1204,11 @@ def user_notifications(request):
         else:
             all_notifications = all_notifications.filter(sent_to_user__user_UUID=user_id).order_by('-notification__date_comment')
 
+        # we exclude from this the notifications sent via the new system (the ones which have an id entry in SentNotification)
+        # these are the notifications sent directly to a user + the notifications sent to a topic
+        new_notif_ids = SentNotification.objects.filter(Q(sent_to_user__user_UUID=user_id) | Q( sent_to_topic__isnull = False )).values("notification__id").distinct()
+        map_notifications_queryset = Notification.objects.filter(user__user_UUID=user_id).exclude(id__in=new_notif_ids).order_by('-date_comment')
+
         #global_topic notifications
         global_notifications = SentNotification.objects.filter(sent_to_topic__topic_code='global').select_related('notification')
 
@@ -1199,8 +1230,31 @@ def user_notifications(request):
                 notifications_all_of_them = notifications_all_of_them.exclude(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
         #serializer = NotificationSerializer(all_notifications)
         content = custom_render_sent_notifications(notifications_all_of_them, acknowledgements, locale)
+        map_content = custom_render_mapnotification_queryset(map_notifications_queryset)
+
+        final_content = content + map_content
+
+        final_content = sorted(final_content, key=lambda x: x['date_comment'], reverse=True)
+
         #return Response(serializer.data)
-        return Response(content)
+        return Response(final_content)
+    # we keep the post method so the old ack method keeps working
+    if request.method == 'POST':
+        id = request.query_params.get('id', -1)
+        try:
+            int(id)
+        except ValueError:
+            raise ParseError(detail='Invalid id integer value')
+        queryset = Notification.objects.all()
+        this_notification = get_object_or_404(queryset, pk=id)
+        if request.query_params.get('acknowledged') is not None:
+            ack = request.query_params.get('acknowledged', True)
+        if ack != 'ignore':
+            ack_bool = string_par_to_bool(ack)
+            this_notification.acknowledged = ack_bool
+        this_notification.save()
+        serializer = NotificationSerializer(this_notification)
+        return Response(serializer.data)
     '''
     if request.method == 'POST':
         id = request.query_params.get('id', -1)

@@ -90,7 +90,7 @@ class PictureTestCase(APITestCase):
 
 class NotificationTestCase(APITestCase):
 
-    fixtures = ['reritja_like.json', 'awardcategory.json', 'europe_countries.json']
+    fixtures = ['reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
@@ -296,6 +296,10 @@ class NotificationTestCase(APITestCase):
         n = Notification(expert=self.reritja_user, notification_content=nc)
         n.save()
 
+        # send notif to regular topic
+        sn = SentNotification(sent_to_topic=self.some_topic, notification=n)
+        sn.save()
+
         self.client.force_authenticate(user=self.reritja_user)
         # list notifications for regular user
         response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
@@ -308,10 +312,6 @@ class NotificationTestCase(APITestCase):
         response = self.client.post('/api/subscribe_to_topic/?code=' + self.some_topic.topic_code + '&user=' + self.regular_user.user_UUID)
         # should respond created
         self.assertEqual(response.status_code, 201)
-
-        # send notif to regular topic
-        sn = SentNotification(sent_to_topic=self.some_topic, notification=n)
-        sn.save()
 
         # list notifications for regular user again
         response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
