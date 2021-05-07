@@ -2636,7 +2636,7 @@ class NotificationContent(models.Model):
     native_locale = models.CharField(default=None, blank=True, null=True, max_length=10, help_text='Locale code for text in body_html_native and title_native')
 
     def get_title_locale_safe(self, locale):
-        if locale.lower().strip() == self.native_locale.lower().strip():
+        if self.native_locale is not None and locale.lower().strip() == self.native_locale.lower().strip():
             return self.title_native
         else:
             return self.title_en
@@ -2662,7 +2662,7 @@ class NotificationContent(models.Model):
         #     return self.title_es
 
     def get_body_locale_safe(self, locale):
-        if locale.lower().strip() == self.native_locale.lower().strip():
+        if self.native_locale is not None and locale.lower().strip() == self.native_locale.lower().strip():
             return self.body_html_native
         else:
             return self.body_html_en

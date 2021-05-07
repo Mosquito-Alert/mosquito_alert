@@ -61,7 +61,7 @@ $( document ).ready(function() {
         var message = '<ul>' +
             '	<li><h3>Notifications</h3>' +
             '		<ul>' +
-            '			<li style="color:green;">Success:'+ data.non_push_estimate_num +'</li>' +
+            '			<li style="color:green;">Estimated number of recipients: '+ data.non_push_estimate_num +'</li>' +
             '		</ul>' +
             '	</li>' +
             '	<li><h3>Push</h3>' +
@@ -359,8 +359,8 @@ $( document ).ready(function() {
     var init_groups = function(){
         $('#topic_group').empty();
         var elems = ['<option value="">-----</option>'];
-        for(var i = 0; i < data.length; i++){
-            var elem = '<option value="' + data[i].topic_group_value + '">' + data[i].topic_group_text + '</option>'
+        for(var i = 0; i < topics_info.length; i++){
+            var elem = '<option value="' + topics_info[i].topic_group_value + '">' + topics_info[i].topic_group_text + '</option>'
             elems.push(elem);
         }
         $('#topic_group').html( elems.join() );
@@ -384,7 +384,7 @@ $( document ).ready(function() {
         if(value == ''){
             init_topics([]);
         }else{
-            init_topics(data[index].topics);
+            init_topics(topics_info[index].topics);
         }
     });
 

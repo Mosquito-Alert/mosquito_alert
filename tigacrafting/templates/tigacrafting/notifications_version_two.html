@@ -23,7 +23,7 @@
         {% else %}
         var user_uuid = '';
         {% endif %}
-        var data = JSON.parse('{{ topics_info | safe }}');
+        var topics_info = JSON.parse('{{ topics_info | safe }}');
     </script>
     <script src={% static "tigacrafting/notifications/notifications_version_two.js" %}></script>
 </head>

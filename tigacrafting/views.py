@@ -601,12 +601,12 @@ def issue_notification(report_annotation,current_domain):
         if (recipient.user_UUID.islower()):
             json_notif = custom_render_notification(sent_notification, recipient, 'en')
             try:
-                send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+                send_message_android(recipient.device_token, notification_content.title_native, '', json_notif)
             except Exception as e:
                 pass
         else:
             try:
-                send_message_ios(recipient.device_token, notification_content.title_es, '')
+                send_message_ios(recipient.device_token, notification_content.title_native, '')
             except Exception as e:
                 pass
     '''
