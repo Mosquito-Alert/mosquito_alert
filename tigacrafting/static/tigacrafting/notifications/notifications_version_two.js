@@ -44,6 +44,7 @@ $( document ).ready(function() {
         }
         var detail_message = '<ul>' + pushes.join('') + '</ul>';
         var push_message;
+        var push_results = data.push_results;
         switch(data.push_success){
             case 'ALL':
                 push_message = '<li style="color:green;">All pushes sent successfully</li>';
@@ -66,6 +67,9 @@ $( document ).ready(function() {
             '	</li>' +
             '	<li><h3>Push</h3>' +
             '		<ul>' + push_message + '</ul>' +
+            '	</li>' +
+            '	<li><h3>Push details</h3>' +
+            '		<ul>' + pushes.join(" ") + '</ul>' +
             '	</li>' +
             '</ul>';
         return message;
