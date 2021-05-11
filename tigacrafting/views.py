@@ -560,10 +560,19 @@ def issue_notification(report_annotation,current_domain):
         context_en['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
         context_native['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
 
+    #if this report_annotation does not have comments, look for comments in
+    #the other report annotations
     if report_annotation.edited_user_notes:
         clean_annotation = report_annotation.edited_user_notes
         context_en['expert_note'] = clean_annotation
         context_native['expert_note'] = clean_annotation
+    else:
+        if report_annotation.report.expert_report_annotations.filter(simplified_annotation=False).exists():
+            non_simplified_annotation = report_annotation.report.expert_report_annotations.filter(simplified_annotation=False).first()
+            if non_simplified_annotation.edited_user_notes:
+                clean_annotation = non_simplified_annotation.edited_user_notes
+                context_en['expert_note'] = clean_annotation
+                context_native['expert_note'] = clean_annotation
 
     if report_annotation.message_for_user:
         clean_annotation = report_annotation.message_for_user
