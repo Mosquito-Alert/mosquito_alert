@@ -616,10 +616,12 @@ def create_pie_data(request, categories, view_name):
     context = {'map_data': json.dumps(map_data), 'map_data_year': json.dumps(map_data_year), 'years': json.dumps(years)}
     return render(request, view_name, context)
 
+
 @login_required
 def report_stats_ccaa_pie_sites(request):
     categories = ('storm_drain_water', 'storm_drain_dry', 'breeding_site_other', )
     return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie_sites.html')
+
 
 @login_required
 def report_stats_ccaa_pie(request):
@@ -628,6 +630,12 @@ def report_stats_ccaa_pie(request):
 
 
 def stats_user_score(request, user_uuid=None):
+    if user_uuid is not None:
+        try:
+            user = TigaUser.objects.get(pk=user_uuid)
+            user.get_identicon()
+        except TigaUser.DoesNotExist:
+            pass
     user_score = compute_user_score_in_xp_v2(user_uuid,update=True)
     context = { "score_data": user_score }
     return render(request, 'stats/user_score.html', context)
@@ -641,9 +649,11 @@ def get_index_of_uuid(objects, user_uuid):
         index += 1
     return index
 
+
 def get_page_of_index(index, page_size):
     index_base_1 = index + 1
     return int(math.ceil( float(index_base_1) / float(page_size) ))
+
 
 def stats_user_ranking(request, page=1, user_uuid=None):
     current_locale = request.LANGUAGE_CODE
