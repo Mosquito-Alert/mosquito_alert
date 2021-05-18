@@ -196,7 +196,7 @@ var MOSQUITO = (function (m, _) {
               ]
             },
             //BITING layer
-            /*{
+            {
               'key': 'R',
               'group': 'models',
               'title': 'layer.biting',
@@ -215,7 +215,7 @@ var MOSQUITO = (function (m, _) {
                 {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
                 {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
               ]
-            },*/
+            },
             {
                 key: 'F',
                 group: 'none',
@@ -432,7 +432,7 @@ var MOSQUITO = (function (m, _) {
                   }
               },
               //BITING layer
-              /*{
+              {
                 'key': 'R',
                 'group': 'models',
                 'title': 'layer.biting',
@@ -451,7 +451,7 @@ var MOSQUITO = (function (m, _) {
                   {'minValue':0.1, 'maxValue':0.15, 'color': '#8f8c8c', 'label': 'models.label.sd-3'},
                   {'minValue':0.15, 'maxValue':1, 'color': '#000', 'label': 'models.label.sd-4'}
                 ]
-              },*/
+              },
               {
                   key: 'Y',
                   group: 'userdata',
