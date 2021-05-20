@@ -37,6 +37,7 @@ import copy
 from django.db import connection
 from django.core.paginator import Paginator, EmptyPage
 import time
+import geohash
 
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
@@ -1182,13 +1183,25 @@ def nearby_reports_no_dwindow(request):
         if center_buffer_lat is None or center_buffer_lon is None:
             raise ParseError(detail='invalid parameters')
 
-        '''
-        sql = "SELECT \"version_UUID\"  " + \
-            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
-            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
-        '''
+        lat = -1
+        long = -1
+        try:
+            lat = float(center_buffer_lat)
+        except ValueError:
+            raise ParseError(detail='cannot convert lat to valid float')
+
+        try:
+            long = float(center_buffer_lon)
+        except ValueError:
+            raise ParseError(detail='cannot convert lon to valid float')
+
+        gh = geohash.encode( lat, long )
+        gh_4 = gh[:5]
+
+        #flattened_data = Report.objects.filter(ghash__startswith=gh_4).values("version_UUID")
 
         #Older postgis versions didn't like the second ::geography cast
+        '''
         sql = "SELECT \"version_UUID\"  " + \
               "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
               "ORDER BY point <-> 'SRID=4326;POINT({3} {4})'"
@@ -1199,9 +1212,10 @@ def nearby_reports_no_dwindow(request):
         cursor.execute(sql_formatted)
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
+        '''
 
         reports_adult = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
+            .filter(ghash__startswith=gh_4)\
             .exclude(creation_time__year=2014)\
             .exclude(note__icontains="#345")\
             .exclude(hide=True)\
@@ -1218,7 +1232,7 @@ def nearby_reports_no_dwindow(request):
             reports_adult = reports_adult.exclude(version_number=-1)
 
         reports_bite = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
+            .filter(ghash__startswith=gh_4)\
             .exclude(creation_time__year=2014)\
             .exclude(note__icontains="#345")\
             .exclude(hide=True) \
@@ -1232,7 +1246,7 @@ def nearby_reports_no_dwindow(request):
             reports_bite = reports_bite.exclude(version_number=-1)
 
         reports_site = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
+            .filter(ghash__startswith=gh_4)\
             .exclude(creation_time__year=2014)\
             .exclude(note__icontains="#345")\
             .exclude(hide=True) \

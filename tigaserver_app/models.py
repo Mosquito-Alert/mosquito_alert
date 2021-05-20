@@ -45,6 +45,7 @@ from io import BytesIO
 from django.core.files import File
 import html.entities
 from common.translation import get_locale_for_en, get_translation_in
+import geohash
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 
@@ -446,6 +447,8 @@ class Report(models.Model):
     country = models.ForeignKey(EuropeCountry, blank=True, null=True, on_delete=models.DO_NOTHING, )
 
     session = models.ForeignKey(Session, blank=True, null=True, help_text='Session ID for session in which this report was created ', related_name="session_reports", on_delete=models.DO_NOTHING)
+
+    ghash = models.CharField(blank=True,null=True,max_length=50,help_text="Geohash for point coordinates")
 
     objects = GeoManager()
 
@@ -2046,8 +2049,13 @@ class Report(models.Model):
     # save is overriden to initialize the point spatial field with the coordinates supplied
     # to the Report object. See method get_point
     def save(self, *args, **kwargs):
+        p = None
         if not self.point:
-            self.point = self.get_point()
+            p = self.get_point()
+            self.point = p
+        if self.point is not None:
+            h = geohash.encode(self.point.y, self.point.x)
+            self.ghash = h
         if not self.country:
             c = self.get_country_is_in()
             if c is None:

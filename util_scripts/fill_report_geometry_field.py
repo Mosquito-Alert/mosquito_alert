@@ -16,6 +16,10 @@ from tigaserver_app.models import Report
 
 reports = Report.objects.all()
 
+for r in reports:
+    r.save()
+
+'''
 i = len(reports)
 j = 0
 for report in reports:
@@ -24,4 +28,5 @@ for report in reports:
             report.point = report.get_point()
             report.save()
     j = j + 1
-    print 'Fixed report ' + str(j) + ' of ' + str(i)
+    print('Fixed report ' + str(j) + ' of ' + str(i))
+'''
