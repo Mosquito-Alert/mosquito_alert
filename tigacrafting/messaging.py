@@ -131,10 +131,23 @@ def generic_send_to_topic(topic_code, title, message, json_notif=None):
     else:
         notification = json_notif
     data_message = {
-        "message": message,
-        "title": title,
-        "notif": notification
+        "notification": {
+            "body": message,
+            "title": title,
+        },
+        "data": {
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+            "sound": "default",
+            "status": "done",
+            "screen": "screenA",
+            "notif": notification
+        }
     }
+    # data_message = {
+    #     "message": message,
+    #     "title": title,
+    #     "notif": notification
+    # }
     dry_run = getattr(settings_local, 'DRY_RUN_PUSH', True)
     try:
         result = push_service.notify_topic_subscribers(topic_name=topic_code, message_body=message, message_title=title, data_message=data_message)
@@ -150,10 +163,23 @@ def generic_send(recipient_token, title, message, json_notif=None):
     else:
         notification = json_notif
     data_message = {
-        "message": message,
-        "title": title,
-        "notif": notification
+        "notification": {
+            "body": message,
+            "title": title,
+        },
+        "data": {
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+            "sound": "default",
+            "status": "done",
+            "screen": "screenA",
+            "notif": notification
+        }
     }
+    # data_message = {
+    #     "message": message,
+    #     "title": title,
+    #     "notif": notification
+    # }
     dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
     try:
         result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message, dry_run=dry_run)
@@ -184,10 +210,24 @@ def generic_multiple_send(token_list, title, message, json_notif=None):
     else:
         notification = json_notif
     data_message = {
-        "message": message,
-        "title": title,
-        "notif": notification
+        "notification": {
+            "body": message,
+            "title": title,
+        },
+        "data": {
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+            "sound": "default",
+            "status": "done",
+            "screen": "screenA",
+            "notif": notification
+        }
     }
+    # data_message = {
+    #     "message": message,
+    #     "title": title,
+    #     "notif": notification
+    # }
+
     dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
     try:
         result = push_service.notify_multiple_devices(registration_ids=token_list, data_message=data_message, dry_run=dry_run)
