@@ -1361,8 +1361,8 @@ def get_reports_unfiltered_adults():
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
     this_user = request.user
-    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
-    if this_user_is_superexpert:
+    this_user_is_coarse = this_user.groups.filter(name='coarse_filter').exists()
+    if this_user_is_coarse:
         args = {}
         args.update(csrf(request))
         PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0, can_order=True)
