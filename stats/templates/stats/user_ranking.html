@@ -64,9 +64,11 @@
                     {% endif %}
                     <a href="{% url 'stats_user_ranking' page=pagination.last  user_uuid=user_id %}" class="btn btn-primary  btn-sm {% if pagination.page == pagination.last %}disabled{% endif %}">>|</a>
                 </div>
+                {% if user_has_score %}
                 <div class="row content">
                     <a href="{% url 'stats_user_ranking' page=1 user_uuid=user_id %}?seek=t" class="btn btn-primary btn-sm">{% trans 'My position' %}</a>
                 </div>
+                {% endif %}
             {% else %}
                 <div class="row content controls">
                     {{ pagination.start }} - {{ pagination.end }} {% trans 'of' %} {{ pagination.total }}
