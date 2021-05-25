@@ -20,7 +20,54 @@ VALIDATION_VALUE_CONFIRMED = 2
 class ScoringTestCase(TestCase):
     fixtures = ['awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
 
-    def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
+    def uuid_to_number(self,uuid):
+        number_part = uuid.split('-')[4]
+        number_part_number = int(number_part)
+        return number_part_number
+
+    def pad_to_left(self, pad_character, original_string, final_length):
+        original_string_len = len(original_string)
+        add_num = final_length - original_string_len
+        retval = ''
+        for i in range(add_num):
+            retval += pad_character
+        retval += original_string
+        return retval
+
+    def number_to_uuid(self,number):
+        uuid = '00000000-0000-0000-0000-'
+        number_str = str(number)
+        return uuid + self.pad_to_left('0',number_str,12)
+
+    def delete_report(self,report):
+        utc = pytz.UTC
+        d = datetime.now()
+        ld = utc.localize(d)
+        old_uuid = report.version_UUID
+        old_number = self.uuid_to_number(old_uuid)
+        new_number = old_number + 1
+        new_uuid = self.number_to_uuid(new_number)
+        new_report = Report(
+            version_UUID=new_uuid,
+            version_number=-1,
+            report_id=report.report_id,
+            user_id=report.user.user_UUID,
+            phone_upload_time=report.phone_upload_time,
+            server_upload_time=report.server_upload_time,
+            creation_time=report.creation_time,
+            version_time=ld,
+            location_choice="current",
+            current_location_lon=report.current_location_lon,
+            current_location_lat=report.current_location_lat,
+            type=report.type,
+            app_language=report.app_language,
+            package_version=report.package_version
+            # This is important for notifications: no notifs issued for null or <32 package version numbers
+        )
+        new_report.save()
+        return new_report
+
+    def create_single_report(self, day, month, year, user, id, report_id='', hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
         if hour is None:
             hour = 0
@@ -39,6 +86,7 @@ class ScoringTestCase(TestCase):
             version_UUID=id,
             version_number=0,
             user_id=user.user_UUID,
+            report_id=report_id,
             phone_upload_time=ld,
             server_upload_time=ld,
             creation_time=ld,
@@ -550,3 +598,25 @@ class ScoringTestCase(TestCase):
             self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_10).count(), 1)
             self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_20).count(), 1)
             self.assertEqual(Notification.objects.filter(notification_content__body_html_es=notification_body_50).count(), 1)
+
+    def test_first_of_season_transfer(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        day_before_start_of_season = conf.SEASON_START_DAY - 1
+        month_before_start_of_season = conf.SEASON_START_MONTH - 1
+        user = TigaUser.objects.get(pk=user_id)
+
+        # should be granted for season 2020
+        #(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es')
+        report_in_season = self.create_single_report(day=conf.SEASON_START_DAY, month=conf.SEASON_START_MONTH, year=2020, user=user, id='00000000-0000-0000-0000-000000001000', report_id='ABCD')
+        report_in_season.save()
+        self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2020).count(), 1)
+
+        report_later_in_season = self.create_single_report(day=conf.SEASON_START_DAY + 1, month=conf.SEASON_START_MONTH, year=2020, user=user, id='00000000-0000-0000-0000-000000001003', report_id='DEFG')
+        report_later_in_season.save()
+
+        report_even_later_in_season = self.create_single_report(day=conf.SEASON_START_DAY + 2, month=conf.SEASON_START_MONTH,year=2020, user=user,id='00000000-0000-0000-0000-000000001004', report_id='AAAA')
+        report_even_later_in_season.save()
+
+        self.delete_report(report_in_season)
+        # first of season should be transferred to earliest valid report after deleted
+        self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2020).filter(report=report_later_in_season).count(), 1)
