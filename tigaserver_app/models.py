@@ -2250,19 +2250,40 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                         award.delete()
                         # recover all reports before this one
                         posterior_reports = Report.objects.exclude(version_UUID__in=deleted_versions).filter( Q(type='adult') | Q(type='site') ).filter(creation_time__gte=instance.creation_time).order_by('creation_time')
+                        award_relocated = False
                         for r in posterior_reports:
                             if r.latest_version:
                                 if r.can_be_first_of_season(current_year):
                                     if not Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season').exists():
                                         grant_first_of_season(r, super_movelab)
+                                        award_relocated = True
+                                        #update notification
+                                        start_of_season_en_text = get_translation_in('start_of_season', 'en')
+                                        n = Notification.objects.filter(report__in=deleted_versions).filter(notification_content__body_html_en__icontains=start_of_season_en_text).first()
+                                        if n is not None:
+                                            n.report = r
+                                            n.save()
+                                        break
+                        if award_relocated == False:
+                            start_of_season_en_text = get_translation_in('start_of_season', 'en')
+                            n = Notification.objects.filter(report=instance).filter(notification_content__body_html_en__icontains=start_of_season_en_text).first()
+                            nc = None
+                            if n is not None:
+                                nc = n.notification_content
+                                n.delete()
+                                if nc is not None:
+                                    nc.delete()
                     elif award.category.category_label == 'daily_participation':
                         # if it's daily participation see if there's another report on the same day to transfer. If not, delete
+                        # do nothing
                         pass
                     elif award.category.category_label == 'fidelity_day_2':
                         # check if fidelity_day_2 is applicable. If not, delete. If yes transfer to suitable report
+                        # do nothing
                         pass
                     elif award.category.category_label == 'fidelity_day_3':
                         # check if fidelity_day_3 is applicable. If not, delete. If yes transfer to suitable report
+                        # do nothing
                         pass
         else:
             try:

@@ -610,6 +610,9 @@ class ScoringTestCase(TestCase):
         report_in_season = self.create_single_report(day=conf.SEASON_START_DAY, month=conf.SEASON_START_MONTH, year=2020, user=user, id='00000000-0000-0000-0000-000000001000', report_id='ABCD')
         report_in_season.save()
         self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2020).count(), 1)
+        # there should be one start of season notification for this report
+        start_of_season_en_text = get_translation_in('start_of_season', 'en')
+        self.assertEqual(Notification.objects.filter(report=report_in_season).filter(notification_content__body_html_en__icontains=start_of_season_en_text).count(), 1)
 
         report_later_in_season = self.create_single_report(day=conf.SEASON_START_DAY + 1, month=conf.SEASON_START_MONTH, year=2020, user=user, id='00000000-0000-0000-0000-000000001003', report_id='DEFG')
         report_later_in_season.save()
@@ -620,3 +623,22 @@ class ScoringTestCase(TestCase):
         self.delete_report(report_in_season)
         # first of season should be transferred to earliest valid report after deleted
         self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2020).filter(report=report_later_in_season).count(), 1)
+        # notification should now be in report_later_in_season
+        self.assertEqual(Notification.objects.filter(report=report_later_in_season).filter(notification_content__body_html_en__icontains=start_of_season_en_text).count(), 1)
+
+    def test_first_of_season_removed_notification(self):
+        user_id = '00000000-0000-0000-0000-000000000000'
+        day_before_start_of_season = conf.SEASON_START_DAY - 1
+        month_before_start_of_season = conf.SEASON_START_MONTH - 1
+        user = TigaUser.objects.get(pk=user_id)
+
+        report_in_season = self.create_single_report(day=conf.SEASON_START_DAY, month=conf.SEASON_START_MONTH,year=2020, user=user, id='00000000-0000-0000-0000-000000001000',report_id='ABCD')
+        report_in_season.save()
+        self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2020).count(), 1)
+        # there should be one start of season notification for this report
+        start_of_season_en_text = get_translation_in('start_of_season', 'en')
+        self.assertEqual(Notification.objects.filter(report=report_in_season).filter(notification_content__body_html_en__icontains=start_of_season_en_text).count(), 1)
+
+        self.delete_report(report_in_season)
+        # there sould not be first of season
+        self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2020).count(), 0)
