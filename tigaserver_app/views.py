@@ -737,6 +737,12 @@ def update_coverage_area_month_model_manual():
     return json.dumps(json_response)
 
 
+def coverage_month_internal():
+    queryset = CoverageAreaMonth.objects.all()
+    serializer = CoverageMonthMapSerializer(queryset, many=True)
+    return serializer.data
+
+
 class CoverageMonthMapViewSet(ReadOnlyModelViewSet):
     queryset = CoverageAreaMonth.objects.all()
     serializer_class = CoverageMonthMapSerializer
@@ -772,33 +778,43 @@ def string_par_to_bool(string_par):
             return True
     return False
 
+def get_cfa_reports():
+    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
+    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(
+        hide=True)
+    # there seems to be some kind of caching issue .all() forces the queryset to refresh
+    results = []
+    for report in unfiltered_clean_reports_query:
+        results.append({"version_UUID": report.version_UUID})
+    return results
+
 @api_view(['GET'])
 def force_refresh_cfa_reports(request):
     if request.method == 'GET':
-        new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-        unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
-        unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-        unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-        # there seems to be some kind of caching issue .all() forces the queryset to refresh
-        results = []
-        for report in unfiltered_clean_reports_query:
-            results.append({"version_UUID": report.version_UUID})
+        results = get_cfa_reports()
         return Response(results)
+
+def get_cfs_reports():
+    reports_imbornal = get_reports_imbornal()
+    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
+    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(
+        hide=True)
+    # there seems to be some kind of caching issue .all() forces the queryset to refresh
+    results = []
+    for report in unfiltered_clean_reports_query:
+        results.append({"version_UUID": report.version_UUID})
+    return results
 
 @api_view(['GET'])
 def force_refresh_cfs_reports(request):
     if request.method == 'GET':
-        reports_imbornal = get_reports_imbornal()
-        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-        unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
-        unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-        unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-        # there seems to be some kind of caching issue .all() forces the queryset to refresh
-        results = []
-        for report in unfiltered_clean_reports_query:
-            results.append({"version_UUID":report.version_UUID})
+        results = get_cfs_reports()
         return Response(results)
 
 
@@ -1606,6 +1622,16 @@ def all_reports_paginated(request):
         return paginator.get_paginated_response(serializer.data)
         #return Response(serializer.data)
 
+# this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
+def all_reports_internal(year):
+    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
+        version_UUID__in=non_visible_report_id).filter(
+        Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(
+            package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(
+            package_name='Mosquito Alert')).exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(creation_time__year=year)
+    serializer = MapDataSerializer(queryset, many=True)
+    return serializer.data
 
 @api_view(['GET'])
 def all_reports(request):
@@ -1622,6 +1648,42 @@ def all_reports(request):
         f = MapDataFilter(request.GET, queryset=queryset)
         serializer = MapDataSerializer(f.qs, many=True)
         return Response(serializer.data)
+
+
+def non_visible_reports_internal(year):
+    reports_imbornal = get_reports_imbornal()
+    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+
+    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+
+    unfiltered_clean_reports = filter_reports(new_reports_unfiltered, False)
+    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
+
+    # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
+    if conf.FAST_LOAD and conf.FAST_LOAD == True:
+        non_visible_report_id = []
+    else:
+        non_visible_report_id = [report.version_UUID for report in
+                                 Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
+                                 not report.visible]
+
+    hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(
+        version_UUID__in=non_visible_report_id).filter(
+        Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(
+            package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(
+            package_name='Mosquito Alert')).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+
+    queryset = hidden_reports | unfiltered_clean_reports_query
+    if year is not None:
+        queryset = queryset.filter(creation_time__year=year)
+
+    serializer = MapDataSerializer(queryset, many=True)
+    return serializer.data
+
 
 @api_view(['GET'])
 def non_visible_reports(request):
