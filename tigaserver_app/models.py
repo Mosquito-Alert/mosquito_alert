@@ -2249,7 +2249,7 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                         # if it's first of season, try to transfer to suitable report. If no report, delete
                         award.delete()
                         # recover all reports before this one
-                        posterior_reports = Report.objects.exclude(version_UUID__in=deleted_versions).filter( Q(type='adult') | Q(type='site') ).filter(creation_time__gte=instance.creation_time).order_by('creation_time')
+                        posterior_reports = Report.objects.exclude(version_UUID__in=deleted_versions).filter(user_id=instance.user.user_UUID).filter( Q(type='adult') | Q(type='site') ).filter(creation_time__gte=instance.creation_time).order_by('creation_time')
                         award_relocated = False
                         for r in posterior_reports:
                             if r.latest_version:
