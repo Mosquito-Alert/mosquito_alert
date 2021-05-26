@@ -1362,6 +1362,7 @@ def get_reports_unfiltered_adults():
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
     this_user = request.user
     this_user_is_coarse = this_user.groups.filter(name='coarse_filter').exists()
+    super_movelab = User.objects.get(pk=24)
     if this_user_is_coarse:
         args = {}
         args.update(csrf(request))
@@ -1383,13 +1384,15 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 
                             #print(f.cleaned_data)
                             if f.cleaned_data['fastUpload']:
-                                photo = report.photos.first()
-                                new_annotation = ExpertReportAnnotation(report=report, user=this_user)
-                                new_annotation.site_certainty_notes = 'auto'
-                                new_annotation.best_photo_id = photo.id
-                                new_annotation.validation_complete = True
-                                new_annotation.revise = True
-                                new_annotation.save()
+                                #check that annotation does not exist, to avoid duplicates
+                                if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
+                                    new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
+                                    photo = report.photos.first()
+                                    new_annotation.site_certainty_notes = 'auto'
+                                    new_annotation.best_photo_id = photo.id
+                                    new_annotation.validation_complete = True
+                                    new_annotation.revise = True
+                                    new_annotation.save()
 
 ###############------------------------------ FI FastUpload --------------------------------###############
 
