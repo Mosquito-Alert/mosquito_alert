@@ -47,6 +47,7 @@ import html.entities
 from common.translation import get_locale_for_en, get_translation_in
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
+logger_notification = logging.getLogger('mosquitoalert.notification')
 
 
 ACHIEVEMENT_10_REPORTS = 'achievement_10_reports'
@@ -2223,13 +2224,13 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
                         #print(recipient.user_UUID)
                         send_message_android(recipient.device_token, notification_content.title_es, '')
                     except Exception as e:
-                        pass
+                        logger_notification.exception("Exception sending xp android message")
                 else:
                     try:
                         #print(recipient.user_UUID)
                         send_message_ios(recipient.device_token, notification_content.title_es, '')
                     except Exception as e:
-                        pass
+                        logger_notification.exception("Exception sending xp ios message")
 
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):

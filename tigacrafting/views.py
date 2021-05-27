@@ -59,6 +59,7 @@ import re
 #-----------------------------------#
 
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
+logger_notification = logging.getLogger('mosquitoalert.notification')
 
 def get_current_domain(request):
     if request.META['HTTP_HOST'] != '':
@@ -615,12 +616,12 @@ def issue_notification(report_annotation,current_domain):
             try:
                 send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
             except Exception as e:
-                pass
+                logger_notification.exception("Exception sending validation android message")
         else:
             try:
                 send_message_ios(recipient.device_token, notification_content.title_es, '')
             except Exception as e:
-                pass
+                logger_notification.exception("Exception sending validation ios message")
     '''
     About to deploy epi data, let's put this in the fridge for now
     # if there is a similar notification issued for this user recently
