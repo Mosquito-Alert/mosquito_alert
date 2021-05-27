@@ -112,12 +112,40 @@ class UserTestCase(TestCase):
             p.save()
             a = a + 1
 
+    def create_stlouis_report_pool(self):
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        non_naive_time = timezone.now()
+        a = 1
+        country = EuropeCountry.objects.get(pk=53)
+        while a < 20:
+            point_on_surface = country.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+
     def create_team(self):
 
         europe_group = Group.objects.create(name='eu_group_europe')
         europe_group.save()
         team_venezuela = Group.objects.create(name='team_venezuela')
         team_venezuela.save()
+        team_stlouis = Group.objects.create(name='team_stlouis')
+        team_stlouis.save()
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
         experts = Group.objects.create(name='expert')
@@ -164,7 +192,13 @@ class UserTestCase(TestCase):
         u11.username = 'expert_11_ve'
         u11.save()
 
+        u12 = User.objects.create(pk=12)
+        u12.username = 'expert_12_sl'
+        u12.save()
+
         team_venezuela.user_set.add(u11)
+
+        team_stlouis.user_set.add(u12)
 
         europe_group.user_set.add(u2)
         europe_group.user_set.add(u3)
@@ -183,6 +217,39 @@ class UserTestCase(TestCase):
         experts.user_set.add(u8)
         experts.user_set.add(u9)
         experts.user_set.add(u10)
+
+    def create_stlouis_team(self):
+        team_stlouis = Group.objects.create(name='team_stlouis')
+        team_stlouis.save()
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+
+        u1 = User.objects.create(pk=1)
+        u1.username = 'expert_1_es'
+        u1.save()
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_sl'
+        u2.save()
+        u3 = User.objects.create(pk=3)
+        u3.username = 'expert_3_sl'
+        u3.save()
+        u4 = User.objects.create(pk=4)
+        u4.username = 'expert_4_sl'
+        u4.save()
+        u5 = User.objects.create(pk=5)
+        u5.username = 'expert_1_eu'
+        u5.save()
+
+        spain_group.user_set.add(u1)
+        europe_group.user_set.add(u5)
+
+        team_stlouis.user_set.add(u2)
+        team_stlouis.user_set.add(u3)
+        team_stlouis.user_set.add(u4)
 
     def create_venezuelan_team(self):
         team_venezuela = Group.objects.create(name='team_venezuela')
@@ -344,6 +411,33 @@ class UserTestCase(TestCase):
             u = User.objects.get(pk=i)
             reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
             self.assertEqual(reports_user_i, 0, msg="NON-Venezuelan user {0} has been assigned {1} reports, but should have received none!".format(u.username, reports_user_i))
+
+    def test_assign_stlouis_reports(self):
+        self.create_stlouis_team()
+        self.create_stlouis_report_pool()
+        current_pending = 0
+        max_pending = 5
+        max_given = 3
+        national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
+        country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
+        country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
+        for this_user in User.objects.all():
+            if this_user.groups.filter(name='team_stlouis').exists():
+                assign_reports_to_bounded_box_user(this_user,current_pending,max_pending,max_given,53)
+            else:
+                assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
+
+        #all venezuelan experts id=2,3,4 should be assigned 3 reports
+        for i in [2, 3, 4]:
+            u = User.objects.get(pk=i)
+            reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
+            self.assertEqual(reports_user_i, 5, msg="St Louis user {0} has not been assigned 5 reports, but {1}!".format(u.username, reports_user_i))
+
+        #no reports for you, non st Louis users (ids 1 and 5)!
+        for i in [1, 5]:
+            u = User.objects.get(pk=i)
+            reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
+            self.assertEqual(reports_user_i, 0, msg="NON-St Louis user {0} has been assigned {1} reports, but should have received none!".format(u.username, reports_user_i))
 
 
 

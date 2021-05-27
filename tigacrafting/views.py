@@ -897,6 +897,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
     this_user_is_team_venezuela = this_user.groups.filter(name='team_venezuela').exists()
+    this_user_is_team_stlouis = this_user.groups.filter(name='team_stlouis').exists()
     #this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
     #this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
     this_user_is_reritja = (this_user.id == 25)
@@ -1007,6 +1008,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         if this_user_is_expert and load_new_reports == 'T':
             if this_user_is_team_venezuela:
                 assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 52)
+            elif this_user_is_team_stlouis:
+                assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 53)
             else:
                 national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
                 country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
