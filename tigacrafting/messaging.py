@@ -126,10 +126,13 @@ def send_message_android(token,title, message, notification=None):
 
 def generic_send_to_topic(topic_code, title, message, json_notif=None):
     push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
+    notif_id = None
     if json_notif:
-        notification = stringify_date(json_notif)
-    else:
-        notification = json_notif
+        notif_id = json_notif['id']
+        #notification = stringify_date(json_notif)
+    #else:
+        #notification = json_notif
+    notif_id = str(json_notif['id'])
     data_message = {
         "notification": {
             "body": message,
@@ -140,7 +143,7 @@ def generic_send_to_topic(topic_code, title, message, json_notif=None):
             "sound": "default",
             "status": "done",
             "screen": "screenA",
-            "notif": notification
+            "notification": {"id": notif_id }
         }
     }
     # data_message = {
@@ -158,10 +161,12 @@ def generic_send_to_topic(topic_code, title, message, json_notif=None):
 def generic_send(recipient_token, title, message, json_notif=None):
     push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
     registration_id = recipient_token
+    notif_id = None
     if json_notif:
-        notification = stringify_date(json_notif)
-    else:
-        notification = json_notif
+        notif_id = str(json_notif['id'])
+        #notification = stringify_date(json_notif)
+    #else:
+        #notification = json_notif
     data_message = {
         "notification": {
             "body": message,
@@ -172,7 +177,7 @@ def generic_send(recipient_token, title, message, json_notif=None):
             "sound": "default",
             "status": "done",
             "screen": "screenA",
-            "notif": notification
+            "notification": {"id" : notif_id }
         }
     }
     # data_message = {
