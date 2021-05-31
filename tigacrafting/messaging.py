@@ -182,7 +182,7 @@ def generic_send(recipient_token, title, message, json_notif=None):
     # }
     dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
     try:
-        result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message, dry_run=dry_run)
+        result = push_service.notify_single_device(registration_id=registration_id, message_body=message, message_title=title, data_message=data_message, dry_run=dry_run)
         return result
     except Exception as e:
         return {'exception': str(e) }
