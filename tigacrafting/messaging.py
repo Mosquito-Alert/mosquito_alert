@@ -141,8 +141,6 @@ def generic_send_to_topic(topic_code, title, message, json_notif=None):
         "data": {
             "click_action": "FLUTTER_NOTIFICATION_CLICK",
             "sound": "default",
-            "status": "done",
-            "screen": "screenA",
             "notification": {"id": notif_id }
         }
     }
@@ -175,8 +173,6 @@ def generic_send(recipient_token, title, message, json_notif=None):
         "data": {
             "click_action": "FLUTTER_NOTIFICATION_CLICK",
             "sound": "default",
-            "status": "done",
-            "screen": "screenA",
             "notification": {"id" : notif_id }
         }
     }
@@ -210,10 +206,12 @@ def send_message_ios(tokens, alert_message, link_url, notification=None):
 
 def generic_multiple_send(token_list, title, message, json_notif=None):
     push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
+    notif_id = None
     if json_notif:
-        notification = stringify_date(json_notif)
-    else:
-        notification = json_notif
+        notif_id = str(json_notif['id'])
+        #notification = stringify_date(json_notif)
+    #else:
+        #notification = json_notif
     data_message = {
         "notification": {
             "body": message,
@@ -222,9 +220,7 @@ def generic_multiple_send(token_list, title, message, json_notif=None):
         "data": {
             "click_action": "FLUTTER_NOTIFICATION_CLICK",
             "sound": "default",
-            "status": "done",
-            "screen": "screenA",
-            "notif": notification
+            "notification": {"id": notif_id}
         }
     }
     # data_message = {
