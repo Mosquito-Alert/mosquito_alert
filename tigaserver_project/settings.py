@@ -67,6 +67,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django_filters',
     'corsheaders',
+    "sslserver",
 )
 
 '''
