@@ -1,4 +1,4 @@
-$( document ).ready(function() {
+        $( document ).ready(function() {
     var SELECTED_SOME_MANUALLY = 0;
     var SELECTED_SOME_FILTER = 1;
     var SELECTED_ALL = 2;
@@ -78,6 +78,8 @@ $( document ).ready(function() {
     ajax_post_send_notifications = function(notificationcontent_id){
         notification_data = jsonify_notification(notificationcontent_id);
         $('#gear').show();
+        $('#save_button').addClass('disabled');
+        $('#clear_form').addClass('disabled');
         $.ajax({
             type: "PUT",
             url: '/api/send_notifications/',
@@ -86,11 +88,15 @@ $( document ).ready(function() {
             data: notification_data,
             success: function(data){
                 $('#gear').hide();
+                $('#save_button').removeClass('disabled');
+                $('#clear_form').removeClass('disabled');
                 $("#dialog-message-report-text").html(format_report(data));
                 $("#dialog-message-report").dialog("open");
             },
             error: function(jqXHR, textStatus, errorThrown){
                 $('#gear').hide();
+                $('#save_button').removeClass('disabled');
+                $('#clear_form').removeClass('disabled');
                 $("#dialog-message-error-text").html(jqXHR.responseText);
                 $("#dialog-message-error").dialog("open");
             }
