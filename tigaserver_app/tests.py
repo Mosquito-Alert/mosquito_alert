@@ -193,9 +193,10 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.data[0]['acknowledged'], False)
         # mark it as read
         notification_id = response.data[0]['id']
-        response = self.client.post('/api/ack_notif/',{'user':'00000000-0000-0000-0000-000000000000','notification':notification_id},format='json')
-        # should respond created
-        self.assertEqual(response.status_code, 201)
+        #response = self.client.post('/api/ack_notif/',{'user':'00000000-0000-0000-0000-000000000000','notification':notification_id},format='json')
+        response = self.client.delete('/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif=' + str(notification_id))
+        # should respond no content
+        self.assertEqual(response.status_code, 204)
         # try again
         response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
         # response should be ok
@@ -271,9 +272,10 @@ class NotificationTestCase(APITestCase):
         # should only receive the notification from the global topic
         self.assertEqual(len(response.data), 1)
         # acknowledge the notification
-        response = self.client.post('/api/ack_notif/', {'user': '00000000-0000-0000-0000-000000000000', 'notification': n.id}, format='json')
-        # should respond created
-        self.assertEqual(response.status_code, 201)
+        #response = self.client.post('/api/ack_notif/', {'user': '00000000-0000-0000-0000-000000000000', 'notification': n.id}, format='json')
+        response = self.client.delete('/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif=' + str(n.id))
+        # should respond no content
+        self.assertEqual(response.status_code, 204)
         # now the notification should be acknowledged
         response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
         # response should be ok

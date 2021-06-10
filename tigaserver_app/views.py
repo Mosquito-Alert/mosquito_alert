@@ -628,25 +628,43 @@ class AcknowledgedNotificationViewSetPaginated(mixins.CreateModelMixin, mixins.L
     filter_class = AcknowledgedNotificationFilter
     pagination_class = StandardResultsSetPagination
 
-
-
+'''
+This implementation is weird AF. The correct ack to be used should be /api/ack_notif. This one does the same, but
+uses the DELETE verb and answers with no content in case of success, which is really counter-intuitive because
+in fact it CREATES an AcknowledgedNotification
+'''
 @api_view(['DELETE'])
 def mark_notif_as_ack(request):
     user = request.query_params.get('user','-1')
     notif = request.query_params.get('notif', -1)
+    u = None
+    n = None
     if user == '-1':
         raise ParseError(detail='user param is mandatory')
     if notif == -1:
         raise ParseError(detail='notif param is mandatory')
     try:
-        ack_notif = AcknowledgedNotification.objects.get(user=user,notification=notif)
-        ack_notif.delete()
-        map_notif = Notification.objects.get(id=notif)
-        map_notif.acknowledged = True
-        map_notif.save()
+        u = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='This user does not exist')
+    try:
+        n = Notification.objects.get(pk=notif)
+    except Notification.DoesNotExist:
+        raise ParseError(detail='This notification does not exist')
+    if AcknowledgedNotification.objects.filter(user=u).filter(notification=n).exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
-    except AcknowledgedNotification.DoesNotExist:
-        raise ParseError(detail='Acknowledged not found')
+    else:
+        try:
+            #ack_notif = AcknowledgedNotification.objects.get(user=user,notification=notif)
+            #ack_notif.delete()
+            ack_notif = AcknowledgedNotification(user=u, notification=n)
+            ack_notif.save()
+            map_notif = Notification.objects.get(id=notif)
+            map_notif.acknowledged = True
+            map_notif.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except AcknowledgedNotification.DoesNotExist:
+            raise ParseError(detail='Acknowledged not found')
 
 
 @api_view(['POST'])
