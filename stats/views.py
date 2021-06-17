@@ -33,6 +33,7 @@ from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
+from tigaserver_app.tasks import async_compute_user_score_v2
 
 
 @xframe_options_exempt
@@ -1017,6 +1018,7 @@ def hashtag_map(request):
 def get_user_xp_data(request):
     user_id = request.query_params.get('user_id', '-1')
     locale = request.query_params.get('locale', 'en')
+    #this parameter does nothing anymore.
     update = request.query_params.get('update', True)
     u = None
     try:
@@ -1024,13 +1026,15 @@ def get_user_xp_data(request):
     except TigaUser.DoesNotExist:
         raise ParseError(detail='user does not exist')
 
-    #language = translation.get_language_from_request(request)
     translation.activate(locale)
 
-    if update == False:
-        retval = { "total_score": u.score_v2 }
-    else:
-        retval = compute_user_score_in_xp_v2(user_id, True)
+    retval = {"total_score": u.score_v2}
+    async_compute_user_score_v2.delay(user_id)
+
+    # if update == False:
+    #     retval = { "total_score": u.score_v2 }
+    # else:
+    #     retval = compute_user_score_in_xp_v2(user_id, True)
     return Response(retval)
 
 
