@@ -1,3 +1,4 @@
+import redis
 from django.db import models
 import uuid
 import os
@@ -740,6 +741,12 @@ class Report(models.Model):
         return result
 
     def get_is_latest(self):
+        # r = redis.Redis()
+        # redis_val = r.hget(self.version_UUID,"latest")
+        # if redis_val is not None:
+        #     retval = True if redis_val == "1" else False
+        #     return retval
+        # else:
         if self.version_number == -1:
             return False
         elif Report.objects.filter(report_id=self.report_id).filter(type=self.type).count() == 1:
@@ -807,6 +814,12 @@ class Report(models.Model):
         return result
 
     def show_on_map(self):
+        # r = redis.Redis()
+        # redis_val = r.hget(self.version_UUID, "show_on_map")
+        # if redis_val is not None:
+        #     retval = True if redis_val == "1" else False
+        #     return retval
+        # else:
         if self.creation_time.year == 2014:
             return True
         else:
