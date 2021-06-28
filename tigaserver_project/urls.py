@@ -12,7 +12,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications_version_two, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages
 from tigaserver_messages.views import compose_w_data, reply_w_data, compose
 from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
@@ -199,7 +199,7 @@ urlpatterns += i18n_patterns(
     path('experts/status/reports/single/<version_uuid>/', single_report_view, name='single_report_view'),
     path('experts/status/people/', expert_status, name='expert_status'),
     path('photo_grid/', picture_validation, name='picture_validation'),
-    path('notifications/', notifications, name='notifications'),
+    path('notifications/', notifications_version_two, name='notifications'),
 
     ## should stay out
     #url(r'^coveragestats/$', show_fix_users),

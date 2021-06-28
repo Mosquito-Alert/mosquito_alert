@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, OrganizationPin
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 
@@ -13,23 +13,32 @@ def score_label(score):
     else:
         return "user_score_beginner"
 
-def custom_render_notification(notification,locale):
-    expert_comment = notification.notification_content.get_title_locale_safe(locale)
-    expert_html = notification.notification_content.get_body_locale_safe(locale)
-    content = {
-        'id':notification.id,
-        'report_id':notification.report.version_UUID,
-        'user_id':notification.user.user_UUID,
-        'user_score':notification.user.score,
-        'user_score_label': score_label(notification.user.score),
-        'expert_id':notification.expert.id,
-        'date_comment':notification.date_comment,
-        'expert_comment':expert_comment,
-        'expert_html':expert_html,
-        'acknowledged':notification.acknowledged,
-        'public':notification.public,
+'''
+recipient is the TigaUser to which the notification will be displayed
+'''
+def custom_render_notification(sent_notification, recipìent, locale):
+    expert_comment = sent_notification.notification.notification_content.get_title_locale_safe(locale)
+    expert_html = sent_notification.notification.notification_content.get_body_locale_safe(locale)
+
+    ack = False
+    if recipìent is not None:
+        ack = AcknowledgedNotification.objects.filter(user=recipìent,notification=sent_notification.notification).exists()
+
+    this_content = {
+        'id': sent_notification.notification.id,
+        'report_id': sent_notification.notification.report.version_UUID if sent_notification.notification.report is not None else None,
+        'user_id': sent_notification.sent_to_user.user_UUID if sent_notification.sent_to_user is not None else None,
+        'topic': sent_notification.sent_to_topic.topic_code if sent_notification.sent_to_topic is not None else None,
+        'user_score': sent_notification.sent_to_user.score if sent_notification.sent_to_user is not None else None,
+        'user_score_label': score_label(sent_notification.sent_to_user.score) if sent_notification.sent_to_user is not None else None,
+        'expert_id': sent_notification.notification.expert.id,
+        'date_comment': sent_notification.notification.date_comment,
+        'expert_comment': expert_comment,
+        'expert_html': expert_html,
+        'acknowledged': ack,
+        'public': sent_notification.notification.public,
     }
-    return content
+    return this_content
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -374,19 +383,23 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ('id','name')
 
+
 class NotificationContentSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    body_html_es = serializers.CharField()
-    body_html_ca = serializers.CharField(required=False)
-    body_html_en = serializers.CharField(required=False)
-    title_es = serializers.CharField()
-    title_ca = serializers.CharField(required=False)
-    title_en = serializers.CharField(required=False)
+    body_html_en = serializers.CharField()
+    title_en = serializers.CharField()
+    body_html_native = serializers.CharField(required=False)
+    title_native = serializers.CharField(required=False)
+    native_locale = serializers.CharField(required=False)
+    #body_html_es = serializers.CharField()
+    #body_html_ca = serializers.CharField(required=False)
+    #title_es = serializers.CharField()
+    #title_ca = serializers.CharField(required=False)
 
     class Meta:
         model = NotificationContent
-        fields = ('id', 'body_html_es', 'body_html_ca', 'body_html_en', 'title_es', 'title_ca', 'title_en')
-        #fields = ('id', 'body_html_es', 'title_es')
+        fields = ('id', 'body_html_en', 'body_html_native', 'title_en', 'title_native', 'native_locale')
+
 
 class NotificationSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -400,11 +413,24 @@ class NotificationSerializer(serializers.ModelSerializer):
     acknowledged = serializers.BooleanField()
     notification_content = NotificationContentSerializer()
     public = serializers.BooleanField()
+    map_notification = serializers.BooleanField()
 
     class Meta:
         model = Notification
         #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
-        fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
+        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
+        fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'map_notification')
+
+
+class UserSubscriptionSerializer(serializers.ModelSerializer):
+    topic_code = serializers.SerializerMethodField()
+
+    def get_topic_code(self,obj):
+        return obj.topic.topic_code
+
+    class Meta:
+        model = UserSubscription
+        fields = ('id','user','topic','topic_code')
 
 
 class TigaUserSerializer(serializers.ModelSerializer):
@@ -419,6 +445,12 @@ class TigaProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TigaProfile
         fields = ('id', 'firebase_token', 'score', 'profile_devices')
+
+
+class AcknowledgedNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcknowledgedNotification
+        fields = '__all__'
 
 
 class DetailedReportSerializer(serializers.ModelSerializer):

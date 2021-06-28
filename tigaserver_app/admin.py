@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, OWCampaigns, OrganizationPin
+    Fix, Configuration, CoverageArea, OWCampaigns, OrganizationPin, NotificationTopic
 from rest_framework.authtoken.models import Token
 import csv
 from django.utils.encoding import smart_str
@@ -277,7 +277,8 @@ class CoverageAreaAdmin(admin.ModelAdmin):
 
 
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('report', 'user', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url', 'acknowledged')
+    #list_display = ('report', 'user', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url', 'acknowledged')
+    list_display = ('report', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url')
     search_fields = ['report__version_UUID','user__user_UUID']
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
@@ -290,6 +291,11 @@ class OWCampaignsAdmin(admin.ModelAdmin):
     list_display = ('id', 'country', 'posting_address', 'campaign_start_date', 'campaign_end_date')
     list_filter = ['country__name_engl', 'posting_address']
     ordering = ['country', 'campaign_start_date', 'campaign_end_date']
+
+class NotificationTopicAdmin(admin.ModelAdmin):
+    list_display = ('id', 'topic_code', 'topic_description', 'topic_group')
+    list_filter = ['topic_code', 'topic_description']
+    ordering = ['id', 'topic_code', 'topic_description']
 
 
 class OrganizationPinAdmin(OSMGeoAdmin):
@@ -309,3 +315,4 @@ admin.site.register(CoverageArea, CoverageAreaAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(OWCampaigns, OWCampaignsAdmin)
 admin.site.register(OrganizationPin, OrganizationPinAdmin)
+admin.site.register(NotificationTopic, NotificationTopicAdmin)

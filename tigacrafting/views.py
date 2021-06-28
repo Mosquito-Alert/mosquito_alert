@@ -26,7 +26,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -42,7 +42,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
 import logging
-from common.translation import get_translation_in, get_locale_for_en
+from common.translation import get_translation_in, get_locale_for_en, get_locale_for_native
 import html.entities
 from django.template.loader import TemplateDoesNotExist
 from django.utils.translation import gettext as _
@@ -549,77 +549,74 @@ def get_sigte_report_link(report,locale,current_domain):
 # This can be called from outside the server, so we need current_domain for absolute urls
 def issue_notification(report_annotation,current_domain):
     notification_content = NotificationContent()
-    context_es = {}
-    context_ca = {}
     context_en = {}
-    locale_for_en = get_locale_for_en(report_annotation.report)
+    context_native = {}
+    locale_for_native = get_locale_for_native(report_annotation.report)
 
-    notification_content.title_es = "¡Tu foto ha sido validada por un experto!"
-    notification_content.title_ca = "La teva foto ha estat validada per un expert!"
-    title_en = _("your_picture_has_been_validated_by_an_expert")
-    notification_content.title_en = get_translation_in("your_picture_has_been_validated_by_an_expert", locale_for_en)
+    notification_content.title_en = get_translation_in("your_picture_has_been_validated_by_an_expert", "en")
+    notification_content.title_native = get_translation_in("your_picture_has_been_validated_by_an_expert", locale_for_native)
+    notification_content.native_locale = locale_for_native
 
     if report_annotation.report.get_final_photo_url_for_notification():
-        context_es['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
         context_en['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
-        context_ca['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
+        context_native['picture_link'] = 'http://' + current_domain + report_annotation.report.get_final_photo_url_for_notification()
 
+    #if this report_annotation does not have comments, look for comments in
+    #the other report annotations
     if report_annotation.edited_user_notes:
-        #clean_annotation = django.utils.html.escape(report_annotation.edited_user_notes)
-        #clean_annotation = report_annotation.edited_user_notes.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         clean_annotation = report_annotation.edited_user_notes
-        context_es['expert_note'] = clean_annotation
         context_en['expert_note'] = clean_annotation
-        context_ca['expert_note'] = clean_annotation
+        context_native['expert_note'] = clean_annotation
+    else:
+        if report_annotation.report.expert_report_annotations.filter(simplified_annotation=False).exists():
+            non_simplified_annotation = report_annotation.report.expert_report_annotations.filter(simplified_annotation=False).first()
+            if non_simplified_annotation.edited_user_notes:
+                clean_annotation = non_simplified_annotation.edited_user_notes
+                context_en['expert_note'] = clean_annotation
+                context_native['expert_note'] = clean_annotation
 
     if report_annotation.message_for_user:
-        #clean_annotation = django.utils.html.escape(report_annotation.message_for_user)
-        #clean_annotation = report_annotation.message_for_user.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         clean_annotation = report_annotation.message_for_user
-        context_es['message_for_user'] = clean_annotation
         context_en['message_for_user'] = clean_annotation
-        context_ca['message_for_user'] = clean_annotation
+        context_native['message_for_user'] = clean_annotation
 
     if report_annotation.report:
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('es'))
-        clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
-        context_es['validation_category'] = clean_annotation
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro(locale_for_en))
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('en'))
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
         context_en['validation_category'] = clean_annotation
-        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro('ca'))
+        clean_annotation = django.utils.html.escape(report_annotation.report.get_final_combined_expert_category_public_map_euro(locale_for_native))
         clean_annotation = clean_annotation.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
-        context_ca['validation_category'] = clean_annotation
+        context_native['validation_category'] = clean_annotation
         map_data = get_sigte_map_info(report_annotation.report)
 
         if map_data:
-            context_es['map_link'] = get_sigte_report_link(report_annotation.report, "es", current_domain)
             context_en['map_link'] = get_sigte_report_link(report_annotation.report, "en", current_domain)
-            context_ca['map_link'] = get_sigte_report_link(report_annotation.report, "ca", current_domain)
+            context_native['map_link'] = get_sigte_report_link(report_annotation.report, locale_for_native, current_domain)
 
-    notification_content.body_html_es = render_to_string('tigacrafting/validation_message_template_es.html', context_es).replace('&amp;', '&')
-    notification_content.body_html_ca = render_to_string('tigacrafting/validation_message_template_ca.html', context_ca).replace('&amp;', '&')
+    notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en).replace('&amp;', '&')
 
     try:
-        notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_' + locale_for_en + '.html', context_en).replace('&amp;', '&')
+        notification_content.body_html_native = render_to_string('tigacrafting/validation_message_template_' + locale_for_native + '.html', context_native).replace('&amp;', '&')
     except TemplateDoesNotExist:
-        notification_content.body_html_en = render_to_string('tigacrafting/validation_message_template_en.html', context_en).replace('&amp;', '&')
+        notification_content.body_html_native = render_to_string('tigacrafting/validation_message_template_en.html', context_native).replace('&amp;', '&')
 
     notification_content.save()
-    notification = Notification(report=report_annotation.report, user=report_annotation.report.user, expert=report_annotation.user, notification_content=notification_content)
+    notification = Notification(report=report_annotation.report, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
+    sent_notification = SentNotification(sent_to_user=report_annotation.report.user,notification=notification)
+    sent_notification.save()
 
     recipient = report_annotation.report.user
     if recipient.device_token is not None and recipient.device_token != '':
         if (recipient.user_UUID.islower()):
-            json_notif = custom_render_notification(notification, 'es')
+            json_notif = custom_render_notification(sent_notification, recipient, 'en')
             try:
-                send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
+                send_message_android(recipient.device_token, notification_content.title_native, '', json_notif)
             except Exception as e:
                 logger_notification.exception("Exception sending validation android message")
         else:
             try:
-                send_message_ios(recipient.device_token, notification_content.title_es, '')
+                send_message_ios(recipient.device_token, notification_content.title_native, '')
             except Exception as e:
                 logger_notification.exception("Exception sending validation ios message")
     '''
@@ -1485,6 +1482,36 @@ def notifications(request,user_uuid=None):
     user_uuid = request.GET.get('user_uuid',None)
     total_users = TigaUser.objects.all().count()
     return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
+
+@login_required
+def notifications_version_two(request,user_uuid=None):
+    this_user = request.user
+    this_user_is_notifier = this_user.groups.filter(name='expert_notifier').exists()
+    if this_user_is_notifier:
+        user_uuid = request.GET.get('user_uuid',None)
+        total_users = TigaUser.objects.exclude(device_token='').filter(device_token__isnull=False).count()
+        # TOPIC_GROUPS = ((0, 'General'), (1, 'Language topics'), (2, 'Country topics'))
+        languages = []
+        sorted_langs = sorted(settings.LANGUAGES, key=lambda tup: tup[1])
+        for lang in sorted_langs:
+            languages.append({'code':lang[0],'name':str(lang[1])})
+        all_topics = []
+        for group in TOPIC_GROUPS:
+            if group[0] != 5: # exclude special topics i.e. global
+                current_topics = []
+                for topic in NotificationTopic.objects.filter(topic_group=group[0]).order_by('topic_description'):
+                    current_topics.append({ 'topic_text': topic.topic_description, 'topic_value': topic.topic_code})
+                topic_info = {
+                    'topic_group_text': group[1],
+                    'topic_group_value': group[0],
+                    'topics': current_topics
+                }
+                all_topics.append(topic_info)
+            else:
+                pass
+        return render(request, 'tigacrafting/notifications_version_two.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid, 'topics_info': json.dumps(all_topics), 'languages': languages})
+    else:
+        return HttpResponse("You don't have permission to issue notifications from EntoLab, please contact MoveLab.")
 
 
 @api_view(['GET'])

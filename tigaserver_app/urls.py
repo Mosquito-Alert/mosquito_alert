@@ -13,6 +13,7 @@ router.register(r'fixes', views.FixViewSet)
 router.register(r'coverage_month', views.CoverageMonthMapViewSet, base_name='coverage_month')
 # router.register(r'all_reports', views.AllReportsMapViewSet, base_name='all_reports')
 # router.register(r'all_reports_paginated', views.AllReportsMapViewSetPaginated, base_name='all_reports_paginated')
+router.register(r'ack_notif', views.AcknowledgedNotificationViewSetPaginated, base_name='ack_notif')
 # This is no longer used, see url('hidden_reports/$', views.non_visible_reports),
 # This line caused the NonVisibleReportsMapViewSet to be executed on app start. This is avoided
 # by using the new non_visible_reports endpoint, which does exactly the same
@@ -29,6 +30,10 @@ urlpatterns = [
     url('all_reports/$', views.all_reports),
     url('all_reports_paginated/$', views.all_reports_paginated),
     url('hidden_reports/$', views.non_visible_reports),
+    url('mark_notif_as_ack/', views.mark_notif_as_ack),
+    url('subscribe_to_topic/', views.subscribe_to_topic),
+    url('unsub_from_topic/', views.unsub_from_topic),
+    url('topics_subscribed/', views.topics_subscribed),
     url('time_info/$', views.get_data_time_info),
     url('score_v2/$', views.user_score_v2),
     url('photos/$', views.post_photo),
@@ -42,7 +47,9 @@ urlpatterns = [
     url('user_score/$', views.user_score),
     url('token/$', views.token),
     url('msg_ios/$', views.msg_ios),
+    url('msgs_ios/$', views.msgs_ios),
     url('msg_android/$', views.msg_android),
+    url('msgs_android/$', views.msgs_android),
     url('nearby_reports/$', views.nearby_reports),
     url('nearby_reports_fast/$', views.nearby_reports_fast),
     url('nearby_reports_nod/$', views.nearby_reports_no_dwindow),

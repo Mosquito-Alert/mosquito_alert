@@ -16,8 +16,8 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -27,7 +27,7 @@ from django.contrib.gis.measure import Distance
 from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
-from tigacrafting.messaging import send_message_ios, send_message_android
+from tigacrafting.messaging import send_message_ios, send_message_android, send_messages_ios, send_messages_android, generic_send_to_topic
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
 from tigascoring.maUsers import smmry
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
@@ -36,6 +36,8 @@ import tigaserver_project.settings as conf
 import copy
 from django.db import connection
 from django.core.paginator import Paginator, EmptyPage
+from django.db import transaction
+from django.db.utils import IntegrityError
 import time
 
 from celery.task.schedules import crontab
@@ -616,6 +618,131 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+class AcknowledgedNotificationFilter(filters.FilterSet):
+    class Meta:
+        model = AcknowledgedNotification
+        fields = ['user', 'notification']
+
+
+class AcknowledgedNotificationViewSetPaginated(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet ):
+    queryset = AcknowledgedNotification.objects.all().select_related('notification').select_related('user')
+    serializer_class = AcknowledgedNotificationSerializer
+    filter_class = AcknowledgedNotificationFilter
+    pagination_class = StandardResultsSetPagination
+
+'''
+This implementation is weird AF. The correct ack to be used should be /api/ack_notif. This one does the same, but
+uses the DELETE verb and answers with no content in case of success, which is really counter-intuitive because
+in fact it CREATES an AcknowledgedNotification
+'''
+@api_view(['DELETE'])
+def mark_notif_as_ack(request):
+    user = request.query_params.get('user','-1')
+    notif = request.query_params.get('notif', -1)
+    u = None
+    n = None
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    if notif == -1:
+        raise ParseError(detail='notif param is mandatory')
+    try:
+        u = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='This user does not exist')
+    try:
+        n = Notification.objects.get(pk=notif)
+    except Notification.DoesNotExist:
+        raise ParseError(detail='This notification does not exist')
+    if AcknowledgedNotification.objects.filter(user=u).filter(notification=n).exists():
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+        try:
+            #ack_notif = AcknowledgedNotification.objects.get(user=user,notification=notif)
+            #ack_notif.delete()
+            ack_notif = AcknowledgedNotification(user=u, notification=n)
+            ack_notif.save()
+            map_notif = Notification.objects.get(id=notif)
+            map_notif.acknowledged = True
+            map_notif.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except AcknowledgedNotification.DoesNotExist:
+            raise ParseError(detail='Acknowledged not found')
+
+
+@api_view(['POST'])
+def unsub_from_topic(request):
+    code = request.query_params.get('code', '-1')
+    user = request.query_params.get('user', '-1')
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    if code == '-1':
+        raise ParseError(detail='code param is mandatory')
+    if code == 'global':
+        raise ParseError(detail='unsubscription from global not allowed')
+    n = None
+    usr = None
+    try:
+        n = NotificationTopic.objects.get(topic_code=code)
+    except NotificationTopic.DoesNotExist:
+        raise ParseError(detail='topic with this code does not exist')
+    try:
+        usr = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='no user with id')
+
+    try:
+        sub = UserSubscription.objects.get(user=usr, topic=n)
+        sub.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except UserSubscription.DoesNotExist:
+        raise ParseError(detail="this user is not subscribed to this topic")
+
+@api_view(['POST'])
+def subscribe_to_topic(request):
+    code = request.query_params.get('code','-1')
+    user = request.query_params.get('user','-1')
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    if code == '-1':
+        raise ParseError(detail='code param is mandatory')
+    if code == 'global':
+        raise ParseError(detail='subscription to global not allowed')
+    n = None
+    usr = None
+    try:
+        n = NotificationTopic.objects.get(topic_code=code)
+    except NotificationTopic.DoesNotExist:
+        n = NotificationTopic(topic_code=code)
+        n.save()
+    try:
+        usr = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='no user with id')
+
+    try:
+        with transaction.atomic():
+            sub = UserSubscription(user=usr, topic=n)
+            sub.save()
+            serializer = UserSubscriptionSerializer(sub)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+    except IntegrityError:
+        raise ParseError(detail='Subscription already exists')
+
+
+@api_view(['GET'])
+def topics_subscribed(request):
+    user = request.query_params.get('user', '-1')
+    if user == '-1':
+        raise ParseError(detail='user param is mandatory')
+    usr = None
+    try:
+        usr = TigaUser.objects.get(pk=user)
+    except TigaUser.DoesNotExist:
+        raise ParseError(detail='no user with this id')
+    subs = UserSubscription.objects.filter(user=user)
+    serializer = UserSubscriptionSerializer(subs,many=True)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
 '''
 class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
@@ -819,6 +946,24 @@ def force_refresh_cfs_reports(request):
 
 
 @api_view(['POST'])
+def msgs_ios(request):
+    data = request.data
+    user_ids = data.get('user_ids', [])
+    alert_message = data.get('alert_message', -1)
+    link_url = data.get('link_url', -1)
+    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
+    tokens = [ u.profile.firebase_token for u in queryset ]
+    if alert_message != -1 and link_url != -1:
+        if len(tokens) > 0:
+            resp = send_messages_ios(tokens, alert_message, link_url)
+            return Response({'tokens': tokens, 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': resp})
+        else:
+            return Response({'tokens': [], 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': 'no_tokens'})
+    else:
+        raise ParseError(detail='Invalid parameters')
+
+
+@api_view(['POST'])
 def msg_ios(request):
     user_id = request.query_params.get('user_id', -1)
     alert_message = request.query_params.get('alert_message', -1)
@@ -837,6 +982,25 @@ def msg_ios(request):
             raise ParseError(detail='Token not set for user')
     else:
         raise ParseError(detail='Invalid parameters')
+
+
+@api_view(['POST'])
+def msgs_android(request):
+    data = request.data
+    user_ids = data.get('user_ids', [])
+    message = data.get('message', -1)
+    title = data.get('title', -1)
+    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
+    tokens = [ u.profile.firebase_token for u in queryset ]
+    if message != -1 and title != -1:
+        if len(tokens) > 0:
+            resp = send_messages_android(tokens, message, title)
+            return Response({'tokens': tokens, 'message': message, 'title': title, 'push_status_msg': resp})
+        else:
+            return Response({'tokens': [], 'message': message, 'title': title, 'push_status_msg': 'no_tokens'})
+    else:
+        raise ParseError(detail='Invalid parameters')
+
 
 @api_view(['POST'])
 def msg_android(request):
@@ -858,6 +1022,7 @@ def msg_android(request):
     else:
         raise ParseError(detail='Invalid parameters')
 
+
 @api_view(['POST'])
 def token(request):
     token = request.query_params.get('token', -1)
@@ -871,6 +1036,7 @@ def token(request):
     else:
         raise ParseError(detail='Invalid parameters')
 
+
 @api_view(['GET'])
 @cache_page(60 * 5)
 def report_stats(request):
@@ -882,6 +1048,7 @@ def report_stats(request):
         r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(version_UUID__in=user_reports).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
     content = {'report_count' : r_count}
     return Response(content)
+
 
 @api_view(['GET'])
 @cache_page(60)
@@ -942,6 +1109,7 @@ def user_score_v2(request):
     result = compute_user_score_in_xp_v2(user_id, update=True)
     return Response(result)
 
+
 @api_view(['GET', 'POST'])
 def user_score(request):
     user_id = request.query_params.get('user_id', -1)
@@ -1001,13 +1169,64 @@ def custom_render_notification(notification,locale):
     return content
 '''
 
+'''
 def custom_render_notification_queryset(queryset,locale):
     content = []
     for notification in queryset:
         content.append(custom_render_notification(notification,locale))
     return content
+'''
 
-@api_view(['GET','POST','DELETE','PUT'])
+def custom_render_map_notifications(map_notification):
+    expert_comment = map_notification.notification_content.title_es
+    expert_html = map_notification.notification_content.body_html_es
+    content = {
+        'id': map_notification.id,
+        'report_id': map_notification.report.version_UUID,
+        'user_id': map_notification.user.user_UUID,
+        'user_score': map_notification.user.score,
+        'user_score_label': score_label(map_notification.user.score),
+        'expert_id': map_notification.expert.id,
+        'date_comment': map_notification.date_comment,
+        'expert_comment': expert_comment,
+        'expert_html': expert_html,
+        'acknowledged': map_notification.acknowledged,
+        'public': map_notification.public,
+    }
+    return content
+
+def custom_render_mapnotification_queryset(queryset):
+    content = []
+    for notification in queryset:
+        content.append(custom_render_map_notifications(notification))
+    return content
+
+def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
+    content = []
+    ack_ids = [ a.notification.id for a in acknowledged_queryset ]
+    for sent_notif in queryset:
+        notification = sent_notif.notification
+        expert_comment = notification.notification_content.get_title_locale_safe(locale)
+        expert_html = notification.notification_content.get_body_locale_safe(locale)
+        this_content = {
+            'id': notification.id,
+            'report_id': notification.report.version_UUID if notification.report is not None else None,
+            'user_id': sent_notif.sent_to_user.user_UUID if sent_notif.sent_to_user is not None else None,
+            'topic': sent_notif.sent_to_topic.topic_code if sent_notif.sent_to_topic is not None else None,
+            'user_score': sent_notif.sent_to_user.score if sent_notif.sent_to_user is not None else None,
+            'user_score_label': score_label(sent_notif.sent_to_user.score) if sent_notif.sent_to_user is not None else None,
+            'expert_id': notification.expert.id,
+            'date_comment': notification.date_comment,
+            'expert_comment': expert_comment,
+            'expert_html': expert_html,
+            'acknowledged': True if sent_notif.notification.id in ack_ids else False,
+            'public': notification.public,
+        }
+        content.append(this_content)
+    return content
+
+
+@api_view(['GET'])
 def user_notifications(request):
     if request.method == 'GET':
         locale = request.query_params.get('locale', 'en')
@@ -1015,18 +1234,65 @@ def user_notifications(request):
         acknowledged = 'ignore'
         if request.query_params.get('acknowledged') != None:
             acknowledged = request.query_params.get('acknowledged', False)
-        all_notifications = Notification.objects.all()
+        #all_notifications = Notification.objects.all()
+        all_notifications = SentNotification.objects.all().select_related('notification')
         if user_id == -1:
             raise ParseError(detail='user_id is mandatory')
         else:
-            all_notifications = all_notifications.filter(user_id=user_id).order_by('-date_comment')
+            all_notifications = all_notifications.filter(sent_to_user__user_UUID=user_id).order_by('-notification__date_comment')
+
+        # we exclude from this the notifications sent via the new system (the ones which have an id entry in SentNotification)
+        # these are the notifications sent directly to a user + the notifications sent to a topic
+        new_notif_ids = SentNotification.objects.filter(Q(sent_to_user__user_UUID=user_id) | Q( sent_to_topic__isnull = False )).values("notification__id").distinct()
+        map_notifications_queryset = Notification.objects.filter(user__user_UUID=user_id).exclude(id__in=new_notif_ids).order_by('-date_comment')
+
+        #global_topic notifications
+        global_notifications = SentNotification.objects.filter(sent_to_topic__topic_code='global').select_related('notification')
+
+        #other notifications
+        this_user = TigaUser.objects.get(pk=user_id)
+        user_subscriptions = this_user.user_subscriptions.all()
+        subscribed_topics = [ a.topic for a in  user_subscriptions]
+        other_topic_notifications = SentNotification.objects.filter(sent_to_topic__in=subscribed_topics).select_related('notification')
+
+        notifications_all_of_them = all_notifications | global_notifications | other_topic_notifications
+
+        acknowledgements = AcknowledgedNotification.objects.filter(user__user_UUID=user_id)
         if acknowledged != 'ignore':
             ack_bool = string_par_to_bool(acknowledged)
-            all_notifications = all_notifications.filter(acknowledged=ack_bool).order_by('-date_comment')
+            acknowledged_notifs = acknowledgements.values('notification')
+            if ack_bool is True:
+                notifications_all_of_them = notifications_all_of_them.filter(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
+            else:
+                notifications_all_of_them = notifications_all_of_them.exclude(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
         #serializer = NotificationSerializer(all_notifications)
-        content = custom_render_notification_queryset(all_notifications,locale)
+        content = custom_render_sent_notifications(notifications_all_of_them, acknowledgements, locale)
+        map_content = custom_render_mapnotification_queryset(map_notifications_queryset)
+
+        final_content = content + map_content
+
+        final_content = sorted(final_content, key=lambda x: x['date_comment'], reverse=True)
+
         #return Response(serializer.data)
-        return Response(content)
+        return Response(final_content)
+    # we keep the post method so the old ack method keeps working
+    if request.method == 'POST':
+        id = request.query_params.get('id', -1)
+        try:
+            int(id)
+        except ValueError:
+            raise ParseError(detail='Invalid id integer value')
+        queryset = Notification.objects.all()
+        this_notification = get_object_or_404(queryset, pk=id)
+        if request.query_params.get('acknowledged') is not None:
+            ack = request.query_params.get('acknowledged', True)
+        if ack != 'ignore':
+            ack_bool = string_par_to_bool(ack)
+            this_notification.acknowledged = ack_bool
+        this_notification.save()
+        serializer = NotificationSerializer(this_notification)
+        return Response(serializer.data)
+    '''
     if request.method == 'POST':
         id = request.query_params.get('id', -1)
         try:
@@ -1036,31 +1302,26 @@ def user_notifications(request):
         queryset = Notification.objects.all()
         this_notification = get_object_or_404(queryset,pk=id)
         notification_content = this_notification.notification_content
-        ack = 'ignore'
-        if request.query_params.get('acknowledged') is not None:
-            ack = request.query_params.get('acknowledged', True)
-        body_html_es = request.query_params.get('body_html_es', '-1')
-        title_es = request.query_params.get('title_es', '-1')
-        body_html_ca = request.query_params.get('body_html_ca', '-1')
-        title_ca = request.query_params.get('title_ca', '-1')
+        #body_html_es = request.query_params.get('body_html_es', '-1')
+        #title_es = request.query_params.get('title_es', '-1')
+        #body_html_ca = request.query_params.get('body_html_ca', '-1')
+        #title_ca = request.query_params.get('title_ca', '-1')
         body_html_en = request.query_params.get('body_html_en', '-1')
         title_en = request.query_params.get('title_en', '-1')
+        body_html_native = request.query_params.get('body_html_native', '-1')
+        title_native = request.query_params.get('title_native', '-1')
+        native_locale = request.query_params.get('native_locale', '-1')
         public = request.query_params.get('public', '-1')
-        if body_html_ca != '-1':
-            notification_content.body_html_ca = body_html_ca
-        if title_ca != '-1':
-            notification_content.title_ca = title_ca
         if body_html_en != '-1':
             notification_content.body_html_en = body_html_en
         if title_en != '-1':
             notification_content.title_en = title_en
-        if body_html_es != '-1':
-            notification_content.body_html_es = body_html_es
-        if title_es != '-1':
-            notification_content.title_es = title_es
-        if ack != 'ignore':
-            ack_bool = string_par_to_bool(ack)
-            this_notification.acknowledged = ack_bool
+        if body_html_native != '-1':
+            notification_content.body_html_native = body_html_native
+        if title_native != '-1':
+            notification_content.title_native = title_native
+        if native_locale != '-1':
+            notification_content.native_locale = native_locale
         if public != '-1':
             public_bool = string_par_to_bool(public)
             this_notification.public = public_bool
@@ -1087,6 +1348,8 @@ def user_notifications(request):
         this_notification.delete()
         notification_content.delete()
         return HttpResponse(status=204)
+    '''
+
 
 @api_view(['PUT'])
 def notification_content(request):
@@ -1107,12 +1370,96 @@ def send_notifications(request):
         sender = data['user_id']
         push = data['ppush']
         # report with oldest creation date
-        r = data['report_id']
+        # r = data['report_id']
         queryset = NotificationContent.objects.all()
         notification_content = get_object_or_404(queryset, pk=id)
         recipients = data['recipients']
+        topic = None
+        send_to = None
+        push_results = []
+
+        # Can be
+        # ALL if all pushes were successful
+        # SOME if some pushes were successful
+        # NONE if no pushes were successful
+        # NO_PUSH
+        push_success = ''
+        if not push:
+            push_success = 'NO_PUSH'
+
+        notification_estimate = 0
+
         if recipients == 'all':
-            send_to = TigaUser.objects.all()
+            topic = NotificationTopic.objects.get(topic_code='global')
+            #if global, estimate is all users with token
+            notification_estimate = TigaUser.objects.exclude(device_token='').filter(device_token__isnull=False).count()
+        elif "$" in recipients:
+            ids_list = recipients.split('$')
+            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
+            notification_estimate = len(ids_list)
+        else: #it's either a topic or a single UUID
+            try:
+                topic = NotificationTopic.objects.get(topic_code=recipients)
+                #users subscribed to topic
+                notification_estimate = UserSubscription.objects.filter(topic=topic).count()
+            except NotificationTopic.DoesNotExist:
+                notification_estimate = 1
+                send_to = [TigaUser.objects.get(pk=recipients)]
+
+        n = Notification(expert_id=sender, notification_content=notification_content)
+        n.save()
+
+        if topic is not None:
+            # send to topic
+            send_notification = SentNotification(sent_to_topic=topic,notification=n)
+            send_notification.save()
+            json_notif = custom_render_notification(sent_notification=send_notification, recipìent=None, locale='en')
+            if push:
+                try:
+                    push_result = generic_send_to_topic(topic_code=topic.topic_code, title=notification_content.title_en, message='',json_notif=json_notif)
+                    push_results.append(push_result)
+                except Exception as e:
+                    pass
+        else:
+            #send to recipient(s)
+            for recipient in send_to:
+                send_notification = SentNotification(sent_to_user=recipient, notification=n)
+                send_notification.save()
+                if push and recipient.device_token is not None and recipient.device_token != '':
+                    if (recipient.user_UUID.islower()):
+                        json_notif = custom_render_notification(send_notification, recipient, 'en')
+                        try:
+                            push_result = send_message_android(recipient.device_token, notification_content.title_en, '', json_notif)
+                            push_results.append(push_result)
+                        except Exception as e:
+                            pass
+                    else:
+                        try:
+                            push_result = send_message_ios(recipient.device_token, notification_content.title_en, '', json_notif)
+                            push_results.append(push_result)
+                        except Exception as e:
+                            pass
+
+        if push:
+            all_successes = True
+            all_failures = True
+            for result in push_results:
+                if result['failure'] > 0:
+                    all_successes = False
+                if result['success'] > 0:
+                    all_failures = False
+            if all_successes:
+                push_success = 'ALL'
+            elif all_failures:
+                push_success = 'NONE'
+            else:
+                push_success = 'SOME'
+
+
+        results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success, 'push_results': push_results}
+        return Response(results)
+
+        '''
         elif recipients.startswith("uploaded"):
             if(recipients=='uploaded_pictures'):
                 send_to = users_with_pictures()
@@ -1126,6 +1473,7 @@ def send_notifications(request):
         else:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
+        
         notifications_issued = 0
         notifications_failed = 0
         push_issued_android = 0
@@ -1157,6 +1505,8 @@ def send_notifications(request):
                         pass
         results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
         return Response(results)
+        '''
+
 
 @api_view(['GET'])
 def nearby_reports_no_dwindow(request):

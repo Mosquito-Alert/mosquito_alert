@@ -1,0 +1,178 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}></script>
+    <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
+    <script src={% static "tigacrafting/tinymce/js/tinymce/tinymce.min.js" %}></script>
+    <script>
+        //This is needed in jsonify_notification
+        var csrf_token = '{{ csrf_token }}';
+        var user_id = {{ user_id }};
+        {% if user_uuid %}
+        var user_uuid = '{{ user_uuid }}';
+        {% else %}
+        var user_uuid = '';
+        {% endif %}
+        var topics_info = JSON.parse('{{ topics_info | safe }}');
+    </script>
+    <script src={% static "tigacrafting/notifications/notifications_version_two.js" %}></script>
+</head>
+<body>
+
+<div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">
+                                <i id="gear" class="fa fa-refresh fa-spin"></i>
+                                MosquitoAlert Notifications
+                            </span>
+
+                        </div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-left">
+                            <li>
+                                <button id="save_button" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px" data-toggle="tooltip" data-placement="bottom"
+                                        title="Send notifications"><span
+                                        class="glyphicon glyphicon-envelope"></span>
+                                </button>
+                                <button id="clear_form" type="submit" class="btn btn-success btn-sm navbar-btn"
+                                        style="margin-left:5px" data-toggle="tooltip" data-placement="bottom"
+                                        title="Clear form"><span
+                                        class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </li>
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url "auth_logout" %}">logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div id="dialog-message-error" title="Error saving data">
+    <h2>Error message:</h2>
+    <p id="dialog-message-error-text"></p>
+</div>
+
+<div id="dialog-message-report" title="Notifications have been issued!">
+    <h2>Sent notifications:</h2>
+    <p id="dialog-message-report-text"></p>
+</div>
+
+<div id="dialog-message-validation" title="There are some problems with your request...">
+    <!--<p>You can't send the notification(s) yet because:</p>
+    <ul>
+        <li>Either you have chosen to send the message to a few users and selected topics in the topic drop box</li>
+        <li>... or the 'Message title(en)' is blank</li>
+        <li>... or the 'Message body(en)' is blank</li>
+    </ul>
+    <p>Fill these fields and try again please.</p>-->
+</div>
+
+
+<div class="container">
+    <div class="starter-template">
+        <h1>Notifications</h1>
+        <h3>1 - To whom do you want to send the message?:</h3>
+        <div id="accordion">
+            <h3>Send message to some people (manual selection)</h3>
+            <div>
+                <p>Select one or more user ids to which the notification will be sent (start typing the first 3 symbols of the user id and select from the dropdown):</p>
+                <select class="tokenize-user-uuid" multiple></select>
+            </div>
+            <h3>Send message to some people (choose filter)</h3>
+            <div>
+                <ul>
+                    <hr class="separator_line">
+                    <li><i>By topic</i></li>
+                    <li>
+                        Topic groups:
+                        <select id="topic_group">
+                        </select>
+                        Topic:
+                        <select id="topic">
+                        </select>
+                    </li>
+                </ul>
+            </div>
+            <h3>Send message to everyone</h3>
+            <div>
+                <p>{{ total_users }} messages will be sent</p>
+            </div>
+        </div>
+        <h3>2 - Do you want the message to also generate an iconic notification, that the user will see even if the app is turned off?:</h3>
+        <div class="row">
+            <input type="radio" name="rb" id="radio-1">Yes
+            <input type="radio" name="rb" id="radio-2">No
+        </div>
+        <h3>3 - Compose the message you want to send below. Only (en) section is mandatory. Please, remember to check your spelling!:</h3>
+        <div style="background:#ffcc66;padding:20px;margin:15px;">
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message title(EN):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="title_en" cols="40" rows="2"></textarea></div>
+            </div>
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message body(EN):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="body_en" cols="40" rows="10"></textarea></div>
+            </div>
+        </div>
+        <div style="background:#ffcc66;padding:20px;margin:15px;">
+            <div class="row">
+                <div class="text-left col-md-4">
+                    <label>Native message is written in:</label>
+                    <select id="native_lang">
+                        <option value="">-----</option>
+                        {% for lang in languages %}
+                        <option value="{{ lang.code }}">{{ lang.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message title(Native):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="title_native" cols="40" rows="2"></textarea></div>
+            </div>
+            <div class="row">
+                <div class="text-left col-md-4"><label>Message body(Native):</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12"><textarea id="body_native" cols="40" rows="10"></textarea></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
