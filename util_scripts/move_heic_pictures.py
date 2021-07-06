@@ -18,22 +18,28 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from tigaserver_app.models import Photo
+from logging.handlers import RotatingFileHandler
+from datetime import datetime
 
 PICTURES_DIR = '/home/webuser/webapps/tigaserver/media/tigapics/'
 BACKUP_DIR = '/home/webuser/webapps/original_pics/'
 NUM_FILES = None
 DEFAULT_NUM_FILES = 50
-logging.basicConfig(filename='heic_converter.log', level=logging.DEBUG)
+
+logger = logging.getLogger('heic_converter')
+logger.setLevel(logging.DEBUG)
+handler = RotatingFileHandler("heic_converter.log", maxBytes=2000, backupCount=5)
+logger.addHandler(handler)
 
 
 def get_file_list(dirpath):
-    logging.debug("Getting file list")
+    logger.debug("Getting file list")
     paths = sorted(Path(dirpath).iterdir(), key=os.path.getmtime, reverse=True)
     return paths[:NUM_FILES]
 
 
 def convert_to_jpg(file):
-    logging.debug("Converting file {0} to jpg".format(str(file)))
+    logger.debug("Converting file {0} to jpg".format(str(file)))
     no_ext = os.path.splitext(file)[0]
     heif_file = pyheif.read(file)
     image = Image.frombytes(
@@ -48,12 +54,12 @@ def convert_to_jpg(file):
 
 
 def rename_photo(filename):
-    logging.debug("Renaming photo in database")
+    logger.debug("Renaming photo in database")
     no_ext = os.path.splitext(filename)[0]
     no_route = ntpath.basename(no_ext)
     p = Photo.objects.filter(photo__icontains=no_route)
     if p.exists():
-        logging.debug("Photo found, renaming to {0}".format('tigapics/' + no_route + ".jpg"))
+        logger.debug("Photo found, renaming to {0}".format('tigapics/' + no_route + ".jpg"))
         pic = p.first()
         pic.photo = 'tigapics/' + no_route + ".jpg"
         pic.save()
@@ -65,7 +71,7 @@ def process_file(p):
             data = f.read()
         fmt = whatimage.identify_image(data)
         if fmt == 'heic':
-            logging.debug("Found heic file! {0} files".format(str(p)))
+            logger.debug("Found heic file! {0} files".format(str(p)))
             print("{0} - {1}".format(p, fmt))
             convert_to_jpg(p)
             rename_photo(p)
@@ -78,17 +84,24 @@ def process_files(file_list):
 
 
 def move_file_to_backup(f,backup_dir):
-    logging.debug("Moving file {0} to backup directory {1}".format(str(f),backup_dir))
+    logger.debug("Moving file {0} to backup directory {1}".format(str(f),backup_dir))
     no_route = ntpath.basename(f)
     os.rename(str(f), backup_dir + no_route)
 
 
+def get_now_timestamp():
+    now = datetime.now()
+    return now.strftime("%m/%d/%Y, %H:%M:%S")
+
+
 if __name__ == "__main__":
+    logger.debug("**** Starting run at {0} ****".format(get_now_timestamp()))
     try:
         NUM_FILES = int(sys.argv[1])
-        logging.debug("Starting scan of {0} files".format(str(NUM_FILES)))
+        logger.debug("Starting scan of {0} files".format(str(NUM_FILES)))
     except:
         NUM_FILES = DEFAULT_NUM_FILES
-        logging.debug("Starting scan of {0} files".format(str(NUM_FILES)))
+        logger.debug("Starting scan of {0} files".format(str(NUM_FILES)))
     paths = get_file_list(PICTURES_DIR)
     process_files(paths)
+    logger.debug("**** Finished run at {0} *****".format(get_now_timestamp()))
