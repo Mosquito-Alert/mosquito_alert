@@ -76,6 +76,12 @@ def process_file(p):
             convert_to_jpg(p)
             rename_photo(p)
             move_file_to_backup(p, BACKUP_DIR)
+        elif fmt == 'jpeg':
+            filename, file_extension = os.path.splitext(p)
+            if file_extension.lower() == 'heic':
+                logger.debug("Found jpeg with heic extension! {0} files".format(str(p)))
+                # jpeg file with extension heic, but it's harmless
+                os.rename(p, filename + '.jpg')
 
 
 def process_files(file_list):
