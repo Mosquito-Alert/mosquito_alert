@@ -251,38 +251,38 @@ class UserTestCase(TestCase):
         team_stlouis.user_set.add(u3)
         team_stlouis.user_set.add(u4)
 
-    def create_venezuelan_team(self):
-        team_venezuela = Group.objects.create(name='team_venezuela')
-        team_venezuela.save()
-        europe_group = Group.objects.create(name='eu_group_europe')
-        europe_group.save()
-        spain_group = Group.objects.create(name='eu_group_spain')
-        spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
-
-        u1 = User.objects.create(pk=1)
-        u1.username = 'expert_1_es'
-        u1.save()
-        u2 = User.objects.create(pk=2)
-        u2.username = 'expert_2_ve'
-        u2.save()
-        u3 = User.objects.create(pk=3)
-        u3.username = 'expert_3_ve'
-        u3.save()
-        u4 = User.objects.create(pk=4)
-        u4.username = 'expert_4_ve'
-        u4.save()
-        u5 = User.objects.create(pk=5)
-        u5.username = 'expert_1_eu'
-        u5.save()
-
-        spain_group.user_set.add(u1)
-        europe_group.user_set.add(u5)
-
-        team_venezuela.user_set.add(u2)
-        team_venezuela.user_set.add(u3)
-        team_venezuela.user_set.add(u4)
+    # def create_venezuelan_team(self):
+    #     team_venezuela = Group.objects.create(name='team_venezuela')
+    #     team_venezuela.save()
+    #     europe_group = Group.objects.create(name='eu_group_europe')
+    #     europe_group.save()
+    #     spain_group = Group.objects.create(name='eu_group_spain')
+    #     spain_group.save()
+    #     experts = Group.objects.create(name='expert')
+    #     experts.save()
+    #
+    #     u1 = User.objects.create(pk=1)
+    #     u1.username = 'expert_1_es'
+    #     u1.save()
+    #     u2 = User.objects.create(pk=2)
+    #     u2.username = 'expert_2_ve'
+    #     u2.save()
+    #     u3 = User.objects.create(pk=3)
+    #     u3.username = 'expert_3_ve'
+    #     u3.save()
+    #     u4 = User.objects.create(pk=4)
+    #     u4.username = 'expert_4_ve'
+    #     u4.save()
+    #     u5 = User.objects.create(pk=5)
+    #     u5.username = 'expert_1_eu'
+    #     u5.save()
+    #
+    #     spain_group.user_set.add(u1)
+    #     europe_group.user_set.add(u5)
+    #
+    #     team_venezuela.user_set.add(u2)
+    #     team_venezuela.user_set.add(u3)
+    #     team_venezuela.user_set.add(u4)
 
 
     # tests that user creation triggers userstat creation
@@ -385,32 +385,32 @@ class UserTestCase(TestCase):
         # for usr in User.objects.all():
         #     user_summary(usr)
 
-    def test_assign_venezuelan_reports(self):
-        self.create_venezuelan_team()
-        self.create_venezuelan_report_pool()
-        current_pending = 0
-        max_pending = 5
-        max_given = 3
-        national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-        country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-        country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-        for this_user in User.objects.all():
-            if this_user.groups.filter(name='team_venezuela').exists():
-                assign_reports_to_bounded_box_user(this_user,current_pending,max_pending,max_given,52)
-            else:
-                assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
-
-        #all venezuelan experts id=2,3,4 should be assigned 3 reports
-        for i in [2, 3, 4]:
-            u = User.objects.get(pk=i)
-            reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
-            self.assertEqual(reports_user_i, 5, msg="Venezuelan user {0} has not been assigned 5 reports, but {1}!".format(u.username, reports_user_i))
-
-        #no reports for you, non venezuelan users (ids 1 and 5)!
-        for i in [1, 5]:
-            u = User.objects.get(pk=i)
-            reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
-            self.assertEqual(reports_user_i, 0, msg="NON-Venezuelan user {0} has been assigned {1} reports, but should have received none!".format(u.username, reports_user_i))
+    # def test_assign_venezuelan_reports(self):
+    #     self.create_venezuelan_team()
+    #     self.create_venezuelan_report_pool()
+    #     current_pending = 0
+    #     max_pending = 5
+    #     max_given = 3
+    #     national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
+    #     country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
+    #     country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
+    #     for this_user in User.objects.all():
+    #         if this_user.groups.filter(name='team_venezuela').exists():
+    #             assign_reports_to_bounded_box_user(this_user,current_pending,max_pending,max_given,52)
+    #         else:
+    #             assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
+    #
+    #     #all venezuelan experts id=2,3,4 should be assigned 3 reports
+    #     for i in [2, 3, 4]:
+    #         u = User.objects.get(pk=i)
+    #         reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
+    #         self.assertEqual(reports_user_i, 5, msg="Venezuelan user {0} has not been assigned 5 reports, but {1}!".format(u.username, reports_user_i))
+    #
+    #     #no reports for you, non venezuelan users (ids 1 and 5)!
+    #     for i in [1, 5]:
+    #         u = User.objects.get(pk=i)
+    #         reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
+    #         self.assertEqual(reports_user_i, 0, msg="NON-Venezuelan user {0} has been assigned {1} reports, but should have received none!".format(u.username, reports_user_i))
 
     def test_assign_stlouis_reports(self):
         self.create_stlouis_team()

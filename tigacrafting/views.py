@@ -737,7 +737,9 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
         # if there is bounding box venezuela
         # no normal users are assigned venezuelan reports
         # refactor this - create some kind of bounding box registry (i.e add a bounding box flag to EuropeCountry)
-        new_reports_unfiltered = new_reports_unfiltered.exclude( Q(country__gid=52) | Q(country__gid=53) )
+        #new_reports_unfiltered = new_reports_unfiltered.exclude( Q(country__gid=52) | Q(country__gid=53) )
+        # exclude venezuela for now
+        new_reports_unfiltered = new_reports_unfiltered.exclude(Q(country__gid=53))
         '''
         if new_reports_unfiltered and this_user_is_team_bcn:
             new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
