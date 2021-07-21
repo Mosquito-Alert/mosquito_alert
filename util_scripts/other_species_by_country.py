@@ -13,14 +13,14 @@ application = get_wsgi_application()
 
 from tigacrafting.models import ExpertReportAnnotation, Categories
 from tigaserver_app.models import Report, EuropeCountry
-from progress.bar import Bar
+#from progress.bar import Bar
 import csv
 
 def main():
     buckets = {}
 
     reports = Report.objects.exclude( creation_time__year__in=[2014,2015,2016,2017,2018,2019])
-    bar = Bar('processing reports...', max=reports.count())
+    #bar = Bar('processing reports...', max=reports.count())
 
     for c in EuropeCountry.objects.all():
         if c.gid == 17:
@@ -46,8 +46,8 @@ def main():
                             buckets[str(r.country.name_engl)][str(ano.other_species)] = current_num + 1
                         except KeyError:
                             buckets[str(r.country.name_engl)][str(ano.other_species)] = 1
-        bar.next()
-    bar.finish()
+        #bar.next()
+    #bar.finish()
 
     clean_buckets = {k: v for k, v in buckets.items() if v}
 
