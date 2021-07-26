@@ -1,5 +1,6 @@
 var save_button = $("#save_button").click(function () {
     var ref = [];
+    var other = [];
 
     $(".fastUploadClass").each(function (index, element) {
         if ($(this).prop("checked")) {
@@ -7,7 +8,23 @@ var save_button = $("#save_button").click(function () {
         }
     });
 
-    if(ref.length>0){
+    $(".otherSpeciesClass").each(function (index, element) {
+        if ($(this).prop("checked")) {
+            other.push($(this).parent().attr('id'));
+        }
+    });
+
+    if(ref.length>0 || other.length>0){
+        if(ref.length>0){
+            $('#fastupload_info').show();
+        }else{
+            $('#fastupload_info').hide();
+        }
+        if(other.length>0){
+            $('#othersp_info').show();
+        }else{
+            $('#othersp_info').hide();
+        }
         $("#dialogConfirmUpPhoto").dialog({
             modal: true,
             buttons: {
@@ -18,7 +35,8 @@ var save_button = $("#save_button").click(function () {
                 },
                 "No": function() {
                     $(this).dialog("close");
-                    $(".reportIDs li").remove()
+                    $(".reportIDs").empty();
+                    $(".otherIDs").empty();
                 }
             },
             draggable: false,
@@ -27,17 +45,18 @@ var save_button = $("#save_button").click(function () {
             }
         });
 
-        var list = document.createElement("ul");
-        var z;
-        var str;
-
-        for (z=0; z<ref.length; z++){
-            str = document.createElement("li");
-            str.innerText = ref[z];
-            list.appendChild(str);
+        list_fastupload = [];
+        for (var i=0; i<ref.length; i++){
+            list_fastupload.push('<li>' + ref[i] + '</li>');
         }
 
-        document.getElementsByClassName("reportIDs")[0].appendChild(list);
+        list_othersp = [];
+        for (var i=0; i<other.length; i++){
+            list_othersp.push('<li>' + other[i] + '</li>');
+        }
+
+        $(".reportIDs").html('<ul>' + list_fastupload.join('') + '</ul>');
+        $(".otherIDs").html('<ul>' + list_othersp.join('') + '</ul>');
 
         $(".ui-dialog").addClass("confirmUpPhoto");
 

@@ -26,7 +26,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -1391,8 +1391,20 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
                                     new_annotation.validation_complete = True
                                     new_annotation.revise = True
                                     new_annotation.save()
-
 ###############------------------------------ FI FastUpload --------------------------------###############
+
+                            if f.cleaned_data['other_species']:
+                                if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
+                                    new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
+                                    photo = report.photos.first()
+                                    new_annotation.site_certainty_notes = 'auto'
+                                    new_annotation.best_photo_id = photo.id
+                                    new_annotation.category = Categories.objects.get(pk=2)
+                                    new_annotation.validation_complete = True
+                                    new_annotation.revise = True
+                                    new_annotation.save()
+
+
 
             page = request.POST.get('page')
             visibility = request.POST.get('visibility')
@@ -1434,9 +1446,17 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         if usr_note and usr_note != '':
             new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
 
-        new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
+        # new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
+        #
+        # new_reports_unfiltered = list(new_reports_unfiltered)
 
-        new_reports_unfiltered = list(new_reports_unfiltered)
+        reports_deleted = Report.objects.filter(version_number=-1)
+        reports_undeleted = Report.objects.exclude(version_UUID__in=reports_deleted)
+        reports_undeleted_last_version = reports_undeleted.order_by('report_id','-version_number').distinct('report_id')
+        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=reports_undeleted_last_version)
+
+        # for r in new_reports_unfiltered:
+        #     print("{0} {1} {2}".format(r.version_UUID, r.deleted, r.latest_version))
 
         paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
         page = request.GET.get('page', 1)

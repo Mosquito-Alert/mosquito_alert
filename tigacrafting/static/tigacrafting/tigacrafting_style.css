@@ -159,6 +159,25 @@ ul {
     float: right;
 }
 
+.other_sp label{
+    display: inline-grid;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+    float: right;
+    padding-right: 25px;
+}
+
+.other_sp input{
+    -ms-transform: scale(2);
+    -moz-transform: scale(2);
+    -webkit-transform: scale(2);
+    -o-transform: scale(2);
+    padding: 10px;
+    margin-right: 15px;
+    float: right;
+}
+
 .confirmUpPhoto .ui-dialog-titlebar-close {
     display: none;
 }
