@@ -30,6 +30,7 @@ urlpatterns = [
     url('all_reports/$', views.all_reports),
     url('all_reports_paginated/$', views.all_reports_paginated),
     url('hidden_reports/$', views.non_visible_reports),
+    url('hidden_reports_paginated/$', views.non_visible_reports_paginated),
     url('mark_notif_as_ack/', views.mark_notif_as_ack),
     url('subscribe_to_topic/', views.subscribe_to_topic),
     url('unsub_from_topic/', views.unsub_from_topic),

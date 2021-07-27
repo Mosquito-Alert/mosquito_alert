@@ -2036,6 +2036,47 @@ def non_visible_reports_internal(year):
 
 
 @api_view(['GET'])
+def non_visible_reports_paginated(request):
+    if request.method == 'GET':
+        year = request.query_params.get('year', None)
+
+        reports_imbornal = get_reports_imbornal()
+        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+        new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+
+        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+
+        unfiltered_clean_reports = filter_reports(new_reports_unfiltered, False)
+        unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
+        unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
+
+        # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
+        if conf.FAST_LOAD and conf.FAST_LOAD == True:
+            non_visible_report_id = []
+        else:
+            non_visible_report_id = [report.version_UUID for report in
+                                     Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
+                                     not report.visible]
+
+        hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(
+            version_UUID__in=non_visible_report_id).filter(
+            Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(
+                package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(
+                package_name='Mosquito Alert')).exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
+
+        queryset = hidden_reports | unfiltered_clean_reports_query
+        if year is not None:
+            queryset = queryset.filter(creation_time__year=year)
+
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = MapDataSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(['GET'])
 def non_visible_reports(request):
     if request.method == 'GET':
         year = request.query_params.get('year', None)
