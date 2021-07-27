@@ -22,6 +22,9 @@
         .site.other { background-color: #a7b9f1; }
         .adult { background-color: orange; }
         .fastUpload { position: absolute; left: 1025px; top: 154px; }
+        .form-inline { display: inline; }
+        .miniform { margin-left: 15px; margin-top: 5px;}
+        li.miniform > span > span { color: white; }
     </style>
     <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
     <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
@@ -65,6 +68,29 @@
                                         class="glyphicon glyphicon-floppy-disk"></span>
                                 </button>
                             </li>
+                            {% if objects.has_next or objects.has_previous %}
+                            <li class="miniform">
+                                <span class="step-links">
+                                    {% if objects.has_previous %}
+                                        <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
+                                    {% endif %}
+                                    <span class="current">
+                                        Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                                    </span>
+                                    {% if objects.has_next %}
+                                        <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
+                                    {% endif %}
+                                    <form role="form" class="form-inline">
+                                        <div class="form-group">
+                                            <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
+                                           class="form-control input-sm" id="page_input" placeholder="Go to page"
+                                           style="width:100px;">
+                                            <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+                                        </div>
+                                    </form>
+                                </span>
+                            </li>
+                            {% endif %}
                         </ul>
 
 
@@ -212,7 +238,7 @@
                 {% endif %}
                 {% if photo.hide == False %}
                     <div class="grid-item valid">
-                        <a href="/media/{{ photo.photo }}" target="_blank">
+                        <a class="preview" href="/media/{{ photo.photo }}" target="_blank">
                             <img class="frame" src="{{ photo.get_small_url }}">
                         </a>
                     </div>
@@ -243,39 +269,13 @@
         <input id="type_input" type="text" name="type" style="display: none;" value="{{ type }}">
     </form>
 
-    {% if objects.has_next or objects.has_previous %}
-        <div class="row">
-            <div class="col-md-12">
-                <div class="pagination">
-                    <span class="step-links">
-                        {% if objects.has_previous %}
-                            <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
-                        {% endif %}
-                        <span class="current">
-                            Page {{ objects.number }} of {{ objects.paginator.num_pages }}
-                        </span>
-                        {% if objects.has_next %}
-                            <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
-                        {% endif %}
-                        <br>
-                        <form role="form" class="form-inline">
-                            <div class="form-group">
-                                <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
-                               class="form-control input-sm" id="page_input" placeholder="Go to page"
-                               style="width:100px;">
-                                <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
-                            </div>
-                        </form>
-                    </span>
-                </div>
-            </div>
-        </div>
-    {% endif %}
 </div>
 
-<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}?v=3"></script>
+<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}"></script>
+<script src="{% static 'tigacrafting/javascript/hover-preview.min.js' %}?v=3"></script>
 </body>
 <script>
+        var current_page = '{{ objects.number }}';
         function background_save(qp) {
             if ($("#formset_forms").length > 0) {
                 $("#formset_forms").submit();

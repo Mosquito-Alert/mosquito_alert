@@ -61,6 +61,26 @@ import re
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
+other_species = {
+    "es": "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las que buscamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+    "en": "This picture doesn't look like any of our targeted mosquitoes, as it seems to be of another species. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
+    "it": "Questa immagine non assomiglia a nessuna delle nostre zanzare selezionate, poiché sembra trattarsi di un'altra specie. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Si prega di inviare altre foto!",
+    "sq": "Kjo fotografi nuk duket si asnjë prej mushkonjave tona target, pasi duket se është e një specie tjetër. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
+    "hr": "Na ovoj slici ne nalazi se niti jedna od ciljanih vrsta komaraca, na slici je prikazana neka druga vrsta. Na www.mosquitoalert.com pronaći ćete savjete za hvatanje i fotografiranje komaraca. Molim Vas pošaljite još slika.",
+    "de": "Die Stechmücke auf diesem Foto sieht nicht wie eine unserer gesuchten Arten aus, es scheint sich um eine andere Art zu handeln. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
+    "mk": "Оваа слика не личи на ниту еден од нашите насочени комарци, бидејќи се чини дека се работи за друг вид. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
+    "el": "Στη συγκεκριμένη φωτογραφία δεν απεικονίζεται κάποιο από τα κουνούπια που αναζητάει το mosquito alert αλλά πιθανόν κάποιο άλλο είδος. Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
+    "pt": "Esta imagem não se parece com nenhum dos nossos mosquitos-alvo, pois parece ser de outra espécie. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes insetos. Por favor, envie mais fotos!",
+    "ro": "Această imagine nu arată ca niciunul dintre țânțarii noștri de interes, deoarece pare a fi de altă specie. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
+    "sr": "Komarac na fotografiji ne izgleda kao neka od ciljanih vrsta, čini se da je reč o drugoj vrsti. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
+    "sl": "Na tej fotografiji je verjetno druga vrsta komarjev in ne taka, ki jo iščemo. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosim, pošljite še kakšno sliko!",
+    "ca": "Aquesta foto sembla ser d'una altra espècie, ja que no s'assembla a cap de les 5 espècies que busquem. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
+    "bg": "Снимката не прилича на никой от нашите целеви видове комари, тъй като изглежда комерът е от друг вид. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
+    "fr": "Cette image ne ressemble pas à nos moustiques ciblés, s'agissant probablement d'une autre espèce. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
+    "nl": "De mug op deze foto lijkt niet op een van onze doelsoorten, het lijkt op een andere muggensoort. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
+    "hu": "Ez a kép nem hasonlít egyik keresett szúnyogunkra sem, mivel úgy tűnik, hogy egy másik faj. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+}
+
 def get_current_domain(request):
     if request.META['HTTP_HOST'] != '':
         return request.META['HTTP_HOST']
@@ -1356,6 +1376,29 @@ def get_reports_unfiltered_adults():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
     return new_reports_unfiltered_adults
 
+def auto_annotate_other_species(report):
+    users = []
+    users.append(User.objects.get(username="innie"))
+    users.append(User.objects.get(username="minnie"))
+    users.append(User.objects.get(username="manny"))
+    photo = report.photos.first()
+    report_locale = report.app_language
+    user_notes = other_species.get(report_locale, other_species['en'])
+    for u in users:
+        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+            new_annotation = ExpertReportAnnotation(report=report, user=u)
+            if u.username == 'innie':
+                new_annotation.simplified_annotation = True
+                new_annotation.edited_user_notes = user_notes
+                new_annotation.best_photo_id = photo.id
+            new_annotation.tiger_certainty_notes = 'auto'
+            new_annotation.tiger_certainty_category = -2
+            new_annotation.aegypti_certainty_category = -2
+            new_annotation.status = -2
+            new_annotation.category = Categories.objects.get(pk=2)
+            new_annotation.validation_complete = True
+            new_annotation.save()
+
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
     this_user = request.user
@@ -1394,16 +1437,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 ###############------------------------------ FI FastUpload --------------------------------###############
 
                             if f.cleaned_data['other_species']:
-                                if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-                                    new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
-                                    photo = report.photos.first()
-                                    new_annotation.site_certainty_notes = 'auto'
-                                    new_annotation.best_photo_id = photo.id
-                                    new_annotation.category = Categories.objects.get(pk=2)
-                                    new_annotation.validation_complete = True
-                                    new_annotation.revise = True
-                                    new_annotation.save()
-
+                                auto_annotate_other_species(report)
 
 
             page = request.POST.get('page')
@@ -1412,7 +1446,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             type = request.POST.get('type', type)
 
             if not page:
-                page = '1'
+                page = request.GET.get('page',"1")
             return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type)
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
@@ -1446,14 +1480,14 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         if usr_note and usr_note != '':
             new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
 
-        # new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
-        #
-        # new_reports_unfiltered = list(new_reports_unfiltered)
+        new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
 
-        reports_deleted = Report.objects.filter(version_number=-1)
-        reports_undeleted = Report.objects.exclude(version_UUID__in=reports_deleted)
-        reports_undeleted_last_version = reports_undeleted.order_by('report_id','-version_number').distinct('report_id')
-        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=reports_undeleted_last_version)
+        new_reports_unfiltered = list(new_reports_unfiltered)
+
+        # reports_deleted = Report.objects.filter(version_number=-1)
+        # reports_undeleted = Report.objects.exclude(version_UUID__in=reports_deleted)
+        # reports_undeleted_last_version = reports_undeleted.order_by('report_id','-version_number').distinct('report_id')
+        # new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=reports_undeleted_last_version)
 
         # for r in new_reports_unfiltered:
         #     print("{0} {1} {2}".format(r.version_UUID, r.deleted, r.latest_version))
@@ -1470,6 +1504,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         this_formset = PictureValidationFormSet(queryset=page_query)
         args['formset'] = this_formset
         args['objects'] = objects
+        args['page'] = page
         args['pages'] = range(1, objects.paginator.num_pages + 1)
         args['new_reports_unfiltered'] = page_query
         args['tasks_per_page'] = tasks_per_page

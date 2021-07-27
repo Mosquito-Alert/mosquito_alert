@@ -1,3 +1,9 @@
+$( document ).ready(function() {
+    $(".preview").each(function (index, element) {
+        return hoverPreview($(this)[0]);
+    });
+});
+
 var save_button = $("#save_button").click(function () {
     var ref = [];
     var other = [];
@@ -65,4 +71,5 @@ var save_button = $("#save_button").click(function () {
         $("#formset_forms").submit();
 
     }
+
 });
