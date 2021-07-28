@@ -1376,7 +1376,7 @@ def get_reports_unfiltered_adults():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
     return new_reports_unfiltered_adults
 
-def auto_annotate_other_species(report):
+def auto_annotate_other_species(report, request):
     users = []
     users.append(User.objects.get(username="innie"))
     users.append(User.objects.get(username="minnie"))
@@ -1388,9 +1388,11 @@ def auto_annotate_other_species(report):
         if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
             new_annotation = ExpertReportAnnotation(report=report, user=u)
             if u.username == 'innie':
-                new_annotation.simplified_annotation = True
                 new_annotation.edited_user_notes = user_notes
                 new_annotation.best_photo_id = photo.id
+                new_annotation.simplified_annotation = False
+            else:
+                new_annotation.simplified_annotation = True
             new_annotation.tiger_certainty_notes = 'auto'
             new_annotation.tiger_certainty_category = -2
             new_annotation.aegypti_certainty_category = -2
@@ -1398,6 +1400,9 @@ def auto_annotate_other_species(report):
             new_annotation.category = Categories.objects.get(pk=2)
             new_annotation.validation_complete = True
             new_annotation.save()
+            if u.username == 'innie':
+                current_domain = get_current_domain(request)
+                issue_notification(new_annotation, current_domain)
 
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
@@ -1437,7 +1442,7 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 ###############------------------------------ FI FastUpload --------------------------------###############
 
                             if f.cleaned_data['other_species']:
-                                auto_annotate_other_species(report)
+                                auto_annotate_other_species(report, request)
 
 
             page = request.POST.get('page')
