@@ -12,6 +12,7 @@
         .grid-item-large { background-color: grey; height: 180px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px; overflow:auto; padding: 10px 10px 10px 10px;}
 
         .fastCheck {background-color: lightgray; margin-bottom: 10px; height: 40px;}
+        .other_sp {background-color: lightgray; margin-bottom: 10px; height: 40px;}
 
         .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px;}
         .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
@@ -21,6 +22,11 @@
         .site.other { background-color: #a7b9f1; }
         .adult { background-color: orange; }
         .fastUpload { position: absolute; left: 1025px; top: 154px; }
+        .form-inline { display: inline; }
+        .miniform { margin-left: 15px; margin-top: 5px;}
+        li.miniform > span > span { color: white; }
+        .mustfix { border-top-color: red; border-top-style: solid; border-top-width: 10px; }
+        .fixids ul li { white-space:nowrap; }
     </style>
     <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
     <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
@@ -64,6 +70,29 @@
                                         class="glyphicon glyphicon-floppy-disk"></span>
                                 </button>
                             </li>
+                            {% if objects.has_next or objects.has_previous %}
+                            <li class="miniform">
+                                <span class="step-links">
+                                    {% if objects.has_previous %}
+                                        <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
+                                    {% endif %}
+                                    <span class="current">
+                                        Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                                    </span>
+                                    {% if objects.has_next %}
+                                        <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
+                                    {% endif %}
+                                    <form role="form" class="form-inline">
+                                        <div class="form-group">
+                                            <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
+                                           class="form-control input-sm" id="page_input" placeholder="Go to page"
+                                           style="width:100px;">
+                                            <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+                                        </div>
+                                    </form>
+                                </span>
+                            </li>
+                            {% endif %}
                         </ul>
 
 
@@ -163,27 +192,45 @@
             </p>
         </div>
     </div>
-    <div class="row">
-        <div id="dialogConfirmUpPhoto" title="Warning">
-            <p class="infoPopup">
-                <span>The following reports have been marked as 'fast upload':</span><br>
-                <span class="reportIDs"></span>
-                <span>and will be published on the map this same day at around midnight. Are you sure you want to proceed?</span>
-            </p>
-        </div>
 
+    <div id="dialogConfirmUpPhoto" title="Warning">
+        <p class="infoPopup">
+            <div id="fastupload_info" style="display:none;">
+                <p>These following reports have been marked as 'fast upload':</p>
+                <p class="reportIDs"></p>
+                <p>and will be published on the map this same day at around midnight.</p>
+            </div>
+            <hr>
+            <div id="othersp_info" style="display:none;">
+                <p>These reports have been marked as 'other species':</p>
+                <p class="otherIDs"></p>
+                <p>and will be automatically validated as 'other species' and will also be published on the map</p>
+            </div>
+            <hr>
+            <p class="text-danger">Are you sure you want to proceed?</p>
+        </p>
+    </div>
+
+    <div id="dialogFix" title="Warning" style="display:none;">
+        <p class="infoPopup">
+            <div id="fix_info">
+                <p>The following reports have been selected for either fast upload AND hide or other species AND hide. Only one of the checkboxes can be selected:</p>
+                <p class="fixids"></p>
+                <p>Look for boxes with a <span style="color:red;">red</span> border and unselect either 'Hide' or 'Fast upload'/'Other species'</p>
+            </div>
+        </p>
     </div>
 
     <form id="formset_forms" class="form-vertical" method="post">
     {% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}
-        <div class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+        <div data-errorborder="{{ form.instance.version_UUID }}" class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
                     <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
                         <a href="/single_report_map/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"></span></a>
-                        <p class="p-small"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                        <p class="p-small" data-id="{{ form.instance.version_UUID }}"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.creation_time }}</p>
                         <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
@@ -201,7 +248,7 @@
                 {% endif %}
                 {% if photo.hide == False %}
                     <div class="grid-item valid">
-                        <a href="/media/{{ photo.photo }}" target="_blank">
+                        <a class="preview" href="/media/{{ photo.photo }}" target="_blank">
                             <img class="frame" src="{{ photo.get_small_url }}">
                         </a>
                     </div>
@@ -215,6 +262,11 @@
                 <label>Fast Upload</label>
                 {{ form.fastUpload }}
             </div>
+        {% elif form.instance.type == 'adult' and form.instance.hide == False %}
+            <div id="{{ form.instance.version_UUID }}" class="other_sp {{form.instance.type}}" style="">
+                <label>Other species</label>
+                {{ form.other_species }}
+            </div>
         {% endif %}
 
 
@@ -227,39 +279,13 @@
         <input id="type_input" type="text" name="type" style="display: none;" value="{{ type }}">
     </form>
 
-    {% if objects.has_next or objects.has_previous %}
-        <div class="row">
-            <div class="col-md-12">
-                <div class="pagination">
-                    <span class="step-links">
-                        {% if objects.has_previous %}
-                            <button id="previous_page_button" class="btn btn-default btn-sm active" type="button">Previous</button>
-                        {% endif %}
-                        <span class="current">
-                            Page {{ objects.number }} of {{ objects.paginator.num_pages }}
-                        </span>
-                        {% if objects.has_next %}
-                            <button id="next_page_button" class="btn btn-default btn-sm active" type="button">Next</button>
-                        {% endif %}
-                        <br>
-                        <form role="form" class="form-inline">
-                            <div class="form-group">
-                                <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
-                               class="form-control input-sm" id="page_input" placeholder="Go to page"
-                               style="width:100px;">
-                                <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
-                            </div>
-                        </form>
-                    </span>
-                </div>
-            </div>
-        </div>
-    {% endif %}
 </div>
 
 <script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}"></script>
+<script src="{% static 'tigacrafting/javascript/hover-preview.min.js' %}?v=3"></script>
 </body>
 <script>
+        var current_page = '{{ objects.number }}';
         function background_save(qp) {
             if ($("#formset_forms").length > 0) {
                 $("#formset_forms").submit();
