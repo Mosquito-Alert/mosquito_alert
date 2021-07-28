@@ -25,6 +25,8 @@
         .form-inline { display: inline; }
         .miniform { margin-left: 15px; margin-top: 5px;}
         li.miniform > span > span { color: white; }
+        .mustfix { border-top-color: red; border-top-style: solid; border-top-width: 10px; }
+        .fixids ul li { white-space:nowrap; }
     </style>
     <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
     <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
@@ -190,37 +192,45 @@
             </p>
         </div>
     </div>
-    <div class="row">
-        <div id="dialogConfirmUpPhoto" title="Warning">
-            <p class="infoPopup">
-                <div id="fastupload_info" style="display:none;">
-                    <p>These following reports have been marked as 'fast upload':</p>
-                    <p class="reportIDs"></p>
-                    <p>and will be published on the map this same day at around midnight.</p>
-                </div>
-                <hr>
-                <div id="othersp_info" style="display:none;">
-                    <p>These reports have been marked as 'other species':</p>
-                    <p class="otherIDs"></p>
-                    <p>and will be automatically validated as 'other species' and will also be published on the map</p>
-                </div>
-                <hr>
-                <p class="text-danger">Are you sure you want to proceed?</p>
-            </p>
-        </div>
 
+    <div id="dialogConfirmUpPhoto" title="Warning">
+        <p class="infoPopup">
+            <div id="fastupload_info" style="display:none;">
+                <p>These following reports have been marked as 'fast upload':</p>
+                <p class="reportIDs"></p>
+                <p>and will be published on the map this same day at around midnight.</p>
+            </div>
+            <hr>
+            <div id="othersp_info" style="display:none;">
+                <p>These reports have been marked as 'other species':</p>
+                <p class="otherIDs"></p>
+                <p>and will be automatically validated as 'other species' and will also be published on the map</p>
+            </div>
+            <hr>
+            <p class="text-danger">Are you sure you want to proceed?</p>
+        </p>
+    </div>
+
+    <div id="dialogFix" title="Warning" style="display:none;">
+        <p class="infoPopup">
+            <div id="fix_info">
+                <p>The following reports have been selected for either fast upload AND hide or other species AND hide. Only one of the checkboxes can be selected:</p>
+                <p class="fixids"></p>
+                <p>Look for boxes with a <span style="color:red;">red</span> border and unselect either 'Hide' or 'Fast upload'/'Other species'</p>
+            </div>
+        </p>
     </div>
 
     <form id="formset_forms" class="form-vertical" method="post">
     {% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}
-        <div class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+        <div data-errorborder="{{ form.instance.version_UUID }}" class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
                     <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
                         <a href="/single_report_map/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"></span></a>
-                        <p class="p-small"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                        <p class="p-small" data-id="{{ form.instance.version_UUID }}"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.creation_time }}</p>
                         <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
