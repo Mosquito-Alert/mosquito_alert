@@ -1956,7 +1956,9 @@ def uuid_list_autocomplete(request):
 package_filter = (
         Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) |
         Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) |
-        Q(package_name='Mosquito Alert'))
+        Q(package_name='cat.ibeji.tigatrapp') |
+        Q(package_name='Mosquito Alert')
+)
 
 @api_view(['GET'])
 def all_reports_paginated(request):
@@ -2058,10 +2060,8 @@ def non_visible_reports_paginated(request):
                                      not report.visible]
 
         hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(
-            version_UUID__in=non_visible_report_id).filter(
-            Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(
-                package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(
-                package_name='Mosquito Alert')).exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
+            version_UUID__in=non_visible_report_id).filter( package_filter )\
+            .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
 
         queryset = hidden_reports | unfiltered_clean_reports_query
         if year is not None:
