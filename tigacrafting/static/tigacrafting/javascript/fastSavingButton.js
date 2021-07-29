@@ -84,8 +84,8 @@ var save_button = $("#save_button").click(function () {
                 list_othersp.push('<li>' + other[i] + '</li>');
             }
 
-            $(".reportIDs").html('<ul>' + list_fastupload.join('') + '</ul>');
-            $(".otherIDs").html('<ul>' + list_othersp.join('') + '</ul>');
+            $(".reportIDs").html('<ul class="collapse_ul">' + list_fastupload.join('') + '</ul>');
+            $(".otherIDs").html('<ul class="collapse_ul">' + list_othersp.join('') + '</ul>');
 
             $(".ui-dialog").addClass("confirmUpPhoto");
 
@@ -102,7 +102,7 @@ var save_button = $("#save_button").click(function () {
             all_errors_html.push('<li>' + all_errors[i] + '</li>');
             $("form").find("[data-errorborder='" + all_errors[i] + "']").addClass('mustfix');
         }
-        $(".fixids").html('<ul>' + all_errors_html.join('') + '</ul>');
+        $(".fixids").html('<ul class="collapse_ul">' + all_errors_html.join('') + '</ul>');
         $("#dialogFix").dialog({
             modal: true,
             buttons: {
