@@ -61,25 +61,45 @@ import re
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
-other_species = {
-    "es": "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las que buscamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-    "en": "This picture doesn't look like any of our targeted mosquitoes, as it seems to be of another species. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
-    "it": "Questa immagine non assomiglia a nessuna delle nostre zanzare selezionate, poiché sembra trattarsi di un'altra specie. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Si prega di inviare altre foto!",
-    "sq": "Kjo fotografi nuk duket si asnjë prej mushkonjave tona target, pasi duket se është e një specie tjetër. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
-    "hr": "Na ovoj slici ne nalazi se niti jedna od ciljanih vrsta komaraca, na slici je prikazana neka druga vrsta. Na www.mosquitoalert.com pronaći ćete savjete za hvatanje i fotografiranje komaraca. Molim Vas pošaljite još slika.",
-    "de": "Die Stechmücke auf diesem Foto sieht nicht wie eine unserer gesuchten Arten aus, es scheint sich um eine andere Art zu handeln. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
-    "mk": "Оваа слика не личи на ниту еден од нашите насочени комарци, бидејќи се чини дека се работи за друг вид. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
-    "el": "Στη συγκεκριμένη φωτογραφία δεν απεικονίζεται κάποιο από τα κουνούπια που αναζητάει το mosquito alert αλλά πιθανόν κάποιο άλλο είδος. Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
-    "pt": "Esta imagem não se parece com nenhum dos nossos mosquitos-alvo, pois parece ser de outra espécie. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes insetos. Por favor, envie mais fotos!",
-    "ro": "Această imagine nu arată ca niciunul dintre țânțarii noștri de interes, deoarece pare a fi de altă specie. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
-    "sr": "Komarac na fotografiji ne izgleda kao neka od ciljanih vrsta, čini se da je reč o drugoj vrsti. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
-    "sl": "Na tej fotografiji je verjetno druga vrsta komarjev in ne taka, ki jo iščemo. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosim, pošljite še kakšno sliko!",
-    "ca": "Aquesta foto sembla ser d'una altra espècie, ja que no s'assembla a cap de les 5 espècies que busquem. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
-    "bg": "Снимката не прилича на никой от нашите целеви видове комари, тъй като изглежда комерът е от друг вид. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
-    "fr": "Cette image ne ressemble pas à nos moustiques ciblés, s'agissant probablement d'une autre espèce. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
-    "nl": "De mug op deze foto lijkt niet op een van onze doelsoorten, het lijkt op een andere muggensoort. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-    "hu": "Ez a kép nem hasonlít egyik keresett szúnyogunkra sem, mivel úgy tűnik, hogy egy másik faj. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+other_insect = {
+    "es": "Esta foto muestra un insecto que no es un mosquito verdadero, es decir, no pertenece a la familia de los Culícidos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+    "en": "This picture shows an insect which is not a real mosquito from the Culicidae family. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
+    "it": "Questa immagine mostra un insetto che non è una zanzara e non appartiene quindi alla famiglia dei Culicidi. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Si prega di inviare altre foto!",
+    "sq": "Kjo foto tregon një insekt i cili nuk është një mushkonjë nga familja Culicidae. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
+    "hr": "Ova slika prikazuje insekta koji nije pravi komarac iz obitelji Culicidae. Na www.mosquitoalert.com pronaći ćete trikove i savjete za hvatanje i fotografiranje ovih insekata. Molimo pošaljite još slika!",
+    "de": "Dieses Foto zeigt ein Insekt, das keine echte Stechmücke aus der Familie der Culicidae ist. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
+    "mk": "Оваа слика покажува инсект кој не е вистински комарец од фамилијата Culicidae. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
+    "el": "Το έντομο της φωτογραφίας δεν ανήκει στα κουνούπια (οικογένεια Culicidae). Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
+    "pt": "Esta imagem mostra um inseto que não é um mosquito da família Culicidae. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes insetos. Por favor, envie mais fotos!",
+    "ro": "Această imagine arată o insectă care nu este un țânțar adevărat din familia Culicidae. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
+    "sr": "Na fotografiji je insekt koji nije komarac iz familije Culicidae. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
+    "sl": "Na tej fotografiji ni komar, temveč druga žuželka. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosim, pošljite še kakšno sliko!",
+    "ca": "Aquesta foto mostra un insecte que no pertany als veritables mosquits de la familia Culicidae. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
+    "bg": "На снимката е насекомо, което не е истински комар от семейство Culicidae. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
+    "fr": "Cette image décrit un insecte qui n'est pas un vrai moustique appartenant à la famille des Culicidés. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
+    "nl": "Het insect op deze foto is geen mug uit de Culicidae familie. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en maken van foto's van deze insecten. Blijf alstublieft foto's insturen.",
+    "hu": "Ezen a képen egy olyan rovar látható, amely nem az igazi szúnyogok (Culicidae) családjába tartozik. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
 }
+
+# other_species = {
+#     "es": "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las que buscamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+#     "en": "This picture doesn't look like any of our targeted mosquitoes, as it seems to be of another species. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
+#     "it": "Questa immagine non assomiglia a nessuna delle nostre zanzare selezionate, poiché sembra trattarsi di un'altra specie. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Si prega di inviare altre foto!",
+#     "sq": "Kjo fotografi nuk duket si asnjë prej mushkonjave tona target, pasi duket se është e një specie tjetër. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
+#     "hr": "Na ovoj slici ne nalazi se niti jedna od ciljanih vrsta komaraca, na slici je prikazana neka druga vrsta. Na www.mosquitoalert.com pronaći ćete savjete za hvatanje i fotografiranje komaraca. Molim Vas pošaljite još slika.",
+#     "de": "Die Stechmücke auf diesem Foto sieht nicht wie eine unserer gesuchten Arten aus, es scheint sich um eine andere Art zu handeln. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
+#     "mk": "Оваа слика не личи на ниту еден од нашите насочени комарци, бидејќи се чини дека се работи за друг вид. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
+#     "el": "Στη συγκεκριμένη φωτογραφία δεν απεικονίζεται κάποιο από τα κουνούπια που αναζητάει το mosquito alert αλλά πιθανόν κάποιο άλλο είδος. Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
+#     "pt": "Esta imagem não se parece com nenhum dos nossos mosquitos-alvo, pois parece ser de outra espécie. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes insetos. Por favor, envie mais fotos!",
+#     "ro": "Această imagine nu arată ca niciunul dintre țânțarii noștri de interes, deoarece pare a fi de altă specie. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
+#     "sr": "Komarac na fotografiji ne izgleda kao neka od ciljanih vrsta, čini se da je reč o drugoj vrsti. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
+#     "sl": "Na tej fotografiji je verjetno druga vrsta komarjev in ne taka, ki jo iščemo. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosim, pošljite še kakšno sliko!",
+#     "ca": "Aquesta foto sembla ser d'una altra espècie, ja que no s'assembla a cap de les 5 espècies que busquem. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
+#     "bg": "Снимката не прилича на никой от нашите целеви видове комари, тъй като изглежда комерът е от друг вид. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
+#     "fr": "Cette image ne ressemble pas à nos moustiques ciblés, s'agissant probablement d'une autre espèce. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
+#     "nl": "De mug op deze foto lijkt niet op een van onze doelsoorten, het lijkt op een andere muggensoort. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
+#     "hu": "Ez a kép nem hasonlít egyik keresett szúnyogunkra sem, mivel úgy tűnik, hogy egy másik faj. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+# }
 
 def get_current_domain(request):
     if request.META['HTTP_HOST'] != '':
@@ -1384,7 +1404,7 @@ def auto_annotate_other_species(report, request):
     super_reritja = User.objects.get(username="super_reritja")
     photo = report.photos.first()
     report_locale = report.app_language
-    user_notes = other_species.get(report_locale, other_species['en'])
+    user_notes = other_insect.get(report_locale, other_insect['en'])
     for u in users:
         if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
             new_annotation = ExpertReportAnnotation(report=report, user=u)
