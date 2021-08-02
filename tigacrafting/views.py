@@ -1401,6 +1401,7 @@ def auto_annotate_other_species(report, request):
     users.append(User.objects.get(username="innie"))
     users.append(User.objects.get(username="minnie"))
     users.append(User.objects.get(username="manny"))
+    super_reritja = User.objects.get(username="super_reritja")
     photo = report.photos.first()
     report_locale = report.app_language
     user_notes = other_insect.get(report_locale, other_insect['en'])
@@ -1423,6 +1424,13 @@ def auto_annotate_other_species(report, request):
             if u.username == 'innie':
                 current_domain = get_current_domain(request)
                 issue_notification(new_annotation, current_domain)
+    try:
+        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    except ExpertReportAnnotation.DoesNotExist:
+        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+
+    roger_annotation.validation_complete = True
+    roger_annotation.save()
 
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
