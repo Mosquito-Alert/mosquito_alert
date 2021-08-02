@@ -37,12 +37,12 @@
                 'push_success': 'ALL' | 'NONE' | 'SOME' | 'NO_PUSH'
                 'push_results': List of status
             }
-        */
         var pushes = [];
         for(var i = 0; i < data.push_results.length; i++){
             pushes.push('<li>' + JSON.stringify(data.push_results[i]) + '</li>');
         }
         var detail_message = '<ul>' + pushes.join('') + '</ul>';
+        */
         var push_message;
         var push_results = data.push_results;
         switch(data.push_success){
@@ -67,9 +67,6 @@
             '	</li>' +
             '	<li><h3>Push</h3>' +
             '		<ul>' + push_message + '</ul>' +
-            '	</li>' +
-            '	<li><h3>Push details</h3>' +
-            '		<ul>' + pushes.join(" ") + '</ul>' +
             '	</li>' +
             '</ul>';
         return message;
@@ -147,11 +144,12 @@
             retVal.validation = false;
             retVal.errors.push('<li class="text-danger">Missing english body text</li>')
         }
+        
         var body_html_native_editor_content = tinyMCE.get('body_native').getContent();
         var title_native = $("#title_native").val();
         var selected_native_locale = $('#native_lang').val()
 
-        if( body_html_native_editor_content != "" || title_native != "" || selected_native_locale != "" ){
+        if( body_html_native_editor_content != "" || title_native != "" || selected_native_locale != ""  ){
             if( body_html_native_editor_content == "" ){
                 retVal.validation = false;
                 retVal.errors.push('<li class="text-danger">Missing native body text</li>')
@@ -174,6 +172,12 @@
         if($("#accordion").accordion( "option", "active" ) == SELECTED_SOME_FILTER && no_topic_selected()){
             retVal.validation = false;
             retVal.errors.push('<li class="text-danger">No topics selected in choose filter</li>')
+        }
+
+        var implications_checkbox = $('#implications_checkbox').is(":checked")
+        if($("#accordion").accordion( "option", "active" ) == SELECTED_ALL && implications_checkbox == false){
+            retVal.validation = false;
+            retVal.errors.push('<li class="text-danger">You must accept the implications of sending to everyone</li>')
         }
         return retVal;
     };

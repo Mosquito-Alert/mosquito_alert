@@ -1401,7 +1401,6 @@ def auto_annotate_other_species(report, request):
     users.append(User.objects.get(username="innie"))
     users.append(User.objects.get(username="minnie"))
     users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
     photo = report.photos.first()
     report_locale = report.app_language
     user_notes = other_insect.get(report_locale, other_insect['en'])
@@ -1424,15 +1423,6 @@ def auto_annotate_other_species(report, request):
             if u.username == 'innie':
                 current_domain = get_current_domain(request)
                 issue_notification(new_annotation, current_domain)
-
-    try:
-        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
-    except ExpertReportAnnotation.DoesNotExist:
-        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
-
-    roger_annotation.validation_complete = True
-    roger_annotation.save()
-
 
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
@@ -1579,7 +1569,7 @@ def notifications_version_two(request,user_uuid=None):
     this_user_is_notifier = this_user.groups.filter(name='expert_notifier').exists()
     if this_user_is_notifier:
         user_uuid = request.GET.get('user_uuid',None)
-        total_users = TigaUser.objects.exclude(device_token='').filter(device_token__isnull=False).count()
+        #total_users = TigaUser.objects.exclude(device_token='').filter(device_token__isnull=False).count()
         # TOPIC_GROUPS = ((0, 'General'), (1, 'Language topics'), (2, 'Country topics'))
         languages = []
         sorted_langs = sorted(settings.LANGUAGES, key=lambda tup: tup[1])
@@ -1599,7 +1589,7 @@ def notifications_version_two(request,user_uuid=None):
                 all_topics.append(topic_info)
             else:
                 pass
-        return render(request, 'tigacrafting/notifications_version_two.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid, 'topics_info': json.dumps(all_topics), 'languages': languages})
+        return render(request, 'tigacrafting/notifications_version_two.html',{'user_id':this_user.id, 'user_uuid':user_uuid, 'topics_info': json.dumps(all_topics), 'languages': languages})
     else:
         return HttpResponse("You don't have permission to issue notifications from EntoLab, please contact MoveLab.")
 
