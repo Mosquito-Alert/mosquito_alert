@@ -60,9 +60,12 @@ td {
 
             var cluster_marker;
             var popup_text;
+            var init_latlng;
+            var init_zoom = 8;
 
             {% for report in report_list %}
                 {% if report.lat != None and report.lon != None %}
+                    init_latlng = L.latLng({{ report.lat }},{{ report.lon }});
                     cluster_marker = L.marker([{{ report.lat }}, {{ report.lon }}], {icon: thisIcon});
                     popup_text = '<table><tr><td>prob:</td><td>'+
                                 '{{ report.tigaprob_text }}</td></tr><tr><td>lat:</td>'+
@@ -86,6 +89,10 @@ td {
 
 
             markers_clustered.addTo(map);
+
+            if (init_latlng != null){
+                map.setView(init_latlng, init_zoom );
+            }
 
         }
 
@@ -124,7 +131,8 @@ td {
                         180]], "resetview": true, "srid": null, "fitextent": true},
             options = {djoptions: djoptions, initfunc: loadmap,
                        globals: false, callback: window.map_init_basic};
-        L.Map.djangoMap('tigamap', options);
+        var this_map = L.Map.djangoMap('tigamap', options);
+        console.log(this_map);
     }
     var loadevents = ["load"];
     if (loadevents.length === 0) loadmap();
