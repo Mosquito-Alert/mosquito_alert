@@ -1557,8 +1557,9 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         #n_query_records = new_reports_unfiltered.count()
         n_query_records = len(new_reports_unfiltered)
         args['n_query_records'] = n_query_records
-        args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
-        #return render(request, 'tigacrafting/photo_grid.html', {'new_reports_unfiltered' : page_query})
+        #args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
+        range_list = [ n for n in range(5, 101, 5) ]
+        args['tasks_per_page_choices'] = range_list + [200,300]
         return render(request, 'tigacrafting/photo_grid.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

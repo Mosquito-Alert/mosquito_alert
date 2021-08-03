@@ -106,7 +106,11 @@
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                         {% for n in tasks_per_page_choices %}
                                             <li>
-                                                <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}">{{ n }}</a>
+                                                {% if n|add:"0" == tasks_per_page|add:"0" %}
+                                                    <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}"><span class="glyphicon glyphicon-check"></span>{{ n }}</a>
+                                                {% else %}
+                                                    <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}">{{ n }}</a>
+                                                {% endif %}
                                             </li>
                                         {% endfor %}
                                     </ul>
