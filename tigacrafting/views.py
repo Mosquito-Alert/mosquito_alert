@@ -46,6 +46,7 @@ from common.translation import get_translation_in, get_locale_for_en, get_locale
 import html.entities
 from django.template.loader import TemplateDoesNotExist
 from django.utils.translation import gettext as _
+from django.db.models.expressions import RawSQL
 
 #----------Metadades fotos----------#
 
@@ -1513,17 +1514,18 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         if usr_note and usr_note != '':
             new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
 
-        new_reports_unfiltered = filter_reports(new_reports_unfiltered,False)
+        # new_reports_unfiltered = filter_reports(new_reports_unfiltered, False)
+        #
+        # new_reports_unfiltered = list(new_reports_unfiltered)
 
-        new_reports_unfiltered = list(new_reports_unfiltered)
+        report_id_deleted_reports = Report.objects.filter(version_number=-1).values('report_id').distinct()
 
-        # reports_deleted = Report.objects.filter(version_number=-1)
-        # reports_undeleted = Report.objects.exclude(version_UUID__in=reports_deleted)
-        # reports_undeleted_last_version = reports_undeleted.order_by('report_id','-version_number').distinct('report_id')
-        # new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=reports_undeleted_last_version)
+        new_reports_unfiltered = new_reports_unfiltered.exclude(report_id__in=report_id_deleted_reports)
+
+        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id, max(version_number) as higher from tigaserver_app_report group by report_id) maxes where r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
 
         # for r in new_reports_unfiltered:
-        #     print("{0} {1} {2}".format(r.version_UUID, r.deleted, r.latest_version))
+        #      print("{0} {1} {2}".format(r.version_UUID, r.deleted, r.latest_version))
 
         paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
         page = request.GET.get('page', 1)
