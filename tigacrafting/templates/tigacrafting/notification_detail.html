@@ -1,0 +1,51 @@
+{% extends 'tigacrafting/base.html' %}
+{% load staticfiles %}
+<head>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+</head>
+    <body>
+{%block content%}
+        <div class="container" >
+            <h1 class="text-center">Notification detail <i title="refresh page" onclick="javascript:window.location.reload()" class="btn btn-success fa fa-refresh"></i></h1>
+            <div class="col-xs-offset-5 h4">
+                <p>Sent on: <b>{{notification.date_comment}}</b></p> 
+                <p>Sent by: <b>{{notification.expert}}</b></p>
+                <p>Sent to: <b>{{potential_audience}}</b> users</p> 
+                <p>Read by:<b> {{seen_by}}</b> users</p>
+            </div>
+            <br>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="btn nav-link" href="#en" data-toggle="tab">English</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#native" class="btn nav-link" data-toggle="tab" >Native</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="en">
+                    <h3 class="text-center">{{notification.notification_content.title_en}}</h3>
+                    {{notification.notification_content.body_html_en | safe }}
+                </div>
+                <div class="tab-pane" id="native">
+                    {% if notification.notification_content.body_html_native %}
+                    <h3 class="text-center">{{notification.notification_content.title_native}}</h3>
+                    {{notification.notification_content.body_html_native | safe }}
+                    {% else %}
+                    <br>
+                    <p class="text-center">A native language notification was not sent</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {%endblock%}
+    </body>
+</html>

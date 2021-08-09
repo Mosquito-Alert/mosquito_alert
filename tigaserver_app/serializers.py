@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from taggit.models import Tag
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
+from django.urls import reverse
 
 def score_label(score):
     if score > 66:
@@ -391,10 +392,6 @@ class NotificationContentSerializer(serializers.ModelSerializer):
     body_html_native = serializers.CharField(required=False)
     title_native = serializers.CharField(required=False)
     native_locale = serializers.CharField(required=False)
-    #body_html_es = serializers.CharField()
-    #body_html_ca = serializers.CharField(required=False)
-    #title_es = serializers.CharField()
-    #title_ca = serializers.CharField(required=False)
 
     class Meta:
         model = NotificationContent
@@ -404,23 +401,27 @@ class NotificationContentSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     report_id = serializers.CharField()
-    user_id = serializers.CharField()
     expert_id = serializers.IntegerField()
-    date_comment = serializers.Field()
-    #expert_comment = serializers.CharField()
-    #expert_html = serializers.CharField()
-    photo_url = serializers.CharField()
-    acknowledged = serializers.BooleanField()
+    date_comment = serializers.ReadOnlyField()
     notification_content = NotificationContentSerializer()
     public = serializers.BooleanField()
-    map_notification = serializers.BooleanField()
+    sent_to = serializers.SerializerMethodField()
+    link = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
-        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
-        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
-        fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'map_notification')
+        fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'sent_to', 'link')
 
+    def get_sent_to(self,obj):
+        sent_notification = SentNotification.objects.filter(notification_id = obj.id).first()
+
+        if(sent_notification.sent_to_topic_id):
+            return NotificationTopic.objects.get(id = sent_notification.sent_to_topic_id).topic_description
+        else:
+             return SentNotification.objects.filter(notification_id=obj.id).values_list('sent_to_user_id')
+
+    def get_link(self,obj):
+        return reverse('notification_detail', kwargs={'notification_id': obj.id})
 
 class UserSubscriptionSerializer(serializers.ModelSerializer):
     topic_code = serializers.SerializerMethodField()

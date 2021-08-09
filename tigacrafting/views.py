@@ -26,7 +26,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -37,7 +37,7 @@ import django.utils.html
 from django.db import connection
 from itertools import chain
 from tigacrafting.messaging import send_message_android,send_message_ios
-from tigaserver_app.serializers import custom_render_notification
+from tigaserver_app.serializers import custom_render_notification, NotificationSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
@@ -46,7 +46,7 @@ from common.translation import get_translation_in, get_locale_for_en, get_locale
 import html.entities
 from django.template.loader import TemplateDoesNotExist
 from django.utils.translation import gettext as _
-from django.db.models.expressions import RawSQL
+from tigacrafting.querystring_parser import parser
 
 #----------Metadades fotos----------#
 
@@ -62,45 +62,25 @@ import re
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
-other_insect = {
-    "es": "Esta foto muestra un insecto que no es un mosquito verdadero, es decir, no pertenece a la familia de los Culícidos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-    "en": "This picture shows an insect which is not a real mosquito from the Culicidae family. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
-    "it": "Questa immagine mostra un insetto che non è una zanzara e non appartiene quindi alla famiglia dei Culicidi. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Si prega di inviare altre foto!",
-    "sq": "Kjo foto tregon një insekt i cili nuk është një mushkonjë nga familja Culicidae. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
-    "hr": "Ova slika prikazuje insekta koji nije pravi komarac iz obitelji Culicidae. Na www.mosquitoalert.com pronaći ćete trikove i savjete za hvatanje i fotografiranje ovih insekata. Molimo pošaljite još slika!",
-    "de": "Dieses Foto zeigt ein Insekt, das keine echte Stechmücke aus der Familie der Culicidae ist. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
-    "mk": "Оваа слика покажува инсект кој не е вистински комарец од фамилијата Culicidae. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
-    "el": "Το έντομο της φωτογραφίας δεν ανήκει στα κουνούπια (οικογένεια Culicidae). Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
-    "pt": "Esta imagem mostra um inseto que não é um mosquito da família Culicidae. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes insetos. Por favor, envie mais fotos!",
-    "ro": "Această imagine arată o insectă care nu este un țânțar adevărat din familia Culicidae. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
-    "sr": "Na fotografiji je insekt koji nije komarac iz familije Culicidae. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
-    "sl": "Na tej fotografiji ni komar, temveč druga žuželka. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosim, pošljite še kakšno sliko!",
-    "ca": "Aquesta foto mostra un insecte que no pertany als veritables mosquits de la familia Culicidae. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
-    "bg": "На снимката е насекомо, което не е истински комар от семейство Culicidae. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
-    "fr": "Cette image décrit un insecte qui n'est pas un vrai moustique appartenant à la famille des Culicidés. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
-    "nl": "Het insect op deze foto is geen mug uit de Culicidae familie. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en maken van foto's van deze insecten. Blijf alstublieft foto's insturen.",
-    "hu": "Ezen a képen egy olyan rovar látható, amely nem az igazi szúnyogok (Culicidae) családjába tartozik. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+other_species = {
+    "es": "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las que buscamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+    "en": "This picture doesn't look like any of our targeted mosquitoes, as it seems to be of another species. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
+    "it": "Questa immagine non assomiglia a nessuna delle nostre zanzare selezionate, poiché sembra trattarsi di un'altra specie. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Si prega di inviare altre foto!",
+    "sq": "Kjo fotografi nuk duket si asnjë prej mushkonjave tona target, pasi duket se është e një specie tjetër. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
+    "hr": "Na ovoj slici ne nalazi se niti jedna od ciljanih vrsta komaraca, na slici je prikazana neka druga vrsta. Na www.mosquitoalert.com pronaći ćete savjete za hvatanje i fotografiranje komaraca. Molim Vas pošaljite još slika.",
+    "de": "Die Stechmücke auf diesem Foto sieht nicht wie eine unserer gesuchten Arten aus, es scheint sich um eine andere Art zu handeln. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
+    "mk": "Оваа слика не личи на ниту еден од нашите насочени комарци, бидејќи се чини дека се работи за друг вид. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
+    "el": "Στη συγκεκριμένη φωτογραφία δεν απεικονίζεται κάποιο από τα κουνούπια που αναζητάει το mosquito alert αλλά πιθανόν κάποιο άλλο είδος. Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
+    "pt": "Esta imagem não se parece com nenhum dos nossos mosquitos-alvo, pois parece ser de outra espécie. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes insetos. Por favor, envie mais fotos!",
+    "ro": "Această imagine nu arată ca niciunul dintre țânțarii noștri de interes, deoarece pare a fi de altă specie. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
+    "sr": "Komarac na fotografiji ne izgleda kao neka od ciljanih vrsta, čini se da je reč o drugoj vrsti. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
+    "sl": "Na tej fotografiji je verjetno druga vrsta komarjev in ne taka, ki jo iščemo. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosim, pošljite še kakšno sliko!",
+    "ca": "Aquesta foto sembla ser d'una altra espècie, ja que no s'assembla a cap de les 5 espècies que busquem. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
+    "bg": "Снимката не прилича на никой от нашите целеви видове комари, тъй като изглежда комерът е от друг вид. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
+    "fr": "Cette image ne ressemble pas à nos moustiques ciblés, s'agissant probablement d'une autre espèce. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
+    "nl": "De mug op deze foto lijkt niet op een van onze doelsoorten, het lijkt op een andere muggensoort. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
+    "hu": "Ez a kép nem hasonlít egyik keresett szúnyogunkra sem, mivel úgy tűnik, hogy egy másik faj. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
 }
-
-# other_species = {
-#     "es": "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las que buscamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
-#     "en": "This picture doesn't look like any of our targeted mosquitoes, as it seems to be of another species. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
-#     "it": "Questa immagine non assomiglia a nessuna delle nostre zanzare selezionate, poiché sembra trattarsi di un'altra specie. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Si prega di inviare altre foto!",
-#     "sq": "Kjo fotografi nuk duket si asnjë prej mushkonjave tona target, pasi duket se është e një specie tjetër. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
-#     "hr": "Na ovoj slici ne nalazi se niti jedna od ciljanih vrsta komaraca, na slici je prikazana neka druga vrsta. Na www.mosquitoalert.com pronaći ćete savjete za hvatanje i fotografiranje komaraca. Molim Vas pošaljite još slika.",
-#     "de": "Die Stechmücke auf diesem Foto sieht nicht wie eine unserer gesuchten Arten aus, es scheint sich um eine andere Art zu handeln. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
-#     "mk": "Оваа слика не личи на ниту еден од нашите насочени комарци, бидејќи се чини дека се работи за друг вид. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
-#     "el": "Στη συγκεκριμένη φωτογραφία δεν απεικονίζεται κάποιο από τα κουνούπια που αναζητάει το mosquito alert αλλά πιθανόν κάποιο άλλο είδος. Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
-#     "pt": "Esta imagem não se parece com nenhum dos nossos mosquitos-alvo, pois parece ser de outra espécie. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes insetos. Por favor, envie mais fotos!",
-#     "ro": "Această imagine nu arată ca niciunul dintre țânțarii noștri de interes, deoarece pare a fi de altă specie. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
-#     "sr": "Komarac na fotografiji ne izgleda kao neka od ciljanih vrsta, čini se da je reč o drugoj vrsti. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
-#     "sl": "Na tej fotografiji je verjetno druga vrsta komarjev in ne taka, ki jo iščemo. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosim, pošljite še kakšno sliko!",
-#     "ca": "Aquesta foto sembla ser d'una altra espècie, ja que no s'assembla a cap de les 5 espècies que busquem. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
-#     "bg": "Снимката не прилича на никой от нашите целеви видове комари, тъй като изглежда комерът е от друг вид. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
-#     "fr": "Cette image ne ressemble pas à nos moustiques ciblés, s'agissant probablement d'une autre espèce. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
-#     "nl": "De mug op deze foto lijkt niet op een van onze doelsoorten, het lijkt op een andere muggensoort. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-#     "hu": "Ez a kép nem hasonlít egyik keresett szúnyogunkra sem, mivel úgy tűnik, hogy egy másik faj. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
-# }
 
 def get_current_domain(request):
     if request.META['HTTP_HOST'] != '':
@@ -1402,10 +1382,9 @@ def auto_annotate_other_species(report, request):
     users.append(User.objects.get(username="innie"))
     users.append(User.objects.get(username="minnie"))
     users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
     photo = report.photos.first()
     report_locale = report.app_language
-    user_notes = other_insect.get(report_locale, other_insect['en'])
+    user_notes = other_species.get(report_locale, other_species['en'])
     for u in users:
         if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
             new_annotation = ExpertReportAnnotation(report=report, user=u)
@@ -1604,6 +1583,112 @@ def notifications_version_two(request,user_uuid=None):
     else:
         return HttpResponse("You don't have permission to issue notifications from EntoLab, please contact MoveLab.")
 
+#used by datatables
+def get_order_clause(params_dict, translation_dict=None):
+    order_clause = []
+    try:
+        order = params_dict['order']
+        if len(order) > 0:
+            for key in order:
+                sort_dict = order[key]
+                column_index_str = sort_dict['column']
+                if translation_dict:
+                    column_name = translation_dict[params_dict['columns'][int(column_index_str)]['data']]
+                else:
+                    column_name = params_dict['columns'][int(column_index_str)]['data']
+                direction = sort_dict['dir']
+                if direction != 'asc':
+                    order_clause.append('-' + column_name)
+                else:
+                    order_clause.append(column_name)
+    except KeyError:
+        pass
+    return order_clause
+
+#used by datatables
+def get_filter_clause(params_dict, fields, translation_dict=None):
+    filter_clause = []
+    try:
+        q = params_dict['search']['value']
+        if q != '':
+            for field in fields:
+                if translation_dict:
+                    translated_field_name = translation_dict[field]
+                    filter_clause.append( Q(**{translated_field_name+'__icontains':q}) )
+                else:
+                    filter_clause.append(Q(**{field + '__icontains': q}))
+    except KeyError:
+        pass
+    return filter_clause
+
+def generic_datatable_list_endpoint(request,search_field_list,queryset, classSerializer, field_translation_dict=None, order_translation_dict=None, paginate=True):
+    length = 25
+    draw = -1
+    start = 0
+    get_dict = parser.parse(request.GET.urlencode())
+
+    order_clause = get_order_clause(get_dict, order_translation_dict)
+    filter_clause = get_filter_clause(get_dict, search_field_list, field_translation_dict)
+
+    if len(filter_clause) == 0:
+        queryset = queryset.order_by(*order_clause)
+    else:
+        queryset = queryset.order_by(*order_clause).filter(functools.reduce(operator.or_, filter_clause))
+
+    if paginate:
+        paginator = Paginator(queryset, length)
+        recordsTotal = queryset.count()
+        recordsFiltered = recordsTotal
+        page = int(start) / int(length) + 1
+        serializer = classSerializer(paginator.page(page), many=True)
+
+    else:
+        serializer = classSerializer(queryset, many=True, context={'request': request})
+        recordsTotal = queryset.count()
+        recordsFiltered = recordsTotal
+
+    return Response({'draw': draw, 'recordsTotal': recordsTotal, 'recordsFiltered': recordsFiltered, 'data': serializer.data})
+
+@api_view(['GET'])
+def user_notifications_datatable(request):
+    if request.method == 'GET':
+        search_field_list = ('title_en', 'title_native')
+        this_user = request.user
+        queryset = Notification.objects.filter(expert=this_user)
+        field_translation_list = {'date': 'date_comment', 'title_en': 'notification_content__title_en', 'title_native': 'notification_content__title_native'}
+        sort_translation_list = {'date': 'date_comment', 'title_en': 'notification_content__title_en', 'title_native': 'notification_content__title_native'}
+        response = generic_datatable_list_endpoint(request, search_field_list, queryset, NotificationSerializer, field_translation_list, sort_translation_list)
+        return response
+
+@login_required
+def notifications_table(request):
+    return render(request, 'tigacrafting/notifications_table.html')
+
+
+@login_required
+def notification_detail(request,notification_id):
+    notification_id = request.GET.get('notification_id', notification_id)
+    notification = Notification.objects.get(id = notification_id)
+    sent_notification = SentNotification.objects.filter(notification_id = notification_id).first()
+
+    def clean_list(list_obj):
+        #list_obj looks like [('uuid1',),]
+        return str(list_obj).replace('(','').replace(')','').replace('[','').replace(']','').replace('\'','').replace(',,',',')[:-1]
+        
+
+    if sent_notification.sent_to_topic_id: #count the number of users subscribed
+        potential_audience = UserSubscription.objects.aggregate(count = Count('id',filter=Q(topic_id = sent_notification.sent_to_topic_id)))['count']
+        seen_by = AcknowledgedNotification.objects.aggregate(count = Count('id',filter=Q(notification_id = notification_id)))['count']
+    else: # if not sent to topic then we return the user uuids 
+        potential_audience = clean_list(list(SentNotification.objects.filter(notification_id=notification_id).values_list('sent_to_user_id')))
+        seen_by = clean_list(list(AcknowledgedNotification.objects.filter(notification_id=notification_id).values_list('user_id')))
+
+        # displaying 'seen by 0 users' looks better than '[] users'
+        if len(seen_by)==0:
+            seen_by = 0
+
+    context = {'notification':notification, 'potential_audience':potential_audience,'seen_by':seen_by}
+    return render(request,'tigacrafting/notification_detail.html',context)
 
 @api_view(['GET'])
 def metadataPhoto(request):
