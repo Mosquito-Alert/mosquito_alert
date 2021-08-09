@@ -28,7 +28,7 @@ from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.messaging import send_message_ios, send_message_android, send_messages_ios, send_messages_android, generic_send_to_topic
-from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range
+from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
 from tigascoring.maUsers import smmry
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from tigaserver_app.serializers import custom_render_notification,score_label
@@ -1065,6 +1065,9 @@ def user_count(request):
         results = users_with_score_range(range[1],range[2])
     elif filter_criteria.startswith('score'):
         results = users_with_score(filter_criteria)
+    elif filter_criteria.startswith('topic'):
+        topic_code = request.query_params.get('value')
+        results = users_with_topic(topic_code)
     else:
         raise ParseError(detail="Invalid filter criteria")
     content = { "user_count" : len(results) }
