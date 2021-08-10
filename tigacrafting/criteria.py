@@ -1,4 +1,4 @@
-from tigaserver_app.models import Photo,Report,TigaUser
+from tigaserver_app.models import Photo,Report,TigaUser, UserSubscription
 
 def filter_users_by_score(score):
     if score == 'score_bronze':
@@ -30,6 +30,9 @@ def users_with_score(score):
 
 def users_with_storm_drain_pictures():
     return filter_reports('users_with_storm_drain_pictures')
+
+def users_with_topic(topic_id):
+    return UserSubscription.objects.filter(topic__topic_code=topic_id)
 
 def filter_reports(type):
     photos = Photo.objects.filter(hide=False)

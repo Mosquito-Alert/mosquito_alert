@@ -314,6 +314,10 @@
             }
         });
     }
+
+    set_send_to_user_count = function(message){
+        $('#send_to_count').html(message);
+    };
     set_message_user_count = function(message){
         $('#number_estimate_text').html(message);
     };
@@ -321,6 +325,18 @@
         var selected = $('#topic').val();
         return selected;
     };
+    $('#topic').change(function(){
+        $.ajax({
+            type: 'GET',
+            url: '/api/user_count/?filter_criteria=topic&value=' + get_selected_radio_op(),
+            dataType: 'json',
+            headers: { "X-CSRFToken": csrf_token },
+            success: function (data) {
+                set_send_to_user_count(data.user_count)
+            }
+        })
+    }
+    );
     $('input[type=radio][name=criteriarb]').change(function() {
         var selected = $(this).attr('id');
         if (selected!='score_arbitrary'){
