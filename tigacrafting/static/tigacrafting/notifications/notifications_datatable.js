@@ -4,11 +4,12 @@ $(document).ready(function () {
             'url': _group_list_url,
             'dataType': 'json'
         },
+        'serverSide': true,
+        'processing': true,
         'language': 'en',
         'pageLength': 25,
-        searchHighlight: true, // not working :(
         'pagingType': 'full_numbers',
-        'bLengthChange': true, //allow changing number of entries per page
+        'bLengthChange': false, //allow changing number of entries per page
         'responsive': true,
         'order': [[0, "desc"]],
         'columns': [
@@ -33,7 +34,8 @@ $(document).ready(function () {
             },
             {
                 'targets': 3,
-                'title': 'Sent to'
+                'title': 'Sent to',
+                'orderable': false
             },
             {
                 'targets': 4,
