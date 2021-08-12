@@ -7,7 +7,7 @@ from django.contrib.gis import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about, show_app_license
-from tigamap.views import show_filterable_report_map, show_single_report_map
+from tigamap.views import show_filterable_report_map, show_single_report_map, single_report_map_simplified
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
@@ -159,6 +159,7 @@ urlpatterns += i18n_patterns(
     path('', RedirectView.as_view(url='/static/tigapublic/spain.html#/es/', permanent=False)),
     path('bcn/', show_filterable_report_map,{'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610, 'min_zoom': 12,'max_zoom': 18}),
     path('single_report_map/<version_uuid>/', show_single_report_map, name='webmap.single_report'),
+    path('single_simple/<version_uuid>/', single_report_map_simplified, name='single_report_map_simplified'),
     path('stats/', show_usage, name='show_usage'),
     path('stats/workload/', workload_stats, name='workload_stats'),
     path('stats/workload/<country_id>/', workload_stats, name='workload_stats'),

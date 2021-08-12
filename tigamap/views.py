@@ -233,6 +233,12 @@ def show_embedded_webmap(request, detail='none'):
     return render(request, 'tigamap/embedded.html', context)
 
 
+def single_report_map_simplified(request, version_uuid):
+    this_report = Report.objects.get(version_UUID=version_uuid)
+    context = {'report': this_report }
+    return render(request, 'tigamap/single_simple.html', context)
+
+
 def show_single_report_map(request, version_uuid, detail='detailed'):
     this_report = Report.objects.filter(version_UUID=version_uuid)
     context = {'report_list': this_report, 'detailed': detail}
