@@ -668,6 +668,65 @@ def issue_notification(report_annotation,current_domain):
         return Notification.objects.filter(report=report,user=user_sent_to,expert=expert_sent_from,notification_content__title_es=title_es).exists()
     '''
 
+
+def assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, country_gid):
+    """
+    This function assigns reports to users in exclusive bounding boxes. These users receive only reports from their assigned
+    bounding box.
+
+    :param this_user: The current user
+    :param my_reports: adult reports already validated or assigned to this user
+    :param current_pending: number of current pending reports for this_user
+    :param max_pending: maximum number of pending reports per user
+    :param max_given: number of users to which a report is given (excluding superexpert)
+    :param country_gid: gid of the country that constitutes the exclusive bounding box
+    """
+    if current_pending < max_pending:
+        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
+
+        n_to_get = max_pending - current_pending
+
+        new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(
+            note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(
+            photos=None).filter(type='adult').annotate(
+            n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+
+        new_reports_unfiltered_and_false_validated = Report.objects.exclude(
+            creation_time__year=2014).exclude(note__icontains="#345").exclude(
+            version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(
+            type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(
+            n_annotations__lt=max_given + 1)
+
+        new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=country_gid)
+
+        if new_reports_unfiltered:
+            new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+            new_filtered_false_validated_reports = filter_false_validated(
+                new_reports_unfiltered_and_false_validated.order_by('creation_time'))
+            new_reports = list(set(new_filtered_reports + new_filtered_false_validated_reports))
+            reports_to_take = new_reports[0:n_to_get]
+            user_stats = None
+            try:
+                user_stats = UserStat.objects.get(user_id=this_user.id)
+            except ObjectDoesNotExist:
+                pass
+            grabbed_reports = -1
+            if user_stats:
+                grabbed_reports = user_stats.grabbed_reports
+            for this_report in reports_to_take:
+                if not this_report.user_has_report(this_user):
+                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                    who_has_count = this_report.get_who_has_count()
+                    if who_has_count == 0 or who_has_count == 1:
+                        # No one has the report, is simplified
+                        new_annotation.simplified_annotation = True
+                    grabbed_reports += 1
+                    new_annotation.save()
+            if grabbed_reports != -1 and user_stats:
+                user_stats.grabbed_reports = grabbed_reports
+                user_stats.save()
+
+
 def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given):
     """
     :param this_user: user to which the reports will be assigned
@@ -696,6 +755,12 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
         n_to_get = max_pending - current_pending
         logger_report_assignment.debug('User {0} trying to get {1} reports'.format(this_user, n_to_get))
         new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+        # if there is bounding box venezuela
+        # no normal users are assigned venezuelan reports
+        # refactor this - create some kind of bounding box registry (i.e add a bounding box flag to EuropeCountry)
+        #new_reports_unfiltered = new_reports_unfiltered.exclude( Q(country__gid=52) | Q(country__gid=53) )
+        # exclude venezuela for now
+        new_reports_unfiltered = new_reports_unfiltered.exclude(Q(country__gid=53))
         '''
         if new_reports_unfiltered and this_user_is_team_bcn:
             new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
@@ -855,6 +920,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
+    this_user_is_team_venezuela = this_user.groups.filter(name='team_venezuela').exists()
+    this_user_is_team_stlouis = this_user.groups.filter(name='team_stlouis').exists()
     #this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
     #this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
     this_user_is_reritja = (this_user.id == 25)
@@ -963,10 +1030,15 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         public_final_reports = set(list(public_final_reports_superexpert) + list(public_final_reports_expert))
 
         if this_user_is_expert and load_new_reports == 'T':
-            national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-            country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-            country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-            assign_reports_to_user(this_user,national_supervisor_ids,current_pending,country_with_supervisor_set,max_pending,max_given)
+            if this_user_is_team_venezuela:
+                assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 52)
+            elif this_user_is_team_stlouis:
+                assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 53)
+            else:
+                national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
+                country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
+                country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
+                assign_reports_to_user(this_user,national_supervisor_ids,current_pending,country_with_supervisor_set,max_pending,max_given)
             '''
             if current_pending < max_pending:
                 n_to_get = max_pending - current_pending
