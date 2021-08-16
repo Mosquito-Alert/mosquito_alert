@@ -6,6 +6,10 @@ import io
 from PIL import Image
 from pathlib import Path
 import ntpath
+import imageio
+import magic
+import rawpy
+from django.core.mail import send_mail
 
 proj_path = "/home/webuser/webapps/tigaserver/"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
@@ -24,11 +28,11 @@ from datetime import datetime
 PICTURES_DIR = '/home/webuser/webapps/tigaserver/media/tigapics/'
 BACKUP_DIR = '/home/webuser/webapps/original_pics/'
 NUM_FILES = None
-DEFAULT_NUM_FILES = 50
+DEFAULT_NUM_FILES = 100
 
 logger = logging.getLogger('heic_converter')
 logger.setLevel(logging.DEBUG)
-handler = RotatingFileHandler("heic_converter.log", maxBytes=2000, backupCount=5)
+handler = RotatingFileHandler("heic_converter.log", maxBytes=1000000, backupCount=5)
 logger.addHandler(handler)
 
 
@@ -38,19 +42,43 @@ def get_file_list(dirpath):
     return paths[:NUM_FILES]
 
 
-def convert_to_jpg(file):
-    logger.debug("Converting file {0} to jpg".format(str(file)))
-    no_ext = os.path.splitext(file)[0]
-    heif_file = pyheif.read(file)
-    image = Image.frombytes(
-        heif_file.mode,
-        heif_file.size,
-        heif_file.data,
-        "raw",
-        heif_file.mode,
-        heif_file.stride,
-    )
-    image.save(no_ext + ".jpg", "JPEG")
+def heic_to_jpg(file):
+    try:
+        logger.debug("Converting file {0} to jpg".format(str(file)))
+        no_ext = os.path.splitext(file)[0]
+        heif_file = pyheif.read(file)
+        image = Image.frombytes(
+            heif_file.mode,
+            heif_file.size,
+            heif_file.data,
+            "raw",
+            heif_file.mode,
+            heif_file.stride,
+        )
+        image.save(no_ext + ".jpg", "JPEG")
+    except Exception as e:
+        print("{0} {1}".format(str(file),e))
+
+
+def dng_to_jpg(file):
+    try:
+        logger.debug("Converting file {0} to jpg".format(str(file)))
+        no_ext = os.path.splitext(file)[0]
+        with rawpy.imread(str(file)) as raw:
+            image = Image.frombytes('RGB', (raw.sizes.raw_width, raw.sizes.raw_height), raw.postprocess())
+            image.save(no_ext + ".jpg", format='jpeg')
+    except Exception as e:
+        print("{0} {1}".format(str(file),e))
+
+
+def webp_to_jpg(file):
+    try:
+        logger.debug("Converting file {0} to jpg".format(str(file)))
+        no_ext = os.path.splitext(file)[0]
+        image = Image.open(file).convert('RGB')
+        image.save(no_ext + ".jpg", format='jpeg')
+    except Exception as e:
+        print("{0} {1}".format(str(file),e))
 
 
 def rename_photo(filename):
@@ -67,22 +95,62 @@ def rename_photo(filename):
 
 def process_file(p):
     if not os.path.isdir(p):
-        with open(p, 'rb') as f:
-            data = f.read()
-        fmt = whatimage.identify_image(data)
-        if fmt == 'heic':
-            logger.debug("Found heic file! {0} files".format(str(p)))
-            print("{0} - {1}".format(p, fmt))
-            convert_to_jpg(p)
+        filename, file_extension = os.path.splitext(p)
+        if file_extension == '.dng':
+            logger.debug("Found dng/raw file! {0} files".format(str(p)))
+            dng_to_jpg(p)
             rename_photo(p)
             move_file_to_backup(p, BACKUP_DIR)
-        elif fmt == 'jpeg':
-            filename, file_extension = os.path.splitext(p)
-            if file_extension.lower() == '.heic':
-                logger.debug("Found jpeg with heic extension! {0} files".format(str(p)))
+        elif file_extension == '.DNG':
+            logger.debug("Found jpeg with heic/dng extension! {0} files".format(str(p)))
+            rename_photo(p)
+            # jpeg file with extension heic, but it's harmless
+            os.rename(p, filename + '.jpg')
+        elif file_extension == '.heic':
+            logger.debug("Found heic file! {0} files".format(str(p)))
+            heic_to_jpg(p)
+            rename_photo(p)
+            move_file_to_backup(p, BACKUP_DIR)
+        elif file_extension == '.HEIC':
+            logger.debug("Found jpeg with heic/dng extension! {0} files".format(str(p)))
+            rename_photo(p)
+            # jpeg file with extension heic, but it's harmless
+            os.rename(p, filename + '.jpg')
+        elif file_extension == '.webp':
+            logger.debug("Found webp file! {0} files".format(str(p)))
+            webp_to_jpg(p)
+            rename_photo(p)
+            move_file_to_backup(p, BACKUP_DIR)
+        elif file_extension in [".JPEG", ".JPG", ".jpg", ".jpeg", ".png", ".PNG", ".GIF", ".gif"]:
+            pass
+        else:
+            logger.debug("Found file with weird extension {0} file, {1} extension".format(str(p), file_extension))
+            fmt = magic.from_file(str(p))
+            if fmt.startswith('JPEG image data'):
                 rename_photo(p)
-                # jpeg file with extension heic, but it's harmless
                 os.rename(p, filename + '.jpg')
+            else:
+                #Don't know what this is
+                body = "Found weird file in media/tigapics, file {0} - extension {1}".format( str(p), file_extension)
+                send_mail('[MA] - Weird file in media/tigapics', body, 'a.escobar@creaf.uab.cat', ['a.escobar@creaf.uab.cat'], fail_silently=False, )
+        #print("{0} {1}".format(str(p),fmt))
+        # if "iso" in fmt.lower(): #heic file
+        #     logger.debug("Found heic file! {0} files".format(str(p)))
+        #     heic_to_jpg(p)
+        #     rename_photo(p)
+        #     move_file_to_backup(p, BACKUP_DIR)
+        # elif "tiff" in fmt.lower() and not fmt.lower().startswith("jpeg image data"):
+        #     logger.debug("Found dng/raw file! {0} files".format(str(p)))
+        #     dng_to_jpg(p)
+        #     rename_photo(p)
+        #     move_file_to_backup(p, BACKUP_DIR)
+        # elif 'jpeg' in fmt.lower():
+        #     filename, file_extension = os.path.splitext(p)
+        #     if file_extension.lower() == '.heic':
+        #         logger.debug("Found jpeg with heic extension! {0} files".format(str(p)))
+        #         rename_photo(p)
+        #         # jpeg file with extension heic, but it's harmless
+        #         os.rename(p, filename + '.jpg')
 
 
 def process_files(file_list):
