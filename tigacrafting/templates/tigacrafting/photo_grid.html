@@ -110,9 +110,9 @@
                                         {% for n in tasks_per_page_choices %}
                                             <li>
                                                 {% if n|add:"0" == tasks_per_page|add:"0" %}
-                                                    <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}"><span class="glyphicon glyphicon-check"></span>{{ n }}</a>
+                                                    <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}&country={{ country }}"><span class="glyphicon glyphicon-check"></span>{{ n }}</a>
                                                 {% else %}
-                                                    <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}">{{ n }}</a>
+                                                    <a href="{% url 'picture_validation' %}?tasks_per_page={{ n }}&visibility={{ visibility }}&usr_note={{ usr_note }}&type={{ type }}&country={{ country }}">{{ n }}</a>
                                                 {% endif %}
                                             </li>
                                         {% endfor %}
@@ -162,6 +162,17 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label for="country_select" class="col-sm-4 control-label">Country:</label>
+                            <div class="col-sm-8">
+                                <select id="country_select" class="selectpicker show-tick form-control">
+                                    <option value="all">Show All</option>
+                                    {% for country in countries %}
+                                    <option value="{{ country.gid }}">{{ country.name_engl }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label for="usernote_filter" class="col-sm-4 control-label">User note contains text:</label>
                             <div class="col-sm-8">
                                 <input id="usernote_filter" type="text" maxlength="20" name="usernote_filter">
@@ -181,7 +192,7 @@
 <div class="container">
     <div class="starter-template">
         <h1>Picture Filter</h1>
-        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type_readable }}
+        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type_readable }}, Country - {{ country_readable }}
         <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
         <div style="text-align: left">
             <h4>Instructions</h4>
@@ -279,11 +290,12 @@
         <input id="visibility_input" type="text" name="visibility" style="display: none;" value="{{ visibility }}">
         <input id="usr_note_input" type="text" name="usr_note" style="display: none;" value="{{ usr_note }}">
         <input id="type_input" type="text" name="type" style="display: none;" value="{{ type }}">
+        <input id="country_input" type="text" name="country" style="display: none;" value="{{ country }}">
     </form>
 
 </div>
 
-<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}?v=2"></script>
+<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}?v=3"></script>
 <script src="{% static 'tigacrafting/javascript/hover-preview.min.js' %}?v=1"></script>
 </body>
 <script>
@@ -364,13 +376,15 @@
             {% endif %}
 
             function query_selectors() {
+                var this_country = $("#country_select").val();
                 var this_visibility = $("#visibility_select").val();
                 var this_usr_note = $("#usernote_filter").val();
                 var this_type = $("#type_select").val();
                 $("#visibility_input").val(this_visibility);
                 $("#usr_note_input").val(this_usr_note);
                 $("#type_input").val(this_type);
-                var qp = '?visibility=' + this_visibility + '&usr_note=' + this_usr_note + '&type=' + this_type;
+                $("#country_input").val(this_country);
+                var qp = '?visibility=' + this_visibility + '&usr_note=' + this_usr_note + '&type=' + this_type + '&country=' + this_country;
                 return(qp)
             }
 
@@ -385,6 +399,7 @@
             $("#visibility_select").val("{{ visibility }}");
             $("#usernote_filter").val("{{ usr_note }}");
             $("#type_select").val("{{ type }}");
+            $("#country_select").val("{{ country }}");
 
 
 </script>

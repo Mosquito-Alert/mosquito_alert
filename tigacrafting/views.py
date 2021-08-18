@@ -1663,7 +1663,7 @@ def auto_annotate_other_species(report, request):
     roger_annotation.save()
 
 @login_required
-def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all'):
+def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all', country='all'):
     this_user = request.user
     this_user_is_coarse = this_user.groups.filter(name='coarse_filter').exists()
     super_movelab = User.objects.get(pk=24)
@@ -1713,13 +1713,15 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             visibility = request.POST.get('visibility')
             usr_note = request.POST.get('usr_note')
             type = request.POST.get('type', type)
+            country = request.POST.get('country', country)
 
             if not page:
                 page = request.GET.get('page',"1")
-            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type)
+            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type + '&country=' + country)
         else:
             tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
             type = request.GET.get('type', type)
+            country = request.GET.get('country', country)
             visibility = request.GET.get('visibility', visibility)
             usr_note = request.GET.get('usr_note', usr_note)
 
@@ -1748,6 +1750,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
         if usr_note and usr_note != '':
             new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
+        if country and country != '' and country != 'all':
+            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
 
         # new_reports_unfiltered = filter_reports(new_reports_unfiltered, False)
         #
@@ -1781,6 +1785,17 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         args['visibility'] = visibility
         args['usr_note'] = usr_note
         args['type'] = type
+        args['country'] = country
+        country_readable = ''
+        if country == 'all':
+            country_readable = 'All'
+        elif country is not None and country != '':
+            try:
+                country_readable = EuropeCountry.objects.get(pk=int(country)).name_engl
+            except EuropeCountry.DoesNotExist:
+                pass
+        args['country_readable'] = country_readable
+        args['countries'] = EuropeCountry.objects.all().order_by('name_engl')
         type_readable = ''
         if type == 'site':
             type_readable = "Breeding sites - Storm drains"
