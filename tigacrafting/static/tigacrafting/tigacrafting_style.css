@@ -159,6 +159,7 @@ ul {
     float: right;
 }
 
+/*
 .other_sp label{
     display: inline-grid;
     max-width: 100%;
@@ -177,6 +178,7 @@ ul {
     margin-right: 15px;
     float: right;
 }
+*/
 
 .confirmUpPhoto .ui-dialog-titlebar-close {
     display: none;

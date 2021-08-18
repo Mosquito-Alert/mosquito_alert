@@ -12,7 +12,10 @@
         .grid-item-large { background-color: grey; height: 180px; width: 380px; float: left; margin-top: 5px;margin-bottom: 5px; overflow:auto; padding: 10px 10px 10px 10px;}
 
         .fastCheck {background-color: lightgray; margin-bottom: 10px; height: 40px;}
-        .other_sp {background-color: lightgray; margin-bottom: 10px; height: 40px;}
+        .other_sp {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
+        .probably_culex {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
+        .sure_albopictus {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
+        .not_sure {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
 
         .grid { /*border-style:solid; border-width: 1px;*/ background-color: lightgray; margin-top: 10px;}
         .frame {position: absolute;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}
@@ -198,32 +201,14 @@
         </div>
     </div>
 
-    <div id="dialogConfirmUpPhoto" title="Warning">
-        <p class="infoPopup">
-            <div id="fastupload_info" style="display:none;">
-                <p>These following reports have been marked as 'fast upload':</p>
-                <p class="reportIDs"></p>
-                <p>and will be published on the map this same day at around midnight.</p>
-            </div>
-            <hr>
-            <div id="othersp_info" style="display:none;">
-                <p>These reports have been marked as 'other species':</p>
-                <p class="otherIDs"></p>
-                <p>and will be automatically validated as 'other species' and will also be published on the map</p>
-            </div>
-            <hr>
-            <p class="text-danger">Are you sure you want to proceed?</p>
-        </p>
-    </div>
-
-    <div id="dialogFix" title="Warning" style="display:none;">
-        <p class="infoPopup">
-            <div id="fix_info">
-                <p>The following reports have been selected for either fast upload AND hide or other species AND hide. Only one of the checkboxes can be selected:</p>
-                <p class="fixids"></p>
-                <p>Look for boxes with a <span style="color:red;">red</span> border and unselect either 'Hide' or 'Fast upload'/'Other species'</p>
-            </div>
-        </p>
+    <div class="row">
+        <div id="dialogConfirmUpPhoto" title="Warning">
+            <p class="infoPopup">
+                <span>The following reports have been marked as 'fast upload':</span><br>
+                <span class="reportIDs"></span>
+                <span>and will be published on the map this same day at around midnight. Are you sure you want to proceed?</span>
+            </p>
+        </div>
     </div>
 
     <form id="formset_forms" class="form-vertical" method="post">
@@ -234,8 +219,8 @@
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
                     <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
-                        <a href="/single_simple/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"></span></a>
-                        <p class="p-small" data-id="{{ form.instance.version_UUID }}"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                        <p><a href="/single_simple/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> {{ form.instance.country.name_engl }}</span></a></p>
+                        <p class="hide_check p-small" data-id="{{ form.instance.version_UUID }}"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.creation_time }}</p>
                         <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
@@ -263,14 +248,26 @@
         </div>
         <div class="reportID" style="display:none;">{{ form.instance.version_UUID }}</div>
         {% if form.instance.type == 'site' and form.instance.hide == False %}
-            <div id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
+            <div data-id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
                 <label>Fast Upload</label>
                 {{ form.fastUpload }}
             </div>
         {% elif form.instance.type == 'adult' and form.instance.hide == False %}
-            <div id="{{ form.instance.version_UUID }}" class="other_sp {{form.instance.type}}" style="">
+            <div data-id="{{ form.instance.version_UUID }}" class="other_sp {{form.instance.type}}" style="">
                 <label>Other species</label>
                 {{ form.other_species }}
+            </div>
+            <div data-id="{{ form.instance.version_UUID }}" class="probably_culex {{form.instance.type}}" style="">
+                <label>Probably culex</label>
+                {{ form.probably_culex }}
+            </div>
+            <div data-id="{{ form.instance.version_UUID }}" class="sure_albopictus {{form.instance.type}}" style="">
+                <label>Sure albopictus</label>
+                {{ form.sure_albopictus }}
+            </div>
+            <div data-id="{{ form.instance.version_UUID }}" class="not_sure {{form.instance.type}}" style="">
+                <label>Not sure</label>
+                {{ form.not_sure }}
             </div>
         {% endif %}
 

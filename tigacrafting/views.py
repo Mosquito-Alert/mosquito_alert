@@ -85,6 +85,66 @@ other_insect = {
     "hu": "Ezen a képen egy olyan rovar látható, amely nem az igazi szúnyogok (Culicidae) családjába tartozik. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
 }
 
+albopictus = {
+    "es": "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente el mosquito tigre ya que se ve muy bien su típica línea blanca en el tórax, además de otras características. ¡Gracias por participar!",
+    "en": "Very good picture! You have managed to make the Tiger mosquito easy to identify because you can spot clearly the characteristic white strip in the thorax, apart from other traits. Thanks for participating!",
+    "it": "Ottima immagine! Sei riuscito a rendere la zanzara tigre facilmente identificabile perché si può individuare chiaramente la caratteristica striscia bianca sul torace, oltre ad altri tratti tipici. Grazie per aver partecipato!",
+    "sq": "Fotografi shumë e mirë! Keni arritur ta bëni të lehtë identifikimin e mushkonjës tigër, sepse mund të dallohet qartë shiriti i bardhë në toraks që është karakteristik, përveç tipareve të tjera. Faleminderit për pjesëmarrjen!",
+    "hr": "Vrlo dobra slika! Uspjeli ste olakšati determinaciju tigrastog komarca jer se može jasno uočiti karakteristična bijela pruga na prsima, uz ostale osobine. Hvala na sudjelovanju!",
+    "de": "Sehr gutes Foto! Du hast es geschafft, dass man die Tigermücke leicht identifizieren kann, denn man erkennt deutlich den charakteristischen weißen Streifen am Thorax, und auch andere Merkmale. Vielen Dank für deine Teilnahme!",
+    "mk": "Многу добра слика! Успеавте да го направите тигрестиот комарец лесен за препознавање бидејќи може јасно да се забележи карактеристичната бела лента на градниот кош. Ви благодариме за учеството!",
+    "el": "Πολύ καλή φωτογραφία! Καταφέρατε να μας βοηθήσετε να ταυτοποιήσουμε εύκολα ότι πρόκειται για το Ασιατικό κουνούπι τίγρης. Η ταυτοποίηση βασίστηκε στο γεγονός ότι στη φωτογραφία σας φαίνονται ξεκάθαρα όλα τα χαρακτηριστικά που απαιτούνται για τη σωστή αναγνώρισή του και ειδικά η λευκή γραμμή στο θώρακα του. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
+    "pt": "Foto muito boa! Conseguiu fazer com que o mosquito tigre fosse fácil de identificar porque se consegue visualizar claramente a faixa branca característica no tórax, além de outras características. Obrigado por participar!",
+    "ro": "Imagine foarte bună! Ați reușit să faceți țânțarul tigru ușor de identificat, deoarece se vede clar banda albă caracteristică din torace, în afară de alte trăsături. Vă mulțumim pentru participare!",
+    "sr": "Vrlo dobra fotografija. Vašom fotografijom omogućili ste nam veoma laku identifikaciju azijskog tigrastog komarca, jer su sve karakteristike ove vrste jasno vidljive, kao npr. bela pruga na gornjoj strani leđa (na toraksu). Hvala Vam na učešću.",
+    "sl": "Zelo dobra fotografija! Iz nje je tigrastega komarja lahko prepoznati, saj se dobro vidijo tipični znaki - bela črta na oprsju ter ostali znaki. Hvala za sodelovanje!",
+    "ca": "Molt bona foto! Has aconseguit que el mosquit tigre sigui fàcil d'identificar ja que es pot observar clarament la franja blanca en el tòrax, a part d'altres característiques. Gràcies per participar!",
+    "bg": "Много добра снимка! Успяхте да улесните разпознаването на тигровия комар, защото ясно може да се види характерната бяла ивица на гърба, освен другите белези. Благодарим за участието!",
+    "fr": "Très belle image! Vous avez réussi à rendre facile à identifier ce Moustique Tigre puisque la typique ligne blanche sur le thorax est très visible, en plus d'autres traits. Merci de votre participation!",
+    "nl": "Een erg goede foto! De door u gefotografeerde Aziatische tijgermug was makkelijk te identificeren, de karakteristieke witte streep op het borststuk is goed zichtbaar. Bedankt voor uw deelname!",
+    "hu": "Nagyon jó kép! Sikerült könnyen azonosítani a tigrisszúnyogot, mert eltekintve más karakterektől, a tor jellegzetes fehér csíkja jól látható. Köszönjük a részvételt!"
+}
+
+culex = {
+    "es": "Con esta foto no podemos asegurar totalmente que sea un Culex. No pueden verse simultáneamente suficientes rasgos, aunque algunas características del mosquito común están presentes. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+    "en": "With this picture, we can't be completely sure that it's an Culex mosquito. You can't simultaneously see enough features, though other typical traits of the common house mosquito are present.  Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
+    "it": "Con questa immagine, non possiamo essere completamente sicuri che sia una zanzara comune. Non è possibile visualizzare abbastanza caratteristiche, sebbene siano presenti altri tratti tipici della zanzara comune. Tuttavia, la tua osservazione è molto utile. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Ti preghiamo di inviare altre foto!",
+    "sq": "Me këtë fotografi, nuk mund të jemi plotësisht të sigurt se është një mushkonjë Culex. Ju nuk mund të shihni njëkohësisht mjaft karakteristika, megjithëse tipare të tjera tipike të mushkonjës së zakonshme të shtëpisë  janë të pranishme. Megjithatë, vëzhgimi juaj është shumë i dobishëm. Në www.mosquitoalert.com do të gjeni truke dhe këshilla për kapjen dhe fotografimin e këtyre insekteve. Ju lutemi dërgoni më shumë fotografi!",
+    "hr": "Na ovoj slici ne možemo odrediti sa sigurnošću da se radi o komarcu Culex. Ne može se  vidjeti dovoljno obilježja, iako su prisutne neke tipične osobine običnog kućnog komarca. Ipak, vaše je promatranje vrlo korisno. Na www.mosquitoalert.com pronaći ćete savjete za hvatanje i fotografiranje komaraca. Molimo Vas pošaljite još slika!",
+    "de": "Bei diesem Foto können wir nicht ganz sicher sein, dass es sich um eine Stechmücke der Gattung Culex handelt. Man kann nicht genügend Merkmale erkennen, auch wenn einige der typischen Merkmale zu sehen sind. Trotzdem ist deine Beobachtung sehr nützlich. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
+    "mk": "Со оваа слика, не можеме да бидеме целосно сигурни дека станува збор за домашниот комарец Culex. Не се забележуваат доволно карактеристики, иако се присутни и други типични црти на овој вид комарец. Сепак, Вашето набљудување е многу корисно. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
+    "el": "Με τη συγκεκριμένη φωτογραφία δεν μπορούμε να ταυτοποιήσουμε με αξιοπιστία αν πρόκειται για κάποιο είδος κουνουπιου που ανήκει στο γένος Culex.  Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
+    "pt": "Com esta foto, não podemos ter certeza de que é um mosquito Culex. Não é possível visualizar simultaneamente características suficientes, embora outras características típicas do mosquito doméstico comum estejam presentes. Ainda assim, a sua observação é muito útil. Em www.mosquitoalert.com vai encontrar truques e dicas para capturar e fotografar estes  insetos. Por favor, envie mais fotos!",
+    "ro": "Cu această imagine nu putem fi complet siguri că specimenul este un țânțar Culex. Nu se văd simultan suficiente caracteristici, deși sunt prezente și alte trăsături tipice ale țânțarului comun. Totuși, observația dvs. este foarte utilă. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
+    "sr": "Vaša fotografija ne omogućava da sa sigurnošću potvrdimo da je reč o kućnom komarcu (Culex). Nije vidljiv dovoljan broj karaktera ove vrste, iako vidljive ostale karakteristike ukazuju na ovu vrstu komarca. U svakom slučaju, Vaš nalaz je veoma koristan. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
+    "sl": "Nismo popolnoma prepričani, da je na fotografiji navadni komar, saj niso dobro vidne vse lastnosti navadnih komarjev. Kljub temu je vaše opažanje zelo koristno. Na www.mosquitoalert.com boste našli trike in nasvete za lovljenje in fotografiranje teh žuželk. Prosimo, pošljite več slik!",
+    "ca": "Amb aquesta foto, no podem estar completament segurs que es tracta d'un mosquit Culex. No es poden veure suficients característiques al mateix temps, tot i que sí que es poden veure altres trets típics del mosquit comú. Tot i així, la teva observació és molt útil. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
+    "bg": "От тази снимка не можем да бъдем напълно сигурни, че става дума за комар Culex. Не могат едновременно да се видят достатъчно белези, въпреки че присъстват и други характерни белези на обикновения домашен комар. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
+    "fr": "Sur cette image nous ne pouvons pas assurer tout à fait qu'il s'agisse d'un moustique Culex. Un nombre insuffisant de traits morphologiques y est visible, bien que certains d'autres, propres au moustique commun, y sont bien présents. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
+    "nl": "Met deze foto kunnen we niet vaststellen of het om een huissteekmug gaat. Er zijn niet genoeg kenmerken van de huissteekmug zichtbaar. Toch is uw observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
+    "hu": "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy dalos szúnyog. Nem látható egyszerre elég jellemvonás, bár a dalos szúnyog általános karakterei megfigyelhetőek. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+}
+
+notsure = {
+    "es": "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas de ninguna de ellas. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
+    "en": "With this picture we can't identify any mosquito species, because it's blurry and you can't recognize the typical traits of any of them. Still, your observation is very useful. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
+    "it": "Con questa immagine non possiamo identificare nessuna specie di zanzara, perché è sfocata e non si possono riconoscere i tratti tipici per determinarla. Tuttavia, la tua osservazione è molto utile. Su www.mosquitoalert.com troverai soluzioni e suggerimenti per catturare e fotografare questi insetti. Ti preghiamo di inviare altre foto!",
+    "sq": "Me këtë fotografi nuk mund të identifikojmë ndonjë lloj mushkonje, sepse pamja është e zbehtë dhe nuk mund të dallohen tiparet e veçanta të ndonjërës prej tyre. Megjithatë, vëzhgimi juaj është shumë i dobishëm. Në www.mosquitoalert.com do të gjeni truke dhe sugjerime për fokusimin dhe fotografimin e këtyre insekteve. Ju lutem, dërgoni më shumë fotografi!",
+    "hr": "Na ovoj slici ne možemo determinirati niti jednu vrstu komaraca, jer je mutna i ne mogu se prepoznati osnovne karakteristike vrste. Ipak, vaše zapažanje je vrlo korisno. Na www.mosquitoalert.com pronaći ćete  savjete za hvatanje i fotografiranje komaraca. Molimo Vas pošaljite još slika!",
+    "de": "Auf diesem Foto können wir keine Stechmückenart identifizieren, denn es ist unscharf und man kann die typischen Merkmale von keiner der Arten erkennen. Trotzdem ist deine Beobachtung sehr nützlich. Unter www.mosquitoalert.com findest du Tricks und Tipps zum Fangen und Fotografieren dieser Insekten. Bitte sende weitere Fotos!",
+    "mk": "Со оваа слика не можеме да идентификуваме ниту еден вид комарец, бидејќи е нејасен и не може да се препознаат типичните карактеристики на кој било од нив. Сепак, Вашето набљудување е многу корисно. На www.mosquitoalert.com ќе најдете трикови и совети за фаќање и фотографирање на овие инсекти. Ве молиме, испратете повеќе слики!",
+    "el": "Με τη συγκεκριμένη φωτογραφία δυστυχώς το είδος του κουνουπιού δεν μπορεί να ταυτοποιηθεί. Είναι θαμπή και δεν είναι ευδιάκριτα όλα τα χαρακτηριστικά που απαιτούνται για μια σωστή ταυτοποίηση. Παρ' όλα αυτά, η παρατήρησή σας κρίνεται πολύ χρήσιμη. Για διευκόλυνσή σας, στη σελίδα www.mosquitoalert.com θα βρείτε όλες τις απαραίτητες πληροφορίες που απαιτούνται για να φωτογραφίσετε σωστά τα κουνούπια. Σας ευχαριστούμε και συνεχίστε να μας στέλνετε τις φωτογραφίες σας!",
+    "pt": "Com esta foto não conseguimos identificar a espécie de mosquito, porque está desfocada e não se conseguem reconhecer os traços típicos das espécies. Ainda assim, a sua observação é muito útil. Em www.mosquitoalert.com vai encontrar truques e dicas para poder capturar e fotografar estes insetos. Por favor, envie mais fotos!",
+    "ro": "Cu această poză nu putem identifica nicio specie de țânțar, deoarece este neclară și nu se poate recunoaște trăsăturile tipice. Totuși, observația dvs. este foarte utilă. La www.mosquitoalert.com veți găsi trucuri și sfaturi pentru prinderea și fotografierea acestor insecte. Vă rugăm să trimiteți mai multe poze!",
+    "sr": "Ova fotografija nam ne omogućava pouzdanu identifikaciju vrste komarca, jer je mutna i ne mogu se prepoznati karakteristične šare na telu komarca. U svakom slučaju, Vaš nalaz je veoma koristan. Na www.mosquitoalert.com pronaći ćete savete i trikove za hvatanje i fotografisanje ovih insekata. Molimo Vas da nam pošaljete više fotografija.",
+    "sl": "Iz te fotografije ne moremo določiti vrste komarjev, saj tipični znaki za določitev komarjev do vrste niso dobro razvidni. Vseeno je vaše opazovanje zelo koristno. Na www.mosquitoalert.com lahko najdete nekaj trikov in namigov za lov in fotografiranje teh žuželk. Prosimo, pošljite še kakšno sliko!",
+    "ca": "Amb aquesta foto no podem identificar cap espècie de mosquit, perquè està borrosa i no es reconeixen les característiques típiques de cap d'elles. Tot i així, la teva observació és molt útil. A www.mosquitoalert.com trobaràs trucs per reconèixer aquestes espècies i caçar i fotografiar aquests insectes. Si et plau envia més fotos!",
+    "bg": "С тази снимка не можем да идентифицираме нито един вид комари, защото е размазана и не могат да се разпознаят типичните белези на нито един от тях. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
+    "fr": "L'identification d'une espècie n'est pas possible sur cette image qui est trop floue et ne montre pas suffisamment de traits pour la reconnaître. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
+    "nl": "We kunnen geen muggensoort identificeren met deze foto omdat de foto wazig is en de typische kenmerken om muggensoorten van elkaar te onderscheiden hierdoor niet zichtbaar zijn. Toch is deze observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
+    "hu": "Sajnos ezzel a képpel nem tudunk azonosítani egyetlen szúnyogfajt sem, mert homályos és nem ismerhetőek fel egyik faj jellemző tulajdonságai sem. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra! A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+}
+
 def get_current_domain(request):
     if request.META['HTTP_HOST'] != '':
         return request.META['HTTP_HOST']
@@ -1452,6 +1512,120 @@ def get_reports_unfiltered_adults():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
     return new_reports_unfiltered_adults
 
+def auto_annotate_notsure(report, request):
+    users = []
+    users.append(User.objects.get(username="innie"))
+    users.append(User.objects.get(username="minnie"))
+    users.append(User.objects.get(username="manny"))
+    super_reritja = User.objects.get(username="super_reritja")
+    photo = report.photos.first()
+    report_locale = report.app_language
+    user_notes = notsure.get(report_locale, notsure['en'])
+    for u in users:
+        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+            new_annotation = ExpertReportAnnotation(report=report, user=u)
+            if u.username == 'innie':
+                new_annotation.edited_user_notes = user_notes
+                new_annotation.best_photo_id = photo.id
+                new_annotation.simplified_annotation = False
+            else:
+                new_annotation.simplified_annotation = True
+            new_annotation.tiger_certainty_notes = 'auto'
+            new_annotation.tiger_certainty_category = 0
+            new_annotation.aegypti_certainty_category = 0
+            new_annotation.status = 1
+            new_annotation.category = Categories.objects.get(pk=9)
+            new_annotation.validation_complete = True
+            new_annotation.save()
+            if u.username == 'innie':
+                current_domain = get_current_domain(request)
+                issue_notification(new_annotation, current_domain)
+    try:
+        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    except ExpertReportAnnotation.DoesNotExist:
+        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+
+    roger_annotation.validation_complete = True
+    roger_annotation.save()
+
+def auto_annotate_albopictus(report, request):
+    users = []
+    users.append(User.objects.get(username="innie"))
+    users.append(User.objects.get(username="minnie"))
+    users.append(User.objects.get(username="manny"))
+    super_reritja = User.objects.get(username="super_reritja")
+    photo = report.photos.first()
+    report_locale = report.app_language
+    user_notes = albopictus.get(report_locale, albopictus['en'])
+    for u in users:
+        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+            new_annotation = ExpertReportAnnotation(report=report, user=u)
+            if u.username == 'innie':
+                new_annotation.edited_user_notes = user_notes
+                new_annotation.best_photo_id = photo.id
+                new_annotation.simplified_annotation = False
+            else:
+                new_annotation.simplified_annotation = True
+            new_annotation.tiger_certainty_notes = 'auto'
+            new_annotation.tiger_certainty_category = 2
+            new_annotation.aegypti_certainty_category = -2
+            new_annotation.status = 1
+            new_annotation.category = Categories.objects.get(pk=4)
+            new_annotation.validation_complete = True
+            # definitely albopictus
+            new_annotation.validation_value = 2
+            new_annotation.save()
+            if u.username == 'innie':
+                current_domain = get_current_domain(request)
+                issue_notification(new_annotation, current_domain)
+    try:
+        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    except ExpertReportAnnotation.DoesNotExist:
+        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+
+    roger_annotation.validation_complete = True
+    roger_annotation.save()
+
+
+def auto_annotate_culex(report, request):
+    users = []
+    users.append(User.objects.get(username="innie"))
+    users.append(User.objects.get(username="minnie"))
+    users.append(User.objects.get(username="manny"))
+    super_reritja = User.objects.get(username="super_reritja")
+    photo = report.photos.first()
+    report_locale = report.app_language
+    user_notes = culex.get(report_locale, culex['en'])
+    for u in users:
+        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+            new_annotation = ExpertReportAnnotation(report=report, user=u)
+            if u.username == 'innie':
+                new_annotation.edited_user_notes = user_notes
+                new_annotation.best_photo_id = photo.id
+                new_annotation.simplified_annotation = False
+            else:
+                new_annotation.simplified_annotation = True
+            new_annotation.tiger_certainty_notes = 'auto'
+            new_annotation.tiger_certainty_category = -2
+            new_annotation.aegypti_certainty_category = -2
+            new_annotation.status = 1
+            new_annotation.category = Categories.objects.get(pk=10)
+            new_annotation.validation_complete = True
+            #probably culex
+            new_annotation.validation_value = 1
+            new_annotation.save()
+            if u.username == 'innie':
+                current_domain = get_current_domain(request)
+                issue_notification(new_annotation, current_domain)
+    try:
+        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    except ExpertReportAnnotation.DoesNotExist:
+        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+
+    roger_annotation.validation_complete = True
+    roger_annotation.save()
+
+
 def auto_annotate_other_species(report, request):
     users = []
     users.append(User.objects.get(username="innie"))
@@ -1473,7 +1647,7 @@ def auto_annotate_other_species(report, request):
             new_annotation.tiger_certainty_notes = 'auto'
             new_annotation.tiger_certainty_category = -2
             new_annotation.aegypti_certainty_category = -2
-            new_annotation.status = -2
+            new_annotation.status = 1
             new_annotation.category = Categories.objects.get(pk=2)
             new_annotation.validation_complete = True
             new_annotation.save()
@@ -1527,6 +1701,12 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
 
                             if f.cleaned_data['other_species']:
                                 auto_annotate_other_species(report, request)
+                            if f.cleaned_data['probably_culex']:
+                                auto_annotate_culex(report, request)
+                            if f.cleaned_data['sure_albopictus']:
+                                auto_annotate_albopictus(report, request)
+                            if f.cleaned_data['not_sure']:
+                                auto_annotate_notsure(report, request)
 
 
             page = request.POST.get('page')
