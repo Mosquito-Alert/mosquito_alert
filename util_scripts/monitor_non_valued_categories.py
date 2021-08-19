@@ -32,6 +32,9 @@ def check_validations():
     if incorrect_annotations > 0:
         wrong_annotations = [ r for r in base_qs ]
         send_email(wrong_annotations)
+    for ano in base_qs:
+        ano.validation_value = 1
+        ano.save()
 
 
 if __name__ == "__main__":
