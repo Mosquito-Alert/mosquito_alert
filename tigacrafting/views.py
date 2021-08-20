@@ -1537,9 +1537,6 @@ def auto_annotate_notsure(report, request):
             new_annotation.category = Categories.objects.get(pk=9)
             new_annotation.validation_complete = True
             new_annotation.save()
-            if u.username == 'innie':
-                current_domain = get_current_domain(request)
-                issue_notification(new_annotation, current_domain)
     try:
         roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
     except ExpertReportAnnotation.DoesNotExist:
@@ -1547,6 +1544,8 @@ def auto_annotate_notsure(report, request):
 
     roger_annotation.validation_complete = True
     roger_annotation.save()
+    current_domain = get_current_domain(request)
+    issue_notification(roger_annotation, current_domain)
 
 def auto_annotate_albopictus(report, request):
     users = []
@@ -1575,9 +1574,6 @@ def auto_annotate_albopictus(report, request):
             # definitely albopictus
             new_annotation.validation_value = 2
             new_annotation.save()
-            if u.username == 'innie':
-                current_domain = get_current_domain(request)
-                issue_notification(new_annotation, current_domain)
     try:
         roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
     except ExpertReportAnnotation.DoesNotExist:
@@ -1585,6 +1581,8 @@ def auto_annotate_albopictus(report, request):
 
     roger_annotation.validation_complete = True
     roger_annotation.save()
+    current_domain = get_current_domain(request)
+    issue_notification(roger_annotation, current_domain)
 
 
 def auto_annotate_culex(report, request):
@@ -1614,9 +1612,6 @@ def auto_annotate_culex(report, request):
             #probably culex
             new_annotation.validation_value = 1
             new_annotation.save()
-            if u.username == 'innie':
-                current_domain = get_current_domain(request)
-                issue_notification(new_annotation, current_domain)
     try:
         roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
     except ExpertReportAnnotation.DoesNotExist:
@@ -1624,6 +1619,8 @@ def auto_annotate_culex(report, request):
 
     roger_annotation.validation_complete = True
     roger_annotation.save()
+    current_domain = get_current_domain(request)
+    issue_notification(roger_annotation, current_domain)
 
 
 def auto_annotate_other_species(report, request):
@@ -1651,9 +1648,6 @@ def auto_annotate_other_species(report, request):
             new_annotation.category = Categories.objects.get(pk=2)
             new_annotation.validation_complete = True
             new_annotation.save()
-            if u.username == 'innie':
-                current_domain = get_current_domain(request)
-                issue_notification(new_annotation, current_domain)
     try:
         roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
     except ExpertReportAnnotation.DoesNotExist:
@@ -1661,6 +1655,8 @@ def auto_annotate_other_species(report, request):
 
     roger_annotation.validation_complete = True
     roger_annotation.save()
+    current_domain = get_current_domain(request)
+    issue_notification(roger_annotation, current_domain)
 
 @login_required
 def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all', country='all'):
