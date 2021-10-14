@@ -1,0 +1,9 @@
+- usar camp native_of -> implica que un usuari només pot estar en una bounding box, i que la geometria de la bounding box ha d'estar a la taula europecountry.
+  - cal assignar native_of a tots els usuaris spanish
+  - eliminar teams i assignar camp native_of
+  - superexpert té native_of en blanc
+  - usuaris especials "innie, minnie, coarse_n" té native_of en blanc
+
+- caldria que per cada bounding box hi hagués com a mínim 3 usuaris
+- si no, determinar què passa amb els informes de bounding box < 3 usuaris
+- aclarir què passa amb national supervisors
