@@ -919,7 +919,11 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
                         new_annotation.simplified_annotation = False
                     grabbed_reports += 1
                     reports_taken += 1
-                    new_annotation.save()
+                    try:
+                        new_annotation.save()
+                    except IntegrityError as e:
+                        logger_duplicate_assignation.debug(
+                            'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
                 else:
                     logger_report_assignment.debug('Report {0} is in country {1}'.format(this_report, this_report.country))
                     if this_report.country.gid in country_with_supervisor_set:
@@ -936,9 +940,11 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
                                 new_annotation.simplified_annotation = False
                             grabbed_reports += 1
                             reports_taken += 1
-                            new_annotation.save()
-                            #else:
-                                #logger_report_assignment.debug('Report {0} not yet assigned to supervisor, not assigning'.format(this_report, ))
+                            try:
+                                new_annotation.save()
+                            except IntegrityError as e:
+                                logger_duplicate_assignation.debug(
+                                    'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
                     else:
                         logger_report_assignment.debug('Report {0} is in country {1} which has NO supervisor'.format(this_report,this_report.country))
                         if who_has_count == 0 or who_has_count == 1:
@@ -949,7 +955,11 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
                             new_annotation.simplified_annotation = False
                         grabbed_reports += 1
                         reports_taken += 1
-                        new_annotation.save()
+                        try:
+                            new_annotation.save()
+                        except IntegrityError as e:
+                            logger_duplicate_assignation.debug(
+                                'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
             if reports_taken == n_to_get:
                 break
         this_user.userstat.grabbed_reports = grabbed_reports
