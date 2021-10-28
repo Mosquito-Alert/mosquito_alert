@@ -204,6 +204,11 @@ class ExpertReportAnnotation(models.Model):
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
     other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.DO_NOTHING, )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'report'], name='unique_assignation')
+        ]
+
     def is_superexpert(self):
         return 'superexpert' in self.user.groups.values_list('name', flat=True)
 

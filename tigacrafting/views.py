@@ -59,11 +59,13 @@ from decimal import *
 from tigaserver_project.settings import *
 from rest_framework.response import Response
 import re
+from django.db import IntegrityError
 
 #-----------------------------------#
 
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 logger_notification = logging.getLogger('mosquitoalert.notification')
+logger_duplicate_assignation = logging.getLogger('mosquitoalert.report.duplicateassignment')
 
 other_insect = {
     "es": "Esta foto muestra un insecto que no es un mosquito verdadero, es decir, no pertenece a la familia de los Culícidos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -781,7 +783,10 @@ def assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, 
                         # No one has the report, is simplified
                         new_annotation.simplified_annotation = True
                     grabbed_reports += 1
-                    new_annotation.save()
+                    try:
+                        new_annotation.save()
+                    except IntegrityError as e:
+                        logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report,this_user, ))
             if grabbed_reports != -1 and user_stats:
                 user_stats.grabbed_reports = grabbed_reports
                 user_stats.save()
@@ -880,7 +885,11 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
                         new_annotation.simplified_annotation = False
                         grabbed_reports += 1
                         reports_taken += 1
-                        new_annotation.save()
+                        try:
+                            new_annotation.save()
+                        except IntegrityError as e:
+                            logger_duplicate_assignation.debug(
+                                'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
                     else:
                         logger_report_assignment.debug('NOT assigning report to supervisor User {0} because it has not yet been assigned to 2 other users (assigned to {1} other users)'.format(this_user, who_has_count,))
                 else:
@@ -893,7 +902,11 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
                         logger_report_assignment.debug('Report assigned to supervisor User {0} as extended'.format(this_user, ))
                     grabbed_reports += 1
                     reports_taken += 1
-                    new_annotation.save()
+                    try:
+                        new_annotation.save()
+                    except IntegrityError as e:
+                        logger_duplicate_assignation.debug(
+                            'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
             else:
                 logger_report_assignment.debug('User {0} is NOT supervisor'.format(this_user, ))
                 if this_report.country is None:
@@ -1156,7 +1169,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
                 for this_report in new_reports:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                    new_annotation.save()
+                    try:
+                        new_annotation.save()
+                    except IntegrityError as e:
+                        logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
 
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
 
