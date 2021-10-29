@@ -819,7 +819,7 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
         logger_report_assignment.debug('User {0} has less than {1} reports assigned (currently {2})'.format(this_user, max_pending, current_pending))
         n_to_get = max_pending - current_pending
         logger_report_assignment.debug('User {0} trying to get {1} reports'.format(this_user, n_to_get))
-        new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+        new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given).order_by('-creation_time')
         # if there is bounding box venezuela
         # no normal users are assigned venezuelan reports
         # refactor this - create some kind of bounding box registry (i.e add a bounding box flag to EuropeCountry)
@@ -832,6 +832,21 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
         if new_reports_unfiltered and this_user_is_team_not_bcn:
             new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
         '''
+        all_reports_len = new_reports_unfiltered.count()
+        if this_user_is_spain:
+            logger_report_assignment.debug('User {0} is in spanish group'.format(this_user, ))
+            #new_reports = filter_spain_reports(new_filtered_reports)
+            new_reports_unfiltered = new_reports_unfiltered.filter( Q(country__isnull=True) | Q(country__gid=17) )
+            logger_report_assignment.debug('User {0} has {1} of {2} reports located in Spain/Other area'.format(this_user, len(new_reports_unfiltered), all_reports_len, ))
+        elif this_user_is_europe:
+            logger_report_assignment.debug('User {0} is in european group'.format(this_user, ))
+            #new_reports = filter_eu_reports(new_filtered_reports)
+            new_reports_unfiltered = new_reports_unfiltered.exclude(Q(country__isnull=True) | Q(country__gid=17))
+            logger_report_assignment.debug('User {0} has {1} of {2} reports located in Europe area'.format(this_user, len(new_reports_unfiltered), all_reports_len, ))
+        else:
+            pass
+            #new_reports = new_filtered_reports
+
         if this_user_is_supervisor:
             #logger_report_assignment.debug('User {0} is supervisor'.format(this_user,))
             reports_supervised_country = new_reports_unfiltered.filter(country__gid=this_user.userstat.national_supervisor_of.gid)
@@ -858,21 +873,11 @@ def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, 
             new_filtered_reports = reports_in_any_country_with_supervisor_filtered + reports_in_country_without_supervisor_filtered
         logger_report_assignment.debug('User {0} has {1} potentially assignable reports'.format(this_user, len(new_filtered_reports)))
 
-        if this_user_is_spain:
-            logger_report_assignment.debug('User {0} is in spanish group'.format(this_user, ))
-            new_reports = filter_spain_reports(new_filtered_reports)
-            logger_report_assignment.debug('User {0} has {1} of {2} reports located in Spain/Other area'.format(this_user, len(new_reports), len(new_filtered_reports), ))
-        elif this_user_is_europe:
-            logger_report_assignment.debug('User {0} is in european group'.format(this_user, ))
-            new_reports = filter_eu_reports(new_filtered_reports)
-            logger_report_assignment.debug('User {0} has {1} of {2} reports located in Europe area'.format(this_user, len(new_reports),len(new_filtered_reports), ))
-        else:
-            new_reports = new_filtered_reports
 
         grabbed_reports = -1
         reports_taken = 0
         logger_report_assignment.debug('Looping reports for User {0}'.format(this_user,))
-        for this_report in new_reports:
+        for this_report in new_filtered_reports:
             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
             who_has_count = this_report.get_who_has_count()
             logger_report_assignment.debug('Report {0} assigned to {1} people'.format(this_report, who_has_count, ))

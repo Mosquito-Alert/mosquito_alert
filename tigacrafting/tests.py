@@ -534,3 +534,5 @@ class UserTestCase(TestCase):
                 nc = NotificationContent.objects.order_by('-id').first()
                 # native title should be in the same language as the report
                 self.assertEqual( get_translation_in("your_picture_has_been_validated_by_an_expert", locale), nc.title_native )
+                # we do this to avoid triggering the unique(user_id,report_id) constraint
+                anno_reritja.delete()
