@@ -328,6 +328,11 @@ class UserStat(models.Model):
     def n_pending_annotations(self):
         return self.user.expert_report_annotations.filter(validation_complete=False).count()
 
+    def is_bb_user(self):
+        if self.native_of is not None:
+            return self.native_of.is_bounding_box
+        return False
+
     def is_national_supervisor(self):
         return self.national_supervisor_of is not None
 
