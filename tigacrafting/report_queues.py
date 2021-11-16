@@ -84,22 +84,40 @@ def assign_reports_to_national_supervisor(this_user):
 
         currently_taken = 0
 
+        user_stats = None
+        try:
+            user_stats = UserStat.objects.get(user_id=this_user.id)
+        except ObjectDoesNotExist:
+            pass
+        grabbed_reports = -1
+        if user_stats:
+            grabbed_reports = user_stats.grabbed_reports
+
+        # for national supervisor, reports from supervised country are never simplified if granted first
         for this_report in country_filtered_reports:
-            if not this_report.user_has_report(this_user):
-                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                new_annotation.save()
-                currently_taken += 1
+            new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+            grabbed_reports += 1
+            new_annotation.save()
+            currently_taken += 1
             if currently_taken >= MAX_N_OF_PENDING_REPORTS:
                 break
 
         if currently_taken < MAX_N_OF_PENDING_REPORTS:
             for this_report in other_countries_filtered_reports:
-                if not this_report.user_has_report(this_user):
-                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                    new_annotation.save()
-                    currently_taken += 1
+                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                who_has_count = this_report.get_who_has_count()
+                if who_has_count == 0 or who_has_count == 1:
+                    # No one has the report, is simplified
+                    new_annotation.simplified_annotation = True
+                grabbed_reports += 1
+                new_annotation.save()
+                currently_taken += 1
                 if currently_taken >= MAX_N_OF_PENDING_REPORTS:
                     break
+
+        if grabbed_reports != -1 and user_stats:
+            user_stats.grabbed_reports = grabbed_reports
+            user_stats.save()
         # reports_unfiltered = reports_supervised_country.order_by('creation_time') | reports_unfiltered_excluding_reserved_ns.order_by('creation_time')
         # if reports_unfiltered:
         #     new_reports = filter_reports(reports_unfiltered)
@@ -166,14 +184,13 @@ def assign_reports_to_regular_user(this_user):
             if user_stats:
                 grabbed_reports = user_stats.grabbed_reports
             for this_report in reports_to_take:
-                if not this_report.user_has_report(this_user):
-                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                    who_has_count = this_report.get_who_has_count()
-                    if who_has_count == 0 or who_has_count == 1:
-                        # No one has the report, is simplified
-                        new_annotation.simplified_annotation = True
-                    grabbed_reports += 1
-                    new_annotation.save()
+                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                who_has_count = this_report.get_who_has_count()
+                if who_has_count == 0 or who_has_count == 1:
+                    # No one has the report, is simplified
+                    new_annotation.simplified_annotation = True
+                grabbed_reports += 1
+                new_annotation.save()
             if grabbed_reports != -1 and user_stats:
                 user_stats.grabbed_reports = grabbed_reports
                 user_stats.save()
@@ -183,7 +200,10 @@ def assign_reports_to_regular_user(this_user):
 def assign_superexpert_reports(this_user):
     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
     new_reports_unfiltered = get_base_adults_qs().exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
-    #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
+    if new_reports_unfiltered and this_user.groups.filter(name='team_bcn').exists():
+        new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
+    if new_reports_unfiltered and this_user.groups.filter(name='team_not_bcn').exists():
+        new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
     if this_user.id == 25:  # it's roger, don't assign reports from barcelona prior to 03/10/2017
         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat']))) & Q(creation_time__lte=date(2017, 3, 10)))
     new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
@@ -211,14 +231,13 @@ def assign_bb_reports(this_user):
             if user_stats:
                 grabbed_reports = user_stats.grabbed_reports
             for this_report in reports_to_take:
-                if not this_report.user_has_report(this_user):
-                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                    who_has_count = this_report.get_who_has_count()
-                    if who_has_count == 0 or who_has_count == 1:
-                        # No one has the report, is simplified
-                        new_annotation.simplified_annotation = True
-                    grabbed_reports += 1
-                    new_annotation.save()
+                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                who_has_count = this_report.get_who_has_count()
+                if who_has_count == 0 or who_has_count == 1:
+                    # No one has the report, is simplified
+                    new_annotation.simplified_annotation = True
+                grabbed_reports += 1
+                new_annotation.save()
             if grabbed_reports != -1 and user_stats:
                 user_stats.grabbed_reports = grabbed_reports
                 user_stats.save()
