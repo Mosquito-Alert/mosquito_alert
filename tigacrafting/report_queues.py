@@ -83,7 +83,6 @@ def assign_reports_to_national_supervisor(this_user):
         other_countries_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
 
         currently_taken = 0
-
         user_stats = None
         try:
             user_stats = UserStat.objects.get(user_id=this_user.id)
@@ -174,26 +173,64 @@ def assign_reports_to_regular_user(this_user):
         reports_unfiltered_excluding_reserved_ns = reports_unfiltered_excluding_reserved_ns.exclude(version_UUID__in=blocked_by_experts)
         if reports_unfiltered_excluding_reserved_ns:
             new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
-            reports_to_take = new_reports[0:n_to_get]
-            user_stats = None
-            try:
-                user_stats = UserStat.objects.get(user_id=this_user.id)
-            except ObjectDoesNotExist:
-                pass
-            grabbed_reports = -1
-            if user_stats:
-                grabbed_reports = user_stats.grabbed_reports
-            for this_report in reports_to_take:
-                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
-                    # No one has the report, is simplified
-                    new_annotation.simplified_annotation = True
-                grabbed_reports += 1
-                new_annotation.save()
-            if grabbed_reports != -1 and user_stats:
-                user_stats.grabbed_reports = grabbed_reports
-                user_stats.save()
+            if not this_user.groups.filter(name='eu_group_europe').exists(): #Spain
+                reports_to_take = new_reports[0:n_to_get]
+                user_stats = None
+                try:
+                    user_stats = UserStat.objects.get(user_id=this_user.id)
+                except ObjectDoesNotExist:
+                    pass
+                grabbed_reports = -1
+                if user_stats:
+                    grabbed_reports = user_stats.grabbed_reports
+                for this_report in reports_to_take:
+                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                    who_has_count = this_report.get_who_has_count()
+                    if who_has_count == 0 or who_has_count == 1:
+                        # No one has the report, is simplified
+                        new_annotation.simplified_annotation = True
+                    grabbed_reports += 1
+                    new_annotation.save()
+                if grabbed_reports != -1 and user_stats:
+                    user_stats.grabbed_reports = grabbed_reports
+                    user_stats.save()
+            else: #Europe -> prioritize reports from own country
+                new_reports_own_country = new_reports.filter(country=this_user.userstat.native_of)
+                new_reports_other_countries = new_reports.exclude(country=this_user.userstat.native_of)
+
+                currently_taken = 0
+                user_stats = None
+                try:
+                    user_stats = UserStat.objects.get(user_id=this_user.id)
+                except ObjectDoesNotExist:
+                    pass
+                grabbed_reports = -1
+                if user_stats:
+                    grabbed_reports = user_stats.grabbed_reports
+
+                for this_report in new_reports_own_country:
+                    new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                    grabbed_reports += 1
+                    new_annotation.save()
+                    currently_taken += 1
+                    if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                        break
+
+                if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    for this_report in new_reports_other_countries:
+                        new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                        who_has_count = this_report.get_who_has_count()
+                        if who_has_count == 0 or who_has_count == 1:
+                            # No one has the report, is simplified
+                            new_annotation.simplified_annotation = True
+                        grabbed_reports += 1
+                        new_annotation.save()
+                        currently_taken += 1
+                        if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                            break
+                if grabbed_reports != -1 and user_stats:
+                    user_stats.grabbed_reports = grabbed_reports
+                    user_stats.save()
 
 
 

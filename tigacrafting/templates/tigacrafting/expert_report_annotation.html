@@ -57,6 +57,16 @@
             display: none;
         }
 
+        .crisis-on {
+            background-color: red;
+            color: white;
+        }
+
+        .crisis-off {
+            background-color: white;
+            color: black;
+        }
+
     </style>
 
     {% block fa_css %}
@@ -110,7 +120,7 @@
 
 </head>
 
-<body>
+<body class="{% if user.userstat.crisis_mode %} bg-danger {% else %} bg-white {% endif %}">
 
 {% block navbar %}
     <!-- NAVBAR
@@ -321,6 +331,17 @@
 
             {% endblock %}
         </div>
+        {% if user.userstat.can_activate_crisis_mode %}
+        <div id="crisis_status" class="row {% if user.userstat.crisis_mode %}crisis-on{% else %}crisis-off{% endif %}">
+            <h3>Crisis mode is
+                {% if user.userstat.crisis_mode %}
+                    <button id="crisis_toggle" class="btn btn-danger"><span class="badge">ON</span></button>
+                {% else %}
+                    <button id="crisis_toggle" class="btn btn-success"><span class="badge">OFF</span></button>
+                {% endif %}
+            </h3>
+        </div>
+        {% endif %}
     </div>
 
     {% if objects.has_next or objects.has_previous %}
@@ -1182,6 +1203,8 @@
         var index_to_id = {};
         var id_to_index = {};
         var final_status_table = {};
+        var user = {{ user.id }};
+        var csrf_token = '{{ csrf_token }}';
 
         function clear_form(form_id){
             //Clear UI
@@ -2392,6 +2415,7 @@
 
     <script src={% static "tigacrafting/categories_combo.js" %}></script>
     <script src={% static "tigacrafting/macro_messages.js" %}></script>
+    <script src={% static "tigacrafting/crisis_toggle.js" %}></script>
 
 
 {% endblock %}

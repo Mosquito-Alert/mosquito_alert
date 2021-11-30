@@ -50,6 +50,7 @@ from tigacrafting.querystring_parser import parser
 from django.db.models.expressions import RawSQL
 import functools
 import operator
+import math
 
 #----------Metadades fotos----------#
 
@@ -965,6 +966,36 @@ def predefined_messages(request):
         langs.append({"val":elem[0],"txt":elem[1]})
     langs.sort(key=lambda x: x.get("txt"))
     return render(request, 'tigacrafting/predefined_messages.html', {'langs': langs})
+
+
+def pending_reports_heatmap_data():
+    country_qs = EuropeCountry.objects.exclude(is_bounding_box=True)
+    raw_data = []
+    data = []
+    for country in country_qs:
+        current_progress_country = Report.objects.filter(country=country).exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+        # data is [lat, lng, intensity]
+        centroid = country.geom.centroid
+        raw_data.append( [ centroid.y, centroid.x, current_progress_country.count() if current_progress_country.count() > 0 else 0  ] )
+    # total = 0
+    # for d in raw_data:
+    #     total += d[2]
+    # for d in raw_data:
+    #     data.append([ d[0], d[1], d[2]/total ])
+    return raw_data
+
+def pending_reports_by_country():
+    country_qs = EuropeCountry.objects.exclude(is_bounding_box=True)
+    data = {}
+    for country in country_qs:
+        current_progress_country = Report.objects.filter(country=country).exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+        data[country.gid]={"n":current_progress_country.count(), "x":country.geom.centroid.x, "y":country.geom.centroid.y, "name":country.name_engl }
+    return data
+
+def expert_geo_report_assign(request):
+    count_data = pending_reports_by_country()
+    return render(request, 'tigacrafting/geo_report_assign.html', { 'count_data': json.dumps(count_data) })
+
 
 @transaction.atomic
 @login_required

@@ -300,6 +300,9 @@ class UserStat(models.Model):
     national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.DO_NOTHING, )
     native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.DO_NOTHING, )
     license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
+    # When in crisis mode, several regional restrictions are disabled and the user preferently receives reports
+    # from places where there has been a spike
+    crisis_mode = models.BooleanField('Tells if the validator is working in crisis mode or not', default=False)
 
     def has_accepted_license(self):
         return self.license_accepted
@@ -332,6 +335,16 @@ class UserStat(models.Model):
         if self.native_of is not None:
             return self.native_of.is_bounding_box
         return False
+
+    # only regular users can activate crisis mode
+    def can_activate_crisis_mode(self):
+        if self.is_superexpert():
+            return False
+        if self.is_bb_user():
+            return False
+        if self.is_national_supervisor():
+            return False
+        return True
 
     def is_national_supervisor(self):
         return self.national_supervisor_of is not None

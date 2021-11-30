@@ -670,6 +670,16 @@ def mark_notif_as_ack(request):
 
 
 @api_view(['POST'])
+def toggle_crisis_mode(request, user_id=None):
+    if user_id is None:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(User.objects.all(), pk=user_id)
+    user.userstat.crisis_mode = not user.userstat.crisis_mode
+    user.userstat.save()
+    return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
 def unsub_from_topic(request):
     code = request.query_params.get('code', '-1')
     user = request.query_params.get('user', '-1')
