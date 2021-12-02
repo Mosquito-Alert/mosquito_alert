@@ -351,7 +351,7 @@ class UserStat(models.Model):
 
     def is_national_supervisor_for_country(self, country):
         return self.is_national_supervisor() and self.national_supervisor_of.gid == country.gid
-
+    
     @property
     def formatted_country_info(self):
         this_user = self.user

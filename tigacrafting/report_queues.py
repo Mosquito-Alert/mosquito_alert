@@ -168,7 +168,10 @@ def assign_reports_to_regular_user(this_user):
         else: #Spain
             reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.filter( Q(country__gid=17) | Q(country__gid__isnull=True) )
         #exclude reports assigned to ANY supervisor but not yet validated
-        reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of__in=country_with_supervisor).filter(report__type='adult').filter(validation_complete=False).values('report').distinct()
+        reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of__in=country_with_supervisor).filter(report__type='adult').filter(validation_complete=False)
+        for country in supervised_countries:
+            reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=country.national_supervisor_report_expires_in)) )
+        reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
         blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
         reports_unfiltered_excluding_reserved_ns = reports_unfiltered_excluding_reserved_ns.exclude(version_UUID__in=blocked_by_experts)
         if reports_unfiltered_excluding_reserved_ns:
@@ -231,7 +234,6 @@ def assign_reports_to_regular_user(this_user):
                 if grabbed_reports != -1 and user_stats:
                     user_stats.grabbed_reports = grabbed_reports
                     user_stats.save()
-
 
 
 def assign_superexpert_reports(this_user):

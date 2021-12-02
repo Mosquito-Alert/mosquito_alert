@@ -478,7 +478,7 @@ class NewReportAssignment(TestCase):
         # assign reports to regular user. All assigned reports should be from isle of man
         user = User.objects.get(pk=10)
         assign_reports_to_regular_user(user)
-        # user should have been assigned 5 reports
+        # user should have been assigned 2 outdated reports
         assigned_reports = ExpertReportAnnotation.objects.filter(user=user)
         self.assertTrue( assigned_reports.count() == 2, "User {0} has been assigned {1} reports, should have been assigned {2}".format( user.username, assigned_reports.count(), 5 ) )
 
@@ -486,7 +486,7 @@ class NewReportAssignment(TestCase):
         assign_reports_to_national_supervisor(national_supervisor_isleofman)
         server_upload_time_first_report = ExpertReportAnnotation.objects.filter(user=national_supervisor_isleofman).order_by('id')[0].report.server_upload_time
         server_upload_time_first_report_str = server_upload_time_first_report.strftime('%Y-%m-%d')
-        self.assertTrue( server_upload_time_first_report_str == timezone.now().strftime('%Y-%m-%d'), "Server upload year of first assigned report should be {0}, is {1}".format( timezone.now().strftime('%Y-%m-%d'), server_upload_time_first_report_str ) )
+        self.assertTrue( server_upload_time_first_report_str == timezone.now().strftime('%Y-%m-%d'), "Server upload time of first assigned report should be {0}, is {1}".format( timezone.now().strftime('%Y-%m-%d'), server_upload_time_first_report_str ) )
 
 
     # tests that user creation triggers userstat creation
@@ -613,6 +613,49 @@ class NewReportAssignment(TestCase):
         # Two equal categories, one different -> No Conflict
         autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
         self.assertEqual(autoflag_question_mark, False)
+
+
+    def test_outdated_assign(self):
+        self.create_team()
+        #create outdated report
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        non_naive_time = timezone.now()
+        country = EuropeCountry.objects.get(pk=22)  # Faroes
+        # date threshold for reports that the national supervisor has lost priority over
+        two_weeks_ago = non_naive_time - timedelta(days=country.national_supervisor_report_expires_in)
+        r = Report(
+            version_UUID="1",
+            version_number=0,
+            user_id='00000000-0000-0000-0000-000000000000',
+            phone_upload_time=non_naive_time,
+            server_upload_time=non_naive_time,
+            creation_time=non_naive_time,
+            version_time=non_naive_time,
+            location_choice="current",
+            current_location_lon=country.geom.point_on_surface.x,
+            current_location_lat=country.geom.point_on_surface.y,
+            type='adult',
+        )
+        r.save()
+        p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+        p.save()
+        # queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
+        Report.objects.all().update(server_upload_time=two_weeks_ago)
+
+        #Manually assign report to NS. Has been assigned report but report outdated remained long time in assigned not resolved queue...
+        ns_user = User.objects.get(username='expert_5_eu')
+        new_annotation = ExpertReportAnnotation(report=r, user=ns_user)
+        new_annotation.save()
+
+        #Now assign reports to Faroes native. Should receive report with uuid 1
+        faroes_native_regular_user = User.objects.get(username='expert_9_eu')
+        assign_reports_to_regular_user(faroes_native_regular_user)
+
+        #should have been assigned the Faroes report, since the report is outdated and therefore no longer blocked by NS
+        n_assigned_to_faroes_user = ExpertReportAnnotation.objects.filter(user=faroes_native_regular_user).filter(report=r).count()
+        self.assertTrue( n_assigned_to_faroes_user == 1, "Number of reports assigned to Faroes user {0} is {1}, should be 1".format( faroes_native_regular_user.username, n_assigned_to_faroes_user ) )
+
 
 
     def test_validation_notification(self):
