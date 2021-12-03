@@ -986,6 +986,30 @@ def entolab_license_agreement(request):
     return render(request, 'tigacrafting/entolab_license_agreement.html', {'form': form})
 
 @login_required
+def expert_progress(request):
+    this_user = request.user
+    experts = User.objects.filter(groups__name='expert').exclude(id__in=[152, 151, 150])
+    n_reports_data = []
+    pseudo_id = 1
+    me_count = 0
+    for expert in experts:
+        count = expert.expert_report_annotations.filter(validation_complete=True).count()
+        if count > 0:
+            if this_user.id == expert.id:
+                me_count = count
+            n_reports_data.append({ 'me': True if this_user.id == expert.id else False, 'id': pseudo_id, 'count': count })
+            pseudo_id += 1
+    newlist = sorted(n_reports_data, key=lambda d: d['count'], reverse=True)
+    position = -1
+    index = 1
+    for item in newlist:
+        if item['me'] == True:
+            position = index
+        index += 1
+    ranking_data = { 'len': len(newlist), 'pos': position, 'me_count': me_count }
+    return render(request, 'tigacrafting/expert_progress.html', { 'n_reports': newlist, 'ranking_data':ranking_data })
+
+@login_required
 def predefined_messages(request):
     langs = []
     for elem in settings.LANGUAGES:

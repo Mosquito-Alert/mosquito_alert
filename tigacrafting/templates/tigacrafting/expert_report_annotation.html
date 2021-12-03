@@ -202,6 +202,9 @@
                             {% block navbar_right_items %}
                             {% endblock %}
                             <li>
+                                <a href="{% url 'expert_progress' %}" target="_blank">My progress</a>
+                            </li>
+                            <li>
                                 <a href="{% url 'predefined_messages' %}" target="_blank">Predefined texts</a>
                             </li>
                             {% if tasks_per_page_choices %}

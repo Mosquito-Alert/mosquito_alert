@@ -1,0 +1,146 @@
+{% load staticfiles %}
+{% load i18n %}
+{% load floppyforms %}
+
+
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+
+    {% block encoding %}
+        <meta charset="utf-8">{% endblock %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta name="description" content="MosquitoAlert">
+    <meta name="author" content="Movement Ecology Laboratory">
+
+    <title>{% block page_title %}Expert progress{% endblock %}</title>
+
+    {% block bootstrap_css %}
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    {% endblock %}
+
+    <!--script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script-->
+    <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
+    <!--script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script-->
+    <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/tag-it/tag-it.min.js" %}></script>
+    <!--link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}-->
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}>
+
+    <style>
+        #ex1Slider .slider-selection {
+            background: #BABABA;
+        }
+
+        .container_value, .container_mix, .container_other, .container_category{
+            font-size: 14px;
+        }
+
+        .tokenize-dropdown{
+            z-index: 9999;
+        }
+
+        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-id{
+            display: none;
+        }
+
+        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-uuid{
+            display: none;
+        }
+
+    </style>
+
+    {% block fa_css %}
+        <!-- FA CSS -->
+        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    {% endblock %}
+
+
+    {% block fallback_bs_js %}
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% endblock %}
+
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+
+</head>
+
+<body>
+
+{% block navbar %}
+    <!-- NAVBAR
+================================================== -->
+    <div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">MosquitoAlert Expert progress</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block main_body %}
+
+
+    <div class="container">
+        <div class="starter-template">
+            <div class="row">
+                <div class="col-md-8"><canvas id="activity_all"></canvas></div>
+                <div class="col-md-4"><h1>Your Rank:</h1><h2><b><span style="color:#FF6384">{{ ranking_data.pos }}</span></b> / {{ ranking_data.len }}</h2><h2> {{ ranking_data.me_count }} Completed reports </h2></div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></body>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js' %}"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script>
+        var activity_data_series = [];
+        var activity_data_values = [];
+        var color_series = [];
+        {% for bit in n_reports %}
+        activity_data_series.push({{ bit.id }});
+        activity_data_values.push({{ bit.count }});
+        {% if bit.me == True %}
+        color_series.push('rgba(255, 99, 132, 1)');
+        {% else %}
+        color_series.push('rgba(128, 128, 128, 0.2)');
+        {% endif %}
+        {% endfor %}
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'tigacrafting/expert_progress.js' %}"></script>
+
+
+{% endblock %}
+
+</body>
+</html>
