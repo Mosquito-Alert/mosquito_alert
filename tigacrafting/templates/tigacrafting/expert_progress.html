@@ -29,26 +29,17 @@
     <script src={% static "tigacrafting/tag-it/tag-it.min.js" %}></script>
     <!--link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}-->
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 
     <style>
-        #ex1Slider .slider-selection {
-            background: #BABABA;
-        }
-
         .container_value, .container_mix, .container_other, .container_category{
             font-size: 14px;
         }
-
-        .tokenize-dropdown{
-            z-index: 9999;
-        }
-
-        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-id{
-            display: none;
-        }
-
-        html body.modal-open div#searchModal.modal.fade.in div.modal-dialog div.modal-content div.modal-body table tbody tr td div.btn-group.bootstrap-select.show-tick.tokenize-report-uuid{
-            display: none;
+        .vertical-align {
+            display: flex;
+            align-items: center;
         }
 
     </style>
@@ -106,9 +97,48 @@
 
     <div class="container">
         <div class="starter-template">
-            <div class="row">
-                <div class="col-md-8"><canvas id="activity_all"></canvas></div>
-                <div class="col-md-4"><h1>Your Rank:</h1><h2><b><span style="color:#FF6384">{{ ranking_data.pos }}</span></b> / {{ ranking_data.len }}</h2><h2> {{ ranking_data.me_count }} Completed reports </h2></div>
+            <div class="row vertical-align">
+                <div class="col-xs-8"><canvas id="activity_all"></canvas></div>
+                <div class="col-xs-4">
+                    <h3>Completed reports rank:</h3><h3><b><span style="color:#FF6384">{{ ranking_data.pos }}</span></b> / {{ ranking_data.len }}</h3><h3> {{ ranking_data.me_count }} Completed reports </h3>
+                    <h4>What's this? <span data-toggle="tooltip" title="Shows the number of completed reports, as well as your rank regarding number of completed reports relative to other experts."><i class="fa fa-question-circle" aria-hidden="true"></i></span></h4>
+                </div>
+            </div>
+            <hr>
+            <div class="row vertical-align">
+                <div class="col-xs-8"><canvas id="accuracy_hard"></canvas></div>
+                <div class="col-xs-4">
+                    <h3>Hard accuracy rank:</h3><h3><b><span style="color:#FF6384">{{ rank_data_hard.pos }}</span></b> / {{ rank_data_hard.len }}</h3><h3> {{ rank_data_hard.val }} % Hard accuracy</h3>
+                    <h4>What's this? <span data-toggle="tooltip"
+                                       title="This shows the accuracy, defined as percent of completed reports where
+                                       the expert report classification is the same as the overall report classification.
+                                       Hard means a strict coincidence, i.e. the expert classification is the same
+                                       species and level of certainty as the overall classification. Example: If you classified
+                                       the report as Definitely Aedes Albopictus, and the overall classification is Probably
+                                       Aedes Albopictus, this is counted as a failed classification. If the overall
+                                       classification were Definitely Aedes Albopictus, this would be counted as a
+                                       correct classification.">
+                        <i class="fa fa-question-circle" aria-hidden="true"></i></span></h4>
+                </div>
+            </div>
+            <hr>
+            <div class="row vertical-align">
+                <div class="col-xs-8"><canvas id="accuracy_soft"></canvas></div>
+                <div class="col-xs-4">
+                    <h3>Soft accuracy rank:</h3><h3><b><span style="color:#FF6384">{{ rank_data_soft.pos }}</span></b> / {{ rank_data_soft.len }}</h3><h3> {{ rank_data_soft.val }} % Soft accuracy</h3>
+                    <h4>What's this? <span data-toggle="tooltip"
+                                       title="This shows the accuracy, defined as percent of completed reports where
+                                       the expert report classification is the same as the overall report classification.
+                                       Soft means a lax coincidence, i.e. the expert classification is the same
+                                       species as the overall classification, and accuracy is ignored. Example: If you
+                                       classified the report as Definitely Aedes Albopictus, and the overall classification is Probably
+                                       Aedes Albopictus, this is counted as a correct classification.">
+                        <i class="fa fa-question-circle" aria-hidden="true"></i></span></h4>
+                </div>
+            </div>
+            <hr>
+            <div class="row vertical-align">
+                <div id="container_two" class="col-xs-12"></div>
             </div>
         </div>
     </div>
@@ -123,6 +153,8 @@
     <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     <script>
+        var hard_progress_data = [];
+        hard_progress_data = {{ hard_progression_data|safe }};
         var activity_data_series = [];
         var activity_data_values = [];
         var color_series = [];
@@ -133,6 +165,31 @@
         color_series.push('rgba(255, 99, 132, 1)');
         {% else %}
         color_series.push('rgba(128, 128, 128, 0.2)');
+        {% endif %}
+        {% endfor %}
+
+        var accuracy_hard_series = [];
+        var accuracy_soft_series = [];
+        var accuracy_hard_values = [];
+        var accuracy_soft_values = [];
+        var color_series_accuracy_hard = [];
+        var color_series_accuracy_soft = [];
+        {% for bit in accuracy_hard %}
+        accuracy_hard_series.push({{ bit.id }});
+        accuracy_hard_values.push({{ bit.accuracy_hard }});
+        {% if bit.me == True %}
+        color_series_accuracy_hard.push('rgba(255, 99, 132, 1)');
+        {% else %}
+        color_series_accuracy_hard.push('rgba(128, 128, 128, 0.2)');
+        {% endif %}
+        {% endfor %}
+        {% for bit in accuracy_soft %}
+        accuracy_soft_series.push({{ bit.id }});
+        accuracy_soft_values.push({{ bit.accuracy_soft }});
+        {% if bit.me == True %}
+        color_series_accuracy_soft.push('rgba(255, 99, 132, 1)');
+        {% else %}
+        color_series_accuracy_soft.push('rgba(128, 128, 128, 0.2)');
         {% endif %}
         {% endfor %}
     </script>

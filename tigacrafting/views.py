@@ -985,13 +985,26 @@ def entolab_license_agreement(request):
         form = LicenseAgreementForm()
     return render(request, 'tigacrafting/entolab_license_agreement.html', {'form': form})
 
+def get_rank_data(series, value_key):
+    position = -1
+    index = 1
+    val = None
+    for item in series:
+        if item['me'] == True:
+            position = index
+            val = str(round(item[value_key], 2))
+        index += 1
+    return { 'len': len(series), 'pos': position, 'val': val }
+
 @login_required
 def expert_progress(request):
     this_user = request.user
     experts = User.objects.filter(groups__name='expert').exclude(id__in=[152, 151, 150])
     n_reports_data = []
     pseudo_id = 1
+    pseudo_id_acc = 1
     me_count = 0
+    validation_raw_data = []
     for expert in experts:
         count = expert.expert_report_annotations.filter(validation_complete=True).count()
         if count > 0:
@@ -999,7 +1012,17 @@ def expert_progress(request):
                 me_count = count
             n_reports_data.append({ 'me': True if this_user.id == expert.id else False, 'id': pseudo_id, 'count': count })
             pseudo_id += 1
+        current_val_data = json.loads(expert.userstat.accuracy_stats)
+        if current_val_data['total'] > 0:
+            accuracy_soft = (current_val_data['soft_hit'] / current_val_data['total']) * 100
+            accuracy_hard = (current_val_data['hard_hit'] / current_val_data['total']) * 100
+            validation_raw_data.append( { 'me': True if this_user.id == expert.id else False,'id': pseudo_id_acc, 'accuracy_soft': accuracy_soft, 'accuracy_hard': accuracy_hard} )
+            pseudo_id_acc += 1
     newlist = sorted(n_reports_data, key=lambda d: d['count'], reverse=True)
+    accuracy_hard_list = sorted(validation_raw_data, key=lambda d: d['accuracy_hard'], reverse=True)
+    accuracy_soft_list = sorted(validation_raw_data, key=lambda d: d['accuracy_soft'], reverse=True)
+    rank_data_hard = get_rank_data(accuracy_hard_list, 'accuracy_hard')
+    rank_data_soft = get_rank_data(accuracy_soft_list, 'accuracy_soft')
     position = -1
     index = 1
     for item in newlist:
@@ -1007,7 +1030,18 @@ def expert_progress(request):
             position = index
         index += 1
     ranking_data = { 'len': len(newlist), 'pos': position, 'me_count': me_count }
-    return render(request, 'tigacrafting/expert_progress.html', { 'n_reports': newlist, 'ranking_data':ranking_data })
+    current_expert_data = json.loads(this_user.userstat.accuracy_stats)
+    raw_progression_data = current_expert_data['accuracy_periods']
+    hard_progression_data = []
+    for r in raw_progression_data:
+        hard_hits = r[1]['hard_hit']
+        soft_hits = r[1]['soft_hit']
+        total = r[1]['total']
+        if total == 0:
+            hard_progression_data.append([r[0], 0])
+        else:
+            hard_progression_data.append([r[0], (hard_hits/total)*100])
+    return render(request, 'tigacrafting/expert_progress.html', { 'n_reports': newlist, 'ranking_data':ranking_data, 'accuracy_hard': accuracy_hard_list, 'accuracy_soft': accuracy_soft_list, 'rank_data_hard': rank_data_hard, 'rank_data_soft': rank_data_soft, 'hard_progression_data': hard_progression_data})
 
 @login_required
 def predefined_messages(request):

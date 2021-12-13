@@ -305,6 +305,8 @@ class UserStat(models.Model):
     national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.DO_NOTHING, )
     native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.DO_NOTHING, )
     license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
+    accuracy_stats = models.TextField('Json structure containing validation accuracy data', blank=True, null=True)
+    accuracy_last_update = models.DateTimeField('Timestamp for last accuracy data update', blank=True, null=True)
 
     def has_accepted_license(self):
         return self.license_accepted
