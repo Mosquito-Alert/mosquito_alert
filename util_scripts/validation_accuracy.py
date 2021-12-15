@@ -193,11 +193,29 @@ def update_expert_accuracy(expert_id):
     expert.userstat.accuracy_last_update = localtime(now()).date()
     expert.userstat.save()
 
-experts = User.objects.filter(groups__name='expert').exclude(id__in=[152, 151, 150])
-update_cached_euro_annotations()
-for expert in experts:
-    print("Updating expert {0} ...".format(expert.username))
-    update_expert_accuracy(expert.id)
-    print("Done!")
-    print("\n")
-# init_report_movelab_annotation_cache()
+# experts = User.objects.filter(groups__name='expert').exclude(id__in=[152, 151, 150])
+# update_cached_euro_annotations()
+# for expert in experts:
+#     print("Updating expert {0} ...".format(expert.username))
+#     update_expert_accuracy(expert.id)
+#     print("Done!")
+#     print("\n")
+
+def print_accuracy_rank():
+    experts = User.objects.filter(groups__name='expert').exclude(id__in=[152, 151, 150])
+    accuracies = []
+    hard_accuracy = []
+    for expert in experts:
+        stats = json.loads(expert.userstat.accuracy_stats)
+        accuracies.append( {'id': expert.id, 'username': expert.username, 'stats': stats} )
+
+    for acc in accuracies:
+        if acc['stats']['total'] > 0:
+            hard_accuracy_value = (acc['stats']['hard_hit'] / acc['stats']['total']) * 100
+            hard_accuracy.append( {'id': acc['id'], 'username': acc['username'], 'total': acc['stats']['total'], 'hard_acc': hard_accuracy_value} )
+
+    sorted_hard = sorted(hard_accuracy, key=lambda d: d['hard_acc'], reverse=True)
+    print(sorted_hard)
+
+print_accuracy_rank()
+
