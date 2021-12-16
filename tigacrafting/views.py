@@ -12,7 +12,7 @@ from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
 from django.db.models import Count
 import pytz
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.db.models import Max,Min
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -60,7 +60,7 @@ from decimal import *
 from tigaserver_project.settings import *
 from rest_framework.response import Response
 import re
-from tigacrafting.report_queues import assign_reports
+from tigacrafting.report_queues import assign_reports, get_base_adults_qs
 
 #-----------------------------------#
 
@@ -984,13 +984,25 @@ def pending_reports_heatmap_data():
     #     data.append([ d[0], d[1], d[2]/total ])
     return raw_data
 
+
 def pending_reports_by_country():
     country_qs = EuropeCountry.objects.exclude(is_bounding_box=True)
     data = {}
     for country in country_qs:
-        current_progress_country = Report.objects.filter(country=country).exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
+        is_supervised_country = UserStat.objects.filter(national_supervisor_of=country).exists()
+        if is_supervised_country:
+            # exclude reports reserved for supervisor
+            current_progress_country = get_base_adults_qs().annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).filter(country=country)
+            if country.national_supervisor_report_expires_in is None:
+                expiration_period_days = 14
+            else:
+                expiration_period_days = country.national_supervisor_report_expires_in
+            current_progress_country = current_progress_country.exclude( Q(country=country) & Q(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days)) )
+        else:
+            current_progress_country = get_base_adults_qs().annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).filter(country=country)
         data[country.gid]={"n":current_progress_country.count(), "x":country.geom.centroid.x, "y":country.geom.centroid.y, "name":country.name_engl }
     return data
+
 
 def expert_geo_report_assign(request):
     count_data = pending_reports_by_country()

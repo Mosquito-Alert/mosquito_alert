@@ -143,6 +143,49 @@ def assign_reports_to_national_supervisor(this_user):
         #         user_stats.save()
 
 
+def assign_crisis_report(this_user, country):
+    summary = {}
+    expiration_period_days = 14
+    current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
+    summary['current_pending'] = current_pending
+    if current_pending < MAX_N_OF_PENDING_REPORTS:
+        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
+        n_to_get = MAX_N_OF_PENDING_REPORTS - current_pending
+        summary['n_to_get'] = n_to_get
+        new_reports_unfiltered = get_base_adults_qs().filter(country=country).exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
+        if UserStat.objects.filter(national_supervisor_of=country).exists():
+            if country.national_supervisor_report_expires_in is not None:
+                expiration_period_days = country.national_supervisor_report_expires_in
+            new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days))
+        #exclude reports assigned to supervisor but not yet validated
+        reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of=country).filter(report__type='adult').filter(validation_complete=False)
+        reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=expiration_period_days)) )
+        reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
+        blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
+        reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(version_UUID__in=blocked_by_experts)
+        if reports_unfiltered_excluding_reserved_ns:
+            new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
+            reports_to_take = new_reports[0:n_to_get]
+            user_stats = None
+            try:
+                user_stats = UserStat.objects.get(user_id=this_user.id)
+            except ObjectDoesNotExist:
+                pass
+            grabbed_reports = -1
+            if user_stats:
+                grabbed_reports = user_stats.grabbed_reports
+            for this_report in reports_to_take:
+                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                who_has_count = this_report.get_who_has_count()
+                if who_has_count == 0 or who_has_count == 1:
+                    # No one has the report, is simplified
+                    new_annotation.simplified_annotation = True
+                grabbed_reports += 1
+                new_annotation.save()
+            if grabbed_reports != -1 and user_stats:
+                user_stats.grabbed_reports = grabbed_reports
+                user_stats.save()
+    return summary
 
 def assign_reports_to_regular_user(this_user):
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()

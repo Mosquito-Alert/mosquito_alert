@@ -60,12 +60,17 @@ $(document).ready(function() {
     resethighlight = function(e){
         geojson.resetStyle(e.target);
 		info.update();
-		console.log("resetting " + e.target.feature.properties.gid);
     };
 
     update_current_selection = function(){
         if(current_selection){
-            $('#cur_sel').text(current_selection.name + ' - ' + count_data[current_selection.gid].n + ' reports available');
+            var n_available = count_data[current_selection.gid].n;
+            $('#cur_sel').text(current_selection.name + ' - ' + n_available + ' reports available');
+            if(n_available > 0){
+                $('button.assign').prop("disabled",false);
+            }else{
+                $('button.assign').prop("disabled",true);
+            }
         }else{
             $('#cur_sel').text("None, click on country to select");
         }
@@ -73,9 +78,7 @@ $(document).ready(function() {
 
     zoomtofeature = function(e) {
 		mymap.fitBounds(e.target.getBounds());
-		console.log(e.target.feature.properties);
 		current_selection = { 'gid': e.target.feature.properties.gid , 'name': e.target.feature.properties.name_engl };
-		$('button.assign').prop("disabled",false);
 		update_current_selection();
 	};
 
@@ -157,6 +160,23 @@ $(document).ready(function() {
 
     $('button.assign').prop("disabled",true);
 
+    var get_reports = function(){
+        var url = '/api/crisis_report_assign/' + user_id + '/' + current_selection.gid + '/';
+        $.ajax({
+            url: url,
+            type: "POST",
+            headers: { "X-CSRFToken": csrf_token },
+            success: function( data, textStatus, jqXHR ) {
+                $('#loading_progress').html("<p>Done retrieving reports! Going back to EntoLab...");
+                window.location.href = '/experts';
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                $('#loading_progress').hide();
+                alert("There has been an error and crisis mode has not been toggled. Please retry later");
+            }
+        });
+    }
+
     $( "#dialog-confirm" ).dialog({
       resizable: false,
       height: "auto",
@@ -165,7 +185,8 @@ $(document).ready(function() {
       autoOpen: false,
       buttons: {
         "Yes": function() {
-          $( this ).dialog( "close" );
+            $('#loading_progress').show();
+            get_reports();
         },
         Cancel: function() {
           $( this ).dialog( "close" );

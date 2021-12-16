@@ -96,6 +96,7 @@
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav navbar-right">
                             {% block navbar_right_items %}
+                            <li><a href="{% url 'expert_report_annotation' %} ">Back to Entolab</a></li>
                             {% endblock %}
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
                             <li><a href="{% url "auth_logout" %}">logout</a></li>
@@ -117,10 +118,13 @@
 
     <div id="dialog-confirm" title="Grab reports?">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span><span id="dialog_message">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+        <p id="loading_progress" style="display:none;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" aria-hidden="true"></i>Getting reports...</p>
     </div>
 
     <script>
         var count_data = JSON.parse('{{ count_data | safe }}');
+        var user_id = {{ request.user.id }};
+        var csrf_token = '{{ csrf_token }}';
     </script>
 
     <!-- Bootstrap core JavaScript

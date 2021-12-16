@@ -634,6 +634,9 @@
                     {% endif %}
 
 {% endif %}
+                <div class="form-group">
+                    <!-- Supervisor validation goes here -->
+                </div>
             </div>
 
             <div class="col-md-4">
@@ -2237,7 +2240,7 @@
     {% endblock %}
 
     <script>
-
+        var crisis_mode = {% if user.userstat.crisis_mode %}true{% else %}false{% endif %};
 
         $("#filters_submit_button").on('click', submit_queries);
 
@@ -2326,12 +2329,16 @@
         $("#search_uuid_autocomplete").on('click', submit_search_version_uuid);
 
         grab_reports_button.on('click', function () {
-            $("#grab_reports_button").attr("disabled", true);
-            gear.show();
-            $("#load_new_reports_input").val("T");
-            var qp = query_selectors();
-            qp += '&load_new_reports=' + "T";
-            background_save(qp);
+            if(crisis_mode==true){
+                window.location.href = '{% url 'expert_geo_report_assign' %}';
+            }else{
+                $("#grab_reports_button").attr("disabled", true);
+                gear.show();
+                $("#load_new_reports_input").val("T");
+                var qp = query_selectors();
+                qp += '&load_new_reports=' + "T";
+                background_save(qp);
+            }
         });
 
         function go_to_page(top_or_bottom){
