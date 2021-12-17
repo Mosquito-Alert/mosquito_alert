@@ -1009,6 +1009,36 @@ def expert_geo_report_assign(request):
     return render(request, 'tigacrafting/geo_report_assign.html', { 'count_data': json.dumps(count_data) })
 
 
+def executive_auto_validate(annotation, request):
+    users = []
+    report = annotation.report
+    users.append(User.objects.get(username="innie"))
+    users.append(User.objects.get(username="minnie"))
+    super_reritja = User.objects.get(username="super_reritja")
+    for u in users:
+        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+            new_annotation = ExpertReportAnnotation(report=report, user=u)
+            new_annotation.simplified_annotation = True
+            new_annotation.tiger_certainty_notes = 'auto'
+            new_annotation.tiger_certainty_category = annotation.tiger_certainty_category
+            new_annotation.aegypti_certainty_category = annotation.aegypti_certainty_category
+            new_annotation.status = annotation.status
+            new_annotation.category = annotation.category
+            new_annotation.complex = annotation.complex
+            new_annotation.validation_value = annotation.validation_value
+            new_annotation.other_species = annotation.other_species
+            new_annotation.validation_complete = True
+            new_annotation.save()
+    try:
+        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    except ExpertReportAnnotation.DoesNotExist:
+        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+
+    roger_annotation.validation_complete = True
+    roger_annotation.save()
+    current_domain = get_current_domain(request)
+    issue_notification(roger_annotation, current_domain)
+
 @transaction.atomic
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na',loc='na'):
@@ -1061,6 +1091,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     for f in formset:
                         one_form = f.save(commit=False)
                         auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
+                        if one_form.validation_complete_executive:
+                            executive_auto_validate(one_form, request)
                         if auto_flag:
                             one_form.status = 0
                         if(this_user_is_reritja and one_form.validation_complete == True):

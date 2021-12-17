@@ -79,8 +79,13 @@ def assign_reports_to_national_supervisor(this_user):
         blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
         reports_unfiltered_excluding_reserved_ns = reports_unfiltered_excluding_reserved_ns.exclude(version_UUID__in=blocked_by_experts)
 
+        reports_unfiltered_excluding_reserved_ns_own_country = reports_unfiltered_excluding_reserved_ns.filter(country__gid=supervised_country.gid)
+        reports_unfiltered_excluding_reserved_ns_other_countries = reports_unfiltered_excluding_reserved_ns.exclude(country__gid=supervised_country.gid)
+
         country_filtered_reports = filter_reports(reports_supervised_country.order_by('creation_time'))
-        other_countries_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
+        #these reports are from the ns country, but expired
+        non_executive_own_country_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns_own_country.order_by('creation_time'))
+        other_countries_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns_other_countries.order_by('creation_time'))
 
         currently_taken = 0
         user_stats = None
@@ -100,6 +105,19 @@ def assign_reports_to_national_supervisor(this_user):
             currently_taken += 1
             if currently_taken >= MAX_N_OF_PENDING_REPORTS:
                 break
+
+        if currently_taken < MAX_N_OF_PENDING_REPORTS:
+            for this_report in non_executive_own_country_filtered_reports:
+                new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                who_has_count = this_report.get_who_has_count()
+                if who_has_count == 0 or who_has_count == 1:
+                    # No one has the report, is simplified
+                    new_annotation.simplified_annotation = True
+                grabbed_reports += 1
+                new_annotation.save()
+                currently_taken += 1
+                if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                    break
 
         if currently_taken < MAX_N_OF_PENDING_REPORTS:
             for this_report in other_countries_filtered_reports:

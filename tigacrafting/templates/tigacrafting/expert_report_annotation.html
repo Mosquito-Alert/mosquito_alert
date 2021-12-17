@@ -551,9 +551,16 @@
                     </div>
                     {% endif %}
 
-
-
                     {% form form using "floppyforms/layouts/bootstrap.html" %}
+
+                    {% if request.user.userstat.is_national_supervisor and form.instance.is_on_ns_executive_validation_period %}
+                    <div class="form-group">
+                        <label>Executive validation:</label>
+                        <div class="controls field-vc_executive" data-toggle="tooltip" title="" data-placement="top" data-original-title="Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor.">
+                            <input class="exec_val_input" type="checkbox" name="vc_executive_{{ form.instance.id }}" id="vc_executive_{{ form.instance.id }}">
+                        </div>
+                    </div>
+                    {% endif %}
 
                     {% if checked == 'unchecked' or edit_mode == 'edit' %}
 
@@ -634,9 +641,6 @@
                     {% endif %}
 
 {% endif %}
-                <div class="form-group">
-                    <!-- Supervisor validation goes here -->
-                </div>
             </div>
 
             <div class="col-md-4">
@@ -2423,6 +2427,7 @@
     <script src={% static "tigacrafting/categories_combo.js" %}></script>
     <script src={% static "tigacrafting/macro_messages.js" %}></script>
     <script src={% static "tigacrafting/crisis_toggle.js" %}></script>
+    <script src={% static "tigacrafting/exec_val.js" %}></script>
 
 
 {% endblock %}

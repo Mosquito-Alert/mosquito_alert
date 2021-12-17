@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import tigacrafting.html_utils as html_utils
-
+import pytz
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -203,12 +203,27 @@ class ExpertReportAnnotation(models.Model):
     complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value', on_delete=models.DO_NOTHING, )
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
     other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.DO_NOTHING, )
+    validation_complete_executive = models.BooleanField(default=False, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
 
     def is_superexpert(self):
         return 'superexpert' in self.user.groups.values_list('name', flat=True)
 
     def is_expert(self):
         return 'expert' in self.user.groups.values_list('name', flat=True)
+
+    @property
+    def is_on_ns_executive_validation_period(self):
+        utc = pytz.UTC
+        if self.report.country is not None:
+            if UserStat.objects.filter(national_supervisor_of=self.report.country).exists():
+                expiration_period = self.report.country.national_supervisor_report_expires_in
+                if expiration_period is None:
+                    expiration_period = 14
+                date_now = datetime.now().replace(tzinfo=utc)
+                date_expiration = date_now - timedelta(days=expiration_period)
+                if self.report.server_upload_time >= date_expiration:
+                    return True
+        return False
 
     def get_others_annotation_html(self):
         result = ''
