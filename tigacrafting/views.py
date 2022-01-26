@@ -1019,7 +1019,7 @@ def executive_auto_validate(annotation, request):
         if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
             new_annotation = ExpertReportAnnotation(report=report, user=u)
             new_annotation.simplified_annotation = True
-            new_annotation.tiger_certainty_notes = 'auto'
+            new_annotation.tiger_certainty_notes = 'exec_auto'
             new_annotation.tiger_certainty_category = annotation.tiger_certainty_category
             new_annotation.aegypti_certainty_category = annotation.aegypti_certainty_category
             new_annotation.status = annotation.status
