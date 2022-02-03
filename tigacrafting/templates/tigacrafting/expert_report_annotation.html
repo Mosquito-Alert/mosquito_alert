@@ -335,9 +335,9 @@
         <div id="crisis_status" class="row {% if user.userstat.crisis_mode %}crisis-on{% else %}crisis-off{% endif %}">
             <h3>Crisis mode is
                 {% if user.userstat.crisis_mode %}
-                    <button id="crisis_toggle" class="btn btn-danger"><span class="badge">ON</span></button>
+                    <span>ON</span>
                 {% else %}
-                    <button id="crisis_toggle" class="btn btn-success"><span class="badge">OFF</span></button>
+                    <span class="text-success">OFF</span>
                 {% endif %}
             </h3>
         </div>
@@ -2425,8 +2425,7 @@
     </script>
 
     <script src={% static "tigacrafting/categories_combo.js" %}></script>
-    <script src={% static "tigacrafting/macro_messages.js" %}></script>
-    <script src={% static "tigacrafting/crisis_toggle.js" %}></script>
+    <script src={% static "tigacrafting/macro_messages.js" %}></script> 
     <script src={% static "tigacrafting/exec_val.js" %}></script>
 
 
