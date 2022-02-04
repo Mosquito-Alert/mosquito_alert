@@ -698,7 +698,10 @@ def stats_user_ranking(request, page=1, user_uuid=None):
     p = Paginator(objects, page_length )
     if seek == 't':
         index = get_index_of_uuid(objects,user_uuid)
-        page_of_index = get_page_of_index(index, page_length)
+        if index == -1:
+            page_of_index = 1
+        else:
+            page_of_index = get_page_of_index(index, page_length)
         current_page = p.page(int(page_of_index))
         return HttpResponseRedirect(reverse('stats_user_ranking', args=[int(page_of_index),user_uuid]))
     else:
