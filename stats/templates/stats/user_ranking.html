@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load stats_extras %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 <html>
@@ -46,6 +47,9 @@
                         <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
                     {% endif %}
                     <!--<p>Más info sobre la <a href="{{ info_url }}">puntuación</a></p>-->
+                </div>
+                <div class="col-xs-12">
+                    <p>{% trans 'last_update' %}: {{ last_update }}</p>
                 </div>
             </div>
             {% if user_id %}
@@ -101,8 +105,8 @@
             {% endif %}
             <div id="{{ row.user_uuid }}" class="row content clickable size-4 {% if row.user_uuid == user_id %} mine pulse {% endif %}">
                 <div class="col-xs-2"><span class="badge badge-info">{{ row.rank }}</span></div>
-                <div class="col-xs-3"><img src="{{ row.identicon }}" height="35px"></div>
-                <div class="col-xs-4">{{ row.class.label }}</div>
+                <div class="col-xs-3"><img src="/media/identicons/{{ row.user_uuid }}.png" height="35px"></div>
+                <div class="col-xs-4">{{ row.class_value|translate_class_value  }}</div>
                 <div class="col-xs-2"><span class="badge badge-info">{{ row.score_v2 }}</span></div>
             </div>
             <div id="hidden_{{ row.user_uuid }}" class="row content info" style="display:none;">

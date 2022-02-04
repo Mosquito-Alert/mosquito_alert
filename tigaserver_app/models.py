@@ -142,6 +142,13 @@ class TigaProfile(models.Model):
     score = models.IntegerField(help_text='Score associated with profile. This is the score associated with the account', default=0)
 
 
+class RankingData(models.Model):
+    user_uuid = models.CharField(max_length=36, primary_key=True, help_text='User identifier uuid')
+    class_value = models.CharField(max_length=60)
+    rank = models.IntegerField()
+    score_v2 = models.IntegerField()
+    last_update = models.DateTimeField(help_text="Last time ranking data was updated", null=True, blank=True)
+
 
 class TigaUser(models.Model):
     user_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '

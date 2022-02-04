@@ -636,18 +636,27 @@ def stats_user_score(request, user_uuid=None):
             user.get_identicon()
         except TigaUser.DoesNotExist:
             pass
-    user_score = compute_user_score_in_xp_v2(user_uuid,update=True)
+
+    if user.score_v2_struct is None:
+        user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+        user.score_v2_struct = json.dumps(user_score, indent=2, sort_keys=True, default=str)
+        user.last_score_update = datetime.datetime.now()
+        user.save()
+    else:
+        user_score = json.loads(user.score_v2_struct)
     context = { "score_data": user_score }
     return render(request, 'stats/user_score.html', context)
 
 
 def get_index_of_uuid(objects, user_uuid):
     index = 0
+    position = -1
     for user in objects:
-        if user['user_uuid'] == user_uuid:
+        if user.user_uuid == user_uuid:
+            position = index
             break
         index += 1
-    return index
+    return position
 
 
 def get_page_of_index(index, page_size):
@@ -667,15 +676,24 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         try:
             user = TigaUser.objects.get(pk=user_uuid)
             user.get_identicon()
-            user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+            #user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+            if user.score_v2_struct is None:
+                user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
+                user.score_v2_struct = json.dumps(user_score, indent=2, sort_keys=True, default=str)
+                user.last_score_update = datetime.datetime.now()
+                user.save()
+            else:
+                user_score = json.loads( user.score_v2_struct )
             if user_score['total_score'] > 0:
                 user_has_score = True
 
         except TigaUser.DoesNotExist:
             pass
     seek = request.GET.get('seek', 'f')
-    ranking = get_ranking_data()
-    objects = ranking['data']
+    #ranking = get_ranking_data()
+    #objects = ranking['data']
+    objects = RankingData.objects.all().order_by('-score_v2')
+    last_update = objects.first().last_update
     page_length = 5
     p = Paginator(objects, page_length )
     if seek == 't':
@@ -694,6 +712,7 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         objects = current_page.object_list
         context = {
                     'data': objects,
+                    'last_update': last_update,
                     'user_has_score': user_has_score,
                     'pagination':
                         {
@@ -1027,10 +1046,13 @@ def get_user_xp_data(request):
     #language = translation.get_language_from_request(request)
     translation.activate(locale)
 
-    if update == False:
-        retval = { "total_score": u.score_v2 }
+    if u.score_v2_struct is None:
+        retval = compute_user_score_in_xp_v2(user_id, update=True)
+        u.score_v2_struct = json.dumps(retval, indent=2, sort_keys=True, default=str)
+        u.last_score_update = datetime.datetime.now()
+        u.save()
     else:
-        retval = compute_user_score_in_xp_v2(user_id, True)
+        retval = json.loads(u.score_v2_struct)
     return Response(retval)
 
 

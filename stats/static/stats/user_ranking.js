@@ -48,7 +48,6 @@ var detail_template = '<div class="panel panel-default">' +
     '</div>' +
 '</div>';
 
-
 $(document).ready(function() {
     //$('#datatable').DataTable();
     $('.clickable').click(function(event) {
