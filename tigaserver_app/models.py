@@ -165,6 +165,10 @@ class TigaUser(models.Model):
 
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True, on_delete=models.DO_NOTHING, )
 
+    score_v2_struct = models.TextField(help_text="Full cached score data", null=True, blank=True)
+
+    last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
+
     def __unicode__(self):
         return self.user_UUID
 
