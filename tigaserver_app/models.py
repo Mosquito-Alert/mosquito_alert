@@ -2066,10 +2066,9 @@ class Report(models.Model):
                     if winning_photo and winning_photo.count() > 0:
                         return Photo.objects.get(pk=winning_photo_id)
             else:
-                photos = Photo.objects.filter(report=self)
-                if photos and len(photos) == 1:
-                    if photos[0] and not photos[0].hide:
-                        return photos[0]
+                photos = Photo.objects.filter(report=self).exclude(hide=True).order_by('-id')
+                if photos and len(photos) > 0:
+                    return photos[0]
             return None
 
     def get_final_public_note(self):
