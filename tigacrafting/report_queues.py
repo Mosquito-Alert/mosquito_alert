@@ -18,15 +18,38 @@ def get_base_adults_qs():
     return Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult')
 
 
-def get_deleted_adult_reports(qs):
-    return qs.filter(version_number=-1).values('report_id').distinct()
+# def get_deleted_adult_reports(qs):
+#     return qs.filter(version_number=-1).values('report_id').distinct()
+# This is not used anymore, because it's too naive and returns as deleted some reports which are in fact not deleted
+# This happens because there is a lot more collisions between report_id
+# The solution goes through this query
+#
+# select "version_UUID"
+# from
+# tigaserver_app_report r,
+# (
+#   select report_id, user_id, count("version_UUID")
+#   from
+#   tigaserver_app_report
+#   where
+#   type = 'adult' and report_id in
+#     (select distinct report_id from tigaserver_app_report where version_number = -1)
+#   group by report_id, user_id having count("version_UUID") >1
+# ) as deleted
+# where r.report_id = deleted.report_id and r.user_id = deleted.user_id
+#
+# The internal count subquery gives a list of report_id, user_id of truly deleted reports. These are reports with the same
+# report_id, belonging to the same user. The subclause in this query applies an additional requirement: there must be a -1 in
+# the versions. This way we obtain the list of report_id, user_id for reports which contain a -1 in the series and belong to
+# the same user. This is important, and avoids the fact of considering deleted a report with the same report_id as one marked -1,
+# but belonging to a different user
 
 
 def filter_reports_for_superexpert(reports):
     # not deleted, last version, completely validated by at least three experts
-    deleted_adult_reports = get_deleted_adult_reports(reports)
+    #deleted_adult_reports = get_deleted_adult_reports(reports)
     # not deleted
-    undeleted = reports.exclude(report_id__in=deleted_adult_reports)
+    undeleted = reports.exclude(report_id__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
     # last version
     latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id, max(version_number) as higher from tigaserver_app_report group by report_id) maxes where r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
     # fully validated
@@ -40,9 +63,9 @@ def filter_reports_for_superexpert(reports):
 
 def filter_reports(reports):
     #not deleted, last version
-    deleted_adult_reports = get_deleted_adult_reports(reports)
+    #deleted_adult_reports = get_deleted_adult_reports(reports)
     # not deleted
-    undeleted = reports.exclude(report_id__in=deleted_adult_reports)
+    undeleted = reports.exclude(report_id__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
     # last version
     latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id, max(version_number) as higher from tigaserver_app_report group by report_id) maxes where r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
     return latest_versions
