@@ -1041,7 +1041,7 @@ def executive_auto_validate(annotation, request):
 
 @transaction.atomic
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', edit_mode='off', tags_filter='na',loc='na'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na',loc='na'):
     this_user = request.user
     if getattr(settings, 'SHOW_USER_AGREEMENT_ENTOLAB', False) == True:
         if this_user.userstat:
@@ -1078,6 +1078,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             final_status = request.POST.get('final_status', final_status)
             version_uuid = request.POST.get('version_uuid', version_uuid)
             linked_id = request.POST.get('linked_id', linked_id)
+            ns_exec = request.POST.get('ns_exec', ns_exec)
             tags_filter = request.POST.get('tags_filter', tags_filter)
             checked = request.POST.get('checked', checked)
             loc = request.POST.get('loc', loc)
@@ -1119,6 +1120,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             final_status = request.GET.get('final_status', final_status)
             version_uuid = request.GET.get('version_uuid', version_uuid)
             linked_id = request.GET.get('linked_id', linked_id)
+            ns_exec = request.GET.get('ns_exec', ns_exec)
             tags_filter = request.GET.get('tags_filter', tags_filter)
             checked = request.GET.get('checked', checked)
             loc = request.GET.get('loc', loc)
@@ -1273,6 +1275,13 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
                 except ValueError:
                     pass
+            if ns_exec and ns_exec != 'all':
+                try:
+                    this_exec = int(ns_exec)
+                    annotated_by_exec = ExpertReportAnnotation.objects.filter(validation_complete_executive=True).filter(user_id=this_exec).values('report').distinct()
+                    all_annotations = all_annotations.filter(report_id__in=annotated_by_exec)
+                except ValueError:
+                    pass
 
             if pending == "complete":
                 all_annotations = all_annotations.filter(validation_complete=True)
@@ -1356,6 +1365,17 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['final_status'] = final_status
         args['version_uuid'] = version_uuid
         args['linked_id'] = linked_id
+        args['ns_exec'] = ns_exec
+        if ns_exec:
+            if ns_exec != 'all':
+                try:
+                    exec_validator_id = int(ns_exec)
+                    exec_validator = User.objects.get(pk=exec_validator_id)
+                    args['exec_validated_label'] = "{0} - {1}".format(exec_validator.username, exec_validator.userstat.national_supervisor_of.name_engl )
+                except:
+                    pass
+            else:
+                args['exec_validated_label'] = 'N/A'
         args['tags_filter'] = tags_filter
         #args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
@@ -1374,6 +1394,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         expert_users = User.objects.filter(groups__name='expert').order_by('first_name', 'last_name')
         expert_users_w_country = UserStat.objects.filter(user_id__in=expert_users).filter(native_of_id__isnull=False).exclude(native_of_id=17).values('native_of_id').distinct()
         args['country_name'] = EuropeCountry.objects.filter(gid__in=expert_users_w_country).order_by('name_engl').values('name_engl','iso3_code')
+
+        args['ns_list'] = User.objects.filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl')
 
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
     else:
