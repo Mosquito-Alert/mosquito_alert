@@ -46,7 +46,7 @@ def compute_all_scores():
 
 def compute_write_all_scores():
     users_with_reports = Report.objects.all().values('user').distinct()
-    all_users = TigaUser.objects.filter(user_UUID__in=users_with_reports).order_by('-score_v2')
+    all_users = TigaUser.objects.filter(user_UUID__in=users_with_reports).filter(score_v2_struct__isnull=True).order_by('-score_v2')
     print("Starting...")
     goal = len(all_users)
     start = 1
@@ -67,5 +67,21 @@ def compute_write_all_scores():
         print("Done {0} of {1}".format( start, goal ))
         start += 1
 
+# Latest user activity query
+# select * from (
+# select
+# tu."user_UUID",
+# tu.last_score_update,
+# max(r.server_upload_time) as latest_act
+# from
+# tigaserver_app_tigauser tu,
+# tigaserver_app_report r
+# where
+# r.user_id = tu."user_UUID"
+# group by
+# tu."user_UUID",
+# tu.last_score_update
+# ) as foo
+# where foo.last_score_update is null or foo.latest_act > foo.last_score_update
 
 compute_write_all_scores()
