@@ -915,15 +915,18 @@ class Report(models.Model):
                         result['class_label'] = 'conflict'
                     else:
                         if classification['category'] is not None:
-                            result['class_name'] = classification['category'].name
-                            result['class_label'] = slugify(classification['category'].name)
-                            result['class_id'] = classification['category'].id
-                            result['class_value'] = classification['value']
-                        elif classification['complex'] is not None:
-                            result['class_name'] = classification['complex'].description
-                            result['class_label'] = slugify(classification['category'].description)
-                            result['class_id'] = classification['category'].id
-                            result['class_value'] = classification['value']
+                            if classification['complex'] is not None:
+                                result['class_name'] = classification['complex'].description
+                                result['class_label'] = slugify(classification['category'].name)
+                                result['class_id'] = classification['category'].id
+                                result['class_value'] = classification['complex'].id
+                                # result['class_value'] = classification['value']
+                            else:
+                                result['class_name'] = classification['category'].name
+                                result['class_label'] = slugify(classification['category'].name)
+                                result['class_id'] = classification['category'].id
+                                result['class_value'] = classification['value']
+
                     '''
                     retval = {
                         'category': None,
@@ -1504,7 +1507,10 @@ class Report(models.Model):
         if superexpert_annotations.count() > 1:
             most_voted = self.get_most_voted_category(superexpert_annotations)
         elif superexpert_annotations.count() == 1:
-            most_voted = superexpert_annotations[0].category
+            if superexpert_annotations[0].category.id == 8:
+                most_voted = superexpert_annotations[0].complex
+            else:
+                most_voted = superexpert_annotations[0].category
         elif expert_annotations.count() >= 3:
             most_voted = self.get_most_voted_category(expert_annotations)
         else:
@@ -1565,7 +1571,10 @@ class Report(models.Model):
         if superexpert_annotations.count() > 1:
             most_voted = self.get_most_voted_category(superexpert_annotations)
         elif superexpert_annotations.count() == 1:
-            most_voted = superexpert_annotations[0].category
+            if superexpert_annotations[0].category.id == 8:
+                most_voted = superexpert_annotations[0].complex
+            else:
+                most_voted = superexpert_annotations[0].category
         elif expert_annotations.count() >= 3:
             most_voted = self.get_most_voted_category(expert_annotations)
         else:
