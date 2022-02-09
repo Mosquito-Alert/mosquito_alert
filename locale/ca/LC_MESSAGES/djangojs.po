@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-21 14:08+0000\n"
+"POT-Creation-Date: 2022-02-09 14:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,36 +19,60 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: stats/static/stats/user_ranking.js:8
+msgid "Data last updated on"
+msgstr "Darrera actualització"
+
+#: stats/static/stats/user_ranking.js:11
 msgid "Joined"
 msgstr "Es va unir fa"
 
-#: stats/static/stats/user_ranking.js:11
+#: stats/static/stats/user_ranking.js:14
 msgid "Last active"
 msgstr "Darrera activitat fa"
 
-#: stats/static/stats/user_ranking.js:20
+#: stats/static/stats/user_ranking.js:23
 msgid "Overall"
 msgstr "Nivell General"
 
-#: stats/static/stats/user_ranking.js:24
+#: stats/static/stats/user_ranking.js:27
 msgid "Adult"
 msgstr "Nivell Mosquit"
 
-#: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
+#: stats/static/stats/user_ranking.js:30 stats/static/stats/user_ranking.js:40
 msgid "Reports"
 msgstr "Dades enviades"
 
-#: stats/static/stats/user_ranking.js:30 stats/static/stats/user_ranking.js:40
+#: stats/static/stats/user_ranking.js:33 stats/static/stats/user_ranking.js:43
 msgid "Score"
 msgstr "Puntuació obtinguda"
 
-#: stats/static/stats/user_ranking.js:34
+#: stats/static/stats/user_ranking.js:37
 msgid "Site"
 msgstr "Nivell Lloc de cria"
 
-#: stats/static/stats/user_ranking.js:44
+#: stats/static/stats/user_ranking.js:47
 msgid "Other"
 msgstr "Altra puntuació"
+
+#: stats/static/stats/user_ranking.js:65
+msgid "Novice"
+msgstr ""
+
+#: stats/static/stats/user_ranking.js:66
+msgid "Contributor"
+msgstr ""
+
+#: stats/static/stats/user_ranking.js:67
+msgid "Expert"
+msgstr ""
+
+#: stats/static/stats/user_ranking.js:68
+msgid "Master"
+msgstr ""
+
+#: stats/static/stats/user_ranking.js:69
+msgid "Grandmaster"
+msgstr ""
 
 #: tigacrafting/static/tigacrafting/jquery-ui/jquery-ui.min.js:10
 msgid "'"

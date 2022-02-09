@@ -644,7 +644,7 @@ def stats_user_score(request, user_uuid=None):
         user.save()
     else:
         user_score = json.loads(user.score_v2_struct)
-    context = { "score_data": user_score }
+    context = { "score_data": user_score, "score_last_update": user.last_score_update }
     return render(request, 'stats/user_score.html', context)
 
 
@@ -730,8 +730,10 @@ def stats_user_ranking(request, page=1, user_uuid=None):
                               'last': p.num_pages
                         }
                   }
-        if user is not None:
+        if user_uuid is not None:
             context['user_id'] = user_uuid
+        if user is not None:
+            context['user'] = user
         context['info_url'] = info_url
         return render(request, 'stats/user_ranking.html', context)
 
@@ -1056,6 +1058,9 @@ def get_user_xp_data(request):
         u.save()
     else:
         retval = json.loads(u.score_v2_struct)
+
+    retval['last_update'] = u.last_score_update
+
     return Response(retval)
 
 

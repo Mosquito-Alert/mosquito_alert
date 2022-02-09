@@ -33,7 +33,7 @@
                 </div>
                 <div class="col-xs-12">
                     {% if user_id %}
-                        {% if user_has_score %}
+                        {% if user_has_score == True %}
                             <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
                         {% else %}
                             <div class="panel panel-primary">
@@ -44,12 +44,22 @@
                             </div>
                         {% endif %}
                     {% else %}
-                        <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
+                        <!--<p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>-->
+                        {% if not user %}
+                        <div class="panel panel-primary">
+                            <div class="panel-body">
+                                <p>{% trans 'no_score_yet' %}</p>
+                                <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
+                            </div>
+                        </div>
+                        {% else %}
+                            <p>{% trans 'user_ranking_info_text_2' %} <a href="{{ info_url }}">{% trans 'user_ranking_info_text_3' %}</a></p>
+                        {% endif %}
                     {% endif %}
                     <!--<p>Más info sobre la <a href="{{ info_url }}">puntuación</a></p>-->
                 </div>
                 <div class="col-xs-12">
-                    <p>{% trans 'last_update' %}: {{ last_update }}</p>
+                    <p><b>{% trans 'last_ranking_data_update' %}: {{ last_update|date:'d/m/Y'}}</b></p>
                 </div>
             </div>
             {% if user_id %}

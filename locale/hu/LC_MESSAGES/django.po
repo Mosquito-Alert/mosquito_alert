@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 11:02+0000\n"
+"POT-Creation-Date: 2022-02-09 14:47+0000\n"
 "PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Hungarian (Hungary)\n"
@@ -76,184 +76,230 @@ msgstr "Résztvevők több mint 3 jelentéssel"
 msgid "Participants with over 4 reports"
 msgstr "Résztvevők több mint 4 jelentéssel"
 
-#: stats/templates/stats/user_ranking.html:30
+#: stats/templates/stats/user_ranking.html:31
 msgid "user_ranking_info_text_1"
 msgstr ""
 "Nézd meg a jelenlegi pontszámod és szinted. A beállítások menüben részletes "
 "információt találsz a Mosquito Alert pontozási rendszeréről."
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:37
+#: stats/templates/stats/user_ranking.html:42
+#: stats/templates/stats/user_ranking.html:47
+#: stats/templates/stats/user_ranking.html:52
+#: stats/templates/stats/user_ranking.html:56
 msgid "user_ranking_info_text_2"
 msgstr "Több infó"
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:37
+#: stats/templates/stats/user_ranking.html:42
+#: stats/templates/stats/user_ranking.html:47
+#: stats/templates/stats/user_ranking.html:52
+#: stats/templates/stats/user_ranking.html:56
 msgid "user_ranking_info_text_3"
 msgstr "pontozás"
 
-#: stats/templates/stats/user_ranking.html:40
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:51
 msgid "no_score_yet"
 msgstr ""
 "Mivel még nincs pontod, így nem szerepelsz a rangsorban. Tölts fel pár "
 "jegyzetet és nézz vissza később. Az alábbi linkre kattintva megtudhatod, "
 "hogyan szerezhetsz pontokat."
 
-#: stats/templates/stats/user_ranking.html:68
-#: stats/templates/stats/user_ranking.html:156
+#: stats/templates/stats/user_ranking.html:62
+msgid "last_ranking_data_update"
+msgstr "Utolsó frissítés"
+
+#: stats/templates/stats/user_ranking.html:83
+#: stats/templates/stats/user_ranking.html:172
 msgid "My position"
 msgstr "Helyzetem"
 
-#: stats/templates/stats/user_ranking.html:72
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_ranking.html:88
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
+#: stats/templates/stats/user_score.html:145
 msgid "of"
 msgstr "nak"
 
-#: stats/templates/stats/user_ranking.html:88
+#: stats/templates/stats/user_ranking.html:104
 msgid "Rank"
 msgstr "Rangsor"
 
-#: stats/templates/stats/user_ranking.html:89
+#: stats/templates/stats/user_ranking.html:105
 msgid "User"
 msgstr "Felhasználó"
 
-#: stats/templates/stats/user_ranking.html:90
+#: stats/templates/stats/user_ranking.html:106
 msgid "Overall class"
 msgstr "Általános csoport"
 
-#: stats/templates/stats/user_ranking.html:91
+#: stats/templates/stats/user_ranking.html:107
 msgid "Score"
 msgstr "Pontozás"
 
-#: stats/templates/stats/user_ranking.html:97
+#: stats/templates/stats/user_ranking.html:113
 msgid "This is you!"
 msgstr "Ez vagy te!"
 
-#: stats/templates/stats/user_ranking.html:134
+#: stats/templates/stats/user_ranking.html:150
 msgid "Score details"
 msgstr "Részletek"
 
-#: stats/templates/stats/user_score.html:28
+#: stats/templates/stats/user_score.html:29
 msgid "Citizen Scientist"
 msgstr "Pontozás összegzése"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:30
+msgid "last_score_data_update"
+msgstr "Utolsó frissítés"
+
+#: stats/templates/stats/user_score.html:32
 msgid "this_is_your_personal_avatar"
 msgstr ""
 "Ez a résztvevő avatarja. A pontozás alapján, a jelenlegi tapasztalati szint"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:32
 msgid "there_are_5_levels"
 msgstr ""
 "Öt szintet lehet elérni: Kezdő, Együttműködő, Szakértő, Mester és Nagy "
 "Mester."
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Joined"
 msgstr "Megkezdett részvétel"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Last active"
 msgstr "Utoljára aktív"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Never"
 msgstr "Soha"
 
-#: stats/templates/stats/user_score.html:34
+#: stats/templates/stats/user_score.html:35
 msgid "Overall rank - Unranked"
 msgstr "Általános pozíció - nem rangsorolt"
 
-#: stats/templates/stats/user_score.html:36
+#: stats/templates/stats/user_score.html:37
 msgid "Overall rank"
 msgstr "Általános pozíció"
 
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
+#: stats/templates/stats/user_score.html:145
 msgid "Top"
 msgstr "A csúcson vagy"
 
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
 msgid "participants"
 msgstr "résztvevők"
 
-#: stats/templates/stats/user_score.html:42
-#: stats/templates/stats/user_score.html:56
-#: stats/templates/stats/user_score.html:67
-#: stats/templates/stats/user_score.html:92
-#: stats/templates/stats/user_score.html:100
-#: stats/templates/stats/user_score.html:149
-#: stats/templates/stats/user_score.html:156
+#: stats/templates/stats/user_score.html:43
+#: stats/templates/stats/user_score.html:57
+#: stats/templates/stats/user_score.html:68
+#: stats/templates/stats/user_score.html:94
+#: stats/templates/stats/user_score.html:102
+#: stats/templates/stats/user_score.html:151
+#: stats/templates/stats/user_score.html:158
 msgid "XP"
 msgstr "Pontok"
 
-#: stats/templates/stats/user_score.html:49
+#: stats/templates/stats/user_score.html:50
 msgid "Other awards"
 msgstr "Díjak"
 
-#: stats/templates/stats/user_score.html:55
+#: stats/templates/stats/user_score.html:56
 msgid "awarded_on"
 msgstr "Díjazott"
 
-#: stats/templates/stats/user_score.html:62
+#: stats/templates/stats/user_score.html:63
 msgid "XP, awarded on"
 msgstr "pontok"
 
-#: stats/templates/stats/user_score.html:81
-#: stats/templates/stats/user_score.html:138
+#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:140
 msgid "Level obtained for"
 msgstr "Elért szint"
 
-#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:83
 msgid "Mosquito"
 msgstr "Szúnyog"
 
-#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:85
 msgid "Mosquito rank - Unranked"
 msgstr "Szúnyog alapján meghatározott pozíció- nem rangsorolt"
 
-#: stats/templates/stats/user_score.html:85
+#: stats/templates/stats/user_score.html:87
 msgid "Mosquito rank"
 msgstr "Szúnyog alapján meghatározott pozíció"
 
-#: stats/templates/stats/user_score.html:87
-#: stats/templates/stats/user_score.html:144
+#: stats/templates/stats/user_score.html:89
+#: stats/templates/stats/user_score.html:146
 msgid "click_score_instructions"
 msgstr ""
 "Kattints a színes négyzetekre az elküldött adatok és a kapott díjak "
 "részleteinek megtekintéséhez."
 
-#: stats/templates/stats/user_score.html:115
-#: stats/templates/stats/user_score.html:171
+#: stats/templates/stats/user_score.html:117
+#: stats/templates/stats/user_score.html:173
 msgid "xp awarded for"
 msgstr "elnyert pontok"
 
-#: stats/templates/stats/user_score.html:120
+#: stats/templates/stats/user_score.html:122
 msgid "No awards because"
 msgstr "Nem kaptál pontot, mert"
 
-#: stats/templates/stats/user_score.html:123
-#: stats/templates/stats/user_score.html:175
+#: stats/templates/stats/user_score.html:125
+#: stats/templates/stats/user_score.html:177
 msgid "No awards for this report!"
 msgstr "Ez a jelentés nem kapott pontokat!"
 
-#: stats/templates/stats/user_score.html:138
+#: stats/templates/stats/user_score.html:140
 msgid "Breeding site"
 msgstr "Tenyészőhelyek"
 
-#: stats/templates/stats/user_score.html:140
+#: stats/templates/stats/user_score.html:142
 msgid "Breeding site rank - Unranked"
 msgstr "Tenyészőhely alapján meghatározott rang - nem rangsorolt"
 
-#: stats/templates/stats/user_score.html:142
+#: stats/templates/stats/user_score.html:144
 msgid "Breeding site rank"
 msgstr "Tenyészőhely alapján meghatározott rang"
+
+#: stats/templatetags/stats_extras.py:13 tigascoring/xp_scoring.py:171
+#: tigascoring/xp_scoring.py:173 tigascoring/xp_scoring.py:176
+msgid "Novice"
+msgstr "Kezdő"
+
+#: stats/templatetags/stats_extras.py:14 tigascoring/xp_scoring.py:178
+msgid "Contributor"
+msgstr "Együttműködő"
+
+#: stats/templatetags/stats_extras.py:15 tigascoring/xp_scoring.py:180
+msgid "Expert"
+msgstr "Szakértő"
+
+#: stats/templatetags/stats_extras.py:16 tigascoring/xp_scoring.py:182
+msgid "Master"
+msgstr "Mester"
+
+#: stats/templatetags/stats_extras.py:17 tigascoring/xp_scoring.py:184
+msgid "Grandmaster"
+msgstr "Nagy Mester"
+
+#: stats/templatetags/stats_extras.py:39
+msgid " years ago"
+msgstr "évek"
+
+#: stats/templatetags/stats_extras.py:41
+msgid " months ago"
+msgstr "hónapok"
+
+#: stats/templatetags/stats_extras.py:43
+msgid " days ago"
+msgstr "napok"
 
 #: templates/admin/base_site.html:4
 msgid "Tigaserver admin"
@@ -380,10 +426,6 @@ msgstr "Mentés"
 msgid "Photos per page"
 msgstr "Fotók oldalanként"
 
-#: tigacrafting/views.py:547
-msgid "your_picture_has_been_validated_by_an_expert"
-msgstr "Fotóját szakértő ellenőrizte!"
-
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -424,8 +466,8 @@ msgid "and"
 msgstr "és"
 
 #: tigamap/templates/tigamap/app.html:122
-#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
-#: tigamap/views.py:263
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:267
+#: tigamap/views.py:269
 msgid "adult-tiger-mosquitoes"
 msgstr "Szúnyog jelentések"
 
@@ -471,7 +513,7 @@ msgstr "Vödrök és kutak"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:582
+#: tigaserver_app/models.py:676
 msgid "Other"
 msgstr "Egyéb"
 
@@ -503,11 +545,11 @@ msgstr "Navigáció"
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/en/citizen-scientist-map/"
 
-#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:267
 msgid "menu_adults_prob"
 msgstr "Lehetséges és megerősített tigrisszúnyogok"
 
-#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:269
 msgid "menu_adults_definite"
 msgstr "Megerősített tigrisszúnyogok"
 
@@ -580,19 +622,19 @@ msgstr "Pontok"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:574
+#: tigaserver_app/models.py:668
 msgid "storm-drain"
 msgstr "Esővízgyűjtő csatorna"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:576
+#: tigaserver_app/models.py:670
 msgid "Fountain"
 msgstr "Szökőkút"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:578
+#: tigaserver_app/models.py:672
 msgid "Basin"
 msgstr "Medence"
 
@@ -603,7 +645,7 @@ msgstr "Vödör"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:580
+#: tigaserver_app/models.py:674
 msgid "Well"
 msgstr "Kút"
 
@@ -968,7 +1010,7 @@ msgstr "Minden jelentés"
 msgid "site_report_legend_main_title"
 msgstr "Jelzések"
 
-#: tigamap/views.py:147 tigamap/views.py:317
+#: tigamap/views.py:147 tigamap/views.py:323
 msgid "coverage-map"
 msgstr "Lefedettség térkép"
 
@@ -988,7 +1030,7 @@ msgstr "Felnőtt tigrisszúnyogok: Közepes és magas valószínűségű jelent�
 msgid "adult-tiger-mosquitoes-high-probability-reports"
 msgstr "Felnőtt tigrisszúnyogok: Magas valószínűségű jelentések"
 
-#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:271
 msgid "adult-tiger-mosquitoes-all-reports"
 msgstr "Szúnyogok: Minden jelentés"
 
@@ -996,191 +1038,79 @@ msgstr "Szúnyogok: Minden jelentés"
 msgid "Breeding Sites: Validated reports"
 msgstr "Tenyészőhelyek: Validált jelentések"
 
-#: tigamap/views.py:199 tigamap/views.py:289
+#: tigamap/views.py:199 tigamap/views.py:295
 msgid "breeding-sites-storm-drains-and-fountains"
 msgstr "Tenyészőhelyek: Eső elvezető csatornák és szökőkutak"
 
-#: tigamap/views.py:202 tigamap/views.py:289
+#: tigamap/views.py:202 tigamap/views.py:295
 msgid "breeding-sites-basins"
 msgstr "Tenyészőhelyek: Medencék"
 
-#: tigamap/views.py:205 tigamap/views.py:289
+#: tigamap/views.py:205 tigamap/views.py:295
 msgid "breeding-sites-buckets-and-wells"
 msgstr "Tenyészőhelyek: Vödrök és kutak"
 
-#: tigamap/views.py:208 tigamap/views.py:289
+#: tigamap/views.py:208 tigamap/views.py:295
 msgid "breeding-sites-other"
 msgstr "Tenyészőhelyek: Egyéb"
 
-#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+#: tigamap/views.py:211 tigamap/views.py:295 tigamap/views.py:299
 msgid "breeding-sites-all-reports"
 msgstr "Tenyészőhelyek: Minden jelentés"
 
-#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
-#: tigascoring/xp_scoring.py:176
-msgid "Novice"
-msgstr "Kezdő"
-
-#: tigascoring/xp_scoring.py:178
-msgid "Contributor"
-msgstr "Együttműködő"
-
-#: tigascoring/xp_scoring.py:180
-msgid "Expert"
-msgstr "Szakértő"
-
-#: tigascoring/xp_scoring.py:182
-msgid "Master"
-msgstr "Mester"
-
-#: tigascoring/xp_scoring.py:184
-msgid "Grandmaster"
-msgstr "Nagy Mester"
-
-#: tigascoring/xp_scoring.py:203
-msgid "start_of_season"
-msgstr "Szezon kezdete"
-
-#: tigascoring/xp_scoring.py:204
-msgid "daily_participation"
-msgstr "a nap első jelentésének feltöltése"
-
-#: tigascoring/xp_scoring.py:205
-msgid "fidelity_day_2"
-msgstr "jelentések feltöltése KÉT egymást követő napon"
-
-#: tigascoring/xp_scoring.py:206
-msgid "fidelity_day_3"
-msgstr "jelentések feltöltése HÁROM egymást követő napon"
-
-#: tigascoring/xp_scoring.py:207
-msgid "achievement_10_reports"
-msgstr "10 feltöltött adat"
-
-#: tigascoring/xp_scoring.py:208
-msgid "achievement_20_reports"
-msgstr "20 feltöltött adat"
-
-#: tigascoring/xp_scoring.py:209
-msgid "achievement_50_reports"
-msgstr "50 feltöltött adat"
-
-#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
-msgid "picture"
-msgstr "a kép"
-
-#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
-msgid "location"
-msgstr "küldött adatok földrajzi helymeghatározása"
-
-#: tigascoring/xp_scoring.py:253
-msgid "storm_drain"
-msgstr "Egy esővíz elvezető csatorna"
-
-#: tigascoring/xp_scoring.py:257
-msgid "water_question"
-msgstr "a víz kérdés megválaszolása a tenyészőhely jelentésben"
-
-#: tigascoring/xp_scoring.py:261
-msgid "mosquito_report_follows_breeding_site"
-msgstr "szúnyog jelentés hozzáadása"
-
-#: tigascoring/xp_scoring.py:293
-msgid "no_picture"
-msgstr "nincs kép"
-
-#: tigascoring/xp_scoring.py:299
-msgid "no_location"
-msgstr "a jelentés földrajzi helyzete nincs meghatározva"
-
-#: tigascoring/xp_scoring.py:302
-msgid "thorax_question"
-msgstr "a tor kérdés megválaszolása a szúnyog jelentésben"
-
-#: tigascoring/xp_scoring.py:305
-msgid "abdomen_question"
-msgstr "a potroh kérdés megválaszolása a szúnyog jelentésben"
-
-#: tigascoring/xp_scoring.py:308
-msgid "leg_question"
-msgstr "a láb kérdés megválaszolása a szúnyog jelentésben"
-
-#: tigascoring/xp_scoring.py:311
-msgid "other_species"
-msgstr ""
-"a beküldött jelentésed elemzése alapján, a szakértők megállapították, hogy "
-"ez az 5 keresett szúnyog faj egyike sem. További információért olvasd el "
-"újra az alkalmazás útmutatóját."
-
-#: tigascoring/xp_scoring.py:318
-msgid "bite report follow"
-msgstr "a jelenlegi jelentés folytatása egy csípés jelentéssel"
-
-#: tigascoring/xp_scoring.py:358
-msgid " years ago"
-msgstr "évek"
-
-#: tigascoring/xp_scoring.py:360
-msgid " months ago"
-msgstr "hónapok"
-
-#: tigascoring/xp_scoring.py:362
-msgid " days ago"
-msgstr "napok"
-
-#: tigaserver_app/models.py:557
+#: tigaserver_app/models.py:651
 msgid "High"
 msgstr "Magas"
 
-#: tigaserver_app/models.py:559
+#: tigaserver_app/models.py:653
 msgid "Medium"
 msgstr "Közepes"
 
-#: tigaserver_app/models.py:561
+#: tigaserver_app/models.py:655
 msgid "Low"
 msgstr "Alacsony"
 
-#: tigaserver_app/models.py:1234
+#: tigaserver_app/models.py:1339
 msgid "species_unclassified"
 msgstr "Nem azonosítható"
 
-#: tigaserver_app/models.py:1235
+#: tigaserver_app/models.py:1340
 msgid "species_other"
 msgstr "Egyéb faj"
 
-#: tigaserver_app/models.py:1236
+#: tigaserver_app/models.py:1341
 msgid "species_albopictus"
 msgstr "tigrisszúnyog (Aedes albopictus)"
 
-#: tigaserver_app/models.py:1237
+#: tigaserver_app/models.py:1342
 msgid "species_aegypti"
 msgstr "sárgaláz szúnyog (Aedes aegypti)"
 
-#: tigaserver_app/models.py:1238
+#: tigaserver_app/models.py:1343
 msgid "species_japonicus"
 msgstr "Japán bozótszúnyog (Aedes japonicus)"
 
-#: tigaserver_app/models.py:1239
+#: tigaserver_app/models.py:1344
 msgid "species_koreicus"
 msgstr "Aedes koreicus"
 
-#: tigaserver_app/models.py:1240
+#: tigaserver_app/models.py:1345
 msgid "species_complex"
 msgstr "Kevert faj"
 
-#: tigaserver_app/models.py:1241
+#: tigaserver_app/models.py:1346
 msgid "species_notsure"
 msgstr "Nem biztos"
 
-#: tigaserver_app/models.py:1242
+#: tigaserver_app/models.py:1347
 msgid "species_culex"
 msgstr "közönséges házi szúnyog (Culex sp.)"
 
-#: tigaserver_app/models.py:1255
+#: tigaserver_app/models.py:1360
 msgid "species_value_possible"
 msgstr "Valószínű"
 
-#: tigaserver_app/models.py:1256
+#: tigaserver_app/models.py:1361
 msgid "species_value_confirmed"
 msgstr "Megerősített"
 
@@ -1203,85 +1133,148 @@ msgstr "Üzenet sikeresen elküldve."
 msgid "Re: %(subject)s"
 msgstr "Re: %(subject)s"
 
-#: tigaserver_project/settings.py:131
+#: tigaserver_project/settings.py:139
 msgid "Spanish"
 msgstr "Spanyol"
 
-#: tigaserver_project/settings.py:132
+#: tigaserver_project/settings.py:140
 msgid "Catalan"
 msgstr "Katalán"
 
-#: tigaserver_project/settings.py:133
+#: tigaserver_project/settings.py:141
 msgid "English"
 msgstr "Angol"
 
-#: tigaserver_project/settings.py:134
+#: tigaserver_project/settings.py:142
 msgid "German"
 msgstr ""
 
-#: tigaserver_project/settings.py:135
+#: tigaserver_project/settings.py:143
 msgid "Albanian"
 msgstr ""
 
-#: tigaserver_project/settings.py:136
+#: tigaserver_project/settings.py:144
 msgid "Greek"
 msgstr ""
 
-#: tigaserver_project/settings.py:137
+#: tigaserver_project/settings.py:145
 msgid "Hungarian"
 msgstr ""
 
-#: tigaserver_project/settings.py:138
+#: tigaserver_project/settings.py:146
 msgid "Portuguese"
 msgstr ""
 
-#: tigaserver_project/settings.py:139
+#: tigaserver_project/settings.py:147
 msgid "Slovenian"
 msgstr ""
 
-#: tigaserver_project/settings.py:140
+#: tigaserver_project/settings.py:148
 msgid "Italian"
 msgstr ""
 
-#: tigaserver_project/settings.py:141
+#: tigaserver_project/settings.py:149
 msgid "French"
 msgstr ""
 
-#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
+#: tigaserver_project/settings.py:150
 msgid "Bulgarian"
 msgstr ""
 
-#: tigaserver_project/settings.py:144
+#: tigaserver_project/settings.py:151
 msgid "Romanian"
 msgstr ""
 
-#: tigaserver_project/settings.py:145
+#: tigaserver_project/settings.py:152
 msgid "Croatian"
 msgstr ""
 
-#: tigaserver_project/settings.py:146
+#: tigaserver_project/settings.py:153
 msgid "Macedonian"
 msgstr ""
 
-#: tigaserver_project/settings.py:147
+#: tigaserver_project/settings.py:154
 msgid "Serbian"
 msgstr ""
 
-#: tigaserver_project/settings.py:148
+#: tigaserver_project/settings.py:155
 msgid "Letzeburgesch"
 msgstr ""
 
-#: tigaserver_project/settings.py:149
+#: tigaserver_project/settings.py:156
 msgid "Dutch"
 msgstr ""
 
-#: tigaserver_project/settings.py:150
+#: tigaserver_project/settings.py:157
 msgid "Turkish"
 msgstr ""
 
-#: tigaserver_project/settings.py:151
+#: tigaserver_project/settings.py:158
 msgid "Chinese"
 msgstr "Kínai"
+
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Fotóját szakértő ellenőrizte!"
+
+msgid "start_of_season"
+msgstr "Szezon kezdete"
+
+msgid "daily_participation"
+msgstr "a nap első jelentésének feltöltése"
+
+msgid "fidelity_day_2"
+msgstr "jelentések feltöltése KÉT egymást követő napon"
+
+msgid "fidelity_day_3"
+msgstr "jelentések feltöltése HÁROM egymást követő napon"
+
+msgid "achievement_10_reports"
+msgstr "10 feltöltött adat"
+
+msgid "achievement_20_reports"
+msgstr "20 feltöltött adat"
+
+msgid "achievement_50_reports"
+msgstr "50 feltöltött adat"
+
+msgid "picture"
+msgstr "a kép"
+
+msgid "location"
+msgstr "küldött adatok földrajzi helymeghatározása"
+
+msgid "storm_drain"
+msgstr "Egy esővíz elvezető csatorna"
+
+msgid "water_question"
+msgstr "a víz kérdés megválaszolása a tenyészőhely jelentésben"
+
+msgid "mosquito_report_follows_breeding_site"
+msgstr "szúnyog jelentés hozzáadása"
+
+msgid "no_picture"
+msgstr "nincs kép"
+
+msgid "no_location"
+msgstr "a jelentés földrajzi helyzete nincs meghatározva"
+
+msgid "thorax_question"
+msgstr "a tor kérdés megválaszolása a szúnyog jelentésben"
+
+msgid "abdomen_question"
+msgstr "a potroh kérdés megválaszolása a szúnyog jelentésben"
+
+msgid "leg_question"
+msgstr "a láb kérdés megválaszolása a szúnyog jelentésben"
+
+msgid "other_species"
+msgstr ""
+"a beküldött jelentésed elemzése alapján, a szakértők megállapították, "
+"hogy ez az 5 keresett szúnyog faj egyike sem. További információért "
+"olvasd el újra az alkalmazás útmutatóját."
+
+msgid "bite report follow"
+msgstr "a jelenlegi jelentés folytatása egy csípés jelentéssel"
 
 msgid "you_just_received_a_points_award"
 msgstr "Most pontdíjat kapott!"

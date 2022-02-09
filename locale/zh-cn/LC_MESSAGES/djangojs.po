@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-09 14:48+0000\n"
+"POT-Creation-Date: 2022-02-09 14:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,39 +19,39 @@ msgstr ""
 
 #: stats/static/stats/user_ranking.js:8
 msgid "Data last updated on"
-msgstr "Last update"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:11
 msgid "Joined"
-msgstr "Joined"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:14
 msgid "Last active"
-msgstr "Last active"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:23
 msgid "Overall"
-msgstr "Overall level"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:27
 msgid "Adult"
-msgstr "Mosquito level"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:30 stats/static/stats/user_ranking.js:40
 msgid "Reports"
-msgstr "Sent data"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:33 stats/static/stats/user_ranking.js:43
 msgid "Score"
-msgstr "Attained score"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:37
 msgid "Site"
-msgstr "Site level"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:47
 msgid "Other"
-msgstr "Other score"
+msgstr ""
 
 #: stats/static/stats/user_ranking.js:65
 msgid "Novice"
@@ -109,6 +109,3 @@ msgstr ""
 #: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
 msgid "p"
 msgstr ""
-
-#~ msgid "Bite"
-#~ msgstr "Bite"

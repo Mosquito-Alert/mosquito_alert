@@ -22,7 +22,7 @@ def init_ranking_data():
     for d in data['data']:
         #hydrate models
         r = RankingData(
-            user_UUID=d['user_uuid'],
+            user_uuid=d['user_uuid'],
             class_value=d['class']['value'],
             rank=d['rank'],
             score_v2=d['score_v2']

@@ -5,6 +5,9 @@ var detail_template = '<div class="panel panel-default">' +
         '<div class="row">' +
             '<div class="col-xs-12 stats">' +
                 '<div class="row">' +
+                    '<div class="col-xs-6">' + gettext('Data last updated on') + '</div><div class="col-xs-6"><span class="badge badge-success">#data_last_update#</span></div>' +
+                '</div>' +
+                '<div class="row">' +
                     '<div class="col-xs-6">' + gettext('Joined') + '</div><div class="col-xs-6"><span class="badge badge-success">#joined#</span></div>' +
                 '</div>' +
                 '<div class="row">' +
@@ -71,6 +74,8 @@ $(document).ready(function() {
     var create_info_div = function(user_uuid, data){
         $('#progress_' + user_uuid).hide();
         var html = detail_template.replace(/#joined#/g, data.joined_value);
+        var date = new Date(data.last_update);
+        html = html.replace(/#data_last_update#/g, date.toLocaleString(current_locale, { timeZone: 'UTC' }));
         html = html.replace(/#active#/g, data.active_value);
         html = html.replace(/#n_adult#/g, data.score_detail.adult.score_items.length);
         html = html.replace(/#n_bite#/g, data.score_detail.bite.score_items.length);

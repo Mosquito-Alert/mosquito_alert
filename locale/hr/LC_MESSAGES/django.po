@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 11:02+0000\n"
+"POT-Creation-Date: 2022-02-09 14:47+0000\n"
 "PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Croatian (Croatia)\n"
@@ -77,184 +77,230 @@ msgstr "Sudionici s više od tri izvješća"
 msgid "Participants with over 4 reports"
 msgstr "Sudionici s više od četiri izvješća"
 
-#: stats/templates/stats/user_ranking.html:30
+#: stats/templates/stats/user_ranking.html:31
 msgid "user_ranking_info_text_1"
 msgstr ""
 "Provjerite svoj rezultat i razinu postignuća. Detaljne informacije o sustavu "
 "bodovanja Mosquito Alert nalaze se u izborniku postavki."
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:37
+#: stats/templates/stats/user_ranking.html:42
+#: stats/templates/stats/user_ranking.html:47
+#: stats/templates/stats/user_ranking.html:52
+#: stats/templates/stats/user_ranking.html:56
 msgid "user_ranking_info_text_2"
 msgstr "Više informacija o"
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:37
+#: stats/templates/stats/user_ranking.html:42
+#: stats/templates/stats/user_ranking.html:47
+#: stats/templates/stats/user_ranking.html:52
+#: stats/templates/stats/user_ranking.html:56
 msgid "user_ranking_info_text_3"
 msgstr "Rezultat"
 
-#: stats/templates/stats/user_ranking.html:40
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:51
 msgid "no_score_yet"
 msgstr ""
 "Još uvijek nemate rezultat, zato vas nema na rang listi. Molimo vas, "
 "pošaljite neka opažanja i provjerite listu kasnije. Da biste saznali kako "
 "zaraditi bodove pratite link ispod."
 
-#: stats/templates/stats/user_ranking.html:68
-#: stats/templates/stats/user_ranking.html:156
+#: stats/templates/stats/user_ranking.html:62
+msgid "last_ranking_data_update"
+msgstr "Zadnje ažurirano"
+
+#: stats/templates/stats/user_ranking.html:83
+#: stats/templates/stats/user_ranking.html:172
 msgid "My position"
 msgstr "Moja pozicija"
 
-#: stats/templates/stats/user_ranking.html:72
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_ranking.html:88
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
+#: stats/templates/stats/user_score.html:145
 msgid "of"
 msgstr "Od"
 
-#: stats/templates/stats/user_ranking.html:88
+#: stats/templates/stats/user_ranking.html:104
 msgid "Rank"
 msgstr "Rangiranje"
 
-#: stats/templates/stats/user_ranking.html:89
+#: stats/templates/stats/user_ranking.html:105
 msgid "User"
 msgstr "Korisnik"
 
-#: stats/templates/stats/user_ranking.html:90
+#: stats/templates/stats/user_ranking.html:106
 msgid "Overall class"
 msgstr "Ukupna lista"
 
-#: stats/templates/stats/user_ranking.html:91
+#: stats/templates/stats/user_ranking.html:107
 msgid "Score"
 msgstr "Rezultat"
 
-#: stats/templates/stats/user_ranking.html:97
+#: stats/templates/stats/user_ranking.html:113
 msgid "This is you!"
 msgstr "Vi ste ovdje"
 
-#: stats/templates/stats/user_ranking.html:134
+#: stats/templates/stats/user_ranking.html:150
 msgid "Score details"
 msgstr "Više detalja"
 
-#: stats/templates/stats/user_score.html:28
+#: stats/templates/stats/user_score.html:29
 msgid "Citizen Scientist"
 msgstr "Sažetak rezultata"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:30
+msgid "last_score_data_update"
+msgstr "Zadnje ažurirano"
+
+#: stats/templates/stats/user_score.html:32
 msgid "this_is_your_personal_avatar"
 msgstr ""
 "Ovo je sudionikov avatar. S obzirom na vaš rezultat, trenutna razina je"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:32
 msgid "there_are_5_levels"
 msgstr ""
 "Postoji pet mogućih razina: Početnik, Suradnik, Stručnjak, Majstor i "
 "Velemajstor."
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Joined"
 msgstr "Započeto sudjelovanje"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Last active"
 msgstr "Posljednja aktivnost"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Never"
 msgstr "Nikad"
 
-#: stats/templates/stats/user_score.html:34
+#: stats/templates/stats/user_score.html:35
 msgid "Overall rank - Unranked"
 msgstr "Ukupna pozicija - bez pozicije"
 
-#: stats/templates/stats/user_score.html:36
+#: stats/templates/stats/user_score.html:37
 msgid "Overall rank"
 msgstr "Ukupna pozicija"
 
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
+#: stats/templates/stats/user_score.html:145
 msgid "Top"
 msgstr "Vi ste na vrhu"
 
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
 msgid "participants"
 msgstr "Sudionici"
 
-#: stats/templates/stats/user_score.html:42
-#: stats/templates/stats/user_score.html:56
-#: stats/templates/stats/user_score.html:67
-#: stats/templates/stats/user_score.html:92
-#: stats/templates/stats/user_score.html:100
-#: stats/templates/stats/user_score.html:149
-#: stats/templates/stats/user_score.html:156
+#: stats/templates/stats/user_score.html:43
+#: stats/templates/stats/user_score.html:57
+#: stats/templates/stats/user_score.html:68
+#: stats/templates/stats/user_score.html:94
+#: stats/templates/stats/user_score.html:102
+#: stats/templates/stats/user_score.html:151
+#: stats/templates/stats/user_score.html:158
 msgid "XP"
 msgstr "Bodovi"
 
-#: stats/templates/stats/user_score.html:49
+#: stats/templates/stats/user_score.html:50
 msgid "Other awards"
 msgstr "Osvojene nagrade"
 
-#: stats/templates/stats/user_score.html:55
+#: stats/templates/stats/user_score.html:56
 msgid "awarded_on"
 msgstr "Odobreno je"
 
-#: stats/templates/stats/user_score.html:62
+#: stats/templates/stats/user_score.html:63
 msgid "XP, awarded on"
 msgstr "Bodovi, dodijeljeni"
 
-#: stats/templates/stats/user_score.html:81
-#: stats/templates/stats/user_score.html:138
+#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:140
 msgid "Level obtained for"
 msgstr "Razina osvojena za"
 
-#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:83
 msgid "Mosquito"
 msgstr "Komarac"
 
-#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:85
 msgid "Mosquito rank - Unranked"
 msgstr "Pozicija specifična za komarce - neklasificirana"
 
-#: stats/templates/stats/user_score.html:85
+#: stats/templates/stats/user_score.html:87
 msgid "Mosquito rank"
 msgstr "Specifična pozicija za komarce"
 
-#: stats/templates/stats/user_score.html:87
-#: stats/templates/stats/user_score.html:144
+#: stats/templates/stats/user_score.html:89
+#: stats/templates/stats/user_score.html:146
 msgid "click_score_instructions"
 msgstr ""
 "Kliknite na obojene kvadratiće kako biste vidjeli detalje poslanih podataka "
 "i zarađene bodove."
 
-#: stats/templates/stats/user_score.html:115
-#: stats/templates/stats/user_score.html:171
+#: stats/templates/stats/user_score.html:117
+#: stats/templates/stats/user_score.html:173
 msgid "xp awarded for"
 msgstr "Bodovi dodijeljeni za"
 
-#: stats/templates/stats/user_score.html:120
+#: stats/templates/stats/user_score.html:122
 msgid "No awards because"
 msgstr "Niste dobili bodove jer"
 
-#: stats/templates/stats/user_score.html:123
-#: stats/templates/stats/user_score.html:175
+#: stats/templates/stats/user_score.html:125
+#: stats/templates/stats/user_score.html:177
 msgid "No awards for this report!"
 msgstr "Ovo izvješće nema dodijeljenih bodova."
 
-#: stats/templates/stats/user_score.html:138
+#: stats/templates/stats/user_score.html:140
 msgid "Breeding site"
 msgstr "Legla komaraca (razvojna staništa)"
 
-#: stats/templates/stats/user_score.html:140
+#: stats/templates/stats/user_score.html:142
 msgid "Breeding site rank - Unranked"
 msgstr "Specifična pozicija legla komaraca - neklasificirano"
 
-#: stats/templates/stats/user_score.html:142
+#: stats/templates/stats/user_score.html:144
 msgid "Breeding site rank"
 msgstr "Specifična pozicija za leglo komaraca"
+
+#: stats/templatetags/stats_extras.py:13 tigascoring/xp_scoring.py:171
+#: tigascoring/xp_scoring.py:173 tigascoring/xp_scoring.py:176
+msgid "Novice"
+msgstr "Početnik"
+
+#: stats/templatetags/stats_extras.py:14 tigascoring/xp_scoring.py:178
+msgid "Contributor"
+msgstr "Suradnik"
+
+#: stats/templatetags/stats_extras.py:15 tigascoring/xp_scoring.py:180
+msgid "Expert"
+msgstr "Stručnjak"
+
+#: stats/templatetags/stats_extras.py:16 tigascoring/xp_scoring.py:182
+msgid "Master"
+msgstr "Majstor"
+
+#: stats/templatetags/stats_extras.py:17 tigascoring/xp_scoring.py:184
+msgid "Grandmaster"
+msgstr "Veliki majstor"
+
+#: stats/templatetags/stats_extras.py:39
+msgid " years ago"
+msgstr "Godina"
+
+#: stats/templatetags/stats_extras.py:41
+msgid " months ago"
+msgstr "Mjesec"
+
+#: stats/templatetags/stats_extras.py:43
+msgid " days ago"
+msgstr "Dan"
 
 #: templates/admin/base_site.html:4
 msgid "Tigaserver admin"
@@ -381,10 +427,6 @@ msgstr "Spremiti"
 msgid "Photos per page"
 msgstr "Fotografije po stranici"
 
-#: tigacrafting/views.py:547
-msgid "your_picture_has_been_validated_by_an_expert"
-msgstr "Vašu fotografiju potvrdio je stručnjak!"
-
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -425,8 +467,8 @@ msgid "and"
 msgstr "i"
 
 #: tigamap/templates/tigamap/app.html:122
-#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
-#: tigamap/views.py:263
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:267
+#: tigamap/views.py:269
 msgid "adult-tiger-mosquitoes"
 msgstr "Izvješća o komarcima"
 
@@ -472,7 +514,7 @@ msgstr "Kante i udubine"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:582
+#: tigaserver_app/models.py:676
 msgid "Other"
 msgstr "Drugo"
 
@@ -504,11 +546,11 @@ msgstr "Toggle navigacija"
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 
-#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:267
 msgid "menu_adults_prob"
 msgstr "Tigrasti komarac, moguće i potvrđen"
 
-#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:269
 msgid "menu_adults_definite"
 msgstr "Tigrasti komarac, potvrđen"
 
@@ -580,19 +622,19 @@ msgstr "Bodovi"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:574
+#: tigaserver_app/models.py:668
 msgid "storm-drain"
 msgstr "Ulični slivnik"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:576
+#: tigaserver_app/models.py:670
 msgid "Fountain"
 msgstr "Fontana"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:578
+#: tigaserver_app/models.py:672
 msgid "Basin"
 msgstr "Bazen"
 
@@ -603,7 +645,7 @@ msgstr "Kanta"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:580
+#: tigaserver_app/models.py:674
 msgid "Well"
 msgstr "Udubina"
 
@@ -968,7 +1010,7 @@ msgstr "Sva izvješća"
 msgid "site_report_legend_main_title"
 msgstr "Oznake"
 
-#: tigamap/views.py:147 tigamap/views.py:317
+#: tigamap/views.py:147 tigamap/views.py:323
 msgid "coverage-map"
 msgstr "Karta pokrivenosti"
 
@@ -988,7 +1030,7 @@ msgstr "Odrasli tigrasti komarci: izvješća o srednjoj i visokoj vjerojatnosti"
 msgid "adult-tiger-mosquitoes-high-probability-reports"
 msgstr "Odrasli tigrasti komarci: izvješća visoke vjerojatnosti"
 
-#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:271
 msgid "adult-tiger-mosquitoes-all-reports"
 msgstr "Komarci: sva izvješća"
 
@@ -996,191 +1038,79 @@ msgstr "Komarci: sva izvješća"
 msgid "Breeding Sites: Validated reports"
 msgstr "Legla komaraca: provjerena izvješča"
 
-#: tigamap/views.py:199 tigamap/views.py:289
+#: tigamap/views.py:199 tigamap/views.py:295
 msgid "breeding-sites-storm-drains-and-fountains"
 msgstr "Legla komaraca: slivnici i fontane"
 
-#: tigamap/views.py:202 tigamap/views.py:289
+#: tigamap/views.py:202 tigamap/views.py:295
 msgid "breeding-sites-basins"
 msgstr "Legla komaraca: bazeni "
 
-#: tigamap/views.py:205 tigamap/views.py:289
+#: tigamap/views.py:205 tigamap/views.py:295
 msgid "breeding-sites-buckets-and-wells"
 msgstr "Legla komaraca: kante i bunari (udubine)"
 
-#: tigamap/views.py:208 tigamap/views.py:289
+#: tigamap/views.py:208 tigamap/views.py:295
 msgid "breeding-sites-other"
 msgstr "Legla komaraca: drugo"
 
-#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+#: tigamap/views.py:211 tigamap/views.py:295 tigamap/views.py:299
 msgid "breeding-sites-all-reports"
 msgstr "Legla komaraca: sva izvješća"
 
-#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
-#: tigascoring/xp_scoring.py:176
-msgid "Novice"
-msgstr "Početnik"
-
-#: tigascoring/xp_scoring.py:178
-msgid "Contributor"
-msgstr "Suradnik"
-
-#: tigascoring/xp_scoring.py:180
-msgid "Expert"
-msgstr "Stručnjak"
-
-#: tigascoring/xp_scoring.py:182
-msgid "Master"
-msgstr "Majstor"
-
-#: tigascoring/xp_scoring.py:184
-msgid "Grandmaster"
-msgstr "Veliki majstor"
-
-#: tigascoring/xp_scoring.py:203
-msgid "start_of_season"
-msgstr "Početak sezone"
-
-#: tigascoring/xp_scoring.py:204
-msgid "daily_participation"
-msgstr "Prvo izvješće dana"
-
-#: tigascoring/xp_scoring.py:205
-msgid "fidelity_day_2"
-msgstr "Dodavanje izvješća tijekom DVA uzastopna dana"
-
-#: tigascoring/xp_scoring.py:206
-msgid "fidelity_day_3"
-msgstr "Dodavanje izvješća tijekom TRI uzastopna dana"
-
-#: tigascoring/xp_scoring.py:207
-msgid "achievement_10_reports"
-msgstr "10 učitanih podataka"
-
-#: tigascoring/xp_scoring.py:208
-msgid "achievement_20_reports"
-msgstr "20 učitanih podataka"
-
-#: tigascoring/xp_scoring.py:209
-msgid "achievement_50_reports"
-msgstr "50 učitanih podataka"
-
-#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
-msgid "picture"
-msgstr "Fotografija"
-
-#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
-msgid "location"
-msgstr "Podaci o geolokaciji "
-
-#: tigascoring/xp_scoring.py:253
-msgid "storm_drain"
-msgstr "To je ulični slivnik"
-
-#: tigascoring/xp_scoring.py:257
-msgid "water_question"
-msgstr "Odgovaranje na pitanja o vodi u izvješću o leglu"
-
-#: tigascoring/xp_scoring.py:261
-msgid "mosquito_report_follows_breeding_site"
-msgstr "Dodavanje izvješća o komarcima na kraju"
-
-#: tigascoring/xp_scoring.py:293
-msgid "no_picture"
-msgstr "Nema fotografije"
-
-#: tigascoring/xp_scoring.py:299
-msgid "no_location"
-msgstr "Izvješće nije geolocirano"
-
-#: tigascoring/xp_scoring.py:302
-msgid "thorax_question"
-msgstr "Odgovaranje na pitanja o prsima komarca u izvješću o komarcima"
-
-#: tigascoring/xp_scoring.py:305
-msgid "abdomen_question"
-msgstr "Odgovaranje na pitanja o abdomenu komarca u izvjesću o komarcima"
-
-#: tigascoring/xp_scoring.py:308
-msgid "leg_question"
-msgstr "Odgovaranje na pitanja o nogama komarca u izvješću o komarcima"
-
-#: tigascoring/xp_scoring.py:311
-msgid "other_species"
-msgstr ""
-"Nakon analize podataka koje ste poslali, stručnjaci su procijenili da "
-"navedeni komarac nije ni jedna od pet ciljanih vrsta komaraca. Za više "
-"informacija, pogledajte tutorial aplikacije."
-
-#: tigascoring/xp_scoring.py:318
-msgid "bite report follow"
-msgstr "Slijedeći trenutni izvještaj o ubodima komaraca"
-
-#: tigascoring/xp_scoring.py:358
-msgid " years ago"
-msgstr "Godina"
-
-#: tigascoring/xp_scoring.py:360
-msgid " months ago"
-msgstr "Mjesec"
-
-#: tigascoring/xp_scoring.py:362
-msgid " days ago"
-msgstr "Dan"
-
-#: tigaserver_app/models.py:557
+#: tigaserver_app/models.py:651
 msgid "High"
 msgstr "Visoka"
 
-#: tigaserver_app/models.py:559
+#: tigaserver_app/models.py:653
 msgid "Medium"
 msgstr "Srednja"
 
-#: tigaserver_app/models.py:561
+#: tigaserver_app/models.py:655
 msgid "Low"
 msgstr "Niska"
 
-#: tigaserver_app/models.py:1234
+#: tigaserver_app/models.py:1339
 msgid "species_unclassified"
 msgstr "Nije moguće odrediti vrstu"
 
-#: tigaserver_app/models.py:1235
+#: tigaserver_app/models.py:1340
 msgid "species_other"
 msgstr "Druga vrsta"
 
-#: tigaserver_app/models.py:1236
+#: tigaserver_app/models.py:1341
 msgid "species_albopictus"
 msgstr "Aedes albopictus (tigrasti komarac)"
 
-#: tigaserver_app/models.py:1237
+#: tigaserver_app/models.py:1342
 msgid "species_aegypti"
 msgstr "Aedes aegypti"
 
-#: tigaserver_app/models.py:1238
+#: tigaserver_app/models.py:1343
 msgid "species_japonicus"
 msgstr "Aedes japonicus"
 
-#: tigaserver_app/models.py:1239
+#: tigaserver_app/models.py:1344
 msgid "species_koreicus"
 msgstr "Aedes koreicus"
 
-#: tigaserver_app/models.py:1240
+#: tigaserver_app/models.py:1345
 msgid "species_complex"
 msgstr "Više vrsta"
 
-#: tigaserver_app/models.py:1241
+#: tigaserver_app/models.py:1346
 msgid "species_notsure"
 msgstr "Nisam suguran/sigurna"
 
-#: tigaserver_app/models.py:1242
+#: tigaserver_app/models.py:1347
 msgid "species_culex"
 msgstr "Domaći komarac (Culex sp.)"
 
-#: tigaserver_app/models.py:1255
+#: tigaserver_app/models.py:1360
 msgid "species_value_possible"
 msgstr "Vjerojatno"
 
-#: tigaserver_app/models.py:1256
+#: tigaserver_app/models.py:1361
 msgid "species_value_confirmed"
 msgstr "Potvrđeno"
 
@@ -1203,85 +1133,148 @@ msgstr "Poruka uspješno poslana"
 msgid "Re: %(subject)s"
 msgstr ""
 
-#: tigaserver_project/settings.py:131
+#: tigaserver_project/settings.py:139
 msgid "Spanish"
 msgstr "Španjolski"
 
-#: tigaserver_project/settings.py:132
+#: tigaserver_project/settings.py:140
 msgid "Catalan"
 msgstr "Katalonski"
 
-#: tigaserver_project/settings.py:133
+#: tigaserver_project/settings.py:141
 msgid "English"
 msgstr "Engleski"
 
-#: tigaserver_project/settings.py:134
+#: tigaserver_project/settings.py:142
 msgid "German"
 msgstr ""
 
-#: tigaserver_project/settings.py:135
+#: tigaserver_project/settings.py:143
 msgid "Albanian"
 msgstr ""
 
-#: tigaserver_project/settings.py:136
+#: tigaserver_project/settings.py:144
 msgid "Greek"
 msgstr ""
 
-#: tigaserver_project/settings.py:137
+#: tigaserver_project/settings.py:145
 msgid "Hungarian"
 msgstr ""
 
-#: tigaserver_project/settings.py:138
+#: tigaserver_project/settings.py:146
 msgid "Portuguese"
 msgstr ""
 
-#: tigaserver_project/settings.py:139
+#: tigaserver_project/settings.py:147
 msgid "Slovenian"
 msgstr ""
 
-#: tigaserver_project/settings.py:140
+#: tigaserver_project/settings.py:148
 msgid "Italian"
 msgstr ""
 
-#: tigaserver_project/settings.py:141
+#: tigaserver_project/settings.py:149
 msgid "French"
 msgstr ""
 
-#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
+#: tigaserver_project/settings.py:150
 msgid "Bulgarian"
 msgstr ""
 
-#: tigaserver_project/settings.py:144
+#: tigaserver_project/settings.py:151
 msgid "Romanian"
 msgstr ""
 
-#: tigaserver_project/settings.py:145
+#: tigaserver_project/settings.py:152
 msgid "Croatian"
 msgstr ""
 
-#: tigaserver_project/settings.py:146
+#: tigaserver_project/settings.py:153
 msgid "Macedonian"
 msgstr ""
 
-#: tigaserver_project/settings.py:147
+#: tigaserver_project/settings.py:154
 msgid "Serbian"
 msgstr ""
 
-#: tigaserver_project/settings.py:148
+#: tigaserver_project/settings.py:155
 msgid "Letzeburgesch"
 msgstr ""
 
-#: tigaserver_project/settings.py:149
+#: tigaserver_project/settings.py:156
 msgid "Dutch"
 msgstr ""
 
-#: tigaserver_project/settings.py:150
+#: tigaserver_project/settings.py:157
 msgid "Turkish"
 msgstr ""
 
-#: tigaserver_project/settings.py:151
+#: tigaserver_project/settings.py:158
 msgid "Chinese"
 msgstr "Kineski"
+
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Vašu fotografiju potvrdio je stručnjak!"
+
+msgid "start_of_season"
+msgstr "Početak sezone"
+
+msgid "daily_participation"
+msgstr "Prvo izvješće dana"
+
+msgid "fidelity_day_2"
+msgstr "Dodavanje izvješća tijekom DVA uzastopna dana"
+
+msgid "fidelity_day_3"
+msgstr "Dodavanje izvješća tijekom TRI uzastopna dana"
+
+msgid "achievement_10_reports"
+msgstr "10 učitanih podataka"
+
+msgid "achievement_20_reports"
+msgstr "20 učitanih podataka"
+
+msgid "achievement_50_reports"
+msgstr "50 učitanih podataka"
+
+msgid "picture"
+msgstr "Fotografija"
+
+msgid "location"
+msgstr "Podaci o geolokaciji "
+
+msgid "storm_drain"
+msgstr "To je ulični slivnik"
+
+msgid "water_question"
+msgstr "Odgovaranje na pitanja o vodi u izvješću o leglu"
+
+msgid "mosquito_report_follows_breeding_site"
+msgstr "Dodavanje izvješća o komarcima na kraju"
+
+msgid "no_picture"
+msgstr "Nema fotografije"
+
+msgid "no_location"
+msgstr "Izvješće nije geolocirano"
+
+msgid "thorax_question"
+msgstr "Odgovaranje na pitanja o prsima komarca u izvješću o komarcima"
+
+msgid "abdomen_question"
+msgstr "Odgovaranje na pitanja o abdomenu komarca u izvjesću o komarcima"
+
+msgid "leg_question"
+msgstr "Odgovaranje na pitanja o nogama komarca u izvješću o komarcima"
+
+msgid "other_species"
+msgstr ""
+"Nakon analize podataka koje ste poslali, stručnjaci su procijenili da "
+"navedeni komarac nije ni jedna od pet ciljanih vrsta komaraca. Za više "
+"informacija, pogledajte tutorial aplikacije."
+
+msgid "bite report follow"
+msgstr "Slijedeći trenutni izvještaj o ubodima komaraca"
 
 msgid "you_just_received_a_points_award"
 msgstr "Upravo ste dobili nagradu za bodove!"

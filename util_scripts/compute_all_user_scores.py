@@ -16,6 +16,7 @@ from tigaserver_app.models import TigaUser, Report
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2_fast, compute_user_score_in_xp_v2
 import json
 import datetime
+import _thread
 
 
 def compute_all_scores():
@@ -47,6 +48,7 @@ def compute_all_scores():
 def compute_write_all_scores():
     users_with_reports = Report.objects.all().values('user').distinct()
     all_users = TigaUser.objects.filter(user_UUID__in=users_with_reports).filter(score_v2_struct__isnull=True).order_by('-score_v2')
+    #all_users = TigaUser.objects.filter(user_UUID__in=users_with_reports).order_by('-score_v2')
     print("Starting...")
     goal = len(all_users)
     start = 1
@@ -66,6 +68,7 @@ def compute_write_all_scores():
             all_users_in_profile.update(score_v2_site=user.score_v2_site)
         print("Done {0} of {1}".format( start, goal ))
         start += 1
+
 
 # Latest user activity query
 # select * from (

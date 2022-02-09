@@ -27,7 +27,7 @@
                 -->
                 <div class="col-xs-9 text_box">
                     <h4>{% trans 'Citizen Scientist' %} - <b>{{ score_data.overall_class_value|translate_class_value }}</b></h4>
-                    <!--<p>User ID - {{ score_data.user_uuid }}</p>-->
+                    <p>{% trans 'last_score_data_update' %} : <b>{{ score_last_update|date:'d/m/Y H:m:s' }}</b></p>
                     <p><img src="{{ score_data.identicon | safe }}" height="75px"></p>
                     <p class="small">{% trans 'this_is_your_personal_avatar' %} <b>{{ score_data.overall_class_value|translate_class_value }}</b>. {% trans 'there_are_5_levels' %}</p>
                     <p><i>{% trans 'Joined' %} {{ score_data.joined_value|get_elapsed_label }} | {% trans 'Last active' %} {% if score_data.active_value %}{{ score_data.active_value|get_elapsed_label }}{%else%}{% trans 'Never' %}{%endif%}</i></p>
