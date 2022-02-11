@@ -9,8 +9,10 @@ from datetime import date, datetime, timedelta
 import logging
 import operator
 import functools
+from django.db import IntegrityError
 
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
+logger_duplicate_assignation = logging.getLogger('mosquitoalert.report.duplicateassignment')
 
 MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT = 3
 MAX_N_OF_PENDING_REPORTS = 5
@@ -131,10 +133,13 @@ def assign_reports_to_national_supervisor(this_user):
             logger_report_assignment.debug('* Assigned Reserved report {0} to user {1}'.format(this_report.version_UUID, this_user))
             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
             grabbed_reports += 1
-            new_annotation.save()
-            currently_taken += 1
-            if currently_taken >= MAX_N_OF_PENDING_REPORTS:
-                break
+            try:
+                new_annotation.save()
+                currently_taken += 1
+                if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                    break
+            except IntegrityError as e:
+                logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
 
         if currently_taken < MAX_N_OF_PENDING_REPORTS:
             for this_report in non_executive_own_country_filtered_reports:
@@ -145,10 +150,13 @@ def assign_reports_to_national_supervisor(this_user):
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 grabbed_reports += 1
-                new_annotation.save()
-                currently_taken += 1
-                if currently_taken >= MAX_N_OF_PENDING_REPORTS:
-                    break
+                try:
+                    new_annotation.save()
+                    currently_taken += 1
+                    if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                        break
+                except IntegrityError as e:
+                    logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
 
         if currently_taken < MAX_N_OF_PENDING_REPORTS:
             for this_report in other_countries_filtered_reports:
@@ -159,10 +167,13 @@ def assign_reports_to_national_supervisor(this_user):
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 grabbed_reports += 1
-                new_annotation.save()
-                currently_taken += 1
-                if currently_taken >= MAX_N_OF_PENDING_REPORTS:
-                    break
+                try:
+                    new_annotation.save()
+                    currently_taken += 1
+                    if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                        break
+                except IntegrityError as e:
+                    logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
 
         if grabbed_reports != -1 and user_stats:
             user_stats.grabbed_reports = grabbed_reports
@@ -230,8 +241,11 @@ def assign_crisis_report(this_user, country):
                 if who_has_count == 0 or who_has_count == 1:
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
-                grabbed_reports += 1
-                new_annotation.save()
+                try:
+                    new_annotation.save()
+                    grabbed_reports += 1
+                except IntegrityError as e:
+                    logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
             if grabbed_reports != -1 and user_stats:
                 user_stats.grabbed_reports = grabbed_reports
                 user_stats.save()
@@ -286,8 +300,11 @@ def assign_reports_to_regular_user(this_user):
                     if who_has_count == 0 or who_has_count == 1:
                         # No one has the report, is simplified
                         new_annotation.simplified_annotation = True
-                    grabbed_reports += 1
-                    new_annotation.save()
+                    try:
+                        new_annotation.save()
+                        grabbed_reports += 1
+                    except IntegrityError as e:
+                        logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
                 if grabbed_reports != -1 and user_stats:
                     user_stats.grabbed_reports = grabbed_reports
                     user_stats.save()
@@ -307,11 +324,14 @@ def assign_reports_to_regular_user(this_user):
 
                 for this_report in new_reports_own_country:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                    grabbed_reports += 1
-                    new_annotation.save()
-                    currently_taken += 1
-                    if currently_taken >= MAX_N_OF_PENDING_REPORTS:
-                        break
+                    try:
+                        new_annotation.save()
+                        grabbed_reports += 1
+                        currently_taken += 1
+                        if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                            break
+                    except IntegrityError as e:
+                        logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
 
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
                     for this_report in new_reports_other_countries:
@@ -321,10 +341,13 @@ def assign_reports_to_regular_user(this_user):
                             # No one has the report, is simplified
                             new_annotation.simplified_annotation = True
                         grabbed_reports += 1
-                        new_annotation.save()
-                        currently_taken += 1
-                        if currently_taken >= MAX_N_OF_PENDING_REPORTS:
-                            break
+                        try:
+                            new_annotation.save()
+                            currently_taken += 1
+                            if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                                break
+                        except IntegrityError as e:
+                            logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
                 if grabbed_reports != -1 and user_stats:
                     user_stats.grabbed_reports = grabbed_reports
                     user_stats.save()
@@ -343,7 +366,10 @@ def assign_superexpert_reports(this_user):
     new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
     for this_report in new_reports:
         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-        new_annotation.save()
+        try:
+            new_annotation.save()
+        except IntegrityError as e:
+            logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
 
 
 def assign_bb_reports(this_user):
@@ -375,8 +401,11 @@ def assign_bb_reports(this_user):
                 if who_has_count == 0 or who_has_count == 1:
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
-                grabbed_reports += 1
-                new_annotation.save()
+                try:
+                    new_annotation.save()
+                    grabbed_reports += 1
+                except IntegrityError as e:
+                    logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
             if grabbed_reports != -1 and user_stats:
                 user_stats.grabbed_reports = grabbed_reports
                 user_stats.save()
