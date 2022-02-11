@@ -17,6 +17,7 @@ from tigascoring.xp_scoring import compute_user_score_in_xp_v2_fast, compute_use
 import json
 import datetime
 import _thread
+from django.db.models.expressions import RawSQL
 
 
 def compute_all_scores():
@@ -69,9 +70,25 @@ def compute_write_all_scores():
         print("Done {0} of {1}".format( start, goal ))
         start += 1
 
+def update_active_user_scores():
+    active_users = TigaUser.objects.filter(user_UUID__in=RawSQL("select distinct foo.\"user_UUID\" from (select tu.\"user_UUID\", tu.last_score_update, max(r.server_upload_time) as latest_act from tigaserver_app_tigauser tu, tigaserver_app_report r where r.user_id = tu.\"user_UUID\" group by tu.\"user_UUID\", tu.last_score_update) as foo where foo.last_score_update is null or foo.latest_act > foo.last_score_update",()))
+    print("Starting...")
+    goal = len(active_users)
+    start = 1
+    for u in active_users:
+        score = compute_user_score_in_xp_v2(u.user_UUID, update=False)
+        u.score_v2 = score['total_score']
+        u.score_v2_adult = score['score_detail']['adult']['score']
+        u.score_v2_site = score['score_detail']['site']['score']
+        u.score_v2_struct = json.dumps(score, indent=2, sort_keys=True, default=str)
+        u.last_score_update = datetime.datetime.now()
+        u.save()
+        print("Done {0} of {1}".format(start, goal))
+        start += 1
+
 
 # Latest user activity query
-# select * from (
+# select distinct tu."user_UUID" from (
 # select
 # tu."user_UUID",
 # tu.last_score_update,
@@ -87,4 +104,4 @@ def compute_write_all_scores():
 # ) as foo
 # where foo.last_score_update is null or foo.latest_act > foo.last_score_update
 
-compute_write_all_scores()
+update_active_user_scores()
