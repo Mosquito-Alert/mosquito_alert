@@ -64,7 +64,6 @@ from tigacrafting.report_queues import assign_reports, get_base_adults_qs
 
 #-----------------------------------#
 
-logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
 other_insect = {

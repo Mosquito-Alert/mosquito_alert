@@ -6,8 +6,11 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.db.models import Q
 from datetime import date, datetime, timedelta
+import logging
 import operator
 import functools
+
+logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
 
 MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT = 3
 MAX_N_OF_PENDING_REPORTS = 5
@@ -72,11 +75,14 @@ def filter_reports(reports):
 
 
 def assign_reports_to_national_supervisor(this_user):
+    logger_report_assignment.debug('User {0} is national supervisor, assigning reports'.format(this_user, ))
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
     supervised_country = this_user.userstat.national_supervisor_of
+    logger_report_assignment.debug('User {0} is national supervisor for {1}'.format(this_user, supervised_country.name_engl))
     if current_pending < MAX_N_OF_PENDING_REPORTS:
         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
         n_to_get = MAX_N_OF_PENDING_REPORTS - current_pending
+        logger_report_assignment.debug('Getting {0} reports for user {1}'.format(n_to_get, this_user))
         country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
         bounding_boxes = EuropeCountry.objects.filter(is_bounding_box=True)
         reports_supervised_country = get_base_adults_qs().filter(country__gid=supervised_country.gid).annotate(n_annotations=Count('expert_report_annotations'))
@@ -122,6 +128,7 @@ def assign_reports_to_national_supervisor(this_user):
 
         # for national supervisor, reports from supervised country are never simplified if granted first
         for this_report in country_filtered_reports:
+            logger_report_assignment.debug('* Assigned Reserved report {0} to user {1}'.format(this_report.version_UUID, this_user))
             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
             grabbed_reports += 1
             new_annotation.save()
@@ -131,6 +138,7 @@ def assign_reports_to_national_supervisor(this_user):
 
         if currently_taken < MAX_N_OF_PENDING_REPORTS:
             for this_report in non_executive_own_country_filtered_reports:
+                logger_report_assignment.debug('* Assigned Non Reserved own country report {0} to user {1}'.format(this_report.version_UUID, this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 who_has_count = this_report.get_who_has_count()
                 if who_has_count == 0 or who_has_count == 1:
@@ -144,6 +152,7 @@ def assign_reports_to_national_supervisor(this_user):
 
         if currently_taken < MAX_N_OF_PENDING_REPORTS:
             for this_report in other_countries_filtered_reports:
+                logger_report_assignment.debug('* Assigned Non Reserved other country report {0} to user {1}'.format(this_report.version_UUID,this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 who_has_count = this_report.get_who_has_count()
                 if who_has_count == 0 or who_has_count == 1:
@@ -229,6 +238,7 @@ def assign_crisis_report(this_user, country):
     return summary
 
 def assign_reports_to_regular_user(this_user):
+    logger_report_assignment.debug('User {0} is regular user, assigning reports'.format(this_user, ))
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
     if current_pending < MAX_N_OF_PENDING_REPORTS:
         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
@@ -321,6 +331,7 @@ def assign_reports_to_regular_user(this_user):
 
 
 def assign_superexpert_reports(this_user):
+    logger_report_assignment.debug('User {0} is superexpert, assigning reports'.format(this_user, ))
     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
     new_reports_unfiltered = get_base_adults_qs().exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
     if new_reports_unfiltered and this_user.groups.filter(name='team_bcn').exists():
@@ -336,12 +347,16 @@ def assign_superexpert_reports(this_user):
 
 
 def assign_bb_reports(this_user):
+    logger_report_assignment.debug('User {0} is bounding box user, assigning reports'.format(this_user, ))
+    logger_report_assignment.debug('Bounding box for user {0} is {1}'.format(this_user, this_user.userstat.native_of.name_engl))
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
     if current_pending < MAX_N_OF_PENDING_REPORTS:
         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
         n_to_get = MAX_N_OF_PENDING_REPORTS - current_pending
+        logger_report_assignment.debug('Getting {0} reports for user {1}'.format(n_to_get, this_user ))
         new_reports_unfiltered = get_base_adults_qs().exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
         new_reports_unfiltered = new_reports_unfiltered.filter(country=this_user.userstat.native_of)
+        logger_report_assignment.debug('{0} reports potentially assignable for user {1}'.format(len(new_reports_unfiltered), this_user))
         if new_reports_unfiltered:
             new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
             reports_to_take = new_reports[0:n_to_get]
@@ -354,6 +369,7 @@ def assign_bb_reports(this_user):
             if user_stats:
                 grabbed_reports = user_stats.grabbed_reports
             for this_report in reports_to_take:
+                logger_report_assignment.debug('* Assigned report {0} to user {1}'.format(this_report.version_UUID, this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 who_has_count = this_report.get_who_has_count()
                 if who_has_count == 0 or who_has_count == 1:
