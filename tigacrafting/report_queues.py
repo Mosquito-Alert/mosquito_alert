@@ -207,6 +207,7 @@ def assign_reports_to_national_supervisor(this_user):
 def assign_crisis_report(this_user, country):
     summary = {}
     expiration_period_days = 14
+    logger_report_assignment.debug('Assigning crisis report for User {0} in country {1}'.format(this_user, country.name_engl))
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
     summary['current_pending'] = current_pending
     if current_pending < MAX_N_OF_PENDING_REPORTS:

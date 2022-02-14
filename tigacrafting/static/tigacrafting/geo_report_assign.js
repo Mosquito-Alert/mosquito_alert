@@ -162,6 +162,8 @@ $(document).ready(function() {
 
     var get_reports = function(){
         var url = '/api/crisis_report_assign/' + user_id + '/' + current_selection.gid + '/';
+        $("#progress_yes").prop("disabled",true);
+        $("#progress_cancel").prop("disabled",true)
         $.ajax({
             url: url,
             type: "POST",
@@ -171,8 +173,10 @@ $(document).ready(function() {
                 window.location.href = '/experts';
             },
             error: function(jqXHR, textStatus, errorThrown){
+                $("#progress_yes").prop("disabled",false);
+                $("#progress_cancel").prop("disabled",false)
                 $('#loading_progress').hide();
-                alert("There has been an error and crisis mode has not been toggled. Please retry later");
+                alert("There has been an error and it's been impossible to assign reports. Please try again later.");
             }
         });
     }
@@ -184,12 +188,20 @@ $(document).ready(function() {
       modal: true,
       autoOpen: false,
       buttons: {
-        "Yes": function() {
-            $('#loading_progress').show();
-            get_reports();
+        "Yes": {
+            text: "Yes",
+            id: "progress_yes",
+            click: function(){
+                $('#loading_progress').show();
+                get_reports();
+            }
         },
-        Cancel: function() {
-          $( this ).dialog( "close" );
+        "Cancel":{
+            text: "Cancel",
+            id: "progress_cancel",
+            click: function(){
+                $( this ).dialog( "close" );
+            }
         }
       }
     });
