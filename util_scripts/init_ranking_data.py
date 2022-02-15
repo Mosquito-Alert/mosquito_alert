@@ -19,6 +19,7 @@ import datetime
 def init_ranking_data():
     data = get_ranking_data()
     RankingData.objects.all().delete()
+    hydrated = []
     for d in data['data']:
         #hydrate models
         r = RankingData(
@@ -27,7 +28,8 @@ def init_ranking_data():
             rank=d['rank'],
             score_v2=d['score_v2']
         )
-        r.save()
+        hydrated.append(r)
+    RankingData.objects.bulk_create(hydrated)
     RankingData.objects.all().update(last_update=datetime.datetime.now())
 
 init_ranking_data()
