@@ -6,7 +6,6 @@ tigapublic/files/models/
 *.csv
 *.log.*
 *.log
-*.json
 *.script
 *.txt
 *pyc

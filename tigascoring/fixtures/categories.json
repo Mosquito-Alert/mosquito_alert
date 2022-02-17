@@ -1,0 +1,74 @@
+[
+  {
+    "model": "tigacrafting.categories",
+    "pk": 1,
+    "fields": {
+      "name": "Unclassified",
+      "specify_certainty_level": false
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 2,
+    "fields": {
+      "name": "Other species",
+      "specify_certainty_level": false
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 4,
+    "fields": {
+      "name": "Aedes albopictus",
+      "specify_certainty_level": true
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 5,
+    "fields": {
+      "name": "Aedes aegypti",
+      "specify_certainty_level": true
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 6,
+    "fields": {
+      "name": "Aedes japonicus",
+      "specify_certainty_level": true
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 7,
+    "fields": {
+      "name": "Aedes koreicus",
+      "specify_certainty_level": true
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 8,
+    "fields": {
+      "name": "Complex",
+      "specify_certainty_level": false
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 9,
+    "fields": {
+      "name": "Not sure",
+      "specify_certainty_level": false
+    }
+  },
+  {
+    "model": "tigacrafting.categories",
+    "pk": 10,
+    "fields": {
+      "name": "Culex sp.",
+      "specify_certainty_level": true
+    }
+  }
+]
