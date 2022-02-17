@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import tigacrafting.html_utils as html_utils
-
+import pytz
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -203,6 +203,7 @@ class ExpertReportAnnotation(models.Model):
     complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value', on_delete=models.DO_NOTHING, )
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
     other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.DO_NOTHING, )
+    validation_complete_executive = models.BooleanField(default=False, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
 
     class Meta:
         constraints = [
@@ -214,6 +215,20 @@ class ExpertReportAnnotation(models.Model):
 
     def is_expert(self):
         return 'expert' in self.user.groups.values_list('name', flat=True)
+
+    @property
+    def is_on_ns_executive_validation_period(self):
+        utc = pytz.UTC
+        if self.report.country is not None:
+            if UserStat.objects.filter(national_supervisor_of=self.report.country).exists():
+                expiration_period = self.report.country.national_supervisor_report_expires_in
+                if expiration_period is None:
+                    expiration_period = 14
+                date_now = datetime.now().replace(tzinfo=utc)
+                date_expiration = date_now - timedelta(days=expiration_period)
+                if self.report.server_upload_time >= date_expiration:
+                    return True
+        return False
 
     def get_others_annotation_html(self):
         result = ''
@@ -305,6 +320,9 @@ class UserStat(models.Model):
     national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.DO_NOTHING, )
     native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.DO_NOTHING, )
     license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
+    # When in crisis mode, several regional restrictions are disabled and the user preferently receives reports
+    # from places where there has been a spike
+    crisis_mode = models.BooleanField('Tells if the validator is working in crisis mode or not', default=False)
 
     def has_accepted_license(self):
         return self.license_accepted
@@ -333,12 +351,27 @@ class UserStat(models.Model):
     def n_pending_annotations(self):
         return self.user.expert_report_annotations.filter(validation_complete=False).count()
 
+    def is_bb_user(self):
+        if self.native_of is not None:
+            return self.native_of.is_bounding_box
+        return False
+
+    # only regular users can activate crisis mode
+    def can_activate_crisis_mode(self):
+        if self.is_superexpert():
+            return False
+        if self.is_bb_user():
+            return False
+        if self.is_national_supervisor():
+            return False
+        return True
+
     def is_national_supervisor(self):
         return self.national_supervisor_of is not None
 
     def is_national_supervisor_for_country(self, country):
         return self.is_national_supervisor() and self.national_supervisor_of.gid == country.gid
-
+    
     @property
     def formatted_country_info(self):
         this_user = self.user

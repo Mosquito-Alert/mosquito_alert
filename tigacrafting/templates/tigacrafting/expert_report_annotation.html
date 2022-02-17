@@ -57,6 +57,16 @@
             display: none;
         }
 
+        .crisis-on {
+            background-color: red;
+            color: white;
+        }
+
+        .crisis-off {
+            background-color: white;
+            color: black;
+        }
+
     </style>
 
     {% block fa_css %}
@@ -110,7 +120,7 @@
 
 </head>
 
-<body>
+<body class="{% if user.userstat.crisis_mode %} bg-danger {% else %} bg-white {% endif %}">
 
 {% block navbar %}
     <!-- NAVBAR
@@ -321,6 +331,17 @@
 
             {% endblock %}
         </div>
+        {% if user.userstat.can_activate_crisis_mode %}
+        <div id="crisis_status" class="row {% if user.userstat.crisis_mode %}crisis-on{% else %}crisis-off{% endif %}">
+            <h3>Crisis mode is
+                {% if user.userstat.crisis_mode %}
+                    <span>ON</span>
+                {% else %}
+                    <span class="text-success">OFF</span>
+                {% endif %}
+            </h3>
+        </div>
+        {% endif %}
     </div>
 
     {% if objects.has_next or objects.has_previous %}
@@ -530,9 +551,16 @@
                     </div>
                     {% endif %}
 
-
-
                     {% form form using "floppyforms/layouts/bootstrap.html" %}
+
+                    {% if request.user.userstat.is_national_supervisor and form.instance.is_on_ns_executive_validation_period %}
+                    <div class="form-group">
+                        <label>Executive validation:</label>
+                        <div class="controls field-vc_executive" data-toggle="tooltip" title="" data-placement="top" data-original-title="Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor.">
+                            <input class="exec_val_input" type="checkbox" name="vc_executive_{{ form.instance.id }}" id="vc_executive_{{ form.instance.id }}">
+                        </div>
+                    </div>
+                    {% endif %}
 
                     {% if checked == 'unchecked' or edit_mode == 'edit' %}
 
@@ -833,6 +861,7 @@
     <input id="version_uuid_input" type="text" name="version_uuid" style="display: none;"
            value="{{ version_uuid }}">
     <input id="linked_id_input" type="text" name="linked_id" style="display: none;" value="{{ linked_id }}">
+    <input id="ns_id_input" type="text" name="ns_id" style="display: none;" value="{{ ns_exec }}">
     <input id="load_new_reports_input" type="text" name="load_new_reports" style="display: none;"
            value="{{ load_new_reports }}">
     <input id="tasks_per_page_input" type="text" name="tasks_per_page" style="display: none;"
@@ -1026,6 +1055,19 @@
                                     </select>
                                 </div>
                             </div>
+                            {% if request.user.userstat.is_superexpert %}
+                            <div class="form-group">
+                                <label for="ns_select" class="col-sm-4 control-label">Exec validated by NS:</label>
+                                <div class="col-sm-8">
+                                    <select id="ns_select" class="selectpicker show-tick form-control" data-live-search="true">
+                                        <option value=""></option>
+                                        {% for ns in ns_list %}
+                                            <option value="{{ ns.id }}">{{ ns.userstat.national_supervisor_of.name_engl }} - {{ ns.username }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            {% endif %}
                             <!--<div class="form-group">
                                 <label for="status_select" class="col-sm-4 control-label">Tags:</label>
                                 <div class="col-sm-8">
@@ -1182,6 +1224,8 @@
         var index_to_id = {};
         var id_to_index = {};
         var final_status_table = {};
+        var user = {{ user.id }};
+        var csrf_token = '{{ csrf_token }}';
 
         function clear_form(form_id){
             //Clear UI
@@ -1955,6 +1999,7 @@
             $("#final_status_input").val('na');
             $("#version_uuid_input").val('na');
             $("#linked_id_input").val('na');
+            $("#ns_id_input").val('all');
             $("#tags_filter_input").val('');
             $("#load_new_reports_input").val('F');
         }
@@ -2172,16 +2217,19 @@
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
                 var this_status = $("#status_select").val();
+                var this_ns_exec = $("#ns_select").val();
                 $("#orderby_input").val(this_orderby);
                 $("#tiger_certainty_input").val(this_tiger_certainty);
                 $("#site_certainty_input").val(this_site_certainty);
                 $("#status_input").val(this_status);
+                $("#ns_id_input").val(this_ns_exec);
                 $("#pending_input").val(pending);
                 var qp = '?orderby=' + this_orderby;
                 qp += '&tiger_certainty=' + this_tiger_certainty;
                 qp += '&site_certainty=' + this_site_certainty;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;
+                qp += '&ns_exec=' + this_ns_exec;
                 return(qp)
             }
 
@@ -2202,6 +2250,7 @@
 
             $("#orderby_select").val("{{ orderby }}");
             $("#tiger_certainty_select").val("{{ tiger_certainty }}");
+            $("#ns_select").val("{{ ns_exec }}");
             $("#site_certainty_select").val("{{ site_certainty }}");
             $("#status_select").val("{{ status }}");
             var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn");
@@ -2214,7 +2263,7 @@
     {% endblock %}
 
     <script>
-
+        var crisis_mode = {% if user.userstat.crisis_mode %}true{% else %}false{% endif %};
 
         $("#filters_submit_button").on('click', submit_queries);
 
@@ -2303,12 +2352,16 @@
         $("#search_uuid_autocomplete").on('click', submit_search_version_uuid);
 
         grab_reports_button.on('click', function () {
-            $("#grab_reports_button").attr("disabled", true);
-            gear.show();
-            $("#load_new_reports_input").val("T");
-            var qp = query_selectors();
-            qp += '&load_new_reports=' + "T";
-            background_save(qp);
+            if(crisis_mode==true){
+                window.location.href = '{% url 'expert_geo_report_assign' %}';
+            }else{
+                $("#grab_reports_button").attr("disabled", true);
+                gear.show();
+                $("#load_new_reports_input").val("T");
+                var qp = query_selectors();
+                qp += '&load_new_reports=' + "T";
+                background_save(qp);
+            }
         });
 
         function go_to_page(top_or_bottom){
@@ -2391,7 +2444,8 @@
     </script>
 
     <script src={% static "tigacrafting/categories_combo.js" %}></script>
-    <script src={% static "tigacrafting/macro_messages.js" %}></script>
+    <script src={% static "tigacrafting/macro_messages.js" %}></script> 
+    <script src={% static "tigacrafting/exec_val.js" %}></script>
 
 
 {% endblock %}

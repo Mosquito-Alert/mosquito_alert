@@ -17,7 +17,8 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
+from tigacrafting.report_queues import assign_crisis_report
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -667,6 +668,28 @@ def mark_notif_as_ack(request):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except AcknowledgedNotification.DoesNotExist:
             raise ParseError(detail='Acknowledged not found')
+
+
+@api_view(['POST'])
+def toggle_crisis_mode(request, user_id=None):
+    if user_id is None:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(User.objects.all(), pk=user_id)
+    user.userstat.crisis_mode = not user.userstat.crisis_mode
+    user.userstat.save()
+    return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def crisis_report_assign(request, user_id=None, country_id=None):
+    if user_id is None:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    if country_id is None:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(User.objects.all(), pk=user_id)
+    country = get_object_or_404(EuropeCountry.objects.all(), pk=country_id)
+    retval = assign_crisis_report(user, country)
+    return Response(data=retval, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

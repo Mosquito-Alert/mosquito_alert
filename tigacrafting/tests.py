@@ -10,11 +10,12 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from django.core.exceptions import ObjectDoesNotExist
 from operator import attrgetter
-from tigacrafting.views import assign_reports_to_user, assign_reports_to_bounded_box_user, issue_notification
+from tigacrafting.views import issue_notification
 import tigaserver_project.settings as conf
 from django.utils import timezone
 from common.translation import get_translation_in
 import pytz
+from tigacrafting.report_queues import *
 
 ###                 HELPER STUFF                ########################################################################
 
@@ -59,8 +60,147 @@ def filter_reports(reports, sort=True):
 ###                END HELPER STUFF                #####################################################################
 
 
-class UserTestCase(TestCase):
-    fixtures = ['europe_countries.json','reritja_like.json','granter_user.json','awardcategory.json','nutseurope.json']
+class NewReportAssignment(TestCase):
+    fixtures = ['europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
+
+    def create_team(self):
+
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+        superexperts = Group.objects.create(name='superexpert')
+        superexperts.save()
+
+        u1 = User.objects.create(pk=1)
+        u1.username = 'expert_1_es'
+        u1.save()
+
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_eu'
+        u2.userstat.native_of = EuropeCountry.objects.get(pk=45)  # Isle of man
+        u2.save()
+
+        u3 = User.objects.create(pk=3)
+        u3.username = 'expert_3_eu'
+        c = EuropeCountry.objects.get(pk=45)  # Isle of man
+        u3.userstat.national_supervisor_of = c
+        u3.save()
+
+        u4 = User.objects.create(pk=4)
+        u4.username = 'expert_4_es'
+        u4.save()
+
+        u5 = User.objects.create(pk=5)
+        u5.username = 'expert_5_eu'
+        c = EuropeCountry.objects.get(pk=22)  # Faroes
+        u5.userstat.national_supervisor_of = c
+        u5.save()
+
+        u6 = User.objects.create(pk=6)
+        u6.username = 'expert_6_es'
+        u6.save()
+
+        u7 = User.objects.create(pk=7)
+        u7.username = 'expert_7_eu'
+        c = EuropeCountry.objects.get(pk=8)  # Norway
+        u7.userstat.national_supervisor_of = c
+        u7.save()
+
+        u8 = User.objects.create(pk=8)
+        u8.username = 'expert_8_es'
+        u8.save()
+
+        u9 = User.objects.create(pk=9)
+        u9.username = 'expert_9_eu'
+        u9.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u9.save()
+
+        u10 = User.objects.create(pk=10)
+        u10.username = 'expert_10_eu'
+        u10.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u10.save()
+
+        u12 = User.objects.create(pk=12)
+        u12.username = 'expert_12_sl'
+        u12.userstat.native_of = EuropeCountry.objects.get(pk=53)  # St Louis bb
+        u12.save()
+
+        europe_group.user_set.add(u2)
+        europe_group.user_set.add(u3)
+        europe_group.user_set.add(u5)
+        europe_group.user_set.add(u7)
+        europe_group.user_set.add(u9)
+        europe_group.user_set.add(u10)
+
+        experts.user_set.add(u1)
+        experts.user_set.add(u2)
+        experts.user_set.add(u3)
+        experts.user_set.add(u4)
+        experts.user_set.add(u5)
+        experts.user_set.add(u6)
+        experts.user_set.add(u7)
+        experts.user_set.add(u8)
+        experts.user_set.add(u9)
+        experts.user_set.add(u10)
+
+        reritja = User.objects.get(pk=25)
+        superexperts.user_set.add(reritja)
+
+
+    def create_outdated_report_pool(self):
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        non_naive_time = timezone.now()
+        country = EuropeCountry.objects.get(pk=45) #Isle of man
+        # date threshold for reports that the national supervisor has lost priority over
+        two_weeks_ago = non_naive_time - timedelta(days=country.national_supervisor_report_expires_in)
+        a = 1
+        while a < 3:
+            point_on_surface = country.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+        #queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
+        Report.objects.all().update(server_upload_time=two_weeks_ago)
+
+        a = 1
+        while a < 4:
+            point_on_surface = country.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a+10),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+
 
     def create_report_pool(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
@@ -87,16 +227,12 @@ class UserTestCase(TestCase):
             p.save()
             a = a + 1
 
-    def create_venezuelan_report_pool(self):
-        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
-        t.save()
-        non_naive_time = timezone.now()
+        country = EuropeCountry.objects.get(pk=53)
         a = 1
-        country = EuropeCountry.objects.get(pk=52)
-        while a < 20:
+        while a < 10:
             point_on_surface = country.geom.point_on_surface
             r = Report(
-                version_UUID=str(a),
+                version_UUID=str(a+100),
                 version_number=0,
                 user_id='00000000-0000-0000-0000-000000000000',
                 phone_upload_time=non_naive_time,
@@ -112,6 +248,64 @@ class UserTestCase(TestCase):
             p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
             p.save()
             a = a + 1
+
+        country = EuropeCountry.objects.get(pk=17)
+        a = 1
+        while a < 10:
+            point_on_surface = country.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a+1000),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+
+    def create_stlouis_team(self):
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+
+        stlouis = EuropeCountry.objects.get(pk=53)
+
+        u1 = User.objects.create(pk=1)
+        u1.username = 'expert_1_es'
+        u1.save()
+
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_sl'
+        u2.userstat.native_of = stlouis
+        u2.save()
+
+        u3 = User.objects.create(pk=3)
+        u3.username = 'expert_3_sl'
+        u3.userstat.native_of = stlouis
+        u3.save()
+
+        u4 = User.objects.create(pk=4)
+        u4.username = 'expert_4_sl'
+        u4.userstat.native_of = stlouis
+        u4.save()
+
+        u5 = User.objects.create(pk=5)
+        u5.username = 'expert_1_eu'
+        u5.save()
+
+        spain_group.user_set.add(u1)
+        europe_group.user_set.add(u5)
 
     def create_stlouis_report_pool(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
@@ -139,151 +333,160 @@ class UserTestCase(TestCase):
             p.save()
             a = a + 1
 
-    def create_team(self):
+    def print_assigned_reports(self, this_user):
+        assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user)
+        print("User {0} has been assigned".format( this_user.username ))
+        for assignation in assigned_reports:
+            is_supervised = User.objects.filter(userstat__national_supervisor_of=assignation.report.country).exists()
+            print( "Report {0} in country {1}, assignation number {2}, country is supervised {3}".format( assignation.report.version_UUID, assignation.report.country, assignation.id, is_supervised ) )
 
-        europe_group = Group.objects.create(name='eu_group_europe')
-        europe_group.save()
-        team_venezuela = Group.objects.create(name='team_venezuela')
-        team_venezuela.save()
-        team_stlouis = Group.objects.create(name='team_stlouis')
-        team_stlouis.save()
-        spain_group = Group.objects.create(name='eu_group_spain')
-        spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
 
-        u1 = User.objects.create(pk=1)
-        u1.username = 'expert_1_es'
-        u1.save()
-        u2 = User.objects.create(pk=2)
-        u2.username = 'expert_2_eu'
-        u2.save()
-        u3 = User.objects.create(pk=3)
-        u3.username = 'expert_3_eu'
-        c = EuropeCountry.objects.get(pk=45)  # Isle of man
-        u3.userstat.national_supervisor_of = c
-        u3.save()
-        u4 = User.objects.create(pk=4)
-        u4.username = 'expert_4_es'
-        u4.save()
-        u5 = User.objects.create(pk=5)
-        u5.username = 'expert_5_eu'
-        c = EuropeCountry.objects.get(pk=22)  # Faroes
-        u5.userstat.national_supervisor_of = c
-        u5.save()
-        u6 = User.objects.create(pk=6)
-        u6.username = 'expert_6_es'
-        u6.save()
-        u7 = User.objects.create(pk=7)
-        u7.username = 'expert_7_eu'
-        c = EuropeCountry.objects.get(pk=8)  # Norway
-        u7.userstat.national_supervisor_of = c
-        u7.save()
-        u8 = User.objects.create(pk=8)
-        u8.username = 'expert_8_es'
-        u8.save()
-        u9 = User.objects.create(pk=9)
-        u9.username = 'expert_9_eu'
-        u9.save()
-        u10 = User.objects.create(pk=10)
-        u10.username = 'expert_10_eu'
-        u10.save()
 
-        u11 = User.objects.create(pk=11)
-        u11.username = 'expert_11_ve'
-        u11.save()
+    def test_check_users(self):
+        self.create_team()
+        #check everyone but the granter user
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                self.assertEqual(this_user.id, 25, "Super user id should be 25")
+            else:
+                if this_user.userstat.is_bb_user():
+                    self.assertEqual(this_user.userstat.native_of.is_bounding_box, True, "BB user native of should be bounding box")
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        self.assertIsNotNone(this_user.userstat.national_supervisor_of_id, "National supervisor supervised country should not be null")
+                        self.assertTrue( this_user.groups.filter(name="eu_group_europe").exists(), "All national supervisors must belong to eu_group_europe"  )
+                    else:  # is regular user
+                        #if no native country, it is spain
+                        if this_user.userstat.native_of is None:
+                            if this_user.userstat.is_superexpert():
+                                pass
+                            else:
+                                self.assertTrue('es' in this_user.username, "User {0} is not assigned native country and has not es suffix in username".format( this_user.username ))
+                        else:
+                            #it should belong to eu group
+                            self.assertTrue(this_user.groups.filter(name="eu_group_europe").exists(), "All regular european users must belong to eu_group_europe, user {0} does not".format(this_user.username))
 
-        u12 = User.objects.create(pk=12)
-        u12.username = 'expert_12_sl'
-        u12.save()
+    def test_check_all_reports_are_located(self):
+        self.create_report_pool()
+        for r in Report.objects.all():
+            self.assertIsNotNone( r.country, "Report {0} has no assigned country".format( r.version_UUID ) )
 
-        team_venezuela.user_set.add(u11)
+    def test_assign_reports(self):
+        self.create_team()
+        self.create_report_pool()
 
-        team_stlouis.user_set.add(u12)
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
 
-        europe_group.user_set.add(u2)
-        europe_group.user_set.add(u3)
-        europe_group.user_set.add(u5)
-        europe_group.user_set.add(u7)
-        europe_group.user_set.add(u9)
-        europe_group.user_set.add(u10)
+        #get all national supervisors
+        for this_user in User.objects.filter(userstat__national_supervisor_of__isnull=False):
+            # Get all reports in supervised country
+            supervised_country = this_user.userstat.national_supervisor_of
+            reports_in_supervised_country = Report.objects.filter(country=supervised_country).count()
+            #there's less than 5 reports in supervised country
+            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country=supervised_country).count()
+            if reports_in_supervised_country <= 5:
+                #all of them should be assigned to this user
+                self.assertEqual( reports_in_supervised_country, assigned_reports, "Less than 5 ({0}) reports available belong to country {1}, all of them should be assigned, but only {2} are".format(reports_in_supervised_country, supervised_country, assigned_reports ) )
+            else:
+                #there's more than five, all five assigned reports should be in the country
+                self.assertEqual( 5, assigned_reports, "More than 5 reports available ({0}) for country {1}, all should be assigned to national supervisor".format( assigned_reports, supervised_country ) )
 
-        experts.user_set.add(u1)
-        experts.user_set.add(u2)
-        experts.user_set.add(u3)
-        experts.user_set.add(u4)
-        experts.user_set.add(u5)
-        experts.user_set.add(u6)
-        experts.user_set.add(u7)
-        experts.user_set.add(u8)
-        experts.user_set.add(u9)
-        experts.user_set.add(u10)
+        # get all bounding box users
+        for this_user in User.objects.filter(userstat__native_of__is_bounding_box=True):
+            #Get all reports in bounding box
+            bb = this_user.userstat.native_of
+            reports_in_bounding_box = Report.objects.filter(country=bb).count()
+            # there's less than 5 reports in supervised country
+            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country=bb).count()
+            if reports_in_bounding_box <= 5:
+                # all of them should be assigned to this user
+                self.assertEqual(reports_in_bounding_box, assigned_reports, "Less than 5 ({0}) reports available belong to country {1}, all of them should be assigned, but only {2} are".format(reports_in_bounding_box, bb, assigned_reports))
+            else:
+                # there's more than five, all five assigned reports should be in the country
+                self.assertEqual(5, assigned_reports, "More than 5 reports available ({0}) for country {1}, all should be assigned to national supervisor".format(assigned_reports, bb))
 
-    def create_stlouis_team(self):
-        team_stlouis = Group.objects.create(name='team_stlouis')
-        team_stlouis.save()
-        europe_group = Group.objects.create(name='eu_group_europe')
-        europe_group.save()
-        spain_group = Group.objects.create(name='eu_group_spain')
-        spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
+        # get all superexperts
+        for this_user in User.objects.filter(groups__name='superexpert'):
+            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).count()
+            #no reports should have been assigned
+            self.assertEqual(assigned_reports, 0,"No reports should have been assigned to superexpert {0}".format(this_user.username))
 
-        u1 = User.objects.create(pk=1)
-        u1.username = 'expert_1_es'
-        u1.save()
-        u2 = User.objects.create(pk=2)
-        u2.username = 'expert_2_sl'
-        u2.save()
-        u3 = User.objects.create(pk=3)
-        u3.username = 'expert_3_sl'
-        u3.save()
-        u4 = User.objects.create(pk=4)
-        u4.username = 'expert_4_sl'
-        u4.save()
-        u5 = User.objects.create(pk=5)
-        u5.username = 'expert_1_eu'
-        u5.save()
+        # get all regular users
+        regular_users = User.objects.filter( Q(userstat__native_of__is_bounding_box=False) & Q(userstat__national_supervisor_of__isnull=True) )
+        for this_user in regular_users:
+            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).count()
+            supervised_countries_gids = User.objects.filter(userstat__national_supervisor_of__isnull=False).values('userstat__national_supervisor_of__gid')
+            supervised_countries = EuropeCountry.objects.filter(gid__in=supervised_countries_gids)
+            # everyone should have less than 5 reports assigned
+            self.assertTrue( assigned_reports <= 5, "User {0} has been assigned more than 5 reports ({1})".format( this_user.username, assigned_reports ) )
+            # no regular user should yet receive reports from supervised countries
+            supervised_country_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country__in=supervised_countries).count()
+            try:
+                self.assertTrue(supervised_country_reports == 0,"User {0} has been assigned some reports ({1}) from supervised countries".format(this_user.username,supervised_country_reports))
+            except AssertionError:
+                self.print_assigned_reports(this_user)
+                raise
+            # ... or from bounding boxes
+            bb_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country__is_bounding_box=True).count()
+            self.assertTrue(bb_reports == 0, "User {0} has been assigned some reports ({1}) from bounding boxes".format(this_user.username, bb_reports))
 
-        spain_group.user_set.add(u1)
-        europe_group.user_set.add(u5)
+        # let's take a closer look at es experts
+        spain_users = User.objects.filter( Q(userstat__native_of__isnull=True) | Q( userstat__native_of__gid=17 ) ).exclude( groups__name='eu_group_europe' ).exclude( id__in=[24,25] )
+        for this_user in spain_users:
+            # All spain user assigned reports should be in Spain
+            assigned_reports_not_spain = ExpertReportAnnotation.objects.filter(user=this_user).exclude( report__country__gid = 17).count()
+            self.assertTrue(assigned_reports_not_spain == 0, "Spain user {0} has been assigned some reports ({1}) outside spain".format(this_user.username, assigned_reports_not_spain))
 
-        team_stlouis.user_set.add(u2)
-        team_stlouis.user_set.add(u3)
-        team_stlouis.user_set.add(u4)
+        # for symmetry sake, the same for eu experts
+        euro_users = User.objects.filter( groups__name='eu_group_europe' ).exclude(id__in=[24, 25]).filter( userstat__national_supervisor_of__isnull = True )
+        for this_user in euro_users:
+            # All reports should be euro
+            assigned_reports_spain = ExpertReportAnnotation.objects.filter(user=this_user).filter( report__country__gid = 17).count()
+            self.assertTrue(assigned_reports_spain == 0, "Euro user {0} has been assigned some reports ({1}) from spain".format(this_user.username, assigned_reports_not_spain))
 
-    # def create_venezuelan_team(self):
-    #     team_venezuela = Group.objects.create(name='team_venezuela')
-    #     team_venezuela.save()
-    #     europe_group = Group.objects.create(name='eu_group_europe')
-    #     europe_group.save()
-    #     spain_group = Group.objects.create(name='eu_group_spain')
-    #     spain_group.save()
-    #     experts = Group.objects.create(name='expert')
-    #     experts.save()
-    #
-    #     u1 = User.objects.create(pk=1)
-    #     u1.username = 'expert_1_es'
-    #     u1.save()
-    #     u2 = User.objects.create(pk=2)
-    #     u2.username = 'expert_2_ve'
-    #     u2.save()
-    #     u3 = User.objects.create(pk=3)
-    #     u3.username = 'expert_3_ve'
-    #     u3.save()
-    #     u4 = User.objects.create(pk=4)
-    #     u4.username = 'expert_4_ve'
-    #     u4.save()
-    #     u5 = User.objects.create(pk=5)
-    #     u5.username = 'expert_1_eu'
-    #     u5.save()
-    #
-    #     spain_group.user_set.add(u1)
-    #     europe_group.user_set.add(u5)
-    #
-    #     team_venezuela.user_set.add(u2)
-    #     team_venezuela.user_set.add(u3)
-    #     team_venezuela.user_set.add(u4)
+        #check grabbed reports
+        for this_user in User.objects.all():
+            grabbed_reports = this_user.userstat.grabbed_reports
+            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).count()
+            self.assertEquals(grabbed_reports, assigned_reports, "User {0} has been assigned {1} reports, grabbed reports in stats is {2}".format( this_user.username, assigned_reports, grabbed_reports ))
+
+        #all reports assigned to national supervisors should be non_simplified
+        for this_user in User.objects.filter(userstat__national_supervisor_of__isnull=False):
+            # Get all reports in supervised country
+            supervised_country = this_user.userstat.national_supervisor_of
+            for assigned_report in ExpertReportAnnotation.objects.filter(user=this_user):
+                if assigned_report.report.country == supervised_country:
+                    self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.report ))
+
+
+
+    # tests that reports that should go to national supervisor don't because of expired precedence period
+    def test_report_outdate(self):
+        self.create_team()
+        # all reports are in isle of man, 2 of them were uploaded to the server 2 weeks + 1 day ago
+        self.create_outdated_report_pool()
+        # assign reports to regular user. All assigned reports should be from isle of man
+        user = User.objects.get(pk=10)
+        assign_reports_to_regular_user(user)
+        # user should have been assigned 2 outdated reports
+        assigned_reports = ExpertReportAnnotation.objects.filter(user=user)
+        self.assertTrue( assigned_reports.count() == 2, "User {0} has been assigned {1} reports, should have been assigned {2}".format( user.username, assigned_reports.count(), 5 ) )
+
+        national_supervisor_isleofman = User.objects.get(pk=3)
+        assign_reports_to_national_supervisor(national_supervisor_isleofman)
+        server_upload_time_first_report = ExpertReportAnnotation.objects.filter(user=national_supervisor_isleofman).order_by('id')[0].report.server_upload_time
+        server_upload_time_first_report_str = server_upload_time_first_report.strftime('%Y-%m-%d')
+        self.assertTrue( server_upload_time_first_report_str == timezone.now().strftime('%Y-%m-%d'), "Server upload time of first assigned report should be {0}, is {1}".format( timezone.now().strftime('%Y-%m-%d'), server_upload_time_first_report_str ) )
 
 
     # tests that user creation triggers userstat creation
@@ -325,110 +528,32 @@ class UserTestCase(TestCase):
         self.assertEqual( u.userstat.is_national_supervisor_for_country( c ), True)
         u.delete()
 
-
-    @staticmethod
-    def has_national_supervisor_assigned(annotations, country):
-        for anno in annotations:
-            if anno.user.userstat.is_national_supervisor_for_country(country):
-                return True
-        return False
-
-    @staticmethod
-    def national_supervisor_assigned_last(annotations, country):
-        last_annotation = annotations.order_by('-created').first()
-        return last_annotation.user.userstat.is_national_supervisor() and last_annotation.user.userstat.is_national_supervisor_for_country(country)
-        #return True
-
-    # tests that all users are:
-    # - assigned max_pending reports
-    # - if users are supervisors, they are assigned the report(s) for the country they supervise
-    def test_assign_reports(self):
-        self.create_team()
-        self.create_report_pool()
-        current_pending = 0
-        max_pending = 5
-        max_given = 3
-        national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-        country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-        country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-        for this_user in User.objects.all():
-            if this_user.groups.filter(name='team_venezuela').exists():
-                assign_reports_to_bounded_box_user(this_user,current_pending,max_pending,max_given,52)
-            else:
-                assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
-            #user_summary(this_user)
-
-        for report in Report.objects.all():
-            annotations = ExpertReportAnnotation.objects.filter(report=report).filter(user__groups__name='expert')
-            assigned_to = annotations.count()
-            self.assertLessEqual(assigned_to, 3, msg="Report {0} assigned to more than 3 experts!".format(report.version_UUID))
-            if assigned_to == 3:
-                #check if there is regional manager for country of report
-                if self.has_national_supervisor_assigned(annotations.all(), report.country):
-                    #if there is regional manager, it should be assigned last
-                    self.assertEqual(self.national_supervisor_assigned_last(annotations, report.country), True, msg="Report {0} not assigned last to national supervisor".format(report.version_UUID))
-
-        # for usr in User.objects.all():
-        #     n = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').values('report').distinct().count()
-        #     if usr.userstat.is_national_supervisor():
-        #         assigned_supervised = ExpertReportAnnotation.objects.filter(user=usr).filter(report__type='adult').filter(report__country__gid=usr.userstat.national_supervisor_of.gid).exists()
-        #         if assigned_supervised == False:
-        #             print("User " + usr.username + " has not been assigned supervised")
-        #         self.assertEqual(n, max_pending)
-        #         self.assertEqual(assigned_supervised, True)
-        #     else:
-        #         if usr.groups.filter(name='eu_group_europe').exists():
-        #             self.assertEqual(n, max_pending)
-        #         elif usr.groups.filter(name='eu_group_spain').exists():
-        #             self.assertTrue(n == 1 or n == 0)
-
-        # Enable this for extra verbose info
-        # for usr in User.objects.all():
-        #     user_summary(usr)
-
-    # def test_assign_venezuelan_reports(self):
-    #     self.create_venezuelan_team()
-    #     self.create_venezuelan_report_pool()
-    #     current_pending = 0
-    #     max_pending = 5
-    #     max_given = 3
-    #     national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-    #     country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-    #     country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-    #     for this_user in User.objects.all():
-    #         if this_user.groups.filter(name='team_venezuela').exists():
-    #             assign_reports_to_bounded_box_user(this_user,current_pending,max_pending,max_given,52)
-    #         else:
-    #             assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
-    #
-    #     #all venezuelan experts id=2,3,4 should be assigned 3 reports
-    #     for i in [2, 3, 4]:
-    #         u = User.objects.get(pk=i)
-    #         reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
-    #         self.assertEqual(reports_user_i, 5, msg="Venezuelan user {0} has not been assigned 5 reports, but {1}!".format(u.username, reports_user_i))
-    #
-    #     #no reports for you, non venezuelan users (ids 1 and 5)!
-    #     for i in [1, 5]:
-    #         u = User.objects.get(pk=i)
-    #         reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
-    #         self.assertEqual(reports_user_i, 0, msg="NON-Venezuelan user {0} has been assigned {1} reports, but should have received none!".format(u.username, reports_user_i))
-
     def test_assign_stlouis_reports(self):
+        # 1 regular euro user, 1 regular spain user, 3 bbox (stlouis) users
         self.create_stlouis_team()
         self.create_stlouis_report_pool()
-        current_pending = 0
-        max_pending = 5
-        max_given = 3
-        national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-        country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-        country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-        for this_user in User.objects.all():
-            if this_user.groups.filter(name='team_stlouis').exists():
-                assign_reports_to_bounded_box_user(this_user,current_pending,max_pending,max_given,53)
-            else:
-                assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given)
 
-        #all venezuelan experts id=2,3,4 should be assigned 3 reports
+        number_of_assignments_to_regular_user = 0
+        number_of_assignments_to_bb_stlouis = 0
+
+        for this_user in User.objects.exclude(id__in=[24,25]):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                    number_of_assignments_to_bb_stlouis += 1
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+                        number_of_assignments_to_regular_user += 1
+
+        self.assertEqual( number_of_assignments_to_regular_user, 2, "Assigned reports to regular users {0} times, should be 2".format( number_of_assignments_to_regular_user ) )
+        self.assertEqual( number_of_assignments_to_bb_stlouis, 3, "Assigned reports to bb stlouis users {0} times, should be 3".format( number_of_assignments_to_bb_stlouis ) )
+
+        #all stlouis experts id=2,3,4 should be assigned 5 reports
         for i in [2, 3, 4]:
             u = User.objects.get(pk=i)
             reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
@@ -439,7 +564,6 @@ class UserTestCase(TestCase):
             u = User.objects.get(pk=i)
             reports_user_i = ExpertReportAnnotation.objects.filter(user=u).count()
             self.assertEqual(reports_user_i, 0, msg="NON-St Louis user {0} has been assigned {1} reports, but should have received none!".format(u.username, reports_user_i))
-
 
 
 
@@ -489,6 +613,50 @@ class UserTestCase(TestCase):
         # Two equal categories, one different -> No Conflict
         autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
         self.assertEqual(autoflag_question_mark, False)
+
+
+    def test_outdated_assign(self):
+        self.create_team()
+        #create outdated report
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        non_naive_time = timezone.now()
+        country = EuropeCountry.objects.get(pk=22)  # Faroes
+        # date threshold for reports that the national supervisor has lost priority over
+        two_weeks_ago = non_naive_time - timedelta(days=country.national_supervisor_report_expires_in)
+        r = Report(
+            version_UUID="1",
+            version_number=0,
+            user_id='00000000-0000-0000-0000-000000000000',
+            phone_upload_time=non_naive_time,
+            server_upload_time=non_naive_time,
+            creation_time=non_naive_time,
+            version_time=non_naive_time,
+            location_choice="current",
+            current_location_lon=country.geom.point_on_surface.x,
+            current_location_lat=country.geom.point_on_surface.y,
+            type='adult',
+        )
+        r.save()
+        p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+        p.save()
+        # queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
+        Report.objects.all().update(server_upload_time=two_weeks_ago)
+
+        #Manually assign report to NS. Has been assigned report but report outdated remained long time in assigned not resolved queue...
+        ns_user = User.objects.get(username='expert_5_eu')
+        new_annotation = ExpertReportAnnotation(report=r, user=ns_user)
+        new_annotation.save()
+
+        #Now assign reports to Faroes native. Should receive report with uuid 1
+        faroes_native_regular_user = User.objects.get(username='expert_9_eu')
+        assign_reports_to_regular_user(faroes_native_regular_user)
+
+        #should have been assigned the Faroes report, since the report is outdated and therefore no longer blocked by NS
+        n_assigned_to_faroes_user = ExpertReportAnnotation.objects.filter(user=faroes_native_regular_user).filter(report=r).count()
+        self.assertTrue( n_assigned_to_faroes_user == 1, "Number of reports assigned to Faroes user {0} is {1}, should be 1".format( faroes_native_regular_user.username, n_assigned_to_faroes_user ) )
+
+
 
     def test_validation_notification(self):
         self.create_report_pool()
