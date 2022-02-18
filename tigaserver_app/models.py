@@ -821,10 +821,10 @@ class Report(models.Model):
     def get_is_latest(self):
         if self.version_number == -1:
             return False
-        elif Report.objects.filter(report_id=self.report_id).filter(type=self.type).count() == 1:
+        elif Report.objects.filter(report_id=self.report_id).filter(type=self.type).filter(user=self.user).count() == 1:
             return True
         else:
-            all_versions = Report.objects.filter(report_id=self.report_id).filter(type=self.type).order_by('version_number')
+            all_versions = Report.objects.filter(report_id=self.report_id).filter(type=self.type).filter(user=self.user).order_by('version_number')
             if all_versions[0].version_number == -1:
                 return False
             elif all_versions.reverse()[0].version_number == self.version_number:
