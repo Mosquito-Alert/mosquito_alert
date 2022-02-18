@@ -806,7 +806,7 @@ class Report(models.Model):
 
     def get_is_deleted(self):
         result = False
-        all_versions = Report.objects.filter(report_id=self.report_id).order_by('version_number')
+        all_versions = Report.objects.filter(report_id=self.report_id).filter(user=self.user).order_by('version_number')
         if all_versions[0].version_number == -1:
             result = True
         return result
