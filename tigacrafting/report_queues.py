@@ -54,7 +54,7 @@ def filter_reports_for_superexpert(reports):
     # not deleted, last version, completely validated by at least three experts
     #deleted_adult_reports = get_deleted_adult_reports(reports)
     # not deleted
-    undeleted = reports.exclude(report_id__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
+    undeleted = reports.exclude(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
     # last version
     latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id, max(version_number) as higher from tigaserver_app_report group by report_id) maxes where r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
     # fully validated
@@ -70,7 +70,7 @@ def filter_reports(reports):
     #not deleted, last version
     #deleted_adult_reports = get_deleted_adult_reports(reports)
     # not deleted
-    undeleted = reports.exclude(report_id__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
+    undeleted = reports.exclude(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
     # last version
     latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id, max(version_number) as higher from tigaserver_app_report group by report_id) maxes where r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
     return latest_versions

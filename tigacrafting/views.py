@@ -1808,9 +1808,9 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         #
         # new_reports_unfiltered = list(new_reports_unfiltered)
 
-        report_id_deleted_reports = Report.objects.filter(report_id__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("report_id").distinct()
+        report_id_deleted_reports = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("report_id").distinct()
 
-        new_reports_unfiltered = new_reports_unfiltered.exclude(report_id__in=report_id_deleted_reports)
+        new_reports_unfiltered = new_reports_unfiltered.exclude(version_UUID__in=report_id_deleted_reports)
 
         new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id, max(version_number) as higher from tigaserver_app_report group by report_id) maxes where r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
 
