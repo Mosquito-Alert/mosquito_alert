@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load stats_extras %}
 {% load i18n %}
 <html>
     <head>
@@ -25,11 +26,11 @@
                 </div>
                 -->
                 <div class="col-xs-9 text_box">
-                    <h4>{% trans 'Citizen Scientist' %} - <b>{{ score_data.overall_class_label }}</b></h4>
-                    <!--<p>User ID - {{ score_data.user_uuid }}</p>-->
+                    <h4>{% trans 'Citizen Scientist' %} - <b>{{ score_data.overall_class_value|translate_class_value }}</b></h4>
+                    <p>{% trans 'last_score_data_update' %} : <b>{{ score_last_update|date:'d/m/Y H:m:s' }}</b></p>
                     <p><img src="{{ score_data.identicon | safe }}" height="75px"></p>
-                    <p class="small">{% trans 'this_is_your_personal_avatar' %} <b>{{ score_data.overall_class_label }}</b>. {% trans 'there_are_5_levels' %}</p>
-                    <p><i>{% trans 'Joined' %} {{ score_data.joined_label }} | {% trans 'Last active' %} {% if score_data.active_label %}{{ score_data.active_label }}{%else%}{% trans 'Never' %}{%endif%}</i></p>
+                    <p class="small">{% trans 'this_is_your_personal_avatar' %} <b>{{ score_data.overall_class_value|translate_class_value }}</b>. {% trans 'there_are_5_levels' %}</p>
+                    <p><i>{% trans 'Joined' %} {{ score_data.joined_value|get_elapsed_label }} | {% trans 'Last active' %} {% if score_data.active_value %}{{ score_data.active_value|get_elapsed_label }}{%else%}{% trans 'Never' %}{%endif%}</i></p>
                     {% if score_data.overall_rank_value == 0 %}
                         <p class="score_label">{% trans 'Overall rank - Unranked' %}</p>
                     {% else %}
@@ -51,7 +52,7 @@
                         {% for item in score_data.unrelated_awards.awards %}
                         <div class="award_box">
                             <img src="{% static "stats/icon/" %}{{ item.media_label }}.png">
-                            <p>{{ item.reason }}</p>
+                            <p>{{ item.reason_untranslated|translate_generic_string }}</p>
                             <p>{% trans 'awarded_on' %} {{ item.awarded_on }}</p>
                             <p class="score_label_smallest">{{ item.xp_awarded }} {% trans 'XP' %}</p>
                         </div>
@@ -78,7 +79,8 @@
                 </div>
                 -->
                 <div class="col-xs-9">
-                    <h4>{% trans 'Level obtained for' %} {% trans 'Mosquito' %} - <b>{{ score_data.score_detail.adult.class_label }}</b></h4>
+                    <!-- score_data.overall_class_value|translate_class_value -->
+                    <h4>{% trans 'Level obtained for' %} {% trans 'Mosquito' %} - <b>{{ score_data.score_detail.adult.class_value|translate_class_value }}</b></h4>
                     {% if score_data.score_detail.adult.rank_value == 0%}
                         <p class="score_label_smaller">{% trans 'Mosquito rank - Unranked' %}</p>
                     {% else %}
@@ -112,12 +114,12 @@
                     {%if item.awards %}
                         <ul>
                         {% for award in item.awards %}
-                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}</li>
+                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason_untranslated|translate_generic_string }}</li>
                         {% endfor %}
                         </ul>
                     {% elif item.penalties %}
                         {% for penalty in item.penalties %}
-                            <li>{% trans 'No awards because' %} {{ penalty.reason }}</li>
+                            <li>{% trans 'No awards because' %} {{ penalty.reason_untranslated|translate_generic_string }}</li>
                         {% endfor %}
                     {% else %}
                         {% trans 'No awards for this report!' %}
@@ -135,7 +137,7 @@
                 </div>
                 -->
                 <div class="col-xs-9">
-                    <h4>{% trans 'Level obtained for' %} {% trans 'Breeding site' %} - <b>{{ score_data.score_detail.site.class_label }}</b></h4>
+                    <h4>{% trans 'Level obtained for' %} {% trans 'Breeding site' %} - <b>{{ score_data.score_detail.site.class_value|translate_class_value }}</b></h4>
                     {% if score_data.score_detail.site.rank_value == 0%}
                         <p class="score_label_smaller">{% trans 'Breeding site rank - Unranked' %}</p>
                     {% else %}
@@ -168,7 +170,7 @@
                     {%if item.awards %}
                         <ul>
                         {% for award in item.awards %}
-                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason }}</li>
+                            <li>{{ award.xp_awarded }} {% trans 'xp awarded for' %} {{ award.reason_untranslated|translate_generic_string }}</li>
                         {% endfor %}
                         </ul>
                     {% else %}

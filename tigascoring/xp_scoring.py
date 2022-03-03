@@ -197,22 +197,22 @@ def get_user_rank_value(sorted_dataframe, user_UUID):
         return 0
     return int(subdf.iloc[0])
 
-def get_translated_category_label(label):
-    retVal = label
-    translations = {
-        'start_of_season': _('start_of_season'),
-        'daily_participation': _('daily_participation'),
-        'fidelity_day_2': _('fidelity_day_2'),
-        'fidelity_day_3': _('fidelity_day_3'),
-        'achievement_10_reports': _('achievement_10_reports'),
-        'achievement_20_reports': _('achievement_20_reports'),
-        'achievement_50_reports': _('achievement_50_reports')
-    }
-    try:
-        retVal = translations[label]
-    except KeyError:
-        pass
-    return retVal
+# def get_translated_category_label(label):
+#     retVal = label
+#     translations = {
+#         'start_of_season': _('start_of_season'),
+#         'daily_participation': _('daily_participation'),
+#         'fidelity_day_2': _('fidelity_day_2'),
+#         'fidelity_day_3': _('fidelity_day_3'),
+#         'achievement_10_reports': _('achievement_10_reports'),
+#         'achievement_20_reports': _('achievement_20_reports'),
+#         'achievement_50_reports': _('achievement_50_reports')
+#     }
+#     try:
+#         retVal = translations[label]
+#     except KeyError:
+#         pass
+#     return retVal
 
 '''
 def get_bite_report_score(report, result):
@@ -238,7 +238,8 @@ def get_site_report_score(report, result):
     local_result['awards'] = []
     local_result['penalties'] = []
     if report.hide == True:
-        local_result['penalties'].append({"reason": _("other_species"), "xp_awarded": 0})
+        #local_result['penalties'].append({"reason_untranslated": "other_species", "reason": _("other_species"), "xp_awarded": 0})
+        local_result['penalties'].append({"reason_untranslated": "other_species", "xp_awarded": 0})
         result['score_detail']['site']['score_items'].append(local_result)
         return result
     picture = report.get_final_photo_html()
@@ -247,28 +248,39 @@ def get_site_report_score(report, result):
     else:
         local_result['report_photo'] = None
     if report.n_visible_photos > 0:
-        local_result['awards'].append({"reason": _("picture"), "xp_awarded": BREEDING_SITE_PICTURE_REWARD})
+        #local_result['awards'].append({"reason_untranslated": "picture", "reason": _("picture"), "xp_awarded": BREEDING_SITE_PICTURE_REWARD})
+        local_result['awards'].append(
+            {"reason_untranslated": "picture", "xp_awarded": BREEDING_SITE_PICTURE_REWARD})
         local_result['report_score'] += BREEDING_SITE_PICTURE_REWARD
 
     if report.located:
-        local_result['awards'].append({"reason": _("location"), "xp_awarded": BREEDING_SITE_LOCATION_REWARD})
+        #local_result['awards'].append({"reason_untranslated": "location", "reason": _("location"), "xp_awarded": BREEDING_SITE_LOCATION_REWARD})
+        local_result['awards'].append(
+            {"reason_untranslated": "location", "xp_awarded": BREEDING_SITE_LOCATION_REWARD})
         local_result['report_score'] += BREEDING_SITE_LOCATION_REWARD
 
     if is_storm_drain(report):
-        local_result['awards'].append({"reason": _("storm_drain"), "xp_awarded": SITE_STORM_DRAIN_REWARD})
+        #local_result['awards'].append({"reason_untranslated": "storm_drain", "reason": _("storm_drain"), "xp_awarded": SITE_STORM_DRAIN_REWARD})
+        local_result['awards'].append(
+            {"reason_untranslated": "storm_drain", "xp_awarded": SITE_STORM_DRAIN_REWARD})
         local_result['report_score'] += SITE_STORM_DRAIN_REWARD
 
     if is_water_answered(report):
-        local_result['awards'].append({"reason": _("water_question"), "xp_awarded": SITE_WATER_QUESTION_REWARD})
+        #local_result['awards'].append({"reason_untranslated": "water_question", "reason": _("water_question"), "xp_awarded": SITE_WATER_QUESTION_REWARD})
+        local_result['awards'].append({"reason_untranslated": "water_question", "xp_awarded": SITE_WATER_QUESTION_REWARD})
         local_result['report_score'] += SITE_WATER_QUESTION_REWARD
 
     if is_mosquito_report_followed(report):
-        local_result['awards'].append({"reason": _("mosquito_report_follows_breeding_site"), "xp_awarded": BREEDING_SITE_MOSQUITO_REWARD})
+        #local_result['awards'].append({"reason_untranslated": "mosquito_report_follows_breeding_site", "reason": _("mosquito_report_follows_breeding_site"), "xp_awarded": BREEDING_SITE_MOSQUITO_REWARD})
+        local_result['awards'].append({"reason_untranslated": "mosquito_report_follows_breeding_site",
+                                       "xp_awarded": BREEDING_SITE_MOSQUITO_REWARD})
         local_result['report_score'] += BREEDING_SITE_MOSQUITO_REWARD
 
     for award in report.report_award.all():
         if award.category:
-            local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
+            #local_result['awards'].append({"reason_untranslated": award.category.category_label, "reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
+            local_result['awards'].append({"reason_untranslated": award.category.category_label,
+                                           "xp_awarded": award.category.xp_points})
             local_result['report_score'] += award.category.xp_points
 
     result['score_detail']['site']['score_items'].append(local_result)
@@ -284,7 +296,9 @@ def get_adult_report_score(report, result):
     local_result['awards'] = []
     local_result['penalties'] = []
     if report.hide == True:
-        local_result['penalties'].append({"reason": _("other_species"), "xp_awarded": 0})
+        #local_result['penalties'].append({"reason_untranslated": "other_species", "reason": _("other_species"), "xp_awarded": 0})
+        local_result['penalties'].append(
+            {"reason_untranslated": "other_species", "xp_awarded": 0})
         result['score_detail']['adult']['score_items'].append(local_result)
         return result
     picture = report.get_final_photo_html()
@@ -295,41 +309,53 @@ def get_adult_report_score(report, result):
 
     if is_aedes(validation_result) or is_culex(validation_result):
         if picture:
-            local_result['awards'].append({"reason": _("picture"), "xp_awarded": MOSQUITO_PICTURE_REWARD})
+            #local_result['awards'].append({"reason_untranslated": "picture", "reason": _("picture"), "xp_awarded": MOSQUITO_PICTURE_REWARD})
+            local_result['awards'].append(
+                {"reason_untranslated": "picture", "xp_awarded": MOSQUITO_PICTURE_REWARD})
             local_result['report_score'] += MOSQUITO_PICTURE_REWARD
         else:
             local_result['report_photo'] = None
-            local_result['penalties'].append({"reason": _("no_picture"), "xp_awarded": 0})
+            #local_result['penalties'].append({"reason_untranslated": "no_picture", "reason": _("no_picture"), "xp_awarded": 0})
+            local_result['penalties'].append(
+                {"reason_untranslated": "no_picture", "xp_awarded": 0})
 
         if report.located:
-            local_result['awards'].append({"reason": _("location"), "xp_awarded": MOSQUITO_LOCATION_REWARD})
+            #local_result['awards'].append({"reason_untranslated": "location", "reason": _("location"), "xp_awarded": MOSQUITO_LOCATION_REWARD})
+            local_result['awards'].append(
+                {"reason_untranslated": "location", "xp_awarded": MOSQUITO_LOCATION_REWARD})
             local_result['report_score'] += MOSQUITO_LOCATION_REWARD
         else:
-            local_result['penalties'].append({"reason": _("no_location"), "xp_awarded": 0})
+            #local_result['penalties'].append({"reason_untranslated": "no_location", "reason": _("no_location"), "xp_awarded": 0})
+            local_result['penalties'].append(
+                {"reason_untranslated": "no_location", "xp_awarded": 0})
 
         if is_thorax_answered(report):
-            local_result['awards'].append({"reason": _("thorax_question"), "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
+            #local_result['awards'].append({"reason_untranslated": "thorax_question", "reason": _("thorax_question"), "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
+            local_result['awards'].append({"reason_untranslated": "thorax_question", "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_THORAX_QUESTION_REWARD
         if is_abdomen_answered(report):
-            local_result['awards'].append({"reason": _("abdomen_question"), "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
+            #local_result['awards'].append({"reason_untranslated": "abdomen_question", "reason": _("abdomen_question"), "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
+            local_result['awards'].append({"reason_untranslated": "abdomen_question", "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_ABDOMEN_QUESTION_REWARD
         if is_leg_answered(report):
-            local_result['awards'].append({"reason": _("leg_question"), "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
+            #local_result['awards'].append({"reason_untranslated": "leg_question", "reason": _("leg_question"), "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
+            local_result['awards'].append({"reason_untranslated": "leg_question", "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_LEG_QUESTION_REWARD
     else:
-        local_result['penalties'].append({"reason": _("other_species"), "xp_awarded": 0})
-        # if validation_result['in_progress'] == True:
-        #     local_result['penalties'].append({"reason": _("not_yet_validated"), "xp_awarded": 0})
-        # else:
-        #     local_result['penalties'].append( {"reason": _("other_species"), "xp_awarded": 0 } )
+        #local_result['penalties'].append({"reason_untranslated": "other_species", "reason": _("other_species"), "xp_awarded": 0})
+        local_result['penalties'].append(
+            {"reason_untranslated": "other_species", "xp_awarded": 0})
 
     if is_bite_report_followed(report):
-        local_result['awards'].append({"reason": _("bite report follow"), "xp_awarded": MOSQUITO_BITE_ANSWER_REWARD})
+        #local_result['awards'].append({"reason_untranslated": "bite report follow", "reason": _("bite report follow"), "xp_awarded": MOSQUITO_BITE_ANSWER_REWARD})
+        local_result['awards'].append({"reason_untranslated": "bite report follow", "xp_awarded": MOSQUITO_BITE_ANSWER_REWARD})
         local_result['report_score'] += MOSQUITO_BITE_ANSWER_REWARD
 
     for award in report.report_award.all():
         if award.category:
-            local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
+            #local_result['awards'].append({"reason_untranslated": award.category.category_label, "reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
+            local_result['awards'].append({"reason_untranslated": award.category.category_label,
+                                           "xp_awarded": award.category.xp_points})
             local_result['report_score'] += award.category.xp_points
 
     result['score_detail']['adult']['score_items'].append(local_result)
@@ -345,30 +371,39 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
         special_awards = Award.objects.filter(report__isnull=True).filter(given_to__in=user_uuids)
     for award in special_awards:
         if award.category is None:
-            awards.append({"reason": get_translated_category_label(award.special_award_text), "xp_awarded": award.special_award_xp, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
+            #awards.append({"reason_untranslated": award.special_award_text, "reason": get_translated_category_label(award.special_award_text), "xp_awarded": award.special_award_xp, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
+            awards.append({"reason_untranslated": award.special_award_text,
+                           "xp_awarded": award.special_award_xp,
+                           "awarded_on": award.date_given.strftime("%d/%m/%Y"),
+                           "media_label": award.special_award_text})
             unrelated_awards_score += award.special_award_xp
         else:
-            awards.append({"reason": get_translated_category_label(award.category), "xp_awarded": award.category.xp_points, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
+            #awards.append({"reason_untranslated": award.category, "reason": get_translated_category_label(award.category), "xp_awarded": award.category.xp_points, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
+            awards.append(
+                {"reason_untranslated": award.category,
+                 "xp_awarded": award.category.xp_points,
+                 "awarded_on": award.date_given.strftime("%d/%m/%Y"),
+                 "media_label": award.special_award_text})
             unrelated_awards_score += award.category.xp_points
     retval['score'] = unrelated_awards_score
     retval['awards'] = awards
     return retval
 
 
-def diff_month( date_now, date_before ):
-    return (( date_now.year - date_before.year ) * 12 ) + (date_now.month - date_before.month)
-
-
-def get_elapsed_label( date_now, date_before ):
-    diff = date_now - date_before
-    if diff.days >= 30:
-        diff_months = diff_month( date_now, date_before )
-        if diff_months > 12:
-            return str( int(diff_months / 12) ) + _(" years ago")
-        else:
-            return str( diff_months ) + _(" months ago")
-    else:
-        return str(diff.days) + _(" days ago")
+# def diff_month( date_now, date_before ):
+#     return (( date_now.year - date_before.year ) * 12 ) + (date_now.month - date_before.month)
+#
+#
+# def get_elapsed_label( date_now, date_before ):
+#     diff = date_now - date_before
+#     if diff.days >= 30:
+#         diff_months = diff_month( date_now, date_before )
+#         if diff_months > 12:
+#             return str( int(diff_months / 12) ) + _(" years ago")
+#         else:
+#             return str( diff_months ) + _(" months ago")
+#     else:
+#         return str(diff.days) + _(" days ago")
 
 
 def compute_user_score_in_xp_v2_fast(user_uuid):
@@ -511,7 +546,7 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     current_date = datetime.date.today()
     if user is not None:
         result['joined_value'] = user.registration_time.strftime("%d/%m/%Y")
-        result['joined_label'] = get_elapsed_label(current_date, user.registration_time.date())
+        #result['joined_label'] = get_elapsed_label(current_date, user.registration_time.date())
     else:
         result['joined_value'] = None
 
@@ -522,7 +557,7 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
 
     if user_reports:
         result['active_value'] = user_reports[0].creation_time.strftime("%d/%m/%Y")
-        result['active_label'] = get_elapsed_label(current_date, user_reports[0].creation_time.date())
+        #result['active_label'] = get_elapsed_label(current_date, user_reports[0].creation_time.date())
     else:
         result['active_value'] = None
         result['active_label'] = None

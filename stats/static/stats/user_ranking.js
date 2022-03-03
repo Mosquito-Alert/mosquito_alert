@@ -5,6 +5,9 @@ var detail_template = '<div class="panel panel-default">' +
         '<div class="row">' +
             '<div class="col-xs-12 stats">' +
                 '<div class="row">' +
+                    '<div class="col-xs-6">' + gettext('Data last updated on') + '</div><div class="col-xs-6"><span class="badge badge-success">#data_last_update#</span></div>' +
+                '</div>' +
+                '<div class="row">' +
                     '<div class="col-xs-6">' + gettext('Joined') + '</div><div class="col-xs-6"><span class="badge badge-success">#joined#</span></div>' +
                 '</div>' +
                 '<div class="row">' +
@@ -48,7 +51,6 @@ var detail_template = '<div class="panel panel-default">' +
     '</div>' +
 '</div>';
 
-
 $(document).ready(function() {
     //$('#datatable').DataTable();
     $('.clickable').click(function(event) {
@@ -58,17 +60,30 @@ $(document).ready(function() {
         load_user_data(id);
     });
 
+    var rank_to_label = function(value){
+        var ranks = {
+            1: gettext("Novice"),
+            2: gettext("Contributor"),
+            3: gettext("Expert"),
+            4: gettext("Master"),
+            5: gettext("Grandmaster")
+        }
+        return ranks[value];
+    }
+
     var create_info_div = function(user_uuid, data){
         $('#progress_' + user_uuid).hide();
-        var html = detail_template.replace(/#joined#/g, data.joined_label);
-        html = html.replace(/#active#/g, data.active_label);
+        var html = detail_template.replace(/#joined#/g, data.joined_value);
+        var date = new Date(data.last_update);
+        html = html.replace(/#data_last_update#/g, date.toLocaleString(current_locale, { timeZone: 'UTC' }));
+        html = html.replace(/#active#/g, data.active_value);
         html = html.replace(/#n_adult#/g, data.score_detail.adult.score_items.length);
         html = html.replace(/#n_bite#/g, data.score_detail.bite.score_items.length);
         html = html.replace(/#n_site#/g, data.score_detail.site.score_items.length);
-        html = html.replace(/#title_adult#/g, data.score_detail.adult.class_label);
-        html = html.replace(/#title_bite#/g, data.score_detail.bite.class_label);
-        html = html.replace(/#title_site#/g, data.score_detail.site.class_label);
-        html = html.replace(/#title_overall#/g, data.overall_class_label);
+        html = html.replace(/#title_adult#/g, rank_to_label(data.score_detail.adult.class_value));
+        html = html.replace(/#title_bite#/g, rank_to_label(data.score_detail.bite.class_value));
+        html = html.replace(/#title_site#/g, rank_to_label(data.score_detail.site.class_value));
+        html = html.replace(/#title_overall#/g, rank_to_label(data.overall_class_value));
         html = html.replace(/#xp_adult#/g, data.score_detail.adult.score);
         html = html.replace(/#xp_bite#/g, data.score_detail.bite.score);
         html = html.replace(/#xp_site#/g, data.score_detail.site.score);

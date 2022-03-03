@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 11:02+0000\n"
+"POT-Creation-Date: 2022-02-09 14:47+0000\n"
 "PO-Revision-Date: 2020-09-21 14:25+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Portuguese (Portugal)\n"
@@ -76,186 +76,232 @@ msgstr "Participantes com mais de 3 relatórios"
 msgid "Participants with over 4 reports"
 msgstr "Participantes com mais de 4 relatórios"
 
-#: stats/templates/stats/user_ranking.html:30
+#: stats/templates/stats/user_ranking.html:31
 msgid "user_ranking_info_text_1"
 msgstr ""
 "Verifique sua pontuação e nível alcançado. No menu de configurações vai "
 "encontrar informações detalhadas sobre o sistema de pontuação da app "
 "Mosquito Alert."
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:37
+#: stats/templates/stats/user_ranking.html:42
+#: stats/templates/stats/user_ranking.html:47
+#: stats/templates/stats/user_ranking.html:52
+#: stats/templates/stats/user_ranking.html:56
 msgid "user_ranking_info_text_2"
 msgstr "Mais informações sobre"
 
-#: stats/templates/stats/user_ranking.html:36
-#: stats/templates/stats/user_ranking.html:41
-#: stats/templates/stats/user_ranking.html:46
+#: stats/templates/stats/user_ranking.html:37
+#: stats/templates/stats/user_ranking.html:42
+#: stats/templates/stats/user_ranking.html:47
+#: stats/templates/stats/user_ranking.html:52
+#: stats/templates/stats/user_ranking.html:56
 msgid "user_ranking_info_text_3"
 msgstr "A pontuação"
 
-#: stats/templates/stats/user_ranking.html:40
+#: stats/templates/stats/user_ranking.html:41
+#: stats/templates/stats/user_ranking.html:51
 msgid "no_score_yet"
 msgstr ""
 "Você ainda não tem pontuação, portanto não aparece no ranking. Faça upload "
 "de algumas observações e verifique a classificação novamente mais tarde. "
 "Para saber como ganhar pontos, siga o link abaixo."
 
-#: stats/templates/stats/user_ranking.html:68
-#: stats/templates/stats/user_ranking.html:156
+#: stats/templates/stats/user_ranking.html:62
+msgid "last_ranking_data_update"
+msgstr "Ultima atualização"
+
+#: stats/templates/stats/user_ranking.html:83
+#: stats/templates/stats/user_ranking.html:172
 msgid "My position"
 msgstr "Minha posição"
 
-#: stats/templates/stats/user_ranking.html:72
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_ranking.html:88
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
+#: stats/templates/stats/user_score.html:145
 msgid "of"
 msgstr "de"
 
-#: stats/templates/stats/user_ranking.html:88
+#: stats/templates/stats/user_ranking.html:104
 msgid "Rank"
 msgstr "Posição"
 
-#: stats/templates/stats/user_ranking.html:89
+#: stats/templates/stats/user_ranking.html:105
 msgid "User"
 msgstr "Usuário"
 
-#: stats/templates/stats/user_ranking.html:90
+#: stats/templates/stats/user_ranking.html:106
 msgid "Overall class"
 msgstr "Gama geral"
 
-#: stats/templates/stats/user_ranking.html:91
+#: stats/templates/stats/user_ranking.html:107
 msgid "Score"
 msgstr "Pontuação obtida"
 
-#: stats/templates/stats/user_ranking.html:97
+#: stats/templates/stats/user_ranking.html:113
 msgid "This is you!"
 msgstr "Tu estás aqui!"
 
-#: stats/templates/stats/user_ranking.html:134
+#: stats/templates/stats/user_ranking.html:150
 msgid "Score details"
 msgstr "Mais detalhes"
 
-#: stats/templates/stats/user_score.html:28
+#: stats/templates/stats/user_score.html:29
 msgid "Citizen Scientist"
 msgstr "Resumo da pontuação"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:30
+msgid "last_score_data_update"
+msgstr "Ultima atualização"
+
+#: stats/templates/stats/user_score.html:32
 msgid "this_is_your_personal_avatar"
 msgstr ""
 "Avatar pessoal do participante. Graças à pontuação obtida, o nível geral de "
 "experiência de"
 
-#: stats/templates/stats/user_score.html:31
+#: stats/templates/stats/user_score.html:32
 msgid "there_are_5_levels"
 msgstr ""
 "Existem 5 níveis possíveis: Iniciante, Colaborador, Especialista, Mestre e "
 "Grande Mestre."
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Joined"
 msgstr "Começou a participar desde"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Last active"
 msgstr "Última atividade desde"
 
-#: stats/templates/stats/user_score.html:32
+#: stats/templates/stats/user_score.html:33
 msgid "Never"
 msgstr "Nunca"
 
-#: stats/templates/stats/user_score.html:34
+#: stats/templates/stats/user_score.html:35
 msgid "Overall rank - Unranked"
 msgstr "Posição global - Sem posição"
 
-#: stats/templates/stats/user_score.html:36
+#: stats/templates/stats/user_score.html:37
 msgid "Overall rank"
 msgstr "Posição global"
 
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
-#: stats/templates/stats/user_score.html:143
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
+#: stats/templates/stats/user_score.html:145
 msgid "Top"
 msgstr "Você está entre"
 
-#: stats/templates/stats/user_score.html:37
-#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:38
+#: stats/templates/stats/user_score.html:88
 msgid "participants"
 msgstr "participantes"
 
-#: stats/templates/stats/user_score.html:42
-#: stats/templates/stats/user_score.html:56
-#: stats/templates/stats/user_score.html:67
-#: stats/templates/stats/user_score.html:92
-#: stats/templates/stats/user_score.html:100
-#: stats/templates/stats/user_score.html:149
-#: stats/templates/stats/user_score.html:156
+#: stats/templates/stats/user_score.html:43
+#: stats/templates/stats/user_score.html:57
+#: stats/templates/stats/user_score.html:68
+#: stats/templates/stats/user_score.html:94
+#: stats/templates/stats/user_score.html:102
+#: stats/templates/stats/user_score.html:151
+#: stats/templates/stats/user_score.html:158
 msgid "XP"
 msgstr "Pontos"
 
-#: stats/templates/stats/user_score.html:49
+#: stats/templates/stats/user_score.html:50
 msgid "Other awards"
 msgstr "Prémios obtidos"
 
-#: stats/templates/stats/user_score.html:55
+#: stats/templates/stats/user_score.html:56
 msgid "awarded_on"
 msgstr "Atribuídos em"
 
-#: stats/templates/stats/user_score.html:62
+#: stats/templates/stats/user_score.html:63
 msgid "XP, awarded on"
 msgstr "pontos, atribuídos"
 
-#: stats/templates/stats/user_score.html:81
-#: stats/templates/stats/user_score.html:138
+#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:140
 msgid "Level obtained for"
 msgstr "Nível alcançado para"
 
-#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:83
 msgid "Mosquito"
 msgstr "Mosquito"
 
-#: stats/templates/stats/user_score.html:83
+#: stats/templates/stats/user_score.html:85
 msgid "Mosquito rank - Unranked"
 msgstr "Posição específica do mosquito - não classificado"
 
-#: stats/templates/stats/user_score.html:85
+#: stats/templates/stats/user_score.html:87
 msgid "Mosquito rank"
 msgstr "Posição específica para Mosquito"
 
-#: stats/templates/stats/user_score.html:87
-#: stats/templates/stats/user_score.html:144
+#: stats/templates/stats/user_score.html:89
+#: stats/templates/stats/user_score.html:146
 msgid "click_score_instructions"
 msgstr ""
 "Clique nas caixas para ver os detalhes dos dados enviados e a pontuação "
 "obtida."
 
-#: stats/templates/stats/user_score.html:115
-#: stats/templates/stats/user_score.html:171
+#: stats/templates/stats/user_score.html:117
+#: stats/templates/stats/user_score.html:173
 msgid "xp awarded for"
 msgstr "pontos concedidos para"
 
-#: stats/templates/stats/user_score.html:120
+#: stats/templates/stats/user_score.html:122
 msgid "No awards because"
 msgstr "Não obtiveste pontos desde"
 
-#: stats/templates/stats/user_score.html:123
-#: stats/templates/stats/user_score.html:175
+#: stats/templates/stats/user_score.html:125
+#: stats/templates/stats/user_score.html:177
 msgid "No awards for this report!"
 msgstr "Este relatório não tem pontos atribuídos!"
 
-#: stats/templates/stats/user_score.html:138
+#: stats/templates/stats/user_score.html:140
 msgid "Breeding site"
 msgstr "Criadouros"
 
-#: stats/templates/stats/user_score.html:140
+#: stats/templates/stats/user_score.html:142
 msgid "Breeding site rank - Unranked"
 msgstr "Posição específica para Criadouros - Não classificado"
 
-#: stats/templates/stats/user_score.html:142
+#: stats/templates/stats/user_score.html:144
 msgid "Breeding site rank"
 msgstr "Posição específica para Criadouros"
+
+#: stats/templatetags/stats_extras.py:13 tigascoring/xp_scoring.py:171
+#: tigascoring/xp_scoring.py:173 tigascoring/xp_scoring.py:176
+msgid "Novice"
+msgstr "Principiante"
+
+#: stats/templatetags/stats_extras.py:14 tigascoring/xp_scoring.py:178
+msgid "Contributor"
+msgstr "Colaborador"
+
+#: stats/templatetags/stats_extras.py:15 tigascoring/xp_scoring.py:180
+msgid "Expert"
+msgstr "Especialista"
+
+#: stats/templatetags/stats_extras.py:16 tigascoring/xp_scoring.py:182
+msgid "Master"
+msgstr "Mestre"
+
+#: stats/templatetags/stats_extras.py:17 tigascoring/xp_scoring.py:184
+msgid "Grandmaster"
+msgstr "Grande mestre"
+
+#: stats/templatetags/stats_extras.py:39
+msgid " years ago"
+msgstr "anos"
+
+#: stats/templatetags/stats_extras.py:41
+msgid " months ago"
+msgstr "meses"
+
+#: stats/templatetags/stats_extras.py:43
+msgid " days ago"
+msgstr "dias"
 
 #: templates/admin/base_site.html:4
 msgid "Tigaserver admin"
@@ -382,10 +428,6 @@ msgstr "Guardar"
 msgid "Photos per page"
 msgstr "Fotos por página"
 
-#: tigacrafting/views.py:547
-msgid "your_picture_has_been_validated_by_an_expert"
-msgstr "Sua foto foi validada por um especialista!"
-
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
 #: tigamap/templates/tigamap/app.html:27
@@ -426,8 +468,8 @@ msgid "and"
 msgstr "e"
 
 #: tigamap/templates/tigamap/app.html:122
-#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:261
-#: tigamap/views.py:263
+#: tigamap/templates/tigamap/app_new.html:171 tigamap/views.py:267
+#: tigamap/views.py:269
 msgid "adult-tiger-mosquitoes"
 msgstr "Relatórios de mosquitos"
 
@@ -473,7 +515,7 @@ msgstr "Bidões e poços"
 #: tigamap/templates/tigamap/app_new.html:197
 #: tigamap/templates/tigamap/site_map.html:207
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:386
-#: tigaserver_app/models.py:582
+#: tigaserver_app/models.py:676
 msgid "Other"
 msgstr "Outros"
 
@@ -505,11 +547,11 @@ msgstr "navbar toggle"
 msgid "map_help_url_new"
 msgstr "http://atrapaeltigre.com/web/el-mapa-del-mosquito-tigre-2014/"
 
-#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:261
+#: tigamap/templates/tigamap/app_new.html:177 tigamap/views.py:267
 msgid "menu_adults_prob"
 msgstr "Mosquitos tigre confirmados e possíveis"
 
-#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:263
+#: tigamap/templates/tigamap/app_new.html:179 tigamap/views.py:269
 msgid "menu_adults_definite"
 msgstr "Mosquitos tigre confirmados"
 
@@ -575,19 +617,19 @@ msgstr "Pontos"
 
 #: tigamap/templates/tigamap/site_map.html:192
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:371
-#: tigaserver_app/models.py:574
+#: tigaserver_app/models.py:668
 msgid "storm-drain"
 msgstr "Canal"
 
 #: tigamap/templates/tigamap/site_map.html:195
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:374
-#: tigaserver_app/models.py:576
+#: tigaserver_app/models.py:670
 msgid "Fountain"
 msgstr "Fonte"
 
 #: tigamap/templates/tigamap/site_map.html:198
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:377
-#: tigaserver_app/models.py:578
+#: tigaserver_app/models.py:672
 msgid "Basin"
 msgstr "Pequeno contentor artificial"
 
@@ -598,7 +640,7 @@ msgstr "Bidão"
 
 #: tigamap/templates/tigamap/site_map.html:204
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:383
-#: tigaserver_app/models.py:580
+#: tigaserver_app/models.py:674
 msgid "Well"
 msgstr "Poço de água"
 
@@ -963,7 +1005,7 @@ msgstr "Todos os relatórios"
 msgid "site_report_legend_main_title"
 msgstr "Marcadores"
 
-#: tigamap/views.py:147 tigamap/views.py:317
+#: tigamap/views.py:147 tigamap/views.py:323
 msgid "coverage-map"
 msgstr "Áreas exploradas"
 
@@ -983,7 +1025,7 @@ msgstr "Mosquitos tigre: apenas probabilidade média e alta"
 msgid "adult-tiger-mosquitoes-high-probability-reports"
 msgstr "Mosquitos tigre: apenas alta probabilidade"
 
-#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:265
+#: tigamap/views.py:183 tigamap/views.py:214 tigamap/views.py:271
 msgid "adult-tiger-mosquitoes-all-reports"
 msgstr "Relatórios de mosquitos: Todos"
 
@@ -991,191 +1033,79 @@ msgstr "Relatórios de mosquitos: Todos"
 msgid "Breeding Sites: Validated reports"
 msgstr "Criadouros: Todos"
 
-#: tigamap/views.py:199 tigamap/views.py:289
+#: tigamap/views.py:199 tigamap/views.py:295
 msgid "breeding-sites-storm-drains-and-fountains"
 msgstr "Criadouros: Sarjetas e fontes"
 
-#: tigamap/views.py:202 tigamap/views.py:289
+#: tigamap/views.py:202 tigamap/views.py:295
 msgid "breeding-sites-basins"
 msgstr "Criadouros: pequenos contentores artificiais"
 
-#: tigamap/views.py:205 tigamap/views.py:289
+#: tigamap/views.py:205 tigamap/views.py:295
 msgid "breeding-sites-buckets-and-wells"
 msgstr "Criadouros: bidons e poços"
 
-#: tigamap/views.py:208 tigamap/views.py:289
+#: tigamap/views.py:208 tigamap/views.py:295
 msgid "breeding-sites-other"
 msgstr "Criadouros: Outros"
 
-#: tigamap/views.py:211 tigamap/views.py:289 tigamap/views.py:293
+#: tigamap/views.py:211 tigamap/views.py:295 tigamap/views.py:299
 msgid "breeding-sites-all-reports"
 msgstr "Criadouros: Todos"
 
-#: tigascoring/xp_scoring.py:171 tigascoring/xp_scoring.py:173
-#: tigascoring/xp_scoring.py:176
-msgid "Novice"
-msgstr "Principiante"
-
-#: tigascoring/xp_scoring.py:178
-msgid "Contributor"
-msgstr "Colaborador"
-
-#: tigascoring/xp_scoring.py:180
-msgid "Expert"
-msgstr "Especialista"
-
-#: tigascoring/xp_scoring.py:182
-msgid "Master"
-msgstr "Mestre"
-
-#: tigascoring/xp_scoring.py:184
-msgid "Grandmaster"
-msgstr "Grande mestre"
-
-#: tigascoring/xp_scoring.py:203
-msgid "start_of_season"
-msgstr "Primeiro relatório da temporada"
-
-#: tigascoring/xp_scoring.py:204
-msgid "daily_participation"
-msgstr "ser o primeiro relatório do dia"
-
-#: tigascoring/xp_scoring.py:205
-msgid "fidelity_day_2"
-msgstr "enviaram dados por DOIS dias consecutivos"
-
-#: tigascoring/xp_scoring.py:206
-msgid "fidelity_day_3"
-msgstr "enviaram dados por TRÊS dias consecutivos"
-
-#: tigascoring/xp_scoring.py:207
-msgid "achievement_10_reports"
-msgstr "10 dados enviados"
-
-#: tigascoring/xp_scoring.py:208
-msgid "achievement_20_reports"
-msgstr "20 dados enviados"
-
-#: tigascoring/xp_scoring.py:209
-msgid "achievement_50_reports"
-msgstr "50 dados enviados"
-
-#: tigascoring/xp_scoring.py:245 tigascoring/xp_scoring.py:289
-msgid "picture"
-msgstr "a foto"
-
-#: tigascoring/xp_scoring.py:249 tigascoring/xp_scoring.py:296
-msgid "location"
-msgstr "a geolocalização dos dados"
-
-#: tigascoring/xp_scoring.py:253
-msgid "storm_drain"
-msgstr "É uma sarjeta"
-
-#: tigascoring/xp_scoring.py:257
-msgid "water_question"
-msgstr "ter respondido a questão da água do criadouro"
-
-#: tigascoring/xp_scoring.py:261
-msgid "mosquito_report_follows_breeding_site"
-msgstr "ter acrescentado um relatório de mosquito no final"
-
-#: tigascoring/xp_scoring.py:293
-msgid "no_picture"
-msgstr "sem foto"
-
-#: tigascoring/xp_scoring.py:299
-msgid "no_location"
-msgstr "o relatório não está geolocalizado"
-
-#: tigascoring/xp_scoring.py:302
-msgid "thorax_question"
-msgstr "ter preenchido o formulário do tórax mosquito"
-
-#: tigascoring/xp_scoring.py:305
-msgid "abdomen_question"
-msgstr "ter preenchido o formulário do abdómen do mosquito"
-
-#: tigascoring/xp_scoring.py:308
-msgid "leg_question"
-msgstr "ter preenchido o formulário das patas do mosquito"
-
-#: tigascoring/xp_scoring.py:311
-msgid "other_species"
-msgstr ""
-"Após análise da notificação, os especialistas consideram que esta não "
-"corresponde a nenhuma das 5 espécies de mosquito-alvo. Para mais "
-"informações, verifique o tutorial do aplicativo."
-
-#: tigascoring/xp_scoring.py:318
-msgid "bite report follow"
-msgstr "Criadouros"
-
-#: tigascoring/xp_scoring.py:358
-msgid " years ago"
-msgstr "anos"
-
-#: tigascoring/xp_scoring.py:360
-msgid " months ago"
-msgstr "meses"
-
-#: tigascoring/xp_scoring.py:362
-msgid " days ago"
-msgstr "dias"
-
-#: tigaserver_app/models.py:557
+#: tigaserver_app/models.py:651
 msgid "High"
 msgstr "Alta"
 
-#: tigaserver_app/models.py:559
+#: tigaserver_app/models.py:653
 msgid "Medium"
 msgstr "Média"
 
-#: tigaserver_app/models.py:561
+#: tigaserver_app/models.py:655
 msgid "Low"
 msgstr "Baixa"
 
-#: tigaserver_app/models.py:1234
+#: tigaserver_app/models.py:1339
 msgid "species_unclassified"
 msgstr "Não identificável"
 
-#: tigaserver_app/models.py:1235
+#: tigaserver_app/models.py:1340
 msgid "species_other"
 msgstr "Outras espécies"
 
-#: tigaserver_app/models.py:1236
+#: tigaserver_app/models.py:1341
 msgid "species_albopictus"
 msgstr "mosquito tigre (Aedes albopictus)"
 
-#: tigaserver_app/models.py:1237
+#: tigaserver_app/models.py:1342
 msgid "species_aegypti"
 msgstr "mosquito da febre amarela (Aedes aegypti)"
 
-#: tigaserver_app/models.py:1238
+#: tigaserver_app/models.py:1343
 msgid "species_japonicus"
 msgstr "mosquito do Japão (Aedes japonicus)"
 
-#: tigaserver_app/models.py:1239
+#: tigaserver_app/models.py:1344
 msgid "species_koreicus"
 msgstr "Mosquito da Coreia (Aedes koreicus)"
 
-#: tigaserver_app/models.py:1240
+#: tigaserver_app/models.py:1345
 msgid "species_complex"
 msgstr "Mistura de espécies"
 
-#: tigaserver_app/models.py:1241
+#: tigaserver_app/models.py:1346
 msgid "species_notsure"
 msgstr "Não está claro"
 
-#: tigaserver_app/models.py:1242
+#: tigaserver_app/models.py:1347
 msgid "species_culex"
 msgstr "mosquito comum (Culex sp.)"
 
-#: tigaserver_app/models.py:1255
+#: tigaserver_app/models.py:1360
 msgid "species_value_possible"
 msgstr "Provável"
 
-#: tigaserver_app/models.py:1256
+#: tigaserver_app/models.py:1361
 msgid "species_value_confirmed"
 msgstr "Confirmado"
 
@@ -1198,85 +1128,148 @@ msgstr "Mensagem enviada com sucesso"
 msgid "Re: %(subject)s"
 msgstr "Re: %(subject)s"
 
-#: tigaserver_project/settings.py:131
+#: tigaserver_project/settings.py:139
 msgid "Spanish"
 msgstr "Espanhol"
 
-#: tigaserver_project/settings.py:132
+#: tigaserver_project/settings.py:140
 msgid "Catalan"
 msgstr "Catalão"
 
-#: tigaserver_project/settings.py:133
+#: tigaserver_project/settings.py:141
 msgid "English"
 msgstr "Inglês"
 
-#: tigaserver_project/settings.py:134
+#: tigaserver_project/settings.py:142
 msgid "German"
 msgstr ""
 
-#: tigaserver_project/settings.py:135
+#: tigaserver_project/settings.py:143
 msgid "Albanian"
 msgstr ""
 
-#: tigaserver_project/settings.py:136
+#: tigaserver_project/settings.py:144
 msgid "Greek"
 msgstr ""
 
-#: tigaserver_project/settings.py:137
+#: tigaserver_project/settings.py:145
 msgid "Hungarian"
 msgstr ""
 
-#: tigaserver_project/settings.py:138
+#: tigaserver_project/settings.py:146
 msgid "Portuguese"
 msgstr ""
 
-#: tigaserver_project/settings.py:139
+#: tigaserver_project/settings.py:147
 msgid "Slovenian"
 msgstr ""
 
-#: tigaserver_project/settings.py:140
+#: tigaserver_project/settings.py:148
 msgid "Italian"
 msgstr ""
 
-#: tigaserver_project/settings.py:141
+#: tigaserver_project/settings.py:149
 msgid "French"
 msgstr ""
 
-#: tigaserver_project/settings.py:142 tigaserver_project/settings.py:143
+#: tigaserver_project/settings.py:150
 msgid "Bulgarian"
 msgstr ""
 
-#: tigaserver_project/settings.py:144
+#: tigaserver_project/settings.py:151
 msgid "Romanian"
 msgstr ""
 
-#: tigaserver_project/settings.py:145
+#: tigaserver_project/settings.py:152
 msgid "Croatian"
 msgstr ""
 
-#: tigaserver_project/settings.py:146
+#: tigaserver_project/settings.py:153
 msgid "Macedonian"
 msgstr ""
 
-#: tigaserver_project/settings.py:147
+#: tigaserver_project/settings.py:154
 msgid "Serbian"
 msgstr ""
 
-#: tigaserver_project/settings.py:148
+#: tigaserver_project/settings.py:155
 msgid "Letzeburgesch"
 msgstr ""
 
-#: tigaserver_project/settings.py:149
+#: tigaserver_project/settings.py:156
 msgid "Dutch"
 msgstr ""
 
-#: tigaserver_project/settings.py:150
+#: tigaserver_project/settings.py:157
 msgid "Turkish"
 msgstr ""
 
-#: tigaserver_project/settings.py:151
+#: tigaserver_project/settings.py:158
 msgid "Chinese"
 msgstr "Chinês"
+
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "Sua foto foi validada por um especialista!"
+
+msgid "start_of_season"
+msgstr "Primeiro relatório da temporada"
+
+msgid "daily_participation"
+msgstr "ser o primeiro relatório do dia"
+
+msgid "fidelity_day_2"
+msgstr "enviaram dados por DOIS dias consecutivos"
+
+msgid "fidelity_day_3"
+msgstr "enviaram dados por TRÊS dias consecutivos"
+
+msgid "achievement_10_reports"
+msgstr "10 dados enviados"
+
+msgid "achievement_20_reports"
+msgstr "20 dados enviados"
+
+msgid "achievement_50_reports"
+msgstr "50 dados enviados"
+
+msgid "picture"
+msgstr "a foto"
+
+msgid "location"
+msgstr "a geolocalização dos dados"
+
+msgid "storm_drain"
+msgstr "É uma sarjeta"
+
+msgid "water_question"
+msgstr "ter respondido a questão da água do criadouro"
+
+msgid "mosquito_report_follows_breeding_site"
+msgstr "ter acrescentado um relatório de mosquito no final"
+
+msgid "no_picture"
+msgstr "sem foto"
+
+msgid "no_location"
+msgstr "o relatório não está geolocalizado"
+
+msgid "thorax_question"
+msgstr "ter preenchido o formulário do tórax mosquito"
+
+msgid "abdomen_question"
+msgstr "ter preenchido o formulário do abdómen do mosquito"
+
+msgid "leg_question"
+msgstr "ter preenchido o formulário das patas do mosquito"
+
+msgid "other_species"
+msgstr ""
+"Após análise da notificação, os especialistas consideram que esta não "
+"corresponde a nenhuma das 5 espécies de mosquito-alvo. Para mais "
+"informações, verifique o tutorial do aplicativo."
+
+msgid "bite report follow"
+msgstr "Criadouros"
 
 msgid "you_just_received_a_points_award"
 msgstr "Você acabou de receber um prêmio de pontos!"
