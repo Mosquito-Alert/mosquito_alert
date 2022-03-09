@@ -208,8 +208,6 @@ def assign_reports_to_national_supervisor(this_user):
 
 def get_crisis_report_available_reports(country):
     expiration_period_days = 14
-    #assigned_reports = ExpertReportAnnotation.objects.filter(report__type='adult').values('report').distinct()
-    #new_reports_unfiltered = get_base_adults_qs().filter(country=country).exclude(version_UUID__in=assigned_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
     new_reports_unfiltered = get_base_adults_qs().filter(country=country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:

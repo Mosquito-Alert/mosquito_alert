@@ -51,6 +51,7 @@ from django.db.models.expressions import RawSQL
 import functools
 import operator
 import math
+from tigacrafting.report_queues import get_crisis_report_available_reports
 
 #----------Metadades fotos----------#
 
@@ -988,18 +989,20 @@ def pending_reports_by_country():
     country_qs = EuropeCountry.objects.exclude(is_bounding_box=True)
     data = {}
     for country in country_qs:
-        is_supervised_country = UserStat.objects.filter(national_supervisor_of=country).exists()
-        if is_supervised_country:
-            # exclude reports reserved for supervisor
-            current_progress_country = get_base_adults_qs().annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).filter(country=country)
-            if country.national_supervisor_report_expires_in is None:
-                expiration_period_days = 14
-            else:
-                expiration_period_days = country.national_supervisor_report_expires_in
-            current_progress_country = current_progress_country.exclude( Q(country=country) & Q(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days)) )
-        else:
-            current_progress_country = get_base_adults_qs().annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).filter(country=country)
-        data[country.gid]={"n":current_progress_country.count(), "x":country.geom.centroid.x, "y":country.geom.centroid.y, "name":country.name_engl }
+        available_reports_country = get_crisis_report_available_reports(country)
+        data[country.gid] = {"n": available_reports_country.count(), "x": country.geom.centroid.x, "y": country.geom.centroid.y, "name": country.name_engl}
+        # is_supervised_country = UserStat.objects.filter(national_supervisor_of=country).exists()
+        # if is_supervised_country:
+        #     # exclude reports reserved for supervisor
+        #     current_progress_country = get_base_adults_qs().annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).filter(country=country)
+        #     if country.national_supervisor_report_expires_in is None:
+        #         expiration_period_days = 14
+        #     else:
+        #         expiration_period_days = country.national_supervisor_report_expires_in
+        #     current_progress_country = current_progress_country.exclude( Q(country=country) & Q(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days)) )
+        # else:
+        #     current_progress_country = get_base_adults_qs().annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).filter(country=country)
+        # data[country.gid]={"n":current_progress_country.count(), "x":country.geom.centroid.x, "y":country.geom.centroid.y, "name":country.name_engl }
     return data
 
 
