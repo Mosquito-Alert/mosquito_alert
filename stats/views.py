@@ -846,59 +846,23 @@ def global_assignments(request):
 @login_required
 def global_assignments_list(request, country_code=None, status=None):
     countryID = EuropeCountry.objects.filter(iso3_code=country_code)
-    keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
 
     for c in countryID:
         countryGID = c.gid
         countryName = c.name_engl
 
-    national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of=countryGID).order_by('userstat__national_supervisor_of__name_engl').all()
-
     report_id_table = {}
     listas = []
     reportStatus = ''
-    for row in keys:
-        report_id_table[row['report_id']] = {'max_version': row['version_number__max'],
-                                             'min_version': row['version_number__min'],
-                                             'num_versions': row['version_number__count']}
+
     if status != 'pending':
         if status == 'unassigned':
-            if countryGID == 17:
-                # unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
-                #     hide=True).exclude(photos=None).filter(type='adult').filter(
-                #     Q(country_id=countryGID) | Q(country_id__isnull=True)).annotate(
-                #     n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-                unassigned = get_unassigned_available_reports( EuropeCountry.objects.get(pk=countryGID) )
-            else:
-                unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
-                hide=True).exclude(photos=None).filter(type='adult').filter(country_id=countryGID).annotate(
-                n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-
-            # reportList = list(filter(lambda x:
-            #                          report_id_table[x.report_id]['num_versions'] == 1 or
-            #                          (report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
-            #                           report_id_table[x.report_id]['max_version']), unassigned))
+            unassigned = get_unassigned_available_reports( EuropeCountry.objects.get(pk=countryGID) )
             reportList = unassigned
             reportStatus = 'Unassigned'
         elif status == 'progress':
-            if countryGID == 17:
-                progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
-                    hide=True).exclude(photos=None).filter(type='adult').filter(
-                    Q(country_id=countryGID) | Q(country_id__isnull=True)).annotate(
-                    n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(
-                    n_annotations=0)
-            else:
-                progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(
-                    hide=True).exclude(photos=None).filter(type='adult').filter(country_id=countryGID).annotate(
-                    n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(
-                    n_annotations=0)
-            reportList = list(filter(lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (
-                    report_id_table[x.report_id]['min_version'] != -1 and x.version_number ==
-                    report_id_table[x.report_id]['max_version']), progress))
-
-
-
-
+            progress = get_progress_available_reports( EuropeCountry.objects.get(pk=countryGID) )
+            reportList = progress
             reportStatus = 'In progress'
 
         i = 0
@@ -917,8 +881,7 @@ def global_assignments_list(request, country_code=None, status=None):
     elif status == 'pending':
         if countryGID == 17:
             user_id_filter = settings.USERS_IN_STATS
-            reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(
-                validation_complete=False).filter(report__type='adult')
+            reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
         else:
             user_id_filter = UserStat.objects.filter(native_of__gid=countryGID).values('user__id')
             reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
@@ -934,7 +897,6 @@ def global_assignments_list(request, country_code=None, status=None):
 
             listas.append({
                 'idReports': reportList[i].report.__unicode__(),
-                #'experts': reportList[i].report.get_expert_recipients()
                 'experts': expNamesJoined
             })
             i += 1
