@@ -56,7 +56,8 @@ def filter_reports_for_superexpert(reports):
     # not deleted
     undeleted = reports.exclude(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
     # last version
-    latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
+    #latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
+    latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number",()))
     # fully validated
     experts = User.objects.filter(groups__name='expert')
     fully_validated = ExpertReportAnnotation.objects.filter(report__in=latest_versions).filter(user__in=experts).filter(validation_complete=True).values('report').annotate(n_validations=Count('report')).filter(n_validations__gte=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
@@ -72,7 +73,8 @@ def filter_reports(reports):
     # not deleted
     undeleted = reports.exclude(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
     # last version
-    latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
+    #latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
+    latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number",()))
     return latest_versions
 
 
@@ -202,6 +204,25 @@ def assign_reports_to_national_supervisor(this_user):
         #     if grabbed_reports != -1 and user_stats:
         #         user_stats.grabbed_reports = grabbed_reports
         #         user_stats.save()
+
+
+def get_crisis_report_available_reports(country):
+    expiration_period_days = 14
+    #assigned_reports = ExpertReportAnnotation.objects.filter(report__type='adult').values('report').distinct()
+    #new_reports_unfiltered = get_base_adults_qs().filter(country=country).exclude(version_UUID__in=assigned_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
+    new_reports_unfiltered = get_base_adults_qs().filter(country=country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
+    if UserStat.objects.filter(national_supervisor_of=country).exists():
+        if country.national_supervisor_report_expires_in is not None:
+            expiration_period_days = country.national_supervisor_report_expires_in
+        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days))
+    # exclude reports assigned to supervisor but not yet validated
+    reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of=country).filter(report__type='adult').filter(validation_complete=False)
+    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=expiration_period_days)))
+    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
+    blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
+    reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(version_UUID__in=blocked_by_experts)
+    available_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
+    return available_reports
 
 
 def assign_crisis_report(this_user, country):
