@@ -485,6 +485,10 @@ class Report(models.Model):
 
     nuts_2 = models.CharField(max_length=4, null=True, blank=True)
 
+    removed = models.BooleanField(default=False)
+
+    last_version = models.BooleanField(default=True)
+
     objects = GeoManager()
 
     def __unicode__(self):
