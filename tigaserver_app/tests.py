@@ -22,6 +22,7 @@ from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
 import urllib
+import uuid
 
 '''
 class PictureTestCase(APITestCase):
@@ -88,6 +89,7 @@ class PictureTestCase(APITestCase):
 
 '''
 
+'''
 class NotificationTestCase(APITestCase):
 
     fixtures = ['reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
@@ -431,3 +433,69 @@ class NotificationTestCase(APITestCase):
         response = self.client.post('/api/msg_android/?' + urllib.parse.urlencode(data))
         print(response)
         self.client.logout()
+'''
+
+
+class ReportCreationTestCase(APITestCase):
+
+    fixtures = ['reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
+
+    def setUp(self):
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        self.regular_user = t
+        self.spain = EuropeCountry.objects.get(pk=1)
+
+    def create_version(self, init_report):
+        non_naive_time = timezone.now()
+        new_version = Report(
+            version_UUID=str(uuid.uuid4()),
+            version_number=init_report.version_number + 1,
+            report_id=init_report.report_id,
+            user=init_report.user,
+            phone_upload_time=non_naive_time,
+            server_upload_time=non_naive_time,
+            creation_time=init_report.creation_time,
+            version_time=non_naive_time,
+            location_choice="current",
+            current_location_lon=init_report.current_location_lon,
+            current_location_lat=init_report.current_location_lat,
+            type=init_report.type,
+        )
+        new_version.save()
+        return new_version
+
+    def create_report_in_spain(self, report_id):
+        non_naive_time = timezone.now()
+        point_on_surface = self.spain.geom.point_on_surface
+        report_0 = Report(
+            version_UUID=str(uuid.uuid4()),
+            version_number=0,
+            report_id=report_id,
+            user=self.regular_user,
+            phone_upload_time=non_naive_time,
+            server_upload_time=non_naive_time,
+            creation_time=non_naive_time,
+            version_time=non_naive_time,
+            location_choice="current",
+            current_location_lon=point_on_surface.x,
+            current_location_lat=point_on_surface.y,
+            type='adult',
+        )
+        report_0.save()
+        return report_0
+
+    def test_report_creation(self):
+        init_report = self.create_report_in_spain('ABCD')
+        version_1 = self.create_version(init_report)
+        version_1_uuid = version_1.version_UUID
+        # init report should be last version
+        self.assertTrue( init_report.last_version,  "Init report should be last version, it is not" )
+        # init report is not deleted
+        self.assertFalse( init_report.removed, "Init report should not be deleted")
+        # force reload of version 1
+        version_1 = Report.objects.get(pk=version_1_uuid)
+        # version 1 should be last version
+        self.assertTrue( version_1.last_version, "Version 1 should be last version, it is not")
+        # therefore, init_report should not
+        self.assertFalse( init_report.last_version, "Init report should not be last version")

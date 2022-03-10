@@ -2354,6 +2354,11 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
 def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
     if created:
+        instance.last_version = instance.latest_version
+        instance.removed = instance.deleted
+        with connection.cursor() as cursor:
+            # all other versions are not latest anymore
+            cursor.execute("UPDATE tigaserver_app_report set last_version=false where report_id=%s and user_id=%s and type=%s and version_number <> %s",[ instance.report_id, instance.user.user_UUID, instance.type, instance.version_number ])
         try:
             profile_uuids = None
             if instance.user.profile is not None:
