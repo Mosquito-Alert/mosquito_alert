@@ -2350,15 +2350,33 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
                     except Exception as e:
                         logger_notification.exception("Exception sending xp ios message")
 
+
+@receiver(post_save, sender=Report)
+def mark_versions(sender, instance, created, **kwargs):
+    if created:
+        instance.last_version = instance.latest_version
+        instance.removed = instance.deleted
+        if instance.removed:
+            all_versions = Report.objects.filter(report_id=instance.report_id).filter(user=instance.user).filter(
+                type=instance.type).order_by('-version_number')
+            for r in all_versions:
+                r.last_version = False
+                r.removed = True
+                r.save()
+        else:
+            older_versions = Report.objects.filter(report_id=instance.report_id).filter(user=instance.user).filter(
+                type=instance.type).exclude(version_UUID=instance.version_UUID).order_by('-version_number')
+            for r in older_versions:
+                r.last_version = False
+                r.save()
+
+
+
+
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
     if created:
-        instance.last_version = instance.latest_version
-        instance.removed = instance.deleted
-        with connection.cursor() as cursor:
-            # all other versions are not latest anymore
-            cursor.execute("UPDATE tigaserver_app_report set last_version=false where report_id=%s and user_id=%s and type=%s and version_number <> %s",[ instance.report_id, instance.user.user_UUID, instance.type, instance.version_number ])
         try:
             profile_uuids = None
             if instance.user.profile is not None:

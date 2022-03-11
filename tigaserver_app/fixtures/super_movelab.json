@@ -1,0 +1,19 @@
+[
+  {
+    "pk": 24,
+    "model": "auth.user",
+    "fields": {
+      "username": "super_movelab",
+      "first_name": "super_movelab like",
+      "last_name": "Lab",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": true,
+      "last_login": "2020-05-13T09:58:54.449Z",
+      "user_permissions": [],
+      "password": "pppppwwwwwwdddddd",
+      "email": "super_movelab@gmail.com",
+      "date_joined": "2015-07-17T15:48:51Z"
+    }
+  }
+]

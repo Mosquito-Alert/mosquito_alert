@@ -438,13 +438,21 @@ class NotificationTestCase(APITestCase):
 
 class ReportCreationTestCase(APITestCase):
 
-    fixtures = ['reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
+    fixtures = ['super_movelab.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
         t.save()
         self.regular_user = t
         self.spain = EuropeCountry.objects.get(pk=1)
+
+    def sanity_print(self):
+        print("")
+        print("Listing current reports")
+        reports = Report.objects.all().order_by('-version_number')
+        for r in reports:
+            print("{0} v{1} deleted - {2} last_version - {3}".format( r.version_UUID, r.version_number, r.removed, r.last_version ))
+        print("")
 
     def create_version(self, init_report):
         non_naive_time = timezone.now()
@@ -464,6 +472,26 @@ class ReportCreationTestCase(APITestCase):
         )
         new_version.save()
         return new_version
+
+    def delete_report(self, last_version):
+        non_naive_time = timezone.now()
+        deleted_version = Report(
+            version_UUID=str(uuid.uuid4()),
+            version_number=-1,
+            report_id=last_version.report_id,
+            user=last_version.user,
+            phone_upload_time=non_naive_time,
+            server_upload_time=non_naive_time,
+            creation_time=last_version.creation_time,
+            version_time=non_naive_time,
+            location_choice="current",
+            current_location_lon=last_version.current_location_lon,
+            current_location_lat=last_version.current_location_lat,
+            type=last_version.type,
+        )
+        deleted_version.save()
+        return deleted_version
+
 
     def create_report_in_spain(self, report_id):
         non_naive_time = timezone.now()
@@ -485,17 +513,48 @@ class ReportCreationTestCase(APITestCase):
         report_0.save()
         return report_0
 
-    def test_report_creation(self):
+    def check_versions_consistent(self):
+        all_reports = Report.objects.all().order_by('-version_number')
+        first_report = all_reports[0]
+        if first_report.removed:
+            #all reports in series must be also deleted, and last version must be false
+            for r in all_reports:
+                self.assertTrue( r.removed, "Report {0} should be deleted, it is NOT".format(r.version_UUID) )
+        else:
+            is_first = True
+            for r in all_reports:
+                if is_first:
+                    self.assertTrue( r.last_version, "Report {0} v{1} should be last version, it is NOT".format( r.version_UUID, r.version_number ) )
+                    self.assertFalse( r.removed, "Report {0} v{1} should NOT be deleted".format( r.version_UUID, r.version_number ) )
+                    is_first = False
+                else:
+                    self.assertFalse( r.last_version, "Report {0} v{1} should NOT be last version".format(r.version_UUID, r.version_number ))
+                    self.assertFalse( r.removed, "Report {0} v{1} should NOT be deleted".format(r.version_UUID, r.version_number))
+
+
+    def test_report_versioning(self):
         init_report = self.create_report_in_spain('ABCD')
+
+        print("created init report")
+        # self.sanity_print()
+        self.check_versions_consistent()
+
         version_1 = self.create_version(init_report)
-        version_1_uuid = version_1.version_UUID
-        # init report should be last version
-        self.assertTrue( init_report.last_version,  "Init report should be last version, it is not" )
-        # init report is not deleted
-        self.assertFalse( init_report.removed, "Init report should not be deleted")
-        # force reload of version 1
-        version_1 = Report.objects.get(pk=version_1_uuid)
-        # version 1 should be last version
-        self.assertTrue( version_1.last_version, "Version 1 should be last version, it is not")
-        # therefore, init_report should not
-        self.assertFalse( init_report.last_version, "Init report should not be last version")
+        print("created report version 1")
+        # self.sanity_print()
+        self.check_versions_consistent()
+
+        version_2 = self.create_version(version_1)
+        print("created report version 2")
+        # self.sanity_print()
+        self.check_versions_consistent()
+
+        version_3 = self.create_version(version_2)
+        print("created report version 3")
+        # self.sanity_print()
+        self.check_versions_consistent()
+
+        deleted_version = self.delete_report(version_3)
+        print("deleted reports")
+        # self.sanity_print()
+        self.check_versions_consistent()
