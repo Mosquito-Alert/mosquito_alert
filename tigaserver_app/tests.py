@@ -492,7 +492,6 @@ class ReportCreationTestCase(APITestCase):
         deleted_version.save()
         return deleted_version
 
-
     def create_report_in_spain(self, report_id):
         non_naive_time = timezone.now()
         point_on_surface = self.spain.geom.point_on_surface
@@ -513,8 +512,8 @@ class ReportCreationTestCase(APITestCase):
         report_0.save()
         return report_0
 
-    def check_versions_consistent(self):
-        all_reports = Report.objects.all().order_by('-version_number')
+    def check_series_consistent(self, report_id):
+        all_reports = Report.objects.all().filter(report_id=report_id).order_by('-version_number')
         first_report = all_reports[0]
         if first_report.removed:
             #all reports in series must be also deleted, and last version must be false
@@ -531,30 +530,45 @@ class ReportCreationTestCase(APITestCase):
                     self.assertFalse( r.last_version, "Report {0} v{1} should NOT be last version".format(r.version_UUID, r.version_number ))
                     self.assertFalse( r.removed, "Report {0} v{1} should NOT be deleted".format(r.version_UUID, r.version_number))
 
-
     def test_report_versioning(self):
         init_report = self.create_report_in_spain('ABCD')
 
         print("created init report")
         # self.sanity_print()
-        self.check_versions_consistent()
+        self.check_series_consistent('ABCD')
 
         version_1 = self.create_version(init_report)
         print("created report version 1")
         # self.sanity_print()
-        self.check_versions_consistent()
+        self.check_series_consistent('ABCD')
 
         version_2 = self.create_version(version_1)
         print("created report version 2")
         # self.sanity_print()
-        self.check_versions_consistent()
+        self.check_series_consistent('ABCD')
 
         version_3 = self.create_version(version_2)
         print("created report version 3")
         # self.sanity_print()
-        self.check_versions_consistent()
+        self.check_series_consistent('ABCD')
 
         deleted_version = self.delete_report(version_3)
         print("deleted reports")
         # self.sanity_print()
-        self.check_versions_consistent()
+        self.check_series_consistent('ABCD')
+
+        init_report_2 = self.create_report_in_spain('EFGH')
+        print("created second init report")
+        # self.sanity_print()
+        self.check_series_consistent('EFGH')
+
+        version_2_1 = self.create_version(init_report_2)
+        print("created second init second version")
+        self.check_series_consistent('EFGH')
+
+        deleted_version_2 = self.delete_report(version_2_1)
+        print("deleted reports in second series")
+        # self.sanity_print()
+        self.check_series_consistent('EFGH')
+
+        self.sanity_print()
