@@ -1164,6 +1164,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
         if load_new_reports == 'T':
             assign_reports(this_user)
+        elif this_user_is_superexpert:
+            assign_reports(this_user)
 
         # if this_user_is_expert and load_new_reports == 'T':
         #     if this_user_is_team_venezuela:
