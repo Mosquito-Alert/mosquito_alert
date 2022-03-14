@@ -14,6 +14,7 @@ from tigaserver_app.models import TigaUser, Report, Photo
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient, APITestCase
+from tigaserver_app.serializers import ReportSerializer
 from django.urls import reverse
 import io
 from rest_framework import status
@@ -438,13 +439,14 @@ class NotificationTestCase(APITestCase):
 
 class ReportCreationTestCase(APITestCase):
 
-    fixtures = ['super_movelab.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
+    fixtures = ['super_movelab.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json', 'reritja_like.json']
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
         t.save()
         self.regular_user = t
         self.spain = EuropeCountry.objects.get(pk=1)
+        self.reritja_user = User.objects.get(pk=25)
 
     def sanity_print(self):
         print("")
@@ -454,7 +456,7 @@ class ReportCreationTestCase(APITestCase):
             print("{0} v{1} deleted - {2} last_version - {3}".format( r.version_UUID, r.version_number, r.removed, r.last_version ))
         print("")
 
-    def create_version(self, init_report):
+    def create_version(self, init_report, save=True):
         non_naive_time = timezone.now()
         new_version = Report(
             version_UUID=str(uuid.uuid4()),
@@ -470,10 +472,11 @@ class ReportCreationTestCase(APITestCase):
             current_location_lat=init_report.current_location_lat,
             type=init_report.type,
         )
-        new_version.save()
+        if save:
+            new_version.save()
         return new_version
 
-    def delete_report(self, last_version):
+    def delete_report(self, last_version, save=True):
         non_naive_time = timezone.now()
         deleted_version = Report(
             version_UUID=str(uuid.uuid4()),
@@ -489,10 +492,11 @@ class ReportCreationTestCase(APITestCase):
             current_location_lat=last_version.current_location_lat,
             type=last_version.type,
         )
-        deleted_version.save()
+        if save:
+            deleted_version.save()
         return deleted_version
 
-    def create_report_in_spain(self, report_id):
+    def create_report_in_spain(self, report_id, save=True):
         non_naive_time = timezone.now()
         point_on_surface = self.spain.geom.point_on_surface
         report_0 = Report(
@@ -509,14 +513,31 @@ class ReportCreationTestCase(APITestCase):
             current_location_lat=point_on_surface.y,
             type='adult',
         )
-        report_0.save()
+        if save:
+            report_0.save()
         return report_0
+
+    def barebones_serializer(self,report):
+        return {
+            "version_UUID": report.version_UUID,
+            "version_number": report.version_number,
+            "report_id": report.report_id,
+            "phone_upload_time": report.phone_upload_time.isoformat(),
+            "creation_time": report.creation_time.isoformat(),
+            "version_time": report.version_time.isoformat(),
+            "type": report.type,
+            "location_choice": report.location_choice,
+            "current_location_lon": report.current_location_lon,
+            "current_location_lat": report.current_location_lat,
+            "responses": [],
+            "user": report.user.user_UUID
+        }
 
     def check_series_consistent(self, report_id):
         all_reports = Report.objects.all().filter(report_id=report_id).order_by('-version_number')
         first_report = all_reports[0]
         if first_report.removed:
-            #all reports in series must be also deleted, and last version must be false
+            # all reports in series must be also deleted, and last version must be false
             for r in all_reports:
                 self.assertTrue( r.removed, "Report {0} should be deleted, it is NOT".format(r.version_UUID) )
         else:
@@ -571,4 +592,85 @@ class ReportCreationTestCase(APITestCase):
         # self.sanity_print()
         self.check_series_consistent('EFGH')
 
-        self.sanity_print()
+        #self.sanity_print()
+
+    def test_report_versioning_api(self):
+        # check reports are clear
+        n_reports_created = 0
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} but i am counting {1}".format( str(n_reports_created),str(n) ))
+        init_report = self.create_report_in_spain(report_id='ABCD', save=False)
+        # test not save option
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} but i am counting {1}".format( str(n_reports_created),str(n) ))
+
+        self.client.force_authenticate(user=self.reritja_user)
+
+        serialized_init_report = self.barebones_serializer(init_report)
+        # print( serialized_init_report.data )
+        response = self.client.post('/api/reports/', serialized_init_report, format='json')
+        # response should be ok
+        self.assertEqual(response.status_code, 201)
+        if response.status_code == 201:
+            n_reports_created += 1
+        # double check it's saved
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} reports but there are {1} instead".format(str(n_reports_created),str(n)))
+        self.check_series_consistent('ABCD')
+
+        version_1 = self.create_version(init_report, save=False)
+        serialized_version_1 = self.barebones_serializer(version_1)
+        response = self.client.post('/api/reports/', serialized_version_1, format='json')
+        # response should be ok
+        self.assertEqual(response.status_code, 201)
+        if response.status_code == 201:
+            n_reports_created += 1
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} reports but there are {1} instead".format(str(n_reports_created),str(n)))
+        self.check_series_consistent('ABCD')
+
+        deleted_report = self.delete_report(version_1, save=False)
+        serialized_deleted = self.barebones_serializer(deleted_report)
+        response = self.client.post('/api/reports/', serialized_deleted, format='json')
+        self.assertEqual(response.status_code, 201)
+        if response.status_code == 201:
+            n_reports_created += 1
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} reports but there are {1} instead".format(str(n_reports_created),str(n)))
+        self.check_series_consistent('ABCD')
+
+        init_report_2 = self.create_report_in_spain('EFGH', save=False)
+        serialized_init_report_2 = self.barebones_serializer(init_report_2)
+        # print( serialized_init_report.data )
+        response = self.client.post('/api/reports/', serialized_init_report_2, format='json')
+        # response should be ok
+        self.assertEqual(response.status_code, 201)
+        if response.status_code == 201:
+            n_reports_created += 1
+        # double check it's saved
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} reports but there are {1} instead".format(str(n_reports_created),str(n)))
+        self.check_series_consistent('EFGH')
+
+        version_2 = self.create_version(init_report_2, save=False)
+        serialized_version_2 = self.barebones_serializer(version_2)
+        response = self.client.post('/api/reports/', serialized_version_2, format='json')
+        # response should be ok
+        self.assertEqual(response.status_code, 201)
+        if response.status_code == 201:
+            n_reports_created += 1
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} reports but there are {1} instead".format(str(n_reports_created),str(n)))
+        self.check_series_consistent('EFGH')
+
+        deleted_report_2 = self.delete_report(version_2, save=False)
+        serialized_deleted_2 = self.barebones_serializer(deleted_report_2)
+        response = self.client.post('/api/reports/', serialized_deleted_2, format='json')
+        self.assertEqual(response.status_code, 201)
+        if response.status_code == 201:
+            n_reports_created += 1
+        n = Report.objects.all().count()
+        self.assertTrue( n == n_reports_created, "There should be {0} reports but there are {1} instead".format(str(n_reports_created),str(n)))
+        self.check_series_consistent('EFGH')
+
+        # self.sanity_print()
