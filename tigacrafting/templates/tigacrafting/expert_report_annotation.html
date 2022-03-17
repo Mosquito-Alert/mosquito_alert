@@ -122,7 +122,7 @@
 
 <body class="{% if user.userstat.crisis_mode %} bg-danger {% else %} bg-white {% endif %}">
 
-    <div id="dialog-confirm" title="Grab reports?">
+    <div style="display:none;" id="dialog-confirm" title="Grab reports?">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span><span id="dialog_message">About to assign reports from selected country. Are you sure?</span></p>
         <p id="loading_progress" style="display:none;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" aria-hidden="true"></i>Getting reports...</p>
     </div>
