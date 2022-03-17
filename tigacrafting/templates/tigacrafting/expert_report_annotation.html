@@ -122,6 +122,11 @@
 
 <body class="{% if user.userstat.crisis_mode %} bg-danger {% else %} bg-white {% endif %}">
 
+    <div id="dialog-confirm" title="Grab reports?">
+        <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span><span id="dialog_message">About to assign reports from selected country. Are you sure?</span></p>
+        <p id="loading_progress" style="display:none;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" aria-hidden="true"></i>Getting reports...</p>
+    </div>
+
 {% block navbar %}
     <!-- NAVBAR
 ================================================== -->
@@ -190,10 +195,19 @@
 
                             {% block grab_reports_button %}
                                 <li>
+                                    <div class="btn-group">
                                     <button style="margin-left: 5px;" id="grab_reports_button" role="button"
                                             class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip"
                                             data-placement="bottom" title="Grab new reports"><span
                                             class="glyphicon glyphicon-download"></span></button>
+                                    {% if user.userstat.crisis_mode and user.userstat.last_emergency_mode_grab %}
+                                        <button id="grab_last" type="button" class="btn btn-danger navbar-btn btn-sm dropdown-toggle" data-toggle="dropdown">
+                                        <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a id="grab_last_link" data-user-id="{{user.id}}" data-country-n="{{user.userstat.last_emergency_mode_grab.pending_crisis_reports}}" data-country-last-name="{{user.userstat.last_emergency_mode_grab.name_engl}}" data-country-last-id="{{user.userstat.last_emergency_mode_grab.gid}}" href="#">Grab reports from <b>{{ user.userstat.last_emergency_mode_grab.name_engl }}</b> without going to the map</a></li>
+                                        </ul>
+                                    {% endif %}
                                 </li>
                             {% endblock %}
 
@@ -1872,12 +1886,15 @@
         }
 
         var grab_reports_button = $("#grab_reports_button");
+        var grab_last = $("#grab_last");
         var n_pending = {{ n_pending }};
         function toggle_grab_reports_button() {
             if (n_pending < 5) {
                 grab_reports_button.prop('disabled', false);
+                grab_last.prop('disabled', false);
             } else {
                 grab_reports_button.prop('disabled', true);
+                grab_last.prop('disabled', true);
             }
         }
 
@@ -2446,6 +2463,7 @@
     <script src={% static "tigacrafting/categories_combo.js" %}></script>
     <script src={% static "tigacrafting/macro_messages.js" %}></script> 
     <script src={% static "tigacrafting/exec_val.js" %}></script>
+    <script src={% static "tigacrafting/straight_emergency_grab.js" %}></script>
 
 
 {% endblock %}

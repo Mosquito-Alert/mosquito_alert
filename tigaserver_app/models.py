@@ -317,6 +317,7 @@ class MissionItem(models.Model):
     attached_image = models.ImageField(upload_to='tigaserver_mission_images', blank=True, null=True,
                                        help_text='Optional Image displayed to user within the help message. File.')
 
+
 class EuropeCountry(models.Model):
     gid = models.IntegerField(primary_key=True)
     cntr_id = models.CharField(max_length=2, blank=True)
@@ -330,6 +331,10 @@ class EuropeCountry(models.Model):
     y_max = models.FloatField(blank=True, null=True)
     is_bounding_box = models.BooleanField(default=False, help_text='If true, this geometry acts as a bounding box. The bounding boxes act as little separate entolabs, in the sense that no reports located inside a bounding box should reach an expert outside this bounding box')
     national_supervisor_report_expires_in = models.IntegerField(default=14, help_text='Number of days that a report in the queue is exclusively available to the nagional supervisor. For example, if the field value is 6, after report_creation_time + 6 days a report will be available to all users')
+
+    pending_crisis_reports = models.IntegerField(blank=True, null=True, help_text='Number of reports in country assignable to non-supervisors')
+    last_crisis_report_n_update = models.DateTimeField(help_text="Last time count was updated", null=True, blank=True)
+
     objects = GeoManager()
 
     class Meta:
@@ -342,7 +347,6 @@ class EuropeCountry(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.gid, self.name_engl)
-
 
 class NutsEurope(models.Model):
     gid = models.AutoField(primary_key=True)

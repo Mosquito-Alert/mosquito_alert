@@ -62,6 +62,7 @@ from tigaserver_project.settings import *
 from rest_framework.response import Response
 import re
 from tigacrafting.report_queues import assign_reports, get_base_adults_qs
+from django.utils import timezone
 
 #-----------------------------------#
 
@@ -985,23 +986,43 @@ def pending_reports_heatmap_data():
     return raw_data
 
 
+def update_pending_data(country):
+    data = get_crisis_report_available_reports(country)
+    country.pending_crisis_reports = data.count()
+    country.last_crisis_report_n_update = timezone.now()
+    country.save()
+
+
+def get_cached_country_pending_crisis_reports(country):
+    if country.pending_crisis_reports is None or country.last_crisis_report_n_update is None:
+        update_pending_data(country)
+    elif country.last_crisis_report_n_update is not None:
+        try:
+            last_country_validation_activity = ExpertReportAnnotation.objects.filter(report__country=country).latest('created').created
+            if country.last_crisis_report_n_update < last_country_validation_activity:
+                update_pending_data(country)
+        except ExpertReportAnnotation.DoesNotExist:
+            country.pending_crisis_reports
+    return country.pending_crisis_reports
+
+
 def pending_reports_by_country():
     country_qs = EuropeCountry.objects.exclude(is_bounding_box=True)
     data = {}
     for country in country_qs:
-        available_reports_country = get_crisis_report_available_reports(country)
-        data[country.gid] = {"n": available_reports_country.count(), "x": country.geom.centroid.x, "y": country.geom.centroid.y, "name": country.name_engl}
+        available_reports_country = get_cached_country_pending_crisis_reports(country)
+        data[country.gid] = {"n": available_reports_country, "x": country.geom.centroid.x, "y": country.geom.centroid.y, "name": country.name_engl}
     return data
 
 
 @login_required
 def expert_geo_report_assign(request):
     this_user = request.user
-    if this_user.userstat.crisis_mode:
-        count_data = pending_reports_by_country()
-        return render(request, 'tigacrafting/geo_report_assign.html', { 'count_data': json.dumps(count_data) })
-    else:
-        return HttpResponse("You don't have emergency mode permissions, so you can't see this page. Please contact your administrator.")
+    #if this_user.userstat.crisis_mode:
+    count_data = pending_reports_by_country()
+    return render(request, 'tigacrafting/geo_report_assign.html', { 'count_data': json.dumps(count_data) })
+    #else:
+        #return HttpResponse("You don't have emergency mode permissions, so you can't see this page. Please contact your administrator.")
 
 
 def executive_auto_validate(annotation, request):

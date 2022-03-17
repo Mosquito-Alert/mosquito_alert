@@ -689,6 +689,8 @@ def crisis_report_assign(request, user_id=None, country_id=None):
     user = get_object_or_404(User.objects.all(), pk=user_id)
     country = get_object_or_404(EuropeCountry.objects.all(), pk=country_id)
     retval = assign_crisis_report(user, country)
+    user.userstat.last_emergency_mode_grab = country
+    user.userstat.save()
     return Response(data=retval, status=status.HTTP_200_OK)
 
 
