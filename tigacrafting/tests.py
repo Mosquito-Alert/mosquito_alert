@@ -42,20 +42,20 @@ def user_summary(user):
     print("")
 
 
-def filter_false_validated(reports, sort=True):
-    if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports), key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
-    return reports_filtered
+# def filter_false_validated(reports, sort=True):
+#     if sort:
+#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports), key=attrgetter('n_annotations'), reverse=True)
+#     else:
+#         reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
+#     return reports_filtered
 
 
-def filter_reports(reports, sort=True):
-    if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-    return reports_filtered
+# def filter_reports(reports, sort=True):
+#     if sort:
+#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),key=attrgetter('n_annotations'), reverse=True)
+#     else:
+#         reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
+#     return reports_filtered
 
 ###                END HELPER STUFF                #####################################################################
 

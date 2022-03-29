@@ -147,8 +147,7 @@ def assign_reports_to_national_supervisor(this_user):
             for this_report in non_executive_own_country_filtered_reports:
                 logger_report_assignment.debug('* Assigned Non Reserved own country report {0} to user {1}'.format(this_report.version_UUID, this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                if this_report_can_be_simplified(this_report):
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 grabbed_reports += 1
@@ -164,8 +163,7 @@ def assign_reports_to_national_supervisor(this_user):
             for this_report in other_countries_filtered_reports:
                 logger_report_assignment.debug('* Assigned Non Reserved other country report {0} to user {1}'.format(this_report.version_UUID,this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                if this_report_can_be_simplified(this_report):
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 grabbed_reports += 1
@@ -291,8 +289,7 @@ def assign_crisis_report(this_user, country):
                 grabbed_reports = user_stats.grabbed_reports
             for this_report in reports_to_take:
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                if this_report_can_be_simplified(this_report):
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 try:
@@ -304,6 +301,17 @@ def assign_crisis_report(this_user, country):
                 user_stats.grabbed_reports = grabbed_reports
                 user_stats.save()
     return summary
+
+
+def this_report_can_be_simplified(report):
+    who_has_count = report.get_who_has_count()
+    there_is_full_report = ExpertReportAnnotation.objects.filter(report=report).filter(simplified_annotation=False).exists()
+    if there_is_full_report:
+        return True
+    if who_has_count == 0 or who_has_count == 1:
+        return True
+    return False
+
 
 def assign_reports_to_regular_user(this_user):
     logger_report_assignment.debug('User {0} is regular user, assigning reports'.format(this_user, ))
@@ -350,9 +358,7 @@ def assign_reports_to_regular_user(this_user):
                     grabbed_reports = user_stats.grabbed_reports
                 for this_report in reports_to_take:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                    who_has_count = this_report.get_who_has_count()
-                    if who_has_count == 0 or who_has_count == 1:
-                        # No one has the report, is simplified
+                    if this_report_can_be_simplified(this_report):
                         new_annotation.simplified_annotation = True
                     try:
                         new_annotation.save()
@@ -378,6 +384,9 @@ def assign_reports_to_regular_user(this_user):
 
                 for this_report in new_reports_own_country:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                    if this_report_can_be_simplified(this_report):
+                        # No one has the report, is simplified
+                        new_annotation.simplified_annotation = True
                     try:
                         new_annotation.save()
                         grabbed_reports += 1
@@ -390,8 +399,7 @@ def assign_reports_to_regular_user(this_user):
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
                     for this_report in new_reports_other_countries:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                        who_has_count = this_report.get_who_has_count()
-                        if who_has_count == 0 or who_has_count == 1:
+                        if this_report_can_be_simplified(this_report):
                             # No one has the report, is simplified
                             new_annotation.simplified_annotation = True
                         grabbed_reports += 1
@@ -451,8 +459,7 @@ def assign_bb_reports(this_user):
             for this_report in reports_to_take:
                 logger_report_assignment.debug('* Assigned report {0} to user {1}'.format(this_report.version_UUID, this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-                who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                if this_report_can_be_simplified(this_report):
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 try:
