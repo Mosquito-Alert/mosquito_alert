@@ -533,16 +533,12 @@ class NewReportAssignment(TestCase):
                     self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.report ))
 
 
-    def test_simplified_assignation(self):
+    def test_simplified_assignation_two_experts_and_ns_report_from_not_supervised_country(self):
         self.create_micro_team()
-
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
         t.save()
         c = EuropeCountry.objects.get(pk=23) #France
         report = create_report(0, "1", t, c)
-
-        # queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
-
         for this_user in User.objects.exclude(id=24):
             if this_user.userstat.is_superexpert():
                 assign_superexpert_reports(this_user)
