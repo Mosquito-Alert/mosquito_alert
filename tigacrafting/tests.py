@@ -42,6 +42,28 @@ def user_summary(user):
     print("")
 
 
+def create_report(version_number, version_uuid, user, country):
+    non_naive_time = timezone.now()
+    point_on_surface = country.geom.point_on_surface
+    r = Report(
+        version_UUID=version_uuid,
+        version_number=version_number,
+        user=user,
+        phone_upload_time=non_naive_time,
+        server_upload_time=non_naive_time,
+        creation_time=non_naive_time,
+        version_time=non_naive_time,
+        location_choice="current",
+        current_location_lon=point_on_surface.x,
+        current_location_lat=point_on_surface.y,
+        type='adult',
+    )
+    r.save()
+    p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+    p.save()
+    return r
+
+
 # def filter_false_validated(reports, sort=True):
 #     if sort:
 #         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports), key=attrgetter('n_annotations'), reverse=True)
@@ -62,6 +84,48 @@ def user_summary(user):
 
 class NewReportAssignment(TestCase):
     fixtures = ['europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
+
+    def create_micro_team(self):
+
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+        superexperts = Group.objects.create(name='superexpert')
+        superexperts.save()
+
+        # National supervisor
+        u1 = User.objects.create(pk=3)
+        u1.username = 'expert_3_eu'
+        c = EuropeCountry.objects.get(pk=45)  # Isle of man
+        u1.userstat.national_supervisor_of = c
+        u1.save()
+
+        # Regular eu user 1
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_eu'
+        u2.userstat.native_of = EuropeCountry.objects.get(pk=8)  # Norway
+        u2.save()
+
+        # Regular eu user 2
+        u3 = User.objects.create(pk=5)
+        u3.username = 'expert_5_eu'
+        u3.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u3.save()
+
+        europe_group.user_set.add(u1)
+        europe_group.user_set.add(u2)
+        europe_group.user_set.add(u3)
+
+        experts.user_set.add(u1)
+        experts.user_set.add(u2)
+        experts.user_set.add(u3)
+
+        reritja = User.objects.get(pk=25)
+        superexperts.user_set.add(reritja)
+
 
     def create_team(self):
 
@@ -467,6 +531,40 @@ class NewReportAssignment(TestCase):
             for assigned_report in ExpertReportAnnotation.objects.filter(user=this_user):
                 if assigned_report.report.country == supervised_country:
                     self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.report ))
+
+
+    def test_simplified_assignation(self):
+        self.create_micro_team()
+
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        c = EuropeCountry.objects.get(pk=23) #France
+        report = create_report(0, "1", t, c)
+
+        # queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
+
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+        # There should be three assignations
+        n = ExpertReportAnnotation.objects.all().count()
+        self.assertTrue( n == 3, "There should be {0} annotations, {1} found".format( 3, n ) )
+        # Two first assignations should be short, third full
+        annos = ExpertReportAnnotation.objects.all().order_by('id')
+        anno_1 = annos[0]
+        anno_2 = annos[1]
+        anno_3 = annos[2]
+        self.assertTrue( anno_1.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_1.id ) )
+        self.assertTrue( anno_2.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_2.id ) )
+        self.assertFalse( anno_3.simplified_annotation, "Annotation with id {0} should NOT be simplified, it is".format( anno_3.id ) )
 
 
 

@@ -338,9 +338,14 @@ def assign_reports_to_regular_user(this_user):
         else: #Spain
             reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.filter( Q(country__gid=17) | Q(country__gid__isnull=True) )
         #exclude reports assigned to ANY supervisor but not yet validated
+        ### !!!! ###
         reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of__in=country_with_supervisor).filter(report__type='adult').filter(validation_complete=False)
         for country in supervised_countries:
+            country_supervisor = User.objects.get( userstat__national_supervisor_of=country )
             reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=country.national_supervisor_report_expires_in)) )
+            # this weird second filter is to ensure that reports assigned to a national supervisor but not from their own country are blocked
+            # if this wasn't here, a French report assigned to the NS of Austria could be considered blocked
+            reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.filter( Q(user=country_supervisor) & Q(report__country=country) )
         reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
         blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
         reports_unfiltered_excluding_reserved_ns = reports_unfiltered_excluding_reserved_ns.exclude(version_UUID__in=blocked_by_experts)
