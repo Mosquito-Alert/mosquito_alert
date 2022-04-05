@@ -341,6 +341,13 @@ class MapDataSerializer(serializers.ModelSerializer):
     n_photos = serializers.ReadOnlyField()
     final_expert_status_text = serializers.ReadOnlyField()
     responses = FullReportResponseSerializer(many=True)
+    country = serializers.SerializerMethodField(method_name='get_country')
+
+    def get_country(self,obj):
+        if obj.country is None:
+            return None
+        else:
+            return obj.country.iso3_code
 
     class Meta:
         model = Report
