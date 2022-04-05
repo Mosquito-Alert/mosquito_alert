@@ -562,6 +562,56 @@ class NewReportAssignment(TestCase):
         self.assertTrue( anno_2.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_2.id ) )
         self.assertFalse( anno_3.simplified_annotation, "Annotation with id {0} should NOT be simplified, it is".format( anno_3.id ) )
 
+    def test_simplified_assignation_two_experts_and_ns_report_from_supervised_country(self):
+        self.create_micro_team()
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        c = EuropeCountry.objects.get(pk=45)  # Isle of man
+        report = create_report(0, "1", t, c)
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+        # There should be ONE assignation
+        n = ExpertReportAnnotation.objects.all().count()
+        self.assertTrue(n == 1, "There should be {0} annotations, {1} found".format(1, n))
+        # NS Validates
+        ns_validation = ExpertReportAnnotation.objects.get(user_id=3)
+        ns_validation.validation_complete = True
+        ns_validation.save()
+        # Now it's validated, reassign
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+        n = ExpertReportAnnotation.objects.all().count()
+        print(str(n))
+        # Two first assignations should be short, third full
+        # annos = ExpertReportAnnotation.objects.all().order_by('id')
+        # anno_1 = annos[0]
+        # anno_2 = annos[1]
+        # anno_3 = annos[2]
+        # self.assertTrue(anno_1.simplified_annotation,
+        #                 "Annotation with id {0} should be simplified, it is NOT".format(anno_1.id))
+        # self.assertTrue(anno_2.simplified_annotation,
+        #                 "Annotation with id {0} should be simplified, it is NOT".format(anno_2.id))
+        # self.assertFalse(anno_3.simplified_annotation,
+        #                  "Annotation with id {0} should NOT be simplified, it is".format(anno_3.id))
+
 
 
     # tests that reports that should go to national supervisor don't because of expired precedence period
