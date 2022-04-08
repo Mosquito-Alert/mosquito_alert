@@ -115,10 +115,11 @@ def assign_reports_to_national_supervisor(this_user):
         reports_unfiltered_excluding_reserved_ns_own_country = reports_unfiltered_excluding_reserved_ns.filter(country__gid=supervised_country.gid)
         reports_unfiltered_excluding_reserved_ns_other_countries = reports_unfiltered_excluding_reserved_ns.exclude(country__gid=supervised_country.gid)
 
-        country_filtered_reports = filter_reports(reports_supervised_country.order_by('creation_time'))
+        # '-alert' means true first
+        country_filtered_reports = filter_reports(reports_supervised_country.order_by('-alert','creation_time'))
         #these reports are from the ns country, but expired
-        non_executive_own_country_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns_own_country.order_by('creation_time'))
-        other_countries_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns_other_countries.order_by('creation_time'))
+        non_executive_own_country_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns_own_country.order_by('-alert','creation_time'))
+        other_countries_filtered_reports = filter_reports(reports_unfiltered_excluding_reserved_ns_other_countries.order_by('-alert','creation_time'))
 
         currently_taken = 0
         user_stats = None
@@ -279,7 +280,7 @@ def assign_crisis_report(this_user, country):
         blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
         reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(version_UUID__in=blocked_by_experts)
         if reports_unfiltered_excluding_reserved_ns:
-            new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
+            new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('-alert','creation_time'))
             reports_to_take = new_reports[0:n_to_get]
             user_stats = None
             try:
@@ -337,7 +338,7 @@ def assign_reports_to_regular_user(this_user):
         blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
         reports_unfiltered_excluding_reserved_ns = reports_unfiltered_excluding_reserved_ns.exclude(version_UUID__in=blocked_by_experts)
         if reports_unfiltered_excluding_reserved_ns:
-            new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
+            new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('-alert','creation_time'))
             if not this_user.groups.filter(name='eu_group_europe').exists(): #Spain
                 reports_to_take = new_reports[0:n_to_get]
                 user_stats = None
@@ -438,7 +439,7 @@ def assign_bb_reports(this_user):
         new_reports_unfiltered = new_reports_unfiltered.filter(country=this_user.userstat.native_of)
         logger_report_assignment.debug('{0} reports potentially assignable for user {1}'.format(len(new_reports_unfiltered), this_user))
         if new_reports_unfiltered:
-            new_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+            new_reports = filter_reports(new_reports_unfiltered.order_by('-alert','creation_time'))
             reports_to_take = new_reports[0:n_to_get]
             user_stats = None
             try:

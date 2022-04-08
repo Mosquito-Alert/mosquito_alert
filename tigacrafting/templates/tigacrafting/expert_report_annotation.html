@@ -66,8 +66,8 @@
             background-color: white;
             color: black;
         }
-
     </style>
+    <link rel="stylesheet" href={% static "stats/css/user_ranking.css" %}>
 
     {% block fa_css %}
         <!-- FA CSS -->
@@ -395,7 +395,7 @@
 
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
-            <div class="col-md-10">
+            <div class="col-md-9">
                 <h4>
                     <strong>
                         {{ form.instance.report.type|capfirst }}
@@ -429,6 +429,13 @@
                         {% endif %}
                     {% endif %}
                 </h4>
+            </div>
+            <div class="col-md-1">
+                {% if form.instance.report.alert %}
+                <h4>
+                    <span class="glyphicon glyphicon-bullhorn text-danger pulse" aria-hidden="true" title="Alert report"></span>
+                </h4>
+                {% endif %}
             </div>
             {% if request.user.userstat.is_superexpert %}
             <!-- Keeping this for future uses, disabled right now -->

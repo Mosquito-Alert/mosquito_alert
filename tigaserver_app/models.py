@@ -489,6 +489,8 @@ class Report(models.Model):
 
     nuts_2 = models.CharField(max_length=4, null=True, blank=True)
 
+    alert = models.BooleanField(help_text='This report has been marked by the IA system as alert',default=False)
+
     objects = GeoManager()
 
     def __unicode__(self):

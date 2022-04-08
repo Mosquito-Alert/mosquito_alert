@@ -1144,9 +1144,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             edit_mode = request.GET.get('edit_mode', edit_mode)
 
         #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
-        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
+        #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
         #my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
+        #my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
 
         '''
         if loc == 'spain':
@@ -1338,7 +1338,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     pass
 
         if all_annotations:
-            all_annotations = all_annotations.order_by('-report__creation_time')
+            all_annotations = all_annotations.order_by('-report__alert','-report__creation_time')
             if orderby == "tiger_score":
                 all_annotations = all_annotations.order_by('category__name')
             # if orderby == "site_score":
