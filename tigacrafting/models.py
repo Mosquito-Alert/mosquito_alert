@@ -430,6 +430,7 @@ class Complex(models.Model):
 class OtherSpecies(models.Model):
     name = models.TextField('Name of other species', help_text='List of other, not controlled species')
     category = models.TextField('Subcategory of other species', blank=True, help_text='The subcategory of other species, i.e. Other insects, Culicidae')
+    ordering = models.IntegerField('Auxiliary help to tweak list ordering', blank=True, null=True)
 
     def __str__(self):
         return self.name

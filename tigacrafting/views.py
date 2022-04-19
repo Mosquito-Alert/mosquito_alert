@@ -1410,7 +1410,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['category_list'] = Categories.objects.order_by('name')
         args['complex_list'] = Complex.objects.order_by('description')
         args['other_species_insects'] = OtherSpecies.objects.filter(category='Other insects').order_by('name')
-        args['other_species_culicidae'] = OtherSpecies.objects.filter(category='Culicidae').order_by('name')
+        args['other_species_culicidae'] = OtherSpecies.objects.filter(category='Culicidae').order_by('ordering','name')
 
         expert_users = User.objects.filter(groups__name='expert').order_by('first_name', 'last_name')
         expert_users_w_country = UserStat.objects.filter(user_id__in=expert_users).filter(native_of_id__isnull=False).exclude(native_of_id=17).values('native_of_id').distinct()
