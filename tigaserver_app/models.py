@@ -489,6 +489,10 @@ class Report(models.Model):
 
     nuts_2 = models.CharField(max_length=4, null=True, blank=True)
 
+    ia_filter_1 = models.FloatField(default=None, blank=True, null=True, help_text='Value ranging from -1.0 to 1.0 positive values indicate possible insect, negative values indicate spam(non-insect)')
+
+    ia_filter_2 = models.FloatField(default=None, blank=True, null=True, help_text='Score for best classified image. 0 indicates not classified, 1.xx indicates classified with score xx, 2.xx classified with alert with score xx. ')
+
     objects = GeoManager()
 
     def __unicode__(self):
@@ -2817,3 +2821,31 @@ class OrganizationPin(models.Model):
     point = models.PointField(srid=4326)
     textual_description = models.TextField(help_text='Text desription on the pin. This text is meant to be visualized as the text body of the dialog on the map')
     page_url = models.URLField(help_text='URL link to the organization page')
+
+
+class IAScore(models.Model):
+    report = models.ForeignKey('tigaserver_app.Report', related_name='report_iascore', help_text='Report which the score refers to.', on_delete=models.DO_NOTHING, )
+    photo = models.ForeignKey('tigaserver_app.Photo', related_name='photo_iascore', help_text='Photo to which the score refers to', on_delete=models.DO_NOTHING, )
+    f1_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 1')
+    f1_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 2')
+    f2_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 1')
+    f2_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 2')
+    f3_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 3, class 1')
+    f3_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 3, class 2')
+    f4_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 4, class 1')
+    f4_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 4, class 2')
+    f5_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 5, class 1')
+    f5_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 5, class 2')
+    f6_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 6, class 1')
+    f6_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 6, class 2')
+    f7_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 7, class 1')
+    f7_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 7, class 2')
+    f8_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 8, class 1')
+    f8_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 8, class 2')
+    f9_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 9, class 1')
+    f9_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 9, class 2')
+    x_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left x")
+    x_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right x")
+    y_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left y")
+    y_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right y")
+
