@@ -2144,7 +2144,11 @@ class OWCampaignsViewSet(ReadOnlyModelViewSet):
         qs = OWCampaigns.objects.all()
         country_id = self.request.query_params.get('country_id', None)
         if country_id is not None:
-            qs = qs.filter(country__gid=country_id)
+            try:
+                country_int = int(country_id)
+                qs = qs.filter(country__gid=country_int)
+            except ValueError:
+                return None
         return qs
 
 
