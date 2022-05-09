@@ -395,7 +395,7 @@
 
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
-            <div class="col-md-10">
+            <div class="col-md-9">
                 <h4>
                     <strong>
                         {{ form.instance.report.type|capfirst }}
@@ -407,6 +407,21 @@
                 <h5>
                     <strong>Report code - {{ form.instance.report.report_id }}</strong>
                 </h5>
+            </div>
+            <div class="col-md-1">
+                {% if form.instance.report.location_choice == 'current' %}
+                <h4>
+                <a href="#"><span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="Location for this report is current (taken from gps)"></span></a>
+                </h4>
+                {% elif form.instance.report.location_choice == 'selected' %}
+                <h4>
+                <a href="#"><span class="glyphicon glyphicon glyphicon-picture" aria-hidden="true" title="Location for this report is selected (selected on map)"></span></a>
+                </h4>
+                {% else %}
+                <h4>
+                <a href="#"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true" title="This report has no location info available"></span></a>
+                </h4>
+                {% endif %}
             </div>
             <div class="col-md-1">
                 <h4>
