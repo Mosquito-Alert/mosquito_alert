@@ -200,7 +200,7 @@
 <div class="container">
     <div class="starter-template">
         <h1>Picture Filter</h1>
-        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type_readable }}, Country - {{ country_readable }}, AI Threshold - >= {{ aithr }}
+        <strong>Filters:</strong> Showing - {{ visibility }}, User note contains - '{{ usr_note | safe }}', Report type - {{ type_readable }}, Country - {{ country_readable }}, AI Threshold - <= {{ aithr }}
         <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
         <div style="text-align: left">
             <h4>Instructions</h4>
@@ -290,6 +290,7 @@
             </div>
             <div data-id="{{ form.instance.version_UUID }}" class="ia_val {{form.instance.type}}" style="">
                 <label><b>IA Value: {{ form.instance.ia_filter_1|floatformat:4 }}</b></label>
+                <div style="height:20px;width:{% widthratio form.instance.ia_filter_1 1 100 %}px;background-color:red;"></div>
             </div>
         {% endif %}
 
