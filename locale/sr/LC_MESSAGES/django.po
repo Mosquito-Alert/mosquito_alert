@@ -1101,7 +1101,7 @@ msgstr "Nismo sigurni"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "Kućni komarac (Culex sp.)"
+msgstr "Kućni komarac (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

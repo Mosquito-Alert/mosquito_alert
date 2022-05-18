@@ -1104,7 +1104,7 @@ msgstr "nedoločena vrsta"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "komar iz rodu (Culex sp.)"
+msgstr "komar iz rodu (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

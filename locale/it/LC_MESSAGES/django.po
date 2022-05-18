@@ -1106,7 +1106,7 @@ msgstr "Non è chiaro"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "zanzara comune (Culex sp.)"
+msgstr "zanzara comune (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

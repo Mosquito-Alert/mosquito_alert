@@ -1110,7 +1110,7 @@ msgstr "Pas sûr"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "moustique domestique commun (Culex sp.)"
+msgstr "moustique domestique commun (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

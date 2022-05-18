@@ -1102,7 +1102,7 @@ msgstr "Jo i sigurt"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "Mushkonja e zakonshme e shtëpisë (Culex sp.)"
+msgstr "Mushkonja e zakonshme e shtëpisë (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

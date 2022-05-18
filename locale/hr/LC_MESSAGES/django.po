@@ -1104,7 +1104,7 @@ msgstr "Nisam suguran/sigurna"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "Domaći komarac (Culex sp.)"
+msgstr "Domaći komarac (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

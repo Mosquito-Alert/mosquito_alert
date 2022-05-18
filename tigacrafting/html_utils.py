@@ -16,6 +16,8 @@ def get_html_color_for_label(label):
         'Probably Aedes koreicus': '#F0E68C',
         'Definitely Culex sp.': '#FF69B4',
         'Probably Culex sp.': '#FFB6C1',
+        'Definitely Culex pipiens': '#FF69B4',
+        'Probably Culex pipiens': '#FFB6C1',
         'japonicus/koreicus': '#2F4F4F',
         'albopictus/cretinus': '#708090'
     }

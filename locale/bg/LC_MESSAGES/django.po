@@ -1103,7 +1103,7 @@ msgstr "Не съм сигурен/а"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "обикновен комар (Culex sp.)"
+msgstr "обикновен комар (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

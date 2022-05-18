@@ -1099,7 +1099,7 @@ msgstr "Não está claro"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "mosquito comum (Culex sp.)"
+msgstr "mosquito comum (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

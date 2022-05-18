@@ -1107,7 +1107,7 @@ msgstr "Onzeker"
 
 #: tigaserver_app/models.py:1347
 msgid "species_culex"
-msgstr "huissteekmug (Culex sp.)"
+msgstr "huissteekmug (Culex pipiens)"
 
 #: tigaserver_app/models.py:1360
 msgid "species_value_possible"

@@ -683,7 +683,7 @@ class NewReportAssignment(TestCase):
         c_7.save()
         c_8 = Categories.objects.create(pk=8, name="Not sure", specify_certainty_level=False)
         c_8.save()
-        c_9 = Categories.objects.create(pk=9, name="Culex sp.", specify_certainty_level=True)
+        c_9 = Categories.objects.create(pk=9, name="Culex pipiens", specify_certainty_level=True)
         c_9.save()
 
         validation_value_possible = 1

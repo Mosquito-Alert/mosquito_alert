@@ -29,6 +29,9 @@ var translate_table = function( category_id, value ){
     }else if( category_id == "8" ){ //complex
         retVal['tiger_certainty_category'] = -2;
         retVal['aegypti_certainty_category'] = -2;
+    }else if( category_id == "10" ){ //Culex
+        retVal['tiger_certainty_category'] = -2;
+        retVal['aegypti_certainty_category'] = -2;
     }else if( category_id == "1" ){ //cannot tell
         retVal['tiger_certainty_category'] = null;
         retVal['aegypti_certainty_category'] = null;

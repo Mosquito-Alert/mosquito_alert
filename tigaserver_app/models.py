@@ -1357,7 +1357,8 @@ class Report(models.Model):
             "Aedes koreicus": ugettext("species_koreicus"),
             "Complex": ugettext("species_complex"),
             "Not sure": ugettext("species_notsure"),
-            "Culex sp.": ugettext("species_culex")
+            "Culex sp.": ugettext("species_culex"),
+            "Culex pipiens": ugettext("species_culex"),
         }
         retval = translations_table_species_name.get(untranslated_species, "Unknown")
         translation.deactivate()
