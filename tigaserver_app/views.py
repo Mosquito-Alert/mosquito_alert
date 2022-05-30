@@ -631,6 +631,23 @@ class AcknowledgedNotificationViewSetPaginated(mixins.CreateModelMixin, mixins.L
     filter_class = AcknowledgedNotificationFilter
     pagination_class = StandardResultsSetPagination
 
+@api_view(['POST'])
+def photo_blood(request):
+    photo_id = request.POST.get('photo_id', -1)
+    _status = request.POST.get('status', '')
+    if photo_id == -1:
+        raise ParseError(detail='photo_id param is mandatory')
+    if _status == '':
+        raise ParseError(detail='status param is mandatory')
+    try:
+        photo = Photo.objects.get(pk=int(photo_id))
+        photo.blood_genre = _status
+        photo.save()
+        return Response(status=status.HTTP_200_OK)
+    except Photo.DoesNotExist:
+        raise ParseError(detail='This picture does not exist')
+
+
 '''
 This implementation is weird AF. The correct ack to be used should be /api/ack_notif. This one does the same, but
 uses the DELETE verb and answers with no content in case of success, which is really counter-intuitive because

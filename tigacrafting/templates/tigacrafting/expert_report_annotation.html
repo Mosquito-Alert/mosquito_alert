@@ -75,7 +75,8 @@
 
     {% block fa_css %}
         <!-- FA CSS -->
-        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+        <!--<link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>-->
+        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.7.0/css/font-awesome.min.css" %}>
     {% endblock %}
 
 
@@ -678,7 +679,6 @@
                             <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
 
                     </div>
-
                     <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>-->
 
                 {% else %}
@@ -2468,6 +2468,8 @@
     <script src={% static "tigacrafting/macro_messages.js" %}></script> 
     <script src={% static "tigacrafting/exec_val.js" %}></script>
     <script src={% static "tigacrafting/straight_emergency_grab.js" %}></script>
+    <script src={% static "tigacrafting/csrf_utils.js" %}></script>
+    <script src={% static "tigacrafting/blood_switch.js" %}></script>
 
 
 {% endblock %}
