@@ -787,7 +787,7 @@ class Report(models.Model):
             result = result + photo.small_image_() + '&nbsp;'
         return result
 
-    def get_photo_html_for_report_validation(self):
+    def get_photo_html_for_report_validation_wblood(self):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         result = ''
         for photo in these_photos:
@@ -798,11 +798,23 @@ class Report(models.Model):
             result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
                         '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
                     '</div>' \
-                    '<div>' \
-                    '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-                    '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-                    '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                    '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
+                    '<br>' \
+                    '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>' \
+                   '<div id="blood_status_' + str(self.version_UUID) + '_' + str(photo.id) + '">' \
+                   '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
+                   '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
+                   '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
+                   '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
+                   '</div>' \
+                   '<br>'
+        return result
+
+    def get_photo_html_for_report_validation(self):
+        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
+        result = ''
+        for photo in these_photos:
+            result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
+                        '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
                     '</div>' \
                     '<br>' \
                     '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>' \
@@ -2499,7 +2511,7 @@ class Photo(models.Model):
                                                  'report_UUID).', on_delete=models.DO_NOTHING, )
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
     uuid = models.CharField(max_length=36, default=make_uuid)
-    blood_genre = models.CharField(max_length=20, choices=BLOOD_GENRE, default=BLOOD_GENRE[3][0])
+    blood_genre = models.CharField(max_length=20, choices=BLOOD_GENRE, null=True, default=None)
 
     def __unicode__(self):
         return self.photo.name

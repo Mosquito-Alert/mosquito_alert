@@ -631,6 +631,7 @@ class AcknowledgedNotificationViewSetPaginated(mixins.CreateModelMixin, mixins.L
     filter_class = AcknowledgedNotificationFilter
     pagination_class = StandardResultsSetPagination
 
+
 @api_view(['POST'])
 def photo_blood(request):
     photo_id = request.POST.get('photo_id', -1)
@@ -646,6 +647,18 @@ def photo_blood(request):
         return Response(status=status.HTTP_200_OK)
     except Photo.DoesNotExist:
         raise ParseError(detail='This picture does not exist')
+
+
+@api_view(['POST'])
+def photo_blood_reset(request):
+    report_id = request.POST.get('report_id', '')
+    if report_id == '':
+        raise ParseError(detail='report_id param is mandatory')
+    photos = Photo.objects.filter(report=report_id)
+    for p in photos:
+        p.blood_genre = None
+        p.save()
+    return Response(status=status.HTTP_200_OK)
 
 
 '''

@@ -674,7 +674,11 @@
                         {% if request.user.userstat.is_superexpert %}
                             {{ form.instance.report.photo_html_for_report_validation_superexpert | safe }}
                         {% else %}
-                            {{ form.instance.report.photo_html_for_report_validation | safe }}
+                            {% if not form.instance.simplified_annotation %}
+                                {{ form.instance.report.get_photo_html_for_report_validation_wblood | safe }}
+                            {% else %}
+                                {{ form.instance.report.photo_html_for_report_validation | safe }}
+                            {% endif %}
                         {% endif %}
                             <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
 
@@ -794,7 +798,9 @@
                 $("#clear_button_{{ form.instance.id }}").click(function () {
                     $('#' + '{{ form.best_photo.auto_id }}').val(null);
                     $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked', false);
-
+                    $('[id^=blood_status_' + '{{ form.instance.report.version_UUID }}' + '_]').hide();
+                    // this function is defined in blood_switch.js
+                    reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}');
                 });
 
 
