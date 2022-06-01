@@ -1331,6 +1331,7 @@
             if(data.photo){
                 $('#' + data.photo).attr('checked', true);
                 $("#id_form-" + id_to_index[form_id] + "-best_photo").val(data.photo);
+                show_blood_control(data.report_id, data.photo);
             }
         }
 
@@ -1681,7 +1682,8 @@
                     status: {{form.instance.report.get_final_expert_status }},
                     photo: '{{form.instance.report.get_final_photo_html.id}}',
                     public_note: '{{form.instance.report.get_final_public_note | linebreaksbr }}',
-                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
+                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}',
+                    report_id: '{{ form.instance.report.version_UUID }}'
                 };
 
                 final_status_table[{{ form.instance.id }}] = final_status;

@@ -22,6 +22,10 @@ var clear_all_report_radios = function(report_id){
     $("[id^='blood_status_" + report_id + "_'] :input").attr('checked', false);
 }
 
+var show_blood_control = function(report_id, photo_id){
+    $('#blood_status_' + report_id + '_' + photo_id).show();
+}
+
 $(document).ready(function() {
 
     var write_picture_status = function( photo_id, status ){
@@ -77,8 +81,7 @@ $(document).ready(function() {
             var this_id = $(this).attr('id');
             var parent_id = $(this).parent().attr('id');
             var report_id = parent_id.split('_')[6];
-            if( $('#' + this_id ).is(':checked') ){
-                console.log(parent_id);
+            if( $('#' + this_id ).is(':checked') || $('#' + this_id ).data('best') == 'True' ){
                 $('#blood_status_' + report_id + '_' + this_id).show();
             }
         });
