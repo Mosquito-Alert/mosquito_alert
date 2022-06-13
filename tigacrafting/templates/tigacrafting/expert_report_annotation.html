@@ -75,7 +75,8 @@
 
     {% block fa_css %}
         <!-- FA CSS -->
-        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+        <!--<link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>-->
+        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.7.0/css/font-awesome.min.css" %}>
     {% endblock %}
 
 
@@ -671,14 +672,17 @@
 
                     <div style="overflow: auto;">
                         {% if request.user.userstat.is_superexpert %}
-                            {{ form.instance.report.photo_html_for_report_validation_superexpert | safe }}
+                            {{ form.instance.get_photo_html_for_report_validation_superexpert | safe }}
                         {% else %}
-                            {{ form.instance.report.photo_html_for_report_validation | safe }}
+                            {% if not form.instance.simplified_annotation %}
+                                {{ form.instance.get_photo_html_for_report_validation_wblood | safe }}
+                            {% else %}
+                                {{ form.instance.get_photo_html_for_report_validation | safe }}
+                            {% endif %}
                         {% endif %}
                             <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
 
                     </div>
-
                     <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>-->
 
                 {% else %}
@@ -794,7 +798,9 @@
                 $("#clear_button_{{ form.instance.id }}").click(function () {
                     $('#' + '{{ form.best_photo.auto_id }}').val(null);
                     $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked', false);
-
+                    $('[id^=blood_status_' + '{{ form.instance.report.version_UUID }}' + '_]').hide();
+                    // this function is defined in blood_switch.js
+                    reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}');
                 });
 
 
@@ -1325,6 +1331,7 @@
             if(data.photo){
                 $('#' + data.photo).attr('checked', true);
                 $("#id_form-" + id_to_index[form_id] + "-best_photo").val(data.photo);
+                show_blood_control(data.report_id, data.photo);
             }
         }
 
@@ -1675,7 +1682,8 @@
                     status: {{form.instance.report.get_final_expert_status }},
                     photo: '{{form.instance.report.get_final_photo_html.id}}',
                     public_note: '{{form.instance.report.get_final_public_note | linebreaksbr }}',
-                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}'
+                    user_note: '{{form.instance.report.get_final_note_to_user  | linebreaksbr }}',
+                    report_id: '{{ form.instance.report.version_UUID }}'
                 };
 
                 final_status_table[{{ form.instance.id }}] = final_status;
@@ -2468,6 +2476,8 @@
     <script src={% static "tigacrafting/macro_messages.js" %}></script> 
     <script src={% static "tigacrafting/exec_val.js" %}></script>
     <script src={% static "tigacrafting/straight_emergency_grab.js" %}></script>
+    <script src={% static "tigacrafting/csrf_utils.js" %}></script>
+    <script src={% static "tigacrafting/blood_switch.js" %}></script>
 
 
 {% endblock %}

@@ -255,7 +255,15 @@
                                                 <th></th>
                                                 <th></th>
                                             </thead>
-                                            <tbody style="border: 1px solid #333;padding:2px;{% if ano.user.userstat.is_superexpert %}background: #F5DA81;{% endif %}">
+                                            {% if ano.user.userstat.is_superexpert %}
+                                            <tbody style="border: 1px solid #333;padding:2px;background: #F5DA81;">
+                                            {% else %}
+                                                {% if not ano.simplified_annotation %}
+                                                    <tbody style="border: 1px solid #F00;padding:2px;">
+                                                {% else %}
+                                                    <tbody style="border: 1px solid #333;padding:2px;">
+                                                {% endif %}
+                                            {% endif %}
                                                 <tr>
                                                     <td>
                                                         {% if ano.user.username == this_user or request.user.userstat.is_superexpert or ano.user.userstat.is_superexpert %}

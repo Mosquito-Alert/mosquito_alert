@@ -38,6 +38,8 @@ urlpatterns = [
     url('subscribe_to_topic/', views.subscribe_to_topic),
     url('unsub_from_topic/', views.unsub_from_topic),
     url('topics_subscribed/', views.topics_subscribed),
+    url('photo_blood/', views.photo_blood),
+    url('photo_blood_reset/', views.photo_blood_reset),
     url('time_info/$', views.get_data_time_info),
     url('score_v2/$', views.user_score_v2),
     url('photos/$', views.post_photo),

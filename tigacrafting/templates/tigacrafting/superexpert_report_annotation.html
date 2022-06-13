@@ -192,7 +192,7 @@
                 {% if ano.validation_complete %}
                     {% if ano.is_expert or ano.is_superexpert and ano.revise %}
 
-                        <tr class="{% if not ano.simplified_annotation %}long{% endif %}">
+                        <tr class="{% if not ano.simplified_annotation and not ano.is_superexpert %}long{% endif %}">
                             <td><a role="button" data-toggle="collapse"
                                    href="#expert_collapse{{ ano.report.version_UUID }}{{ ano.id }}"
                                    aria-expanded="false"
