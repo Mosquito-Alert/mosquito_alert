@@ -795,6 +795,8 @@ class Report(models.Model):
             female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
             fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
             dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
+            fg_status = 'checked="checked"' if photo.blood_genre == 'fg' else ''
+            fgb_status = 'checked="checked"' if photo.blood_genre == 'fgb' else ''
             result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
                         '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
                     '</div>' \
@@ -804,6 +806,8 @@ class Report(models.Model):
                    '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
                    '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
                    '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
+                   '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
+                   '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
                    '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
                    '</div>' \
                    '<br>'
@@ -832,6 +836,8 @@ class Report(models.Model):
             female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
             fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
             dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
+            fg_status = 'checked="checked"' if photo.blood_genre == 'fg' else ''
+            fgb_status = 'checked="checked"' if photo.blood_genre == 'fgb' else ''
             result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
                         '<input data-best="' + str(best_photo) + '" type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:'\
                         '</div>' \
@@ -841,6 +847,8 @@ class Report(models.Model):
                         '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
                         '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
                         '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
+                        '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
+                        '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
                         '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
                         '</div>' \
                         '<br>'
@@ -854,7 +862,9 @@ class Report(models.Model):
             BLOOD_GENRE[0][0] : '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>',
             BLOOD_GENRE[1][0]: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>',
             BLOOD_GENRE[2][0]: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>',
-            BLOOD_GENRE[3][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>'
+            BLOOD_GENRE[3][0]: '<label title="Female gravid"><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>',
+            BLOOD_GENRE[4][0]: '<label title="Female gravid + blood"><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>',
+            BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>'
         }
         if blood_genre is None:
             return ''
@@ -2526,7 +2536,7 @@ def make_uuid():
     return str(uuid.uuid4())
 
 
-BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('dk', 'Dont know'))
+BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood'), ('dk', 'Dont know'))
 
 class Photo(models.Model):
     """
