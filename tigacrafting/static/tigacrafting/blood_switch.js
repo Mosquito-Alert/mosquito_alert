@@ -54,14 +54,27 @@ $(document).ready(function() {
         write_picture_status(photo_id, status)
     });
 
+    var show_control_by_species = function(annotation_id){
+        var val = $('#category_' + annotation_id).val();
+        if(val == '4' || val == '5' || val == '6' || val == '7'){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     $("[id^='div_for_photo_to_display_report_']").click( function(){
         var div_id = $(this).attr('id');
         var report_id = div_id.split('_')[6];
+        var ano_id = $(this).data('ano-id')
+        var show = show_control_by_species(ano_id);
         hide_blood_controls_for_report(report_id);
         reset_all_picture_status_for_report(report_id);
         $(this).children().each(function(e){
             var input_id = $(this).attr('id');
-            $('#blood_status_' + report_id + '_' + input_id).show();
+            if(show){
+                $('#blood_status_' + report_id + '_' + input_id).show();
+            }
         });
     });
 

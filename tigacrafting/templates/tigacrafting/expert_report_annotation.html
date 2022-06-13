@@ -672,12 +672,12 @@
 
                     <div style="overflow: auto;">
                         {% if request.user.userstat.is_superexpert %}
-                            {{ form.instance.report.photo_html_for_report_validation_superexpert | safe }}
+                            {{ form.instance.get_photo_html_for_report_validation_superexpert | safe }}
                         {% else %}
                             {% if not form.instance.simplified_annotation %}
-                                {{ form.instance.report.get_photo_html_for_report_validation_wblood | safe }}
+                                {{ form.instance.get_photo_html_for_report_validation_wblood | safe }}
                             {% else %}
-                                {{ form.instance.report.photo_html_for_report_validation | safe }}
+                                {{ form.instance.get_photo_html_for_report_validation | safe }}
                             {% endif %}
                         {% endif %}
                             <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
