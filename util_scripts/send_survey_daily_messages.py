@@ -25,7 +25,7 @@ from tigacrafting.messaging import generic_send
 base_folder = proj_path + 'util_scripts/survey_files/'
 logs_folder = base_folder + 'logs/'
 
-list_files_root = '/home/webuser/dev/python/survey_sender/test_files/roll3/'
+list_files_root = '/home/webuser/dev/python/survey_list_generator/test_files/roll3/'
 message_content = 'tigacrafting/survey/dailies/'
 
 
@@ -54,14 +54,29 @@ def generate_file_list(root_listfiles_dir):
     return file_list
 
 
-def get_title( category, language, number ):
-    title = "{0}_{1}_{2}".format(category, language, number)
+def get_title( language ):
+    titles = {
+        'ca': 'Missatge del dia - {0}',
+        'es': 'Mensaje del día - {0}',
+        'en': 'Message of the day - {0}'
+    }
+    today = datetime.date.today().strftime('%d/%m/%Y')
+    title = titles[language].format( today )
     return title
 
 
 def get_message_and_title( category, language, number ):
-    title = get_title(category, language, number)
-    message = render_to_string(message_content + "{0}_{1}_{2}".format(category, language, number), {}).replace('&amp;', '&')
+    title = get_title(language)
+    file = proj_path + 'tigacrafting/templates/' + message_content + "{0}_{1}_{2}".format(category, language, number)
+    with open( file, 'r' ) as f:
+        message_text = f.read()
+    message_date = datetime.date.today().strftime('%d/%m/%Y')
+    context = {
+        'message': message_text,
+        'message_date': message_date
+    }
+    template = message_content + "daily_{0}.html".format( language )
+    message = render_to_string(template, context).replace('&amp;', '&')
     retval = {
         'title': title,
         'message': message,
@@ -79,17 +94,14 @@ def do_send_notification( uuid, message_and_title  ):
     title = message_and_title['title']
     language = message_and_title['language']
 
-    try:
-        notification_content = NotificationContent.objects.get(body_html_native=message)
-    except NotificationContent.DoesNotExist:
-        notification_content = NotificationContent(
-            body_html_en=message,
-            body_html_native=message,
-            title_en=title,
-            title_native=title,
-            native_locale=language
-        )
-        notification_content.save()
+    notification_content = NotificationContent(
+        body_html_en=message,
+        body_html_native=message,
+        title_en=title,
+        title_native=title,
+        native_locale=language
+    )
+    notification_content.save()
 
     notification = Notification(expert=sender, notification_content=notification_content)
     notification.save()
@@ -97,7 +109,15 @@ def do_send_notification( uuid, message_and_title  ):
     send_notification = SentNotification(sent_to_user=user, notification=notification)
     send_notification.save()
 
-    generic_send( user.device_token, title, message )
+    push_messages = {
+        'en': 'You have a new Mosquito Alert message, please check your messages in the app.',
+        'es': 'Tienes un nuevo mensaje de Mosquito Alert. Por favor, comprueba tus mensajes en la app.',
+        'ca': 'Tens un nou missatge de Mosquito Alert. Si us plau comprova els teus missatges dins la app.'
+    }
+
+    push_message = push_messages[language]
+
+    generic_send( user.device_token, title, push_message )
 
 
 def get_uuid_tokens( uuids ):
@@ -110,13 +130,17 @@ def get_uuid_tokens( uuids ):
 
 
 def send_notification_to( actual_file, category, language, number ):
+    logging.debug("Extracting uuids from file {0}".format(actual_file))
     uuids = read_file_to_lines(actual_file)
+    logging.debug("Read {0} uuids from file {1}".format(len(uuids), actual_file))
     for this_uuid in uuids:
         message_and_title = get_message_and_title(category, language, number)
+        logging.debug("\tSending notification to uuid {0}, category {1}, language {2}, number {3}".format(this_uuid, category, language, number))
         do_send_notification( this_uuid, message_and_title )
 
 
 def treat_file(actual_file):
+    logging.debug("Treating file {0}...".format(actual_file))
     file_no_path = os.path.basename(actual_file)
     name_parts = file_no_path.split('_')
     category = name_parts[0]
@@ -135,4 +159,8 @@ def walk_files(root_listfiles_dir):
 if __name__ == '__main__':
     args = sys.argv[1:]
     root_listfiles_dir = args[0]
+    config_logging()
+    logging.debug("***** START SENDING NOTIFICATIONS TO FILE LIST ******")
+    logging.debug("Scanning for files in directory {0}".format( root_listfiles_dir ))
     walk_files( root_listfiles_dir )
+    logging.debug("***** END SENDING NOTIFICATIONS TO FILE LIST ******")

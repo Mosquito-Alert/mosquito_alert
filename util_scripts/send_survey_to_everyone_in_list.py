@@ -23,7 +23,11 @@ from django.template.loader import render_to_string
 base_folder = proj_path + 'util_scripts/survey_files/'
 logs_folder = base_folder + 'logs/'
 
-SURVEY_TITLE = "Survey"
+SURVEY_TITLE = {
+    'en': 'Want to help us?',
+    'es': '¿Quieres ayudarnos?',
+    'ca': 'Ens vols donar un cop de mà?'
+}
 
 
 def config_logging():
@@ -41,7 +45,7 @@ def read_file_to_lines(filename):
         return []
 
 
-def send_message_to_uuid(this_uuid, sender):
+def send_message_to_uuid(this_uuid, sender, survey_code):
 
     user_language = 'en'
 
@@ -52,44 +56,55 @@ def send_message_to_uuid(this_uuid, sender):
         if os_language in ['en','es','ca']:
             user_language = os_language
 
+    # 221221
+    url = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
+    url_en = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
+
     context = {
-        'survey_link' : 'https://mosqal.limesurvey.net/221221?lang={0}&uuid={1}'.format(user_language, this_uuid),
+        'survey_link' : url,
     }
 
-    body_html_en = render_to_string("tigacrafting/survey/survey_en.html", context).replace('&amp;', '&')
-    body_html_native = render_to_string("tigacrafting/survey/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
+    context_en = {
+        'survey_link': url_en,
+    }
 
-    # notification_content = NotificationContent(
-    #     body_html_en=body_html_en,
-    #     body_html_native=body_html_native,
-    #     title_en=SURVEY_TITLE,
-    #     title_native=SURVEY_TITLE,
-    #     native_locale=user_language
-    # )
-    # notification_content.save()
-    #
-    # notification = Notification(expert=sender, notification_content=notification_content)
-    # notification.save()
-    #
-    # send_notification = SentNotification(sent_to_user=user, notification=notification)
-    # send_notification.save()
+    body_html_en = render_to_string("tigacrafting/survey/survey_en.html", context_en).replace('&amp;', '&')
+    body_html_native = render_to_string("tigacrafting/survey/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
+    title_native = SURVEY_TITLE[user_language]
+
+    notification_content = NotificationContent(
+        body_html_en=body_html_en,
+        body_html_native=body_html_native,
+        title_en=title_native,
+        title_native=SURVEY_TITLE,
+        native_locale=user_language
+    )
+    notification_content.save()
+
+    notification = Notification(expert=sender, notification_content=notification_content)
+    notification.save()
+
+    send_notification = SentNotification(sent_to_user=user, notification=notification)
+    send_notification.save()
+
     print(body_html_native)
 
 
 def send_message_to_list(list_file_args):
     sender = User.objects.get(pk=38) #mosquitoalert
     config_logging()
-    if len(list_file_args) != 1:
-        print("Usage: send_survey_to_everyone_in_list.py listfile ")
+    if len(list_file_args) != 2:
+        print("Usage: send_survey_to_everyone_in_list.py listfile survey_code")
         logging.error('Incorrect arguments')
         sys.exit(0)
     filename = list_file_args[0]
+    survey_code = list_file_args[1]
     uuids = read_file_to_lines( filename )
     if len(uuids) > 0:
         logging.debug("Start sending messages")
         logging.debug("Read {0} uuids from file {1}".format( len(uuids),filename ))
         for uuid in uuids:
-            send_message_to_uuid(uuid, sender)
+            send_message_to_uuid(uuid, sender, survey_code)
     else:
         logging.debug("No uuids in file, doing nothing")
 
