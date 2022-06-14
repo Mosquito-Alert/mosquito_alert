@@ -56,7 +56,7 @@ $(document).ready(function() {
 
     var show_control_by_species = function(annotation_id){
         var val = $('#category_' + annotation_id).val();
-        if(val == '4' || val == '5' || val == '6' || val == '7'){
+        if(val == '4' || val == '5' || val == '6' || val == '7' || val == '10'){
             return true;
         }else{
             return false;
