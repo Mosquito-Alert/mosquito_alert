@@ -859,12 +859,12 @@ class Report(models.Model):
 
     def get_icon_for_blood_genre(self, blood_genre):
         blood_genre_table = {
-            BLOOD_GENRE[0][0] : '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>',
-            BLOOD_GENRE[1][0]: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>',
-            BLOOD_GENRE[2][0]: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>',
-            BLOOD_GENRE[3][0]: '<label title="Female gravid"><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>',
-            BLOOD_GENRE[4][0]: '<label title="Female gravid + blood"><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>',
-            BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>'
+            BLOOD_GENRE[0][0] : '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
+            BLOOD_GENRE[1][0]: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
+            BLOOD_GENRE[2][0]: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
+            BLOOD_GENRE[3][0]: '<label title="Female gravid"><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i> Gravid</label>',
+            BLOOD_GENRE[4][0]: '<label title="Female gravid + blood"><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
+            #BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
         }
         if blood_genre is None:
             return ''
@@ -872,7 +872,8 @@ class Report(models.Model):
             try:
                 return blood_genre_table[blood_genre]
             except KeyError:
-                return blood_genre_table['dk']
+                #return blood_genre_table['dk']
+                return ''
 
     def get_photo_html_for_report_validation_completed(self):
         these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
@@ -880,7 +881,7 @@ class Report(models.Model):
         for photo in these_photos:
             best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
             border_style = "3px solid green" if best_photo else "1px solid #333333"
-            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_() + '</div>' + self.get_icon_for_blood_genre(photo.blood_genre) + '<br>'
+            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_() + '</div><div>' + self.get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
         return result
 
     def get_formatted_date(self):
@@ -2536,7 +2537,7 @@ def make_uuid():
     return str(uuid.uuid4())
 
 
-BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood'), ('dk', 'Dont know'))
+BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood') )
 
 class Photo(models.Model):
     """
@@ -2737,6 +2738,7 @@ class NotificationContent(models.Model):
     body_html_native = models.TextField(default=None,blank=True,null=True, help_text='Expert comment, expanded and allows html, in the language indicated by the field native_locale')
     title_native = models.TextField(default=None, blank=True, null=True, help_text='Title of the comment, shown in non-detail view, in the language indicated by the field title_native')
     native_locale = models.CharField(default=None, blank=True, null=True, max_length=10, help_text='Locale code for text in body_html_native and title_native')
+    notification_label = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='Arbitrary label used to group thematically equal notifications. Optional. ')
 
     def get_title_locale_safe(self, locale):
         if self.native_locale is not None and locale.lower().strip() == self.native_locale.lower().strip():

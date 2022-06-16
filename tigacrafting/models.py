@@ -238,7 +238,7 @@ class ExpertReportAnnotation(models.Model):
             male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
             female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
             fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-            dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
+            #dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
             fg_status = 'checked="checked"' if photo.blood_genre == 'fgravid' else ''
             fgb_status = 'checked="checked"' if photo.blood_genre == 'fgblood' else ''
             result += '<div data-ano-id="' + str(self.id) + '" id="div_for_photo_to_display_report_' + str(self.report.version_UUID) + '">' \
@@ -252,10 +252,10 @@ class ExpertReportAnnotation(models.Model):
                    '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
                    '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
                    '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                   '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
                    '</div>' \
                    '<br>'
         return result
+
 
     def get_photo_html_for_report_validation(self):
         #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
@@ -281,7 +281,7 @@ class ExpertReportAnnotation(models.Model):
             male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
             female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
             fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-            dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
+            #dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
             fg_status = 'checked="checked"' if photo.blood_genre == 'fgravid' else ''
             fgb_status = 'checked="checked"' if photo.blood_genre == 'fgblood' else ''
             result += '<div data-ano-id="' + str(self.id) + '" id="div_for_photo_to_display_report_' + str(self.report.version_UUID) + '">' \
@@ -295,7 +295,6 @@ class ExpertReportAnnotation(models.Model):
                         '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
                         '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
                         '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                        '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
                         '</div>' \
                         '<br>'
         return result

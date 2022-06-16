@@ -70,12 +70,12 @@ $(document).ready(function() {
         var show = show_control_by_species(ano_id);
         hide_blood_controls_for_report(report_id);
         reset_all_picture_status_for_report(report_id);
-        $(this).children().each(function(e){
-            var input_id = $(this).attr('id');
-            if(show){
+        if(show){
+            $(this).children().each(function(e){
+                var input_id = $(this).attr('id');
                 $('#blood_status_' + report_id + '_' + input_id).show();
-            }
-        });
+            });
+        }
     });
 
     var hide_blood_controls_for_report = function(report_id){

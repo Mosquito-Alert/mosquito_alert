@@ -85,21 +85,26 @@ def get_message_and_title( category, language, number ):
     return retval
 
 
-def do_send_notification( uuid, message_and_title  ):
+def do_send_notification( uuid, category, language, number ):
 
     user = TigaUser.objects.get(pk=uuid)
     sender = User.objects.get(pk=38)  # mosquitoalert
 
+    message_and_title = get_message_and_title(category, language, number)
+
     message = message_and_title['message']
     title = message_and_title['title']
     language = message_and_title['language']
+
+    notification_label = '{0}_{1}_{2}'.format(category, language, str(number))
 
     notification_content = NotificationContent(
         body_html_en=message,
         body_html_native=message,
         title_en=title,
         title_native=title,
-        native_locale=language
+        native_locale=language,
+        notification_label=notification_label
     )
     notification_content.save()
 
@@ -136,7 +141,7 @@ def send_notification_to( actual_file, category, language, number ):
     for this_uuid in uuids:
         message_and_title = get_message_and_title(category, language, number)
         logging.debug("\tSending notification to uuid {0}, category {1}, language {2}, number {3}".format(this_uuid, category, language, number))
-        do_send_notification( this_uuid, message_and_title )
+        do_send_notification( this_uuid, category, language, number )
 
 
 def treat_file(actual_file):

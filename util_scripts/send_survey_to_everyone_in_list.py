@@ -71,23 +71,27 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
     body_html_en = render_to_string("tigacrafting/survey/survey_en.html", context_en).replace('&amp;', '&')
     body_html_native = render_to_string("tigacrafting/survey/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
     title_native = SURVEY_TITLE[user_language]
+    title_en = SURVEY_TITLE['en']
+
+    notification_label = 'survey_{0}_{1}'.format(survey_code, user_language)
 
     notification_content = NotificationContent(
         body_html_en=body_html_en,
         body_html_native=body_html_native,
-        title_en=title_native,
-        title_native=SURVEY_TITLE,
-        native_locale=user_language
+        title_en=title_en,
+        title_native=title_native,
+        native_locale=user_language,
+        notification_label=notification_label
     )
     notification_content.save()
 
-    notification = Notification(expert=sender, notification_content=notification_content)
+    notification = Notification(expert=sender, notification_content=notification_content )
     notification.save()
 
     send_notification = SentNotification(sent_to_user=user, notification=notification)
     send_notification.save()
 
-    print(body_html_native)
+    #print(body_html_native)
 
 
 def send_message_to_list(list_file_args):
@@ -101,10 +105,15 @@ def send_message_to_list(list_file_args):
     survey_code = list_file_args[1]
     uuids = read_file_to_lines( filename )
     if len(uuids) > 0:
+        n_uuids = len(uuids)
         logging.debug("Start sending messages")
-        logging.debug("Read {0} uuids from file {1}".format( len(uuids),filename ))
+        logging.debug("Read {0} uuids from file {1}".format( str(n_uuids),filename ))
+        i = 0
         for uuid in uuids:
+            i = i + 1
+            logging.debug("Sending uuid {0} of {1}".format(str(i), str(n_uuids)))
             send_message_to_uuid(uuid, sender, survey_code)
+
     else:
         logging.debug("No uuids in file, doing nothing")
 
