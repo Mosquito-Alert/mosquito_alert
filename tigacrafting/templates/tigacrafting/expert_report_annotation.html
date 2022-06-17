@@ -800,7 +800,8 @@
                     $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').attr('checked', false);
                     $('[id^=blood_status_' + '{{ form.instance.report.version_UUID }}' + '_]').hide();
                     // this function is defined in blood_switch.js
-                    reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}');
+                    /* TODO - uncomment this when activating blood + female */
+                    /* reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}'); */
                 });
 
 
