@@ -56,9 +56,12 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
         if os_language in ['en','es','ca']:
             user_language = os_language
 
-    # 221221
-    url = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
-    url_en = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
+    # 221221 - test
+    # 152148 - production
+    #url = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
+    #url_en = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
+    url = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
+    url_en = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
 
     context = {
         'survey_link' : url,
