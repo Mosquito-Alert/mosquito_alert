@@ -148,7 +148,8 @@ def assign_reports_to_national_supervisor(this_user):
                 logger_report_assignment.debug('* Assigned Non Reserved own country report {0} to user {1}'.format(this_report.version_UUID, this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                exists_long = this_report.get_expert_has_been_assigned_long_validation()
+                if exists_long or who_has_count == 0 or who_has_count == 1:
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 grabbed_reports += 1
@@ -165,7 +166,8 @@ def assign_reports_to_national_supervisor(this_user):
                 logger_report_assignment.debug('* Assigned Non Reserved other country report {0} to user {1}'.format(this_report.version_UUID,this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                exists_long = this_report.get_expert_has_been_assigned_long_validation()
+                if exists_long or who_has_count == 0 or who_has_count == 1:
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 grabbed_reports += 1
@@ -292,7 +294,8 @@ def assign_crisis_report(this_user, country):
             for this_report in reports_to_take:
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                exists_long = this_report.get_expert_has_been_assigned_long_validation()
+                if exists_long or who_has_count == 0 or who_has_count == 1:
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 try:
@@ -351,7 +354,8 @@ def assign_reports_to_regular_user(this_user):
                 for this_report in reports_to_take:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                     who_has_count = this_report.get_who_has_count()
-                    if who_has_count == 0 or who_has_count == 1:
+                    exists_long = this_report.get_expert_has_been_assigned_long_validation()
+                    if exists_long or who_has_count == 0 or who_has_count == 1:
                         # No one has the report, is simplified
                         new_annotation.simplified_annotation = True
                     try:
@@ -391,7 +395,8 @@ def assign_reports_to_regular_user(this_user):
                     for this_report in new_reports_other_countries:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         who_has_count = this_report.get_who_has_count()
-                        if who_has_count == 0 or who_has_count == 1:
+                        exists_long = this_report.get_expert_has_been_assigned_long_validation()
+                        if exists_long or who_has_count == 0 or who_has_count == 1:
                             # No one has the report, is simplified
                             new_annotation.simplified_annotation = True
                         grabbed_reports += 1
@@ -452,7 +457,8 @@ def assign_bb_reports(this_user):
                 logger_report_assignment.debug('* Assigned report {0} to user {1}'.format(this_report.version_UUID, this_user))
                 new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                 who_has_count = this_report.get_who_has_count()
-                if who_has_count == 0 or who_has_count == 1:
+                exists_long = this_report.get_expert_has_been_assigned_long_validation()
+                if exists_long or who_has_count == 0 or who_has_count == 1:
                     # No one has the report, is simplified
                     new_annotation.simplified_annotation = True
                 try:

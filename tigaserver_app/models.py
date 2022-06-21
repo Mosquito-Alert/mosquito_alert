@@ -2024,6 +2024,14 @@ class Report(models.Model):
                 result += ', '
         return result
 
+    def get_expert_has_been_assigned_long_validation(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        for ano in these_annotations:
+            if not ano.user.userstat.is_superexpert():
+                if ano.simplified_annotation == False:
+                    return True
+        return False
+
     def get_who_has_count(self):
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         i = these_annotations.count()

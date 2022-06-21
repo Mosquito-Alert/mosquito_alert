@@ -63,6 +63,41 @@ def filter_reports(reports, sort=True):
 class NewReportAssignment(TestCase):
     fixtures = ['europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
 
+    # just regular european users
+    def create_regular_team(self):
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+        superexperts = Group.objects.create(name='superexpert')
+        superexperts.save()
+
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_eu'
+        u2.userstat.native_of = EuropeCountry.objects.get(pk=45)  # Isle of man
+        u2.save()
+
+        u9 = User.objects.create(pk=9)
+        u9.username = 'expert_9_eu'
+        u9.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u9.save()
+
+        u10 = User.objects.create(pk=10)
+        u10.username = 'expert_10_eu'
+        u10.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u10.save()
+
+        europe_group.user_set.add(u2)
+        europe_group.user_set.add(u9)
+        europe_group.user_set.add(u10)
+
+        experts.user_set.add(u2)
+        experts.user_set.add(u9)
+        experts.user_set.add(u10)
+
+        reritja = User.objects.get(pk=25)
+        superexperts.user_set.add(reritja)
+
     def create_team(self):
 
         europe_group = Group.objects.create(name='eu_group_europe')
@@ -370,6 +405,38 @@ class NewReportAssignment(TestCase):
         self.create_report_pool()
         for r in Report.objects.all():
             self.assertIsNotNone( r.country, "Report {0} has no assigned country".format( r.version_UUID ) )
+
+    def test_last_assignment(self):
+        self.create_regular_team()
+        self.create_report_pool()
+        # they are all regular users but ...
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+        for r in Report.objects.all():
+            annos = ExpertReportAnnotation.objects.filter(report=r)
+            if annos.count() == 3:
+                long_report_count = annos.filter(simplified_annotation=False).count()
+                short_report_count = annos.filter(simplified_annotation=True).count()
+                long_annotation_id = annos.filter(simplified_annotation=False).first().id
+                short_annotation_ids = [ a.id for a in annos.filter(simplified_annotation=True) ]
+                self.assertTrue( long_report_count == 1, "Report {0} has {0} LONG assignations, should be 1".format( r.version_UUID, str(long_report_count) )  )
+                self.assertTrue(short_report_count == 2, "Report {0} has {0} SHORT assignations, should be 2".format(r.version_UUID, str(short_report_count)))
+                # since long annotation is last to be assigned, id should be the highest
+                ids = []
+                for i in short_annotation_ids:
+                    ids.append(i)
+                ids.append(long_annotation_id)
+                latest_id = max(ids)
+                self.assertTrue(latest_id == long_annotation_id, "For report {0} long annotation id is not the highest (highest is {1}, actual id is {2}".format(r.version_UUID, str(latest_id), str(long_annotation_id)))
 
     def test_assign_reports(self):
         self.create_team()
