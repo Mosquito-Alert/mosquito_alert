@@ -62,8 +62,8 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
     #url_en = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
     #url = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
     #url_en = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
-    url = 'https://mosquitoalert.limesurvey.net/{0}/newtest/Y?lang={1}&G02Q33={2}'.format(survey_code, user_language, this_uuid)
-    url_en = 'https://mosquitoalert.limesurvey.net/{0}/newtest/Y?lang={1}&G02Q33={2}'.format(survey_code, 'en', this_uuid)
+    url = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&G02Q33={2}'.format(survey_code, user_language, this_uuid)
+    url_en = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&G02Q33={2}'.format(survey_code, 'en', this_uuid)
 
 
     context = {
