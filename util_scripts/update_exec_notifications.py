@@ -19,6 +19,7 @@ from django.template.loader import render_to_string
 from tigacrafting.views import get_sigte_report_link, get_sigte_map_info
 import django
 
+
 def get_report_annotation_from_report(report_uuid):
     for n in Notification.objects.filter(report=report_uuid):
         if n.expert.id == 25:
@@ -33,7 +34,7 @@ def get_report_annotation_from_report(report_uuid):
 
 def get_notification_content_from_report(report_uuid):
     for n in Notification.objects.filter(report=report_uuid):
-        if n.expert.id == 25:
+        if n.expert.id == 25 and "Your picture has been validated by an expert!" in n.notification_content.title_en:
             return n.notification_content
     return None
 
@@ -102,8 +103,13 @@ def update_report(report_uuid):
 
 def main():
     #update_report('9db5c877-c838-4f15-a188-8a33f0d4e3f6')
-    update_report('48b38189-7a60-4b3c-90ba-d1c52526b18a')
-
+    #update_report('48b38189-7a60-4b3c-90ba-d1c52526b18a')
+    count = ExpertReportAnnotation.objects.filter(validation_complete_executive=True).filter(user_id=94).count()
+    i = 1
+    for r in ExpertReportAnnotation.objects.filter(validation_complete_executive=True).filter(user_id=94).values('report_id'):
+        update_report( r['report_id'] )
+        print("Done {0} of {1}, uuid {2}".format( str(i), str(count), r['report_id']))
+        i = i + 1
 
 
 if __name__ == '__main__':
