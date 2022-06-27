@@ -1108,14 +1108,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     for f in formset:
                         one_form = f.save(commit=False)
                         auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
-                        if one_form.validation_complete_executive:
-                            executive_auto_validate(one_form, request)
                         if auto_flag:
                             one_form.status = 0
-                        if(this_user_is_reritja and one_form.validation_complete == True):
-                            issue_notification(one_form,current_domain)
                         one_form.save()
                         f.save_m2m()
+                        if one_form.validation_complete_executive:
+                            executive_auto_validate(one_form, request)
+                        if(this_user_is_reritja and one_form.validation_complete == True):
+                            issue_notification(one_form,current_domain)
                         if auto_flag:
                             autoflag_others(one_form.id)
                 else:
