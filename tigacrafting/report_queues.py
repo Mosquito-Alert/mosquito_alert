@@ -308,6 +308,17 @@ def assign_crisis_report(this_user, country):
                 user_stats.save()
     return summary
 
+
+def this_report_can_be_simplified(report):
+    who_has_count = report.get_who_has_count()
+    there_is_full_report = ExpertReportAnnotation.objects.filter(report=report).filter(simplified_annotation=False).exists()
+    if there_is_full_report:
+        return True
+    if who_has_count == 0 or who_has_count == 1:
+        return True
+    return False
+
+
 def assign_reports_to_regular_user(this_user):
     logger_report_assignment.debug('User {0} is regular user, assigning reports'.format(this_user, ))
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
@@ -333,13 +344,33 @@ def assign_reports_to_regular_user(this_user):
         else: #Spain
             reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.filter( Q(country__gid=17) | Q(country__gid__isnull=True) )
         #exclude reports assigned to ANY supervisor but not yet validated
+        ### !!!! ###
         reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of__in=country_with_supervisor).filter(report__type='adult').filter(validation_complete=False)
         for country in supervised_countries:
+            country_supervisor = User.objects.get( userstat__national_supervisor_of=country )
             reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=country.national_supervisor_report_expires_in)) )
+            # this weird second filter is to ensure that reports assigned to a national supervisor but not from their own country are blocked
+            # if this wasn't here, a French report assigned to the NS of Austria could be considered blocked
+            reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.filter( Q(user=country_supervisor) & Q(report__country=country) )
         reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
         blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
         reports_unfiltered_excluding_reserved_ns = reports_unfiltered_excluding_reserved_ns.exclude(version_UUID__in=blocked_by_experts)
-        if reports_unfiltered_excluding_reserved_ns:
+        reports_validated_by_ns_non_exec = []
+
+        this_user_country = this_user.userstat.native_of
+        this_user_ns = None
+        try:
+            if this_user_country is not None:
+                this_user_ns_userstat = UserStat.objects.get(national_supervisor_of=this_user_country)
+                this_user_ns = this_user_ns_userstat.user
+        except UserStat.DoesNotExist:
+            pass
+
+        if this_user_ns is not None:
+            annotation_non_exec_validated_ns = ExpertReportAnnotation.objects.filter(user=this_user_ns).filter(Q(validation_complete=True) & Q(validation_complete_executive=False)).values('report').distinct()
+            reports_validated_by_ns_non_exec = Report.objects.exclude(country__in=bounding_boxes).filter(version_UUID__in=annotation_non_exec_validated_ns).exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
+
+        if reports_unfiltered_excluding_reserved_ns or reports_validated_by_ns_non_exec:
             new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
             if not this_user.groups.filter(name='eu_group_europe').exists(): #Spain
                 reports_to_take = new_reports[0:n_to_get]
@@ -356,7 +387,6 @@ def assign_reports_to_regular_user(this_user):
                     who_has_count = this_report.get_who_has_count()
                     exists_long = this_report.get_expert_has_been_assigned_long_validation()
                     if exists_long or who_has_count == 0 or who_has_count == 1:
-                        # No one has the report, is simplified
                         new_annotation.simplified_annotation = True
                     try:
                         new_annotation.save()
@@ -380,8 +410,11 @@ def assign_reports_to_regular_user(this_user):
                 if user_stats:
                     grabbed_reports = user_stats.grabbed_reports
 
-                for this_report in new_reports_own_country:
+                for this_report in reports_validated_by_ns_non_exec:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                    if this_report_can_be_simplified(this_report):
+                        # No one has the report, is simplified
+                        new_annotation.simplified_annotation = True
                     try:
                         new_annotation.save()
                         grabbed_reports += 1
@@ -389,7 +422,23 @@ def assign_reports_to_regular_user(this_user):
                         if currently_taken >= MAX_N_OF_PENDING_REPORTS:
                             break
                     except IntegrityError as e:
-                        logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
+                        logger_duplicate_assignation.debug(
+                            'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
+
+                if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    for this_report in new_reports_own_country:
+                        new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+                        if this_report_can_be_simplified(this_report):
+                            # No one has the report, is simplified
+                            new_annotation.simplified_annotation = True
+                        try:
+                            new_annotation.save()
+                            grabbed_reports += 1
+                            currently_taken += 1
+                            if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                                break
+                        except IntegrityError as e:
+                            logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
 
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
                     for this_report in new_reports_other_countries:

@@ -42,20 +42,42 @@ def user_summary(user):
     print("")
 
 
-def filter_false_validated(reports, sort=True):
-    if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports), key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
-    return reports_filtered
+def create_report(version_number, version_uuid, user, country):
+    non_naive_time = timezone.now()
+    point_on_surface = country.geom.point_on_surface
+    r = Report(
+        version_UUID=version_uuid,
+        version_number=version_number,
+        user=user,
+        phone_upload_time=non_naive_time,
+        server_upload_time=non_naive_time,
+        creation_time=non_naive_time,
+        version_time=non_naive_time,
+        location_choice="current",
+        current_location_lon=point_on_surface.x,
+        current_location_lat=point_on_surface.y,
+        type='adult',
+    )
+    r.save()
+    p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+    p.save()
+    return r
 
 
-def filter_reports(reports, sort=True):
-    if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-    return reports_filtered
+# def filter_false_validated(reports, sort=True):
+#     if sort:
+#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports), key=attrgetter('n_annotations'), reverse=True)
+#     else:
+#         reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
+#     return reports_filtered
+
+
+# def filter_reports(reports, sort=True):
+#     if sort:
+#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),key=attrgetter('n_annotations'), reverse=True)
+#     else:
+#         reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
+#     return reports_filtered
 
 ###                END HELPER STUFF                #####################################################################
 
@@ -94,6 +116,87 @@ class NewReportAssignment(TestCase):
         experts.user_set.add(u2)
         experts.user_set.add(u9)
         experts.user_set.add(u10)
+
+        reritja = User.objects.get(pk=25)
+        superexperts.user_set.add(reritja)
+
+    def create_austria_team(self):
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+        superexperts = Group.objects.create(name='superexpert')
+        superexperts.save()
+
+        # National supervisor
+        u1 = User.objects.create(pk=3)
+        u1.username = 'expert_3_eu'
+        c = EuropeCountry.objects.get(pk=34)  # Austria NS
+        u1.userstat.national_supervisor_of = c
+        u1.save()
+
+        # Regular eu user 1
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_eu'
+        u2.userstat.native_of = EuropeCountry.objects.get(pk=34)  # Austria regular user 1
+        u2.save()
+
+        # Regular eu user 2
+        u3 = User.objects.create(pk=5)
+        u3.username = 'expert_5_eu'
+        u3.userstat.native_of = EuropeCountry.objects.get(pk=34)  # Austria regular user 2
+        u3.save()
+
+        europe_group.user_set.add(u1)
+        europe_group.user_set.add(u2)
+        europe_group.user_set.add(u3)
+
+        experts.user_set.add(u1)
+        experts.user_set.add(u2)
+        experts.user_set.add(u3)
+
+        reritja = User.objects.get(pk=25)
+        superexperts.user_set.add(reritja)
+
+    def create_micro_team(self):
+
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+        superexperts = Group.objects.create(name='superexpert')
+        superexperts.save()
+
+        # National supervisor
+        u1 = User.objects.create(pk=3)
+        u1.username = 'expert_3_eu'
+        c = EuropeCountry.objects.get(pk=45)  # Isle of man
+        u1.userstat.national_supervisor_of = c
+        u1.save()
+
+        # Regular eu user 1
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_eu'
+        u2.userstat.native_of = EuropeCountry.objects.get(pk=8)  # Norway
+        u2.save()
+
+        # Regular eu user 2
+        u3 = User.objects.create(pk=5)
+        u3.username = 'expert_5_eu'
+        u3.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u3.save()
+
+        europe_group.user_set.add(u1)
+        europe_group.user_set.add(u2)
+        europe_group.user_set.add(u3)
+
+        experts.user_set.add(u1)
+        experts.user_set.add(u2)
+        experts.user_set.add(u3)
 
         reritja = User.objects.get(pk=25)
         superexperts.user_set.add(reritja)
@@ -535,6 +638,86 @@ class NewReportAssignment(TestCase):
                 if assigned_report.report.country == supervised_country:
                     self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.report ))
 
+
+    def test_simplified_assignation_two_experts_and_ns_report_from_not_supervised_country(self):
+        self.create_micro_team()
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        c = EuropeCountry.objects.get(pk=23) #France
+        report = create_report(0, "1", t, c)
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+        # There should be three assignations
+        n = ExpertReportAnnotation.objects.all().count()
+        self.assertTrue( n == 3, "There should be {0} annotations, {1} found".format( 3, n ) )
+        # Two first assignations should be short, third full
+        annos = ExpertReportAnnotation.objects.all().order_by('id')
+        anno_1 = annos[0]
+        anno_2 = annos[1]
+        anno_3 = annos[2]
+        self.assertTrue( anno_1.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_1.id ) )
+        self.assertTrue( anno_2.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_2.id ) )
+        self.assertFalse( anno_3.simplified_annotation, "Annotation with id {0} should NOT be simplified, it is".format( anno_3.id ) )
+
+    def test_simplified_assignation_two_experts_and_ns_report_from_supervised_country(self):
+        #self.create_micro_team()
+        # team exclusively composed by austrian experts (2 regular, 1 ns)
+        self.create_austria_team()
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        c = EuropeCountry.objects.get(pk=34)  # Austria
+        # we create an austrian report, with current time. That means it's locked by ns
+        report = create_report(0, "1", t, c)
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+        # There should be ONE assignation
+        n = ExpertReportAnnotation.objects.all().count()
+        self.assertTrue(n == 1, "There should be {0} annotations, {1} found".format(1, n))
+        # NS Validates
+        ns_validation = ExpertReportAnnotation.objects.get(user_id=3)
+        ns_validation.validation_complete = True
+        ns_validation.save()
+        # Now report it's validated AND NO LONGER LOCKED, reassign
+        for this_user in User.objects.exclude(id=24):
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+        n = ExpertReportAnnotation.objects.all().count()
+        # it should now be assigned to 3 experts (ns, and two regulars)
+        self.assertTrue(n == 3, "There should be {0} annotations, {1} found".format(1, n))
+        annos = ExpertReportAnnotation.objects.all().order_by('id')
+        anno_1 = annos[0]
+        anno_2 = annos[1]
+        anno_3 = annos[2]
+        # First assignation is to NS, should be complete
+        self.assertFalse(anno_1.simplified_annotation,"Annotation with id {0} (NS) should NOT be simplified, it is".format(anno_1.id))
+        self.assertTrue(anno_2.simplified_annotation,"Annotation with id {0} should be simplified, it is NOT".format(anno_2.id))
+        self.assertTrue(anno_3.simplified_annotation,"Annotation with id {0} should be simplified, it is NOT".format(anno_3.id))
 
 
     # tests that reports that should go to national supervisor don't because of expired precedence period
