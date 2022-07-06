@@ -1027,20 +1027,25 @@ def expert_geo_report_assign(request):
 
 @login_required
 def report_expiration(request):
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
-    superexperts = User.objects.filter(groups__name='superexpert')
-    annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
-    data = { }
-    for anno in annos:
-        elapsed = (datetime.now(timezone.utc) - anno.created).days
-        if elapsed > lock_period:
-            try:
-                data[anno.user.username]
-            except KeyError:
-                data[anno.user.username] = []
-            data[anno.user.username].append({'annotation': anno, 'days': elapsed})
+    this_user = request.user
+    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    if this_user_is_superexpert:
+        lock_period = settings.ENTOLAB_LOCK_PERIOD
+        superexperts = User.objects.filter(groups__name='superexpert')
+        annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
+        data = { }
+        for anno in annos:
+            elapsed = (datetime.now(timezone.utc) - anno.created).days
+            if elapsed > lock_period:
+                try:
+                    data[anno.user.username]
+                except KeyError:
+                    data[anno.user.username] = []
+                data[anno.user.username].append({'annotation': anno, 'days': elapsed})
 
-    return render(request, 'tigacrafting/report_expiration.html', { 'data':data, 'lock_period': lock_period })
+        return render(request, 'tigacrafting/report_expiration.html', { 'data':data, 'lock_period': lock_period })
+    else:
+        return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
 
 def executive_auto_validate(annotation, request):
