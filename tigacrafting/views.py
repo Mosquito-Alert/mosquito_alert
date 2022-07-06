@@ -1018,11 +1018,29 @@ def pending_reports_by_country():
 @login_required
 def expert_geo_report_assign(request):
     this_user = request.user
-    #if this_user.userstat.crisis_mode:
-    count_data = pending_reports_by_country()
-    return render(request, 'tigacrafting/geo_report_assign.html', { 'count_data': json.dumps(count_data) })
-    #else:
-        #return HttpResponse("You don't have emergency mode permissions, so you can't see this page. Please contact your administrator.")
+    if this_user.userstat.crisis_mode:
+        count_data = pending_reports_by_country()
+        return render(request, 'tigacrafting/geo_report_assign.html', { 'count_data': json.dumps(count_data) })
+    else:
+        return HttpResponse("You don't have emergency mode permissions, so you can't see this page. Please contact your administrator.")
+
+
+@login_required
+def report_expiration(request):
+    lock_period = settings.ENTOLAB_LOCK_PERIOD
+    superexperts = User.objects.filter(groups__name='superexpert')
+    annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
+    data = { }
+    for anno in annos:
+        elapsed = (datetime.now(timezone.utc) - anno.created).days
+        if elapsed > lock_period:
+            try:
+                data[anno.user.username]
+            except KeyError:
+                data[anno.user.username] = []
+            data[anno.user.username].append({'annotation': anno, 'days': elapsed})
+
+    return render(request, 'tigacrafting/report_expiration.html', { 'data':data, 'lock_period': lock_period })
 
 
 def executive_auto_validate(annotation, request):

@@ -305,6 +305,10 @@ SHOW_USER_AGREEMENT_ENTOLAB = False
 HOST_NAME = 'webserver.mosquitoalert.com'
 
 SITE_ID = 1
+
+# number of days after a report is considered blocked
+ENTOLAB_LOCK_PERIOD = 14
+
 from tigaserver_project.settings_local import *
 
 # Disable notifications for messaging system. It falls back to email if pinax not present
