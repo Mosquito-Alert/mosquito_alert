@@ -1,7 +1,16 @@
+var showprogressanimation = function() {
+    $("#loading-div-background").show();
+}
+
+var hideprogressanimation = function() {
+    $("#loading-div-background").hide();
+}
+
 $(document).ready(function() {
 
     var clear_all = function(){
         var url = '/api/clear_blocked_all/';
+        showprogressanimation();
         $.ajax({
             url: url,
             type: "DELETE",
@@ -10,6 +19,7 @@ $(document).ready(function() {
                 location.reload();
             },
             error: function(jqXHR, textStatus, errorThrown){
+                hideprogressanimation();
                 toastr.error('Delete failed');
             }
         });
@@ -18,6 +28,7 @@ $(document).ready(function() {
     var clear_user = function(user){
         var url = '/api/clear_blocked/';
         url = url + user + '/';
+        showprogressanimation();
         $.ajax({
             url: url,
             type: "DELETE",
@@ -26,6 +37,7 @@ $(document).ready(function() {
                 location.reload();
             },
             error: function(jqXHR, textStatus, errorThrown){
+                hideprogressanimation();
                 toastr.error('Delete failed');
             }
         });
@@ -35,6 +47,7 @@ $(document).ready(function() {
         var url = '/api/clear_blocked_r/';
         url = url + user + '/';
         url = url + user_report + '/';
+        showprogressanimation();
         $.ajax({
             url: url,
             type: "DELETE",
@@ -43,6 +56,7 @@ $(document).ready(function() {
                 location.reload();
             },
             error: function(jqXHR, textStatus, errorThrown){
+                hideprogressanimation();
                 toastr.error('Delete failed');
             }
         });
@@ -71,4 +85,6 @@ $(document).ready(function() {
             clear_all();
         }
     });
+
+    $("#loading-div-background").css({ opacity: 0.8 });
 });
