@@ -86,27 +86,33 @@
             <div class="row">
                 <div class="col-md-3">
                     <div id="{{ d.ns_country_code }}_unassigned" style="height: 200px; margin: 0 auto"></div>
+                    {% if user.is_superexpert %}
                     <div style="padding-top: 15px;">
                         <p style="text-align: center;">
                             <a id="{{ d.ns_country_code }}_unassigned_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='unassigned' %}"><i class="fas fa-list"></i>&nbsp; Unassigned report list</a>
                         </p>
                     </div>
+                    {% endif %}
                 </div>
                 <div class="col-md-3">
                     <div id="{{ d.ns_country_code }}_progress" style="height: 200px; margin: 0 auto"></div>
+                    {% if user.is_superexpert %}
                     <div style="padding-top: 15px;">
                         <p style="text-align: center;">
                             <a id="{{ d.ns_country_code }}_progress_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='progress' %}"><i class="fas fa-list"></i>&nbsp; Reports in progress list</a>
                         </p>
                     </div>
+                    {% endif %}
                 </div>
                 <div class="col-md-3">
                     <div id="{{ d.ns_country_code }}_pending" style="height: 200px; margin: 0 auto"></div>
+                    {% if user.is_superexpert %}
                     <div style="padding-top: 15px;">
                         <p style="text-align: center;">
                             <a id="{{ d.ns_country_code }}_pending_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='pending' %}" target="_blank"><i class="fas fa-list"></i>&nbsp; Pending reports list</a>
                         </p>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
