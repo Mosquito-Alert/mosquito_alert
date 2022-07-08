@@ -72,6 +72,9 @@
       <div class="row">
           <div class="col-md-12">
             <h3>Reports caught in expert report queue for more than {{ lock_period }} days</h3>
+              {% if country %}
+              <h2>Country: {{ country.name_engl }}</h2>
+              {% endif %}
           </div>
       </div>
       <hr>
@@ -81,15 +84,15 @@
       <div class="row">
           {% for key in data %}
             <div class="col-md-6">
-                <div id="{{ key }}" class="panel panel-primary">
+                <div id="{{ key.0 }}" class="panel panel-primary">
                     <div class="panel-heading">
-                        <div class="panel-title"><button type="button" title="Unblock all reports for this user" data-user="{{ key }}" class="btn btn-warning delete-user"><span class="glyphicon glyphicon-remove"></span></button> <b>{{ key }}</b></div>
+                        <div class="panel-title"><button type="button" title="Unblock all reports for this user" data-user="{{ key.0 }}" class="btn btn-warning delete-user"><span class="glyphicon glyphicon-remove"></span></button> <b>{{ key.0 }}</b></div>
                     </div>
                     <div class="panel-body">
                         <ul class="list-group">
-                        {% for annotation in data|get_value:key %}
+                        {% for annotation in key.1 %}
                             <li class="list-group-item">
-                                <button class="btn btn-info delete-report" title="Unblock this single report" data-report-id="{{ annotation.annotation.report.version_UUID }}" data-user="{{ key }}" type="button"><span class="glyphicon glyphicon-remove"></span></button> <b>Report</b> <a target="_blank" href="/experts/status/reports/?version_uuid={{ annotation.annotation.report.version_UUID }}"><span class="label label-default">{{ annotation.annotation.report.version_UUID }}</span></a> <b>Days</b> <span class="label label-default">{{ annotation.days }}</span>
+                                <button class="btn btn-info delete-report" title="Unblock this single report" data-report-id="{{ annotation.annotation.report.version_UUID }}" data-user="{{ key.0 }}" type="button"><span class="glyphicon glyphicon-remove"></span></button> <b>Report</b> <a target="_blank" href="/experts/status/reports/?version_uuid={{ annotation.annotation.report.version_UUID }}"><span class="label label-default">{{ annotation.annotation.report.version_UUID }}</span></a> <b>Days</b> <span class="label label-default">{{ annotation.days }}</span>
                             </li>
                         {% endfor %}
                         </ul>

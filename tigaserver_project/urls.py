@@ -194,6 +194,7 @@ urlpatterns += i18n_patterns(
     path('experts/', expert_report_annotation, name='expert_report_annotation'),
     path('experts/geo_report_assign/', expert_geo_report_assign, name='expert_geo_report_assign'),
     path('experts/report_expiration/', report_expiration, name='report_expiration'),
+    path('experts/report_expiration/<int:country_id>/', report_expiration, name='report_expiration'),
     path('experts/predefined_messages/', predefined_messages, name='predefined_messages'),
     path('entolab_license_agreement/', entolab_license_agreement, name='entolab_license_agreement'),
     path('experts/status/reports/', expert_report_status, name='expert_report_status'),

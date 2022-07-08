@@ -1025,15 +1025,50 @@ def expert_geo_report_assign(request):
         return HttpResponse("You don't have emergency mode permissions, so you can't see this page. Please contact your administrator.")
 
 
+def get_blocked_reports_by_country(country_id):
+    lock_period = settings.ENTOLAB_LOCK_PERIOD
+    superexperts = User.objects.filter(groups__name='superexpert')
+    if country_id == 17: #Spain
+        country_experts = User.objects.filter(id__in=settings.USERS_IN_STATS)
+    else:
+        country_experts = User.objects.filter(userstat__native_of=country_id)
+    annos = ExpertReportAnnotation.objects.filter(validation_complete=False).filter(user__in=country_experts).exclude(user__in=superexperts).order_by('user__username', 'report')
+    data = {}
+    for anno in annos:
+        elapsed = (datetime.now(timezone.utc) - anno.created).days
+        if elapsed > lock_period:
+            try:
+                data[anno.user.username]
+            except KeyError:
+                data[anno.user.username] = []
+            data[anno.user.username].append({'annotation': anno, 'days': elapsed})
+    return data
+
+
+def sort_by_days(elem):
+    return elem[1][0]['days']
+
+
 @login_required
-def report_expiration(request):
+def report_expiration(request, country_id=None):
     this_user = request.user
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    country = None
+    if country_id is not None:
+        country = EuropeCountry.objects.get(pk=country_id)
     if this_user_is_superexpert:
         lock_period = settings.ENTOLAB_LOCK_PERIOD
         superexperts = User.objects.filter(groups__name='superexpert')
-        annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
+        if country_id is not None:
+            if country_id == 17:  # Spain
+                country_experts = User.objects.filter(id__in=settings.USERS_IN_STATS)
+            else:
+                country_experts = User.objects.filter(userstat__native_of=country_id)
+            annos = ExpertReportAnnotation.objects.filter(validation_complete=False).filter(user__in=country_experts).exclude(user__in=superexperts).order_by('user__username', 'report')
+        else:
+            annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
         data = { }
+        sorted_data = []
         for anno in annos:
             elapsed = (datetime.now(timezone.utc) - anno.created).days
             if elapsed > lock_period:
@@ -1042,8 +1077,9 @@ def report_expiration(request):
                 except KeyError:
                     data[anno.user.username] = []
                 data[anno.user.username].append({'annotation': anno, 'days': elapsed})
+        sorted_data = sorted( data.items(), key=sort_by_days, reverse=True )
 
-        return render(request, 'tigacrafting/report_expiration.html', { 'data':data, 'lock_period': lock_period })
+        return render(request, 'tigacrafting/report_expiration.html', { 'data':sorted_data, 'lock_period': lock_period , 'country': country})
     else:
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
