@@ -39,6 +39,9 @@ from django.db import connection
 from django.core.paginator import Paginator, EmptyPage
 from django.db import transaction
 from django.db.utils import IntegrityError
+from django.utils import timezone
+from django.core.mail import EmailMessage
+from django.template.loader import get_template
 import time
 
 from celery.task.schedules import crontab
@@ -1949,6 +1952,75 @@ def profile_new(request):
             profile.save()
             serializer = TigaProfileSerializer(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+def send_unblock_email(name, email):
+    lock_period = settings.ENTOLAB_LOCK_PERIOD
+    send_to = copy.copy(settings.ADDITIONAL_EMAIL_RECIPIENTS)
+    send_to.append(email)
+    subject = 'MOSQUITO ALERT - blocked report release warning'
+    plaintext = get_template('report_release/report_release_template.txt')
+    context = {
+        'name': name,
+        'n_days': lock_period
+    }
+    text_content = plaintext.render(context)
+    email = EmailMessage(subject, text_content, to=send_to)
+    email.send(fail_silently=True)
+
+
+@api_view(['DELETE'])
+def clear_blocked_all(request):
+    if request.method == 'DELETE':
+        superexperts = User.objects.filter(groups__name='superexpert')
+        annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
+        to_delete = []
+        recipients = []
+        for anno in annos:
+            elapsed = (datetime.now(timezone.utc) - anno.created).days
+            if elapsed > 14:
+                to_delete.append(anno.id)
+                if anno.user.email is not None and anno.user.email != '':
+                    if anno.user not in recipients:
+                        recipients.append(anno.user)
+        ExpertReportAnnotation.objects.filter(id__in=to_delete).delete()
+        for r in recipients:
+            name = r.first_name if r.first_name != '' else r.username
+            email = r.email
+            send_unblock_email( name, email )
+        return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+def clear_blocked(request, username, report=None):
+    lock_period = settings.ENTOLAB_LOCK_PERIOD
+    if request.method == 'DELETE':
+        if username is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        user = get_object_or_404(User.objects.all(), username=username)
+        actual_report = None
+        if report is not None:
+            actual_report = get_object_or_404(Report.objects.all(), pk=report)
+        if report is not None:
+            annotations_for_user = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report=actual_report)
+        else:
+            annotations_for_user = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False)
+        to_delete = []
+        recipients = []
+        for anno in annotations_for_user:
+            elapsed = (datetime.now(timezone.utc) - anno.created).days
+            if elapsed > lock_period:
+                to_delete.append(anno.id)
+                if anno.user.email is not None and anno.user.email != '':
+                    if anno.user not in recipients:
+                        recipients.append(anno.user)
+        ExpertReportAnnotation.objects.filter(id__in=to_delete).delete()
+        for r in recipients:
+            name = r.first_name if r.first_name != '' else r.username
+            email = r.email
+            send_unblock_email( name, email )
+
+        return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

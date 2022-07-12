@@ -108,7 +108,6 @@
         <li>
             <a href="{% url 'workload_stats' %}">Workload Stats</a>
         </li>
-
         {% for t in country_name %}
             <li>
                 <a href="/stats/workload/{{ t.iso3_code }}/">Workload stats {{ t.name_engl }}</a>

@@ -34,6 +34,7 @@ import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from tigacrafting.report_queues import get_crisis_report_available_reports, get_unassigned_available_reports, get_progress_available_reports
+from tigacrafting.views import get_blocked_reports_by_country
 from tigacrafting.report_queues import filter_reports as queue_filter
 
 
@@ -774,16 +775,24 @@ def report_stats_ccaa(request):
     return render(request, 'stats/report_stats_ccaa.html', context)
 
 
+def get_blocked_count(data):
+    n = 0
+    for item in data.items():
+        n = n + len(item[1])
+    return n
+
 @login_required
 def global_assignments(request):
     this_user = request.user
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+    lock_period = settings.ENTOLAB_LOCK_PERIOD
     if this_user_is_superexpert:
         national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
         data = []
         total_unassigned = 0
         total_progress = 0
         total_pending = 0
+        total_blocked = 0
         # manually add spain
         current_country = 17
         country = EuropeCountry.objects.get(pk=current_country)
@@ -792,9 +801,11 @@ def global_assignments(request):
         user_id_filter = settings.USERS_IN_STATS
         pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(
             validation_complete=False).filter(report__type='adult').values('report')
+        blocked = get_blocked_reports_by_country(17)
         n_unassigned = unassigned_filtered.count()
         n_progress = progress_filtered.count()
         n_pending = pending.count()
+        n_blocked = get_blocked_count( blocked )
         data.append(
             {
                 "ns_id": 'N/A',
@@ -804,12 +815,14 @@ def global_assignments(request):
                 "ns_country_name": 'Spain',
                 "unassigned": n_unassigned,
                 "progress": n_progress,
-                "pending": n_pending
+                "pending": n_pending,
+                "blocked": n_blocked
             }
         )
         total_unassigned += n_unassigned
         total_progress += n_progress
         total_pending += n_pending
+        total_blocked += n_blocked
         for user in national_supervisors:
             current_country = user.userstat.national_supervisor_of.gid
             #unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
@@ -818,9 +831,11 @@ def global_assignments(request):
             progress_filtered = get_progress_available_reports(user.userstat.national_supervisor_of)
             user_id_filter = UserStat.objects.filter(native_of__gid=current_country).values('user__id')
             pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
+            blocked = get_blocked_reports_by_country(current_country)
             n_unassigned = unassigned_filtered.count()
             n_progress = progress_filtered.count()
             n_pending = pending.count()
+            n_blocked = get_blocked_count(blocked)
             data.append(
                 {
                     "ns_id":user.id,
@@ -830,14 +845,16 @@ def global_assignments(request):
                     "ns_country_name":user.userstat.national_supervisor_of.name_engl,
                     "unassigned": n_unassigned,
                     "progress": n_progress,
-                    "pending": n_pending
+                    "pending": n_pending,
+                    "blocked": n_blocked
                 }
             )
             total_unassigned += n_unassigned
             total_progress += n_progress
             total_pending += n_pending
-        summary = { 'total_unassigned':total_unassigned, 'total_progress':total_progress, 'total_pending':total_pending }
-        context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary}
+            total_blocked += n_blocked
+        summary = { 'total_unassigned':total_unassigned, 'total_progress':total_progress, 'total_pending':total_pending, 'total_blocked':total_blocked }
+        context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary, 'days': lock_period}
         return render(request, 'stats/global_assignments.html', context)
     else:
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")

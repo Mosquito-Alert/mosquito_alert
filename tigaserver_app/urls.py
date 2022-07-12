@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.conf.urls import url, include, re_path
 from rest_framework import routers
 from tigaserver_app import views
 from stats.views import workload_stats_per_user,workload_daily_report_input,workload_pending_per_user,workload_available_reports, speedmeter_api, get_hashtag_map_data, get_user_xp_data
@@ -66,6 +66,9 @@ urlpatterns = [
     url('cfa_reports/$', views.force_refresh_cfa_reports),
     url('profile/new/$', views.profile_new),
     url('profile/$', views.profile_detail),
+    url('clear_blocked/(?P<username>[\w.@+-]+)/$', views.clear_blocked),
+    url('clear_blocked_r/(?P<username>[\w.@+-]+)/(?P<report>[\w-]+)/$', views.clear_blocked),
+    url('clear_blocked_all/$', views.clear_blocked_all),
     url('session_update/(?P<pk>\d+)/$', views.SessionPartialUpdateView.as_view(), name="session_update"),
     url('stats/workload_data/user/$', workload_stats_per_user),
     url('stats/workload_data/report_input/$', workload_daily_report_input),
