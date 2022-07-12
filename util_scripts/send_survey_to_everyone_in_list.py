@@ -48,56 +48,56 @@ def read_file_to_lines(filename):
 def send_message_to_uuid(this_uuid, sender, survey_code):
 
     user_language = 'en'
+    try:
+        user = TigaUser.objects.get(pk=this_uuid)
+        if len( user.user_reports.all() ) > 0:
+            first_report = user.user_reports.all().order_by('-creation_time').first()
+            os_language =  first_report.app_language
+            if os_language in ['en','es','ca']:
+                user_language = os_language
 
-    user = TigaUser.objects.get(pk=this_uuid)
-    if len( user.user_reports.all() ) > 0:
-        first_report = user.user_reports.all().order_by('-creation_time').first()
-        os_language =  first_report.app_language
-        if os_language in ['en','es','ca']:
-            user_language = os_language
-
-    # 221221 - test
-    # 152148 - production
-    #url = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
-    #url_en = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
-    #url = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
-    #url_en = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
-    url = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&G02Q33={2}'.format(survey_code, user_language, this_uuid)
-    url_en = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&G02Q33={2}'.format(survey_code, 'en', this_uuid)
+        # 221221 - test
+        # 152148 - production
+        #url = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
+        #url_en = 'https://mosqal.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
+        #url = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, user_language, this_uuid)
+        #url_en = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&uuid={2}'.format(survey_code, 'en', this_uuid)
+        url = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&G02Q33={2}'.format(survey_code, user_language, this_uuid)
+        url_en = 'https://mosquitoalert.limesurvey.net/{0}?lang={1}&G02Q33={2}'.format(survey_code, 'en', this_uuid)
 
 
-    context = {
-        'survey_link' : url,
-    }
+        context = {
+            'survey_link' : url,
+        }
 
-    context_en = {
-        'survey_link': url_en,
-    }
+        context_en = {
+            'survey_link': url_en,
+        }
 
-    body_html_en = render_to_string("tigacrafting/survey/survey_en.html", context_en).replace('&amp;', '&')
-    body_html_native = render_to_string("tigacrafting/survey/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
-    title_native = SURVEY_TITLE[user_language]
-    title_en = SURVEY_TITLE['en']
+        body_html_en = render_to_string("tigacrafting/survey/survey_en.html", context_en).replace('&amp;', '&')
+        body_html_native = render_to_string("tigacrafting/survey/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
+        title_native = SURVEY_TITLE[user_language]
+        title_en = SURVEY_TITLE['en']
 
-    notification_label = 'survey_{0}_{1}'.format(survey_code, user_language)
+        notification_label = 'survey_{0}_{1}'.format(survey_code, user_language)
 
-    notification_content = NotificationContent(
-        body_html_en=body_html_en,
-        body_html_native=body_html_native,
-        title_en=title_en,
-        title_native=title_native,
-        native_locale=user_language,
-        notification_label=notification_label
-    )
-    notification_content.save()
+        notification_content = NotificationContent(
+            body_html_en=body_html_en,
+            body_html_native=body_html_native,
+            title_en=title_en,
+            title_native=title_native,
+            native_locale=user_language,
+            notification_label=notification_label
+        )
+        notification_content.save()
 
-    notification = Notification(expert=sender, notification_content=notification_content )
-    notification.save()
+        notification = Notification(expert=sender, notification_content=notification_content )
+        notification.save()
 
-    send_notification = SentNotification(sent_to_user=user, notification=notification)
-    send_notification.save()
-
-    #print(body_html_native)
+        send_notification = SentNotification(sent_to_user=user, notification=notification)
+        send_notification.save()
+    except TigaUser.DoesNotExist:
+        logging.error("User with uuid {0} does not exist, doing nothing!!".format(this_uuid))
 
 
 def send_message_to_list(list_file_args):
