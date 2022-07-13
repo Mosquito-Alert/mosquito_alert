@@ -1959,7 +1959,7 @@ def send_unblock_email(name, email):
     send_to = copy.copy(settings.ADDITIONAL_EMAIL_RECIPIENTS)
     send_to.append(email)
     subject = 'MOSQUITO ALERT - blocked report release warning'
-    plaintext = get_template('report_release/report_release_template.txt')
+    plaintext = get_template('tigaserver_app/report_release/report_release_template')
     context = {
         'name': name,
         'n_days': lock_period

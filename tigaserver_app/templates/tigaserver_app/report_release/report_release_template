@@ -1,0 +1,13 @@
+Dear {{ name }},
+
+You had several Mosquito Alert Entolab reports assigned, but they were not validated for more than {{ n_days }} days. Therefore,
+they have been automatically removed from your queue so that they can be assigned to other experts for validation.
+
+At any time, you can log in back to EntoLab and claim more reports to validate. However, please claim only the reports
+you are going to process immediately as otherwise there is a risk that they get indefinitely blocked by a given expert.
+If this happens the user will not get feedback for a long time, which is harmful for motivation.
+
+Thank you very much for your understanding. Your valued contribution to the system is always highly appreciated!
+
+The Mosquito Alert Team.
+
