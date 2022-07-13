@@ -42,7 +42,7 @@ $(function () {
                     y: 16
                 },
                 min: 0,
-                max: 50
+                max: 200
             },
             plotOptions: {
                 solidgauge: {
