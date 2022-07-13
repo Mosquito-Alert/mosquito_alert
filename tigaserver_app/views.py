@@ -1972,13 +1972,14 @@ def send_unblock_email(name, email):
 @api_view(['DELETE'])
 def clear_blocked_all(request):
     if request.method == 'DELETE':
+        lock_period = settings.ENTOLAB_LOCK_PERIOD
         superexperts = User.objects.filter(groups__name='superexpert')
         annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
         to_delete = []
         recipients = []
         for anno in annos:
             elapsed = (datetime.now(timezone.utc) - anno.created).days
-            if elapsed > 14:
+            if elapsed > lock_period:
                 to_delete.append(anno.id)
                 if anno.user.email is not None and anno.user.email != '':
                     if anno.user not in recipients:
