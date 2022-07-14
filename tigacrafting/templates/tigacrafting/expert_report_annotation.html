@@ -242,9 +242,9 @@
                                 <a href="{% url 'predefined_messages' %}" target="_blank">Predefined texts</a>
                             </li>
                             {% if user.userstat.is_national_supervisor %}
-                            <li>
+                            <!--<li>
                                 <a href="{% url 'global_assignments' %}">Report queue</a>
-                            </li>
+                            </li>-->
                             {% endif %}
                             {% if tasks_per_page_choices %}
                                 <li class="dropdown">

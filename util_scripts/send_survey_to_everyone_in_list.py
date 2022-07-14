@@ -16,9 +16,11 @@ application = get_wsgi_application()
 
 import logging
 import datetime
-from tigaserver_app.models import NotificationContent, Notification, TigaUser, SentNotification
+from tigaserver_app.models import NotificationContent, Notification, TigaUser, SentNotification, NotificationTopic
+from tigaserver_app.serializers import custom_render_notification
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
+from tigacrafting.messaging import generic_send_to_topic
 
 base_folder = proj_path + 'util_scripts/survey_files/'
 logs_folder = base_folder + 'logs/'
@@ -119,9 +121,27 @@ def send_message_to_list(list_file_args):
             i = i + 1
             logging.debug("Sending uuid {0} of {1}".format(str(i), str(n_uuids)))
             send_message_to_uuid(uuid, sender, survey_code)
-
+        # and finally, the reminder
+        send_global_notification_reminder()
     else:
         logging.debug("No uuids in file, doing nothing")
+
+
+def send_global_notification_reminder():
+
+    notification_content = NotificationContent.objects.get(pk=249173)
+    sender = User.objects.get(pk=38)  # mosquitoalert
+    topic = NotificationTopic.objects.get(pk=1)
+
+    notification = Notification(expert=sender, notification_content=notification_content)
+    notification.save()
+
+    send_notification = SentNotification(sent_to_topic=topic, notification=notification)
+    send_notification.save()
+
+    json_notif = custom_render_notification(sent_notification=send_notification, recipìent=None, locale='en')
+    push_result = generic_send_to_topic(topic_code=topic.topic_code, title=notification_content.title_en, message='', json_notif=json_notif)
+
 
 
 if __name__ == '__main__':

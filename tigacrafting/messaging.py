@@ -147,7 +147,7 @@ def generic_send_to_topic(topic_code, title, message, json_notif=None):
     }
     dry_run = getattr(settings_local, 'DRY_RUN_PUSH', True)
     try:
-        result = push_service.notify_topic_subscribers(topic_name=topic_code, message_body=message, message_title=title, data_message=data_message)
+        result = push_service.notify_topic_subscribers(topic_name=topic_code, message_body=message, message_title=title, data_message=data_message, dry_run=dry_run)
         return result
     except Exception as e:
         return {'exception': str(e) }
