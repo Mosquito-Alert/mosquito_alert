@@ -25,7 +25,6 @@ from tigacrafting.messaging import generic_send
 base_folder = proj_path + 'util_scripts/survey_files/'
 logs_folder = base_folder + 'logs/'
 
-list_files_root = '/home/webuser/dev/python/survey_list_generator/test_files/roll3/'
 message_content = 'tigacrafting/survey/dailies/'
 
 
