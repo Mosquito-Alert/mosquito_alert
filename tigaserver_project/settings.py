@@ -67,6 +67,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django_filters',
     'corsheaders',
+    'django_elasticsearch_dsl',
 )
 
 '''
@@ -227,6 +228,12 @@ LEAFLET_CONFIG = {
             'auto-include': True,
         }
     }
+}
+
+ELASTICSEARCH_DSL={
+    'default': {
+        'hosts': 'localhost:9200'
+    },
 }
 
 #TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
