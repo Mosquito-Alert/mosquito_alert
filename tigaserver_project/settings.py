@@ -140,6 +140,7 @@ LANGUAGES = (
     ('ca', _('Catalan')),
     ('en', _('English')),
     ('de', _('German')),
+    ('gl', _('Galician')),
     ('sq', _('Albanian')),
     ('el', _('Greek')),
     ('hu', _('Hungarian')),
