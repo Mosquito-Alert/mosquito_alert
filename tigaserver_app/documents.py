@@ -6,8 +6,8 @@ from tigaserver_app.models import Report
 @registry.register_document
 class ReportDocument(Document):
 
-    latest_version = fields.BooleanField(attr='latest_version')
-    movelab_annotation = fields.ObjectField(attr='get_movelab_annotation_euro')
+    #latest_version = fields.BooleanField(attr='latest_version')
+    #movelab_annotation = fields.ObjectField(attr='get_movelab_annotation_euro')
 
     class Index:
         name = 'reports'
@@ -19,5 +19,7 @@ class ReportDocument(Document):
 
         fields = [
             'creation_time',
-            'type'
+            'type',
+            'version_number',
+            'note'
         ]
