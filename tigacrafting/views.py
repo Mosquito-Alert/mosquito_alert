@@ -1788,6 +1788,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             type = request.POST.get('type', type)
             country = request.POST.get('country', country)
             aithr = request.POST.get('aithr', aithr)
+            if aithr == '':
+                aithr = '0.75'
 
             if not page:
                 page = request.GET.get('page',"1")
@@ -1799,6 +1801,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             visibility = request.GET.get('visibility', visibility)
             usr_note = request.GET.get('usr_note', usr_note)
             aithr = request.GET.get('aithr', aithr)
+            if aithr == '':
+                aithr = '0.75'
 
         #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
         new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
@@ -1808,7 +1812,8 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
         new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
 
-        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
+        #new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( Q(ia_filter_1__lte=float(aithr)) | Q(ia_filter_1__isnull=True) )
+        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( ia_filter_1__lte=float(aithr) )
 
         new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
 
