@@ -473,7 +473,7 @@
         {% endblock %}
 
         <div class="row">
-            <div class="col-md-4" id="{{ form.instance.report.version_UUID }}">
+            <div class="col-md-4" data-simplified="{{ form.instance.simplified_annotation }}" id="{{ form.instance.report.version_UUID }}">
                 <br>
 
                 {% block view_others_annotations %}
@@ -561,7 +561,7 @@
                             <button type="button" id="btn_conflict_{{ form.instance.id }}" class="btn btn-success btn-sm" title="Conflict"><span class="glyphicon glyphicon-resize-small"></span></button>
                         </div>
                         <div class="controls field-public_note" data-placement="top" title="" data-toggle="tooltip" data-original-title="Notes to display on public map">
-                            <textarea id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
+                            <textarea data-simplified="False" id="public_note_{{ form.instance.id }}" cols="40" rows="4"></textarea>
                         </div>
                     </div>
                     <div class="form-group" {% if request.user.userstat.is_expert %}style="display:none;"{% endif %}>
@@ -973,10 +973,11 @@
                     <p>
                         The following reports have been marked as validated, but either:</p>
                         <ul>
-                        <li>you haven't chosen any value from the 'Species certainty' dropbox.</li>
-                        <li>you have chosen 'Unclassified' from the 'Species certainty' dropbox and made the report status 'public'.</li>
-                        <li>you have flagged the report without internal comment (unexplained flag)</li>
-                        <li>you have hidden the report without internal comment (unexplained hidden)</li>
+                            <li> - you haven't chosen any value from the 'Species certainty' dropbox.</li>
+                            <li> - you have chosen 'Unclassified' from the 'Species certainty' dropbox and made the report status 'public'.</li>
+                            <li> - you have flagged the report without internal comment (unexplained flag)</li>
+                            <li> - you have hidden the report without internal comment (unexplained hidden)</li>
+                            <li> - it's a full report and you have not chosen a public note</li>
                         </ul>
 
                         <p>Please select a valid value in each of them and hit 'save' again.
@@ -1995,6 +1996,7 @@
                 var flag_title = $('button[data-id="id_form-' + id_string + '-status"]').attr('title');
                 //var flag_title = $('button[data-id="id_form-' + form_id + '-status"]').attr('title');
                 var report_id = $(this).parent().parent().parent().attr('id');
+                var simplified_report = $(this).parent().parent().parent().data('simplified');
                 if ( title == '--------------' ){
                     reports_list.append('<li>' + report_id + ' <span style="color:red">Validated without selecting species certainty</span></li>');
                 }else{
@@ -2008,6 +2010,11 @@
                         }
                     }
                 }
+                var public_note = $('#public_note_' + form_id).val();
+                if ( simplified_report == 'False' && public_note.trim() == ''){
+                    reports_list.append('<li>' + report_id + ' <span style="color:red">Non simplified report without public note</span></li>');
+                }
+
                 // This is here to avoid that the "flagged without..." validation message pops up when the SUPERexpert is
                 // revising an autoflagged conflicting report
                 {% if request.user.userstat.is_expert %}
@@ -2134,6 +2141,7 @@
                 var validated_without_aedes_input = false;
                 var complex_without_class = false;
                 var simple_without_value = false;
+                var full_report_without_note = false;
                 var unclassified = false;
                 var public_unclassified = false;
                 if ($("[id*='validation_complete']").is(":checked")) {
@@ -2143,6 +2151,10 @@
                         var button_title = buttons[index].attributes["title"].value;
                         var status = $('#id_form-' + index + '-status').val();
                         var checked = ($("[id=id_form-" + index + "-validation_complete]:checked").size() == 1);
+                        var public_note = $('#public_note_' + index_to_id[index] );
+                        if( public_note != null && public_note.data('simplified') == 'False' && public_note.val().trim() == '' && checked){
+                            full_report_without_note = true;
+                        }
                         if(button_title == '--------------' && checked){
                             var validated_without_aedes_input = true;
                         }else{
@@ -2178,7 +2190,7 @@
                         }
                     }
                     {% if request.user.userstat.is_expert %}
-                    if(validated_without_aedes_input || complex_without_class || simple_without_value || flagged_without_comment || hidden_without_comment || public_unclassified){
+                    if(validated_without_aedes_input || complex_without_class || simple_without_value || flagged_without_comment || hidden_without_comment || public_unclassified || full_report_without_note){
                         //launch ok dialog and not save
                         setup_and_launch_mustfix_dialog();
                     }else{
