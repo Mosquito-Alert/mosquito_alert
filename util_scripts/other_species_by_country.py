@@ -28,7 +28,7 @@ def main():
     #     else:
     #         buckets[str(c.name_engl)] = {}
 
-    headers = (['country', 'report_short_id','species'])
+    headers = (['country', 'report_short_id','report_long_id','species'])
 
     with open('/home/webuser/webapps/tigaserver/static/other_species_count.csv', mode='w') as validation_data:
         validation_writer = csv.writer(validation_data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -40,7 +40,7 @@ def main():
                 for ano in annots:
                     if ano.other_species is not None:
                         country_name = 'Spain/Other' if r.country is None or r.country.gid == 17 else r.country.name_engl
-                        validation_writer.writerow([country_name, r.report_id, str(ano.other_species)])
+                        validation_writer.writerow([country_name, r.report_id, r.version_UUID, str(ano.other_species)])
                         # if r.country is None or r.country.gid == 17:
                         #     try:
                         #         current_num = buckets['Spain/Other'][str(ano.other_species)]
