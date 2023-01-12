@@ -136,6 +136,7 @@ urlpatterns = [
     path('project_about/tr/', RedirectView.as_view(url='/tr/project_about/', permanent=False), name="project_about_tr"),
     path('tigapublic/', include('tigapublic.urls')),
     path('get_photo/<token>/<photo_uuid>/<size>', lookup_photo),
+    path('react_frontend/', include('rfrontend.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

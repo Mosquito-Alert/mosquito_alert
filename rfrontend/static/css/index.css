@@ -1,0 +1,7 @@
+[type='radio'] {
+    display: none; 
+}
+
+.nav-item button.btn {
+    margin: 5px;
+}
