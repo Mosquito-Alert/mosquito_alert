@@ -22,3 +22,5 @@ tigatrapp-server/media
 /media
 tigatrapp-server/media
 /media
+/rfrontend/node_modules
+/rfrontend/package-lock.json
