@@ -2,7 +2,28 @@ import React, { Component } from "react";
 
 export default class NavigationBar extends Component {
     constructor(props) {
-      super(props);
+      super(props);      
+      this.handleLogout = this.handleLogout.bind(this);
+    }
+
+    componentDidMount(){
+        fetch('http://127.0.0.1:8000/api_rfront/user_is_logged')
+        .then(results => {      
+            return results.json();
+        }).then(data => {      
+            this.setState({ logged: data.logged });      
+        });       
+    }
+
+    handleLogout() {
+        fetch('http://127.0.0.1:8000/api_rfront/ajax_logout',{
+            method: 'POST',
+            body: JSON.stringify({}),
+        }).then(results => {      
+            return results.json();
+        }).then(data => {      
+            window.location.reload(false);
+        });
     }
   
     render() {
@@ -13,24 +34,24 @@ export default class NavigationBar extends Component {
             <div className="collapse navbar-collapse" id="navbarSupportedContent">                
                 <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                     <li className="nav-item">
-                        <div className="btn-group" id="status_grp" data-toggle="buttons">
-                                <label className="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Pending" id="pending_btn">
-                                    <input type="radio" name="status"></input>
-                                    <i className="fa-solid fa-clock"></i>                                    
-                                    <span className="badge">{ this.props.n_pending }</span>                                        
-                                </label>
-                                <label className="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Complete" id="complete_btn">
-                                    <input type="radio" name="status"></input>
-                                    <i className="fa-solid fa-square-check"></i>                                    
-                                    <span className="badge">{ this.props.n_complete }</span>                                        
-                                </label>
+                        <div className="btn-group">
+                            <input type="radio" className="btn-check" name="status" id="option1"></input>                            
+                            <label className="btn btn-outline-primary"><i className="fa-solid fa-clock"></i> { this.props.n_pending }</label>
+                            <input type="radio" className="btn-check" name="status" id="option2"></input>                                                                
+                            <label className="btn btn-outline-primary"><i className="fa-solid fa-square-check"></i> { this.props.n_complete }</label>                            
                         </div>
                     </li>
                     <li className="nav-item">
                         <button className="btn btn-primary btn-success">Next page</button>
                         <button className="btn btn-primary btn-success">Previous page</button>
                     </li>
-                </ul>                
+                    
+                </ul>
+                <ul className="navbar-nav mr-5">
+                    <li className="nav-item">
+                        <button className="btn btn-primary btn-secondary" onClick={this.handleLogout}>Logout</button>
+                    </li>
+                </ul>
             </div>
             </div>
             </nav>

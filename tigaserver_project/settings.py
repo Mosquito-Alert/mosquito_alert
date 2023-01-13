@@ -68,6 +68,7 @@ INSTALLED_APPS = (
     'django_filters',
     'corsheaders',
     'rfrontend',
+    'rfrontend_api',
 )
 
 '''
