@@ -6,12 +6,7 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path + "util_scripts/")
 
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-
 from tigaserver_app.models import OrganizationPin, EuropeCountry
-from django.contrib.gis.geos import GEOSGeometry
 
 
 def run():

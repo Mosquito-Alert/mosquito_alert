@@ -6,10 +6,6 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path)
 
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-
 from tigaserver_app.models import Report
 from progress.bar import Bar
 

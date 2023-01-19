@@ -6,7 +6,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about, show_app_license
+from tigahelp.views import show_help, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about, show_app_license
 from tigamap.views import show_filterable_report_map, show_single_report_map, single_report_map_simplified
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
@@ -18,7 +18,6 @@ from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
 from django.contrib.auth import views as auth_views
-from rest_framework.schemas import get_schema_view
 from django.views.generic import TemplateView
 
 admin.autodiscover()
@@ -30,19 +29,11 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/', include('tigaserver_app.urls')),
     #This is used for dynamic schema generation
-    #path('openapi/',get_schema_view(title="Mosquito Alert API",description="Dynamic API schema generator"), name='openapi-schema'),
     path('api-docs/', TemplateView.as_view(template_name='swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
-    path('help/<platform>/<language>/', show_help),
-    path('about/<platform>/<language>/', show_about),
+    path('help/<language>/', show_help),
     path('credits/', show_credit_image, name='show_credit_image'),
-    path('license/<platform>/<language>/', show_license),
+    path('license/<language>/', show_license),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('webmap/embedded/ca/', RedirectView.as_view(url='/ca/webmap/embedded/', permanent=False)),
-    path('webmap/embedded/es/', RedirectView.as_view(url='/es/webmap/embedded/', permanent=False)),
-    path('webmap/embedded/en/', RedirectView.as_view(url='/en/webmap/embedded/', permanent=False)),
-    path('webmap/ca/', RedirectView.as_view(url='/ca/webmap/', permanent=False)),
-    path('webmap/es/', RedirectView.as_view(url='/es/webmap/', permanent=False)),
-    path('webmap/en/', RedirectView.as_view(url='/en/webmap/', permanent=False)),
     path('policies/es/', RedirectView.as_view(url='/es/policies/', permanent=False)),
     path('policies/ca/', RedirectView.as_view(url='/ca/policies/', permanent=False)),
     path('policies/en/', RedirectView.as_view(url='/en/policies/', permanent=False)),
@@ -149,15 +140,8 @@ urlpatterns += i18n_patterns(
     path('about_us/', show_about_us, name='help.show_about_us'),
     path('project_about/', show_project_about, name='help.show_project_about'),
     path('app_license/', show_app_license, name='help.show_app_license'),
-    path('webmap/embedded/', show_filterable_report_map, {'fullscreen': 'off', 'legend': 'on'}),
-    path('webmap/adults/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map'),
-    path('webmap/adults/<selected_validation>/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map_type'),
-    path('webmap/sites/', show_filterable_report_map, {'map_type': 'site'}, name='site_map'),
-    path('webmap/sites/<selected_validation>/', show_filterable_report_map, {'map_type': 'site'}, name='site_map_type'),
-    path('webmap/coverage/', show_filterable_report_map, {'map_type': 'coverage'}, name='coverage_map'),
     path('webmap/', show_filterable_report_map, name='webmap.show_map_defaults'),
-    path('', RedirectView.as_view(url='/static/tigapublic/spain.html#/es/', permanent=False)),
-    path('bcn/', show_filterable_report_map,{'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610, 'min_zoom': 12,'max_zoom': 18}),
+    path('', RedirectView.as_view(pattern_name='webmap.show_map_defaults', permanent=False)),
     path('single_report_map/<version_uuid>/', show_single_report_map, name='webmap.single_report'),
     path('single_simple/<version_uuid>/', single_report_map_simplified, name='single_report_map_simplified'),
     path('stats/', show_usage, name='show_usage'),
@@ -165,7 +149,6 @@ urlpatterns += i18n_patterns(
     path('stats/workload/<country_id>/', workload_stats, name='workload_stats'),
     path('stats/global_assignments/', global_assignments, name='global_assignments'),
     path('stats/global_assignments_list/<country_code>/<status>/', global_assignments_list, name='global_assignments_list'),
-
     path('stats/report_stats_ccaa/', report_stats_ccaa, name='report_stats_ccaa'),
     path('stats/report_stats_ccaa_pie/', report_stats_ccaa_pie, name='report_stats_ccaa_pie'),
     path('stats/report_stats_ccaa_pie_sites/', report_stats_ccaa_pie_sites, name='report_stats_ccaa_pie_sites'),
@@ -183,13 +166,6 @@ urlpatterns += i18n_patterns(
     path('stats/user_score/<user_uuid>', stats_user_score, name='stats_user_score'),
     path('stats/user_ranking/<page>', stats_user_ranking, name='stats_user_ranking'),
     path('stats/user_ranking/<page>/<user_uuid>', stats_user_ranking, name='stats_user_ranking'),
-    #url(r'^reportstats/$', show_report_users),
-    #url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
-    #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),
-    #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation, name='movelab_annotation_scroll_position'),
-    #url(r'^movelab_annotation_pending/$', movelab_annotation_pending, name='movelab_annotation_pending'),
-    #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation_pending,name='movelab_annotation_pending_tasks_per_page'),
-    #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
 
     path('experts/', expert_report_annotation, name='expert_report_annotation'),
     path('experts/geo_report_assign/', expert_geo_report_assign, name='expert_geo_report_assign'),
@@ -208,15 +184,9 @@ urlpatterns += i18n_patterns(
     path('notifications/apilist', user_notifications_datatable, name='user_notifications_datatable'),
     path('notifications/detail/<int:notification_id>', notification_detail, name='notification_detail'),
 
-    ## should stay out
-    #url(r'^coveragestats/$', show_fix_users),
-
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
-    #url(r'^processing/$', show_processing),
     path('logout/', auth_views.LogoutView.as_view(), {'next_page': '/experts/'}, name='auth_logout'),
     # We do not include the message urls because two of the views (compose_w_data and reply_w_data) are slightly customized
-    #url(r'^messages/', include('django_messages.urls')),
-    #url(r'^$', RedirectView.as_view(permanent=True, url='inbox/'), name='messages_redirect'),
     path('messages/inbox/', inbox, name='messages_inbox'),
     path('messages/outbox/', outbox, name='messages_outbox'),
     path('messages/compose/', compose, name='messages_compose'),
@@ -229,6 +199,4 @@ urlpatterns += i18n_patterns(
     path('messages/reply/<int:message_id>/', reply_w_data, name='messages_reply'),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     path('metadataPhotoInfo', metadataPhoto, name='metadataPhotoInfo'),
-
-
 )

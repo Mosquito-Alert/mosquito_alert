@@ -9,10 +9,6 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path + "util_scripts/")
 
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-
 from tigaserver_app.models import grant_first_of_day, grant_first_of_season, grant_three_consecutive_days_sending, \
     grant_two_consecutive_days_sending, Award, grant_10_reports_achievement, grant_20_reports_achievement, \
     grant_50_reports_achievement
@@ -189,6 +185,3 @@ def crunch():
 
 #test_awards_for_grandmaster()
 crunch()
-
-
-#{ '2004':{ '1':[], '2':[] }, '2005':{ '1': [], '2':[] } }

@@ -190,7 +190,6 @@ class ExpertReportAnnotation(models.Model):
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
     message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
     status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
-    #last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     last_modified = models.DateTimeField(default=datetime.now)
     validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
@@ -231,35 +230,20 @@ class ExpertReportAnnotation(models.Model):
         return False
 
     def get_photo_html_for_report_validation_wblood(self):
-        #these_photos = Photo.objects.filter(report=self.report).exclude(hide=True)
         these_photos = self.report.photos.all()
         result = ''
         for photo in these_photos:
-            male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
-            female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
-            fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-            #dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
-            fg_status = 'checked="checked"' if photo.blood_genre == 'fgravid' else ''
-            fgb_status = 'checked="checked"' if photo.blood_genre == 'fgblood' else ''
             result += '<div data-ano-id="' + str(self.id) + '" id="div_for_photo_to_display_report_' + str(self.report.version_UUID) + '">' \
                         '<input type="radio" name="photo_to_display_report_' + str(self.report.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
                     '</div>' \
                     '<br>' \
                     '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>' \
                     '<br>'
-                   # '<div id="blood_status_' + str(self.report.version_UUID) + '_' + str(photo.id) + '">' \
-                   # '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-                   # '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-                   # '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                   # '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="moon" aria-hidden="true"></i></label>' \
-                   # '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                   # '</div>' \
 
         return result
 
 
     def get_photo_html_for_report_validation(self):
-        #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         these_photos = self.report.photos.all()
         result = ''
         for photo in these_photos:
@@ -272,32 +256,17 @@ class ExpertReportAnnotation(models.Model):
         return result
 
     def get_photo_html_for_report_validation_superexpert(self):
-        #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
         these_photos = self.report.photos.all()
         result = ''
 
         for photo in these_photos:
             best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
             border_style = "3px solid green" if best_photo else "1px solid #333333"
-            male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
-            female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
-            fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-            #dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
-            fg_status = 'checked="checked"' if photo.blood_genre == 'fgravid' else ''
-            fgb_status = 'checked="checked"' if photo.blood_genre == 'fgblood' else ''
             result += '<div data-ano-id="' + str(self.id) + '" id="div_for_photo_to_display_report_' + str(self.report.version_UUID) + '">' \
                         '<input data-best="' + str(best_photo) + '" type="radio" name="photo_to_display_report_' + str(self.report.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:'\
                         '</div>' \
                         '<br>' \
                         '<div style="border:' + border_style + ';margin:1px;position: relative;">' + photo.medium_image_for_validation_() + '</div>'
-                        # '<div id="blood_status_' + str(self.report.version_UUID) + '_' + str(photo.id) + '">' \
-                        # '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-                        # '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-                        # '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                        # '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="moon" aria-hidden="true"></i></label>' \
-                        # '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                        # '</div>' \
-                        # '<br>'
         return result
 
     def get_others_annotation_html(self):
@@ -449,7 +418,6 @@ class UserStat(models.Model):
         this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
         this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
         this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
-        this_user_is_team_everywhere = self.is_team_everywhere()
         this_user_is_spain = not this_user_is_europe
         if this_user_is_spain:
             if this_user_is_team_bcn:
@@ -504,17 +472,3 @@ class OtherSpecies(models.Model):
 
     def __str__(self):
         return self.name
-
-# class Species(models.Model):
-#     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
-#     composite = models.BooleanField(default=False, help_text='Indicates if this row is a single species or a combination')
-
-
-# VALIDATION_CATEGORIES = ((2, 'Sure'), (1, 'Probably'), (0, 'None'))
-# class Validation(models.Model):
-#     report = models.ForeignKey('tigaserver_app.Report', related_name='report_speciesvalidations')
-#     user = models.ForeignKey(User, related_name="user_speciesvalidations")
-#     validation_time = models.DateTimeField(blank=True, null=True)
-#     species = models.ForeignKey(Species, related_name='validations', blank=True, null=True)
-#     #species = models.ManyToManyField(Species)
-#     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure')

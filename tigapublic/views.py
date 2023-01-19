@@ -4,20 +4,17 @@ List of endpoints identified at urls.py
 """
 # -*- coding: utf-8 -*-
 import json
-from io import BytesIO
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache, cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
-# from decorators import cross_domain_ajax
 from .forms import TinyMCEImageForm
 from .libs.notifications import NotificationManager
 from .libs.observations import ObservationManager
 from .libs.stormdrains import (StormDrainData, StormDrainUploader,
                                StormDrainUserSetup)
-from .libs.userfixes import UserfixesManager
 from .libs.upload import ExcelUploader
 from .libs.epidemiology import EpidemiologyData
 from .libs.irideon import irideonData
@@ -37,19 +34,11 @@ from tigapublic.constants import (compulsatory_epidemiology_fields,
                                   municipalities_virus_models_folder,
                                   municipalities_virus_file_name,
                                   municipalities_virus_file_ext,
-                                  municipalities_geom_folder,
-                                  municipalities_geom_file_name,
-                                  municipalities_geom_file_ext,
-                                  municipalities_sd_geom_folder,
-                                  municipalities_sd_geom_file_name,
-                                  municipalities_sd_geom_file_ext,
                                   vectors, virus, tiles_path,
                                   biting_rates_models_folder,
                                   biting_file_name, biting_file_ext
                                   )
-# from tigapublic.constants import prediction_models_folder
 import os
-import gzip
 from tablib import Dataset
 from tigapublic.utils import get_directory_structure
 import psycopg2
@@ -260,29 +249,6 @@ def observations_report(request, **filters):
     return ObservationManager(request, **filters).get_report()
 
 
-##############
-# USER FIXES #
-##############
-def userfixes_get_gridsize(data):
-    """Return the size of the grid."""
-    # Focus on Barcelona (where we have maximum density of userfixes)
-    griddata = data.filter(masked_lon__gt=1.9, masked_lat__gt=41.34)
-    if griddata[0]['masked_lat'] == griddata[1]['masked_lat']:
-        gridsize = griddata[1]['masked_lon'] - griddata[0]['masked_lon']
-    else:
-        gridsize = griddata[1]['masked_lat'] - griddata[0]['masked_lat']
-    return gridsize
-
-
-# def userfixes(request, years, months, date_start, date_end):
-# cache for one day
-@cache_page(36000)
-def userfixes(request, **filters):
-    """Get Coverage Layer Info."""
-    manager = UserfixesManager(request)
-    return manager.get('GeoJSON', **filters)
-
-
 ################
 # STORM DRAINS #
 ################
@@ -458,76 +424,6 @@ def predictionModelData(request, vector, year, month):
         return myModel._end_gz()
     else:
         return HttpResponse(status=404)
-
-
-##################
-# COMUNITI GEOMS #
-##################
-
-# For now is unused. Geometries are static files
-@cache_page(36000)
-def regionGeometries(request, ccaa):
-    """Get comunity Geometry."""
-    filename = (municipalities_geom_folder + '/' +
-                municipalities_geom_file_name + str(ccaa) +
-                municipalities_geom_file_ext)
-
-    # If file exist then get data and create JSON
-    if os.path.exists(filename):
-        try:
-            with open(filename, 'r') as file:
-                data = file.read().replace('\n', '')
-                # data = json.loads(file.read())
-        except IOError:
-            return HttpResponse(status=401)
-
-        zbuf = BytesIO()
-        zfile = gzip.GzipFile(mode='wb',
-                              compresslevel=6,
-                              fileobj=zbuf)
-        # content = json.dumps(data, cls=CustomJSONEncoder)
-        zfile.write(data.encode('utf-8'))
-        zfile.close()
-
-        compressed_content = zbuf.getvalue()
-        response = HttpResponse(compressed_content)
-        response['Content-Type'] = 'application/json'
-        response['Content-Encoding'] = 'gzip'
-        response['Content-Length'] = str(len(compressed_content))
-        return response
-
-
-# For now is unused. Geometries are static files
-@cache_page(36000)
-def regionSdGeometries(request, ccaa):
-    """Get comunity Geometry."""
-    filename = (municipalities_sd_geom_folder + '/' +
-                municipalities_sd_geom_file_name + str(ccaa) +
-                municipalities_sd_geom_file_ext)
-
-    # If file exist then get data and create JSON
-    if os.path.exists(filename):
-        try:
-            with open(filename, 'r') as file:
-                data = file.read().replace('\n', '')
-                # data = json.loads(file.read())
-        except IOError:
-            return HttpResponse(status=401)
-
-        zbuf = BytesIO()
-        zfile = gzip.GzipFile(mode='wb',
-                              compresslevel=6,
-                              fileobj=zbuf)
-        # content = json.dumps(data, cls=CustomJSONEncoder)
-        zfile.write(data.encode('utf-8'))
-        zfile.close()
-
-        compressed_content = zbuf.getvalue()
-        response = HttpResponse(compressed_content)
-        response['Content-Type'] = 'application/json'
-        response['Content-Encoding'] = 'gzip'
-        response['Content-Length'] = str(len(compressed_content))
-        return response
 
 
 #################

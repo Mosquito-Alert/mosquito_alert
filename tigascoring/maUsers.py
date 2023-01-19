@@ -1,12 +1,9 @@
 from __future__ import division
-from datetime import datetime, date, timedelta
+from datetime import datetime
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import rc  # latex resources
 from operator import itemgetter, attrgetter
 from math import log
-from sklearn.preprocessing import minmax_scale
 
 import tigascoring.ma as ma
 
@@ -106,7 +103,6 @@ class Report:
         return rprtLbl
 
     def showIt(self):
-        print
         print ('+++++ ID: %s' % self.id)
         print ('    date: %s' % self.date)
         print ('    type: %s' % self.type)
@@ -143,16 +139,6 @@ class Usmmry:
         classifiedR = [rprt for rprt in self.rprtDict.values() if rprt.getLbl()]
         return sorted(classifiedR, key=attrgetter('date'))
 
-    def xLastR(self, rType, xLast):
-        sortDict = self.sortDict()
-        if rType == 'adult':
-            rList = np.zeros(7, dtype='int')
-        elif rType == 'site':
-            rList = np.zeros(5, dtype='int')
-        for rprt in sortDict[-xLast:]:
-            if rprt.type == rType: rList[rprt.getLbl()] += 1
-        return rList
-
     def locList(self):
         return [rprt.location for rprt in self.rprtDict.values()]
 
@@ -164,14 +150,6 @@ class Usmmry:
         else:
             return 0
 
-    def logMI(self):
-        MI = self.movIdx()
-        if MI > 1:
-            logMI = log(MI, 10)
-        else:
-            logMI = 0
-        return logMI
-
     def nvIdx(self, n, v):
         adultR = self.rprtList('adult')
         bSiteR = self.rprtList('site')
@@ -179,26 +157,6 @@ class Usmmry:
         i = int((np.sum(adultR) - adultR[1] + np.sum(bSiteR) - bSiteR[1]) > n)
         j = int(self.movIdx() > v)
         return int(str(i) + str(j), 2)
-
-    def showIt(self):
-        print
-        print ('+++ userId.', self.uuid)
-        print ('    adultR.', np.sum(self.rprtList('adult')), '...', self.rprtList('adult'))
-        print ('    bSiteR.', np.sum(self.rprtList('site')), '...', self.rprtList('site'))
-        print ('  location.', self.locList())
-        print ('    movIdx.', self.movIdx())
-        print ('    uScore.', self.score)
-
-    def chkIt(self):
-        self.showIt()
-        for rprt in self.rprtDict.values(): rprt.showIt()
-
-    def detail(self):
-        with ma.connect() as dbConn:
-            with ma.Cursor(dbConn) as crsr:
-                sql = """SELECT A.hide, A.type, A.mission_id, A.location_choice,  A.current_location_lon, A.current_location_lat, A.selected_location_lon, A.selected_location_lat, B.report_id, B.user_id as expert_id, B.status, B.tiger_certainty_category, B.site_certainty_category FROM tigaserver_app_report as A RIGHT JOIN tigacrafting_expertreportannotation AS B ON A."version_UUID" = B.report_id WHERE (A.user_id = (%s) AND B.validation_complete = TRUE) ORDER by A.server_upload_time; """
-                crsr.execute(sql, (self.uuid,))
-                crsr.browse()
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -268,40 +226,6 @@ class Dsmmry(dict):
         print ('-' * 68)
         print (' ' * 36, 'summary time ... %s' % self.smmryTime)
 
-    def smmry2_old(self):
-
-        nCounts = np.zeros(33).reshape(3, 11)
-
-        for uSmmry in self.values():
-            binNumber = (10 if np.sum(uSmmry.adultRprts) >= 10 else np.sum(uSmmry.adultRprts))
-            nCounts[0, binNumber] += 1
-            binNumber = (10 if np.sum(uSmmry.bSiteRprts) >= 10 else np.sum(uSmmry.bSiteRprts))
-            nCounts[1, binNumber] += 1
-            binNumber = (10 if uSmmry.missionRprts >= 10 else uSmmry.missionRprts)
-            nCounts[2, binNumber] += 1
-
-        axs = plt.subplot()
-        axs.set_xticks(np.array(range(11)) * 3 + 1)
-        axs.set_xticklabels(range(11))
-        axs.bar(range(33), nCounts.T.flatten(), color=['y', 'm', 'c'])
-        plt.show()
-
-    def usrRprt_hst(self, maxRprt=100):
-        repx = [min(uSmmry.ttlRprts(), maxRprt) for uSmmry in self.values()]
-        plt.hist(repx, bins=maxRprt, color='r')
-        plt.xlabel("#Reports")
-        plt.ylabel("#Users")
-        plt.show()
-
-    def movIdx_hst(self, perc=90):
-        movIdx = [uSmmry.movIdx() for uSmmry in self.values()]
-        maxMI = np.percentile(movIdx, perc)
-        movIdx = [min(MI, maxMI) for MI in movIdx]
-        plt.hist(movIdx, bins=perc + 1, color='b')
-        plt.xlabel("movIndex")
-        plt.ylabel("#Users")
-        plt.show()
-
     # +++ bayesian Network methods
 
     def adCounts(self, uCounts, nv):
@@ -359,12 +283,6 @@ class Dsmmry(dict):
 
         # # do NOT count not-classified reports here
         # # !! Att. see file chkScore1.txt
-        # eCounts = self.adCounts(adultR, nv)
-        # self.nRpEx[0, ] += np.sum(eCounts[1:, ], axis=0)
-        # self.nAdEx[1:, ] += eCounts[1:, ]
-        # eCounts = self.bSCounts(bSiteR, nv)
-        # self.nRpEx[1, ] += np.sum(eCounts[1:, ], axis=0)
-        # self.nBsEx[1:, ] += eCounts[1:, ]
 
         # expertise-class prior
         # do NOT count not-classified reports here
@@ -453,51 +371,6 @@ class Dsmmry(dict):
             for c, e in zip(cRow, eRow): nExCls[e] += c
         self.shwLine(headLbl='expCat', nExCls=nExCls)
 
-    # expertise-class prior distribution
-    def expPrior(self):
-        self.counts_chk()
-        self.shwLine(headLbl='expCls', nExCls=self.nExCls)
-
-    # reportType (join)conditional distribution
-    def rTypeCond(self):
-        self.counts_chk()
-        self.shwLine(headLbl='Rprts.')
-        for row, label in zip(self.nRpEx, [' adult ', ' bSite ']):
-            self.shwLine(rowLbl=label, nExCls=row)
-        print ('-' * 60)
-        self.shwLine(nExCls=np.sum(self.nRpEx.T, axis=1))
-
-    # adultRprts/bSiteRprts (join)conditional distributions
-    def rClssCond(self):
-        self.counts_chk()
-        # +++ adultReports
-        self.shwLine(headLbl='adultR')
-        for row, rLabel in zip(self.nAdEx, ['--', 'hd', '-2', '-1', ' 0', '+1', '+2']):
-            self.shwLine(rowLbl=rLabel, nExCls=row)
-        print ('-' * 60)
-        self.shwLine(nExCls=np.sum(self.nAdEx.T, axis=1))
-        # +++ bSiteReports
-        self.shwLine(headLbl='bSiteR')
-        for row, rLabel in zip(self.nBsEx, ['--', 'hd', '-1', ' 0', '+1']):
-            self.shwLine(rowLbl=rLabel, nExCls=row)
-        print ('-' * 60)
-        self.shwLine(nExCls=np.sum(self.nBsEx.T, axis=1))
-
-    # compute bayesian network distributions
-    def bayesNet(self, p=0):
-        # get bayesNet parameters
-        self.p = p
-        self.counts_get()
-        if self.p: self.distro_get()
-        # expertise-category prior distribution
-        self.catPrior()
-        # expertise-class prior distribution
-        self.expPrior()
-        # reportType (join)conditional distribution
-        self.rTypeCond()
-        # adultRprts/bSiteRprts classification (join)conditional distributions
-        self.rClssCond()
-
     # +++ expertise-class conditional distributions
 
     def expCond_get(self):
@@ -576,47 +449,6 @@ class Dsmmry(dict):
         else:
             label = "user_score_beginner"
         return (score, label)
-
-    # +++ score-rank visualization methods
-
-    def rank_tbl(self):
-        if not hasattr(self, 'rank'): self.rank_get()
-        fSmmry = Usmmry('tmp')
-        score, counts, n, Counts = -1, 0, 0, -1
-        for uuid in self.rank:
-            if self[uuid].score != score:
-                score = self[uuid].score  # expertise-class distribution
-                counts = 0
-                n += 1
-                print
-            counts += 1
-            Counts += 1
-            print ('%6i ... %14.8f, ... %6i %8i ' % (n, score, counts, Counts),)
-            # show xLast reports used to score
-            print (self[uuid].xLastR('adult', self.xLast),)
-            print (self[uuid].xLastR('site', self.xLast), '\r',)
-
-    def rank_plt(self, ylim=(0.0, 1.1)):
-        if not hasattr(self, 'rank'): self.rank_get()
-        fig, axs = plt.subplots(figsize=(13, 5))
-        axs.set_ylim(ylim)
-        axs.grid(True)
-        # movIdx
-        X = np.array([self[uuid].logMI() for uuid in self.rank])
-        axs.plot(minmax_scale(X), color='y', label='movIdx')
-        # number of bSite reports
-        X = np.array([np.sum(self[uuid].xLastR('site', self.xLast)) for uuid in self.rank], dtype='float')
-        axs.plot(minmax_scale(X), color='c', label='bSites')
-        # number of adult reports
-        X = np.array([np.sum(self[uuid].xLastR('adult', self.xLast)) for uuid in self.rank], dtype='float')
-        axs.plot(minmax_scale(X), color='m', label='adults')
-        # score
-        X = np.array([self[uuid].score for uuid in self.rank])
-        axs.plot(X, color='b', label='uScore')
-        # legend
-        plt.legend(loc='upper left')
-        # plt.title('+++ ranked scoring +++')
-        plt.show()
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

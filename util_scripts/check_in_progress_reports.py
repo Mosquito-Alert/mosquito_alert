@@ -6,13 +6,9 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path + "util_scripts/")
 
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-
 
 from django.db.models import Count
-from tigaserver_app.models import EuropeCountry, Report, ExpertReportAnnotation, Categories
+from tigaserver_app.models import Report, ExpertReportAnnotation
 
 
 current_progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0).order_by('-server_upload_time')

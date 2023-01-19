@@ -1,12 +1,9 @@
 import os, sys
-import whatimage
 import logging
 import pyheif
-import io
 from PIL import Image
 from pathlib import Path
 import ntpath
-import imageio
 import magic
 import rawpy
 from django.core.mail import send_mail
@@ -16,10 +13,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
 sys.path.append(proj_path)
 
 os.chdir(proj_path + "util_scripts/")
-
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
 
 from tigaserver_app.models import Photo
 from logging.handlers import RotatingFileHandler
@@ -133,24 +126,6 @@ def process_file(p):
                 #Don't know what this is
                 body = "Found weird file in media/tigapics, file {0} - extension {1}".format( str(p), file_extension)
                 send_mail('[MA] - Weird file in media/tigapics', body, 'a.escobar@creaf.uab.cat', ['a.escobar@creaf.uab.cat'], fail_silently=False, )
-        #print("{0} {1}".format(str(p),fmt))
-        # if "iso" in fmt.lower(): #heic file
-        #     logger.debug("Found heic file! {0} files".format(str(p)))
-        #     heic_to_jpg(p)
-        #     rename_photo(p)
-        #     move_file_to_backup(p, BACKUP_DIR)
-        # elif "tiff" in fmt.lower() and not fmt.lower().startswith("jpeg image data"):
-        #     logger.debug("Found dng/raw file! {0} files".format(str(p)))
-        #     dng_to_jpg(p)
-        #     rename_photo(p)
-        #     move_file_to_backup(p, BACKUP_DIR)
-        # elif 'jpeg' in fmt.lower():
-        #     filename, file_extension = os.path.splitext(p)
-        #     if file_extension.lower() == '.heic':
-        #         logger.debug("Found jpeg with heic extension! {0} files".format(str(p)))
-        #         rename_photo(p)
-        #         # jpeg file with extension heic, but it's harmless
-        #         os.rename(p, filename + '.jpg')
 
 
 def process_files(file_list):

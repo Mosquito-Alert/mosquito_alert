@@ -6,12 +6,8 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path)
 
-from django.core.wsgi import get_wsgi_application
 from django.db.models import Q
 
-application = get_wsgi_application()
-
-from tigacrafting.models import ExpertReportAnnotation, Categories
 from tigaserver_app.models import Report
 import json
 

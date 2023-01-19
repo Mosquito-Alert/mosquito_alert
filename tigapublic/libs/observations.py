@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from io import StringIO, BytesIO
+from io import BytesIO
 from zipfile import ZipFile
 
 from django.conf import settings
@@ -16,7 +16,6 @@ from tigapublic.constants import (fields_available, managers_group,
                                   superusers_group)
 from tigapublic.models import AuthUser, MapAuxReports, ReportsMapData
 from tigapublic.resources import GetObservationResource, NotificationResource
-from .predictionmodels import predictionModels
 
 
 def coordinateListToWKTPolygon(coordinates):

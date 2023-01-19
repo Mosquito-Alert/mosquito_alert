@@ -68,27 +68,6 @@ class MissionTriggerSerializer(serializers.ModelSerializer):
 
 
 class MissionSerializer(serializers.ModelSerializer):
-    # id = serializers.IntegerField()
-    # title_catalan = serializers.CharField()
-    # title_spanish = serializers.CharField()
-    # title_english = serializers.CharField()
-    # short_description_catalan = serializers.CharField()
-    # short_description_spanish = serializers.CharField()
-    # short_description_english = serializers.CharField()
-    # long_description_catalan = serializers.CharField()
-    # long_description_spanish = serializers.CharField()
-    # long_description_english = serializers.CharField()
-    # help_text_catalan = serializers.CharField()
-    # help_text_spanish = serializers.CharField()
-    # help_text_english = serializers.CharField()
-    # creation_time = serializers.DateTimeField()
-    # expiration_time = serializers.DateTimeField()
-    # platform = serializers.CharField()
-    # url = serializers.URLField()
-    # photo_mission = serializers.BooleanField()
-    # items = MissionItemSerializer(many=True)
-    # triggers = MissionTriggerSerializer(many=True)
-    # mission_version = serializers.IntegerField()
     id = serializers.ReadOnlyField()
     title_catalan = serializers.ReadOnlyField()
     title_spanish = serializers.ReadOnlyField()
@@ -288,23 +267,6 @@ class NearbyReportSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-'''
-class NearbyReportSerializer(serializers.ModelSerializer):
-    version_UUID = serializers.ReadOnlyField()
-    lon = serializers.ReadOnlyField()
-    lat = serializers.ReadOnlyField()
-    simplified_annotation = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Report
-        fields = ['version_UUID','lon','lat','simplified_annotation']
-        # exclude = ('version_number', 'user', 'report_id','creation_time','server_upload_time', 'phone_upload_time', 'version_time',
-        #            'location_choice', 'current_location_lon', 'current_location_lat', 'mission',
-        #            'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
-        #            'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide',
-        #            'type','point')
-'''
-
 class ReportIdSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
     class Meta:
@@ -318,9 +280,7 @@ class ReportIdSerializer(serializers.ModelSerializer):
 
 class MapDataSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
-    #creation_time = serializers.DateTimeField()
     creation_time = serializers.ReadOnlyField()
-    #creation_date = serializers.DateTimeField()
     creation_date = serializers.ReadOnlyField()
     creation_day_since_launch = serializers.ReadOnlyField()
     creation_year = serializers.ReadOnlyField()
@@ -411,8 +371,6 @@ class NotificationSerializer(serializers.ModelSerializer):
     user_id = serializers.CharField()
     expert_id = serializers.IntegerField()
     date_comment = serializers.Field()
-    #expert_comment = serializers.CharField()
-    #expert_html = serializers.CharField()
     photo_url = serializers.CharField()
     acknowledged = serializers.BooleanField()
     notification_content = NotificationContentSerializer()
@@ -421,8 +379,6 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
-        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
         fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'map_notification')
 
 

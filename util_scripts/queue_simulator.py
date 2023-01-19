@@ -12,7 +12,7 @@ application = get_wsgi_application()
 
 from tigacrafting.models import ExpertReportAnnotation, UserStat
 from tigaserver_app.models import Report, EuropeCountry
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.db.models import Q, ExpressionWrapper
 from django.db.models import Count
 from django.db.models import F
@@ -32,13 +32,7 @@ def get_countries_without_national_supervisor():
     country_with_supervisor = get_countries_with_national_supervisor()
     return EuropeCountry.objects.exclude(gid__in=country_with_supervisor)
 
-
-def get_regional_supervisors_days_to_free_report():
-    national_supervisors = UserStat.objects.filter(national_supervisor_of__isnull=False)
-
-
 def get_global_queue_regular_user(this_user):
-    current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
 
     new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)

@@ -3,20 +3,18 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins, GenericAPIView
-from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.exceptions import ParseError
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django_filters import rest_framework as filters
-#import django_filters
 from datetime import datetime, timedelta
 import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
 from tigacrafting.report_queues import assign_crisis_report
 from math import ceil
@@ -42,10 +40,6 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
-import time
-
-from celery.task.schedules import crontab
-from celery.decorators import periodic_task
 
 
 
@@ -190,11 +184,6 @@ version_UUID linking this photo to a specific report version.
         instance.save()
         return Response('uploaded')
 
-def filter_partial_uuid(queryset, user_UUID):
-    if not user_UUID:
-        return queryset
-    return queryset.filter(user_UUID__startswith=user_UUID)
-
 class UserFilter(filters.FilterSet):
     user_UUID = filters.Filter(method='filter_partial_uuid')
 
@@ -223,11 +212,6 @@ through the API.)
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
     filter_class = UserFilter
-
-
-class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
-    def get_default_renderer(self, view):
-        return JSONRenderer()
 
 
 # For production version, substitute WriteOnlyModelViewSet
@@ -364,68 +348,6 @@ def get_data_time_info(request):
     return HttpResponse(json.dumps(json_response))
 
 
-def get_n_days():
-    # setting fixed start time based on release date to avoid the pre-release beta reports
-    start_time = settings.START_TIME
-    end_time = Report.objects.latest('creation_time').creation_time
-    # adding 1 to include the last dayin the set
-    return (end_time - start_time).days + 1
-
-
-def get_n_months():
-    # setting fixed start time based on release date to avoid the pre-release beta reports
-    start_time = settings.START_TIME
-    end_time = Report.objects.latest('creation_time').creation_time
-    # adding 1 to include the last dayin the set
-    return ((end_time - start_time).days / 28) + 1
-
-
-def filter_creation_day(queryset, days_since_launch):
-    if not days_since_launch:
-        return queryset
-    try:
-        target_day_start = settings.START_TIME + timedelta(days=int(days_since_launch))
-        target_day_end = settings.START_TIME + timedelta(days=int(days_since_launch)+1)
-        result = queryset.filter(creation_time__range=(target_day_start, target_day_end))
-        return result
-    except ValueError:
-        return queryset
-
-
-def filter_creation_week(queryset, weeks_since_launch):
-    if not weeks_since_launch:
-        return queryset
-    try:
-        target_week_start = settings.START_TIME + timedelta(weeks=int(weeks_since_launch))
-        target_week_end = settings.START_TIME + timedelta(weeks=int(weeks_since_launch)+1)
-        result = queryset.filter(creation_time__range=(target_week_start, target_week_end))
-        return result
-    except ValueError:
-        return queryset
-
-
-def filter_creation_month(queryset, months_since_launch):
-    if not months_since_launch:
-        return queryset
-    try:
-        target_month_start = settings.START_TIME + timedelta(weeks=int(months_since_launch)*4)
-        target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch)*4)+4)
-        result = queryset.filter(creation_time__range=(target_month_start, target_month_end))
-        return result
-    except ValueError:
-        return queryset
-
-
-def filter_creation_year(queryset, year):
-    if not year:
-        return queryset
-    try:
-        result = queryset.filter(creation_time__year=year)
-        return result
-    except ValueError:
-        return queryset
-
-
 class MapDataFilter(filters.FilterSet):
 
     day = filters.Filter(method='filter_day')
@@ -484,15 +406,6 @@ class MapDataFilter(filters.FilterSet):
         fields = ['day', 'week', 'month', 'year']
 
 
-class CoverageMapFilter(filters.FilterSet):
-    id_range_start = filters.NumberFilter(field_name='id', lookup_type='gte')
-    id_range_end = filters.NumberFilter(field_name='id', lookup_type='lte')
-
-    class Meta:
-        model = CoverageArea
-        fields = ['id_range_start', 'id_range_end']
-
-
 class CoverageMonthMapFilter(filters.FilterSet):
     id_range_start = filters.NumberFilter(field_name='id', lookup_expr='gte')
     id_range_end = filters.NumberFilter(field_name='id', lookup_expr='lte')
@@ -530,91 +443,6 @@ def get_latest_reports_qs(reports, property_filter=None):
             result_ids.append(this_version_UUID)
     return Report.objects.filter(version_UUID__in=result_ids)
 
-
-def get_latest_validated_reports(reports):
-    reports = filter(lambda x: x.show_on_map(), reports.iterator())
-    unique_report_ids = set([r.report_id for r in reports])
-    result_ids = list()
-    for this_id in unique_report_ids:
-        these_reports = sorted([report for report in reports if report.report_id == this_id], key=attrgetter('version_number'))
-        if these_reports[0].version_number > -1:
-            this_version_UUID = these_reports[-1].version_UUID
-            result_ids.append(this_version_UUID)
-    return Report.objects.filter(version_UUID__in=result_ids)
-
-# non_visible_report_id is veeeeery slow - try to replace with query (this is a work in progress)
-# select "version_UUID" from tigaserver_app_report where "version_UUID" in (select "version_UUID" from tigaserver_app_report where to_char(creation_time,'YYYY') = '2014')
-# UNION
-# select tigaserver_app_report."version_UUID" from tigaserver_app_report left join tigaserver_app_photo on tigaserver_app_report."version_UUID" = tigaserver_app_photo.report_id where tigaserver_app_photo.id is null
-# UNION
-# select expert_validated."version_UUID" from (select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='expert' AND an.validation_complete = True GROUP BY r."version_UUID" HAVING count(r."version_UUID") >= 3 AND min(an.status) = 1) expert_validated
-# UNION
-# select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
-
-'''
-class CoarseFilterAdultReports(ReadOnlyModelViewSet):
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-    #there seems to be some kind of caching issue .all() forces the queryset to refresh
-    queryset = unfiltered_clean_reports_query.all()
-    serializer_class = ReportIdSerializer
-
-class CoarseFilterSiteReports(ReadOnlyModelViewSet):
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-    # there seems to be some kind of caching issue .all() forces the queryset to refresh
-    queryset = unfiltered_clean_reports_query.all()
-    serializer_class = ReportIdSerializer
-'''
-
-'''
-class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-
-    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered,False)
-    unfiltered_clean_reports_id = [ report.version_UUID for report in unfiltered_clean_reports ]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
-
-    #new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if not report.visible]
-
-    hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-    queryset = hidden_reports | unfiltered_clean_reports_query
-
-    serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
-'''
-
-'''
-class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-    serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
-    paginate_by = 10
-    paginate_by_param = 'page_size'
-    max_paginate_by = 100
-'''
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
@@ -701,16 +529,6 @@ def mark_notif_as_ack(request):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except AcknowledgedNotification.DoesNotExist:
             raise ParseError(detail='Acknowledged not found')
-
-
-@api_view(['POST'])
-def toggle_crisis_mode(request, user_id=None):
-    if user_id is None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    user = get_object_or_404(User.objects.all(), pk=user_id)
-    user.userstat.crisis_mode = not user.userstat.crisis_mode
-    user.userstat.save()
-    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -801,29 +619,6 @@ def topics_subscribed(request):
     serializer = UserSubscriptionSerializer(subs,many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-'''
-class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
-    serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
-    pagination_class = StandardResultsSetPagination
-'''
-
-'''
-class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-    serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
-'''
-
 def lon_function(this_lon, these_lons, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
     n_fixes = len([l for l in these_lons if l == this_lon])
     if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2]).count() > 0:
@@ -894,38 +689,6 @@ def lat_function_y0(this_lat, fix_list, latest_fix_id, report_list, latest_repor
     these_lons_y0 = [(f.masked_lon, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.month == this_lat[1])] + [(r.masked_lon, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.month == this_lat[1])]
     unique_lons_y0 = set(these_lons_y0)
     [lon_function_y0(this_lon, these_lons_y0, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lon in unique_lons_y0]
-
-
-def update_coverage_area_month_model_manual():
-    json_response = {'updated': False}
-    # turning off for now
-    if True:
-        if CoverageAreaMonth.objects.all().count() > 0:
-            latest_report_server_upload_time = CoverageAreaMonth.objects.order_by('latest_report_server_upload_time').last().latest_report_server_upload_time
-            latest_fix_id = CoverageAreaMonth.objects.order_by('latest_fix_id').last().latest_fix_id
-        else:
-            latest_report_server_upload_time = pytz.utc.localize(datetime(1970, 1, 1))
-            latest_fix_id = 0
-        if CoverageAreaMonth.objects.all().count() == 0 or latest_report_server_upload_time < Report.objects.order_by('server_upload_time').last().server_upload_time or latest_fix_id < Fix.objects.order_by('id').last().id:
-            report_list = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).filter(server_upload_time__gt=latest_report_server_upload_time))
-            fix_list = Fix.objects.filter(fix_time__gt=settings.START_TIME, id__gt=latest_fix_id)
-            full_lat_list = [(f.masked_lat, f.fix_time.year, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.year, r.creation_time.month) for r in report_list if r.masked_lat is not None]
-            full_lat_list_m0 = [(f.masked_lat, f.fix_time.year) for f in fix_list] + [(r.masked_lat, r.creation_time.year) for r in report_list if r.masked_lat is not None]
-            full_lat_list_y0 = [(f.masked_lat, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.month) for r in report_list if r.masked_lat is not None]
-            unique_lats = set(full_lat_list)
-            unique_lats_m0 = set(full_lat_list_m0)
-            unique_lats_y0 = set(full_lat_list_y0)
-            [lat_function(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats]
-            [lat_function_m0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats_m0]
-            [lat_function_y0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats_y0]
-            json_response['updated'] = True
-    return json.dumps(json_response)
-
-
-def coverage_month_internal():
-    queryset = CoverageAreaMonth.objects.all()
-    serializer = CoverageMonthMapSerializer(queryset, many=True)
-    return serializer.data
 
 
 class CoverageMonthMapViewSet(ReadOnlyModelViewSet):
@@ -1131,21 +894,6 @@ def user_count(request):
     content = { "user_count" : len(results) }
     return Response(content)
 
-'''
-def score_label(score):
-    if score > 66:
-        return "user_score_pro"
-    elif 33 < score <= 66:
-        return "user_score_advanced"
-    else:
-        return "user_score_beginner"
-'''
-
-
-def get_user_score(user_id):
-    summary = smmry()
-    return summary.getScore(user_id)
-
 
 def refresh_user_scores():
     summary = smmry()
@@ -1209,34 +957,6 @@ def user_score(request):
         else:
             content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
-
-'''
-def custom_render_notification(notification,locale):
-    expert_comment = notification.notification_content.get_title_locale_safe(locale)
-    expert_html = notification.notification_content.get_body_locale_safe(locale)
-    content = {
-        'id':notification.id,
-        'report_id':notification.report.version_UUID,
-        'user_id':notification.user.user_UUID,
-        'user_score':notification.user.score,
-        'user_score_label': score_label(notification.user.score),
-        'expert_id':notification.expert.id,
-        'date_comment':notification.date_comment,
-        'expert_comment':expert_comment,
-        'expert_html':expert_html,
-        'acknowledged':notification.acknowledged,
-        'public':notification.public,
-    }
-    return content
-'''
-
-'''
-def custom_render_notification_queryset(queryset,locale):
-    content = []
-    for notification in queryset:
-        content.append(custom_render_notification(notification,locale))
-    return content
-'''
 
 def custom_render_map_notifications(map_notification):
     expert_comment = map_notification.notification_content.title_es
@@ -1353,64 +1073,7 @@ def user_notifications(request):
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
-    '''
-    if request.method == 'POST':
-        id = request.query_params.get('id', -1)
-        try:
-            int(id)
-        except ValueError:
-            raise ParseError(detail='Invalid id integer value')
-        queryset = Notification.objects.all()
-        this_notification = get_object_or_404(queryset,pk=id)
-        notification_content = this_notification.notification_content
-        #body_html_es = request.query_params.get('body_html_es', '-1')
-        #title_es = request.query_params.get('title_es', '-1')
-        #body_html_ca = request.query_params.get('body_html_ca', '-1')
-        #title_ca = request.query_params.get('title_ca', '-1')
-        body_html_en = request.query_params.get('body_html_en', '-1')
-        title_en = request.query_params.get('title_en', '-1')
-        body_html_native = request.query_params.get('body_html_native', '-1')
-        title_native = request.query_params.get('title_native', '-1')
-        native_locale = request.query_params.get('native_locale', '-1')
-        public = request.query_params.get('public', '-1')
-        if body_html_en != '-1':
-            notification_content.body_html_en = body_html_en
-        if title_en != '-1':
-            notification_content.title_en = title_en
-        if body_html_native != '-1':
-            notification_content.body_html_native = body_html_native
-        if title_native != '-1':
-            notification_content.title_native = title_native
-        if native_locale != '-1':
-            notification_content.native_locale = native_locale
-        if public != '-1':
-            public_bool = string_par_to_bool(public)
-            this_notification.public = public_bool
-        notification_content.save()
-        this_notification.save()
-        serializer = NotificationSerializer(this_notification)
-        return Response(serializer.data)
-    if request.method == 'PUT':
-        this_notification = Notification()
-        serializer = NotificationSerializer(this_notification,data=request.DATA)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'DELETE':
-        id = request.query_params.get('id', -1)
-        try:
-            int(id)
-        except ValueError:
-            raise ParseError(detail='Invalid id integer value')
-        queryset = Notification.objects.all()
-        this_notification = get_object_or_404(queryset, pk=id)
-        notification_content = this_notification.notification_content
-        this_notification.delete()
-        notification_content.delete()
-        return HttpResponse(status=204)
-    '''
-
+ 
 
 @api_view(['PUT'])
 def notification_content(request):
@@ -1520,54 +1183,6 @@ def send_notifications(request):
         results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success, 'push_results': push_results}
         return Response(results)
 
-        '''
-        elif recipients.startswith("uploaded"):
-            if(recipients=='uploaded_pictures'):
-                send_to = users_with_pictures()
-            elif(recipients=='uploaded_pictures_sd'):
-                send_to = users_with_storm_drain_pictures()
-        elif recipients.startswith("score_arbitrary"):
-            range = recipients.split('-')
-            send_to = users_with_score_range(range[1], range[2])
-        elif recipients.startswith("score"):
-            send_to = users_with_score(recipients)
-        else:
-            ids_list = recipients.split('$')
-            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
-        
-        notifications_issued = 0
-        notifications_failed = 0
-        push_issued_android = 0
-        push_failed_android = 0
-        push_issued_ios = 0
-        push_failed_ios = 0
-        for recipient in send_to:
-            n = Notification(report_id=r,user=recipient,expert_id=sender,notification_content=notification_content)
-            try:
-                n.save()
-                notifications_issued = notifications_issued + 1
-            except Exception as e:
-                notifications_failed = notifications_failed + 1
-                #raise ParseError(detail=e.message)
-            if push and recipient.device_token is not None and recipient.device_token != '':
-                #send push
-                if(recipient.user_UUID.islower()):
-                    json_notif = custom_render_notification(n,'es')
-                    try:
-                        send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-                        push_issued_android = push_issued_android + 1
-                    except Exception as e:
-                        pass
-                else:
-                    try:
-                        send_message_ios(recipient.device_token,notification_content.title_es,'')
-                        push_issued_ios = push_issued_ios + 1
-                    except Exception as e:
-                        pass
-        results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
-        return Response(results)
-        '''
-
 
 @api_view(['GET'])
 def nearby_reports_no_dwindow(request):
@@ -1608,12 +1223,6 @@ def nearby_reports_no_dwindow(request):
 
         if center_buffer_lat is None or center_buffer_lon is None:
             raise ParseError(detail='invalid parameters')
-
-        '''
-        sql = "SELECT \"version_UUID\"  " + \
-            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
-            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
-        '''
 
         #Older postgis versions didn't like the second ::geography cast
         sql = "SELECT \"version_UUID\"  " + \
@@ -1773,60 +1382,6 @@ def nearby_reports_fast(request):
             serializer = NearbyReportSerializer(classified_reports_in_max_radius[:10])
         return Response(serializer.data)
 
-# This is the old method which used a Window. It is now deprecated
-
-# @api_view(['GET'])
-# def nearby_reports(request):
-#     if request.method == 'GET':
-#         dwindow = request.query_params.get('dwindow', 30)
-#         try:
-#             int(dwindow)
-#         except ValueError:
-#             raise ParseError(detail='Invalid dwindow integer value')
-#         if int(dwindow) > 365:
-#             raise ParseError(detail='Values above 365 not allowed for dwindow')
-#
-#         date_N_days_ago = datetime.now() - timedelta(days=int(dwindow))
-#
-#         center_buffer_lat = request.query_params.get('lat', None)
-#         center_buffer_lon = request.query_params.get('lon', None)
-#         radius = request.query_params.get('radius', '2500')
-#         if center_buffer_lat is None or center_buffer_lon is None:
-#             return Response(status=400,data='invalid parameters')
-#
-#         center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
-#         center_point_3857 = center_point_4326.transform(3857,clone=True)
-#
-#         swcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
-#         nwcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
-#         secorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
-#         necorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
-#
-#         swcorner_4326 = swcorner_3857.transform(4326,clone=True)
-#         nwcorner_4326 = nwcorner_3857.transform(4326, clone=True)
-#         secorner_4326 = secorner_3857.transform(4326, clone=True)
-#         necorner_4326 = necorner_3857.transform(4326, clone=True)
-#
-#         min_lon = swcorner_4326.x
-#         min_lat = swcorner_4326.y
-#
-#         max_lon = necorner_4326.x
-#         max_lat = necorner_4326.y
-#
-#         all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
-#         #all_reports = Report.objects.exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
-#         #Broad square filter
-#         all_reports = all_reports.filter(Q(location_choice='selected', selected_location_lon__range=(min_lon,max_lon),selected_location_lat__range=(min_lat, max_lat)) | Q(location_choice='current', current_location_lon__range=(min_lon,max_lon), current_location_lat__range=(min_lat, max_lat)))
-#         classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,all_reports)
-#         serializer = NearbyReportSerializer(classified_reports)
-#         return Response(serializer.data)
-
-
-def filter_partial_name_address(queryset, name):
-    if not name:
-        return queryset
-    return queryset.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
-
 class UserAddressFilter(filters.FilterSet):
     name = filters.Filter(method='filter_partial_name_address')
 
@@ -1877,7 +1432,6 @@ def nearby_reports(request):
 
         center_buffer_lat = request.query_params.get('lat', None)
         center_buffer_lon = request.query_params.get('lon', None)
-        radius = request.query_params.get('radius', 5000)
         if center_buffer_lat is None or center_buffer_lon is None:
             return Response(status=400,data='invalid parameters')
 
@@ -1893,23 +1447,6 @@ def nearby_reports(request):
         else:
             serializer = NearbyReportSerializer(reports_sorted_by_distance[:10], many=True)
         return Response(serializer.data)
-
-        '''
-        -- All points within a given distance from given coordinate - this is FAST
-        SELECT st_distance(point::geography, 'SRID=4326;POINT(2.06999 41.62729)'::geography) as d
-        FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(2.06999 41.62729)'::geography) <= 5000
-        ORDER BY point::geography <-> 'SRID=4326;POINT(2.06999 41.62729)'::geography;
-        '''
-
-        '''
-        keep_looping = True
-        while( (len(classified_reports) < minimum_points) and keep_looping ):
-            radius = radius + RADIUS_INCREASE
-            reports_in_radius = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=radius)))
-            classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,reports_in_radius)
-            if radius > MAX_SEARCH_RADIUS:
-                keep_looping = False
-        '''
 
 
 @api_view(['POST'])
@@ -2108,15 +1645,6 @@ def all_reports_paginated(request):
         return paginator.get_paginated_response(serializer.data)
         #return Response(serializer.data)
 
-# this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
-def all_reports_internal(year):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
-        version_UUID__in=non_visible_report_id).filter( package_filter )\
-        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(creation_time__year=year)
-    serializer = MapDataSerializer(queryset, many=True)
-    return serializer.data
-
 @api_view(['GET'])
 def all_reports(request):
     if request.method == 'GET':
@@ -2130,39 +1658,6 @@ def all_reports(request):
         f = MapDataFilter(request.GET, queryset=queryset)
         serializer = MapDataSerializer(f.qs, many=True)
         return Response(serializer.data)
-
-
-def non_visible_reports_internal(year):
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-
-    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
-
-    # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in
-                                 Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
-                                 not report.visible]
-
-    hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(
-        version_UUID__in=non_visible_report_id).filter( package_filter )\
-        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-
-    queryset = hidden_reports | unfiltered_clean_reports_query
-    if year is not None:
-        queryset = queryset.filter(creation_time__year=year)
-
-    serializer = MapDataSerializer(queryset, many=True)
-    return serializer.data
 
 
 @api_view(['GET'])

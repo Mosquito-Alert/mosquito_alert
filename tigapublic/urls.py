@@ -14,11 +14,7 @@ re_zoom = re.compile(r"(?P<zoom>\d{1,2})\/?").pattern
 # BOUNDS: Geographic bounding box
 # Matches 4 coordinates separated by commas: lon, lat, lon, lat
 # LON: Longitude
-
-# re_lon = ("-?(?:480(?:(?:\.0{1,4})?)|"
-#           "(?:[0-9]|[1-9][0-9]|1[0-7][0-9]|2[0-7][0-9]|3[0-7][0-9]|4[0-7][0-9])(?:(?:\.[0-9]{1,4})?))")
 re_lon = "[-\d\.]*"
-# re_lon = "[\d\.]"
 # LAT: Latitude
 re_lat = "-?(?:90(?:(?:\.0{1,4})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,4})?))"
 
@@ -32,7 +28,6 @@ re_bounds = re.compile(r"(?P<bounds>" + re_lon + "," + re_lat + ","
 # Matches two date parameters: dateStart and dateEnd
 # DATE: Definition of a date, used for daterange.
 # Either N or a date
-# re_date = "N|[\d]{4}-[\d]{1,2}-[\d]{1,2}"
 re_date = ("N|([0-9]{4}-?((0[13-9]|1[012])[-]?(0[1-9]|[12][0-9]|30)|"
            "(0[13578]|1[02])[-]?31|02[-]?(0[1-9]|1[0-9]|2[0-8]))|"
            "([0-9]{2}(([2468][048]|[02468][48])|[13579][26])|"
@@ -42,7 +37,6 @@ re_daterange = re.compile(r"(?P<date_start>" + re_date + ")/(?P<date_end>" +
 
 # HASHTAG:
 # Matches anything except white space and slash. Repeated one or more times.
-# re_hashtag = re.compile(r"(?P<hashtag>[\w\.&@'*\(\)\$]+)\/?").pattern
 re_hashtag = re.compile(r"(?P<hashtag>[^ /]+)\/?").pattern
 
 # MUNICIPALITIES
@@ -244,11 +238,6 @@ irideon_urls = [
 
 """Get municipalities geometry by region."""
 ccaa_geom_urls = [
-#     # Manage StormDrain Data
-#     url(r'^get/geom/ccaa/' + re_cc_aa + '.geojson' + '$',
-#         views.regionGeometries),
-#     url(r'^get/centroid/ccaa/' + re_cc_aa + '.geojson' + '$',
-#         views.regionSdGeometries),
     url(r'^get/region/' + re_coord +'$', views.getSpainRegionFromCoords)
 ]
 
@@ -262,14 +251,6 @@ prediction_models_urls = [
         re_year + '/' + re_month + '$',
         views.predictionModelData)
 ]
-
-# """Prediction models data."""
-# re_model_date = re.compile(r"(?P<prediction_date>" + re_date + ")\/?").pattern
-# prediction_models_urls = [
-#     # Manage StormDrain Data
-#     url(r'^get/prediction/' + re_year + '/' + re_month + '$',
-#         views.predictionModelData)
-# ]
 
 """Municipalities."""
 muni_urls = [

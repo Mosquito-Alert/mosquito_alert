@@ -8,12 +8,7 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path)
 
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-
 from tigaserver_app.models import Report, ExpertReportAnnotation
-from django.db.models import Count
 
 
 def report_is_validated(report):

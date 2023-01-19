@@ -196,29 +196,3 @@ def _normalize(d):
         else:
             newd[k] = v
     return newd
-
-
-if __name__ == '__main__':
-    """Compare speed with Django QueryDict"""
-    from timeit import Timer
-    from tests import KnownValues
-    import os
-    import sys
-    from django.core.management import setup_environ
-    # Add project dir so Djnago project settings is in the scope
-    LIB_PATH = os.path.abspath('..')
-    sys.path.append(LIB_PATH)
-    import settings
-    setup_environ(settings)
-
-    i = 0
-    for key, val in KnownValues.knownValues:
-        statement = "parse(\"%s\")" % key
-        statementd = "http.QueryDict(\"%s\")" % key
-        statementqs = "parse_qs(\"%s\")" % key
-        t = Timer(statement, "from __main__ import parse")
-        td = Timer(statementd, "from django import http")
-        tqs = Timer(statementqs, "from urlparse import parse_qs")
-        print ("Test string nr ".ljust(15), "querystring-parser".ljust(22), "Django QueryDict".ljust(22), "parse_qs")
-        print (str(i).ljust(15), str(min(t.repeat(3, 10000))).ljust(22), str(min(td.repeat(3, 10000))).ljust(22), min(tqs.repeat(3, 10000)))
-        i += 1

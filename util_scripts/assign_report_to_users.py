@@ -7,13 +7,7 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path)
 
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-
-import string
-import random
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from tigaserver_app.models import ExpertReportAnnotation, Report
 
 def check_assign_report_to_users(experts, national_supervisor, report):

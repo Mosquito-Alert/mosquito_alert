@@ -1,10 +1,7 @@
-from tigaserver_app.models import Report, TigaUser, TigaProfile, Award, AwardCategory
+from tigaserver_app.models import Report, TigaUser, TigaProfile, Award
 from tigaserver_project import settings as conf
-import csv
-import time
 import pandas as pd
 import datetime
-from django.utils import translation
 from django.utils.translation import gettext as _
 
 XP = 12
@@ -44,19 +41,6 @@ STORM_DRAIN_ANSWER_ID = 121
 
 CULEX_CATEGORY_ID = 10
 AEDES_CATEGORY_IDS = [4, 5, 6, 7]
-
-
-'''
-from tigaserver_app.models import TigaUser
-#queryset to dataframe
-df = pd.DataFrame(list(TigaUser.objects.all().values()))
-#sort by scor
-df.sort_values("score_v2", inplace=True)
-#create rank column
-df["rank"] = df["score_v2"].rank(ascending=False)
-#get row by column value (in this case, user_uuid)
-df.loc[df['user_UUID']=='b7853081-eea8-4f3f-abad-6192ba7e4429']
-'''
 
 
 '''
@@ -186,8 +170,6 @@ def get_user_class(max, min, user_score):
 def get_min_max(sorted_dataframe, score_field_name):
     max_score = sorted_dataframe[score_field_name].max()
     min_score = sorted_dataframe[score_field_name].min()
-    # get row by column value (in this case, user_uuid)
-    # df.loc[df['user_UUID'] == 'b7853081-eea8-4f3f-abad-6192ba7e4429']
     return {"min": min_score, "max": max_score}
 
 
@@ -197,39 +179,6 @@ def get_user_rank_value(sorted_dataframe, user_UUID):
         return 0
     return int(subdf.iloc[0])
 
-# def get_translated_category_label(label):
-#     retVal = label
-#     translations = {
-#         'start_of_season': _('start_of_season'),
-#         'daily_participation': _('daily_participation'),
-#         'fidelity_day_2': _('fidelity_day_2'),
-#         'fidelity_day_3': _('fidelity_day_3'),
-#         'achievement_10_reports': _('achievement_10_reports'),
-#         'achievement_20_reports': _('achievement_20_reports'),
-#         'achievement_50_reports': _('achievement_50_reports')
-#     }
-#     try:
-#         retVal = translations[label]
-#     except KeyError:
-#         pass
-#     return retVal
-
-'''
-def get_bite_report_score(report, result):
-    local_result = {}
-    local_result['report'] = report.version_UUID
-    local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
-    local_result['report_score'] = 0
-    local_result['awards'] = []
-    local_result['awards'].append({"reason": _("bite_report"), "xp_awarded": BITE_REWARD})
-    local_result['report_score'] = BITE_REWARD
-    for award in report.report_award.all():
-        local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
-        local_result['report_score'] += award.category.xp_points
-    result['score_detail']['bite']['score_items'].append(local_result)
-    return result
-'''
-
 def get_site_report_score(report, result):
     local_result = {}
     local_result['report'] = report.version_UUID
@@ -238,7 +187,6 @@ def get_site_report_score(report, result):
     local_result['awards'] = []
     local_result['penalties'] = []
     if report.hide == True:
-        #local_result['penalties'].append({"reason_untranslated": "other_species", "reason": _("other_species"), "xp_awarded": 0})
         local_result['penalties'].append({"reason_untranslated": "other_species", "xp_awarded": 0})
         result['score_detail']['site']['score_items'].append(local_result)
         return result
@@ -248,37 +196,31 @@ def get_site_report_score(report, result):
     else:
         local_result['report_photo'] = None
     if report.n_visible_photos > 0:
-        #local_result['awards'].append({"reason_untranslated": "picture", "reason": _("picture"), "xp_awarded": BREEDING_SITE_PICTURE_REWARD})
         local_result['awards'].append(
             {"reason_untranslated": "picture", "xp_awarded": BREEDING_SITE_PICTURE_REWARD})
         local_result['report_score'] += BREEDING_SITE_PICTURE_REWARD
 
     if report.located:
-        #local_result['awards'].append({"reason_untranslated": "location", "reason": _("location"), "xp_awarded": BREEDING_SITE_LOCATION_REWARD})
         local_result['awards'].append(
             {"reason_untranslated": "location", "xp_awarded": BREEDING_SITE_LOCATION_REWARD})
         local_result['report_score'] += BREEDING_SITE_LOCATION_REWARD
 
     if is_storm_drain(report):
-        #local_result['awards'].append({"reason_untranslated": "storm_drain", "reason": _("storm_drain"), "xp_awarded": SITE_STORM_DRAIN_REWARD})
         local_result['awards'].append(
             {"reason_untranslated": "storm_drain", "xp_awarded": SITE_STORM_DRAIN_REWARD})
         local_result['report_score'] += SITE_STORM_DRAIN_REWARD
 
     if is_water_answered(report):
-        #local_result['awards'].append({"reason_untranslated": "water_question", "reason": _("water_question"), "xp_awarded": SITE_WATER_QUESTION_REWARD})
         local_result['awards'].append({"reason_untranslated": "water_question", "xp_awarded": SITE_WATER_QUESTION_REWARD})
         local_result['report_score'] += SITE_WATER_QUESTION_REWARD
 
     if is_mosquito_report_followed(report):
-        #local_result['awards'].append({"reason_untranslated": "mosquito_report_follows_breeding_site", "reason": _("mosquito_report_follows_breeding_site"), "xp_awarded": BREEDING_SITE_MOSQUITO_REWARD})
         local_result['awards'].append({"reason_untranslated": "mosquito_report_follows_breeding_site",
                                        "xp_awarded": BREEDING_SITE_MOSQUITO_REWARD})
         local_result['report_score'] += BREEDING_SITE_MOSQUITO_REWARD
 
     for award in report.report_award.all():
         if award.category:
-            #local_result['awards'].append({"reason_untranslated": award.category.category_label, "reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
             local_result['awards'].append({"reason_untranslated": award.category.category_label,
                                            "xp_awarded": award.category.xp_points})
             local_result['report_score'] += award.category.xp_points
@@ -296,7 +238,6 @@ def get_adult_report_score(report, result):
     local_result['awards'] = []
     local_result['penalties'] = []
     if report.hide == True:
-        #local_result['penalties'].append({"reason_untranslated": "other_species", "reason": _("other_species"), "xp_awarded": 0})
         local_result['penalties'].append(
             {"reason_untranslated": "other_species", "xp_awarded": 0})
         result['score_detail']['adult']['score_items'].append(local_result)
@@ -309,51 +250,41 @@ def get_adult_report_score(report, result):
 
     if is_aedes(validation_result) or is_culex(validation_result):
         if picture:
-            #local_result['awards'].append({"reason_untranslated": "picture", "reason": _("picture"), "xp_awarded": MOSQUITO_PICTURE_REWARD})
             local_result['awards'].append(
                 {"reason_untranslated": "picture", "xp_awarded": MOSQUITO_PICTURE_REWARD})
             local_result['report_score'] += MOSQUITO_PICTURE_REWARD
         else:
             local_result['report_photo'] = None
-            #local_result['penalties'].append({"reason_untranslated": "no_picture", "reason": _("no_picture"), "xp_awarded": 0})
             local_result['penalties'].append(
                 {"reason_untranslated": "no_picture", "xp_awarded": 0})
 
         if report.located:
-            #local_result['awards'].append({"reason_untranslated": "location", "reason": _("location"), "xp_awarded": MOSQUITO_LOCATION_REWARD})
             local_result['awards'].append(
                 {"reason_untranslated": "location", "xp_awarded": MOSQUITO_LOCATION_REWARD})
             local_result['report_score'] += MOSQUITO_LOCATION_REWARD
         else:
-            #local_result['penalties'].append({"reason_untranslated": "no_location", "reason": _("no_location"), "xp_awarded": 0})
             local_result['penalties'].append(
                 {"reason_untranslated": "no_location", "xp_awarded": 0})
 
         if is_thorax_answered(report):
-            #local_result['awards'].append({"reason_untranslated": "thorax_question", "reason": _("thorax_question"), "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
             local_result['awards'].append({"reason_untranslated": "thorax_question", "xp_awarded": MOSQUITO_THORAX_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_THORAX_QUESTION_REWARD
         if is_abdomen_answered(report):
-            #local_result['awards'].append({"reason_untranslated": "abdomen_question", "reason": _("abdomen_question"), "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
             local_result['awards'].append({"reason_untranslated": "abdomen_question", "xp_awarded": MOSQUITO_ABDOMEN_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_ABDOMEN_QUESTION_REWARD
         if is_leg_answered(report):
-            #local_result['awards'].append({"reason_untranslated": "leg_question", "reason": _("leg_question"), "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
             local_result['awards'].append({"reason_untranslated": "leg_question", "xp_awarded": MOSQUITO_LEG_QUESTION_REWARD})
             local_result['report_score'] += MOSQUITO_LEG_QUESTION_REWARD
     else:
-        #local_result['penalties'].append({"reason_untranslated": "other_species", "reason": _("other_species"), "xp_awarded": 0})
         local_result['penalties'].append(
             {"reason_untranslated": "other_species", "xp_awarded": 0})
 
     if is_bite_report_followed(report):
-        #local_result['awards'].append({"reason_untranslated": "bite report follow", "reason": _("bite report follow"), "xp_awarded": MOSQUITO_BITE_ANSWER_REWARD})
         local_result['awards'].append({"reason_untranslated": "bite report follow", "xp_awarded": MOSQUITO_BITE_ANSWER_REWARD})
         local_result['report_score'] += MOSQUITO_BITE_ANSWER_REWARD
 
     for award in report.report_award.all():
         if award.category:
-            #local_result['awards'].append({"reason_untranslated": award.category.category_label, "reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
             local_result['awards'].append({"reason_untranslated": award.category.category_label,
                                            "xp_awarded": award.category.xp_points})
             local_result['report_score'] += award.category.xp_points
@@ -371,14 +302,12 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
         special_awards = Award.objects.filter(report__isnull=True).filter(given_to__in=user_uuids)
     for award in special_awards:
         if award.category is None:
-            #awards.append({"reason_untranslated": award.special_award_text, "reason": get_translated_category_label(award.special_award_text), "xp_awarded": award.special_award_xp, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
             awards.append({"reason_untranslated": award.special_award_text,
                            "xp_awarded": award.special_award_xp,
                            "awarded_on": award.date_given.strftime("%d/%m/%Y"),
                            "media_label": award.special_award_text})
             unrelated_awards_score += award.special_award_xp
         else:
-            #awards.append({"reason_untranslated": award.category, "reason": get_translated_category_label(award.category), "xp_awarded": award.category.xp_points, "awarded_on": award.date_given.strftime("%d/%m/%Y"), "media_label": award.special_award_text})
             awards.append(
                 {"reason_untranslated": award.category,
                  "xp_awarded": award.category.xp_points,
@@ -388,22 +317,6 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
     retval['score'] = unrelated_awards_score
     retval['awards'] = awards
     return retval
-
-
-# def diff_month( date_now, date_before ):
-#     return (( date_now.year - date_before.year ) * 12 ) + (date_now.month - date_before.month)
-#
-#
-# def get_elapsed_label( date_now, date_before ):
-#     diff = date_now - date_before
-#     if diff.days >= 30:
-#         diff_months = diff_month( date_now, date_before )
-#         if diff_months > 12:
-#             return str( int(diff_months / 12) ) + _(" years ago")
-#         else:
-#             return str( diff_months ) + _(" months ago")
-#     else:
-#         return str(diff.days) + _(" days ago")
 
 
 def compute_user_score_in_xp_v2_fast(user_uuid):
@@ -424,11 +337,9 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
         user_reports = Report.objects.filter(user__user_UUID__in=user_uuids).order_by('-creation_time')
 
     adults = user_reports.filter(type='adult')
-    #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
     adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
     site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
 
     results_adult = {}
@@ -444,21 +355,6 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
             'report_score']
         adult_score += result['score_detail']['adult']['score_items'][index]['report_score']
     result['total_score'] += adult_score
-
-    '''
-    results_bite = {}
-    results_bite['score'] = 0
-    results_bite['score_items'] = []
-    result['score_detail']['bite'] = results_bite
-
-    bite_score = 0
-    for report in bite_last_versions:
-        result = get_bite_report_score(report, result)
-        index = len(result['score_detail']['bite']['score_items']) - 1
-        result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
-        bite_score += result['score_detail']['bite']['score_items'][index]['report_score']
-    result['total_score'] += bite_score
-    '''
 
     results_site = {}
     results_site['score'] = 0
@@ -505,12 +401,10 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     qs_overall = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
     qs_adult = TigaUser.objects.exclude(score_v2_adult=0).exclude(user_UUID__in=uuid_replicas)
     qs_site = TigaUser.objects.exclude(score_v2_site=0).exclude(user_UUID__in=uuid_replicas)
-    #qs_bite = TigaUser.objects.exclude(score_v2_bite=0).exclude(user_UUID__in=uuid_replicas)
 
     overall_df = pd.DataFrame(list(qs_overall.values_list('score_v2', 'user_UUID')), columns=['score_v2', 'user_UUID'])
     adult_df = pd.DataFrame(list(qs_adult.values_list('score_v2_adult', 'user_UUID')), columns=['score_v2_adult', 'user_UUID'])
     site_df = pd.DataFrame(list(qs_site.values_list('score_v2_site', 'user_UUID')), columns=['score_v2_site', 'user_UUID'])
-    #bite_df = pd.DataFrame(list(qs_bite.values_list('score_v2_bite', 'user_UUID')), columns=['score_v2_bite', 'user_UUID'])
 
     overall_sorted_df = overall_df.sort_values('score_v2', inplace=False)
     overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(method='dense', ascending=False)
@@ -520,9 +414,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
 
     site_sorted_df = site_df.sort_values('score_v2_site', inplace=False)
     site_sorted_df["rank"] = site_sorted_df['score_v2_site'].rank(method='dense', ascending=False)
-
-    #bite_sorted_df = bite_df.sort_values('score_v2_bite', inplace=False)
-    #bite_sorted_df["rank"] = bite_sorted_df['score_v2_bite'].rank(method='dense', ascending=False)
 
     result = {}
     result['total_score'] = 0
@@ -540,13 +431,8 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     rank_value_site = get_user_rank_value(site_sorted_df, user_uuid)
     min_max_site = get_min_max(site_sorted_df, 'score_v2_site')
 
-    #rank_value_bite = get_user_rank_value(bite_sorted_df, user_uuid)
-    #min_max_bite = get_min_max(bite_sorted_df, 'score_v2_bite')
-
-    current_date = datetime.date.today()
     if user is not None:
         result['joined_value'] = user.registration_time.strftime("%d/%m/%Y")
-        #result['joined_label'] = get_elapsed_label(current_date, user.registration_time.date())
     else:
         result['joined_value'] = None
 
@@ -557,17 +443,14 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
 
     if user_reports:
         result['active_value'] = user_reports[0].creation_time.strftime("%d/%m/%Y")
-        #result['active_label'] = get_elapsed_label(current_date, user_reports[0].creation_time.date())
     else:
         result['active_value'] = None
         result['active_label'] = None
 
     adults = user_reports.filter(type='adult')
-    #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
     adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
     site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
 
     results_adult = {}
@@ -587,16 +470,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     results_bite['score'] = 0
     results_bite['score_items'] = []
     result['score_detail']['bite'] = results_bite
-
-    '''
-    bite_score = 0
-    for report in bite_last_versions:
-        result = get_bite_report_score(report, result)
-        index = len(result['score_detail']['bite']['score_items']) - 1
-        result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
-        bite_score += result['score_detail']['bite']['score_items'][index]['report_score']
-    result['total_score'] += bite_score
-    '''
 
     results_site = {}
     results_site['score'] = 0
@@ -631,13 +504,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     result['score_detail']['site']['class_label'] = site_class['label']
     result['score_detail']['site']['rank_value'] = rank_value_site
 
-    '''
-    bite_class = get_user_class(min_max_bite['max'], min_max_bite['min'], result['score_detail']['bite']['score'])
-    result['score_detail']['bite']['class_value'] = bite_class['value']
-    result['score_detail']['bite']['class_label'] = bite_class['label']
-    result['score_detail']['bite']['rank_value'] = rank_value_bite
-    '''
-
     overall_number_below_rank = overall_sorted_df[ overall_sorted_df['rank'] <= result['overall_rank_value'] ].count()['rank']
     overall_number_total = overall_sorted_df.count()['rank']
 
@@ -647,10 +513,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     site_number_below_rank = site_sorted_df[site_sorted_df['rank'] <= result['score_detail']['site']['rank_value']].count()['rank']
     site_number_total = site_sorted_df.count()['rank']
 
-    '''
-    bite_number_below_rank = bite_sorted_df[bite_sorted_df['rank'] <= result['score_detail']['bite']['rank_value']].count()['rank']
-    bite_number_total = bite_sorted_df.count()['rank']
-    '''
     if overall_number_total == 0:
         result['overall_top_perc'] = 100.0
     else:
@@ -681,14 +543,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
             user.score_v2_site = result['score_detail']['site']['score']
             user.save()
 
-    '''
-    if bite_number_below_rank == 0 and bite_number_total == 0:
-        result['score_detail']['bite']['top_perc'] = 100.0
-    else:
-        result['score_detail']['bite']['top_perc'] = (float(bite_number_below_rank) / float(bite_number_total)) * 100.0
-    result['score_detail']['bite']['ranked_users'] = bite_number_total
-    '''
-
     return result
 
 
@@ -709,7 +563,7 @@ def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
     min = min_max_overall['min']
     max = min_max_overall['max']
     retval['data'] = []
-    for index, row in overall_sorted_df.iterrows():
+    for _, row in overall_sorted_df.iterrows():
         score = row['score_v2']
         user_class = get_user_class( max, min, score)
         retval['data'].append(

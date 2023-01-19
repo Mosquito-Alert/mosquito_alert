@@ -13,18 +13,6 @@ from tigapublic.models import (AuthUser, MapAuxReports, Municipalities,
                                ObservationNotifications)
 
 
-def category_filter(qs, categories):
-    """Category filter."""
-    args = Q()
-    if categories is not None:
-        categories = categories.split(',')
-        for c in categories:
-            args.add(Q(private_webmap_layer=c), Q.OR)
-
-    qs = qs.filter(args)
-    return qs
-
-
 class Filter(object):
     """Base Filter object.
 
@@ -495,10 +483,6 @@ class FilterManager(BaseManager):
 
     def objects(self, model=MapAuxReports, **kwargs):
         """Define the base object pool."""
-        # print
-        # print("Getting objects from model %s" % model.__name__)
-        # print
-        # self.model = model
         qs = model.objects.all()
         for key, value in kwargs.items():
             if key == 'extra':

@@ -6,9 +6,6 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path + "util_scripts/")
 
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
 from tigaserver_app.models import ExpertReportAnnotation
 from django.core.mail import send_mail
 

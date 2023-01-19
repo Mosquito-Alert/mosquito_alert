@@ -48,62 +48,6 @@ fields_available = [
     ('ref_system', 'Ref. System'),
     ('municipality__nombre', 'Municipality'),
     ('type', 'Type'),
-    # ('t_q_1', {
-    #     'label': 'Adult question 1',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('t_a_1', {
-    #     'label': 'Adult answer 1',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('t_q_2', {
-    #     'label': 'Adult question 2',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('t_a_2', {
-    #     'label': 'Adult answer 2',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('t_q_3', {
-    #     'label': 'Adult question 3',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('t_a_3', {
-    #     'label': 'Adult answer 3',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_q_1', {
-    #     'label': 'Site question 1',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_a_1', {
-    #     'label': 'Site answer 1',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_q_2', {
-    #     'label': 'Site question 2',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_a_2', {
-    #     'label': 'Site answer 2',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_q_3', {
-    #     'label': 'Site question 3',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_a_3', {
-    #     'label': 'Site answer 3',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_q_4', {
-    #     'label': 'Site question 4',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
-    # ('s_a_4', {
-    #     'label': 'Site answer 4',
-    #     'permissions':  [superusers_group, managers_group]
-    # }),
     ('expert_validated', 'Expert validated'),
     ('private_webmap_layer', 'Expert validation result'),
     ('single_report_map_url', 'Map link'),

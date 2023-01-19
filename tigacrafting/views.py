@@ -1,7 +1,5 @@
 # coding=utf-8
-from pydoc import visiblename
 from django.shortcuts import render
-from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
 
@@ -12,12 +10,10 @@ from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
 from django.db.models import Count
 import pytz
-from datetime import datetime, date, timedelta
+from datetime import datetime
 from django.db.models import Max,Min
-from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
-from random import shuffle
 from django.template.context_processors import csrf
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -25,8 +21,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
-from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
+from tigacrafting.forms import ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
+from tigaserver_app.models import Notification, NotificationContent, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -35,22 +31,18 @@ from django.contrib.auth.models import User, Group
 import urllib
 import django.utils.html
 from django.db import connection
-from itertools import chain
 from tigacrafting.messaging import send_message_android,send_message_ios
-from tigaserver_app.serializers import custom_render_notification, NotificationSerializer, DataTableNotificationSerializer
-from django.contrib.gis.geos import GEOSGeometry
+from tigaserver_app.serializers import custom_render_notification, DataTableNotificationSerializer
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
 import logging
-from common.translation import get_translation_in, get_locale_for_en, get_locale_for_native
-import html.entities
+from common.translation import get_translation_in, get_locale_for_native
 from django.template.loader import TemplateDoesNotExist
 from django.utils.translation import gettext as _
 from tigacrafting.querystring_parser import parser
 from django.db.models.expressions import RawSQL
 import functools
 import operator
-import math
 from tigacrafting.report_queues import get_crisis_report_available_reports
 
 #----------Metadades fotos----------#
@@ -60,8 +52,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from decimal import *
 from tigaserver_project.settings import *
 from rest_framework.response import Response
-import re
-from tigacrafting.report_queues import assign_reports, get_base_adults_qs
+from tigacrafting.report_queues import assign_reports
 from django.utils import timezone
 
 #-----------------------------------#
@@ -156,15 +147,6 @@ def get_current_domain(request):
     else:
         current_domain = 'tigaserver.atrapaeltigre.com'
     return current_domain
-
-
-def photos_to_tasks():
-    these_photos = Photo.objects.filter(crowdcraftingtask=None).exclude(report__hide=True).exclude(hide=True)
-    if these_photos:
-        for p in these_photos:
-            new_task = CrowdcraftingTask()
-            new_task.photo = p
-            new_task.save()
 
 
 def import_tasks():
@@ -306,26 +288,8 @@ def import_task_responses():
         if len(warnings) > 0:
             ef.write('<h1>tigacrafting.views.import_task_responses warnings</h1><p>' + barcelona.localize(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S UTC%z') + '</p><p>' + '</p><p>'.join(warnings) + '</p>')
         ef.close()
-      #  print '\n'.join(errors)
-      #  print '\n'.join(warnings)
     return {'errors': errors, 'warnings': warnings}
 
-
-def show_processing(request):
-    return render(request, 'tigacrafting/please_wait.html')
-
-
-def filter_tasks(tasks):
-    tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, tasks)
-    return tasks_filtered
-
-
-def filter_false_validated(reports, sort=True):
-    if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports),key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
-    return reports_filtered
 
 def fast_filter_reports(reports):
     #these are all the report_id in reports, with its max version number and the number of versions
@@ -344,212 +308,6 @@ def filter_reports(reports, sort=True):
     else:
         reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
     return reports_filtered
-
-
-def filter_spain_reports(reports, sort=True):
-    if sort:
-        reports_filtered = sorted( filter(lambda x: x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: x.is_spain_p, reports)
-    return reports_filtered
-
-
-def filter_eu_reports(reports, sort=True):
-    if sort:
-        reports_filtered = sorted(filter(lambda x: not x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: not x.is_spain_p, reports)
-    return reports_filtered
-
-
-def filter_reports_for_superexpert(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(list(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))) >= 3, reports)
-    return reports_filtered
-
-
-@xframe_options_exempt
-def show_validated_photos(request, type='tiger'):
-    title_dic = {'mosquito': 'Mosquito Validation Results', 'site': 'Breeding Site Validation Results', 'tiger': 'Tiger Mosquito Validation Results'}
-    question_dic = {'mosquito': 'Do you see a mosquito in this photo?', 'site': 'Do you see a potential tiger mosquito breeding site in this photo?', 'tiger': 'Is this a tiger mosquito?'}
-    validation_score_dic = {'mosquito': 'mosquito_validation_score', 'site': 'site_validation_score', 'tiger': 'tiger_validation_score'}
-    individual_responses_dic = {'mosquito': 'mosquito_individual_responses_html', 'site': 'site_individual_responses_html', 'tiger': 'tiger_individual_responses_html'}
-    import_task_responses()
-    validated_tasks = CrowdcraftingTask.objects.annotate(n_responses=Count('responses')).filter(n_responses__gte=30).exclude(photo__report__hide=True).exclude(photo__hide=True)
-    validated_tasks_filtered = filter_tasks(validated_tasks)
-    validated_task_array = sorted(map(lambda x: {'id': x.id, 'report_type': x.photo.report.type, 'report_creation_time': x.photo.report.creation_time.strftime('%d %b %Y, %H:%M %Z'), 'lat': x.photo.report.lat, 'lon':  x.photo.report.lon, 'photo_image': x.photo.medium_image_(), 'validation_score': round(getattr(x, validation_score_dic[type]), 2), 'neg_validation_score': -1*round(getattr(x, validation_score_dic[type]), 2), 'individual_responses_html': getattr(x, individual_responses_dic[type])}, list(validated_tasks_filtered)), key=lambda x: -x['validation_score'])
-    paginator = Paginator(validated_task_array, 25)
-    page = request.GET.get('page')
-    try:
-        these_validated_tasks = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        these_validated_tasks = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        these_validated_tasks = paginator.page(paginator.num_pages)
-    context = {'type': type, 'title': title_dic[type], 'n_tasks': len(validated_task_array), 'question': question_dic[type], 'validated_tasks': these_validated_tasks}
-    return render(request, 'tigacrafting/validated_photos.html', context)
-
-
-@login_required
-def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
-    this_user = request.user
-    args = {}
-    args.update(csrf(request))
-    args['scroll_position'] = scroll_position
-    AnnotationFormset = modelformset_factory(Annotation, form=AnnotationForm, extra=0)
-    if request.method == 'POST':
-        scroll_position = request.POST.get("scroll_position", '0')
-        formset = AnnotationFormset(request.POST)
-        if formset.is_valid():
-            formset.save()
-            return HttpResponseRedirect(reverse('annotate_tasks_scroll_position', kwargs={'which': 'working_on', 'scroll_position': scroll_position}))
-        else:
-            return HttpResponse('error')
-    else:
-        if which == 'noted_only':
-            Annotation.objects.filter(working_on=True).update(working_on=False)
-            this_queryset = Annotation.objects.filter(user=request.user, value_changed=False).exclude(notes="")
-            this_queryset.update(working_on=True)
-            this_formset = AnnotationFormset(queryset=this_queryset)
-        if which == 'completed':
-            Annotation.objects.filter(working_on=True).update(working_on=False)
-            this_queryset = Annotation.objects.filter(user=request.user).exclude( tiger_certainty_percent=None).exclude(value_changed=False)
-            this_queryset.update(working_on=True)
-            this_formset = AnnotationFormset(queryset=this_queryset)
-        if which == 'working_on':
-            this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, working_on=True))
-        if which == 'new':
-            import_task_responses()
-            annotated_task_ids = Annotation.objects.filter(user=this_user).exclude(tiger_certainty_percent=None).exclude(value_changed=False).values('task__id')
-            validated_tasks = CrowdcraftingTask.objects.exclude(id__in=annotated_task_ids).exclude(photo__report__hide=True).exclude(photo__hide=True).filter(photo__report__type='adult').annotate(n_responses=Count('responses')).filter(n_responses__gte=30)
-            validated_tasks_filtered = filter_tasks(validated_tasks)
-            shuffle(validated_tasks_filtered)
-            if how_many is not None:
-                task_sample = validated_tasks_filtered[:int(how_many)]
-            else:
-                task_sample = validated_tasks_filtered
-            # reset working_on annotations
-            Annotation.objects.filter(working_on=True).update(working_on=False)
-            # set working on for existing annotations:
-            Annotation.objects.filter(user=this_user, task__in=task_sample).update(working_on=True)
-            # make blank annotations for this user as needed
-            for this_task in task_sample:
-                if not Annotation.objects.filter(user=this_user, task=this_task).exists():
-                    new_annotation = Annotation(user=this_user, task=this_task, working_on=True)
-                    new_annotation.save()
-            this_formset = AnnotationFormset(queryset=Annotation.objects.filter(user=request.user, task__in=task_sample))
-        args['formset'] = this_formset
-        return render(request, 'tigacrafting/expert_validation.html', args)
-
-
-@login_required
-def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='all'):
-    this_user = request.user
-    if request.user.groups.filter(name='movelab').exists():
-        args = {}
-        args.update(csrf(request))
-        args['scroll_position'] = scroll_position
-        AnnotationFormset = modelformset_factory(MoveLabAnnotation, form=MovelabAnnotationForm, extra=0)
-        if request.method == 'POST':
-            scroll_position = request.POST.get("scroll_position", '0')
-            formset = AnnotationFormset(request.POST)
-            if formset.is_valid():
-                formset.save()
-                page = request.GET.get('page')
-                if not page:
-                    page = '1'
-                if type == 'pending':
-                    return HttpResponseRedirect(reverse('movelab_annotation_pending_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-                else:
-                    return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-            else:
-                return HttpResponse('error')
-        else:
-            photos_to_tasks()
-            import_tasks()
-            tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
-            tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
-            for this_task in tasks_without_annotations:
-                new_annotation = MoveLabAnnotation(task=this_task)
-                new_annotation.save()
-            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            if type == 'pending':
-                all_annotations = all_annotations.exclude(tiger_certainty_category__in=[-2, -1, 0, 1, 2])
-            paginator = Paginator(all_annotations, int(tasks_per_page))
-            page = request.GET.get('page')
-            try:
-                objects = paginator.page(page)
-            except PageNotAnInteger:
-                objects = paginator.page(1)
-            except EmptyPage:
-                objects = paginator.page(paginator.num_pages)
-            page_query = all_annotations.filter(id__in=[object.id for object in objects])
-            this_formset = AnnotationFormset(queryset=page_query)
-            args['formset'] = this_formset
-            args['objects'] = objects
-            args['pages'] = range(1, objects.paginator.num_pages+1)
-            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
-        return render(request, 'tigacrafting/movelab_validation.html', args)
-    else:
-        return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
-
-
-@login_required
-def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50', type='pending'):
-    this_user = request.user
-    if request.user.groups.filter(name='movelab').exists():
-        args = {}
-        args.update(csrf(request))
-        args['scroll_position'] = scroll_position
-        AnnotationFormset = modelformset_factory(MoveLabAnnotation, form=MovelabAnnotationForm, extra=0)
-        if request.method == 'POST':
-            scroll_position = request.POST.get("scroll_position", '0')
-            formset = AnnotationFormset(request.POST)
-            if formset.is_valid():
-                formset.save()
-                page = request.GET.get('page')
-                if not page:
-                    page = '1'
-                if type == 'pending':
-                    return HttpResponseRedirect(reverse('movelab_annotation_pending_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-                else:
-                    return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-            else:
-                return HttpResponse('error')
-        else:
-            photos_to_tasks()
-            import_tasks()
-            tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
-            tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
-            for this_task in tasks_without_annotations:
-                new_annotation = MoveLabAnnotation(task=this_task)
-                new_annotation.save()
-            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            if type == 'pending':
-                all_annotations = all_annotations.exclude(tiger_certainty_category__in=[-2, -1, 0, 1, 2])
-            paginator = Paginator(all_annotations, int(tasks_per_page))
-            page = request.GET.get('page')
-            try:
-                objects = paginator.page(page)
-            except PageNotAnInteger:
-                objects = paginator.page(1)
-            except EmptyPage:
-                objects = paginator.page(paginator.num_pages)
-            page_query = all_annotations.filter(id__in=[object.id for object in objects])
-            this_formset = AnnotationFormset(queryset=page_query)
-            args['formset'] = this_formset
-            args['objects'] = objects
-            args['pages'] = range(1, objects.paginator.num_pages+1)
-            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
-        return render(request, 'tigacrafting/movelab_validation.html', args)
-    else:
-        return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
-
-
-BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
-
-ITALY_GEOMETRY = GEOSGeometry('{"type": "Polygon","coordinates": [[[7.250976562499999,43.70759350405294],[8.96484375,44.071800467511565],[10.96435546875,41.95131994679697],[7.822265625000001,41.0130657870063],[8.1298828125,38.788345355085625],[11.865234375,37.735969208590504],[14.1064453125,36.70365959719456],[14.985351562499998,36.31512514748051],[18.80859375,40.27952566881291],[12.45849609375,44.5278427984555],[13.86474609375,45.413876460821086],[14.04052734375,46.51351558059737],[12.238769531249998,47.264320080254805],[6.8994140625,46.10370875598026],[6.43798828125,45.120052841530544],[7.250976562499999,43.70759350405294]]]}')
 
 
 def autoflag_others(id_annotation_report):
@@ -578,44 +336,6 @@ def must_be_autoflagged(this_annotation, is_current_validated):
             if is_current_validated and len(classifications) == 3 and ( len(set(classifications)) == len(classifications) ):
                 return True
     return False
-    '''
-    if this_annotation is not None:
-        the_report = this_annotation.report
-        if the_report is not None:
-            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID, user__groups__name='expert').exclude(id=this_annotation.id)
-            anno_count = 0
-            one_positive_albopictus = False
-            one_positive_aegypti = False
-            one_unclassified_or_inconclusive = False
-            for anno in annotations:
-                validated = anno.validation_complete
-                if anno.tiger_certainty_category is not None and anno.tiger_certainty_category > 0 and validated == True:
-                    one_positive_albopictus = True
-                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category > 0 and validated == True:
-                    one_positive_aegypti = True
-                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category <= 0 \
-                        and anno.tiger_certainty_category is not None and anno.tiger_certainty_category <= 0 \
-                        and validated == True:
-                    one_unclassified_or_inconclusive = True
-                if anno.aegypti_certainty_category is None and anno.tiger_certainty_category is None and validated == True:
-                    one_unclassified_or_inconclusive = True
-                anno_count += 1
-            validated = is_current_validated
-            if this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category > 0 and validated == True:
-                one_positive_albopictus = True
-            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category > 0 and validated == True:
-                one_positive_aegypti = True
-            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category <= 0 \
-                    and this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category <= 0 \
-                    and validated == True:
-                one_unclassified_or_inconclusive = True
-            if this_annotation.aegypti_certainty_category is None and this_annotation.tiger_certainty_category is None and validated == True:
-                one_unclassified_or_inconclusive = True
-
-            if one_positive_albopictus and one_positive_aegypti and one_unclassified_or_inconclusive and (anno_count + 1) == 3:
-                return True
-    return False
-    '''
 
 def get_sigte_map_info(report):
     cursor = connection.cursor()
@@ -706,246 +426,6 @@ def issue_notification(report_annotation,current_domain):
                 send_message_ios(recipient.device_token, notification_content.title_native, '')
             except Exception as e:
                 logger_notification.exception("Exception sending validation ios message")
-    '''
-    About to deploy epi data, let's put this in the fridge for now
-    # if there is a similar notification issued for this user recently
-    if not notification_already_issued(report_annotation.report, report_annotation.report.user, report_annotation.user, notification_content.title_es):
-        notification.save()
-        recipient = report_annotation.report.user
-        if recipient.device_token is not None and recipient.device_token != '':
-            if (recipient.user_UUID.islower()):
-                json_notif = custom_render_notification(notification, 'es')
-                try:
-                    send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-                except Exception as e:
-                    pass
-            else:
-                try:
-                    send_message_ios(recipient.device_token, notification_content.title_es, '')
-                except Exception as e:
-                    pass
-
-    #checks if a notification about this report, sent to user_sent_to, from expert_sent_from has been sent
-    #this will hopefully avoid multi-sent notifications
-    def notification_already_issued(report, user_sent_to, expert_sent_from, title_es):
-        return Notification.objects.filter(report=report,user=user_sent_to,expert=expert_sent_from,notification_content__title_es=title_es).exists()
-    '''
-
-
-# def assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, country_gid):
-#     """
-#     This function assigns reports to users in exclusive bounding boxes. These users receive only reports from their assigned
-#     bounding box.
-#
-#     :param this_user: The current user
-#     :param my_reports: adult reports already validated or assigned to this user
-#     :param current_pending: number of current pending reports for this_user
-#     :param max_pending: maximum number of pending reports per user
-#     :param max_given: number of users to which a report is given (excluding superexpert)
-#     :param country_gid: gid of the country that constitutes the exclusive bounding box
-#     """
-#     if current_pending < max_pending:
-#         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
-#
-#         n_to_get = max_pending - current_pending
-#
-#         new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(
-#             note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(
-#             photos=None).filter(type='adult').annotate(
-#             n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-#
-#         new_reports_unfiltered_and_false_validated = Report.objects.exclude(
-#             creation_time__year=2014).exclude(note__icontains="#345").exclude(
-#             version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(
-#             type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(
-#             n_annotations__lt=max_given + 1)
-#
-#         new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=country_gid)
-#
-#         if new_reports_unfiltered:
-#             new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
-#             new_filtered_false_validated_reports = filter_false_validated(
-#                 new_reports_unfiltered_and_false_validated.order_by('creation_time'))
-#             new_reports = list(set(new_filtered_reports + new_filtered_false_validated_reports))
-#             reports_to_take = new_reports[0:n_to_get]
-#             user_stats = None
-#             try:
-#                 user_stats = UserStat.objects.get(user_id=this_user.id)
-#             except ObjectDoesNotExist:
-#                 pass
-#             grabbed_reports = -1
-#             if user_stats:
-#                 grabbed_reports = user_stats.grabbed_reports
-#             for this_report in reports_to_take:
-#                 if not this_report.user_has_report(this_user):
-#                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-#                     who_has_count = this_report.get_who_has_count()
-#                     if who_has_count == 0 or who_has_count == 1:
-#                         # No one has the report, is simplified
-#                         new_annotation.simplified_annotation = True
-#                     grabbed_reports += 1
-#                     new_annotation.save()
-#             if grabbed_reports != -1 and user_stats:
-#                 user_stats.grabbed_reports = grabbed_reports
-#                 user_stats.save()
-#
-#
-# def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given):
-#     """
-#     :param this_user: user to which the reports will be assigned
-#     :param national_supervisor_ids: list of national supervisor ids in dict format [{'user__id':id}...{}]
-#     :param current_pending: number of current pending reports for this_user
-#     :param country_with_supervisor_set: set of id_country which have supervisor
-#     :param max_pending: maximum number of pending reports per user
-#     :param max_given: number of users to which a report is given (excluding superexpert)
-#     """
-#     logger_report_assignment.debug('Begin ASSIGN REPORT for User {0}'.format(this_user,))
-#     logger_report_assignment.debug('Assigning reports to user {0}'.format(this_user, ))
-#     # dictionary or reports assigned to some supervisor
-#     report_assigned_to_supervisor = ExpertReportAnnotation.objects.filter(user__id__in=national_supervisor_ids).values('report').distinct()
-#     # set of these report ids
-#     report_assigned_to_supervisor_set = set([d['report'] for d in report_assigned_to_supervisor])
-#     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
-#     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-#     this_user_is_supervisor = this_user.userstat.is_national_supervisor()
-#     this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
-#     #this_user_is_spain = this_user.groups.filter(name='eu_group_spain').exists()
-#     this_user_is_spain = not this_user_is_europe
-#
-#     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
-#     if current_pending < max_pending:
-#         logger_report_assignment.debug('User {0} has less than {1} reports assigned (currently {2})'.format(this_user, max_pending, current_pending))
-#         n_to_get = max_pending - current_pending
-#         logger_report_assignment.debug('User {0} trying to get {1} reports'.format(this_user, n_to_get))
-#         new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-#         # if there is bounding box venezuela
-#         # no normal users are assigned venezuelan reports
-#         # refactor this - create some kind of bounding box registry (i.e add a bounding box flag to EuropeCountry)
-#         #new_reports_unfiltered = new_reports_unfiltered.exclude( Q(country__gid=52) | Q(country__gid=53) )
-#         # exclude venezuela for now
-#         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(country__gid=53))
-#         '''
-#         if new_reports_unfiltered and this_user_is_team_bcn:
-#             new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
-#         if new_reports_unfiltered and this_user_is_team_not_bcn:
-#             new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
-#         '''
-#         if this_user_is_supervisor:
-#             #logger_report_assignment.debug('User {0} is supervisor'.format(this_user,))
-#             reports_supervised_country = new_reports_unfiltered.filter(country__gid=this_user.userstat.national_supervisor_of.gid)
-#             # list of countries with supervisor (excluding present)
-#             country_with_supervisor_other_than_this = UserStat.objects.filter(national_supervisor_of__isnull=False).exclude(national_supervisor_of__gid=this_user.userstat.national_supervisor_of.gid).values('national_supervisor_of__gid').distinct()
-#             # list of reports with supervisor and two annotations -> these reports are meant for the supervisor and should not be assigned
-#             reports_other_supervised_country_expecting_supervisor = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=2).filter(country__gid__in=country_with_supervisor_other_than_this)
-#             # so we remove them from the available reports for this expert
-#             reports_non_supervised_country = new_reports_unfiltered.exclude(version_UUID__in=reports_supervised_country.values('version_UUID')).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
-#             reports_supervised_country_filtered = filter_reports(reports_supervised_country.order_by('creation_time'))
-#             reports_non_supervised_country_filtered = filter_reports(reports_non_supervised_country.order_by('creation_time'))
-#             new_filtered_reports = reports_supervised_country_filtered + reports_non_supervised_country_filtered
-#         else:
-#             #logger_report_assignment.debug('User {0} is not supervisor'.format(this_user, ))
-#             country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-#             # these are the reports in supervised countries, already assigned to two experts, so they should be assigned to supervisor and no one else
-#             reports_other_supervised_country_expecting_supervisor = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=2).filter(country__gid__in=country_with_supervisor)
-#             # we put the countries with supervisor first on the list. This aims to reduce the amount of time the regional supervisor has to wait to be assigned last report
-#             # we EXCLUDE the reports_other_supervised_country_expecting_supervisor from both lists -- these are reserved reports for the supervisor
-#             reports_in_any_country_with_supervisor = new_reports_unfiltered.filter(country__gid__in=country_with_supervisor).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
-#             reports_in_country_without_supervisor = new_reports_unfiltered.exclude(country__gid__in=country_with_supervisor).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
-#             reports_in_any_country_with_supervisor_filtered = filter_reports(reports_in_any_country_with_supervisor.order_by('creation_time'))
-#             reports_in_country_without_supervisor_filtered = filter_reports(reports_in_country_without_supervisor.order_by('creation_time'))
-#             new_filtered_reports = reports_in_any_country_with_supervisor_filtered + reports_in_country_without_supervisor_filtered
-#         logger_report_assignment.debug('User {0} has {1} potentially assignable reports'.format(this_user, len(new_filtered_reports)))
-#
-#         if this_user_is_spain:
-#             logger_report_assignment.debug('User {0} is in spanish group'.format(this_user, ))
-#             new_reports = filter_spain_reports(new_filtered_reports)
-#             logger_report_assignment.debug('User {0} has {1} of {2} reports located in Spain/Other area'.format(this_user, len(new_reports), len(new_filtered_reports), ))
-#         elif this_user_is_europe:
-#             logger_report_assignment.debug('User {0} is in european group'.format(this_user, ))
-#             new_reports = filter_eu_reports(new_filtered_reports)
-#             logger_report_assignment.debug('User {0} has {1} of {2} reports located in Europe area'.format(this_user, len(new_reports),len(new_filtered_reports), ))
-#         else:
-#             new_reports = new_filtered_reports
-#
-#         grabbed_reports = -1
-#         reports_taken = 0
-#         logger_report_assignment.debug('Looping reports for User {0}'.format(this_user,))
-#         for this_report in new_reports:
-#             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-#             who_has_count = this_report.get_who_has_count()
-#             logger_report_assignment.debug('Report {0} assigned to {1} people'.format(this_report, who_has_count, ))
-#             if this_user_is_supervisor:
-#                 logger_report_assignment.debug('User {0} is supervisor for {1}'.format(this_user, this_user.userstat.national_supervisor_of.name_engl))
-#                 if this_user.userstat.is_national_supervisor_for_country(this_report.country):
-#                     logger_report_assignment.debug('User {0} is supervisor for country of report {1} which is {2}'.format(this_user, this_report, this_report.country, ))
-#                     if who_has_count == 2:
-#                         logger_report_assignment.debug('Assigning full report {0} to supervisor User {1} because it has been assigned to 2 other users'.format(this_report, this_user,))
-#                         new_annotation.simplified_annotation = False
-#                         grabbed_reports += 1
-#                         reports_taken += 1
-#                         new_annotation.save()
-#                     else:
-#                         logger_report_assignment.debug('NOT assigning report to supervisor User {0} because it has not yet been assigned to 2 other users (assigned to {1} other users)'.format(this_user, who_has_count,))
-#                 else:
-#                     logger_report_assignment.debug('User {0} is NOT supervisor for country of report {1} which is {2}'.format(this_user, this_report,this_report.country, ))
-#                     logger_report_assignment.debug('Assigning report {0} to supervisor User {1} because it is available'.format(this_report, this_user, ))
-#                     if who_has_count == 0 or who_has_count == 1:
-#                         logger_report_assignment.debug('Report assigned to supervisor User {0} as simplified'.format(this_user, ))
-#                         new_annotation.simplified_annotation = True
-#                     else:
-#                         logger_report_assignment.debug('Report assigned to supervisor User {0} as extended'.format(this_user, ))
-#                     grabbed_reports += 1
-#                     reports_taken += 1
-#                     new_annotation.save()
-#             else:
-#                 logger_report_assignment.debug('User {0} is NOT supervisor'.format(this_user, ))
-#                 if this_report.country is None:
-#                     logger_report_assignment.debug('Report {0} has no country'.format(this_report, ))
-#                     if who_has_count == 0 or who_has_count == 1:
-#                         logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
-#                         new_annotation.simplified_annotation = True
-#                     else:
-#                         logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
-#                         new_annotation.simplified_annotation = False
-#                     grabbed_reports += 1
-#                     reports_taken += 1
-#                     new_annotation.save()
-#                 else:
-#                     logger_report_assignment.debug('Report {0} is in country {1}'.format(this_report, this_report.country))
-#                     if this_report.country.gid in country_with_supervisor_set:
-#                         logger_report_assignment.debug('Report {0} is in country {1} which has a supervisor'.format(this_report, this_report.country))
-#                         #Assign only if only 1 other user or nobody is assigned
-#                         if who_has_count <= 1:
-#                             logger_report_assignment.debug('Report {0} is assigned to less or equal than 1 people ({1})'.format(this_report, who_has_count))
-#                             #if this_report.version_UUID in report_assigned_to_supervisor_set:
-#                             if who_has_count == 0 or who_has_count == 1:
-#                                 logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
-#                                 new_annotation.simplified_annotation = True
-#                             else:
-#                                 logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
-#                                 new_annotation.simplified_annotation = False
-#                             grabbed_reports += 1
-#                             reports_taken += 1
-#                             new_annotation.save()
-#                             #else:
-#                                 #logger_report_assignment.debug('Report {0} not yet assigned to supervisor, not assigning'.format(this_report, ))
-#                     else:
-#                         logger_report_assignment.debug('Report {0} is in country {1} which has NO supervisor'.format(this_report,this_report.country))
-#                         if who_has_count == 0 or who_has_count == 1:
-#                             logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
-#                             new_annotation.simplified_annotation = True
-#                         else:
-#                             logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
-#                             new_annotation.simplified_annotation = False
-#                         grabbed_reports += 1
-#                         reports_taken += 1
-#                         new_annotation.save()
-#             if reports_taken == n_to_get:
-#                 break
-#         this_user.userstat.grabbed_reports = grabbed_reports
-#         this_user.userstat.save()
-#         logger_report_assignment.debug('End ASSIGN REPORT for User {0}'.format(this_user, ))
-#         logger_report_assignment.debug(' ')
 
 
 @login_required
@@ -967,23 +447,6 @@ def predefined_messages(request):
         langs.append({"val":elem[0],"txt":elem[1]})
     langs.sort(key=lambda x: x.get("txt"))
     return render(request, 'tigacrafting/predefined_messages.html', {'langs': langs})
-
-
-def pending_reports_heatmap_data():
-    country_qs = EuropeCountry.objects.exclude(is_bounding_box=True)
-    raw_data = []
-    data = []
-    for country in country_qs:
-        current_progress_country = Report.objects.filter(country=country).exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
-        # data is [lat, lng, intensity]
-        centroid = country.geom.centroid
-        raw_data.append( [ centroid.y, centroid.x, current_progress_country.count() if current_progress_country.count() > 0 else 0  ] )
-    # total = 0
-    # for d in raw_data:
-    #     total += d[2]
-    # for d in raw_data:
-    #     data.append([ d[0], d[1], d[2]/total ])
-    return raw_data
 
 
 def update_pending_data(country):
@@ -1116,7 +579,7 @@ def executive_auto_validate(annotation, request):
 
 @transaction.atomic
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na',loc='na'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na',loc='na'):
     this_user = request.user
     if getattr(settings, 'SHOW_USER_AGREEMENT_ENTOLAB', False) == True:
         if this_user.userstat:
@@ -1127,12 +590,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
-    this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
-    this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-    this_user_is_team_venezuela = this_user.groups.filter(name='team_venezuela').exists()
-    this_user_is_team_stlouis = this_user.groups.filter(name='team_stlouis').exists()
-    #this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
-    #this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
+
     this_user_is_reritja = (this_user.id == 25)
 
     if this_user_is_expert or this_user_is_superexpert:
@@ -1202,19 +660,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             load_new_reports = request.GET.get('load_new_reports', load_new_reports)
             edit_mode = request.GET.get('edit_mode', edit_mode)
 
-        #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
         current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
-        #my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
-
-        '''
-        if loc == 'spain':
-            all_annotations = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17))
-        elif loc == 'europe':
-            all_annotations = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17))
-        else:
-            pass
-        '''
 
         if loc == 'spain':
             hidden_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=-1).filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values_list('report', flat=True).distinct()
@@ -1238,9 +684,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             flagged_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=0).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True).distinct()
             public_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=1).exclude(report__version_UUID__in=flagged_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True).distinct()
 
-        # hidden_final_reports = set(list(hidden_final_reports_superexpert) + list(hidden_final_reports_expert))
-        # flagged_final_reports = set(list(flagged_final_reports_superexpert) + list(flagged_final_reports_expert))
-        # public_final_reports = set(list(public_final_reports_superexpert) + list(public_final_reports_expert))
         hidden_final_reports = hidden_final_reports_superexpert | hidden_final_reports_expert
         flagged_final_reports = flagged_final_reports_superexpert | flagged_final_reports_expert
         public_final_reports = public_final_reports_superexpert | public_final_reports_expert
@@ -1250,38 +693,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         elif this_user_is_superexpert:
             assign_reports(this_user)
 
-        # if this_user_is_expert and load_new_reports == 'T':
-        #     if this_user_is_team_venezuela:
-        #         assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 52)
-        #     elif this_user_is_team_stlouis:
-        #         assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 53)
-        #     else:
-        #         national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-        #         country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-        #         country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-        #         assign_reports_to_user(this_user,national_supervisor_ids,current_pending,country_with_supervisor_set,max_pending,max_given)
-        # elif this_user_is_superexpert:
-        #     new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
-        #     if new_reports_unfiltered and this_user_is_team_bcn:
-        #         new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-        #     if new_reports_unfiltered and this_user_is_team_not_bcn:
-        #         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-        #     if this_user.id == 25: #it's roger, don't assign reports from barcelona prior to 03/10/2017
-        #         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(creation_time__lte=date(2017, 3, 10)))
-        #     if new_reports_unfiltered:
-        #         new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
-        #         for this_report in new_reports:
-        #             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-        #             new_annotation.save()
-
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
-
-        # if loc == 'spain':
-        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        # elif loc == 'europe':
-        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        # else:
-        #     my_version_uuids = all_annotations.values('report__version_UUID').distinct()
 
         my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:
@@ -1345,7 +757,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if tiger_certainty and tiger_certainty != 'all':
                 try:
                     this_certainty = int(tiger_certainty)
-                    #all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
                     all_annotations = all_annotations.filter(category__id=this_certainty)
                 except ValueError:
                     pass
@@ -1400,10 +811,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             all_annotations = all_annotations.order_by('-report__creation_time')
             if orderby == "tiger_score":
                 all_annotations = all_annotations.order_by('category__name')
-            # if orderby == "site_score":
-            #     all_annotations = all_annotations.order_by('site_certainty_category')
-            # elif orderby == "tiger_score":
-            #     all_annotations = all_annotations.order_by('tiger_certainty_category')
         paginator = Paginator(all_annotations, int(tasks_per_page))
         page = request.GET.get('page', 1)
         try:
@@ -1417,10 +824,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['formset'] = this_formset
         args['objects'] = objects
         args['pages'] = range(1, objects.paginator.num_pages+1)
-        #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
         current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
         args['n_pending'] = current_pending
-        #n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
         n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).filter(report__type='adult').count()
         args['n_complete'] = n_complete
         args['n_total'] = n_complete + current_pending
@@ -1457,7 +862,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             else:
                 args['exec_validated_label'] = 'N/A'
         args['tags_filter'] = tags_filter
-        #args['my_version_uuids'] = my_version_uuids
         args['my_linked_ids'] = my_linked_ids
         args['tasks_per_page'] = tasks_per_page
         args['note_language'] = note_language
@@ -1505,9 +909,6 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         version_uuid = request.GET.get('version_uuid', version_uuid)
         reports_per_page = request.GET.get('reports_per_page', reports_per_page)
-        #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
-        #all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
-        #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
         these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('-creation_time')
         if version_uuid and version_uuid != 'na':
             reports = Report.objects.filter(version_UUID=version_uuid)
@@ -1516,7 +917,6 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            #reports = list(filter_reports(these_reports, sort=False))
             reports = list(fast_filter_reports(these_reports))
             n_reports = len(reports)
         paginator = Paginator(reports, int(reports_per_page))
@@ -1529,7 +929,6 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             objects = paginator.page(paginator.num_pages)
         paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
         reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
-        #context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
         context = {'reports': paged_reports, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
         context['objects'] = objects
         context['pages'] = range(1, objects.paginator.num_pages+1)
@@ -1863,7 +1262,6 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
             if aithr == '':
                 aithr = '0.75'
 
-        #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
         new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
 
         reports_imbornal = get_reports_imbornal()
@@ -1871,17 +1269,13 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
         new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
 
-        #new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( Q(ia_filter_1__lte=float(aithr)) | Q(ia_filter_1__isnull=True) )
         new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( ia_filter_1__lte=float(aithr) )
 
         new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
 
-        #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
         if type == 'adult':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
             new_reports_unfiltered = new_reports_unfiltered_adults
         elif type == 'site':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
             new_reports_unfiltered = new_reports_unfiltered_sites_embornal
         elif type == 'site-o':
             new_reports_unfiltered = new_reports_unfiltered_sites_other
@@ -1894,21 +1288,12 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         if country and country != '' and country != 'all':
             new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
 
-        # new_reports_unfiltered = filter_reports(new_reports_unfiltered, False)
-        #
-        # new_reports_unfiltered = list(new_reports_unfiltered)
-
-        #report_id_deleted_reports = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("report_id").distinct()
         report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("version_UUID").distinct()
         report_id_deleted_reports_sites = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'site' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("version_UUID").distinct()
 
         new_reports_unfiltered = new_reports_unfiltered.exclude(version_UUID__in=report_id_deleted_reports_adults).exclude(version_UUID__in=report_id_deleted_reports_sites)
 
         new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
-        #new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number union select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'site' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number",()))
-
-        # for r in new_reports_unfiltered:
-        #      print("{0} {1} {2}".format(r.version_UUID, r.deleted, r.latest_version))
 
         paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
         page = request.GET.get('page', 1)
@@ -1951,23 +1336,13 @@ def picture_validation(request,tasks_per_page='10',visibility='visible', usr_not
         elif type == 'all':
             type_readable = "All"
         args['type_readable'] = type_readable
-        #n_query_records = new_reports_unfiltered.count()
         n_query_records = len(new_reports_unfiltered)
         args['n_query_records'] = n_query_records
-        #args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
         range_list = [ n for n in range(5, 101, 5) ]
         args['tasks_per_page_choices'] = range_list + [200,300]
         return render(request, 'tigacrafting/photo_grid.html', args)
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
-
-
-@login_required
-def notifications(request,user_uuid=None):
-    this_user = request.user
-    user_uuid = request.GET.get('user_uuid',None)
-    total_users = TigaUser.objects.all().count()
-    return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
 
 @login_required
 def notifications_version_two(request,user_uuid=None):

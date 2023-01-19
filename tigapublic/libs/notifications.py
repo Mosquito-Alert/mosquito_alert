@@ -2,7 +2,6 @@
 """Notification Libraries."""
 import json
 import urllib.parse
-# from HTMLParser import HTMLParser  PYTHON 2
 from html.parser import HTMLParser
 
 import requests
@@ -109,11 +108,6 @@ class NotificationManager(BaseManager):
         else:
             # iOS endpoint
             # get the link to this report
-            # qs = MapAuxReports.objects.filter(
-            #    version_uuid=usernotif.report_id)
-            # qsobject = Struct(**qs.values()[0])
-            # link_url = MapAuxReportsResource()
-            #            .dehydrate_single_report_map_url(qsobject)
             link_url = ''
             # set the url & params
             url = '%smsg_ios/?user_id=%s&link_url=%s&alert_message=%s' % (

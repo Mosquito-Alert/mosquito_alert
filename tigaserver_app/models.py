@@ -2,19 +2,16 @@ from django.db import models
 import uuid
 import os
 import os.path
-import urllib
 from PIL import Image
 import datetime
 from math import floor
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Max, Min
-from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
-#from django.core.urlresolvers import reverse
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation
 from django.db.models import Count
 from django.conf import settings
 from django.db.models import Q
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES, Categories
 from collections import Counter
 from datetime import datetime, timedelta
@@ -41,10 +38,7 @@ from django.db.models import Manager as GeoManager
 from django.utils.deconstruct import deconstructible
 from django.urls import reverse
 from django.template.loader import TemplateDoesNotExist
-from io import BytesIO
-from django.core.files import File
-import html.entities
-from common.translation import get_locale_for_en, get_translation_in, get_locale_for_native
+from common.translation import get_translation_in, get_locale_for_native
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
@@ -787,76 +781,6 @@ class Report(models.Model):
             result = result + photo.small_image_() + '&nbsp;'
         return result
 
-    # def get_photo_html_for_report_validation_wblood(self):
-    #     these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-    #     result = ''
-    #     for photo in these_photos:
-    #         male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
-    #         female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
-    #         fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-    #         dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
-    #         fg_status = 'checked="checked"' if photo.blood_genre == 'fg' else ''
-    #         fgb_status = 'checked="checked"' if photo.blood_genre == 'fgb' else ''
-    #         result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
-    #                     '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
-    #                 '</div>' \
-    #                 '<br>' \
-    #                 '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>' \
-    #                '<div id="blood_status_' + str(self.version_UUID) + '_' + str(photo.id) + '">' \
-    #                '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
-    #                '</div>' \
-    #                '<br>'
-    #     return result
-
-    # def get_photo_html_for_report_validation(self):
-    #     these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-    #     result = ''
-    #     for photo in these_photos:
-    #         result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
-    #                 '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
-    #                 '</div>' \
-    #                 '<br>' \
-    #                 '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>' \
-    #                 '<br>'
-    #     return result
-
-    # def get_photo_html_for_report_validation_superexpert(self):
-    #     these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-    #     result = ''
-    #
-    #     for photo in these_photos:
-    #         best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
-    #         border_style = "3px solid green" if best_photo else "1px solid #333333"
-    #         male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
-    #         female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
-    #         fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-    #         dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
-    #         fg_status = 'checked="checked"' if photo.blood_genre == 'fg' else ''
-    #         fgb_status = 'checked="checked"' if photo.blood_genre == 'fgb' else ''
-    #         result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
-    #                     '<input data-best="' + str(best_photo) + '" type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:'\
-    #                     '</div>' \
-    #                     '<br>' \
-    #                     '<div style="border:' + border_style + ';margin:1px;position: relative;">' + photo.medium_image_for_validation_() + '</div>' \
-    #                     '<div id="blood_status_' + str(self.version_UUID) + '_' + str(photo.id) + '">' \
-    #                     '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
-    #                     '</div>' \
-    #                     '<br>'
-    #     return result
-        # '<a class="btn btn-default infoPhoto bottom-right" value="' + str(self.version_UUID) + '__' + str(photo.id) + '">'
-        # '<i aria-hidden="true" title="Image EXIF metadata" class="glyphicon glyphicon-info-sign"></i>'
-        # '</a>'
-
     def get_icon_for_blood_genre(self, blood_genre):
         blood_genre_table = {
             BLOOD_GENRE[0][0] : '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
@@ -1011,15 +935,6 @@ class Report(models.Model):
                                 result['class_label'] = slugify(classification['category'].name)
                                 result['class_id'] = classification['category'].id
                                 result['class_value'] = classification['value']
-
-                    '''
-                    retval = {
-                        'category': None,
-                        'complex': None,
-                        'value': None,
-                        'conflict': False
-                    }
-                    '''
                 elif self.type == 'site':
                     result['class_name'] = "site"
                     result['class_label'] = "site"
@@ -1147,34 +1062,6 @@ class Report(models.Model):
             q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
             result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
         return result
-
-    # def get_tiger_responses(self):
-    #     if self.type != 'adult':
-    #         return None
-    #     these_responses = self.responses.all()
-    #     result = {}
-    #
-    #     if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
-    #         q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
-    #         result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q1r = these_responses.get(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q1_response'] = -2 if q1r in [u'Like Ae. albopictus', u'Com Ae. albopictus',u'Como Ae. albopictus'] else -3 if q1r in [u'Like Ae. aegypti', u'Com Ae. aegypti', u'Como Ae. aegypti'] else -4 if q1r in [u'Neither', u'Cap dels dos', u'None of them'] else -5
-    #
-    #     if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
-    #         q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
-    #         result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q2r = these_responses.get(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q2_response'] = -2 if q2r in [u'Thorax like Ae. albopictus', u'T\xf3rax com Ae. albopictus', u'T\xf3rax like Ae. albopictus'] else -3 if q2r in [u'Thorax like Ae. aegypti', u'T\xf3rax com Ae. aegypti', u'T\xf3rax como Ae. aegypti'] else -4 if q2r in [u'Neither', u'Cap dels dos', u'Ninguno de los dos'] else -5
-    #
-    #     if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
-    #         q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
-    #         result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q3r = these_responses.get(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q3_response'] = -2 if q3r in [u'Abdomen like a Ae. albopictus',u'Abdomen com Ae. albopictus',u'Abdomen como Ae. albopictus'] else -3 if q3r in [u'Abdomen like Ae. aegypti', u'Abdomen com Ae. aegypti',u'Abdomen como Ae. aegypti'] else -4 if q3r in [u'Neither', u'Cap dels dos',u'Ninguno de los dos'] else -5
-    #     return result
 
     def get_site_responses_text(self):
         if self.type != 'site':
@@ -1493,28 +1380,6 @@ class Report(models.Model):
                     return None  # conflict
         return most_frequent_item
 
-    '''
-    def get_most_voted_category(self,expert_annotations):
-        score_table = {}
-        most_frequent_item, most_frequent_count = None, 0
-        for anno in expert_annotations:                            
-            item = anno.category if anno.complex is None else anno.complex
-            score_table[item] = score_table.get(item,0) + 1
-            if score_table[item] >= most_frequent_count:
-                most_frequent_count, most_frequent_item = score_table[item], item
-        # if there's a single key and it's Not sure, then not sure
-        if len(score_table.keys()) == 1:
-            for key in score_table:
-                if key.id == 9:
-                    return score_table[key]
-        # check for ties
-        for key in score_table:            
-            score = score_table[key]
-            if key != most_frequent_item and score >= most_frequent_count:
-                return None #conflict
-        return most_frequent_item
-    '''
-
     def get_score_for_category_or_complex(self, category):
         superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)
         expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category=category)
@@ -1533,7 +1398,6 @@ class Report(models.Model):
             return 2
         else:
             return 1
-        #return mean_score
 
 
     def get_html_color_for_label(self):
@@ -2260,8 +2124,6 @@ class Report(models.Model):
     n_photos = property(get_n_photos)
     n_visible_photos = property(get_n_visible_photos)
     photo_html = property(get_photo_html)
-    #photo_html_for_report_validation= property(get_photo_html_for_report_validation)
-    #photo_html_for_report_validation_superexpert = property(get_photo_html_for_report_validation_superexpert)
     formatted_date = property(get_formatted_date)
     response_html = property(get_response_html)
     response_string = property(get_response_string)
@@ -2314,23 +2176,6 @@ def get_user_reports_count(user):
     last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
     return len(list(last_versions))
 
-# def get_translation_in(string, locale):
-#     translation.activate(locale)
-#     val = ugettext(string)
-#     translation.deactivate()
-#     return val
-#
-# def get_locale_for_en(report):
-#     if report is not None:
-#         if report.app_language is not None and report.app_language != '':
-#             if report.app_language != 'ca' and report.app_language != 'en' and report.app_language != 'es':
-#                 report_locale = report.app_language
-#                 for lang in settings.LANGUAGES:
-#                     if lang[0] == report_locale:
-#                         return report_locale
-#     return 'en'
-
-
 def package_number_allows_notification(report):
     minimum_package_version = getattr(conf, 'MINIMUM_PACKAGE_VERSION_SCORING_NOTIFICATIONS', 32)
     if report is not None:
@@ -2343,48 +2188,32 @@ def package_number_allows_notification(report):
 def issue_notification(report, reason_label, xp_amount, current_domain):
     if getattr( conf, 'DISABLE_ACHIEVEMENT_NOTIFICATIONS', True) == False:
         if package_number_allows_notification(report):
-            #table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
             notification_content = NotificationContent()
-            # context_es = {}
-            # context_ca = {}
             context_en = {}
             context_native = {}
-            # locale_for_en = get_locale_for_en(report)
             locale_for_native = get_locale_for_native(report)
             notification_content.native_locale = locale_for_native
             super_movelab = User.objects.get(pk=24)
-            # notification_content.title_es = "¡Acabas de recibir una recompensa de puntos!"
-            # notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
             notification_content.title_en = get_translation_in("you_just_received_a_points_award",'en')
             notification_content.title_native = get_translation_in("you_just_received_a_points_award", locale_for_native)
             if report is not None:
                 if report.get_final_photo_url_for_notification():
-                    #context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
                     context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
                     context_native['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                    #context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
                 else:
                     pic = report.get_first_visible_photo()
                     if pic:
                         pic_url = pic.get_medium_url()
                         if pic_url is not None:
-                            # context_es['picture_link'] = 'http://' + current_domain + pic_url
                             context_en['picture_link'] = 'http://' + current_domain + pic_url
                             context_native['picture_link'] = 'http://' + current_domain + pic_url
-                            # context_ca['picture_link'] = 'http://' + current_domain + pic_url
 
-            # context_es['amount_awarded'] = xp_amount
             context_en['amount_awarded'] = xp_amount
             context_native['amount_awarded'] = xp_amount
-            # context_ca['amount_awarded'] = xp_amount
 
-            # context_es['reason_awarded'] = get_translation_in(reason_label, 'es')
             context_en['reason_awarded'] = get_translation_in(reason_label, 'en')
             context_native['reason_awarded'] = get_translation_in(reason_label, locale_for_native)
-            # context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca')
 
-            #notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
-            #notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
             notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
             try:
                 notification_content.body_html_native = render_to_string('tigaserver_app/award_notification_' + locale_for_native + '.html', context_native)
@@ -2392,18 +2221,9 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
                 notification_content.body_html_native = render_to_string('tigaserver_app/award_notification_en.html',context_en)
 
 
-            #notification_content.body_html_es = notification_content.body_html_es.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-            #notification_content.body_html_ca = notification_content.body_html_ca.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
             notification_content.body_html_en = notification_content.body_html_en.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
             notification_content.body_html_native = notification_content.body_html_native.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
 
-
-            '''
-            if conf.DEBUG == True:
-                print(notification_content.body_html_es)
-                print(notification_content.body_html_ca)
-                print(notification_content.body_html_en)
-            '''
             notification_content.save()
             notification = Notification(report=report, expert=super_movelab, notification_content=notification_content)
             notification.save()
@@ -2415,13 +2235,11 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             if recipient.device_token is not None and recipient.device_token != '':
                 if (recipient.user_UUID.islower()):
                     try:
-                        #print(recipient.user_UUID)
                         send_message_android(recipient.device_token, notification_content.title_en, '')
                     except Exception as e:
                         logger_notification.exception("Exception sending xp android message")
                 else:
                     try:
-                        #print(recipient.user_UUID)
                         send_message_ios(recipient.device_token, notification_content.title_en, '')
                     except Exception as e:
                         logger_notification.exception("Exception sending xp ios message")
@@ -2532,14 +2350,6 @@ class MakeImageUUID(object):
 
 make_image_uuid = MakeImageUUID('tigapics')
 
-'''
-def make_image_uuid(path):
-    def wrapper(instance, filename):
-        extension = filename.split('.')[-1]
-        filename = "%s.%s" % (uuid.uuid4(), extension)
-        return os.path.join(path, filename)
-    return wrapper
-'''
 
 def make_uuid():
     return str(uuid.uuid4())
@@ -2753,52 +2563,12 @@ class NotificationContent(models.Model):
             return self.title_native
         else:
             return self.title_en
-        '''
-        if locale.lower().startswith('es'):
-            return self.title_es
-        elif locale.lower().startswith('ca'):
-            if self.title_ca is None:
-                return self.title_es
-            else:
-                return self.title_ca
-        elif locale.lower().startswith('en'):
-            if self.title_en is None:
-                return self.title_es
-            else:
-                return self.title_en
-        else:
-            return self.title_en
-        '''
-        # elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
-        #     return self.title_en
-        # else:
-        #     return self.title_es
 
     def get_body_locale_safe(self, locale):
         if self.native_locale is not None and locale.lower().strip() == self.native_locale.lower().strip():
             return self.body_html_native
         else:
             return self.body_html_en
-        '''
-        if locale.lower().startswith('es'):
-            return self.body_html_es
-        elif locale.lower().startswith('ca'):
-            if self.body_html_ca is None:
-                return self.body_html_es
-            else:
-                return self.body_html_ca
-        elif locale.lower().startswith('en'):
-            if self.body_html_en is None:
-                return self.body_html_es
-            else:
-                return self.body_html_en
-        else:
-            return self.body_html_en
-        '''
-        # elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
-        #     return self.body_html_en
-        # else:
-        #     return self.body_html_es
 
 
 class Notification(models.Model):

@@ -2,13 +2,11 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
-from django.template import RequestContext
 from django_messages.utils import format_quote, get_user_model, get_username_field
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import get_object_or_404
 from tigaserver_messages.forms import ComposeForm
 from django_messages.models import Message
 from django.utils.translation import ugettext as _
@@ -111,7 +109,6 @@ def compose_w_data(request, recipient=None, body=None, subject=None, form_class=
         if subject is not None:
             form.fields['subject'].initial = subject
     return render(request, template_name, {'form': form, 'tokenized_recipients': tokenized_recipients})
-    #return render_to_response(template_name, {'form': form, 'tokenized_recipients': tokenized_recipients}, context_instance=RequestContext(request))
 
 @login_required
 def reply_w_data(request, message_id, form_class=ComposeForm,
@@ -131,7 +128,6 @@ def reply_w_data(request, message_id, form_class=ComposeForm,
         raise Http404
 
     if request.method == "POST":
-        sender = request.user
         form = form_class(request.POST, recipient_filter=recipient_filter)
         if form.is_valid():
             form.save(sender=request.user, parent_msg=parent)
@@ -147,4 +143,3 @@ def reply_w_data(request, message_id, form_class=ComposeForm,
             'recipient': [parent.sender,]
             })
     return render(request, template_name, {'form': form, 'tokenized_recipients': tokenized_recipients})
-    #return render_to_response(template_name, {'form': form,'tokenized_recipients': tokenized_recipients}, context_instance=RequestContext(request))

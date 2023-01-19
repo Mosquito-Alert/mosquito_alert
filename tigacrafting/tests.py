@@ -2,44 +2,17 @@ from django.test import TestCase
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
-from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex
+from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent
+from tigacrafting.models import ExpertReportAnnotation, Categories, Complex
 from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
 from django.utils import timezone
-from django.db.models import Count, Q
-from django.core.exceptions import ObjectDoesNotExist
-from operator import attrgetter
+from django.db.models import Q
 from tigacrafting.views import issue_notification
 import tigaserver_project.settings as conf
 from django.utils import timezone
 from common.translation import get_translation_in
-import pytz
 from tigacrafting.report_queues import *
-
-###                 HELPER STUFF                ########################################################################
-
-BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
-
-
-def user_summary(user):
-    print("############################################".format(user.username, ))
-    print("#### USER - {0} \t\t####".format(user.username,))
-    assigned_reports = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').values('report').distinct()
-    assigned_reports_count = assigned_reports.count()
-    if user.groups.filter(name='eu_group_europe').exists():
-        print("#### Group - europe \t\t####")
-    elif user.groups.filter(name='eu_group_spain').exists:
-        print("#### Group - spain \t\t####")
-    print("#### National supervisor - {0} \t\t####".format( 'Yes' if user.userstat.is_national_supervisor() else 'No', ))
-    if user.userstat.is_national_supervisor():
-        print("#### Supervised country - {0} \t\t####".format(user.userstat.national_supervisor_of.name_engl))
-    print("#### Assigned reports - {0} \t\t####".format(str(assigned_reports_count), ))
-    reports = Report.objects.filter(version_UUID__in=assigned_reports)
-    for r in reports:
-        print("#### Report {0} - {1} \t\t####".format(r.version_UUID, str(r.country), ))
-    print("############################################".format(user.username, ))
-    print("")
 
 
 def create_report(version_number, version_uuid, user, country):
@@ -62,24 +35,6 @@ def create_report(version_number, version_uuid, user, country):
     p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
     p.save()
     return r
-
-
-# def filter_false_validated(reports, sort=True):
-#     if sort:
-#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports), key=attrgetter('n_annotations'), reverse=True)
-#     else:
-#         reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
-#     return reports_filtered
-
-
-# def filter_reports(reports, sort=True):
-#     if sort:
-#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),key=attrgetter('n_annotations'), reverse=True)
-#     else:
-#         reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-#     return reports_filtered
-
-###                END HELPER STUFF                #####################################################################
 
 
 class NewReportAssignment(TestCase):

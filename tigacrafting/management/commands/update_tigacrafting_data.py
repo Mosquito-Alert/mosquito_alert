@@ -54,7 +54,7 @@ class Command(BaseCommand):
                 response_model.user_lang = info_dic['user_lang']
                 existing_task = CrowdcraftingTask.objects.filter(task_id=response['task_id'])
                 if existing_task:
-                    print 'existing task'
+                    print('existing task')
                     this_task = CrowdcraftingTask.objects.get(task_id=response['task_id'])
                     response_model.task = this_task
                 else:

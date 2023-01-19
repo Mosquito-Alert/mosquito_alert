@@ -4,13 +4,7 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from django.conf import settings
 from django.db import models
-
-
-class UserfixesManager(models.Manager):
-    """a."""
-
 
 class Userfixes(models.Model):
     """Userfixes model."""
@@ -113,7 +107,6 @@ class AuthUserManager(models.Manager):
     def get_queryset(self):
         """Just ordering province name."""
         return super(AuthUserManager, self).get_queryset().order_by('username')
-
 
 class AuthUser(models.Model):
     """Users who can get authenticated at the map."""

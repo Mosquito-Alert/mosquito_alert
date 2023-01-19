@@ -1,36 +1,12 @@
 from django.shortcuts import render
 from django.template.loader import TemplateDoesNotExist
 
-# Create your views here.
-
-
-def show_about(request, platform, language):
-    context = {}
-    # We ignore platform for now
-    # if platform == 'ios':
-    #     if language == 'ca':
-    #         return render(request, 'tigahelp/about_ios_ca.html', context)
-    #     if language == 'es':
-    #         return render(request, 'tigahelp/about_ios_es.html', context)
-    #     if language == 'en':
-    #         return render(request, 'tigahelp/about_ios_en.html', context)
-    # else:
-    if language == 'ca':
-        return render(request, 'tigahelp/about_ca.html', context)
-    if language == 'es':
-        return render(request, 'tigahelp/about_es.html', context)
-    if language == 'en':
-        return render(request, 'tigahelp/about_en.html', context)
-    if language == 'zh-cn':
-        return render(request, 'tigahelp/about_zh.html', context)
-
-
 def show_credit_image(request):
     context = {}
     return render(request, 'tigahelp/credit_image.html', context)
 
 
-def show_help(request, platform, language):
+def show_help(request, language):
     context = {}
     if language == 'ca':
         return render(request, 'tigahelp/help_ca.html', context)
@@ -42,8 +18,7 @@ def show_help(request, platform, language):
         return render(request, 'tigahelp/help_zh.html', context)
 
 
-def show_license(request, platform, language):
-    #language = request.LANGUAGE_CODE
+def show_license(request, language):
     context = {}
     try:
         return render(request, 'tigahelp/license_' + language + '.html', context)

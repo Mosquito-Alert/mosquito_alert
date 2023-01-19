@@ -1,13 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.db import connection
-from matplotlib.pyplot import switch_backend
 
 from tigaserver_app.models import *
 from tigacrafting.models import UserStat
 from datetime import date, timedelta, datetime
 import time
-import pytz
-from collections import Counter
 from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.cache import cache_page
@@ -21,21 +18,20 @@ from tigaserver_project import settings
 import json
 import datetime
 from django.utils import timezone
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import math
 from django.utils import translation
 
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data, compute_user_score_in_xp_v2_fast
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
-from tigacrafting.report_queues import get_crisis_report_available_reports, get_unassigned_available_reports, get_progress_available_reports
+from tigacrafting.report_queues import get_unassigned_available_reports, get_progress_available_reports
 from tigacrafting.views import get_blocked_reports_by_country
-from tigacrafting.report_queues import filter_reports as queue_filter
 
 
 @xframe_options_exempt
@@ -315,7 +311,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     if category == 'confirmedpossible':
 
         categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable',)
-        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\'')
 
         title_linechart = 'Number of confirmed and possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         title = 'Confirmed and possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -326,7 +321,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     elif category == 'confirmedpossibleunident':
 
         categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'unidentified')
-        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\',\'mosquito_tiger_probable\',\'unidentified\'')
 
         title_linechart = 'Number of confirmed, possible and unidentifiable mosquito tiger observations'
         title = 'Confirmed, possible and unidentifiable mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -338,7 +332,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     elif category == 'confirmed':
 
         categories = ('mosquito_tiger_confirmed',)
-        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
 
         title_linechart = 'Number of confirmed mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         title = 'Confirmed mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -350,7 +343,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     elif category == 'probable':
 
         categories = ('mosquito_tiger_probable',)
-        #sql_template = sql_template.format('\'mosquito_tiger_probable\'')
 
         title_linechart = 'Number of possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         title = 'Possible mosquito tiger observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -362,7 +354,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     elif category == 'other':
 
         categories = ('other_species',)
-        #sql_template = sql_template.format('\'other_species\'')
 
         title_linechart = 'Number of other species observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         title = 'Other species observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -374,7 +365,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     elif category == 'unidentified':
 
         categories = ('unidentified',)
-        #sql_template = sql_template.format('\'unidentified\'')
 
         title_linechart = 'Number of unidentifiable observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         title = 'Unidentifiable observations, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -386,7 +376,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     elif category == 'all':
 
         categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'unidentified', 'other_species',)
-        #sql_template = sql_template.format('\'unidentified\'')
 
         title_linechart = 'All categories, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         title = 'All categories, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -398,7 +387,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     elif category == 'storm_drain_water':
 
         categories = ('storm_drain_water', )
-        # sql_template = sql_template.format('\'unidentified\'')
 
         title_linechart = 'Breeding sites with water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
         title = 'Breeding sites with water, ' + str(t[0]['min']) + '-' + str(t[0]['max']) + ''
@@ -454,7 +442,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     else:
 
         categories = ('mosquito_tiger_confirmed',)
-        #sql_template = sql_template.format('\'mosquito_tiger_confirmed\'')
 
         title_linechart = ''
         title = ''
@@ -679,7 +666,6 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         try:
             user = TigaUser.objects.get(pk=user_uuid)
             user.get_identicon()
-            #user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
             if user.score_v2_struct is None:
                 user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
                 user.score_v2_struct = json.dumps(user_score, indent=2, sort_keys=True, default=str)
@@ -693,8 +679,6 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         except TigaUser.DoesNotExist:
             pass
     seek = request.GET.get('seek', 'f')
-    #ranking = get_ranking_data()
-    #objects = ranking['data']
     objects = RankingData.objects.all().order_by('-score_v2')
     last_update = objects.first().last_update
     page_length = 5
@@ -769,8 +753,6 @@ def report_stats_ccaa(request):
     years = list(years)
     years.sort()
 
-
-    # context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa),  'm_data': json.dumps(m_data), 'years': years}
     context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa), 'years': years}
     return render(request, 'stats/report_stats_ccaa.html', context)
 
@@ -788,7 +770,6 @@ def global_assignments(request):
     this_user_is_national_supervisor = this_user.userstat.is_national_supervisor()
     lock_period = settings.ENTOLAB_LOCK_PERIOD
     if this_user_is_superexpert:
-        #national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
         data = []
         total_unassigned = 0
         total_progress = 0
@@ -832,9 +813,6 @@ def global_assignments(request):
                 ns = UserStat.objects.get(national_supervisor_of=current_country)
             except UserStat.DoesNotExist:
                 ns = None
-            #current_country = user.userstat.national_supervisor_of.gid
-            #unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-            #unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
             unassigned_filtered = get_unassigned_available_reports(current_country)
             progress_filtered = get_progress_available_reports(current_country)
             user_id_filter = UserStat.objects.filter(native_of=current_country).values('user__id')
@@ -865,14 +843,11 @@ def global_assignments(request):
         context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary, 'days': lock_period}
         return render(request, 'stats/global_assignments.html', context)
     elif this_user_is_national_supervisor:
-        #national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
         data = []
         total_unassigned = 0
         total_progress = 0
         total_pending = 0
         current_country = this_user.userstat.national_supervisor_of.gid
-        # unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-        # unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
         unassigned_filtered = get_unassigned_available_reports(this_user.userstat.national_supervisor_of)
         progress_filtered = get_progress_available_reports(this_user.userstat.national_supervisor_of)
         user_id_filter = UserStat.objects.filter(native_of__gid=current_country).values('user__id')
@@ -910,7 +885,6 @@ def global_assignments_list(request, country_code=None, status=None):
         countryGID = c.gid
         countryName = c.name_engl
 
-    report_id_table = {}
     listas = []
     reportStatus = ''
 
@@ -991,53 +965,6 @@ def workload_stats(request, country_id=None):
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
 
-def show_fix_users(request):
-    real_fixes = Fix.objects.filter(fix_time__gt='2014-06-13')
-    tz = get_localzone()
-    ref_date = datetime.datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
-    end_date = tz.localize(datetime.datetime.now())
-    fix20_users = []
-    fix15_users = []
-    fix10_users = []
-    fix5_users = []
-    fix1_users = []
-
-    while ref_date <= end_date:
-        these_fixes = real_fixes.filter(fix_time__lte=ref_date, user_coverage_uuid__isnull=False)
-        c = Counter(f.user_coverage_uuid for f in these_fixes)
-        fix20_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 20])})
-        fix15_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 15])})
-        fix10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 10])})
-        fix5_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 5])})
-        fix1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v >= 1])})
-        ref_date += timedelta(hours=24)
-    context = {'fix20_users': fix20_users, 'fix15_users': fix15_users,'fix10_users': fix10_users, 'fix5_users': fix5_users, 'fix1_users': fix1_users}
-    return render(request, 'stats/fix_user_chart.html', context)
-
-
-def show_report_users(request):
-    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)) if report.latest_version]
-    tz = get_localzone()
-    ref_date = datetime.datetime(2014, 6, 13,  tzinfo=tz)
-    end_date = tz.localize(datetime.datetime.now())
-    r0_users = []
-    r1_users = []
-    r2_users = []
-    r3_users = []
-    r4_users = []
-    while ref_date <= end_date:
-        these_reports = [r for r in real_reports if r.creation_time <= ref_date]
-        c = Counter(r.user for r in these_reports)
-        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 0])})
-        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 1])})
-        r2_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 2])})
-        r3_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 3])})
-        r4_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 4])})
-        ref_date += timedelta(days=1)
-    context = {'r0_users': r0_users, 'r1_users': r1_users, 'r2_users': r2_users, 'r3_users': r3_users, 'r4_users': r4_users}
-    return render(request, 'stats/report_user_chart.html', context)
-
-
 @login_required
 def hashtag_map(request):
     context = {}
@@ -1049,7 +976,6 @@ def hashtag_map(request):
 def get_user_xp_data(request):
     user_id = request.query_params.get('user_id', '-1')
     locale = request.query_params.get('locale', 'en')
-    update = request.query_params.get('update', True)
     u = None
     try:
         u = TigaUser.objects.get(pk=user_id)

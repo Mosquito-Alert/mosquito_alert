@@ -8,16 +8,7 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path)
 
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-
 from django.contrib.auth.models import User
-
-
-# def list_users():
-#     for u in User.objects.all().order_by('username'):
-#         assign_tester(u)
 
 
 def get_user_groups(user):

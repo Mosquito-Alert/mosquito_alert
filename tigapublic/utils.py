@@ -3,7 +3,6 @@
 import datetime
 import decimal
 import json
-import requests
 import os
 from django.contrib.auth.models import User
 import re
@@ -170,32 +169,6 @@ def extendUser(user):
         return AnonymousUser(user.id)
 
 
-def userIsValid(user):
-    """Return True if user is valid.
-
-    A valid user is an active & authenticated user.
-    """
-    return user.is_authenticated and user.is_active
-
-
-def userIsManager(user):
-    """Return True if user is manager.
-
-    A manager must be valid and belong to the managers_group.
-    """
-    return (userIsValid(user) and
-            user.groups.filter(name=managers_group).exists())
-
-
-def userIsRoot(user):
-    """Return True if user is root.
-
-    A root must be valid and belong to the superusers_group.
-    """
-    return (userIsValid(user) and
-            user.groups.filter(name=superusers_group).exists())
-
-
 #################
 # JSON encoding #
 #################
@@ -216,40 +189,9 @@ class CustomJSONEncoder(json.JSONEncoder):
             return super(CustomJSONEncoder, self).default(o)
 
 
-# class Struct:
-#    """Struct."""
-#
-#    def __init__(self, **entries):
-#        """Constructor."""
-#        self.__dict__.update(entries)
-
-# def dictfetchall(cursor):
-#     "Return all rows from a cursor as a dict"
-#     columns = [col[0] for col in cursor.description]
-#     return [
-#         dict(zip(columns, row))
-#         for row in cursor.fetchall()
-#     ]
-
 #############
 # Tools
 #############
-
-def ValuesQuerySetToDict(vqs):
-    """Turn Queryset to array of dicts."""
-    return [item for item in vqs]
-
-
-def julianDay(date):
-    """Get julianDay from date."""
-    julianDay = '%03d' % (date.timetuple().tm_yday)
-    return int(julianDay)
-
-
-def urlExists(url):
-    """Check if url exists."""
-    r = requests.head(url)
-    return r.status_code == requests.codes.ok
 
 
 def get_directory_structure(rootdir, filename):

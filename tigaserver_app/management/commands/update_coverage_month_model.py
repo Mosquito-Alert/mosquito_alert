@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from tigaserver_app.models import CoverageAreaMonth, Fix, Report
 from tigaserver_app.views import get_latest_reports_qs, lat_function, lat_function_m0, lat_function_y0
 import pytz

@@ -1,5 +1,3 @@
-import sys
-from types import MethodType
 import psycopg2
 import psycopg2.extensions
 from tigaserver_project import settings as conf
@@ -7,17 +5,12 @@ from tigaserver_project import settings as conf
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
-# host = "161.111.254.244"
-#Apparently unused
-#_HOST = 'http://humboldt.ceab.csic.es'
-#_HOST_ip = "158.109.46.21"  # posrgresql ver 1.18.1
 _HOST_ip = conf.DATABASES['default']['HOST']  # posrgresql ver 1.18.1
 _DB_USER = conf.DATABASES['default']['USER']
 _DB_PASSWORD = conf.DATABASES['default']['PASSWORD']
 _DB_NAME = conf.DATABASES['default']['NAME']
 _DB_PORT = conf.DATABASES['default']['PORT']
 #Apparently unused
-#_LOCAL_data = '/home/jgarriga/mosquitoAlert/data/'
 
 
 # +++ mosquitoAlert data base connect/disconnect functions

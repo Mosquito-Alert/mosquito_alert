@@ -1,6 +1,5 @@
 from django.utils.translation import ugettext_lazy as _
 import tigaserver_project as project_module
-import django.conf.global_settings as DEFAULT_SETTINGS
 import pytz
 from datetime import datetime
 
@@ -28,19 +27,13 @@ PROJECT_DIR = os.path.dirname(os.path.realpath(project_module.__file__))
 SECRET_KEY = 'h0v(25z3u9yquh+01+#%tj@7iyk*raq!-6)jwz+0ac^h2grd0@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 TEMPLATE_DEBUG = DEBUG
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = []
 
 # Application definition
-
-
-# TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
-#     'django.core.context_processors.request',
-# )
-
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -69,17 +62,6 @@ INSTALLED_APPS = (
     'corsheaders',
 )
 
-'''
-MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
-'''
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -105,12 +87,12 @@ WSGI_APPLICATION = 'tigaserver_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
+        'NAME': BASE_DIR +'/db.sqlite3',
         'USER': '',
         'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '',
+        #'HOST': 'localhost',
+        #'PORT': '',
     }
 }
 
@@ -166,7 +148,6 @@ LANGUAGES = (
 # ./manage.py makemessages -d djangojs -l ca
 # ./manage.py makemessages -d djangojs -l es
 # ./manage.py compilemessages
-
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
@@ -177,8 +158,6 @@ LOCALE_PATHS = (
 STATIC_URL = '/static/'
 
 STATIC_ROOT = ''
-
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = '/media/'
 
@@ -228,8 +207,6 @@ LEAFLET_CONFIG = {
         }
     }
 }
-
-#TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 TEMPLATES = [
     {

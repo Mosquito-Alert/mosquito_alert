@@ -7,8 +7,6 @@ from django.db.models import Count
 from django.db.models import Q
 from datetime import date, datetime, timedelta
 import logging
-import operator
-import functools
 from django.db import IntegrityError
 
 logger_report_assignment = logging.getLogger('mosquitoalert.report.assignment')
@@ -23,36 +21,7 @@ def get_base_adults_qs():
     return Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult')
 
 
-# def get_deleted_adult_reports(qs):
-#     return qs.filter(version_number=-1).values('report_id').distinct()
-# This is not used anymore, because it's too naive and returns as deleted some reports which are in fact not deleted
-# This happens because there is a lot more collisions between report_id
-# The solution goes through this query
-#
-# select "version_UUID"
-# from
-# tigaserver_app_report r,
-# (
-#   select report_id, user_id, count("version_UUID")
-#   from
-#   tigaserver_app_report
-#   where
-#   type = 'adult' and report_id in
-#     (select distinct report_id from tigaserver_app_report where version_number = -1)
-#   group by report_id, user_id having count("version_UUID") >1
-# ) as deleted
-# where r.report_id = deleted.report_id and r.user_id = deleted.user_id
-#
-# The internal count subquery gives a list of report_id, user_id of truly deleted reports. These are reports with the same
-# report_id, belonging to the same user. The subclause in this query applies an additional requirement: there must be a -1 in
-# the versions. This way we obtain the list of report_id, user_id for reports which contain a -1 in the series and belong to
-# the same user. This is important, and avoids the fact of considering deleted a report with the same report_id as one marked -1,
-# but belonging to a different user
-
-
 def filter_reports_for_superexpert(reports):
-    # not deleted, last version, completely validated by at least three experts
-    #deleted_adult_reports = get_deleted_adult_reports(reports)
     # not deleted
     undeleted = reports.exclude(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
     # last version
@@ -182,30 +151,6 @@ def assign_reports_to_national_supervisor(this_user):
         if grabbed_reports != -1 and user_stats:
             user_stats.grabbed_reports = grabbed_reports
             user_stats.save()
-        # reports_unfiltered = reports_supervised_country.order_by('creation_time') | reports_unfiltered_excluding_reserved_ns.order_by('creation_time')
-        # if reports_unfiltered:
-        #     new_reports = filter_reports(reports_unfiltered)
-        #     reports_to_take = new_reports[0:n_to_get]
-        #     user_stats = None
-        #     try:
-        #         user_stats = UserStat.objects.get(user_id=this_user.id)
-        #     except ObjectDoesNotExist:
-        #         pass
-        #     grabbed_reports = -1
-        #     if user_stats:
-        #         grabbed_reports = user_stats.grabbed_reports
-        #     for this_report in reports_to_take:
-        #         if not this_report.user_has_report(this_user):
-        #             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-        #             who_has_count = this_report.get_who_has_count()
-        #             if who_has_count == 0 or who_has_count == 1:
-        #                 # No one has the report, is simplified
-        #                 new_annotation.simplified_annotation = True
-        #             grabbed_reports += 1
-        #             new_annotation.save()
-        #     if grabbed_reports != -1 and user_stats:
-        #         user_stats.grabbed_reports = grabbed_reports
-        #         user_stats.save()
 
 
 def get_progress_available_reports(country):

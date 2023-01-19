@@ -1,9 +1,7 @@
 from __future__ import absolute_import
 
-from celery import shared_task
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
-from celery.utils.log import get_task_logger
 from tigaserver_app.views import refresh_user_scores
 import tigaserver_project.settings as conf
 

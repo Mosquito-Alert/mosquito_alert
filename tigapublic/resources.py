@@ -6,11 +6,7 @@ import re
 from django.conf import settings
 from import_export import resources
 
-# from constants import true_values
 from .models import MapAuxReports, ObservationNotifications
-
-# from import_export.widgets import DateTimeWidget
-# from pyproj import Proj, transform
 
 
 def GetObservationResource(*args, **kwargs):
@@ -80,70 +76,3 @@ class NotificationResource(resources.ModelResource):
         else:
             m.update(report.user_id.encode('utf-8'))
         return m.hexdigest()
-
-# Les següents classes no es fan servir
-
-# class BaseStormDrainResource(resources.ModelResource):
-#     """Base Drain Resource."""
-#
-#     def transformColumnValue(self, value):
-#         """Transform a boolean value to a binary value (0 or 1)."""
-#         if value is not None:
-#             if value.lower() in true_values:
-#                 return '1'
-#             else:
-#                 return '0'
-#
-#     def before_import_row(self, row, *kwargs):
-#         """Parse values before importing."""
-#         row['original_lon'] = row['lon']
-#         row['original_lat'] = row['lat']
-#
-#         if 'water' in row:
-#             row['water'] = self.transformColumnValue(row['water'])
-#
-#         if 'sand' in row:
-#             row['sand'] = self.transformColumnValue(row['sand'])
-#
-#         if 'species1' in row:
-#             row['species1'] = self.transformColumnValue(row['species1'])
-#
-#         if 'species2' in row:
-#             row['species2'] = self.transformColumnValue(row['species2'])
-#
-#         if 'treatment' in row:
-#             row['treatment'] = self.transformColumnValue(row['treatment'])
-#
-#         if 'activity' in row:
-#             row['activity'] = self.transformColumnValue(row['activity'])
-#
-#         inProj = Proj(init='epsg:25831')
-#         outProj = Proj(init='epsg:4326')
-#         row['lon'], row['lat'] = transform(inProj, outProj,
-#                                            row['lon'], row['lat'])
-#
-#
-# class StormDrainResource(BaseStormDrainResource):
-#     """Storm Drain Resource."""
-#
-#     date_visit = fields.Field(column_name='date')
-#
-#     class Meta:
-#         """Meta."""
-#
-#         model = StormDrain
-#         widgets = {
-#             'date_visit': DateTimeWidget(format='%Y-%m-%d %H:%M:%S')
-#         }
-#
-#
-# class StormDrainCSVResource(BaseStormDrainResource):
-#     """Storm Drain CSV Resource."""
-#
-#     class Meta:
-#         """Meta."""
-#
-#         model = StormDrain
-#         widgets = {
-#             'date': {'format': '%d/%m/%Y'}
-#         }

@@ -8,13 +8,6 @@ from django.conf import settings
 from django.http import HttpResponse
 
 
-class LoginForm(forms.Form):
-    """Login Form."""
-
-    username = forms.CharField(required=True)
-    password = forms.CharField(required=True)
-
-
 class TinyMCEImageForm(forms.Form):
     """Standard Image form."""
 
