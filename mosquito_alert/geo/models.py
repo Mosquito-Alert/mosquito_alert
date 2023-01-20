@@ -247,7 +247,7 @@ class Location(models.Model):
         OUTDOORS = "OUT", _("Outdoors.")
 
     # Relations
-    boundaries = models.ManyToManyField(Boundary, related_name="locations")
+    boundaries = models.ManyToManyField(Boundary, blank=True, related_name="locations")
 
     # Attributes - Mandatory
     point = models.PointField(geography=True)
