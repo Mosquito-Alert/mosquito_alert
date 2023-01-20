@@ -1,3 +1,4 @@
+from adminsortable2.admin import SortableAdminBase, SortableStackedInline
 from django.contrib import admin
 from polymorphic.admin import (
     PolymorphicChildModelAdmin,
@@ -6,33 +7,36 @@ from polymorphic.admin import (
 )
 from reversion.admin import VersionAdmin
 
+from mosquito_alert.images.admin import m2mPhotoAdminInlineMixin
+
 from .forms import (
     BiteReportForm,
     BreedingSiteReportForm,
     IndividualReportForm,
     ReportForm,
 )
-from .models import (
-    BiteReport,
-    BreedingSiteReport,
-    IndividualReport,
-    Report,
-    ReportPhoto,
-)
+from .models import BiteReport, BreedingSiteReport, IndividualReport, Report
 
 
-class ReportPhotoInline(admin.TabularInline):
-    model = ReportPhoto
+class ReadOnlyPhotoAdminInline(m2mPhotoAdminInlineMixin, SortableStackedInline):
+    model = Report.photos.through
+    fields = m2mPhotoAdminInlineMixin.fields + [
+        "sort_value",
+    ]
+    ordering = ["sort_value"]
 
 
-#################################################
-
-
-class ReportChildAdmin(PolymorphicChildModelAdmin):
+class ReportChildAdmin(SortableAdminBase, PolymorphicChildModelAdmin):
     """Base admin class for all child models"""
 
     base_model = Report
     base_form = ReportForm
+    show_in_index = True
+    inlines = [
+        ReadOnlyPhotoAdminInline,
+    ]
+    list_filter = ["observed_at", "created_at"]
+    list_display = ["uuid", "user", "observed_at", "created_at", "updated_at"]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj=obj, **kwargs)
@@ -65,10 +69,6 @@ class ReportParentAdmin(VersionAdmin, PolymorphicParentModelAdmin):
     child_models = (BiteReport, BreedingSiteReport, IndividualReport)
     list_filter = (PolymorphicChildModelFilter, "observed_at", "created_at")
     list_display = ["uuid", "user", "observed_at", "created_at", "updated_at"]
-
-    inlines = [
-        ReportPhotoInline,
-    ]
 
 
 admin.site.register(Report, ReportParentAdmin)

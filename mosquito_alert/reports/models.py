@@ -5,13 +5,14 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from imagekit.models import ProcessedImageField
 from polymorphic.models import PolymorphicModel
+from sortedm2m.fields import SortedManyToManyField
 from taggit.managers import TaggableManager
 
 from mosquito_alert.bites.models import Bite
 from mosquito_alert.breeding_sites.models import BreedingSite
 from mosquito_alert.geo.models import Location
+from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual, Taxon
 
 # from polymorphic.managers import PolymorphicManager
@@ -33,6 +34,7 @@ class Report(PolymorphicModel):
         editable=False,
         on_delete=models.SET_NULL,
     )
+    photos = SortedManyToManyField(Photo, blank=True)
 
     # Attributes - Mandatory
     # TODO About uuid: https://stackoverflow.com/questions/3936182/using-a-uuid-as-a-primary-key-in-django-models-generic-relations-impact  # noqa: E501
@@ -54,6 +56,7 @@ class Report(PolymorphicModel):
     observed_at = models.DateTimeField(default=timezone.now, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    published = models.BooleanField(default=False)
     # TODO: app_version, os
 
     # Attributes - Optional
@@ -78,32 +81,6 @@ class Report(PolymorphicModel):
         ordering = ["-created_at"]
 
 
-class ReportPhoto(models.Model):
-    # TODO: https://github.com/matthewwithanm/django-imagekit
-    # Relations
-    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="photos")
-
-    # Attributes - Mandatory
-    # TODO ?: method field -> seen, caught, trapped, etc
-    uuid = models.UUIDField(primary_key=True)
-    image = ProcessedImageField(upload_to="photos", format="JPEG")  # Forcing JPEG
-
-    # Attributes - Optional
-    # Object Manager
-
-    # Custom Properties
-    @property
-    def license(self):
-        return self.report.license
-
-    # Methods
-
-    # Meta and String
-    class Meta:
-        verbose_name = _("photo")
-        verbose_name_plural = _("photos")
-
-
 @reversion.register(follow=("report_ptr",))
 class BiteReport(Report):
 
@@ -116,6 +93,11 @@ class BiteReport(Report):
     # Object Manager
     # Custom Properties
     # Methods
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.published = True
+        super().save(*args, **kwargs)
+
     # Meta and String
     class Meta:
         verbose_name = _("bite report")
@@ -137,18 +119,21 @@ class BreedingSiteReport(Report):
     # Custom Properties
     # Methods
     def save(self, *args, **kwargs):
-        if not hasattr(self, "breeding_site"):
-            nearest_breeding_site = BreedingSite.objects.within_circle(
-                center_point=self.location.point, radius_meters=50
-            ).first_by_distance(point=self.location.point)
+        if self._state.adding:
+            self.published = True
 
-            if nearest_breeding_site:
-                self.breeding_site = nearest_breeding_site
-            else:
-                self.breeding_site = BreedingSite.objects.create(
-                    location=self.location,
-                    # TODO: missing breeding_site type
-                )
+            if not hasattr(self, "breeding_site"):
+                nearest_breeding_site = BreedingSite.objects.within_circle(
+                    center_point=self.location.point, radius_meters=50
+                ).first_by_distance(point=self.location.point)
+
+                if nearest_breeding_site:
+                    self.breeding_site = nearest_breeding_site
+                else:
+                    self.breeding_site = BreedingSite.objects.create(
+                        location=self.location,
+                        # TODO: missing breeding_site type
+                    )
 
         super().save(*args, **kwargs)
 
@@ -160,7 +145,6 @@ class BreedingSiteReport(Report):
 
 @reversion.register(follow=("report_ptr",))
 class IndividualReport(Report):
-    # TODO make photos required and not null!
     "An individual report records an encounter with an individual organism at a particular time and location."
     # Relations
     individual = models.ForeignKey(
@@ -174,6 +158,15 @@ class IndividualReport(Report):
     # Object Manager
     # Custom Properties
     # Methods
+    def save(self, *args, **kwargs):
+
+        is_adding = self._state.adding
+        if is_adding:
+            if not hasattr(self, "individual"):
+                self.individual = Individual.objects.create()
+
+        super().save(*args, **kwargs)
+
     # Meta and String
     class Meta:
         verbose_name = _("report of an individual")

@@ -93,6 +93,8 @@ THIRD_PARTY_APPS = [
     "django_admin_inline_paginator",
     "import_export",
     "imagekit",
+    "sortedm2m",
+    "adminsortable2",
 ]
 
 LOCAL_APPS = [
@@ -100,6 +102,7 @@ LOCAL_APPS = [
     "mosquito_alert.breeding_sites",
     "mosquito_alert.epidemiology",
     "mosquito_alert.geo",
+    "mosquito_alert.images",
     "mosquito_alert.individuals",
     "mosquito_alert.reports",
     "mosquito_alert.taxa",
@@ -348,5 +351,3 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
 }
-# Your stuff...
-# ------------------------------------------------------------------------------

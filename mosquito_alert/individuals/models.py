@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import Min
 from django.utils.translation import gettext_lazy as _
 
+from mosquito_alert.images.models import Photo
 from mosquito_alert.taxa.models import Taxon
 
 
@@ -10,6 +11,7 @@ class Individual(models.Model):
     # Relations
 
     # Attributes - Mandatory
+    photos = models.ManyToManyField(Photo, blank=True, related_name="individuals")
     # is_identified = models.BooleanField(default=False)
     # community_taxon_id = models.ForeignKey(Taxon, on_delete=models.PROTECT)
     # identifications_agreements = models.PositiveSmallIntegerField()
