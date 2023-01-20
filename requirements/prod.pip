@@ -1,5 +1,0 @@
--r common.pip
-
-gunicorn==18.0
-
-
