@@ -28,7 +28,7 @@ TIME_ZONE = "UTC"
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
-SITE_ID = 1
+SITE_ID = 1  # Needed for django-allauth
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
 USE_I18N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
@@ -95,6 +95,7 @@ THIRD_PARTY_APPS = [
     "imagekit",
     "sortedm2m",
     "adminsortable2",
+    "nested_admin",
 ]
 
 LOCAL_APPS = [

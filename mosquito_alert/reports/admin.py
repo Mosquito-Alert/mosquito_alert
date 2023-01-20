@@ -46,22 +46,30 @@ class ReportChildAdmin(SortableAdminBase, PolymorphicChildModelAdmin):
 
 @admin.register(BiteReport)
 class BiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
+    class BitesInlineAdmin(admin.TabularInline):
+        model = BiteReport.bites.through
+        extra = 0
+        show_change_link = True
+
     base_model = BiteReport
     base_form = BiteReportForm
 
-    filter_horizontal = ("bites",)
+    inlines = [BitesInlineAdmin]
 
 
 @admin.register(BreedingSiteReport)
 class BreedingSiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
     base_model = BreedingSiteReport
     base_form = BreedingSiteReportForm
+    list_filter = ReportChildAdmin.list_filter + ["has_water"]
+    list_display = ReportChildAdmin.list_display + ["has_water"]
 
 
 @admin.register(IndividualReport)
 class IndividualReportAdmin(VersionAdmin, ReportChildAdmin):
     base_model = IndividualReport
     base_form = IndividualReportForm
+    readonly_fields = ["individual"]
 
 
 class ReportParentAdmin(VersionAdmin, PolymorphicParentModelAdmin):

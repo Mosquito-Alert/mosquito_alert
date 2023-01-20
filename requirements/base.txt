@@ -35,6 +35,7 @@ django-dirtyfields==1.9.1  # https://github.com/romgar/django-dirtyfields
 django-sortedm2m==3.1.1  # https://github.com/jazzband/django-sortedm2m
 # Django Admin
 django-admin-sortable2==2.1.4  # https://github.com/jrief/django-admin-sortable2
+django-nested-admin==4.0.2  # https://github.com/theatlantic/django-nested-admin
 # Django REST Framework
 djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework
 django-cors-headers==3.13.0 # https://github.com/adamchainz/django-cors-headers
