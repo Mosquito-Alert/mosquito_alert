@@ -11,15 +11,14 @@ from taggit.managers import TaggableManager
 
 from mosquito_alert.bites.models import Bite
 from mosquito_alert.breeding_sites.models import BreedingSite
-from mosquito_alert.geo.models import Location
+from mosquito_alert.geo.models import GeoLocatedModel
 from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual, Taxon
 
-# from polymorphic.managers import PolymorphicManager
-# from .querysets import ReportQuerySet
+from .managers import ReportManager
 
 
-class Report(PolymorphicModel):
+class Report(PolymorphicModel, GeoLocatedModel):
     """A detailed account of an event, based on what one has observed or asked questions about.
 
     Args:
@@ -43,16 +42,7 @@ class Report(PolymorphicModel):
     )
     # NOTE: in case licensing is needed, get inspiration from django-licensing (it does not work)
     # license = models.ForeignKey(License, on_delete=models.PROTECT)
-    location = models.OneToOneField(
-        Location,
-        on_delete=models.PROTECT,
-        related_name="report",
-        help_text=_("The location where the report is created."),
-    )
-    # TODO: location_is_modified or another location for the event_location.
-    # positional_accuracy = models.IntegerField(
-    #     help_text=_("The uncertainty in meters around the latitude and longitude.")
-    # )
+    # TODO: add location_is_modified or another location for the event_location.
     observed_at = models.DateTimeField(default=timezone.now, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -60,10 +50,10 @@ class Report(PolymorphicModel):
     # TODO: app_version, os
 
     # Attributes - Optional
-    note = models.TextField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
 
     # Object Manager
-    # objects = PolymorphicManager.from_queryset(ReportQuerySet)()
+    objects = ReportManager()
     tags = TaggableManager(
         blank=True,
         help_text=_(

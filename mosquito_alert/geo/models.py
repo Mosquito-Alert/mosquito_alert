@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from treebeard.mp_tree import MP_Node
 
 from ..utils.models import ParentManageableNodeMixin
-from .managers import BoundaryManager, LocationManager
+from .managers import BoundaryManager, GeoLocatedManager, LocationManager
 
 # Webs of interest:
 #     - https://osm-boundaries.com/Map
@@ -254,6 +254,7 @@ class Location(models.Model):
     location_type = models.CharField(
         max_length=3, choices=LocationType.choices, null=True, blank=True
     )
+    # TODO: add positional_accuray (The uncertainty in meters around the latitude and longitude.)
 
     # Attributes - Optional
     # Object Manager
@@ -287,3 +288,29 @@ class Location(models.Model):
             if self.location_type
             else str(self.point)
         )
+
+
+class GeoLocatedModel(models.Model):
+
+    # Relations
+    location = models.OneToOneField(
+        Location,
+        on_delete=models.PROTECT,
+        related_name="+",
+    )
+
+    # Attributes - Mandatory
+
+    # Attributes - Optional
+    # Object Manager
+    objects = GeoLocatedManager()
+
+    # Custom Properties
+    # Methods
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.location.delete()
+
+    # Meta and String
+    class Meta:
+        abstract = True

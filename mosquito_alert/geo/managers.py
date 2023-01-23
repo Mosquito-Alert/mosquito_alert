@@ -1,7 +1,7 @@
 from django.db.models import Manager
 from treebeard.mp_tree import MP_NodeManager
 
-from .querysets import BoundaryQuerySet, LocationQuerySet
+from .querysets import BoundaryQuerySet, GeoLocatedModelQuerySet, LocationQuerySet
 
 
 class BaseBoundaryManager(MP_NodeManager):
@@ -16,3 +16,5 @@ class BaseBoundaryManager(MP_NodeManager):
 BoundaryManager = BaseBoundaryManager.from_queryset(BoundaryQuerySet)
 
 LocationManager = Manager.from_queryset(LocationQuerySet)
+
+GeoLocatedManager = Manager.from_queryset(GeoLocatedModelQuerySet)
