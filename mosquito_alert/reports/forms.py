@@ -31,21 +31,18 @@ class ReportForm(forms.ModelForm):
             self.instance.location = Location.objects.create(
                 point=self.cleaned_data["location_point"]
             )
-            # self.cleaned_data['location'] = location_obj
 
         return super().save(commit)
 
     class Meta:
         model = Report
-        fields = ["observed_at", "note"]
+        fields = ["observed_at", "notes"]
 
 
 class BiteReportForm(ReportForm):
     class Meta:
         model = BiteReport
-        fields = ReportForm.Meta.fields + [
-            "bites",
-        ]
+        fields = ReportForm.Meta.fields
 
 
 class BreedingSiteReportForm(ReportForm):
