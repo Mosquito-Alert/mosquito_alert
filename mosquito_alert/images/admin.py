@@ -3,9 +3,12 @@ import json
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from nested_admin.nested import NestedModelAdmin
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
+
+from mosquito_alert.utils.admin import FlaggedContentInlineAdmin
 
 from .models import Photo
 
@@ -29,12 +32,14 @@ class m2mPhotoAdminInlineMixin:
     preview.allow_tags = True
 
 
-class PhotoAdmin(admin.ModelAdmin):
+class PhotoAdmin(NestedModelAdmin):
     list_display = ("__str__", "user", "created_at", "preview")
     list_filter = ("user", "created_at")
     fields = ("created_at", ("image", "preview"))
     readonly_fields = ("preview", "created_at")
     list_per_page = 10
+
+    inlines = [FlaggedContentInlineAdmin]
 
     def preview(self, obj):
         if obj.pk:

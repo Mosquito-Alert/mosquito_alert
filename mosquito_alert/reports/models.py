@@ -2,9 +2,11 @@ import uuid
 
 import reversion
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from flag.models import Flag
 from polymorphic.models import PolymorphicModel
 from sortedm2m.fields import SortedManyToManyField
 from taggit.managers import TaggableManager
@@ -34,12 +36,10 @@ class Report(PolymorphicModel, GeoLocatedModel):
         on_delete=models.SET_NULL,
     )
     photos = SortedManyToManyField(Photo, blank=True)
+    flags = GenericRelation(Flag)
 
     # Attributes - Mandatory
-    # TODO About uuid: https://stackoverflow.com/questions/3936182/using-a-uuid-as-a-primary-key-in-django-models-generic-relations-impact  # noqa: E501
-    uuid = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
-    )
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     # NOTE: in case licensing is needed, get inspiration from django-licensing (it does not work)
     # license = models.ForeignKey(License, on_delete=models.PROTECT)
     # TODO: add location_is_modified or another location for the event_location.

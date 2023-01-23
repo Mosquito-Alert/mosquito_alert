@@ -96,6 +96,7 @@ THIRD_PARTY_APPS = [
     "sortedm2m",
     "adminsortable2",
     "nested_admin",
+    "flag",
 ]
 
 LOCAL_APPS = [

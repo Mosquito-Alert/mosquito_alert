@@ -3,10 +3,12 @@ import uuid
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
+from flag.models import Flag
 from imagekit.processors import ResizeToFit, Transpose
 from PIL import ExifTags, Image, TiffImagePlugin
 
@@ -39,6 +41,7 @@ class Photo(models.Model):
         related_name="photos",
         on_delete=models.SET_NULL,
     )
+    flags = GenericRelation(Flag)
 
     # Attributes - Mandatory
     image = ProcessedImageField(

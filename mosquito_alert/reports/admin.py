@@ -1,5 +1,7 @@
-from adminsortable2.admin import SortableAdminBase, SortableStackedInline
 from django.contrib import admin
+from nested_admin.forms import SortableHiddenMixin
+from nested_admin.nested import NestedTabularInline
+from nested_admin.polymorphic import NestedPolymorphicModelAdmin
 from polymorphic.admin import (
     PolymorphicChildModelAdmin,
     PolymorphicChildModelFilter,
@@ -8,6 +10,7 @@ from polymorphic.admin import (
 from reversion.admin import VersionAdmin
 
 from mosquito_alert.images.admin import m2mPhotoAdminInlineMixin
+from mosquito_alert.utils.admin import FlaggedContentInlineAdmin
 
 from .forms import (
     BiteReportForm,
@@ -18,23 +21,23 @@ from .forms import (
 from .models import BiteReport, BreedingSiteReport, IndividualReport, Report
 
 
-class ReadOnlyPhotoAdminInline(m2mPhotoAdminInlineMixin, SortableStackedInline):
+class ReadOnlyPhotoAdminInline(
+    SortableHiddenMixin, m2mPhotoAdminInlineMixin, NestedTabularInline
+):
     model = Report.photos.through
     fields = m2mPhotoAdminInlineMixin.fields + [
         "sort_value",
     ]
-    ordering = ["sort_value"]
+    sortable_field_name = "sort_value"
 
 
-class ReportChildAdmin(SortableAdminBase, PolymorphicChildModelAdmin):
+class ReportChildAdmin(NestedPolymorphicModelAdmin, PolymorphicChildModelAdmin):
     """Base admin class for all child models"""
 
     base_model = Report
     base_form = ReportForm
     show_in_index = True
-    inlines = [
-        ReadOnlyPhotoAdminInline,
-    ]
+    inlines = [ReadOnlyPhotoAdminInline, FlaggedContentInlineAdmin]
     list_filter = ["observed_at", "created_at"]
     list_display = ["uuid", "user", "observed_at", "created_at", "updated_at"]
 
@@ -54,7 +57,7 @@ class BiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
     base_model = BiteReport
     base_form = BiteReportForm
 
-    inlines = [BitesInlineAdmin]
+    inlines = ReportChildAdmin.inlines + [BitesInlineAdmin]
 
 
 @admin.register(BreedingSiteReport)
@@ -66,7 +69,7 @@ class BreedingSiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
 
 
 @admin.register(IndividualReport)
-class IndividualReportAdmin(VersionAdmin, ReportChildAdmin):
+class IndividualReportAdmin(ReportChildAdmin, VersionAdmin):
     base_model = IndividualReport
     base_form = IndividualReportForm
     readonly_fields = ["individual"]
