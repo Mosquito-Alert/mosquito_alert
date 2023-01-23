@@ -45,8 +45,12 @@ class LocationQuerySet(QuerySet):
         super().__init__(*args, **kwargs)
         self.point_field_name = point_field_name
 
-    def filter_by_polygon_intersection(self, polygon):
-        return self.filter(**{f"{self.point_field_name}__intersects": polygon})
+    def filter_by_polygon_intersection(self, polygon, negate=False):
+        func = self.filter
+        if negate:
+            func = self.exclude
+
+        return func(**{f"{self.point_field_name}__intersects": polygon})
 
     def first_by_distance(self, point):
         return self.order_by_distance(point=point).first()

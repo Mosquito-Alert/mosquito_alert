@@ -3,6 +3,7 @@ from django.contrib.gis.db import models
 from django.db.models import Q
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
+from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
 from treebeard.mp_tree import MP_Node
 
 from ..utils.models import ParentManageableNodeMixin
@@ -197,7 +198,7 @@ class Boundary(MP_Node, ParentManageableNodeMixin):
         return f"{self.name} ({self.code})"
 
 
-class BoundaryGeometry(models.Model):
+class BoundaryGeometry(LifecycleModel):
     """Stores the geometries of boundaries.
 
     We COULD have had a geometry column in the 'boundary' table, but geometries can get rather
@@ -219,18 +220,32 @@ class BoundaryGeometry(models.Model):
     # Object Manager
     # Custom Properties
     # Methods
+    @hook(AFTER_UPDATE, when="geometry", has_changed=True)
+    def update_linked_location(self):
+        # Get Location objects linked to this Boundary, and which point now rest outside
+        # the boundary.
+        loc_qs = Location.objects.filter(
+            boundaries=self.boundary
+        ).filter_by_polygon_intersection(boundaries=self.geometry, negate=True)
+        for loc in loc_qs.all():
+            loc.boundaries.remove(self.boundary)
+
+        self._link_boundary_to_location()
+
+    def _link_boundary_to_location(self):
+        loc_qs = Location.objects.filter_by_polygon_intersection(self.geometry).exclude(
+            boundaries=self.boundary
+        )
+        for loc in loc_qs.all():
+            loc.boundaries.add(self.boundary)
+
     def save(self, *args, **kwargs):
         # if geom is a Polygon, make it into a MultiPolygon
         if self.geometry and isinstance(self.geometry, geos.Polygon):
             self.geometry = geos.MultiPolygon(self.geometry)
 
         if self._state.adding:
-            # Link parent boundary with Location
-            for loc in Location.objects.filter_by_polygon_intersection(
-                self.geometry
-            ).all():
-                loc.boundaries.add(self.boundary)
-                loc.save()
+            self._link_boundary_to_location()
 
         super().save(*args, **kwargs)
 
@@ -240,7 +255,7 @@ class BoundaryGeometry(models.Model):
         verbose_name_plural = _("boundary geometries")
 
 
-class Location(models.Model):
+class Location(LifecycleModel):
     class LocationType(models.TextChoices):
         IN_VEHICLE = "VEH", _("Inside a vehicle.")
         IN_BUILDING = "BUI", _("Inside a building.")
@@ -262,6 +277,10 @@ class Location(models.Model):
 
     # Custom Properties
     # Methods
+    @hook(AFTER_UPDATE, when="point", has_changed=True)
+    def update_linked_boundaries(self):
+        self._recompute_boundaries()
+
     def _recompute_boundaries(self):
         # TODO check if signals are sent. otherwise, manually add/delete
         self.boundaries.set(Boundary.objects.reverse_geocoding(point=self.point).all())
