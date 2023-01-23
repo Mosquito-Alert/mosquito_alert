@@ -37,6 +37,7 @@ class Taxon(MP_Node, ParentManageableNodeMixin):
     # Attributes - Mandatory
     rank = models.PositiveSmallIntegerField(choices=TaxonomicRank.choices)
     name = models.CharField(max_length=32)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     # Attributes - Optional
     common_name = models.CharField(max_length=64, null=True, blank=True)
