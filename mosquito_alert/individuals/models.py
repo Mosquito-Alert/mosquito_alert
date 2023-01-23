@@ -25,12 +25,17 @@ class Individual(models.Model):
     @property
     def first_observed_at(self):
         result = None
-        if self.reports:
-            self.reports.aggregate(first=Min("observed_at"))["first"]
+        if hasattr(self, "reports"):
+            result = self.reports.aggregate(first=Min("observed_at"))["first"]
 
         return result
 
     # Methods
+    def delete(self, *args, **kwargs):
+        # TODO delete orphan images with no reports assigne to them.
+
+        super().delete(*args, **kwargs)
+
     def save(self, *args, **kwargs) -> None:
 
         super().save(*args, **kwargs)
