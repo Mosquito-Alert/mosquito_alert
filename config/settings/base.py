@@ -97,6 +97,7 @@ THIRD_PARTY_APPS = [
     "adminsortable2",
     "nested_admin",
     "flag",
+    "notifications",
 ]
 
 LOCAL_APPS = [
@@ -106,6 +107,7 @@ LOCAL_APPS = [
     "mosquito_alert.geo",
     "mosquito_alert.images",
     "mosquito_alert.individuals",
+    "mosquito_alert.notifications",
     "mosquito_alert.reports",
     "mosquito_alert.taxa",
     "mosquito_alert.users",
@@ -353,3 +355,6 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
 }
+
+DJANGO_NOTIFICATIONS_CONFIG = {"USE_JSONFIELD": True}
+NOTIFICATIONS_NOTIFICATION_MODEL = "platform_notifications.Notification"

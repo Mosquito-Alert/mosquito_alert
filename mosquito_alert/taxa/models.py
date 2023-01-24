@@ -7,6 +7,8 @@ from month.models import MonthField
 from treebeard.mp_tree import MP_Node
 
 from mosquito_alert.geo.models import Boundary
+from mosquito_alert.notifications.models import Notification
+from mosquito_alert.notifications.signals import notify_subscribers
 
 from ..utils.models import ParentManageableNodeMixin
 
@@ -168,6 +170,16 @@ class MonthlyDistribution(LifecycleModel):
     # Object Manager
     # Custom Properties
     # Methods
+    @hook(AFTER_UPDATE, when="status", has_changed=True)
+    def notify_status_change(self):
+        notify_subscribers.send(
+            sender=self.taxon,
+            verb="had its status updated to",
+            target=self.boundary,
+            level=Notification.LEVELS.warning,
+            status=self.status,
+        )
+
     @hook(AFTER_UPDATE, when="status", has_changed=True)
     def update_relatives_on_status_change(self):
         distribution_status_has_changed.send(

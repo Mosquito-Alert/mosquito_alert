@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
 
 from mosquito_alert.images.models import Photo
+from mosquito_alert.notifications.signals import notify_subscribers
 from mosquito_alert.taxa.models import Taxon
 
 
@@ -35,6 +36,23 @@ class Individual(LifecycleModel):
         return result
 
     # Methods
+    @hook(AFTER_UPDATE, when="is_identified", was=False, is_now=True)
+    def notify_identification(self):
+
+        if hasattr(self, "reports"):
+            for r in self.reports.all():
+                for b in r.location.boundaries.all():
+                    notify_subscribers.send(
+                        sender=self.identification_set.taxon,
+                        verb="was identified in",
+                        target=b,
+                    )
+        else:
+            notify_subscribers.send(
+                sender=self.identification_set.taxon,
+                verb="was identified",
+            )
+
     def delete(self, *args, **kwargs):
         # TODO delete orphan images with no reports assigne to them.
         super().delete(*args, **kwargs)
