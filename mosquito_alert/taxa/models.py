@@ -124,6 +124,7 @@ class MonthlyDistribution(LifecycleModel):
             observed_at__month__lte=instance.month.month,
             observed_at__year__lte=instance.month.year,
             location__boundaries=instance.boundary,
+            individual__is_identified=True,
             individual__identification_set__taxon=instance.taxon,
         )
         num_results = report_qs.count()

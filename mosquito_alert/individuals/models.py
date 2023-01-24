@@ -1,18 +1,22 @@
+from decimal import Decimal
+
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Min
 from django.utils.translation import gettext_lazy as _
+from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
 
 from mosquito_alert.images.models import Photo
 from mosquito_alert.taxa.models import Taxon
 
 
-class Individual(models.Model):
+class Individual(LifecycleModel):
     # Relations
 
     # Attributes - Mandatory
+    is_identified = models.BooleanField(default=False)
     photos = models.ManyToManyField(Photo, blank=True, related_name="individuals")
-    # is_identified = models.BooleanField(default=False)
     # community_taxon_id = models.ForeignKey(Taxon, on_delete=models.PROTECT)
     # identifications_agreements = models.PositiveSmallIntegerField()
     # number_identifications_agreements = models.PositiveIntegerField()
@@ -33,7 +37,6 @@ class Individual(models.Model):
     # Methods
     def delete(self, *args, **kwargs):
         # TODO delete orphan images with no reports assigne to them.
-
         super().delete(*args, **kwargs)
 
     def save(self, *args, **kwargs) -> None:
@@ -59,7 +62,11 @@ class Individual(models.Model):
         )
 
 
-class IdentificationSet(models.Model):
+class IdentificationSet(LifecycleModel):
+
+    MIN_IDENTIFICATION_COUNT = 3
+    MIN_AGREEMENT = 0.75
+
     # Relations
     individual = models.OneToOneField(
         Individual, on_delete=models.CASCADE, related_name="identification_set"
@@ -73,7 +80,12 @@ class IdentificationSet(models.Model):
     )
 
     # Attributes - Mandatory
-    agreement = models.PositiveSmallIntegerField(default=0)
+    agreement = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal(0),
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     # Attributes - Optional
@@ -82,6 +94,17 @@ class IdentificationSet(models.Model):
     # Custom Properties
 
     # Methods
+    @hook(AFTER_UPDATE, when_any=["taxon", "agreement"], has_changed=True)
+    def update_is_identified(self):
+        is_species_rank = self.taxon.rank >= Taxon.TaxonomicRank.SPECIES_COMPLEX
+        is_over_agreement_level = self.agreement >= self.MIN_AGREEMENT
+        if is_species_rank and is_over_agreement_level:
+            self.individual.is_identified = True
+        else:
+            self.individual.is_identified = False
+
+        self.individual.save()
+
     def _get_taxa_scoring(self):
         result = {}
         counter = 0
@@ -100,17 +123,14 @@ class IdentificationSet(models.Model):
         return list(result.items())
 
     def _update_identification_result(self):
-        MIN_SCORING = 0.75
         scores = self._get_taxa_scoring()
         # Filtering and sort scores
-        scores = sorted(
-            filter(lambda x: x[1] >= MIN_SCORING, scores), key=lambda x: x[1]
-        )
+        scores = sorted(scores, key=lambda x: x[1])
         if scores:
             self.taxon = scores[0][0]
             self.agreement = scores[0][1]
         else:
-            self.taxon = self.get_root()
+            self.taxon = Taxon.get_root_nodes().first()
             self.agreement = 0
         self.save()
 

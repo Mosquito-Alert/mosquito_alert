@@ -30,8 +30,8 @@ class IdentificationSetAdminInline(NestedStackedInline):
 
 
 class IndividualAdmin(NestedModelAdmin):
-    fields = ["first_observed_at"]
-    readonly_fields = ["first_observed_at"]
+    fields = ["first_observed_at", "is_identified"]
+    readonly_fields = ["first_observed_at", "is_identified"]
     list_filter = ["identification_set__taxon"]
     inlines = [ReadOnlyPhotoAdminInline, IdentificationSetAdminInline]
 
