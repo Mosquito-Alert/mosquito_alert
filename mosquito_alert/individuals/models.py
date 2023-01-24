@@ -185,6 +185,10 @@ class Identification(models.Model):
     # Custom Properties
 
     # Methods
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.identification_set._update_identification_result()
+
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
         self.identification_set._update_identification_result()
