@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Max, Q
+from django.db.models import Count, Max, Q, Sum
 from django.db.models.signals import ModelSignal
 from django.utils.translation import gettext_lazy as _
 from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
@@ -77,80 +77,12 @@ class MonthlyDistribution(LifecycleModel):
     """The manner in which a biological taxon is spatially arranged."""
 
     # TODO: duplicate previous month rows on first day of the month.
-    # TODO: add signal -> Location boundary m2m change (only for IndividualReports).
-    #                     On indivudal, identifiaction change.
 
     class DistributionStatus(models.IntegerChoices):
         # NOTE: write in ascending status order!
         ABSENT = 0, _("Absent")
         INTRODUCED = 10, _("Introduced")
         ESTABLISHED = 20, _("Established")
-
-    @classmethod
-    def _get_inherited_status(cls, instance):
-
-        # If any taxon/boundary descendant is found, use its status.
-        qs = cls.objects.filter(month__lte=instance.month)
-
-        q_boundary = Q(boundary=instance.boundary)
-        if b_descendants := instance.boundary.get_descendants():
-            q_boundary = q_boundary | Q(boundary__in=b_descendants)
-        qs = qs.filter(q_boundary)
-
-        q_taxon = Q(taxon=instance.taxon)
-        if t_descendants := instance.taxon.get_descendants():
-            q_taxon = q_taxon | Q(taxon__in=t_descendants)
-        qs = qs.filter(q_taxon)
-
-        if instance.pk:
-            qs = qs.exclude(pk=instance.pk)
-
-        result = (
-            qs.annotate(max_status=Max("status"))
-            .values("month", "max_status")
-            .order_by("month")
-            .last()
-        )
-
-        return result
-
-    @classmethod
-    def _get_recomputed_status(cls, instance):
-        # NOTE: placing import here to avoid circular import
-        from mosquito_alert.reports.models import IndividualReport
-
-        # TODO: Make new rules. Only for demo purposes.
-        # TODO: take into account previous month status.
-
-        report_qs = IndividualReport.objects.filter(
-            observed_at__month__lte=instance.month.month,
-            observed_at__year__lte=instance.month.year,
-            location__boundaries=instance.boundary,
-            individual__is_identified=True,
-            individual__identification_set__taxon=instance.taxon,
-        )
-        num_results = report_qs.count()
-
-        result = instance.status
-        if num_results > 0:
-            result = cls.DistributionStatus.INTRODUCED
-        elif num_results > 5:
-            result = cls.DistributionStatus.ESTABLISHED
-
-        return result if result > instance.status else instance.status
-
-    @classmethod
-    def recompute_multiple_status(cls, taxon, month, boundary=None):
-        filter_kwargs = dict(taxon=taxon, month=month)
-
-        if boundary:
-            filter_kwargs["boundary"] = boundary
-
-        for obj_update in cls.objects.filter(**filter_kwargs).all():
-            new_status = obj_update._get_recomputed_status()
-            if new_status != obj_update.status:
-                obj_update.status = new_status
-                obj_update.save()
 
     # Relations
     boundary = models.ForeignKey(
@@ -181,18 +113,26 @@ class MonthlyDistribution(LifecycleModel):
         )
 
     @hook(AFTER_UPDATE, when="status", has_changed=True)
-    def update_relatives_on_status_change(self):
+    def send_distributation_status_changed_signal(self):
         distribution_status_has_changed.send(
             sender=self.__class__,
             instance=self,
             prev_status=self.initial_value(field_name="status"),
         )
 
+    @hook(AFTER_UPDATE, when="status", has_changed=True)
+    def update_relatives_on_status_change(self):
         # Update by boundary parent (same taxon)
         common_qs = self.__class__.objects.filter(
             status__lt=self.status,  # Only update if status is less than current.
             month__gte=self.month,  # Only update date from this month onwards.
         )
+        for future_distribution in common_qs.filter(
+            taxon=self.taxon, boundary=self.boundary
+        ):
+            future_distribution.status = self.status
+            future_distribution.save()
+
         if b_parent := self.boundary.parent:
             ancestors_b_qs = common_qs.filter(
                 taxon=self.taxon,
@@ -212,13 +152,127 @@ class MonthlyDistribution(LifecycleModel):
                 ancestor_t.status = self.status
                 ancestor_t.save()
 
+    def _get_inherited_status(self):
+
+        # If any taxon/boundary descendant is found, use its status.
+        qs = self.__class__.objects.filter(month__lte=self.month)
+
+        q_boundary = Q(boundary=self.boundary)
+        if b_descendants := self.boundary.get_descendants():
+            q_boundary = q_boundary | Q(boundary__in=b_descendants)
+        qs = qs.filter(q_boundary)
+
+        q_taxon = Q(taxon=self.taxon)
+        if t_descendants := self.taxon.get_descendants():
+            q_taxon = q_taxon | Q(taxon__in=t_descendants)
+        qs = qs.filter(q_taxon)
+
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
+
+        result = (
+            qs.annotate(max_status=Max("status"))
+            .values("month", "max_status")
+            .order_by("month")
+            .last()
+        )
+
+        return result
+
+    def recompute_status(self, commit=True):
+        # NOTE: placing import here to avoid circular import
+        from mosquito_alert.reports.models import IndividualReport
+
+        # TODO: Make new rules. Only for demo purposes.
+        # Getting the IndividualReports of interest:
+        #     * Report observation date previous than self.month
+        #     * Report location is self.boundary (or descendat)
+        #     * Individal has been marked as indentified
+        #     * The taxon assigned to individual is self.taxon
+        report_qs = (
+            IndividualReport.objects.filter(
+                observed_at__month__lte=self.month.month,
+                observed_at__year__lte=self.month.year,
+                individual__is_identified=True,
+            )
+            .filter(
+                Q(individual__identification_set__taxon=self.taxon)
+                | Q(
+                    individual__identification_set__taxon__in=self.taxon.get_descendants()
+                )
+            )
+            .filter_by_boundary(boundaries=self.boundary, include_descendants=True)
+        )
+        num_results = report_qs.annotate(
+            num_of_individual=Count("individual")
+        ).aggregate(total_individuals=Sum("num_of_individual", default=0))[
+            "total_individuals"
+        ]
+
+        result = self.DistributionStatus.ABSENT
+        if num_results > 0:
+            result = self.DistributionStatus.INTRODUCED
+        elif num_results > 5:
+            result = self.DistributionStatus.ESTABLISHED
+
+        if self.status is None or result > self.status:
+            self.status = result
+            if commit:
+                self.save()
+
     def save(self, *args, **kwargs) -> None:
 
-        if not self.status:
-            self.status = self._get_inherited_status()
+        if self.status is None:
+            self.recompute_status(commit=False)
+
+        if self._state.adding:
+            # Create new for boundary parent (same taxon)
+            if b_parent := self.boundary.parent:
+                _ = self.__class__.objects.update_or_create(
+                    taxon=self.taxon,
+                    boundary=b_parent,
+                    month=self.month,
+                    defaults=dict(
+                        status=self.status,
+                    ),
+                )
+
+            # Create new for taxon parent (same boundary)
+            if t_parent := self.taxon.parent:
+                _ = self.__class__.objects.update_or_create(
+                    taxon=t_parent,
+                    boundary=self.boundary,
+                    month=self.month,
+                    defaults=dict(
+                        status=self.status,
+                    ),
+                )
+
+        if self.has_changed("status"):
+            affected_instances_qs = self.__class__.objects.filter(
+                month__gte=self.month,
+                status__gt=self.status,
+            ).filter(
+                Q(boundary__in=self.boundary.get_children())
+                | Q(boundary=self.boundary)
+                | Q(taxon__in=self.taxon.get_children())
+                | Q(taxon=self.taxon)
+            )
+
+            if affected_instances_qs.count():
+                raise ValueError(
+                    f"Can not change {self.boundary} status to {self.get_status_display()}."
+                    "It is lower than any of its relatives' status."
+                )
 
         # TODO: discuss if a status can go backward.
         #       If True, needs to check when adding new status.
+        # Getting previous month's status
+        # previous_status = self.__class__.objects.filter(
+        #     boundary=self.boundary,
+        #     taxon=self.taxon,
+        #     month=self.month - 1
+        # ).values_list('status', flat=True).first()
 
         super().save(*args, **kwargs)
 

@@ -4,7 +4,7 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from ..utils.forms import ParentManageableMoveNodeForm
-from .models import Taxon
+from .models import MonthlyDistribution, Taxon
 
 
 class TaxonAdmin(TreeAdmin, TranslationAdmin):
@@ -16,4 +16,10 @@ class TaxonAdmin(TreeAdmin, TranslationAdmin):
     form = movenodeform_factory(Taxon, form=ParentManageableMoveNodeForm)
 
 
+class MonthlyDistributionAdmin(admin.ModelAdmin):
+    list_display = ("boundary", "month", "taxon", "status")
+    list_filter = ("boundary", "month", "taxon", "status")
+
+
 admin.site.register(Taxon, TaxonAdmin)
+admin.site.register(MonthlyDistribution, MonthlyDistributionAdmin)

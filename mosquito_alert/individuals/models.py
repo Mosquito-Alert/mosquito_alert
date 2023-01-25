@@ -4,12 +4,15 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Min
+from django.db.models.signals import ModelSignal
 from django.utils.translation import gettext_lazy as _
 from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
 
 from mosquito_alert.images.models import Photo
 from mosquito_alert.notifications.signals import notify_subscribers
 from mosquito_alert.taxa.models import Taxon
+
+post_identification_changed = ModelSignal(use_caching=True)
 
 
 class Individual(LifecycleModel):
@@ -112,6 +115,10 @@ class IdentificationSet(LifecycleModel):
     # Custom Properties
 
     # Methods
+    @hook(AFTER_UPDATE, when="taxon", has_changed=True, on_commit=True)
+    def send_identification_changed_signal(self):
+        post_identification_changed.send(sender=self.__class__, instance=self)
+
     @hook(AFTER_UPDATE, when_any=["taxon", "agreement"], has_changed=True)
     def update_is_identified(self):
         is_species_rank = self.taxon.rank >= Taxon.TaxonomicRank.SPECIES_COMPLEX
