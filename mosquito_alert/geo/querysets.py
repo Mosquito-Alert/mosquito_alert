@@ -41,29 +41,41 @@ class BoundaryQuerySet(MP_NodeQuerySet):
 
 
 class LocationQuerySet(QuerySet):
-    def __init__(self, point_field_name="point", *args, **kwargs):
+    def __init__(self, field_prefix=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.point_field_name = point_field_name
+        self.field_prefix = field_prefix + "__" if field_prefix else ""
+
+    def filter_by_boundary(self, boundaries, include_descendants=False):
+
+        if not isinstance(boundaries, (list, tuple)):
+            boundaries = [boundaries]
+
+        if include_descendants:
+            for b in boundaries:
+                if descendats := list(b.get_descendants()):
+                    boundaries += descendats
+
+        return self.filter(**{f"{self.field_prefix}boundaries__in": boundaries})
 
     def filter_by_polygon_intersection(self, polygon, negate=False):
         func = self.filter
         if negate:
             func = self.exclude
 
-        return func(**{f"{self.point_field_name}__intersects": polygon})
+        return func(**{f"{self.field_prefix}point__intersects": polygon})
 
     def first_by_distance(self, point):
         return self.order_by_distance(point=point).first()
 
     def order_by_distance(self, point):
         return self.annotate(
-            distance=DistanceFunction(self.point_field_name, point)
+            distance=DistanceFunction(f"{self.field_prefix}point", point)
         ).order_by("distance")
 
     def within_circle(self, center_point, radius_meters):
         return self.filter(
             **{
-                f"{self.point_field_name}__dwithin": (
+                f"{self.field_prefix}point__dwithin": (
                     center_point,
                     DistanceMeasure(m=radius_meters),
                 )
@@ -73,6 +85,4 @@ class LocationQuerySet(QuerySet):
 
 class GeoLocatedModelQuerySet(LocationQuerySet):
     def __init__(self, location_fk_field="location", *args, **kwargs):
-        super().__init__(
-            point_field_name=f"{location_fk_field}__point", *args, **kwargs
-        )
+        super().__init__(field_prefix=location_fk_field, *args, **kwargs)
