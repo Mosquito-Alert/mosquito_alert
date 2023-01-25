@@ -1,7 +1,10 @@
 from django.contrib import admin
 from modeltranslation.admin import TranslationAdmin
 
+from mosquito_alert.taxa.admin import MonthlyDistributionAdmin
+
 from .models import Disease, DiseaseVector
+from .models import MonthlyDistribution as VectorMonthlyDistribution
 
 
 class DiseaseVectorsInlineAdmin(admin.TabularInline):
@@ -34,5 +37,10 @@ class DiseaseVectorsAdmin(admin.ModelAdmin):
         return ", ".join([d.name for d in obj.diseases.all()])
 
 
+class VectorMonthlyDistributionAdmin(MonthlyDistributionAdmin):
+    pass
+
+
 admin.site.register(Disease, DiseasesAdmin)
 admin.site.register(DiseaseVector, DiseaseVectorsAdmin)
+admin.site.register(VectorMonthlyDistribution, VectorMonthlyDistributionAdmin)
