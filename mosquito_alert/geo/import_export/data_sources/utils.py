@@ -6,7 +6,7 @@ import pycountry
 
 
 def download_file(url, filename=None, **kwargs):
-    if not filename:
+    if filename is None:
         tfp = tempfile.NamedTemporaryFile(delete=False, **kwargs)
         filename = tfp.name
     logging.info(f"Downloading {url} to {filename}")
@@ -28,7 +28,7 @@ def get_pycountry_param_from_iso_code(db_name, iso_code, raise_not_found=True):
     else:
         raise ValueError("ISO code must be iso2 or iso3.")
 
-    if not result and raise_not_found:
+    if result is None and raise_not_found:
         raise KeyError(
             f"Could not find a record for {iso_code} in pycountry {db_name} db"
         )

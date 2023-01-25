@@ -19,7 +19,7 @@ class InMemoryGDALFileSystemStorage(BaseStorage):
 
 class TempFolderZippedGDALFileSystemStorage(TempFolderStorage):
     def __init__(self, name=None, *args, **kwargs):
-        if not name:
+        if name is None:
             _tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
             name = _tmp_file.name
         super().__init__(name, *args, **kwargs)

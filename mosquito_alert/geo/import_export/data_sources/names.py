@@ -481,7 +481,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
         result = None
         if len(df_filtered):
             result = df_filtered.iloc[0]["alternatename"]
-            if not result:
+            if result is None:
                 result = df_filtered.iloc[0]["name"]
 
         return result

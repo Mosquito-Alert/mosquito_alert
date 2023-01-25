@@ -109,7 +109,7 @@ class CompressedGdalFile(GdalVirtualFileHandler):
         mime_type, _ = mimetypes.guess_type(url=uri)
         logging.debug(f"mimetype is {mime_type}")
 
-        if not mime_type:
+        if mime_type is None:
             return None
 
         extension = mimetypes.guess_extension(type=mime_type)
@@ -134,7 +134,7 @@ class CompressedGdalFile(GdalVirtualFileHandler):
                 f"compression_type must be one of {self.ALLOWED_COMPRESSIONS}"
             )
 
-        if not compression_type:
+        if compression_type is None:
             compression_type = self.guess_compression_type(uri=path)
 
         return self.format_syntax(

@@ -175,7 +175,7 @@ class Boundary(MP_Node, ParentManageableNodeMixin):
             # If geometry has changed or been called
             current_geometry = self.get_geometry()
 
-            if not current_geometry or not self.geometry.equals(current_geometry):
+            if current_geometry is None or not self.geometry.equals(current_geometry):
                 # If current geometry is not set OR is different.
                 BoundaryGeometry.objects.update_or_create(
                     defaults={"geometry": self.geometry}, boundary=self

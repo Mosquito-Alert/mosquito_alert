@@ -72,11 +72,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.set_logging(verbosity=int(options["verbosity"]))
 
-        if not options.get("bl_level"):
+        if options.get("bl_level", None) is None:
             # Use data_source level as default
             options["bl_level"] = options["level"]
 
-        if not options.get("bl_pk"):
+        if options.get("bl_pk", None) is None:
             if None in itemgetter("bl_type", "bl_level")(options):
                 raise ValueError(
                     "Either bl_pk or all [bl_type, bl_level] values must be set."
