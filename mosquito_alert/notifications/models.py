@@ -2,7 +2,6 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from notifications.base.models import AbstractNotification
 from notifications.signals import notify
@@ -50,7 +49,7 @@ class NotificationSubscription(models.Model):
     subscribed_target = GenericForeignKey("target_content_type", "target_object_id")
 
     # Attributes - Mandatory
-    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     # Attributes - Optional
     level = models.CharField(
