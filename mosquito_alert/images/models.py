@@ -4,6 +4,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -50,9 +51,12 @@ class Photo(models.Model):
         format="WEBP",
         options={"quality": 85},
     )
-    created_at = models.DateTimeField(default=timezone.now, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     # Attributes - Optional
+    taken_at = models.DateTimeField(
+        null=True, blank=True, validators=[MaxValueValidator(limit_value=timezone.now)]
+    )
 
     # Object Manager
     # Custom Properties
