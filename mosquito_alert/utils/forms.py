@@ -74,7 +74,6 @@ class MoveNodeForm(OriginalMoveNodeForm):
         except ValueError:
             pass
         else:
-            print("CLASS")
             self.__class__ = ParentManageableMoveNodeForm
 
         super().__init__(*args, **kwargs)
