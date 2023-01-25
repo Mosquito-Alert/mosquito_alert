@@ -4,6 +4,7 @@ from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.geos.collections import MultiPoint, MultiPolygon
 from django.contrib.gis.measure import Distance as DistanceMeasure
 from django.db.models import F, Q, QuerySet
+from polymorphic.managers import PolymorphicQuerySet
 from treebeard.mp_tree import MP_NodeQuerySet
 
 
@@ -84,5 +85,23 @@ class LocationQuerySet(QuerySet):
 
 
 class GeoLocatedModelQuerySet(LocationQuerySet):
-    def __init__(self, location_fk_field="location", *args, **kwargs):
-        super().__init__(field_prefix=location_fk_field, *args, **kwargs)
+    # NOTE: do not use *args, **kwargs. Error when using polymorphic querysets.
+    def __init__(
+        self,
+        model=None,
+        query=None,
+        using=None,
+        hints=None,
+        location_fk_field="location",
+    ):
+        super().__init__(
+            model=model,
+            query=query,
+            using=using,
+            hints=hints,
+            field_prefix=location_fk_field,
+        )
+
+
+class GeoLocatedPolymorphicModelQuerySet(PolymorphicQuerySet, GeoLocatedModelQuerySet):
+    pass
