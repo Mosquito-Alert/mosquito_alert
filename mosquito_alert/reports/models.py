@@ -4,6 +4,7 @@ import reversion
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from django.core.validators import MaxValueValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from flag.models import Flag
@@ -43,7 +44,11 @@ class Report(PolymorphicModel, GeoLocatedModel):
     # NOTE: in case licensing is needed, get inspiration from django-licensing (it does not work)
     # license = models.ForeignKey(License, on_delete=models.PROTECT)
     # TODO: add location_is_modified or another location for the event_location.
-    observed_at = models.DateTimeField(default=timezone.now, blank=True)
+    observed_at = models.DateTimeField(
+        default=timezone.now,
+        blank=True,
+        validators=[MaxValueValidator(limit_value=timezone.now)],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     published = models.BooleanField(default=False)
