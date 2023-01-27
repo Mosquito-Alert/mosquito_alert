@@ -5,6 +5,7 @@ from django.db.models.query import QuerySet
 from django.db.models.signals import post_save
 from django.dispatch import Signal, receiver
 from notifications.models import notify_handler as _notify_handler
+from notifications.signals import notify  # noqa: F401
 
 from .models import Notification, NotificationSubscription
 
@@ -55,18 +56,16 @@ def event_handler(sender, **kwargs):
 def send_notification_email(instance, created, *args, **kwargs):
     # TODO: send mail async + django-anymail
     if created:
-        if isinstance(instance.recipient, User_model) and hasattr(
-            instance.recipient, "email"
+        if isinstance(instance.recipient, User_model) and (
+            email := instance.recipient.email
         ):
-            message = str(instance)
-            if instance.description:
-                message = message + "\n" + instance.description
-            send_mail(
-                subject=f"{instance.verb} in {instance.target}",
+            message = instance.description
+            is_sent = send_mail(
+                subject=str(instance),
                 message=message,
-                recipient_list=[instance.recipient.email],
+                recipient_list=[email],
                 fail_silently=True,
                 from_email=None,  # Will use settings.DEFAULT_FROM_EMAIL
             )
-        instance.emailed = True
-        instance.save()
+            instance.emailed = bool(is_sent)
+            instance.save()
