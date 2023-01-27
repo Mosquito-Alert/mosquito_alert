@@ -18,7 +18,12 @@ class TaxonAdmin(TreeAdmin, TranslationAdmin):
 
 class MonthlyDistributionAdmin(admin.ModelAdmin):
     list_display = ("boundary", "month", "taxon", "status")
-    list_filter = ("boundary", "month", "taxon", "status")
+    list_filter = (
+        ("boundary", admin.RelatedOnlyFieldListFilter),
+        "month",
+        ("taxon", admin.RelatedOnlyFieldListFilter),
+        "status",
+    )
 
 
 admin.site.register(Taxon, TaxonAdmin)
