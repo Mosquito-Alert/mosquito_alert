@@ -75,6 +75,9 @@ class Report(PolymorphicModel, GeoLocatedModel):
         verbose_name_plural = _("reports")
         ordering = ["-created_at"]
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__} ({self.uuid})"
+
 
 @reversion.register(follow=("report_ptr",))
 class BiteReport(Report):
