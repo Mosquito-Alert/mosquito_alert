@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
 
 from mosquito_alert.images.models import Photo
-from mosquito_alert.notifications.signals import notify_subscribers
+from mosquito_alert.notifications.signals import notify, notify_subscribers
 from mosquito_alert.taxa.models import Taxon
 
 post_identification_changed = ModelSignal(use_caching=True)
@@ -41,9 +41,20 @@ class Individual(LifecycleModel):
     # Methods
     @hook(AFTER_UPDATE, when="is_identified", was=False, is_now=True)
     def notify_identification(self):
+        # TODO: use signals and notify in reports app.
 
         if hasattr(self, "reports"):
             for r in self.reports.all():
+                if user := r.user:
+                    notify.send(
+                        recipient=user,
+                        sender=r,
+                        verb="was identified as",
+                        action_object=self.identification_set.taxon,
+                        description="Your observation report has been identified as {}".format(
+                            self.identification_set.taxon
+                        ),
+                    )
                 for b in r.location.boundaries.all():
                     notify_subscribers.send(
                         sender=self.identification_set.taxon,
