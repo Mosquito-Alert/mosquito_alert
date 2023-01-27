@@ -50,8 +50,8 @@ class Taxon(MP_Node, ParentManageableNodeMixin):
 
     # Methods
     def save(self, *args, **kwargs):
-        # Forcing capital letters
-        self.name = self.name.title()
+        # Capitalize only first letter
+        self.name = self.name.capitalize()
 
         if self.parent:
             if self.rank <= self.parent.rank:
