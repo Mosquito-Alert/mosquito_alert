@@ -49,7 +49,7 @@ class ReportChildAdmin(NestedPolymorphicModelAdmin, PolymorphicChildModelAdmin):
 
 @admin.register(BiteReport)
 class BiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
-    class BitesInlineAdmin(admin.TabularInline):
+    class BitesInlineAdmin(NestedTabularInline):
         model = BiteReport.bites.through
         extra = 0
         show_change_link = True
