@@ -42,15 +42,19 @@ send_to_2 = [
     'ITG2', #Sardinia
 ]
 
+# cleanup
+# delete from tigaserver_app_sentnotification where notification_id in ( select n.id from tigaserver_app_notification n, tigaserver_app_notificationcontent nc where nc.id = n.notification_content_id and nc.notification_label = 'notif_ita_06022023' );
+# delete from tigaserver_app_acknowledgednotification where notification_id in ( select n.id from tigaserver_app_notification n, tigaserver_app_notificationcontent nc where nc.id = n.notification_content_id and nc.notification_label = 'notif_ita_06022023' );
+# delete from tigaserver_app_notification where notification_content_id in ( select id from tigaserver_app_notificationcontent nc where nc.notification_label = 'notif_ita_06022023' );
 
 def main(pk_notif_1, pk_notif_2):
     sender = User.objects.get(pk=38)  # mosquitoalert
 
     notification_content_1 = NotificationContent.objects.get(pk=pk_notif_1)
-    notification_1 = Notification(expert=sender, notification_content=notification_content_1)
-    notification_1.save()
 
     for topic_code in send_to_1:
+        notification_1 = Notification(expert=sender, notification_content=notification_content_1)
+        notification_1.save()
         topic = NotificationTopic.objects.get(topic_code=topic_code)
         send_notification_1 = SentNotification(sent_to_topic=topic, notification=notification_1)
         send_notification_1.save()
@@ -59,10 +63,10 @@ def main(pk_notif_1, pk_notif_2):
         print(retval)
 
     notification_content_2 = NotificationContent.objects.get(pk=pk_notif_2)
-    notification_2 = Notification(expert=sender, notification_content=notification_content_2)
-    notification_2.save()
 
     for topic_code in send_to_2:
+        notification_2 = Notification(expert=sender, notification_content=notification_content_2)
+        notification_2.save()
         topic = NotificationTopic.objects.get(topic_code=topic_code)
         send_notification_2 = SentNotification(sent_to_topic=topic, notification=notification_2)
         send_notification_2.save()
@@ -73,6 +77,6 @@ def main(pk_notif_1, pk_notif_2):
 
 if __name__ == '__main__':
     # args = sys.argv[1:]
-    # main(pk_notif_1=1442609,pk_notif_2=1442610)
+    # main(pk_notif_1=1442611,pk_notif_2=1442612)
     # production
     main(pk_notif_1=1442835,pk_notif_2=1442836)
