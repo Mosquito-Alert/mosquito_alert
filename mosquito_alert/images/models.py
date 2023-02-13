@@ -11,7 +11,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from flag.models import Flag
 from imagekit.processors import ResizeToFit, Transpose
-from PIL import ExifTags, Image, TiffImagePlugin
+from PIL import ExifTags, Image
 
 from .fields import ProcessedImageField
 
@@ -52,6 +52,7 @@ class Photo(models.Model):
         options={"quality": 85},
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    # TODO: license + attributions
 
     # Attributes - Optional
     taken_at = models.DateTimeField(
@@ -63,13 +64,22 @@ class Photo(models.Model):
     @cached_property
     def exif_dict(self):
         # NOTE: this information is user-sensitive. Consider it private, never expose it in views/api.
-        img = Image.open(self.image)
-        img_exif = img.getexif()
-        return {
-            ExifTags.TAGS[key]: val
-            for key, val in img_exif.items()
-            if type(val) not in [bytes, TiffImagePlugin.IFDRational]
-        }
+        exif_data = {}
+        image = Image.open(self.image)
+        info = image._getexif()
+        if info:
+            for tag, value in info.items():
+                decoded = str(ExifTags.TAGS.get(tag, tag))
+                if decoded == "GPSInfo":
+                    gps_data = {}
+                    for gps_tag in value:
+                        sub_decoded = ExifTags.GPSTAGS.get(gps_tag, gps_tag)
+                        gps_data[sub_decoded] = str(value[gps_tag])
+                    exif_data[decoded] = gps_data
+                else:
+                    exif_data[decoded] = str(value)
+
+        return exif_data
 
     # Methods
 
