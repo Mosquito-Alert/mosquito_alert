@@ -32,8 +32,8 @@ def main():
                 for ano in annots:
                     if ano.other_species is not None:
                         validation_writer.writerow([r.report_id, r.creation_time, r.version_UUID, str(ano.other_species)])
-                print("Done {0} of {1}".format( i, total ))
-                i = i + 1
+            print("Done {0} of {1}".format( i, total ))
+            i = i + 1
 
 
 if __name__ == "__main__":
