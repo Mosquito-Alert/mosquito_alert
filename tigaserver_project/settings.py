@@ -142,6 +142,7 @@ LANGUAGES = (
     ('de', _('German')),
     ('sq', _('Albanian')),
     ('el', _('Greek')),
+    ('gl', _('Galician')),
     ('hu', _('Hungarian')),
     ('pt', _('Portuguese')),
     ('sl', _('Slovenian')),
