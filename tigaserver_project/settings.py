@@ -138,6 +138,7 @@ USE_TZ = True
 LANGUAGES = (
     ('es', _('Spanish')),
     ('ca', _('Catalan')),
+    ('eu', _('Basque')),
     ('en', _('English')),
     ('de', _('German')),
     ('sq', _('Albanian')),
