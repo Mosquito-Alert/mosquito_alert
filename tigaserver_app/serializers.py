@@ -399,10 +399,11 @@ class NotificationContentSerializer(serializers.ModelSerializer):
     body_html_native = serializers.CharField(required=False)
     title_native = serializers.CharField(required=False)
     native_locale = serializers.CharField(required=False)
+    notification_label = serializers.CharField(required=False)
 
     class Meta:
         model = NotificationContent
-        fields = ('id', 'body_html_en', 'body_html_native', 'title_en', 'title_native', 'native_locale')
+        fields = ('id', 'body_html_en', 'body_html_native', 'title_en', 'title_native', 'native_locale', 'notification_label')
 
 
 class NotificationSerializer(serializers.ModelSerializer):

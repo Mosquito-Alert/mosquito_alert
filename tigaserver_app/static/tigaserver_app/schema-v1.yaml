@@ -2523,12 +2523,52 @@ paths:
   /api/notification_content/:
     put:
       operationId: Updatenotification_content
-      parameters: []
+      requestBody:
+        description: JSON Representation of a NotificationContent object
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body_html_en
+                - title_en
+              properties:
+                body_html_en:
+                  type: string
+                  description: Notification body in english. Allows html.
+                title_en:
+                  type: string
+                body_html_native:
+                  type: string
+                title_native:
+                  type: string
+                native_locale:
+                  type: string
+                notification_label:
+                  type: string
+      consumes:
+        - application/json
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  body_html_en:
+                    type: string
+                  title_en:
+                    type: string
+                  body_html_native:
+                    type: string
+                  title_native:
+                    type: string
+                  native_locale:
+                    type: string
+                  notification_label:
+                    type: string
           description: ''
   /api/send_notifications/:
     put:

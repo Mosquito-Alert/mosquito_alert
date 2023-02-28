@@ -42,6 +42,8 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
+from rest_framework.parsers import JSONParser
+from rest_framework.decorators import parser_classes
 import time
 
 from celery.task.schedules import crontab
@@ -1413,6 +1415,7 @@ def user_notifications(request):
 
 
 @api_view(['PUT'])
+@parser_classes([JSONParser])
 def notification_content(request):
     if request.method == 'PUT':
         this_notification_content = NotificationContent()
@@ -1431,7 +1434,12 @@ def send_notifications(request):
         sender = data['user_id']
         push = data['ppush']
         # report with oldest creation date
-        # r = data['report_id']
+        r = None
+        try:
+            r = data['report_id']
+        except KeyError:
+            pass
+        report = None
         queryset = NotificationContent.objects.all()
         notification_content = get_object_or_404(queryset, pk=id)
         recipients = data['recipients']
@@ -1467,7 +1475,13 @@ def send_notifications(request):
                 notification_estimate = 1
                 send_to = [TigaUser.objects.get(pk=recipients)]
 
-        n = Notification(expert_id=sender, notification_content=notification_content)
+        if r is not None:
+            try:
+                report = Report.objects.get( pk=r )
+            except Report.DoesNotExist:
+                pass
+
+        n = Notification(expert_id=sender, notification_content=notification_content, report=report)
         n.save()
 
         if topic is not None:
