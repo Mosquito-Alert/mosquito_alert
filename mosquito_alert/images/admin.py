@@ -34,9 +34,9 @@ class m2mPhotoAdminInlineMixin:
 
 
 class PhotoAdmin(NestedPolymorphicModelAdmin):
-    list_display = ("__str__", "user", "created_at", "taken_at", "preview")
-    list_filter = ("user", "created_at", "taken_at")
-    fields = ("created_at", "taken_at", ("image", "preview"))
+    list_display = ("__str__", "user", "created_at", "preview")
+    list_filter = ("user", "created_at")
+    fields = ("created_at", ("image", "preview"))
     readonly_fields = ("preview", "created_at")
     list_per_page = 10
 
