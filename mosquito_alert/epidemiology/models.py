@@ -31,7 +31,10 @@ class Disease(models.Model):
 class DiseaseVector(models.Model):
     # Relations
     taxon = models.OneToOneField(
-        Taxon, on_delete=models.CASCADE, related_name="disease_vector"
+        Taxon,
+        on_delete=models.CASCADE,
+        related_name="disease_vector",
+        limit_choices_to={"rank__gte": Taxon.TaxonomicRank.SPECIES_COMPLEX},
     )
     diseases = models.ManyToManyField(Disease, related_name="disease_vectors")
 
