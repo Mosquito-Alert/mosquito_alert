@@ -1,6 +1,8 @@
 from .base import *  # noqa
 from .base import env
 
+RUNSERVERPLUS_POLLER_RELOADER_TYPE = "stat"
+
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
