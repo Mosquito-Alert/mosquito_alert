@@ -105,6 +105,7 @@ LOCAL_APPS = [
     "mosquito_alert.breeding_sites",
     "mosquito_alert.epidemiology",
     "mosquito_alert.geo",
+    "mosquito_alert.identifications",
     "mosquito_alert.images",
     "mosquito_alert.individuals",
     "mosquito_alert.notifications",

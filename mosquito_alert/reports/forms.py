@@ -56,10 +56,8 @@ class IndividualReportForm(ReportForm):
 
         if self.instance._state.adding:
             self.instance.individual = Individual.objects.create()
-            self.instance.individual.identification_set.taxon = self.cleaned_data[
-                "taxon"
-            ]
-            self.instance.individual.identification_set.save()
+            self.instance.individual.taxon = self.cleaned_data["taxon"]
+            self.instance.individual.save()
 
         return super().save(commit)
 

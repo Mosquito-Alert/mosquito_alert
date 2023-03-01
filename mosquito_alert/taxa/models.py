@@ -48,6 +48,10 @@ class Taxon(MP_Node, ParentManageableNodeMixin):
     # Custom Properties
     node_order_by = ["name"]  # Needed for django-treebeard
 
+    @property
+    def is_specie(self):
+        return self.rank >= self.TaxonomicRank.SPECIES_COMPLEX
+
     # Methods
     def save(self, *args, **kwargs):
         # Capitalize only first letter
@@ -193,13 +197,11 @@ class MonthlyDistribution(LifecycleModel):
             IndividualReport.objects.filter(
                 observed_at__month__lte=self.month.month,
                 observed_at__year__lte=self.month.year,
-                individual__is_identified=True,
+                individual__taxon__isnull=False,
             )
             .filter(
-                Q(individual__identification_set__taxon=self.taxon)
-                | Q(
-                    individual__identification_set__taxon__in=self.taxon.get_descendants()
-                )
+                Q(individual__taxon=self.taxon)
+                | Q(individual__taxon__in=self.taxon.get_descendants())
             )
             .filter_by_boundary(boundaries=self.boundary, include_descendants=True)
         )

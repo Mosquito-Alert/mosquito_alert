@@ -12,6 +12,7 @@ pandas==1.5.2
 geopandas==0.12.2  # https://github.com/geopandas/geopandas
 tqdm==4.64.1
 geopy==2.3.0  # https://github.com/geopy/geopy
+anytree==2.8.0  # https://github.com/c0fec0de/anytree
 
 # Django
 # ------------------------------------------------------------------------------
