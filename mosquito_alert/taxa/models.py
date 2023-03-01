@@ -70,7 +70,10 @@ class Taxon(MP_Node, ParentManageableNodeMixin):
         verbose_name = _("taxon")
         verbose_name_plural = _("taxa")
         constraints = [
-            models.UniqueConstraint(fields=["name", "rank"], name="unique_name_rank")
+            models.UniqueConstraint(fields=["name", "rank"], name="unique_name_rank"),
+            models.UniqueConstraint(
+                fields=["depth"], condition=Q(depth=1), name="unique_root"
+            ),
         ]
 
     def __str__(self) -> str:
