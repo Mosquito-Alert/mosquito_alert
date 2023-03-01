@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from flag.models import Flag
-from imagekit.processors import ResizeToFit, Transpose
+from imagekit.processors import ResizeToFit
 from PIL import ExifTags, Image
 
 from .fields import ProcessedImageField
@@ -45,7 +45,7 @@ class Photo(models.Model):
     # Attributes - Mandatory
     image = ProcessedImageField(
         upload_to=image_upload_to,
-        processors=[Transpose(), ResizeToFit(height=720, upscale=False)],
+        processors=[ResizeToFit(height=720, upscale=False)],
         format="WEBP",
         options={"quality": 85},
     )
