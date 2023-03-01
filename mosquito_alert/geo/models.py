@@ -208,7 +208,10 @@ class BoundaryGeometry(LifecycleModel):
 
     # Relations
     boundary = models.OneToOneField(
-        Boundary, on_delete=models.CASCADE, related_name="geometry_model"
+        Boundary,
+        on_delete=models.CASCADE,
+        related_name="geometry_model",
+        primary_key=True,
     )
 
     # Attributes - Mandatory
