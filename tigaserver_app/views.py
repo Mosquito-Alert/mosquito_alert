@@ -1440,8 +1440,9 @@ def send_notifications(request):
         except KeyError:
             pass
         report = None
-        queryset = NotificationContent.objects.all()
-        notification_content = get_object_or_404(queryset, pk=id)
+        #queryset = NotificationContent.objects.all()
+        #notification_content = get_object_or_404(queryset, pk=id)
+        notification_content = get_object_or_404(NotificationContent, pk=id)
         recipients = data['recipients']
         topic = None
         send_to = None

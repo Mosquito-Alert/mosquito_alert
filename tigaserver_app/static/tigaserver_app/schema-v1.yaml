@@ -4,6 +4,113 @@ info:
   version: 1.0
   description: Documentation for the Mosquito Alert server API
 paths:
+  /api/notification_content/:
+    put:
+      operationId: Updatenotification_content
+      tags:
+        - aima
+      requestBody:
+        description: Create NotificationContent object
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body_html_en
+                - title_en
+              properties:
+                body_html_en:
+                  type: string
+                  description: Notification body in english. Allows html.
+                title_en:
+                  type: string
+                body_html_native:
+                  type: string
+                title_native:
+                  type: string
+                native_locale:
+                  type: string
+                notification_label:
+                  type: string
+      consumes:
+        - application/json
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  body_html_en:
+                    type: string
+                  title_en:
+                    type: string
+                  body_html_native:
+                    type: string
+                  title_native:
+                    type: string
+                  native_locale:
+                    type: string
+                  notification_label:
+                    type: string
+          description: ''
+  /api/send_notifications/:
+    put:
+      operationId: Updatesend_notifications
+      tags:
+        - aima
+      requestBody:
+        description: Send notification to single user, topic or group of users
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - notification_content_id
+                - user_id
+                - recipients
+                - ppush
+              properties:
+                notification_content_id:
+                  type: integer
+                  description: Id of notification content to be sent (must exist previously)
+                user_id:
+                  type: integer
+                  description: Id of user which sends the notification
+                ppush:
+                  type: boolean
+                  description: If true, a push notification is also sent
+                recipients:
+                  type: string
+                  format: uuid
+                  description: Target or targets for the notification. Can be 'all' (global notification), multiple uuids separated by '$', a single uuid, or a topic
+                report_id:
+                  type: string
+                  format: uuid
+                  description: UUID for the report associated to the notification
+      consumes:
+        - application/json
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  non_push_estimate_num:
+                    type: integer
+                    description: Number of non push messages sent. Useful for knowing the actual number of users when sent to topics
+                  push_success:
+                    type: string
+                    description: Status code for push notifications. NO_PUSH - no pushes sent, ALL - all pushes sent successfully, NONE - all pushes failed, SOME - some pushes failed
+                  push_results:
+                    type: array
+                    items:
+                      type: string
+                    description: List containing detailed status messages for each push attempt
+          description: ''
   /api/mark_notif_as_ack/:
     delete:
       operationId: Destroymark_notif_as_ack
@@ -2513,66 +2620,6 @@ paths:
   /api/profile/new/:
     post:
       operationId: Createprofile_new
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: {}
-          description: ''
-  /api/notification_content/:
-    put:
-      operationId: Updatenotification_content
-      requestBody:
-        description: JSON Representation of a NotificationContent object
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - body_html_en
-                - title_en
-              properties:
-                body_html_en:
-                  type: string
-                  description: Notification body in english. Allows html.
-                title_en:
-                  type: string
-                body_html_native:
-                  type: string
-                title_native:
-                  type: string
-                native_locale:
-                  type: string
-                notification_label:
-                  type: string
-      consumes:
-        - application/json
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  id:
-                    type: integer
-                  body_html_en:
-                    type: string
-                  title_en:
-                    type: string
-                  body_html_native:
-                    type: string
-                  title_native:
-                    type: string
-                  native_locale:
-                    type: string
-                  notification_label:
-                    type: string
-          description: ''
-  /api/send_notifications/:
-    put:
-      operationId: Updatesend_notifications
       parameters: []
       responses:
         '200':
