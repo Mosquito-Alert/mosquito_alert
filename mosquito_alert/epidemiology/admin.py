@@ -20,7 +20,7 @@ class DiseasesAdmin(TranslationAdmin):
 
 class DiseaseVectorsAdmin(admin.ModelAdmin):
     autocomplete_fields = ("taxon",)
-    search_fields = ("taxon",)
+    search_fields = ("taxon__name",)
     filter_horizontal = ("diseases",)
     list_display = ("taxon", "get_diseases")
     list_filter = (
