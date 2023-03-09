@@ -45,6 +45,11 @@ class DiseaseVector(models.Model):
     # Custom Properties
 
     # Methods
+    def save(self, *args, **kwargs):
+        if not self.taxon.is_specie:
+            raise ValueError("Taxon must be species rank.")
+
+        super().save(*args, **kwargs)
 
     # Meta and String
     class Meta:
