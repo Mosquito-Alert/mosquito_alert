@@ -38,7 +38,8 @@ class DiseaseVectorsAdmin(admin.ModelAdmin):
 
 
 class VectorMonthlyDistributionAdmin(MonthlyDistributionAdmin):
-    pass
+    def has_add_permission(self, request) -> bool:
+        return False
 
 
 admin.site.register(Disease, DiseasesAdmin)
