@@ -33,4 +33,4 @@ class Bite(models.Model):
         verbose_name_plural = _("bites")
 
     def __str__(self):
-        return f"{self.get_body_part_display()} ({self.datetime})"
+        return f"{self.get_body_part_display()} ({self.datetime.strftime('%Y-%m-%d %H:%M:%S')})"
