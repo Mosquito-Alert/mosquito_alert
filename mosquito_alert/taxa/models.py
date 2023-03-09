@@ -20,7 +20,7 @@ distribution_status_has_changed = ModelSignal()
 #     * (alternatives) https://www.ncbi.nlm.nih.gov/taxonomy
 
 
-class Taxon(MP_Node, ParentManageableNodeMixin):
+class Taxon(ParentManageableNodeMixin, MP_Node):
     class TaxonomicRank(models.IntegerChoices):
         DOMAIN = 0, _("Domain")
         KINGDOM = 10, _("Kingdom")
@@ -54,10 +54,12 @@ class Taxon(MP_Node, ParentManageableNodeMixin):
 
     # Methods
     def save(self, *args, **kwargs):
-        # Capitalize only first letter
-        self.name = self.name.capitalize()
+        if self.name:
+            # Capitalize only first letter
+            self.name = self.name.capitalize()
 
         if self.parent:
+            print(f"parent {self} is {self.parent}")
             if self.rank <= self.parent.rank:
                 raise ValueError(
                     "Child taxon must have a higher rank than their parent."
@@ -92,6 +94,7 @@ class MonthlyDistribution(LifecycleModel):
         ESTABLISHED = 20, _("Established")
 
     # Relations
+    # TODO: use unique_for_month instead of constraint?
     boundary = models.ForeignKey(
         Boundary, on_delete=models.CASCADE, related_name="distribution"
     )
