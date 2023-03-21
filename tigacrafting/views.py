@@ -68,6 +68,8 @@ from django.utils import timezone
 
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
+IA_USER = User.objects.get(pk=104)
+
 other_insect = {
     "es": "Esta foto muestra un insecto que no es un mosquito verdadero, es decir, no pertenece a la familia de los Culícidos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
     "en": "This picture shows an insect which is not a real mosquito from the Culicidae family. At www.mosquitoalert.com you will find tricks and tips for catching and photographing these insects. Please send more pictures!",
@@ -1114,6 +1116,27 @@ def executive_auto_validate(annotation, request):
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
+
+def get_my_area_ia_annotations(this_user):
+    my_supervised_area = this_user.userstat.national_supervisor_of
+    return ExpertReportAnnotation.objects.filter(user=IA_USER).filter(validation_complete=True).filter(report__type='adult').filter(report__country=my_supervised_area)
+
+
+def get_my_completed_ia_reports(this_user):
+    #TODO
+    """
+    this_user should be a national supervisor. the returned reports should be reports in the regional supervisor area, which
+    are already completely validated by the IA user
+    :param this_user:
+    :return: the number of reports
+    """
+    my_supervised_area = this_user.userstat.national_supervisor_of
+    if my_supervised_area is None:
+        return 0
+    my_area_annotations = get_my_area_ia_annotations(this_user)
+    my_area_reports = my_area_annotations.values('report').distinct()
+    return my_area_reports.count()
+
 @transaction.atomic
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na',loc='na'):
@@ -1127,12 +1150,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     current_domain = get_current_domain(request)
     this_user_is_expert = this_user.groups.filter(name='expert').exists()
     this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
-    this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
-    this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-    this_user_is_team_venezuela = this_user.groups.filter(name='team_venezuela').exists()
-    this_user_is_team_stlouis = this_user.groups.filter(name='team_stlouis').exists()
-    #this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
-    #this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
+    this_user_is_national_supervisor = this_user.userstat is not None and this_user.userstat.is_national_supervisor()
     this_user_is_reritja = (this_user.id == 25)
 
     if this_user_is_expert or this_user_is_superexpert:
@@ -1164,19 +1182,30 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if save_formset == "T":
                 formset = AnnotationFormset(request.POST)
                 if formset.is_valid():
-                    for f in formset:
-                        one_form = f.save(commit=False)
-                        auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
-                        if auto_flag:
-                            one_form.status = 0
-                        one_form.save()
-                        f.save_m2m()
-                        if one_form.validation_complete_executive:
+                    if this_user_is_superexpert:
+                        for f in formset:
+                            one_form = f.save(commit=False)
+                            auto_flag = must_be_autoflagged(one_form, one_form.validation_complete)
+                            if auto_flag:
+                                one_form.status = 0
+                            one_form.save()
+                            f.save_m2m()
+                            if one_form.validation_complete_executive:
+                                executive_auto_validate(one_form, request)
+                            if (this_user_is_reritja and one_form.validation_complete == True):
+                                issue_notification(one_form, current_domain)
+                            if auto_flag:
+                                autoflag_others(one_form.id)
+                    elif this_user_is_national_supervisor:
+                        for f in formset:
+                            # then executive validate
+                            one_form = f.save(commit=False)
+                            # delete previous IA validation
+                            ExpertReportAnnotation.objects.filter(report=one_form.report).delete()
+                            one_form.validation_complete_executive = True
+                            one_form.validation_complete = True
+                            one_form.save()
                             executive_auto_validate(one_form, request)
-                        if(this_user_is_reritja and one_form.validation_complete == True):
-                            issue_notification(one_form,current_domain)
-                        if auto_flag:
-                            autoflag_others(one_form.id)
                 else:
                     return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
             page = request.POST.get('page')
@@ -1274,7 +1303,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         #             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
         #             new_annotation.save()
 
-        all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
+        if pending == 'complete_ia':
+            all_annotations = get_my_area_ia_annotations(this_user)
+        else:
+            all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
 
         # if loc == 'spain':
         #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
@@ -1420,7 +1452,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
         current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
         args['n_pending'] = current_pending
-        #n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
+        n_ia_complete = get_my_completed_ia_reports(this_user)
+        args['n_ia_complete'] = n_ia_complete
         n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).filter(report__type='adult').count()
         args['n_complete'] = n_complete
         args['n_total'] = n_complete + current_pending

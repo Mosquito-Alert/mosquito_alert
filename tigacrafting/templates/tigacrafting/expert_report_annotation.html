@@ -178,6 +178,14 @@
                                                 class="glyphicon glyphicon-check"></span> <span
                                                 class="badge">{{ n_complete }}</span>
                                         </label>
+                                        {% if request.user.userstat.is_national_supervisor %}
+                                        <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip"
+                                               data-placement="bottom" title="IA Validated" id="ia_completed_btn">
+                                            <input type="radio" name="status" autocomplete="off"><span
+                                                class="fa fa-android fa-lg"></span> <span
+                                                class="badge">{{ n_ia_complete }}</span>
+                                        </label>
+                                        {% endif %}
                                     </div>
                                 </li>
                             {% endblock %}
@@ -291,14 +299,19 @@
     <div class="starter-template">
 
         {% block title %}
-            <h1>Expert Report Validation</h1>
-            <h2>{% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}Search
-                Result{% else %}{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed
-                    Reports{% endif %}{% endif %}</h2>
+            {% if request.user.userstat.is_national_supervisor and edit_mode == 'edit' %}
+                <h1>National Supervisor IA Revision</h1>
+                <h2><span style="color:red;">Edit Mode</span></h2>
+            {% else %}
+                <h1>Expert Report Validation</h1>
+                <h2>{% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}Search
+                    Result{% else %}{% if pending == 'pending' %}Pending Reports{% elif pending == 'complete' %}Completed
+                        Reports{% endif %}{% endif %}</h2>
 
-            {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
-                <strong>Ordered by:</strong> {{ orderby }}<br>
-                <strong>Filters:</strong> Species classification - {{ tiger_certainty_label }}, Status - {{ status }}
+                {% if version_uuid != 'na' and version_uuid != '' or linked_id != 'na' and linked_id != '' or tags_filter != 'na' and tags_filter != '' %}{% else %}
+                    <strong>Ordered by:</strong> {{ orderby }}<br>
+                    <strong>Filters:</strong> Species classification - {{ tiger_certainty_label }}, Status - {{ status }}
+                {% endif %}
             {% endif %}
         {% endblock %}
             <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge">{{ n_query_records }}</span>
@@ -307,58 +320,61 @@
         <div style="text-align: left">
 
             {% block instructions %}
-
-                {% if pending == 'pending' %}
-                    <h4> Instructions <button data-toggle="tooltip" id="details" type="button" class="btn btn-primary">Show</button></h4>
-                    <div class="persiana" style="display: none;">
-                    <p>
-                        You can be assigned a simplified report or a full report. In case of the simplified report, the steps
-                        in <span style="color:blue;">blue</span> are ommitted.
-                        For each report:
-                        <ul>
-                        <li>
-                            (1) Select a species classification. If you choose any of the current Aedes or Culex,
-                            choose also the degree of certainty matching your degree of belief that the picture contains the
-                            species. If you choose 'Complex', select also the species combo. If you choose 'Other', please specify the other
-                            species that you are sure it is.
-                        </li>
-                        <li style="color:blue;">
-                            (2) add any note you want to see displayed on the public map along with the report. Please be careful not to write
-                            any sensitive information here such as names, e-mail addresses, telephone numbers or anything which can be considered
-                            personal/sensitive data.
-                        </li>
-                        <li style="color:blue;">
-                            (3) add any internal tags for this report, which can help you locate it later.
-                        </li>
-                        <li>
-                            (4) add any internal notes for yourself or other experts regarding your reasons for each selection. These notes will be
-                            used only internally and will be never visible anywhere public.
-                        </li>
-                        <li>
-                            (5) flag the report if you want to bring it to the attention of other experts
-                            (because it is an especially interesting report or because you have doubts).
-                        </li>
-                        <li>
-                            (6) indicate if the report should be hidden from public view (this will automatically
-                            remove it from the public map). If you select to hide or flag the report, you need to specify why you have chosen to
-                            do so. Do this by writing an internal comment.
-                        </li>
-                        <li style="color:blue;">
-                            (7) select which (if any) of the reports photos should be displayed on the public map (only one photo will be displayed).
-                            Please be careful not to mark any picture which may contain sensitive data such as faces, addresses or anything which can
-                            be considered personal/sensitive data.
-                        </li>
-                        </ul>
-                        You can save your work as you go using the "save" button at the top of the screen.
-                        When you are done with a given report, check  the "validation complete" box. You will not be
-                        able to modify your responses once you have saved a report marked with "validation complete."
-                    </p>
-                    </div>
-
-                {% else %}
+                {% if request.user.userstat.is_national_supervisor and edit_mode == 'edit' %}
                     <h4> Instructions </h4>
-                    <p>You are currently viewing your completed reports. To validate new reports, click the blue
-                        'Pending' button at the top of the screen.</p>
+                    <p>You are revising a report validated by IA</p>
+                {% else %}
+                    {% if pending == 'pending' %}
+                        <h4> Instructions <button data-toggle="tooltip" id="details" type="button" class="btn btn-primary">Show</button></h4>
+                        <div class="persiana" style="display: none;">
+                        <p>
+                            You can be assigned a simplified report or a full report. In case of the simplified report, the steps
+                            in <span style="color:blue;">blue</span> are ommitted.
+                            For each report:
+                            <ul>
+                            <li>
+                                (1) Select a species classification. If you choose any of the current Aedes or Culex,
+                                choose also the degree of certainty matching your degree of belief that the picture contains the
+                                species. If you choose 'Complex', select also the species combo. If you choose 'Other', please specify the other
+                                species that you are sure it is.
+                            </li>
+                            <li style="color:blue;">
+                                (2) add any note you want to see displayed on the public map along with the report. Please be careful not to write
+                                any sensitive information here such as names, e-mail addresses, telephone numbers or anything which can be considered
+                                personal/sensitive data.
+                            </li>
+                            <li style="color:blue;">
+                                (3) add any internal tags for this report, which can help you locate it later.
+                            </li>
+                            <li>
+                                (4) add any internal notes for yourself or other experts regarding your reasons for each selection. These notes will be
+                                used only internally and will be never visible anywhere public.
+                            </li>
+                            <li>
+                                (5) flag the report if you want to bring it to the attention of other experts
+                                (because it is an especially interesting report or because you have doubts).
+                            </li>
+                            <li>
+                                (6) indicate if the report should be hidden from public view (this will automatically
+                                remove it from the public map). If you select to hide or flag the report, you need to specify why you have chosen to
+                                do so. Do this by writing an internal comment.
+                            </li>
+                            <li style="color:blue;">
+                                (7) select which (if any) of the reports photos should be displayed on the public map (only one photo will be displayed).
+                                Please be careful not to mark any picture which may contain sensitive data such as faces, addresses or anything which can
+                                be considered personal/sensitive data.
+                            </li>
+                            </ul>
+                            You can save your work as you go using the "save" button at the top of the screen.
+                            When you are done with a given report, check  the "validation complete" box. You will not be
+                            able to modify your responses once you have saved a report marked with "validation complete."
+                        </p>
+                        </div>
+                    {% else %}
+                        <h4> Instructions </h4>
+                        <p>You are currently viewing your completed reports. To validate new reports, click the blue
+                            'Pending' button at the top of the screen.</p>
+                    {% endif %}
                 {% endif %}
 
             {% endblock %}
@@ -460,11 +476,31 @@
         {% block report_title_status_row %}
             <div class="row">
                 <div class="col-md-6">
-                    {% if form.instance.simplified_annotation == True %}
-                    <strong>This is a simplified report - </strong>
-                    {% else %}<strong>This is a full report - </strong>
+                    {% if edit_mode != 'edit' %}
+                        {% if pending != 'complete_ia'%}
+                            {% if form.instance.simplified_annotation == True %}
+                            <strong>This is a simplified report - </strong>
+                            {% else %}<strong>This is a full report - </strong>
+                            {% endif %}
+                            <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}superexpert {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
+                        {% else %}
+                            <label class="label label-success" style="font-size: 14px;">
+                                <strong>IA Validated</strong> <span class="fa fa-android fa-1x"></span> <span class="glyphicon glyphicon-check"></span>
+                            </label>
+                        {% endif %}
+                    {% else %}
+                        {% if request.user.userstat.is_superexpert %}
+                            {% if form.instance.simplified_annotation == True %}
+                            <strong>This is a simplified report - </strong>
+                            {% else %}<strong>This is a full report - </strong>
+                            {% endif %}
+                            <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}superexpert {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
+                        {% else %}
+                            <label class="label label-success" style="font-size: 14px;">
+                                <strong>IA Validated</strong> <span class="fa fa-android fa-1x"></span> <span class="glyphicon glyphicon-check"></span>
+                            </label>
+                        {% endif %}
                     {% endif %}
-                    <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}superexpert {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
                 </div>
                 <div class="col-md-6">
                     <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}
@@ -595,7 +631,7 @@
                     {% endif %}
 
                     {% if checked == 'unchecked' or edit_mode == 'edit' %}
-
+                        {% if request.user.userstat.is_superexpert %}
                         <div class="btn-group" id="status_grp" data-toggle="buttons">
                             <label class="btn btn-default btn-lg" data-toggle="tooltip" data-placement="bottom"
                                    title="Confirm expert annotations without changes"
@@ -611,12 +647,12 @@
                                     class="glyphicon glyphicon-thumbs-down"></span>
                             </label>
                         </div>
-
+                        {% endif %}
                     {% endif %}
 
 
                 {% else %}
-                    <h4><strong>My Responses</strong></h4>
+                    {% if pending != 'complete_ia' %}<h4><strong>My Responses</strong></h4>{% endif %}
 
                     {% if request.user.userstat.is_superexpert and checked == 'confirmed' %}
 
@@ -625,19 +661,23 @@
                         {% else %}
 
                     {% if form.instance.report.type == 'adult' %}
-                        <strong>Expert classification:</strong><br>
+                        {% if pending == 'complete_ia' %} <strong>IA classification:</strong> {% else %} <strong>Expert classification:</strong><br> {% endif %}
                         <div style="border:1px solid #333333;padding:2px;">
                             <!-- $EURO_SWITCH$ -->
                             {{ form.instance.report.get_final_combined_expert_category_euro }}
                         </div>
+                        {% if pending != 'complete_ia' %}
                         <strong>My classification:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
                             <!-- $EURO_SWITCH$ -->
                             {{ form.instance.get_category_euro }}
                         </div>
+                        {% endif %}
+                        {% if pending != 'complete_ia' %}
                         <strong>Internal Certainty Comments:</strong><br>
                         <div style="overflow: auto;height: 150px;border:1px solid #333333;padding:2px;">
                             {{ form.instance.tiger_certainty_notes }}</div><br>
+                        {% endif %}
                     {% else %}
                         <strong>Site Certainty:</strong><br>
                         <div style="border:1px solid #333333;padding:2px;">
@@ -874,6 +914,15 @@
                     confirm_btn.addClass('active');
                 {% endif %}
 
+                {% if request.user.userstat.is_national_supervisor and edit_mode == 'edit' %}
+                    // replicate behaviour of click on revise
+                    hidden_form_fields{{ form.instance.id }}.parent().parent().slideDown('fast');
+                    hidden_photo_fields{{ form.instance.id }}.show();
+                    $("#" + validation_complete_id_{{ form.instance.id }}).prop('checked', true);
+                    $("label[for*='validation_complete']").hide();
+                    $("[id*='validation_complete']").hide();
+                    copy_revise_form_fields({{ form.instance.id }});
+                {% endif %}
 
 
             {% endif %}
@@ -1001,15 +1050,24 @@
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                             aria-hidden="true">&times;</span></button>
+                    {% if request.user.userstat.is_national_supervisor and edit_mode == 'edit' %}
+                    <h4 class="modal-title" id="save_block_modal_label">Submit IA revision</h4>
+                    {% else %}
                     <h4 class="modal-title" id="save_warning_modal_label">Submit validation</h4>
+                    {% endif %}
                 </div>
                 <div id="save_warning_modal_body" class="modal-body">
+                    {% if request.user.userstat.is_national_supervisor and edit_mode == 'edit' %}
+                    <p>You will replace the IA validation with your own validation. Once this is done, you will not be
+                    able to modify the report again. Are you sure you wish to proceed?</p>
+                    {% else %}
                     <p>You are about to submit your validations for the reports listed below.
                         {% if pending == 'pending' %}<strong>
                             You will not be able to modify these once you have submitted them.</strong>
                             {% elif checked == 'unchecked' or checked == 'confirmed' or checked == 'revised' %}<strong>Your
                             submission may immediately appear on the public webmap.</strong>{% endif %} Are you sure you
                         wish to proceed?</p>
+                    {% endif %}
 
                     <div id="reports_being_saved_list"></div>
                 </div>
@@ -2207,9 +2265,10 @@
                 }
             });
 
-
             {% if request.user.userstat.is_expert and pending != 'pending' %}
-            save_button.prop('disabled', true);
+                {% if not request.user.userstat.is_national_supervisor or edit_mode != 'edit' %}
+                    save_button.prop('disabled', true);
+                {% endif %}
             {% elif request.user.userstat.is_superexpert and checked != 'unchecked' and edit_mode != 'edit' %}
                 save_button.prop('disabled', true);
             {% endif %}
@@ -2308,10 +2367,20 @@
             $("#ns_select").val("{{ ns_exec }}");
             $("#site_certainty_select").val("{{ site_certainty }}");
             $("#status_select").val("{{ status }}");
-            var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn");
-            pending == "complete" ? complete_btn.addClass("active") : (pending == "pending" ? pending_btn.addClass("active") : {});
+            var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn"), ia_completed_btn = $("#ia_completed_btn");
+            //pending == "complete" ? complete_btn.addClass("active") : (pending == "pending" ? pending_btn.addClass("active") : {});
+            if (pending == "complete"){
+                complete_btn.addClass("active");
+            }else{
+                if(pending == "pending"){
+                    pending_btn.addClass("active");
+                }else{
+                    ia_completed_btn.addClass("active");
+                }
+            }
             pending_btn.on('click', {extr: 'pending'}, submit_queries_plus);
             complete_btn.on('click', { extr: 'complete'}, submit_queries_plus);
+            ia_completed_btn.on('click', { extr: 'complete_ia'}, submit_queries_plus);
 
 
         </script>
