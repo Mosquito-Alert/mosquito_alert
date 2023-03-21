@@ -650,7 +650,6 @@
                         {% endif %}
                     {% endif %}
 
-
                 {% else %}
                     {% if pending != 'complete_ia' %}<h4><strong>My Responses</strong></h4>{% endif %}
 
@@ -702,6 +701,13 @@
                     <strong>Linked ID:</strong><br>
                     <div style="border:1px solid #333333;padding:2px;">
                         {% if form.instance.linked_id %}{{ form.instance.linked_id }}{% else %}---{% endif %}</div>
+
+                    {% if request.user.userstat.is_national_supervisor and pending == 'complete_ia' %}
+                        <br>
+                        <a class="btn btn-danger"
+                           href="{% url 'expert_report_annotation' %}?version_uuid={{ form.instance.report.version_UUID }}&edit_mode=edit">Revise IA Validation
+                            <span class="glyphicon glyphicon-edit"></span></a>
+                    {% endif %}
 
                 {% endif %}
 
