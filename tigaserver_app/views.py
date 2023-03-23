@@ -1415,7 +1415,6 @@ def user_notifications(request):
 
 
 @api_view(['PUT'])
-@parser_classes([JSONParser])
 def notification_content(request):
     if request.method == 'PUT':
         this_notification_content = NotificationContent()
