@@ -2,7 +2,7 @@ def get_html_color_for_label(label):
     default = 'white; border:1px solid #000; color:black'
 
     color_table = {
-        'Unclassified': '#8B4513',
+        'Off-topic': '#8B4513',
         'Conflict': '#00FFFF; border:1px solid #000; color:black',
         'Other species': 'black',
         'Not sure': default,
