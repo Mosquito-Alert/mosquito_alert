@@ -1413,7 +1413,7 @@ class Report(models.Model):
                 current_locale = locale
         translation.activate(current_locale)
         translations_table_species_name = {
-            "Unclassified": ugettext("species_unclassified"),
+            "Off-topic": ugettext("species_unclassified"),
             "Other species": ugettext("species_other"),
             "Aedes albopictus": ugettext("species_albopictus"),
             "Aedes aegypti": ugettext("species_aegypti"),
@@ -1663,7 +1663,7 @@ class Report(models.Model):
         elif expert_annotations.count() >= 3:
             most_voted = self.get_most_voted_category(expert_annotations)
         else:
-            most_voted = Categories.objects.get(name='Unclassified')
+            most_voted = Categories.objects.get(name='Off-topic')
             retval['in_progress'] = True
 
         if most_voted is None:

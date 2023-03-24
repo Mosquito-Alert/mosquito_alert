@@ -917,7 +917,7 @@ class NewReportAssignment(TestCase):
         reritja_user.save()
         superexperts_group.save()
 
-        c_1 = Categories.objects.create(pk=1, name="Unclassified", specify_certainty_level=False)
+        c_1 = Categories.objects.create(pk=1, name="Off-topic", specify_certainty_level=False)
         c_1.save()
         c_2 = Categories.objects.create(pk=2, name="Other species", specify_certainty_level=False)
         c_2.save()

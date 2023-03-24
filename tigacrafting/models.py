@@ -343,11 +343,11 @@ class ExpertReportAnnotation(models.Model):
 
     def get_category_euro(self):
         if self.report.type == 'site':
-            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
+            return dict([(-3, 'Off-topic')] + list(SITE_CATEGORIES))[self.get_score()]
         elif self.report.type == 'adult':
             if self.category is None:
                 # This should not happen, but safety first
-                return "Unclassified"
+                return "Off-topic"
             if self.category.specify_certainty_level:
                 return dict(list(VALIDATION_CATEGORIES))[self.validation_value] + " " + self.category.name
             elif self.category.id == 8:

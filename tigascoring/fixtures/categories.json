@@ -3,7 +3,7 @@
     "model": "tigacrafting.categories",
     "pk": 1,
     "fields": {
-      "name": "Unclassified",
+      "name": "Off-topic",
       "specify_certainty_level": false
     }
   },

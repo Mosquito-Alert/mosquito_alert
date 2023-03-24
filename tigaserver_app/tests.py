@@ -119,7 +119,7 @@ class NotificationTestCase(APITestCase):
             p.save()
             a = a + 1
         self.reritja_user = User.objects.get(pk=25)
-        c_1 = Categories.objects.create(pk=1, name="Unclassified", specify_certainty_level=False)
+        c_1 = Categories.objects.create(pk=1, name="Off-topic", specify_certainty_level=False)
         c_1.save()
         c_2 = Categories.objects.create(pk=2, name="Other species", specify_certainty_level=False)
         c_2.save()
