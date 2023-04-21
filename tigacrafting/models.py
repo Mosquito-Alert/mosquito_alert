@@ -394,6 +394,7 @@ class UserStat(models.Model):
     # from places where there has been a spike
     crisis_mode = models.BooleanField('Tells if the validator is working in crisis mode or not', default=False)
     last_emergency_mode_grab = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True,related_name="emergency_pullers", help_text='Last country user pulled map data from', on_delete=models.DO_NOTHING, )
+    nuts2_assignation = models.ForeignKey('tigaserver_app.NutsEurope', blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.DO_NOTHING, )
 
     def has_accepted_license(self):
         return self.license_accepted

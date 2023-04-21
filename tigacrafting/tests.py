@@ -622,7 +622,7 @@ class NewReportAssignment(TestCase):
         for this_user in euro_users:
             # All reports should be euro
             assigned_reports_spain = ExpertReportAnnotation.objects.filter(user=this_user).filter( report__country__gid = 17).count()
-            self.assertTrue(assigned_reports_spain == 0, "Euro user {0} has been assigned some reports ({1}) from spain".format(this_user.username, assigned_reports_not_spain))
+            self.assertTrue(assigned_reports_spain == 0, "Euro user {0} has been assigned some reports ({1}) from spain".format(this_user.username, assigned_reports_spain))
 
         #check grabbed reports
         for this_user in User.objects.all():
