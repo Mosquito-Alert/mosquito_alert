@@ -400,8 +400,8 @@ def assign_reports_to_regular_user(this_user):
                 reports_own_region = None
                 reports_other_region = None
                 if this_user_nuts2 is not None:
-                    reports_own_region = new_reports.filter(Q(country__gid=17) & Q(nuts_3=this_user_nuts2.nuts_id))
-                    reports_other_region = new_reports.filter(Q(country__gid=17) & ~Q(nuts_3=this_user_nuts2.nuts_id))
+                    reports_own_region = new_reports.filter(Q(country__gid=17) & Q(nuts_2=this_user_nuts2.nuts_id))
+                    reports_other_region = new_reports.filter(Q(country__gid=17) & ~Q(nuts_2=this_user_nuts2.nuts_id))
                 else:
                     reports_own_region = new_reports.filter(country__gid=17)
                     reports_other_region = None
