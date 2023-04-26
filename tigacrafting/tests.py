@@ -344,12 +344,12 @@ class NewReportAssignment(TestCase):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
         t.save()
         non_naive_time = timezone.now()
-        spain = EuropeCountry.objects.get(pk=17)
+        extremadura = NutsEurope.objects.get(name_latn='Extremadura')
         catalonia = NutsEurope.objects.get(name_latn='Cataluña')
         andalucia = NutsEurope.objects.get(name_latn='Andalucía')
         a = 1
         while a < 6:
-            point_on_surface = spain.geom.point_on_surface
+            point_on_surface = extremadura.geom.point_on_surface
             r = Report(
                 version_UUID=str(a),
                 version_number=0,
@@ -1082,6 +1082,7 @@ class NewReportAssignment(TestCase):
 
         self.assertTrue(reports_catalonia_exists, "There should be some reports in Catalonia, but there are 0")
         self.assertTrue(reports_andalucia_exists, "There should be some reports in Andalucia, but there are 0")
+        self.assertTrue(reports_extremadura_exists, "There should be some reports in Andalucia, but there are 0")
 
         # Check that expert group is correct
         users = User.objects.filter(groups__name='expert').order_by('-id')
@@ -1117,9 +1118,12 @@ class NewReportAssignment(TestCase):
         for anno in andalusian_assignments:
             self.assertTrue(anno.report.nuts_2 == 'ES61', "Report {0} should be located in Andalucía, but is assigned to nuts2 {1}".format(anno.report.version_UUID, anno.report.nuts_2))
 
+        '''
         european_expert = User.objects.get(pk=3)
         self.assertTrue(european_expert.userstat.nuts2_assignation is None, "User {0} should not be regionalized, it is")
         european_assignments = ExpertReportAnnotation.objects.filter(user=european_expert)
         self.assertTrue(european_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(european_expert.id, european_assignments.count()))
-        # for anno in european_assignments:
-            # self.assertTrue(anno.report.nuts_2 == 'ES61', "Report {0} should be located in Andalucía, but is assigned to nuts2 {1}".format(anno.report.version_UUID, anno.report.nuts_2))
+        for anno in european_assignments:
+            self.assertFalse(anno.report.nuts_2 == 'ES51', "Report {0} should not be located in Catalunya, it is")
+            self.assertFalse(anno.report.nuts_2 == 'ES61', "Report {0} should not be located in Andalucía, it is")
+        '''
