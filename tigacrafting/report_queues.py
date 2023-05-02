@@ -471,6 +471,8 @@ def assign_reports_to_regular_user(this_user):
             else: #Europe -> prioritize reports from own country
                 new_reports_own_country = new_reports.filter(country=this_user.userstat.native_of)
                 new_reports_other_countries = new_reports.exclude(country=this_user.userstat.native_of)
+                new_reports_other_countries_not_null = new_reports_other_countries.exclude(country__gid__isnull=True)
+                new_reports_other_country_null = new_reports_other_countries.filter(country__gid__isnull=True)
 
                 currently_taken = 0
                 user_stats = None
@@ -523,7 +525,12 @@ def assign_reports_to_regular_user(this_user):
                     '''
 
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
-                    result = _do_assign(new_reports_other_countries, this_user, grabbed_reports, currently_taken)
+                    result = _do_assign(new_reports_other_countries_not_null, this_user, grabbed_reports, currently_taken)
+                    grabbed_reports = result['grabbed_reports']
+                    currently_taken = result['grabbed_reports']
+
+                if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    result = _do_assign(new_reports_other_country_null, this_user, grabbed_reports, currently_taken)
                     grabbed_reports = result['grabbed_reports']
                     currently_taken = result['grabbed_reports']
                     '''
