@@ -1969,6 +1969,21 @@ class Report(models.Model):
                 i += 1
         return result
 
+    def get_tags_bootstrap_superexpert(self):
+        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
+        result = ''
+        s = set()
+        for ano in these_annotations:
+            tags = ano.tags.all()
+            for tag in tags:
+                if not tag in s:
+                    s.add(tag)
+                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by ' + ano.user.username + '" data-placement="bottom">' + (
+                        tag.name) + '</span>'
+        if (len(s) == 0):
+            return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
+        return result
+
     def get_tags_bootstrap(self):
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         result = ''
@@ -1978,8 +1993,8 @@ class Report(models.Model):
             for tag in tags:
                 if not tag in s:
                     s.add(tag)
-                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by ' + ano.user.username + '" data-placement="bottom">' + (tag.name) + '</span>'
-        if(len(s)==0):
+                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by someone" data-placement="bottom">' + (tag.name) + '</span>'
+        if (len(s) == 0):
             return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
         return result
 
