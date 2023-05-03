@@ -321,20 +321,21 @@ def this_report_can_be_simplified(report):
 
 
 def _do_assign(report_list, this_user, grabbed_reports, currently_taken):
-    for this_report in report_list:
-        new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-        if this_report_can_be_simplified(this_report):
-            # No one has the report, is simplified
-            new_annotation.simplified_annotation = True
-        try:
-            new_annotation.save()
-            grabbed_reports += 1
-            currently_taken += 1
-            if currently_taken >= MAX_N_OF_PENDING_REPORTS:
-                break
-        except IntegrityError as e:
-            logger_duplicate_assignation.debug(
-                'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
+    if report_list:
+        for this_report in report_list:
+            new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+            if this_report_can_be_simplified(this_report):
+                # No one has the report, is simplified
+                new_annotation.simplified_annotation = True
+            try:
+                new_annotation.save()
+                grabbed_reports += 1
+                currently_taken += 1
+                if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                    break
+            except IntegrityError as e:
+                logger_duplicate_assignation.debug(
+                    'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
     return { 'grabbed_reports': grabbed_reports, 'currently_taken': currently_taken }
 
 
