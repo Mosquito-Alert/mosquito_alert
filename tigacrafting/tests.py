@@ -706,7 +706,6 @@ class NewReportAssignment(TestCase):
             is_supervised = User.objects.filter(userstat__national_supervisor_of=assignation.report.country).exists()
             print( "Report {0} in country {1}, assignation number {2}, country is supervised {3}".format( assignation.report.version_UUID, assignation.report.country, assignation.id, is_supervised ) )
 
-    '''
     def test_check_users(self):
         self.create_team()
         #check everyone but the granter user
@@ -1182,7 +1181,7 @@ class NewReportAssignment(TestCase):
                 self.assertEqual( get_translation_in("your_picture_has_been_validated_by_an_expert", locale), nc.title_native )
                 # we do this to avoid triggering the unique(user_id,report_id) constraint
                 anno_reritja.delete()
-    '''
+
 
     def test_spanish_regionalization(self):
         self.create_regionalized_report_pool()
