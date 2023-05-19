@@ -1,6 +1,6 @@
 # coding=utf-8
 from pydoc import visiblename
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
@@ -632,6 +632,10 @@ def get_sigte_report_link(report,locale,current_domain):
         url_template = "http://{0}/static/tigapublic/spain.html#/{1}/19/{2}/{3}/A,B,C,D/all/all/{4}".format(current_domain, locale, lat, lon, id)
         return url_template
     return None
+
+@login_required
+def private_map(request):
+    return redirect('/static/tigapublic/spain_old.html')
 
 # This can be called from outside the server, so we need current_domain for absolute urls
 def issue_notification(report_annotation,current_domain):
