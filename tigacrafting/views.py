@@ -1367,6 +1367,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 all_annotations = all_annotations.filter(validation_complete=True)
             elif pending == 'pending':
                 all_annotations = all_annotations.filter(validation_complete=False)
+            elif pending == 'favorite':
+                my_favorites = FavoritedReports.objects.filter(user=this_user).values('report__version_UUID')
+                all_annotations = all_annotations.filter(report__version_UUID__in=my_favorites)
             if status == "flagged":
                 all_annotations = all_annotations.filter(status=0)
             elif status == "hidden":
@@ -1423,6 +1426,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         #n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
         n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).filter(report__type='adult').count()
         args['n_complete'] = n_complete
+        n_favorites = FavoritedReports.objects.filter(user=this_user).count()
+        args['n_favorites'] = n_favorites
         args['n_total'] = n_complete + current_pending
         args['year'] = year
         args['orderby'] = orderby

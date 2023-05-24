@@ -505,6 +505,15 @@ class OtherSpecies(models.Model):
     def __str__(self):
         return self.name
 
+
+class FavoritedReports(models.Model):
+    user = models.ForeignKey(User, related_name='favorited_by', help_text='User which marked the report as favorite', on_delete=models.CASCADE,)
+    report = models.ForeignKey('tigaserver_app.Report', related_name='favorites', help_text='User which marked the report as favorite', on_delete=models.CASCADE)
+    note = models.TextField('Brief note stating why this report interested you', blank=True, help_text='Add a brief description that will help you remember the report')
+
+    class Meta:
+        unique_together = ('user','report',)
+
 # class Species(models.Model):
 #     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
 #     composite = models.BooleanField(default=False, help_text='Indicates if this row is a single species or a combination')

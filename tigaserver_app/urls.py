@@ -77,5 +77,7 @@ urlpatterns = [
     url('stats/speedmeter/$', speedmeter_api),
     url('stats/hashtag_map_data/$', get_hashtag_map_data),
     url('stats/user_xp_data/$', get_user_xp_data),
+    url('favorite/$', views.favorite),
+    url('user_favorites/$', views.user_favorites),
     url('', include(router.urls)),
 ]
