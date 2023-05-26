@@ -39,6 +39,8 @@ WORKDIR ${APP_HOME}
 
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
+  # Needed for docker healthcheck
+  curl \
   # psycopg2 dependencies
   libpq-dev \
   # Translations dependencies

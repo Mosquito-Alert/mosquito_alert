@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 volumes:
   mosquito_alert_local_postgres_data: {}
@@ -23,6 +23,12 @@ services:
     ports:
       - "8000:8000"
     command: /start
+    healthcheck:
+      test: "curl -f http://localhost:8000/ping/ || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   postgres:
     build:
@@ -56,6 +62,8 @@ services:
       - mailhog
     ports: []
     command: /start-celeryworker
+    healthcheck:
+      disable: true
 
   celerybeat:
     <<: *django
@@ -67,6 +75,8 @@ services:
       - mailhog
     ports: []
     command: /start-celerybeat
+    healthcheck:
+      disable: true
 
   flower:
     <<: *django
@@ -75,3 +85,5 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
+    healthcheck:
+      disable: true
