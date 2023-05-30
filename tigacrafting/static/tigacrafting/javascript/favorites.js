@@ -7,7 +7,7 @@ var set_favorited = function(report_id){
 }
 
 var set_unfavorited = function(report_id){
-    if(pending == 'favorite'){
+    if(pending == 'favorite' || checked == 'favorite'){
         location.reload();
     }else{
         var elem = $('*[data-report-icon="' + report_id + '"]');

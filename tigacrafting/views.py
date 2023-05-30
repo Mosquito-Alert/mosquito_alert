@@ -1384,6 +1384,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     all_annotations = all_annotations.filter(validation_complete=True, revise=False)
                 elif checked == "revised":
                     all_annotations = all_annotations.filter(validation_complete=True, revise=True)
+                elif checked == "favorite":
+                    my_favorites = FavoritedReports.objects.filter(user=this_user).values('report__version_UUID')
+                    all_annotations = all_annotations.filter(report__version_UUID__in=my_favorites)
 
                 if final_status == "flagged":
                     all_annotations = all_annotations.filter(report__in=flagged_final_reports)
