@@ -1795,7 +1795,7 @@ def auto_annotate_other_species(report, request):
     issue_notification(roger_annotation, current_domain)
 
 @login_required
-def picture_validation(request,tasks_per_page='10',visibility='visible', usr_note='', type='all', country='all', aithr='0.75'):
+def picture_validation(request,tasks_per_page='300',visibility='visible', usr_note='', type='all', country='all', aithr='1.00'):
     this_user = request.user
     this_user_is_coarse = this_user.groups.filter(name='coarse_filter').exists()
     super_movelab = User.objects.get(pk=24)
