@@ -28,7 +28,9 @@ logs_folder = base_folder + 'logs/'
 SURVEY_TITLE = {
     'en': 'Want to help us?',
     'es': '¿Quieres ayudarnos?',
-    'ca': 'Ens vols donar un cop de mà?'
+    'ca': 'Ens vols donar un cop de mà?',
+    'nl': 'Wil je ons helpen?',
+    'el': 'Θέλετε να μας βοηθήσετε;'
 }
 
 
@@ -55,7 +57,7 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
         if len( user.user_reports.all() ) > 0:
             first_report = user.user_reports.all().order_by('-creation_time').first()
             os_language =  first_report.app_language
-            if os_language in ['en','es','ca']:
+            if os_language in ['en', 'es', 'ca', 'nl', 'el']:
                 user_language = os_language
 
         # 221221 - test
