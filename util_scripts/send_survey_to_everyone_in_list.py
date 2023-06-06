@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from tigacrafting.messaging import generic_send_to_topic
 
-base_folder = proj_path + 'util_scripts/survey_files/'
+base_folder = proj_path + 'util_scripts/survey_files_2023/'
 logs_folder = base_folder + 'logs/'
 
 SURVEY_TITLE = {
@@ -30,7 +30,8 @@ SURVEY_TITLE = {
     'es': '¿Quieres ayudarnos?',
     'ca': 'Ens vols donar un cop de mà?',
     'nl': 'Wil je ons helpen?',
-    'el': 'Θέλετε να μας βοηθήσετε;'
+    'el': 'Θέλετε να μας βοηθήσετε;',
+    'it': 'Vuoi aiutarci?'
 }
 
 
@@ -57,7 +58,7 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
         if len( user.user_reports.all() ) > 0:
             first_report = user.user_reports.all().order_by('-creation_time').first()
             os_language =  first_report.app_language
-            if os_language in ['en', 'es', 'ca', 'nl', 'el']:
+            if os_language in ['en', 'es', 'ca', 'nl', 'el', 'it']:
                 user_language = os_language
 
         # 221221 - test
@@ -78,8 +79,8 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
             'survey_link': url_en,
         }
 
-        body_html_en = render_to_string("tigacrafting/survey/survey_en.html", context_en).replace('&amp;', '&')
-        body_html_native = render_to_string("tigacrafting/survey/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
+        body_html_en = render_to_string("tigacrafting/survey_2023/survey_en.html", context_en).replace('&amp;', '&')
+        body_html_native = render_to_string("tigacrafting/survey_2023/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
         title_native = SURVEY_TITLE[user_language]
         title_en = SURVEY_TITLE['en']
 
@@ -131,7 +132,7 @@ def send_message_to_list(list_file_args):
 
 def send_global_notification_reminder():
 
-    notification_content = NotificationContent.objects.get(pk=249173)
+    notification_content = NotificationContent.objects.get(pk=1451002)
     sender = User.objects.get(pk=38)  # mosquitoalert
     topic = NotificationTopic.objects.get(pk=1)
 

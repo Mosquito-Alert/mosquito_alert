@@ -45,8 +45,8 @@ def read_file_to_lines(filename):
 
 def generate_file_list(root_listfiles_dir):
     file_list = []
-    groups = ['eager', 'neutral', 'prevention']
-    languages = [ 'ca', 'en', 'es' ]
+    groups = ['promotion', 'neutral', 'prevention']
+    languages = [ 'ca', 'en', 'es', 'nl', 'el', 'it']
     for g in groups:
         for l in languages:
             file_list = file_list + glob.glob(root_listfiles_dir + g + "_" + l + "_*")
@@ -57,7 +57,10 @@ def get_title( language ):
     titles = {
         'ca': 'Missatge del dia - {0}',
         'es': 'Mensaje del día - {0}',
-        'en': 'Message of the day - {0}'
+        'en': 'Message of the day - {0}',
+        'el': 'Το μήνυμα της ημέρας - {0}',
+        'nl': 'Bericht van de dag - {0}',
+        'it': 'Messaggio del giorno - {0}'
     }
     today = datetime.date.today().strftime('%d/%m/%Y')
     title = titles[language].format( today )
@@ -116,7 +119,10 @@ def do_send_notification( uuid, category, language, number ):
     push_messages = {
         'en': 'You have a new Mosquito Alert message, please check your messages in the app.',
         'es': 'Tienes un nuevo mensaje de Mosquito Alert. Por favor, comprueba tus mensajes en la app.',
-        'ca': 'Tens un nou missatge de Mosquito Alert. Si us plau comprova els teus missatges dins la app.'
+        'ca': 'Tens un nou missatge de Mosquito Alert. Si us plau comprova els teus missatges dins la app.',
+        'el': 'Έχετε ένα νέο μήνυμα Mosquito Alert, ελέγξτε τα μηνύματά σας στην εφαρμογή.',
+        'nl': 'Je hebt een nieuw Mosquito Alert-bericht, controleer je berichten in de app.',
+        'it': 'Hai un nuovo messaggio di Mosquito Alert, controlla i tuoi messaggi nell\'app.'
     }
 
     push_message = push_messages[language]
