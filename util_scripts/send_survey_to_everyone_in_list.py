@@ -132,7 +132,7 @@ def send_message_to_list(list_file_args):
 
 def send_global_notification_reminder():
 
-    notification_content = NotificationContent.objects.get(pk=1451002)
+    notification_content = NotificationContent.objects.get(pk=1453086)
     sender = User.objects.get(pk=38)  # mosquitoalert
     topic = NotificationTopic.objects.get(pk=1)
 
