@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Automatic send email script
 '''
