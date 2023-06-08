@@ -17,8 +17,7 @@ application = get_wsgi_application()
 
 import logging
 import datetime
-from tigaserver_app.models import NotificationContent, Notification, TigaUser, SentNotification, NotificationTopic
-from tigaserver_app.serializers import custom_render_notification
+from tigaserver_app.models import NotificationContent, Notification, TigaUser, SentNotification, NotificationTopic, AcknowledgedNotification
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from tigacrafting.messaging import generic_send_to_topic
@@ -131,6 +130,40 @@ def send_message_to_list(list_file_args):
         logging.debug("No uuids in file, doing nothing")
 
 
+def score_label(score):
+    if score > 66:
+        return "user_score_pro"
+    elif 33 < score <= 66:
+        return "user_score_advanced"
+    else:
+        return "user_score_beginner"
+
+
+def custom_render_notification(sent_notification, recipient, locale):
+    expert_comment = sent_notification.notification.notification_content.get_title_locale_safe(locale)
+    expert_html = sent_notification.notification.notification_content.get_body_locale_safe(locale)
+
+    ack = False
+    if recipient is not None:
+        ack = AcknowledgedNotification.objects.filter(user=recipient,notification=sent_notification.notification).exists()
+
+    this_content = {
+        'id': sent_notification.notification.id,
+        'report_id': sent_notification.notification.report.version_UUID if sent_notification.notification.report is not None else None,
+        'user_id': sent_notification.sent_to_user.user_UUID if sent_notification.sent_to_user is not None else None,
+        'topic': sent_notification.sent_to_topic.topic_code if sent_notification.sent_to_topic is not None else None,
+        'user_score': sent_notification.sent_to_user.score if sent_notification.sent_to_user is not None else None,
+        'user_score_label': score_label(sent_notification.sent_to_user.score) if sent_notification.sent_to_user is not None else None,
+        'expert_id': sent_notification.notification.expert.id,
+        'date_comment': sent_notification.notification.date_comment,
+        'expert_comment': expert_comment,
+        'expert_html': expert_html,
+        'acknowledged': ack,
+        'public': sent_notification.notification.public,
+    }
+    return this_content
+
+
 def send_global_notification_reminder():
 
     notification_content = NotificationContent.objects.get(pk=1453086)
@@ -143,7 +176,7 @@ def send_global_notification_reminder():
     send_notification = SentNotification(sent_to_topic=topic, notification=notification)
     send_notification.save()
 
-    json_notif = custom_render_notification(sent_notification=send_notification, recipìent=None, locale='en')
+    json_notif = custom_render_notification(sent_notification=send_notification, recipient=None, locale='en')
     push_result = generic_send_to_topic(topic_code=topic.topic_code, title=notification_content.title_en, message='', json_notif=json_notif)
 
 
