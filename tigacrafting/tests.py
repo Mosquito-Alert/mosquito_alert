@@ -2,7 +2,7 @@ from django.test import TestCase
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
+from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
 from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex
 from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
@@ -339,6 +339,169 @@ class NewReportAssignment(TestCase):
             p.save()
             a = a + 1
 
+    def create_small_regionalized_report_pool(self):
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        non_naive_time = timezone.now()
+        extremadura = NutsEurope.objects.get(name_latn='Extremadura')
+        spain = EuropeCountry.objects.get(pk=17)
+        # Two reports from Extremadura
+        a = 1
+        while a < 3:
+            point_on_surface = extremadura.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+
+        # Two reports from not extremadura
+        not_extremadura = NutsEurope.objects.filter(europecountry=spain).exclude(name_latn='Extremadura')
+        a = 1
+        while a < 3:
+            point_on_surface = not_extremadura[a].geom.point_on_surface
+            r = Report(
+                version_UUID=str(a + 10),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+
+        # Two reports from Europe
+        a = 1
+        while a < 3:
+            not_spain = EuropeCountry.objects.exclude(gid=17)[a]
+            point_on_surface = not_spain.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a + 100),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+
+        # Two unlocated reports
+        a = 1
+        while a < 3:
+            r = Report(
+                version_UUID=str(a + 1000),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=0,
+                current_location_lat=0,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+
+
+    def create_regionalized_report_pool(self):
+        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t.save()
+        non_naive_time = timezone.now()
+        extremadura = NutsEurope.objects.get(name_latn='Extremadura')
+        catalonia = NutsEurope.objects.get(name_latn='Cataluña')
+        andalucia = NutsEurope.objects.get(name_latn='Andalucía')
+        a = 1
+        while a < 6:
+            point_on_surface = extremadura.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+        a = 1
+        while a < 6:
+            point_on_surface = catalonia.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a + 10),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
+        a = 1
+        while a < 6:
+            point_on_surface = andalucia.geom.point_on_surface
+            r = Report(
+                version_UUID=str(a + 100),
+                version_number=0,
+                user_id='00000000-0000-0000-0000-000000000000',
+                phone_upload_time=non_naive_time,
+                server_upload_time=non_naive_time,
+                creation_time=non_naive_time,
+                version_time=non_naive_time,
+                location_choice="current",
+                current_location_lon=point_on_surface.x,
+                current_location_lat=point_on_surface.y,
+                type='adult',
+            )
+            r.save()
+            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p.save()
+            a = a + 1
 
     def create_report_pool(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
@@ -409,6 +572,71 @@ class NewReportAssignment(TestCase):
             p.save()
             a = a + 1
 
+    def create_small_region_team(self):
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+        experts = Group.objects.create(name='expert')
+        experts.save()
+
+        extremadura = NutsEurope.objects.get(name_latn='Extremadura')
+
+        u1 = User.objects.create(pk=1)
+        u1.username = 'expert_1_es'
+        u1.save()
+        u1.userstat.nuts2_assignation = extremadura
+        u1.userstat.save()
+
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_es'
+        u2.save()
+        u2.userstat.nuts2_assignation = None
+        u2.userstat.save()
+
+        spain_group.user_set.add(u1)
+        spain_group.user_set.add(u2)
+
+        experts.user_set.add(u1)
+        experts.user_set.add(u2)
+
+    def create_region_team(self):
+        europe_group = Group.objects.create(name='eu_group_europe')
+        europe_group.save()
+        spain_group = Group.objects.create(name='eu_group_spain')
+        spain_group.save()
+
+        experts = Group.objects.create(name='expert')
+        experts.save()
+
+        catalonia = NutsEurope.objects.get(name_latn='Cataluña')
+        andalucia = NutsEurope.objects.get(name_latn='Andalucía')
+        greece = EuropeCountry.objects.get(pk=16)
+
+        u1 = User.objects.create(pk=1)
+        u1.username = 'expert_1_es'
+        u1.save()
+        u1.userstat.nuts2_assignation = catalonia
+        u1.userstat.save()
+
+        u2 = User.objects.create(pk=2)
+        u2.username = 'expert_2_es'
+        u2.save()
+        u2.userstat.nuts2_assignation = andalucia
+        u2.userstat.save()
+
+        u3 = User.objects.create(pk=3)
+        u3.username = 'expert_1_eu'
+        u3.userstat.native_of = greece
+        u3.save()
+
+        spain_group.user_set.add(u1)
+        spain_group.user_set.add(u2)
+        europe_group.user_set.add(u3)
+
+        experts.user_set.add(u1)
+        experts.user_set.add(u2)
+        experts.user_set.add(u3)
+
+
     def create_stlouis_team(self):
         europe_group = Group.objects.create(name='eu_group_europe')
         europe_group.save()
@@ -477,8 +705,6 @@ class NewReportAssignment(TestCase):
         for assignation in assigned_reports:
             is_supervised = User.objects.filter(userstat__national_supervisor_of=assignation.report.country).exists()
             print( "Report {0} in country {1}, assignation number {2}, country is supervised {3}".format( assignation.report.version_UUID, assignation.report.country, assignation.id, is_supervised ) )
-
-
 
     def test_check_users(self):
         self.create_team()
@@ -618,11 +844,12 @@ class NewReportAssignment(TestCase):
             self.assertTrue(assigned_reports_not_spain == 0, "Spain user {0} has been assigned some reports ({1}) outside spain".format(this_user.username, assigned_reports_not_spain))
 
         # for symmetry sake, the same for eu experts
-        euro_users = User.objects.filter( groups__name='eu_group_europe' ).exclude(id__in=[24, 25]).filter( userstat__national_supervisor_of__isnull = True )
-        for this_user in euro_users:
-            # All reports should be euro
-            assigned_reports_spain = ExpertReportAnnotation.objects.filter(user=this_user).filter( report__country__gid = 17).count()
-            self.assertTrue(assigned_reports_spain == 0, "Euro user {0} has been assigned some reports ({1}) from spain".format(this_user.username, assigned_reports_not_spain))
+        # THIS TEST DOES NOT APPLY ANYMORE - eu experts can be assigned reports from SPAIN        
+        # euro_users = User.objects.filter( groups__name='eu_group_europe' ).exclude(id__in=[24, 25]).filter( userstat__national_supervisor_of__isnull = True )
+        # for this_user in euro_users:
+        #     # All reports should be euro
+        #     assigned_reports_spain = ExpertReportAnnotation.objects.filter(user=this_user).filter( report__country__gid = 17).count()
+        #     self.assertTrue(assigned_reports_spain == 0, "Euro user {0} has been assigned some reports ({1}) from spain".format(this_user.username, assigned_reports_spain))        
 
         #check grabbed reports
         for this_user in User.objects.all():
@@ -954,3 +1181,118 @@ class NewReportAssignment(TestCase):
                 self.assertEqual( get_translation_in("your_picture_has_been_validated_by_an_expert", locale), nc.title_native )
                 # we do this to avoid triggering the unique(user_id,report_id) constraint
                 anno_reritja.delete()
+
+
+    def test_spanish_regionalization(self):
+        self.create_regionalized_report_pool()
+        self.create_region_team()
+
+        # Check that report pool is correct
+        for r in Report.objects.all():
+            self.assertTrue(r.country is not None, "Country should not be null, it is")
+            self.assertTrue(r.nuts_3 is not None, "Nuts 3 level should not be null it is")
+            self.assertTrue(r.nuts_2 is not None, "Nuts 2 level should not be null it is")
+
+        # There should be only reports for Catalonia and Andalucia
+        catalonia = NutsEurope.objects.get(name_latn='Cataluña')
+        andalucia = NutsEurope.objects.get(name_latn='Andalucía')
+        extremadura = NutsEurope.objects.get(name_latn='Extremadura')
+        reports_catalonia_exists = Report.objects.filter(nuts_2=catalonia.nuts_id).exists()
+        reports_andalucia_exists = Report.objects.filter(nuts_2=andalucia.nuts_id).exists()
+        reports_extremadura_exists = Report.objects.filter(nuts_2=extremadura.nuts_id).exists()
+
+        self.assertTrue(reports_catalonia_exists, "There should be some reports in Catalonia, but there are 0")
+        self.assertTrue(reports_andalucia_exists, "There should be some reports in Andalucia, but there are 0")
+        self.assertTrue(reports_extremadura_exists, "There should be some reports in Andalucia, but there are 0")
+
+        # Check that expert group is correct
+        users = User.objects.filter(groups__name='expert').order_by('-id')
+        self.assertTrue(users.count() == 3, "There should be 3 experts, there are {0}".format(users.count()))
+
+        self.assertTrue(users[0].id == 3, "First expert to be assigned should be eu, is not")
+
+        for this_user in users:
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+
+        # All reports assigned to catalan expert should be from Catalonia
+        catalan = User.objects.get(pk=1)
+        self.assertTrue(catalan.userstat.nuts2_assignation == catalonia, "User {0} should be regionalized to Catalonia, is not".format(catalan.id))
+        catalan_assignments = ExpertReportAnnotation.objects.filter(user=catalan)
+        self.assertTrue(catalan_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(catalan.id, catalan_assignments.count()))
+        for anno in catalan_assignments:
+            self.assertTrue( anno.report.nuts_2 == 'ES51', "Report {0} should be located in Catalonia, but is assigned to nuts2 {1}".format( anno.report.version_UUID, anno.report.nuts_2 ) )
+
+        # All reports assigned to andalusian expert should be from Andalucía
+        andalusian = User.objects.get(pk=2)
+        self.assertTrue(andalusian.userstat.nuts2_assignation == andalucia, "User {0} should be regionalized to Andalucía, is not".format(andalusian.id))
+        andalusian_assignments = ExpertReportAnnotation.objects.filter(user=andalusian)
+        self.assertTrue(andalusian_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(andalusian.id, andalusian_assignments.count()))
+        for anno in andalusian_assignments:
+            self.assertTrue(anno.report.nuts_2 == 'ES61', "Report {0} should be located in Andalucía, but is assigned to nuts2 {1}".format(anno.report.version_UUID, anno.report.nuts_2))
+
+        '''
+        european_expert = User.objects.get(pk=3)
+        self.assertTrue(european_expert.userstat.nuts2_assignation is None, "User {0} should not be regionalized, it is")
+        european_assignments = ExpertReportAnnotation.objects.filter(user=european_expert)
+        self.assertTrue(european_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(european_expert.id, european_assignments.count()))
+        for anno in european_assignments:
+            self.assertFalse(anno.report.nuts_2 == 'ES51', "Report {0} should not be located in Catalunya, it is")
+            self.assertFalse(anno.report.nuts_2 == 'ES61', "Report {0} should not be located in Andalucía, it is")
+        '''
+
+
+    def test_regionalization_priority_queues(self):
+        self.create_small_regionalized_report_pool()
+        self.create_small_region_team()
+
+        #check report pool
+        # 2 extremadura, 2 not extremadura, 2 european and 2 unassigned
+        self.assertTrue( Report.objects.all().count() == 8, "N of reports should be 8, is {0}".format( Report.objects.all().count() ) )
+        self.assertTrue( Report.objects.filter(nuts_2='ES43').count() == 2, "N of reports in extremadura should be 2, is {0}".format( Report.objects.filter(nuts_2='ES43').count() ) )
+        self.assertTrue( Report.objects.filter(country__gid=17).exclude(nuts_2='ES43').count() == 2, "N of reports spain but not extremadura should be 2, is {0}".format( Report.objects.filter(country__gid=17).exclude(nuts_2='ES43').count() ))
+        self.assertTrue(Report.objects.exclude(country__gid=17).exclude(country__isnull=True).count() == 2, "N of reports europe should be 2, is {0}".format(Report.objects.exclude(country__gid=17).exclude(country__isnull=True).count()))
+        self.assertTrue(Report.objects.filter(country__isnull=True).count() == 2, "N of non-located reports be 2, is {0}".format( Report.objects.filter(country__isnull=True).count() ))
+
+        users = User.objects.filter(groups__name='expert').order_by('-id')
+        self.assertTrue(users.count() == 2, "There should be 2 experts, there are {0}".format(users.count()))
+
+        for this_user in users:
+            if this_user.userstat.is_superexpert():
+                assign_superexpert_reports(this_user)
+            else:
+                if this_user.userstat.is_bb_user():
+                    assign_bb_reports(this_user)
+                else:
+                    if this_user.userstat.is_national_supervisor():
+                        assign_reports_to_national_supervisor(this_user)
+                    else:  # is regular user
+                        assign_reports_to_regular_user(this_user)
+
+        extremadura = NutsEurope.objects.get(name_latn='Extremadura')
+        extremaduran = User.objects.get(pk=1)
+        self.assertTrue(extremaduran.userstat.nuts2_assignation == extremadura, "User {0} should be regionalized to Extremadura, is not".format(extremaduran.id))
+        extremaduran_assignments = ExpertReportAnnotation.objects.filter(user=extremaduran)
+        self.assertTrue(extremaduran_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(extremaduran.id, extremaduran_assignments.count()))
+
+        # Assign reports to expert 1 - they should get 2 extremadura, 2 spain and 1 european
+        self.assertTrue( extremaduran_assignments.filter(report__nuts_2='ES43').count() == 2, "Expert should be assigned 2 extremadura reports, has been assigned {0}".format( extremaduran_assignments.filter(report__nuts_2='ES43').count() ) )
+        self.assertTrue( extremaduran_assignments.filter(report__country__gid=17).exclude(report__nuts_2='ES43').count() == 2, "Expert should be assigned 2 spanish not extremadura reports, has been assigned {0}".format( extremaduran_assignments.filter(report__country__gid=17).exclude(report__nuts_2='ES43').count() ))
+        self.assertTrue( extremaduran_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).count() == 1, "Expert should be assigned 1 european report, has been assigned {0}".format( extremaduran_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).count() ))
+
+        generic_spain = User.objects.get(pk=2)
+        self.assertTrue(generic_spain.userstat.nuts2_assignation == None, "User {0} should not be regionalized it is ({1}) ".format(extremaduran.id, generic_spain.userstat.nuts2_assignation))
+        generic_assignments = ExpertReportAnnotation.objects.filter(user=generic_spain)
+        self.assertTrue(generic_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(generic_spain.id, generic_assignments.count()))
+        self.assertTrue(generic_assignments.filter(report__country__gid=17).count() == 4, "Expert should be assigned 4 spanish reports, has been assigned {0}".format( generic_assignments.filter(report__country__gid=17).count() ))
+        n_european = generic_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).count()
+        self.assertTrue(n_european == 1,"Expert should be 1 european report, has been assigned {0}".format(n_european))
+        # print( generic_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).first().report.country.name_engl )

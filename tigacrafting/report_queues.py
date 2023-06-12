@@ -20,7 +20,8 @@ BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_
 
 
 def get_base_adults_qs():
-    return Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult')
+    #return Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult')
+    return Report.objects.filter(creation_time__year__gt=2021).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult')
 
 
 # def get_deleted_adult_reports(qs):
@@ -319,6 +320,25 @@ def this_report_can_be_simplified(report):
     return False
 
 
+def _do_assign(report_list, this_user, grabbed_reports, currently_taken):
+    if report_list:
+        for this_report in report_list:
+            new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
+            if this_report_can_be_simplified(this_report):
+                # No one has the report, is simplified
+                new_annotation.simplified_annotation = True
+            try:
+                new_annotation.save()
+                grabbed_reports += 1
+                currently_taken += 1
+                if currently_taken >= MAX_N_OF_PENDING_REPORTS:
+                    break
+            except IntegrityError as e:
+                logger_duplicate_assignation.debug(
+                    'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
+    return { 'grabbed_reports': grabbed_reports, 'currently_taken': currently_taken }
+
+
 def assign_reports_to_regular_user(this_user):
     logger_report_assignment.debug('User {0} is regular user, assigning reports'.format(this_user, ))
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
@@ -334,15 +354,19 @@ def assign_reports_to_regular_user(this_user):
                 expiration_period = country.national_supervisor_report_expires_in
             else:
                 expiration_period = 14
-            reserved_for_supervised_countries_operator_list.append( Q(country=country) & Q(server_upload_time__gte=datetime.now() - timedelta(days=country.national_supervisor_report_expires_in)) )
+            reserved_for_supervised_countries_operator_list.append( Q(country=country) & Q(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period)) )
         new_reports_unfiltered = get_base_adults_qs().exclude(country__in=bounding_boxes).exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
         #reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude( functools.reduce(operator.or_, reserved_for_supervised_countries_operator_list) )
         for condition in reserved_for_supervised_countries_operator_list:
             new_reports_unfiltered = new_reports_unfiltered.exclude(condition)
+        '''
         if this_user.groups.filter(name='eu_group_europe').exists(): #Europe
             reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.filter( ~Q(country__gid=17) & Q(country__gid__isnull=False) )
         else: #Spain
             reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.filter( Q(country__gid=17) | Q(country__gid__isnull=True) )
+        '''
+        # We don't segment anymore by country, this must be done later
+        reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered
         #exclude reports assigned to ANY supervisor but not yet validated
         ### !!!! ###
         reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of__in=country_with_supervisor).filter(report__type='adult').filter(validation_complete=False)
@@ -373,6 +397,53 @@ def assign_reports_to_regular_user(this_user):
         if reports_unfiltered_excluding_reserved_ns or reports_validated_by_ns_non_exec:
             new_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
             if not this_user.groups.filter(name='eu_group_europe').exists(): #Spain
+                this_user_nuts2 = this_user.userstat.nuts2_assignation
+                reports_own_region = None
+                reports_other_region = None
+                if this_user_nuts2 is not None:
+                    reports_own_region = new_reports.filter(Q(country__gid=17) & Q(nuts_2=this_user_nuts2.nuts_id))
+                    reports_other_region = new_reports.filter(Q(country__gid=17) & ~Q(nuts_2=this_user_nuts2.nuts_id))
+                else:
+                    reports_own_region = new_reports.filter(country__gid=17)
+                    reports_other_region = None
+                reports_europe = new_reports.filter( ~Q(country__gid=17) & Q(country__gid__isnull=False) )
+                reports_other = new_reports.filter( country__gid__isnull=True )
+
+                currently_taken = 0
+                user_stats = None
+                try:
+                    user_stats = UserStat.objects.get(user_id=this_user.id)
+                except ObjectDoesNotExist:
+                    pass
+                grabbed_reports = -1
+                if user_stats:
+                    grabbed_reports = user_stats.grabbed_reports
+
+                result = _do_assign(reports_own_region, this_user, grabbed_reports, currently_taken)
+                grabbed_reports = result['grabbed_reports']
+                currently_taken = result['currently_taken']
+
+                if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    result = _do_assign(reports_other_region, this_user, grabbed_reports, currently_taken)
+                    grabbed_reports = result['grabbed_reports']
+                    currently_taken = result['currently_taken']
+
+                if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    result = _do_assign(reports_europe, this_user, grabbed_reports, currently_taken)
+                    grabbed_reports = result['grabbed_reports']
+                    currently_taken = result['currently_taken']
+
+                if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    result = _do_assign(reports_other, this_user, grabbed_reports, currently_taken)
+                    grabbed_reports = result['grabbed_reports']
+                    currently_taken = result['currently_taken']
+
+                if grabbed_reports != -1 and user_stats:
+                    user_stats.grabbed_reports = grabbed_reports
+                    user_stats.save()
+
+
+                '''
                 reports_to_take = new_reports[0:n_to_get]
                 user_stats = None
                 try:
@@ -396,9 +467,13 @@ def assign_reports_to_regular_user(this_user):
                 if grabbed_reports != -1 and user_stats:
                     user_stats.grabbed_reports = grabbed_reports
                     user_stats.save()
+                '''
+
             else: #Europe -> prioritize reports from own country
                 new_reports_own_country = new_reports.filter(country=this_user.userstat.native_of)
                 new_reports_other_countries = new_reports.exclude(country=this_user.userstat.native_of)
+                new_reports_other_countries_not_null = new_reports_other_countries.exclude(country__gid__isnull=True)
+                new_reports_other_country_null = new_reports_other_countries.filter(country__gid__isnull=True)
 
                 currently_taken = 0
                 user_stats = None
@@ -410,6 +485,7 @@ def assign_reports_to_regular_user(this_user):
                 if user_stats:
                     grabbed_reports = user_stats.grabbed_reports
 
+                '''
                 for this_report in reports_validated_by_ns_non_exec:
                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                     if this_report_can_be_simplified(this_report):
@@ -424,8 +500,16 @@ def assign_reports_to_regular_user(this_user):
                     except IntegrityError as e:
                         logger_duplicate_assignation.debug(
                             'Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
+                '''
+                result = _do_assign(reports_validated_by_ns_non_exec,this_user,grabbed_reports,currently_taken)
+                grabbed_reports = result['grabbed_reports']
+                currently_taken = result['grabbed_reports']
 
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    result = _do_assign(new_reports_own_country,this_user, grabbed_reports, currently_taken)
+                    grabbed_reports = result['grabbed_reports']
+                    currently_taken = result['grabbed_reports']
+                    '''
                     for this_report in new_reports_own_country:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         if this_report_can_be_simplified(this_report):
@@ -439,8 +523,18 @@ def assign_reports_to_regular_user(this_user):
                                 break
                         except IntegrityError as e:
                             logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
+                    '''
 
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    result = _do_assign(new_reports_other_countries_not_null, this_user, grabbed_reports, currently_taken)
+                    grabbed_reports = result['grabbed_reports']
+                    currently_taken = result['grabbed_reports']
+
+                if currently_taken < MAX_N_OF_PENDING_REPORTS:
+                    result = _do_assign(new_reports_other_country_null, this_user, grabbed_reports, currently_taken)
+                    grabbed_reports = result['grabbed_reports']
+                    currently_taken = result['grabbed_reports']
+                    '''
                     for this_report in new_reports_other_countries:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
                         who_has_count = this_report.get_who_has_count()
@@ -456,6 +550,7 @@ def assign_reports_to_regular_user(this_user):
                                 break
                         except IntegrityError as e:
                             logger_duplicate_assignation.debug('Tried to assign twice report {0} to user {1}'.format(this_report, this_user, ))
+                    '''
                 if grabbed_reports != -1 and user_stats:
                     user_stats.grabbed_reports = grabbed_reports
                     user_stats.save()
