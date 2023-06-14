@@ -22,10 +22,10 @@ from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from tigacrafting.messaging import generic_send
 
-base_folder = proj_path + 'util_scripts/survey_files/'
+base_folder = proj_path + 'util_scripts/survey_files_2023/'
 logs_folder = base_folder + 'logs/'
 
-message_content = 'tigacrafting/survey/dailies/'
+message_content = 'tigacrafting/survey_2023/dailies/'
 
 
 def config_logging():
