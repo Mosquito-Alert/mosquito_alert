@@ -493,6 +493,8 @@ class Report(models.Model):
 
     ia_filter_2 = models.FloatField(default=None, blank=True, null=True, help_text='Score for best classified image. 0 indicates not classified, 1.xx indicates classified with score xx, 2.xx classified with alert with score xx. ')
 
+    type_changed_on_coarse_filter = models.BooleanField(default=False, help_text='If True, indicates that the report type was flipped from adult to site or vice versa on the coarse filter')
+
     objects = GeoManager()
 
     def __unicode__(self):

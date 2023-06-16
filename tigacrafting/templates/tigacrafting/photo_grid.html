@@ -13,6 +13,8 @@
 
         .fastCheck {background-color: lightgray; margin-bottom: 10px; height: 40px;}
         .other_sp {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
+        .flip_type_site {background-color: orange; text-align: right; padding-right: 10px;}
+        .flip_type_adult {background-color: #4169E1; text-align: right; padding-right: 10px;}
         .probably_culex {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .sure_albopictus {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .not_sure {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
@@ -237,67 +239,74 @@
     {% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}
-        <div data-errorborder="{{ form.instance.version_UUID }}" class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
-            {% for photo in form.instance.photos.all %}
-                {% if forloop.first %}
-                    <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
-                        <p><a href="/single_simple/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> {{ form.instance.country.name_engl }}</span></a></p>
-                        <p class="hide_check p-small" data-id="{{ form.instance.version_UUID }}"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
-                        <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
-                        <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.creation_time }}</p>
-                        <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
-                        {% if form.instance.type == 'site' %}
-                            {% if form.instance.get_site_cat == 0 %}
-                                <p class="p-medium"><span class="label label-warning">This is a storm drain</span></p>
-                            {% else %}
-                                <p class="p-medium"><span class="label label-warning">This is an 'others' site</span></p>
+        <div data-id="{{ form.instance.version_UUID }}" class="report-wrapper">
+            <div data-errorborder="{{ form.instance.version_UUID }}" class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+                {% for photo in form.instance.photos.all %}
+                    {% if forloop.first %}
+                        <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+                            <p><a href="/single_simple/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> {{ form.instance.country.name_engl }}</span></a></p>
+                            <p class="hide_check p-small" data-id="{{ form.instance.version_UUID }}"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
+                            <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
+                            <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.creation_time }}</p>
+                            <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
+                            {% if form.instance.type == 'site' %}
+                                {% if form.instance.get_site_cat == 0 %}
+                                    <p class="p-medium"><span class="label label-warning">This is a storm drain</span></p>
+                                {% else %}
+                                    <p class="p-medium"><span class="label label-warning">This is an 'others' site</span></p>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
-                        {% for hidden in form.hidden_fields %}
-                            {{ hidden }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                {% if photo.hide == False %}
-                    <div class="grid-item valid">
-                        <a class="preview" href="/media/{{ photo.photo }}" target="_blank">
-                            <img class="frame" src="{{ photo.get_small_url }}">
-                        </a>
-                    </div>
-                {% endif %}
-            {% endfor %}
+                            {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if photo.hide == False %}
+                        <div class="grid-item valid">
+                            <a class="preview" href="/media/{{ photo.photo }}" target="_blank">
+                                <img class="frame" src="{{ photo.get_small_url }}">
+                            </a>
+                        </div>
+                    {% endif %}
+                {% endfor %}
 
+            </div>
+            <div class="reportID" style="display:none;">{{ form.instance.version_UUID }}</div>
+            {% if form.instance.type == 'site' and form.instance.hide == False %}
+                <div data-id="{{ form.instance.version_UUID }}" class="flip_type_adult">
+                    <button data-id="{{ form.instance.version_UUID }}" type="button" class="btn btn-info btn-sm navbar-btn flip_btn" data-toggle="tooltip" data-placement="bottom" style="margin-left:5px"><span class="glyphicon glyphicon-repeat"></span> Change report type to <b>adult</b></button>
+                </div>
+                <div data-id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
+                    <label>Fast Upload</label>
+                    {{ form.fastUpload }}
+                </div>
+            {% elif form.instance.type == 'adult' and form.instance.hide == False %}
+                <div data-id="{{ form.instance.version_UUID }}" class="flip_type_site">
+                    <button data-id="{{ form.instance.version_UUID }}" type="button" class="btn btn-info btn-sm navbar-btn flip_btn" data-toggle="tooltip" data-placement="bottom" style="margin-left:5px"><span class="glyphicon glyphicon-repeat"></span> Change report type to <b>site</b></button>
+                </div>
+                <div data-id="{{ form.instance.version_UUID }}" class="other_sp {{form.instance.type}}" style="">
+                    <label>Other species</label>
+                    {{ form.other_species }}
+                </div>
+                <div data-id="{{ form.instance.version_UUID }}" class="probably_culex {{form.instance.type}}" style="">
+                    <label>Probably culex</label>
+                    {{ form.probably_culex }}
+                </div>
+                <div data-id="{{ form.instance.version_UUID }}" class="sure_albopictus {{form.instance.type}}" style="">
+                    <label>Definitely albopictus</label>
+                    {{ form.sure_albopictus }}
+                </div>
+                <div data-id="{{ form.instance.version_UUID }}" class="not_sure {{form.instance.type}}" style="">
+                    <label>Not sure</label>
+                    {{ form.not_sure }}
+                </div>
+                <div data-id="{{ form.instance.version_UUID }}" class="ia_val {{form.instance.type}}" style="">
+                    <label style="color:white;"><b>IA Value: {{ form.instance.ia_filter_1|floatformat:4 }}</b></label>
+                </div>
+                <div id="ia{{ form.instance.version_UUID }}" data-ia-value="{{ form.instance.ia_filter_1 }}" data-id="{{ form.instance.version_UUID }}" class="ia_graph {{form.instance.type}}" style="">
+                </div>
+            {% endif %}
         </div>
-        <div class="reportID" style="display:none;">{{ form.instance.version_UUID }}</div>
-        {% if form.instance.type == 'site' and form.instance.hide == False %}
-            <div data-id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
-                <label>Fast Upload</label>
-                {{ form.fastUpload }}
-            </div>
-        {% elif form.instance.type == 'adult' and form.instance.hide == False %}
-            <div data-id="{{ form.instance.version_UUID }}" class="other_sp {{form.instance.type}}" style="">
-                <label>Other species</label>
-                {{ form.other_species }}
-            </div>
-            <div data-id="{{ form.instance.version_UUID }}" class="probably_culex {{form.instance.type}}" style="">
-                <label>Probably culex</label>
-                {{ form.probably_culex }}
-            </div>
-            <div data-id="{{ form.instance.version_UUID }}" class="sure_albopictus {{form.instance.type}}" style="">
-                <label>Definitely albopictus</label>
-                {{ form.sure_albopictus }}
-            </div>
-            <div data-id="{{ form.instance.version_UUID }}" class="not_sure {{form.instance.type}}" style="">
-                <label>Not sure</label>
-                {{ form.not_sure }}
-            </div>
-            <div data-id="{{ form.instance.version_UUID }}" class="ia_val {{form.instance.type}}" style="">
-                <label style="color:white;"><b>IA Value: {{ form.instance.ia_filter_1|floatformat:4 }}</b></label>
-            </div>
-            <div id="ia{{ form.instance.version_UUID }}" data-ia-value="{{ form.instance.ia_filter_1 }}" data-id="{{ form.instance.version_UUID }}" class="ia_graph {{form.instance.type}}" style="">
-            </div>
-        {% endif %}
-
 
     {% endfor %}
         <input id="save_formset" type="text" name="save_formset" style="display: none;" value="F">
@@ -314,6 +323,8 @@
 
 <script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}?v=3"></script>
 <script src="{% static 'tigacrafting/javascript/hover-preview.min.js' %}?v=1"></script>
+<script src="{% static 'tigacrafting/csrf_utils.js' %}"></script>
+<script src="{% static 'tigacrafting/javascript/flip_report.js' %}"></script>
 </body>
 <script>
         var current_page = '{{ objects.number }}';
