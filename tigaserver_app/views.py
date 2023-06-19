@@ -718,7 +718,15 @@ def toggle_crisis_mode(request, user_id=None):
 @api_view(['POST'])
 def flip_report(request, version_uuid=None):
     report = get_object_or_404(Report, pk=version_uuid)
-    return Response(data={'status':'OK'}, status=status.HTTP_200_OK)
+    if report.type == 'site':
+        # simply nuke the associated responses and change type
+        pass
+    elif report.type == 'adult':
+        # if report is adult, additional data is needed
+        pass
+    else:
+        return Response(data={'status':'KO', 'type': report.type}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(data={'status':'OK', 'type': report.type}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

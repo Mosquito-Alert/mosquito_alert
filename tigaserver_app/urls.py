@@ -34,7 +34,7 @@ urlpatterns = [
     # This is disabled, we do not give users the chance to flip crisis mode
     #url('toggle_crisis/(?P<user_id>\d+)/$', views.toggle_crisis_mode),
     url('crisis_report_assign/(?P<user_id>\d+)/(?P<country_id>\d+)/$', views.crisis_report_assign),
-    url('flip_report/<uuid:version_uuid>/$', views.flip_report),
+    url('flip_report/(?P<version_uuid>[\w-]+)/$', views.flip_report),
     url('mark_notif_as_ack/', views.mark_notif_as_ack),
     url('subscribe_to_topic/', views.subscribe_to_topic),
     url('unsub_from_topic/', views.unsub_from_topic),
