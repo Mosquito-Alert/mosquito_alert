@@ -804,7 +804,10 @@
                 }
 
                 $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function () {
+                    //console.log(this.value);
                     $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
+                    //set_default_female(this.value);
+                    //reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}').then( set_default_female(id_photo) );
                 });
 
 
