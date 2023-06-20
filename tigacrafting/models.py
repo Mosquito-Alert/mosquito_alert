@@ -241,7 +241,7 @@ class ExpertReportAnnotation(models.Model):
             dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
             fg_status = 'checked="checked"' if photo.blood_genre == 'fgravid' else ''
             fgb_status = 'checked="checked"' if photo.blood_genre == 'fgblood' else ''
-            result += '<div data-ano-id="' + str(self.id) + '" id="div_for_photo_to_display_report_' + str(self.report.version_UUID) + '">' \
+            result += '<div class="rb_display_this_photo" data-ano-id="' + str(self.id) + '" id="div_for_photo_to_display_report_' + str(self.report.version_UUID) + '">' \
                         '<input type="radio" name="photo_to_display_report_' + str(self.report.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
                     '</div>' \
                     '<br>' \
