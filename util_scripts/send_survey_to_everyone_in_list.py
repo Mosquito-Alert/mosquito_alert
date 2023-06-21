@@ -125,7 +125,7 @@ def send_message_to_list(list_file_args):
             logging.debug("Sending uuid {0} of {1}".format(str(i), str(n_uuids)))
             send_message_to_uuid(uuid, sender, survey_code)
         # and finally, the reminder
-        send_global_notification_reminder()
+        # send_global_notification_reminder()
     else:
         logging.debug("No uuids in file, doing nothing")
 
