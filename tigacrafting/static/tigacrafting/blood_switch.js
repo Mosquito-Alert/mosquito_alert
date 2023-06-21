@@ -65,7 +65,7 @@ $(document).ready(function() {
 
     $("[id^='div_for_photo_to_display_report_']").click( function(){
         /* TODO - uncomment this when activating blood + female */
-        var div_id = $(this).attr('id');
+        /*var div_id = $(this).attr('id');
         var report_id = div_id.split('_')[6];
         var ano_id = $(this).data('ano-id')
         var show = show_control_by_species(ano_id);
@@ -76,7 +76,7 @@ $(document).ready(function() {
                 var input_id = $(this).attr('id');
                 $('#blood_status_' + report_id + '_' + input_id).show();
             });
-        }
+        }*/
     });
 
     var hide_blood_controls_for_report = function(report_id){
