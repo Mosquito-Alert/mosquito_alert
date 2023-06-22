@@ -1,4 +1,30 @@
+/* convenience function, sets status to female and adjusts ui accordingly */
+var set_default_female = function( photo_id ) {
+    var def = $.Deferred();
+    $.ajax({
+        url: '/api/photo_blood/',
+        data: {'photo_id': photo_id, 'status': 'female'},
+        type: 'POST',
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type)) {
+                var csrftoken = getCookie('csrftoken');
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        },
+        success: function( data, textStatus, jqXHR ) {
+            $('input:radio[name=fblood_' + photo_id + '][value=' + photo_id + '_female]').attr('checked',true);
+            def.resolve();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            console.log(textStatus);
+            def.reject();
+        }
+    });
+    return def.promise();
+}
+
 var reset_all_picture_status_for_report = function(report_id){
+    var def = $.Deferred();
     $.ajax({
         url: '/api/photo_blood_reset/',
         data: {'report_id': report_id},
@@ -11,11 +37,14 @@ var reset_all_picture_status_for_report = function(report_id){
         },
         success: function( data, textStatus, jqXHR ) {
             clear_all_report_radios(report_id);
+            def.resolve();
         },
         error: function(jqXHR, textStatus, errorThrown){
             console.log(textStatus);
+            def.reject();
         }
     });
+    return def.promise();
 }
 
 var clear_all_report_radios = function(report_id){
@@ -63,20 +92,22 @@ $(document).ready(function() {
         }
     }
 
-    $("[id^='div_for_photo_to_display_report_']").click( function(){
+    $("input:radio[name^='photo_to_display_report_']").click( function(){
         /* TODO - uncomment this when activating blood + female */
-        /*var div_id = $(this).attr('id');
+        var div_id = $(this).parent().attr('id');
         var report_id = div_id.split('_')[6];
-        var ano_id = $(this).data('ano-id')
+        var ano_id = $(this).parent().data('ano-id')
         var show = show_control_by_species(ano_id);
         hide_blood_controls_for_report(report_id);
-        reset_all_picture_status_for_report(report_id);
+        var id_photo = $(this).attr('id');
         if(show){
-            $(this).children().each(function(e){
-                var input_id = $(this).attr('id');
-                $('#blood_status_' + report_id + '_' + input_id).show();
-            });
-        }*/
+            $('#blood_status_' + report_id + '_' + id_photo).show();
+        }
+        reset_all_picture_status_for_report(report_id).then(
+            function(){
+                set_default_female(id_photo);
+            }
+        );
     });
 
     var hide_blood_controls_for_report = function(report_id){

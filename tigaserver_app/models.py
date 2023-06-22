@@ -859,12 +859,12 @@ class Report(models.Model):
 
     def get_icon_for_blood_genre(self, blood_genre):
         blood_genre_table = {
-            BLOOD_GENRE[0][0] : '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
+            BLOOD_GENRE[0][0]: '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
             BLOOD_GENRE[1][0]: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
             BLOOD_GENRE[2][0]: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
             BLOOD_GENRE[3][0]: '<label title="Female gravid"><i class="moon" aria-hidden="true"></i> Gravid</label>',
             BLOOD_GENRE[4][0]: '<label title="Female gravid + blood"><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
-            #BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
+            BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
         }
         if blood_genre is None:
             return ''

@@ -51,7 +51,9 @@ $(document).ready(function () {
         var form_id = e.target.id.split('_')[1];
         var form_index = id_to_index[form_id];
         var needs_value = $(this).find(':selected').data('needs-value');
+        var version_uuid = $(this).data('version-uuid');
         //reset everything
+        do_reset_button(form_index, version_uuid);
         $('#id_form-' + form_index + '-validation_value').val("");
         $('#id_form-' + form_index + '-complex').val("");
         $('#id_form-' + form_index + '-category').val("");

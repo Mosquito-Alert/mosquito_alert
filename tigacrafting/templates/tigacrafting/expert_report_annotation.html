@@ -79,6 +79,12 @@
             display: inline-block;
         }
 
+        .rb_display_this_photo {
+            padding-top: 20px;
+            margin-top: 10px;
+            border-top: 1px solid #ccc !important;
+        }
+
     </style>
 
     {% block fa_css %}
@@ -504,7 +510,7 @@
                         <div class="row">
                             <div class="col-md-5 container_category">
                             <strong>Species classif.:</strong><br>
-                            <select id="category_{{ form.instance.id }}">
+                            <select id="category_{{ form.instance.id }}" data-version-uuid="{{ form.instance.report.version_UUID }}">
                                 <option value="">--------------</option>
                                 {% for cat in category_list %}
                                 <option data-needs-value="{% if cat.specify_certainty_level %}1{% else %}0{% endif %}" value="{{ cat.id }}">{{ cat.name }}</option>
@@ -773,6 +779,14 @@
 
         <script>
 
+            var do_reset_button = function(form_index, version_uuid){
+                $('#id_form-' + form_index + '-best_photo').val(null);
+                $('input:radio[name=photo_to_display_report_' + version_uuid + ']').attr('checked', false);
+                $('[id^=blood_status_' + version_uuid + '_]').hide();
+                // this function is defined in blood_switch.js
+                reset_all_picture_status_for_report(version_uuid);
+            }
+
             var best_photo_id = "{{ form.instance.best_photo.id }}";
             $("#" + best_photo_id).css({"border-color": "green", "border-width": "3px", "border-style": "solid"});
 
@@ -804,7 +818,10 @@
                 }
 
                 $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function () {
+                    //console.log(this.value);
                     $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
+                    //set_default_female(this.value);
+                    //reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}').then( set_default_female(id_photo) );
                 });
 
 
@@ -814,8 +831,9 @@
                     $('[id^=blood_status_' + '{{ form.instance.report.version_UUID }}' + '_]').hide();
                     // this function is defined in blood_switch.js
                     /* TODO - uncomment this when activating blood + female */
-                    /* reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}'); */
+                    reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}');
                 });
+
 
 
 
