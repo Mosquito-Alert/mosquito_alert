@@ -170,7 +170,11 @@ def generic_send(recipient_token, title, message, json_notif=None):
         "notification_id": notif_id,
         "sound": "default",
         "data": {
-            "notification": {"id": notif_id}
+            "notification": {"id": notif_id},
+            # I suspect this is the way to go so the app picks up the notification id
+            # and opens the notification in the app. However, it seems to work only if
+            # the app is open
+            "notification_id": notif_id
         }
     }
     dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
