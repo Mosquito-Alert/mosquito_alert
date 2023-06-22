@@ -1,8 +1,15 @@
+import django
 from django.conf import settings
 from django.db.models import F
 
 import csv
-import os
+import os, sys
+
+proj_path = "/home/webuser/webapps/tigaserver/"
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
+sys.path.append(proj_path)
+
+django.setup()
 
 from tigapublic.models import MapAuxReports
 
