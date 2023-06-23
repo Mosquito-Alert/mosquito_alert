@@ -25,14 +25,14 @@ from tigacrafting.messaging import generic_send_to_topic
 base_folder = proj_path + 'util_scripts/survey_files_2023/'
 logs_folder = base_folder + 'logs/'
 
-SURVEY_TITLE = {
-    'en': 'Want to help us?',
-    'es': '¿Quieres ayudarnos?',
-    'ca': 'Ens vols donar un cop de mà?',
-    'nl': 'Wil je ons helpen?',
-    'el': 'Θέλετε να μας βοηθήσετε;',
-    'it': 'Vuoi aiutarci?'
-}
+# SURVEY_TITLE = {
+#     'en': 'Want to help us?',
+#     'es': '¿Quieres ayudarnos?',
+#     'ca': 'Ens vols donar un cop de mà?',
+#     'nl': 'Wil je ons helpen?',
+#     'el': 'Θέλετε να μας βοηθήσετε;',
+#     'it': 'Vuoi aiutarci?'
+# }
 
 
 def config_logging():
