@@ -36,12 +36,12 @@ logs_folder = base_folder + 'logs/'
 # }
 
 SURVEY_TEXT_DEFAULT = {
-    "en": { "title":"Take our survey","message":"Share your perspective! Participate in our survey and help us improve." },
-    "es": { "title":"Completa nuestra encuesta","message":"¡Comparte tu perspectiva! Participa en nuestra encuesta y ayúdanos a mejorar." },
-    "ca": { "title":"Completa la nostra enquesta","message":"Comparteix la teva perspectiva! Participa en la nostra enquesta i ajuda'ns a millorar." },
-    "el": { "title":"Συμπλήρωσε την έρευνά μας","message":"Μοιράσου την αποψή σου! Συμμετέχετε στην έρευνά μας και βοηθήστε μας να βελτιωθούμε." },
-    "nl": { "title":"Doe mee aan onze enquête","message":"Deel je perspectief! Neem deel aan onze enquête en help ons verbeteren." },
-    "it": { "title":"Compila il nostro sondaggio","message":"Condividi la tua prospettiva! Partecipa al nostro sondaggio e aiutaci a migliorare." }
+    "en": { "title":"We need your input","message":"Be a part of our research! Take the survey and contribute your insights." },
+    "es": { "title":"Necesitamos tu opinión","message":"¡Forma parte de nuestra investigación! Completa la encuesta y aporta tus ideas." },
+    "ca": { "title":"Necessitem la teva opinió","message": "Forma part de la nostra investigació! Completa l'enquesta i aporta les teves idees." },
+    "el": { "title":"Χρειαζόμαστε την άποψή σας","message": "Γίνε μέρος της έρευνάς μας! Συμπλήρωσε το ερωτηματολόγιο και συνεισφέρετε τις απόψεις σας." },
+    "nl": { "title":"We hebben jouw input nodig","message": "Maak deel uit van ons onderzoek! Vul de enquête in en draag jouw inzichten bij." },
+    "it": { "title":"Abbiamo bisogno del tuo contributo","message": "Fai parte della nostra ricerca! Compila il sondaggio e contribuisci con le tue opinioni." }
 }
 
 SURVEY_TEXT = {
