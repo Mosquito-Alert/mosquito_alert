@@ -147,7 +147,7 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
             if os_language in ['en', 'es', 'ca', 'nl', 'el', 'it']:
                 user_language = os_language
 
-        title_and_message_native = get_today_title_and_message(month,day,os_language)
+        title_and_message_native = get_today_title_and_message(month,day,user_language)
         title_native = title_and_message_native['title']
         message_native = title_and_message_native['message']
         title_and_message_en = get_today_title_and_message(month,day,'en')
