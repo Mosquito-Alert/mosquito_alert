@@ -21,6 +21,7 @@ from tigaserver_app.models import NotificationContent, Notification, TigaUser, S
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from tigacrafting.messaging import generic_send_to_topic
+from tigacrafting.messaging import generic_send
 
 base_folder = proj_path + 'util_scripts/survey_files_2023/'
 logs_folder = base_folder + 'logs/'
@@ -33,6 +34,80 @@ logs_folder = base_folder + 'logs/'
 #     'el': 'Θέλετε να μας βοηθήσετε;',
 #     'it': 'Vuoi aiutarci?'
 # }
+
+SURVEY_TEXT_DEFAULT = {
+    "en": { "title":"Take our survey","message":"Share your perspective! Participate in our survey and help us improve." },
+    "es": { "title":"Completa nuestra encuesta","message":"¡Comparte tu perspectiva! Participa en nuestra encuesta y ayúdanos a mejorar." },
+    "ca": { "title":"Completa la nostra enquesta","message":"Comparteix la teva perspectiva! Participa en la nostra enquesta i ajuda'ns a millorar." },
+    "el": { "title":"Συμπλήρωσε την έρευνά μας","message":"Μοιράσου την αποψή σου! Συμμετέχετε στην έρευνά μας και βοηθήστε μας να βελτιωθούμε." },
+    "nl": { "title":"Doe mee aan onze enquête","message":"Deel je perspectief! Neem deel aan onze enquête en help ons verbeteren." },
+    "it": { "title":"Compila il nostro sondaggio","message":"Condividi la tua prospettiva! Partecipa al nostro sondaggio e aiutaci a migliorare." }
+}
+
+SURVEY_TEXT = {
+  "7": {
+    "2": {
+      "en": { "title":"Take our survey","message":"Share your perspective! Participate in our survey and help us improve." },
+      "es": { "title":"Completa nuestra encuesta","message":"¡Comparte tu perspectiva! Participa en nuestra encuesta y ayúdanos a mejorar." },
+      "ca": { "title":"Completa la nostra enquesta","message":"Comparteix la teva perspectiva! Participa en la nostra enquesta i ajuda'ns a millorar." },
+      "el": { "title":"Συμπλήρωσε την έρευνά μας","message":"Μοιράσου την αποψή σου! Συμμετέχετε στην έρευνά μας και βοηθήστε μας να βελτιωθούμε." },
+      "nl": { "title":"Doe mee aan onze enquête","message":"Deel je perspectief! Neem deel aan onze enquête en help ons verbeteren." },
+      "it": { "title":"Compila il nostro sondaggio","message":"Condividi la tua prospettiva! Partecipa al nostro sondaggio e aiutaci a migliorare." }
+    },
+    "15": {
+      "en": { "title":"We need your input","message":"Be a part of our research! Take the survey and contribute your insights." },
+      "es": { "title":"Necesitamos tu opinión","message":"¡Forma parte de nuestra investigación! Completa la encuesta y aporta tus ideas." },
+      "ca": { "title":"Necessitem la teva opinió","message": "Forma part de la nostra investigació! Completa l'enquesta i aporta les teves idees." },
+      "el": { "title":"Χρειαζόμαστε την άποψή σας","message": "Γίνε μέρος της έρευνάς μας! Συμπλήρωσε το ερωτηματολόγιο και συνεισφέρετε τις απόψεις σας." },
+      "nl": { "title":"We hebben jouw input nodig","message": "Maak deel uit van ons onderzoek! Vul de enquête in en draag jouw inzichten bij." },
+      "it": { "title":"Abbiamo bisogno del tuo contributo","message": "Fai parte della nostra ricerca! Compila il sondaggio e contribuisci con le tue opinioni." }
+    },
+    "26": {
+      "en": { "title":"Participate in our research","message":"Your voice matters! Help develop participation in science by participating in our survey." },
+      "es": { "title":"Participa en nuestra investigación","message": "¡Tu voz es importante! Ayuda a fomentar la participación en la ciencia participando en nuestra encuesta." },
+      "ca": { "title":"Participa en la nostra investigació","message": "La teva veu compta! Ajuda a desenvolupar la participació en la ciència participant en la nostra enquesta." },
+      "el": { "title":"Συμμετέχετε στην έρευνά μας","message": "Η φωνή σου μετράει! Βοήθησε στην ανάπτυξη της συμμετοχής στην επιστήμη συμμετέχοντας στην έρευνά μας." },
+      "nl": { "title":"Neem deel aan ons onderzoek","message": "Jouw stem telt! Draag bij aan de ontwikkeling van participatie in wetenschap door deel te nemen aan onze enquête." },
+      "it": { "title":"Partecipa alla nostra ricerca","message": "La tua voce conta! Aiuta a sviluppare la partecipazione nella scienza partecipando al nostro sondaggio." }
+    }
+  },
+  "8":{
+    "8":{
+      "en": { "title":"Share your Insights","message":"We want to hear from you! Participate in our survey and share your views." },
+      "es": { "title":"Comparte tus ideas","message": "¡Queremos conocer tu opinión! Participa en nuestra encuesta y comparte tus puntos de vista." },
+      "ca": { "title":"Comparteix les teves idees","message": "Volem sentir la teva opinió! Participa en la nostra enquesta i comparteix les teves perspectives." },
+      "el": { "title":"Μοιραστείτε τις ιδέες σας","message": "Θέλουμε να ακούσουμε τη φωνή σου! Συμμετέχετε στην έρευνά μας και μοιραστείτε τις απόψεις σας." },
+      "nl": { "title":"Deel je inzichten","message": "Wij willen graag jouw mening horen! Doe mee aan onze enquête en deel jouw visie." },
+      "it": { "title":"Condividi le tue opinioni","message": "Vogliamo sentire la tua voce! Partecipa al nostro sondaggio e condividi le tue opinioni." }
+    },
+    "19":{
+      "en": { "title":"Participate in our study","message":"Shape the future of science! Contribute to research, and help us improve by participating in our survey." },
+      "es": { "title":"Participa en nuestro estudio","message": "¡Contribuye al futuro de la ciencia! Colabora en la investigación y ayúdanos a mejorar participando en nuestra encuesta." },
+      "ca": { "title":"Participa en el nostre estudi","message": "Volem sentir la teva opinió! Participa en la nostra enquesta i comparteix les teves perspectives." },
+      "el": { "title":"Συμμετάσχετε στη μελέτη μας","message": "Συμβάλλετε στο μέλλον της επιστήμης! Συμμετάσχετε στην έρευνα και βοηθήστε μας να βελτιωθούμε συμπληρώνοντας το ερωτηματολόγιό μας." },
+      "nl": { "title":"Neem deel aan ons onderzoek","message": "Vorm de toekomst van de wetenschap! Draag bij aan onderzoek en help ons verbeteren door deel te nemen aan onze enquête." },
+      "it": { "title":"Partecipa al nostro studio","message": "Contribuisci al futuro della scienza! Partecipa alla ricerca e aiutaci a migliorare compilando il nostro sondaggio." }
+    },
+    "31":{
+      "en": { "title":"Take our survey","message":"Share your perspective! Participate in our survey and help us improve." },
+      "es": { "title":"Completa nuestra encuesta","message":"¡Comparte tu perspectiva! Participa en nuestra encuesta y ayúdanos a mejorar." },
+      "ca": { "title":"Completa la nostra enquesta","message":"Comparteix la teva perspectiva! Participa en la nostra enquesta i ajuda'ns a millorar." },
+      "el": { "title":"Συμπλήρωσε την έρευνά μας","message":"Μοιράσου την αποψή σου! Συμμετέχετε στην έρευνά μας και βοηθήστε μας να βελτιωθούμε." },
+      "nl": { "title":"Doe mee aan onze enquête","message":"Deel je perspectief! Neem deel aan onze enquête en help ons verbeteren." },
+      "it": { "title":"Compila il nostro sondaggio","message":"Condividi la tua prospettiva! Partecipa al nostro sondaggio e aiutaci a migliorare." }
+    }
+  },
+  "9":{
+    "12":{
+      "en": { "title":"We need your input","message":"Be a part of our research! Take the survey and contribute your insights." },
+      "es": { "title":"Necesitamos tu opinión","message":"¡Forma parte de nuestra investigación! Completa la encuesta y aporta tus ideas." },
+      "ca": { "title":"Necessitem la teva opinió","message": "Forma part de la nostra investigació! Completa l'enquesta i aporta les teves idees." },
+      "el": { "title":"Χρειαζόμαστε την άποψή σας","message": "Γίνε μέρος της έρευνάς μας! Συμπλήρωσε το ερωτηματολόγιο και συνεισφέρετε τις απόψεις σας." },
+      "nl": { "title":"We hebben jouw input nodig","message": "Maak deel uit van ons onderzoek! Vul de enquête in en draag jouw inzichten bij." },
+      "it": { "title":"Abbiamo bisogno del tuo contributo","message": "Fai parte della nostra ricerca! Compila il sondaggio e contribuisci con le tue opinioni." }
+    }
+  }
+}
 
 
 def config_logging():
@@ -49,8 +124,19 @@ def read_file_to_lines(filename):
     except FileNotFoundError:
         return []
 
+def get_today_title_and_message(month,day,language):
+    try:
+        title_and_message = SURVEY_TEXT[ str(month) ][ str(day) ][ language ]
+        return title_and_message
+    except KeyError:
+        return SURVEY_TEXT_DEFAULT[ language ]
+
 
 def send_message_to_uuid(this_uuid, sender, survey_code):
+
+    today = datetime.date.today()
+    day = today.day
+    month = today.month
 
     user_language = 'en'
     try:
@@ -60,6 +146,13 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
             os_language =  first_report.app_language
             if os_language in ['en', 'es', 'ca', 'nl', 'el', 'it']:
                 user_language = os_language
+
+        title_and_message_native = get_today_title_and_message(month,day,os_language)
+        title_native = title_and_message_native['title']
+        message_native = title_and_message_native['message']
+        title_and_message_en = get_today_title_and_message(month,day,'en')
+        title_en = title_and_message_en['title']
+        message_en = title_and_message_en['message']
 
         # 221221 - test
         # 152148 - production
@@ -73,16 +166,20 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
 
         context = {
             'survey_link' : url,
+            'title': title_native,
+            'message': message_native
         }
 
         context_en = {
             'survey_link': url_en,
+            'title': title_en,
+            'message': message_en
         }
 
         body_html_en = render_to_string("tigacrafting/survey_2023/survey_en.html", context_en).replace('&amp;', '&')
         body_html_native = render_to_string("tigacrafting/survey_2023/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
-        title_native = SURVEY_TITLE[user_language]
-        title_en = SURVEY_TITLE['en']
+        title_native = title_native
+        title_en = title_en
 
         notification_label = 'survey_{0}_{1}'.format(survey_code, user_language)
 
@@ -101,6 +198,11 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
 
         send_notification = SentNotification(sent_to_user=user, notification=notification)
         send_notification.save()
+
+        # then push notification
+        json_notif = custom_render_notification(sent_notification=send_notification, recipient=None, locale=user_language)
+        generic_send(user.device_token, title_native, message_native)
+
     except TigaUser.DoesNotExist:
         logging.error("User with uuid {0} does not exist, doing nothing!!".format(this_uuid))
 
