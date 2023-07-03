@@ -15,6 +15,8 @@
         .other_sp {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .flip_type_site {background-color: orange; text-align: right; padding-right: 10px;}
         .flip_type_adult {background-color: #4169E1; text-align: right; padding-right: 10px;}
+        .flip_type_adult_sd {background-color: #4169E1; text-align: right; padding-right: 10px;}
+        .flip_type_adult_other {background-color: #a7b9f1; text-align: right; padding-right: 10px;}
         .probably_culex {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .sure_albopictus {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .not_sure {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
@@ -273,7 +275,7 @@
             </div>
             <div class="reportID" style="display:none;">{{ form.instance.version_UUID }}</div>
             {% if form.instance.type == 'site' and form.instance.hide == False %}
-                <div data-id="{{ form.instance.version_UUID }}" class="flip_type_adult">
+                <div data-id="{{ form.instance.version_UUID }}" class="{% if form.instance.get_site_cat == 0 %}flip_type_adult_sd{% else %}flip_type_adult_other{% endif %}">
                     <button data-id="{{ form.instance.version_UUID }}" type="button" class="btn btn-info btn-sm navbar-btn flip_btn" data-toggle="tooltip" data-placement="bottom" style="margin-left:5px"><span class="glyphicon glyphicon-repeat"></span> Change report type to <b>adult</b></button>
                 </div>
                 <div data-id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
