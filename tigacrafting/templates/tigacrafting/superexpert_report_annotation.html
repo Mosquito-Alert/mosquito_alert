@@ -90,6 +90,13 @@
                     class="glyphicon glyphicon-thumbs-down"></span> <span
                     class="badge">{{ n_revised }}</span>
             </label>
+            <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom"
+                   title="Favorites" id="favorite_btn">
+                <input type="radio" name="pending" autocomplete="off">
+                    <input type="radio" name="status" autocomplete="off">
+                    <span class="glyphicon glyphicon-heart"></span>
+                    <span id="n_favorites" class="badge">{{ n_favorites }}</span>
+            </label>
         </div>
     </li>
 
@@ -253,6 +260,8 @@
 
         var unchecked_btn = $("#unchecked_btn"), confirmed_btn = $("#confirmed_btn"), revised_btn = $("#revised_btn");
 
+        var favorite_btn = $("#favorite_btn");
+
         var checked = "{{ checked }}";
 
         var loc_all_btn = $("#ento-all"), loc_spain_btn = $("#ento-es"), loc_europe_btn = $("#ento-eu");
@@ -264,6 +273,7 @@
             flagged_btn.removeClass("active");
             hidden_btn.removeClass("active");
             unchecked_btn.removeClass("active");
+            favorite_btn.removeClass("active");
             revised_btn.removeClass("active");
             confirmed_btn.removeClass("active");
             loc_all_btn.removeClass("active");
@@ -274,7 +284,7 @@
         function activate_btns() {
             clear_btns();
             final_status == "public" ? public_btn.addClass("active") : (final_status == "flagged" ? flagged_btn.addClass("active") : (final_status == "hidden" ? hidden_btn.addClass("active") : {}) );
-            checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed" ? confirmed_btn.addClass("active") : (checked == "unchecked" ? unchecked_btn.addClass("active") : {} ));
+            checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed" ? confirmed_btn.addClass("active") : (checked == "unchecked" ? unchecked_btn.addClass("active") : (checked == "favorite" ? favorite_btn.addClass("active") : {} ) ) );
             loc == "spain" ? loc_spain_btn.addClass("active") : ( loc == "europe" ? loc_europe_btn.addClass("active") : ( loc == "na" ? loc_all_btn.addClass("active") : {} ));
 
         }
@@ -325,6 +335,9 @@
             } else if (confirmed_btn.hasClass("active")) {
                 $("#checked_input").val("confirmed");
                 qp += '&checked=' + 'confirmed';
+            } else if (favorite_btn.hasClass("active")) {
+                $("#checked_input").val("favorite");
+                qp += '&checked=' + 'favorite';
             } else {
                 $("#checked_input").val("unchecked");
                 qp += '&checked=' + 'unchecked';
@@ -382,6 +395,7 @@
         unchecked_btn.on('click', {extr: 'unchecked'}, submit_queries_checked);
         confirmed_btn.on('click', { extr: 'confirmed'}, submit_queries_checked);
         revised_btn.on('click', { extr: 'revised'}, submit_queries_checked);
+        favorite_btn.on('click', { extr: 'favorite'}, submit_queries_checked);
 
         loc_all_btn.on('click', {extr: 'na'}, submit_queries_loc);
         loc_spain_btn.on('click', {extr: 'spain'}, submit_queries_loc);

@@ -18,6 +18,7 @@ import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
+from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
 from math import ceil
 from taggit.models import Tag
@@ -46,8 +47,8 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
 
-from celery.task.schedules import crontab
-from celery.decorators import periodic_task
+#from celery.task.schedules import crontab
+#from celery.decorators import periodic_task
 
 
 
@@ -2275,3 +2276,37 @@ class OrganizationsPinViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         qs = OrganizationPin.objects.all()
         return qs
+
+
+@api_view(['POST'])
+def favorite(request):
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id', -1)
+        report_id = request.POST.get('report_id', '')
+        note = request.POST.get('note', '')
+        if user_id == -1:
+            raise ParseError(detail='user_id param is mandatory')
+        if report_id == '':
+            raise ParseError(detail='report_id param is mandatory')
+        user = get_object_or_404(User, pk=user_id)
+        report = get_object_or_404(Report, pk=report_id)
+        fav = FavoritedReports.objects.filter(user=user).filter(report=report).first()
+        if fav:
+            fav.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            new_fav = FavoritedReports(user=user, report=report, note=note)
+            new_fav.save()
+            return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def user_favorites(request):
+    if request.method == 'GET':
+        user_id = request.GET.get('user_id', -1)
+        if user_id == -1:
+            raise ParseError(detail='user_id param is mandatory')
+        user = get_object_or_404(User, pk=user_id)
+        favorites = FavoritedReports.objects.filter(user=user).values('report__version_UUID')
+        retval = [ f['report__version_UUID'] for f in favorites]
+        return Response(retval, status=status.HTTP_200_OK)

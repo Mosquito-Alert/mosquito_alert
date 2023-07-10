@@ -37,6 +37,11 @@
     <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
     <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
     <style>
+
+        .fav {
+            color: red;
+        }
+
         #ex1Slider .slider-selection {
             background: #BABABA;
         }
@@ -183,6 +188,11 @@
                                             <input type="radio" name="status" autocomplete="off"><span
                                                 class="glyphicon glyphicon-check"></span> <span
                                                 class="badge">{{ n_complete }}</span>
+                                        </label>
+                                        <label class="btn btn-primary btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Favorites" id="favorite_btn">
+                                            <input type="radio" name="status" autocomplete="off">
+                                            <span class="glyphicon glyphicon-heart"></span>
+                                            <span id="n_favorites" class="badge">{{ n_favorites }}</span>
                                         </label>
                                     </div>
                                 </li>
@@ -419,7 +429,7 @@
 
     {% for form in formset %}
         <div class="row row_for_{{ form.instance.report.version_UUID }}">
-            <div class="col-md-10">
+            <div class="col-md-9">
                 <h4>
                     <strong>
                         {{ form.instance.report.type|capfirst }}
@@ -452,6 +462,11 @@
                             <a href="{% url 'compose_w_data' %}?recipient=super_reritja&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to superexperts about this report..."></span></a>
                         {% endif %}
                     {% endif %}
+                </h4>
+            </div>
+            <div class="col-md-1">
+                <h4>
+                    <a data-report="{{ form.instance.report.version_UUID }}" class="fav_link"><span data-report-icon="{{ form.instance.report.version_UUID }}" class="glyphicon glyphicon-heart unfav" aria-hidden="true" title="Add to favorites..."></span></a>
                 </h4>
             </div>
             {% if request.user.userstat.is_superexpert %}
@@ -1924,6 +1939,7 @@
     <script>
 
         var pending = "{{ pending }}";
+        var checked = "{{ checked }}";
 
         var scroll_position = parseInt({{ scroll_position }});
         if (scroll_position != null && !isNaN(scroll_position) && isFinite(scroll_position)) {
@@ -2326,16 +2342,18 @@
             $("#ns_select").val("{{ ns_exec }}");
             $("#site_certainty_select").val("{{ site_certainty }}");
             $("#status_select").val("{{ status }}");
-            var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn");
-            pending == "complete" ? complete_btn.addClass("active") : (pending == "pending" ? pending_btn.addClass("active") : {});
+            var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn"), favorite_btn = $('#favorite_btn');
+            pending == "complete" ? complete_btn.addClass("active") : (pending == "pending" ? pending_btn.addClass("active") : (pending == "favorite" ? favorite_btn.addClass("active") : {} ));
             pending_btn.on('click', {extr: 'pending'}, submit_queries_plus);
             complete_btn.on('click', { extr: 'complete'}, submit_queries_plus);
+            favorite_btn.on('click', { extr: 'favorite'}, submit_queries_plus);
 
 
         </script>
     {% endblock %}
 
     <script>
+        var user_id = {{ request.user.id }};
         var crisis_mode = {% if user.userstat.crisis_mode %}true{% else %}false{% endif %};
 
         $("#filters_submit_button").on('click', submit_queries);
@@ -2522,6 +2540,7 @@
     <script src={% static "tigacrafting/straight_emergency_grab.js" %}></script>
     <script src={% static "tigacrafting/csrf_utils.js" %}></script>
     <script src={% static "tigacrafting/blood_switch.js" %}></script>
+    <script src={% static "tigacrafting/javascript/favorites.js" %}></script>
 
 
 {% endblock %}
