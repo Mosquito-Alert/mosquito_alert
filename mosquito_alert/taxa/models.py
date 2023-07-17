@@ -54,16 +54,13 @@ class Taxon(ParentManageableNodeMixin, MP_Node):
 
     # Methods
     def save(self, *args, **kwargs):
-        if self.name:
+        if self.name and self.is_specie:
             # Capitalize only first letter
             self.name = self.name.capitalize()
 
         if self.parent:
-            print(f"parent {self} is {self.parent}")
             if self.rank <= self.parent.rank:
-                raise ValueError(
-                    "Child taxon must have a higher rank than their parent."
-                )
+                raise ValueError("Child taxon must have a higher rank than their parent.")
 
         super().save(*args, **kwargs)
 
@@ -73,9 +70,7 @@ class Taxon(ParentManageableNodeMixin, MP_Node):
         verbose_name_plural = _("taxa")
         constraints = [
             models.UniqueConstraint(fields=["name", "rank"], name="unique_name_rank"),
-            models.UniqueConstraint(
-                fields=["depth"], condition=Q(depth=1), name="unique_root"
-            ),
+            models.UniqueConstraint(fields=["depth"], condition=Q(depth=1), name="unique_root"),
         ]
 
     def __str__(self) -> str:
@@ -83,6 +78,17 @@ class Taxon(ParentManageableNodeMixin, MP_Node):
 
 
 class MonthlyDistribution(LifecycleModel):
+    # TODO: See
+    #       * https://en.wikipedia.org/wiki/Slowly_changing_dimension
+    #       * https://dev.to/zhiyueyi/design-a-table-to-keep-historical-changes-in-database-10fn
+    #       * https://github.com/grantmcconnaughey/django-field-history/blob/master/field_history/models.py
+    #       * https://django-simple-history.readthedocs.io/en/latest/index.html
+    #       * https://github.com/MattWindsor91/django-lass-schedule/blob/master/schedule/models/timeslot.py
+    #       * django-fsm
+    #       * django-simple-history
+    # Despres de buscar, crec que el millor seria fer un SpeciesDistributionHistory SCD type2.
+    # El FSM nomes en cas que les alertes es tinguin que autoritzar per algu, llavors si que tenen
+    # estat.
     """The manner in which a biological taxon is spatially arranged."""
 
     # TODO: duplicate previous month rows on first day of the month.
@@ -95,12 +101,8 @@ class MonthlyDistribution(LifecycleModel):
 
     # Relations
     # TODO: use unique_for_month instead of constraint?
-    boundary = models.ForeignKey(
-        Boundary, on_delete=models.CASCADE, related_name="distribution"
-    )
-    taxon = models.ForeignKey(
-        Taxon, on_delete=models.CASCADE, related_name="distribution"
-    )
+    boundary = models.ForeignKey(Boundary, on_delete=models.CASCADE, related_name="distribution")
+    taxon = models.ForeignKey(Taxon, on_delete=models.CASCADE, related_name="distribution")
 
     # Attributes - Mandatory
     # TODO: add periodicity? It will let have monthly, weekly in same table
@@ -137,9 +139,7 @@ class MonthlyDistribution(LifecycleModel):
             status__lt=self.status,  # Only update if status is less than current.
             month__gte=self.month,  # Only update date from this month onwards.
         )
-        for future_distribution in common_qs.filter(
-            taxon=self.taxon, boundary=self.boundary
-        ):
+        for future_distribution in common_qs.filter(taxon=self.taxon, boundary=self.boundary):
             future_distribution.status = self.status
             future_distribution.save()
 
@@ -163,7 +163,6 @@ class MonthlyDistribution(LifecycleModel):
                 ancestor_t.save()
 
     def _get_inherited_status(self):
-
         # If any taxon/boundary descendant is found, use its status.
         qs = self.__class__.objects.filter(month__lte=self.month)
 
@@ -180,12 +179,7 @@ class MonthlyDistribution(LifecycleModel):
         if self.pk:
             qs = qs.exclude(pk=self.pk)
 
-        result = (
-            qs.annotate(max_status=Max("status"))
-            .values("month", "max_status")
-            .order_by("month")
-            .last()
-        )
+        result = qs.annotate(max_status=Max("status")).values("month", "max_status").order_by("month").last()
 
         return result
 
@@ -205,17 +199,12 @@ class MonthlyDistribution(LifecycleModel):
                 observed_at__year__lte=self.month.year,
                 individual__taxon__isnull=False,
             )
-            .filter(
-                Q(individual__taxon=self.taxon)
-                | Q(individual__taxon__in=self.taxon.get_descendants())
-            )
+            .filter(Q(individual__taxon=self.taxon) | Q(individual__taxon__in=self.taxon.get_descendants()))
             .filter_by_boundary(boundaries=self.boundary, include_descendants=True)
         )
-        num_results = report_qs.annotate(
-            num_of_individual=Count("individual")
-        ).aggregate(total_individuals=Sum("num_of_individual", default=0))[
-            "total_individuals"
-        ]
+        num_results = report_qs.annotate(num_of_individual=Count("individual")).aggregate(
+            total_individuals=Sum("num_of_individual", default=0)
+        )["total_individuals"]
 
         result = self.DistributionStatus.ABSENT
         if num_results > 0:
@@ -229,7 +218,6 @@ class MonthlyDistribution(LifecycleModel):
                 self.save()
 
     def save(self, *args, **kwargs) -> None:
-
         if self.status is None:
             self.recompute_status(commit=False)
 
