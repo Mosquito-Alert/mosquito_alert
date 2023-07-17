@@ -17,11 +17,11 @@ class ArgumentParseableDataSource(ABC):
 
     @classmethod
     def add_arguments(cls, parser):
-        cls.add_custom_arguments(parser=parser)
+        cls._add_custom_arguments(parser=parser)
 
     @classmethod
     @abstractmethod
-    def add_custom_arguments(cls, parser):
+    def _add_custom_arguments(cls, parser):
         return NotImplementedError
 
 
@@ -31,20 +31,18 @@ class BaseDataSource(ArgumentParseableDataSource, ABC):
 
 
 class CompressedDataSourceMixin:
-    @property
-    def COMPRESSED_DESIRED_FILENAME(self):
-        return None
+    COMPRESSED_DESIRED_FILENAME = None
 
     @classmethod
-    def get_compressed_desired_filename(cls, desired_filename=None, **kwargs):
+    def _get_compressed_desired_filename(cls, desired_filename=None, **kwargs):
         desired_filename = desired_filename or cls.COMPRESSED_DESIRED_FILENAME
         return desired_filename.format(**kwargs) if desired_filename else None
 
 
-class FileDataSource(BaseDataSource, CompressedDataSourceMixin):
+class FileDataSource(CompressedDataSourceMixin, BaseDataSource):
     @classmethod
     def _process_file(cls, file_path, **kwargs):
-        if compressed_file := cls.get_compressed_desired_filename(**kwargs):
+        if compressed_file := cls._get_compressed_desired_filename(**kwargs):
             return Archive(file_path)._archive._archive.open(compressed_file)
         else:
             return open(file_path)
@@ -54,6 +52,7 @@ class FileDataSource(BaseDataSource, CompressedDataSourceMixin):
         self.file = (
             self._process_file(file_path=file_path, **kwargs) if file_path else None
         )
+        super().__init__(**kwargs)
 
 
 class OnlineDataSource(BaseDataSource, ABC):
@@ -63,7 +62,7 @@ class OnlineDataSource(BaseDataSource, ABC):
         return NotImplementedError
 
     @classmethod
-    def _construct_url(cls, url=None, params=[], **kwargs):
+    def _construct_url(cls, url=None, params={}, **kwargs):
         url = url or cls.URL
         url = url.format(**kwargs)
         logging.debug(f"Url {url}")
@@ -71,7 +70,8 @@ class OnlineDataSource(BaseDataSource, ABC):
 
     @classmethod
     def from_online_source(cls, **kwargs):
-        return cls(url=cls._construct_url(**kwargs), **kwargs)
+        url = kwargs.pop("url", None)
+        return cls(url=cls._construct_url(url=url, **kwargs), **kwargs)
 
     def __init__(self, url=None, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -79,17 +79,16 @@ class OnlineDataSource(BaseDataSource, ABC):
 
 
 class DownloadableDataSource(FileDataSource, OnlineDataSource):
-
     DOWNLOAD_FILE_SUFFIX = None  # Force if we don't want to guess using its mimetype.
     URL = None
     CLI_NAME = "simple_downloadable_datasource"
 
     @classmethod
-    def add_custom_arguments(cls, parser):
+    def _add_custom_arguments(cls, parser):
         pass
 
     @classmethod
-    def get_download_file_extension(cls, url):
+    def _get_download_file_extension(cls, url):
         return cls.DOWNLOAD_FILE_SUFFIX or mimetypes.guess_extension(
             type=mimetypes.guess_type(url=url)[0]
         )
@@ -99,7 +98,7 @@ class DownloadableDataSource(FileDataSource, OnlineDataSource):
         url = kwargs.pop("url", None)
         url = cls._construct_url(url=url, **kwargs)
         with tempfile.NamedTemporaryFile(
-            delete=True, suffix=cls.get_download_file_extension(url=url)
+            delete=True, suffix=cls._get_download_file_extension(url=url)
         ) as tmpfile:
             instance = cls(
                 url=url,

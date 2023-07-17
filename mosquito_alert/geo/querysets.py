@@ -23,18 +23,16 @@ class BoundaryQuerySet(MP_NodeQuerySet):
         return self.prefetch_related("geometry_model")
 
     def reverse_geocoding(self, point):
-
         if not isinstance(point, (Point, MultiPoint)):
             raise ValueError("Only point geometries are supported.")
 
         return self.filter(geometry_model__geometry__intersects=point)
 
-    def reverse_polygon_geocoding(self, polygon):
-
+    def fuzzy_reverse_polygon_geocoding(self, polygon):
         if not isinstance(polygon, (Polygon, MultiPolygon)):
             raise ValueError("Only polygon geometries are supported.")
 
-        point = polygon.point_on_surface
+        point = polygon.point_on_surface  # NOTE: This can become fuzzy.
         if isinstance(polygon, MultiPolygon):
             point = MultiPoint([x.point_on_surface for x in polygon])
 
@@ -47,7 +45,6 @@ class LocationQuerySet(QuerySet):
         self.field_prefix = field_prefix + "__" if field_prefix else ""
 
     def filter_by_boundary(self, boundaries, include_descendants=False):
-
         if not isinstance(boundaries, (list, tuple)):
             boundaries = [boundaries]
 
@@ -74,12 +71,30 @@ class LocationQuerySet(QuerySet):
         ).order_by("distance")
 
     def within_circle(self, center_point, radius_meters):
+        # See: https://stackoverflow.com/a/31945883
+        # NOTE: Already tried transforming the point to ESPG:3857 (which is in meters), apply a buffer in meters and
+        #       transform back to its original SRID. Do not work well, missing precision during transformations.
+
+        # from pyproj import Geod
+        # geod = Geod(a=center_point.srs.semi_major, b=center_point.srs.semi_minor)
+        # _, new_lat, _ = geod.fwd(
+        #    lons=center_point.x,
+        #    lats=center_point.y,
+        #    az=0,
+        #    dist=radius_meters,
+        #    radians=False,
+        # )
+        # buffer_width = new_lat - center_point.y
+
+        # buffered_point = center_point.buffer(buffer_width)
+
         return self.filter(
             **{
-                f"{self.field_prefix}point__dwithin": (
+                f"{self.field_prefix}point__distance_lte": (
                     center_point,
                     DistanceMeasure(m=radius_meters),
-                )
+                ),
+                # f"{self.field_prefix}point__intersects": buffered_point,
             }
         )
 

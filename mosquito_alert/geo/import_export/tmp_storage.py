@@ -1,20 +1,9 @@
 import tempfile
 
-from django.contrib.gis.gdal import DataSource
-from import_export.tmp_storages import BaseStorage, TempFolderStorage
+from django.contrib.gis.gdal.datasource import DataSource
+from import_export.tmp_storages import TempFolderStorage
 
 from .data_sources.boundaries.boundaries import uri_to_vsi_path
-
-
-class InMemoryGDALFileSystemStorage(BaseStorage):
-    def save(self, data):
-        pass
-
-    def read(self):
-        return DataSource(uri_to_vsi_path(uri=self.name))
-
-    def remove(self):
-        pass
 
 
 class TempFolderZippedGDALFileSystemStorage(TempFolderStorage):

@@ -2,7 +2,13 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import ModelSignal
 from django.utils.translation import gettext_lazy as _
-from django_lifecycle import AFTER_UPDATE, BEFORE_UPDATE, LifecycleModel, hook
+from django_lifecycle import (
+    AFTER_UPDATE,
+    BEFORE_CREATE,
+    BEFORE_UPDATE,
+    LifecycleModel,
+    hook,
+)
 
 from mosquito_alert.images.models import Photo
 from mosquito_alert.notifications.signals import notify, notify_subscribers
@@ -12,7 +18,6 @@ post_identification_changed = ModelSignal(use_caching=True)
 
 
 class Individual(LifecycleModel):
-
     # Relations
     taxon = models.ForeignKey(
         Taxon,
@@ -24,6 +29,9 @@ class Individual(LifecycleModel):
 
     # Attributes - Mandatory
     is_identified = models.BooleanField(default=False, editable=False)
+
+    # TODO: through model that indicates a bounding box in the photos.
+    #       That is, an individual is found boxed in some place of the image.
     photos = models.ManyToManyField(Photo, blank=True, related_name="individuals")
 
     # Attributes - Optional
@@ -32,6 +40,7 @@ class Individual(LifecycleModel):
     # Custom Properties
 
     # Methods
+    @hook(BEFORE_CREATE)
     @hook(BEFORE_UPDATE, when="taxon", has_changed=True)
     def update_is_identified_on_taxon_change(self):
         self.is_identified = self.taxon.is_specie if self.taxon else False
@@ -50,26 +59,26 @@ class Individual(LifecycleModel):
                     notify.send(
                         recipient=user,
                         sender=r,
-                        verb="was identified as",
+                        verb=_("was identified as"),
                         action_object=self.taxon,
-                        description="Your observation report has been identified as {}".format(
-                            self.taxon
+                        description=_(
+                            f"Your observation report has been identified as {self.taxon}"
                         ),
                     )
                 for b in r.location.boundaries.all():
                     notify_subscribers.send(
                         sender=self.taxon,
-                        verb="was identified in",
+                        verb=_("was identified in"),
                         target=b,
                     )
         else:
             notify_subscribers.send(
                 sender=self.taxon,
-                verb="was identified",
+                verb=_("was identified"),
             )
 
     def delete(self, *args, **kwargs):
-        # TODO delete orphan images with no reports assigne to them.
+        # TODO delete orphan images with no reports assigned to them.
         super().delete(*args, **kwargs)
 
     # Meta and String
@@ -113,7 +122,6 @@ class AnnotationAttribute(models.Model):
 
 
 class AnnotationValue(models.Model):
-
     # Relations
     annotation_attribute = models.ForeignKey(
         AnnotationAttribute, on_delete=models.CASCADE, related_name="values"
@@ -134,7 +142,6 @@ class AnnotationValue(models.Model):
 
     # Methods
     def save(self, *args, **kwargs) -> None:
-
         if (
             self.taxa != self.annotation_attribute.taxa
             or not self.taxa.is_descendant_of(self.annotation_attribute.taxa)
@@ -156,7 +163,6 @@ class AnnotationValue(models.Model):
 
 
 class Annotation(models.Model):
-
     # Relations
     annotation_attribute = models.ForeignKey(
         AnnotationAttribute, on_delete=models.PROTECT, related_name="annotations"
@@ -184,7 +190,6 @@ class Annotation(models.Model):
 
     # Methods
     def save(self, *args, **kwargs) -> None:
-
         if self.annotation_value not in self.annotation_attribute.values:
             raise ValueError(
                 "The annotation value is not a valid option for this annotation attribute."

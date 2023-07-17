@@ -11,7 +11,12 @@ mypy==0.982  # https://github.com/python/mypy
 django-stubs==1.12.0  # https://github.com/typeddjango/django-stubs
 pytest==7.2.0  # https://github.com/pytest-dev/pytest
 pytest-sugar==0.9.6  # https://github.com/Frozenball/pytest-sugar
+pytest-mock==3.10.0 # https://github.com/pytest-dev/pytest-mock/
+pytest-cov==4.0.0  # https://github.com/pytest-dev/pytest-cov
+pytest-freezegun==0.4.2  # https://github.com/ktosiek/pytest-freezegun
+requests-mock==1.10.0  # https://github.com/jamielennox/requests-mock
 djangorestframework-stubs==1.7.0  # https://github.com/typeddjango/djangorestframework-stubs
+faker-biology==0.6.0  # https://github.com/richarda23/faker-biology
 
 # Documentation
 # ------------------------------------------------------------------------------

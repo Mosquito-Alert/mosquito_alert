@@ -13,7 +13,6 @@ from .widgets import GeoWidget
 
 
 class BoundaryResource(ParentManageableModelResource, TranslationModelResourceMixin):
-
     geometry = fields.Field(
         attribute="geometry",
         column_name="geometry",
@@ -27,13 +26,12 @@ class BoundaryResource(ParentManageableModelResource, TranslationModelResourceMi
     )
 
     def __init__(self, show_progess_bar=False, **kwargs):
-
         self.show_progess_bar = show_progess_bar
         super().__init__(**kwargs)
 
         self._parent_boundary_layer = None
 
-    def get_descriptor_name_from_row(self, row):
+    def _get_descriptor_name_from_row(self, row):
         descriptor = None
         # Getting all available fieldnames for 'name' (accepts translations).
         a_fields = [
@@ -57,7 +55,6 @@ class BoundaryResource(ParentManageableModelResource, TranslationModelResourceMi
         return descriptor
 
     def before_import(self, dataset, using_transactions, dry_run, **kwargs):
-
         self.progress_bar = tqdm(total=len(dataset)) if self.show_progess_bar else None
 
         boundary_layer = kwargs.pop("boundary_layer", None)
@@ -82,7 +79,7 @@ class BoundaryResource(ParentManageableModelResource, TranslationModelResourceMi
         if self.progress_bar:
             # Update progress_bar
             self.progress_bar.set_description(
-                desc=self.get_descriptor_name_from_row(row=row) or str(row_number)
+                desc=self._get_descriptor_name_from_row(row=row) or str(row_number)
             )
 
         if not row[self.fields["parent"].column_name] and self._parent_boundary_layer:
@@ -92,7 +89,7 @@ class BoundaryResource(ParentManageableModelResource, TranslationModelResourceMi
 
                 # Quering the DB to get parent boundaries (concentric).
                 parent_boundary = (
-                    Boundary.objects.reverse_polygon_geocoding(polygon=geometry)
+                    Boundary.objects.fuzzy_reverse_polygon_geocoding(polygon=geometry)
                     .filter(boundary_layer=self._parent_boundary_layer)
                     .first_by_area()
                 )

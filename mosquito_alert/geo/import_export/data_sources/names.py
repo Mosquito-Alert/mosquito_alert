@@ -11,7 +11,7 @@ import pandas as pd
 import pycountry
 import shapely
 from django.contrib.gis.geos import Point, Polygon
-from django.contrib.gis.geos.collections import MultiPoint, MultiPolygon
+from django.contrib.gis.geos.collections import MultiPolygon
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.geocoders import Nominatim
 from geopy.point import Point as GeopyPoint
@@ -71,7 +71,7 @@ class BaseBoundaryNameDataSource(BaseDataSource, ABC):
             "-l", "--location_type", choices=cls.LOCATION_DICT.keys(), required=False
         )
 
-        cls.add_custom_arguments(parser=parser)
+        cls._add_custom_arguments(parser=parser)
 
     @classmethod
     def get_field_by_location_type(cls, value):
@@ -91,7 +91,6 @@ class BaseBoundaryNameDataSource(BaseDataSource, ABC):
 
 
 class NominatimDataSource(BaseBoundaryNameDataSource):
-
     CLI_NAME = "nominatim"
 
     LOCATION_DICT = {
@@ -103,7 +102,7 @@ class NominatimDataSource(BaseBoundaryNameDataSource):
     }
 
     @classmethod
-    def add_custom_arguments(cls, parser):
+    def _add_custom_arguments(cls, parser):
         pass
 
     def __init__(self, **kwargs) -> None:
@@ -119,18 +118,17 @@ class NominatimDataSource(BaseBoundaryNameDataSource):
         )
 
     def reverse(self, geometry, location_type, language_iso="en", exactly_one=True):
-
         location_type = self.get_field_by_location_type(value=location_type)
 
         geometry_point = None
         if isinstance(geometry, (MultiPolygon, Polygon)):
             logging.debug("Detected geomtry as (Multi)polygon.")
             geometry_point = get_biggest_polygon(geometry).point_on_surface
-        elif isinstance(geometry, (MultiPoint, Point)):
-            logging.debug("Detected geomtry as (Multi)Point.")
+        elif isinstance(geometry, Point):
+            logging.debug("Detected geomtry as Point.")
             geometry_point = geometry
         else:
-            raise ValueError("Geometry can only be (Multi)Polygon or (Multi)Point.")
+            raise ValueError("Geometry can only be (Multi)Polygon or Point.")
 
         point = GeopyPoint(latitude=geometry_point.y, longitude=geometry_point.x)
 
@@ -148,8 +146,11 @@ class NominatimDataSource(BaseBoundaryNameDataSource):
             namedetails=False,
         )
 
+        if result is None:
+            return None
+
         if not isinstance(result, (tuple, list)):
-            result = list(result)
+            result = [result]
 
         # Keep only those that have a field with the selected location_type
         result = list(filter(lambda x: x.raw["address"].get(location_type), result))
@@ -174,7 +175,6 @@ class NominatimDataSource(BaseBoundaryNameDataSource):
 
 
 class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
-
     CLI_NAME = "geonames"
 
     URL = {
@@ -231,7 +231,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
     }
 
     @classmethod
-    def add_custom_arguments(cls, parser):
+    def _add_custom_arguments(cls, parser):
         class keyvalue(argparse.Action):
             # Constructor calling
             def __call__(self, parser, namespace, values, option_string=None):
@@ -265,7 +265,6 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
 
     @classmethod
     def from_online_source(cls, country_iso, **kwargs):
-
         country = get_country_from_iso_code(country_iso=country_iso)
 
         geoname_url = cls.URL["geoname"]
@@ -294,7 +293,6 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
     def __init__(
         self, geonames_filepath, alternate_names_filepath, filters={}, **kwargs
     ) -> None:
-
         # Super init. TODO multiple file_path?
         super().__init__(file_path=None)
 
@@ -379,7 +377,6 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
     def reverse(
         self, geometry, location_type, language_iso="en", exactly_one=True
     ) -> Location:
-
         result_ids = self.get_ids_by_region(
             geometry=geometry,
             **{"featurecode": self.get_field_by_location_type(value=location_type)},
@@ -391,7 +388,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
 
         if exactly_one:
             # Keeping only first result
-            result_ids = result_ids[0]
+            result_ids = [result_ids[0]]
 
         location_results = []
         for id in result_ids:
@@ -417,7 +414,12 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
         data = self._filter_df(data, **kwargs)
 
         # Only keep the one with biggest area.
-        geometry = get_biggest_polygon(geometry)
+        if isinstance(geometry, (MultiPolygon, Polygon)):
+            logging.debug("Detected geomtry as (Multi)polygon.")
+            geometry = get_biggest_polygon(geometry)
+        else:
+            raise ValueError("Geometry can only be (Multi)Polygon")
+
         geometry = shapely.from_wkt(geometry=geometry.wkt).simplify(0.05)
 
         # result is a pandas series: index geonameid, value True/False
@@ -435,8 +437,11 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
 
     def get_id_by_name(self, name, **kwargs):
         result_generator = self.search(name=name, converter=dict, **kwargs)
-        first_result = next(result_generator)
-        return first_result["geonameid"]
+        try:
+            first_result = next(result_generator)
+            return first_result["geonameid"]
+        except StopIteration:
+            raise KeyError
 
     def get_ids_by_region(self, geometry, **kwargs):
         result = self.filter_by_region(geometry=geometry, **kwargs)
@@ -455,7 +460,6 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
         id_filter = self.df["geonameid"] == id
 
         if language:
-
             language_iso_list = []
             try:
                 language_iso_list.append(language.alpha_2.lower())
@@ -471,9 +475,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
                 (id_filter) & (self.df["isolanguage"].isin(language_iso_list)),
             ]
         else:
-            df_filtered = self.df.loc[
-                (id_filter) & (self.df["isolanguage"].isnull()),
-            ]
+            df_filtered = self.df.loc[(id_filter) & (self.df["isolanguage"].isnull()),]
 
         if df_filtered["isPreferredName"].any():
             df_filtered = df_filtered.loc[df_filtered["isPreferredName"]]

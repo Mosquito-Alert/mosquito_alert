@@ -14,7 +14,7 @@ class AllowOnlyNodesFromSameTreeFormMixin:
         if for_node:
             if for_node.is_root():
                 for node in model.get_root_nodes():
-                    cls.add_subtree(for_node, node, options)
+                    cls.add_subtree(for_node=None, node=node, options=options)
             else:
                 # Only select its tree.
                 cls.add_subtree(for_node, for_node.get_root(), options)
@@ -26,7 +26,7 @@ class AllowOnlyNodesFromSameTreeFormMixin:
 
 
 class AllowOnlyNodesFromSameTreeForm(
-    OriginalMoveNodeForm, AllowOnlyNodesFromSameTreeFormMixin
+    AllowOnlyNodesFromSameTreeFormMixin, OriginalMoveNodeForm
 ):
     pass
 

@@ -3,7 +3,7 @@ import re
 from abc import ABC, abstractmethod
 
 import pycountry
-from django.contrib.gis.gdal import DataSource
+from django.contrib.gis.gdal.datasource import DataSource
 
 from ....models import BoundaryLayer
 from ..base import BaseDataSource, CompressedDataSourceMixin, OnlineDataSource
@@ -14,7 +14,6 @@ from .files import uri_to_vsi_path
 class BaseBoundaryDataSource(BaseDataSource, CompressedDataSourceMixin, ABC):
     @classmethod
     def add_arguments(cls, parser):
-
         parser.add_argument(
             "-l",
             "--level",
@@ -31,13 +30,12 @@ class BaseBoundaryDataSource(BaseDataSource, CompressedDataSourceMixin, ABC):
             )
             parser.set_defaults(bl_type=cls.DEFAULT_BOUNDARY_LEVEL_TYPE.value)
 
-        cls.add_custom_arguments(parser=parser)
+        cls._add_custom_arguments(parser=parser)
 
     def __init__(self, uri, level, **kwargs) -> None:
-
         super().__init__(**kwargs)
 
-        self.level = level
+        self.level = int(level)
         self.ds = DataSource(uri_to_vsi_path(uri))
 
     @property
@@ -71,7 +69,7 @@ class BaseOnlineBoundaryDataSource(BaseBoundaryDataSource, OnlineDataSource):
     def from_online_source(cls, **kwargs):
         url = cls._construct_url(**kwargs)
 
-        zipped_file_path = cls.get_compressed_desired_filename(**kwargs)
+        zipped_file_path = cls._get_compressed_desired_filename(**kwargs)
         uri = url
         if zipped_file_path:
             # See 'uri_to_vsi_path' method,
@@ -84,7 +82,6 @@ class BaseOnlineBoundaryDataSource(BaseBoundaryDataSource, OnlineDataSource):
 
 
 class NutsBoundarySource(BaseOnlineBoundaryDataSource):
-
     CLI_NAME = "nuts"
     COMPRESSED_DESIRED_FILENAME = "NUTS_RG_{scale}_{db_version}_{coor}_LEVL_{level}.shp"
     URL = "https://gisco-services.ec.europa.eu/distribution/v2/nuts/shp/{shapefile}.zip".format(
@@ -93,8 +90,7 @@ class NutsBoundarySource(BaseOnlineBoundaryDataSource):
     DEFAULT_BOUNDARY_LEVEL_TYPE = BoundaryLayer.BoundaryType.STATISTICAL
 
     @classmethod
-    def add_custom_arguments(cls, parser):
-
+    def _add_custom_arguments(cls, parser):
         parser.add_argument(
             "--db_version",
             type=int,
@@ -155,7 +151,6 @@ class NutsBoundarySource(BaseOnlineBoundaryDataSource):
 
 
 class GadmBoundarySource(BaseOnlineBoundaryDataSource):
-
     CLI_NAME = "gadm"
 
     URL = "https://geodata.ucdavis.edu/gadm/gadm{db_version}/shp/gadm{db_version_str}_{country_iso3}_shp.zip"
@@ -164,7 +159,7 @@ class GadmBoundarySource(BaseOnlineBoundaryDataSource):
     DEFAULT_BOUNDARY_LEVEL_TYPE = BoundaryLayer.BoundaryType.ADMINISTRATIVE
 
     @classmethod
-    def add_custom_arguments(cls, parser):
+    def _add_custom_arguments(cls, parser):
         parser.add_argument("--db_version", type=float, default=4.1)
 
         parser.add_argument(

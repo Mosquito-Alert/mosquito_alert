@@ -30,9 +30,8 @@ class m2mPhotoAdminInlineMixin:
             return format_html(f"<img src='{obj.photo.image.url}' height='150' />")
         return "Upload image for preview"
 
-    preview.allow_tags = True
 
-
+@admin.register(Photo)
 class PhotoAdmin(NestedPolymorphicModelAdmin):
     list_display = ("__str__", "user", "created_at", "preview")
     list_filter = ("user", "created_at")
@@ -47,8 +46,7 @@ class PhotoAdmin(NestedPolymorphicModelAdmin):
             return format_html(f"<img src='{obj.image.url}' height='150' />")
         return "Upload image for preview"
 
-    preview.allow_tags = True
-
+    @admin.display(description="EXIF")
     def exif_dict(self, obj):
         response = json.dumps(dict(obj.exif_dict), sort_keys=True, indent=2)
         # Get the Pygments formatter
@@ -60,8 +58,6 @@ class PhotoAdmin(NestedPolymorphicModelAdmin):
         # Safe the output
         return mark_safe(style + response)
 
-    exif_dict.short_description = "EXIF"
-
     def save_model(self, request, obj, form, change):
         if not obj.pk:
             # Only set added_by during the first save.
@@ -72,9 +68,8 @@ class PhotoAdmin(NestedPolymorphicModelAdmin):
         result = self.fields
         if obj:
             result += ("user",)
-
-        if obj and request.user.has_perm(perm="view_exif", obj=obj):
-            result += ("exif_dict",)
+            if request.user.has_perm(perm=f"{obj._meta.app_label}.view_exif"):
+                result += ("exif_dict",)
 
         return result
 
@@ -83,10 +78,6 @@ class PhotoAdmin(NestedPolymorphicModelAdmin):
 
         if obj:
             result += ("user",)
-
-        if obj and request.user.has_perm(perm="view_exif", obj=obj):
-            result += ("exif_dict",)
+            if request.user.has_perm(perm=f"{obj._meta.app_label}.view_exif"):
+                result += ("exif_dict",)
         return result
-
-
-admin.site.register(Photo, PhotoAdmin)

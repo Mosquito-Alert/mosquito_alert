@@ -20,11 +20,12 @@ class ReadOnlyPhotoAdminInline(m2mPhotoAdminInlineMixin, NestedTabularInline):
     is_sortable = False
 
 
+@admin.register(Individual)
 class IndividualAdmin(NestedPolymorphicModelAdmin):
     list_display = ["__str__", "is_identified", "thumbnail"]
     list_filter = [("taxon", admin.RelatedOnlyFieldListFilter), "is_identified"]
     fieldsets = (
-        (None, {"fields": (("taxon", "get_is_identified"),)}),
+        (None, {"fields": (("taxon", "is_identified"),)}),
         (
             _("Probability trees"),
             {
@@ -38,7 +39,7 @@ class IndividualAdmin(NestedPolymorphicModelAdmin):
     )
     readonly_fields = [
         "taxon",
-        "get_is_identified",
+        "is_identified",
         "show_result_prob_tree",
         "show_community_prob_tree",
         "show_computervision_prob_tree",
@@ -48,12 +49,7 @@ class IndividualAdmin(NestedPolymorphicModelAdmin):
         UserIdentificationSuggestionInline,
     ]
 
-    def get_is_identified(self, instance):
-        return instance.is_identified
-
-    get_is_identified.boolean = True
-    get_is_identified.short_description = "Is identified"
-
+    @admin.display(description=_("Community suggestion probability tree"))
     def show_community_prob_tree(self, instance):
         if instance:
             render = CommunityIdentificationResult.get_probability_tree(
@@ -62,10 +58,7 @@ class IndividualAdmin(NestedPolymorphicModelAdmin):
 
             return format_html("<textarea readonly>{}</textarea>", render)
 
-    show_community_prob_tree.short_description = _(
-        "Community suggestion probability tree"
-    )
-
+    @admin.display(description=_("Computer vision suggestion probability tree"))
     def show_computervision_prob_tree(self, instance):
         if instance:
             render = ComputerVisionIdentificationSuggestion.get_probability_tree(
@@ -74,10 +67,7 @@ class IndividualAdmin(NestedPolymorphicModelAdmin):
 
             return format_html("<textarea readonly>{}</textarea>", render)
 
-    show_computervision_prob_tree.short_description = _(
-        "Computer vision suggestion probability tree"
-    )
-
+    @admin.display(description=_("Final probability tree"))
     def show_result_prob_tree(self, instance):
         if instance:
             render = EnsembledIdentificationResult.get_probability_tree(
@@ -85,8 +75,6 @@ class IndividualAdmin(NestedPolymorphicModelAdmin):
             ).get_tree_render()
 
             return format_html("<textarea readonly>{}</textarea>", render)
-
-    show_result_prob_tree.short_description = _("Final probability tree")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -96,8 +84,3 @@ class IndividualAdmin(NestedPolymorphicModelAdmin):
     def thumbnail(self, obj):
         if photo := obj.photos.first():
             return format_html(f"<img src='{photo.image.url}' height='75' />")
-
-    thumbnail.allow_tags = True
-
-
-admin.site.register(Individual, IndividualAdmin)

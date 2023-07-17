@@ -17,7 +17,6 @@ class Command(BaseCommand):
     help = "Import boundaries data."
 
     def add_arguments(self, parser):
-
         boundary_layer_group = parser.add_argument_group("Boundary layer")
         boundary_layer_group.add_argument(
             "--bl_pk", type=int, help="Assign a boundary layer already found in the DB."
@@ -128,20 +127,10 @@ class Command(BaseCommand):
             )
         )
 
-        dataset = ZippedShapefileFormat().create_dataset(in_stream=data_source.ds)
-        kwargs = dict(
+        result = self._do_import(
+            boundary_ds=data_source,
             boundary_layer=boundary_layer,
-            name_fieldname=data_source.name_field_name,
-            code_fieldname=data_source.code_field_name,
-        )
-        result = BoundaryResource(show_progess_bar=True).import_data(
-            dataset,
             dry_run=options.get("dry_run"),
-            raise_errors=True,
-            use_transactions=True,
-            collect_failed_rows=True,
-            rollback_on_validation_errors=False,
-            **kwargs,
         )
 
         if result.has_errors():
@@ -156,6 +145,23 @@ class Command(BaseCommand):
         else:
             logging.debug("Saving commit (transaction atomic)")
             transaction.savepoint_commit(sid=sp)
+
+    def _do_import(self, boundary_ds, boundary_layer, dry_run=False):
+        dataset = ZippedShapefileFormat().create_dataset(in_stream=boundary_ds.ds)
+        kwargs = dict(
+            boundary_layer=boundary_layer,
+            name_fieldname=boundary_ds.name_field_name,
+            code_fieldname=boundary_ds.code_field_name,
+        )
+        return BoundaryResource(show_progess_bar=True).import_data(
+            dataset,
+            dry_run=dry_run,
+            raise_errors=True,
+            use_transactions=True,
+            collect_failed_rows=True,
+            rollback_on_validation_errors=False,
+            **kwargs,
+        )
 
     def set_logging(self, verbosity):
         if verbosity == 0:

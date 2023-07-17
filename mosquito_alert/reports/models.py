@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.validators import MaxValueValidator
+from django.db.models.functions import Now
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from flag.models import Flag
@@ -46,10 +47,12 @@ class Report(PolymorphicModel, GeoLocatedModel):
     # TODO: add location_is_modified or another location for the event_location.
     observed_at = models.DateTimeField(
         default=timezone.now,
-        blank=True,
+        blank=True,  # TODO: why blank?
         validators=[MaxValueValidator(limit_value=timezone.now)],
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True, validators=[MaxValueValidator(limit_value=timezone.now)]
+    )
     updated_at = models.DateTimeField(auto_now=True)
     published = models.BooleanField(default=False)
     # TODO: app_version, os
@@ -74,6 +77,16 @@ class Report(PolymorphicModel, GeoLocatedModel):
         verbose_name = _("report")
         verbose_name_plural = _("reports")
         ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(created_at__lte=Now()),
+                name="created_at_cannot_be_future_dated",
+            ),
+            models.CheckConstraint(
+                check=models.Q(observed_at__lte=models.F("created_at")),
+                name="observed_at_cannot_be_after_created_at",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__} ({self.uuid})"
@@ -81,7 +94,6 @@ class Report(PolymorphicModel, GeoLocatedModel):
 
 @reversion.register(follow=("report_ptr",))
 class BiteReport(Report):
-
     # Relations
     bites = models.ManyToManyField(Bite, related_name="reports")
 
@@ -157,7 +169,6 @@ class IndividualReport(Report):
     # Custom Properties
     # Methods
     def save(self, *args, **kwargs):
-
         is_adding = self._state.adding
         if is_adding:
             if not hasattr(self, "individual"):
