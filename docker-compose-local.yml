@@ -35,8 +35,8 @@ services:
     image: postgis/postgis:15-3.3
     container_name: mosquito_alert_local_postgres
     volumes:
-      - mosquito_alert_local_postgres_data:/var/lib/postgresql/data:Z
-      - mosquito_alert_local_postgres_data_backups:/backups:z
+      - mosquito_alert_local_postgres_data:/var/lib/postgresql/data
+      - mosquito_alert_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
 
