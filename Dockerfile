@@ -1,7 +1,5 @@
-ARG PYTHON_VERSION=3.10-slim-bullseye
-
 # define an alias for the specfic python version used in this file.
-FROM python:${PYTHON_VERSION} as python
+FROM python:3.11.4-slim-bullseye as python
 
 # Python build stage
 FROM python as python-build-stage
@@ -30,9 +28,9 @@ FROM python as python-run-stage
 LABEL org.opencontainers.image.source=https://github.com/Mosquito-Alert/mosquito_alert
 LABEL org.opencontainers.image.licenses=gpl-3.0
 
+ARG BUILD_ENVIRONMENT
 ARG APP_HOME=/app
 
-ARG BUILD_ENVIRONMENT
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
@@ -94,5 +92,10 @@ COPY --chown=django:django . ${APP_HOME}
 RUN chown django:django ${APP_HOME}
 
 USER django
+
+RUN DATABASE_URL="" \
+    CELERY_BROKER_URL="" \
+    DJANGO_SETTINGS_MODULE="config.settings.test" \
+    python manage.py compilemessages
 
 ENTRYPOINT ["/entrypoint"]
