@@ -7,15 +7,12 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpRequest, HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 from mosquito_alert.users.forms import UserAdminChangeForm
 from mosquito_alert.users.models import User
 from mosquito_alert.users.tests.factories import UserFactory
-from mosquito_alert.users.views import (
-    UserRedirectView,
-    UserUpdateView,
-    user_detail_view,
-)
+from mosquito_alert.users.views import UserRedirectView, UserUpdateView, user_detail_view
 
 pytestmark = pytest.mark.django_db
 
@@ -38,7 +35,6 @@ class TestUserUpdateView:
         request.user = user
 
         view.request = request
-
         assert view.get_success_url() == f"/users/{user.username}/"
 
     def test_get_object(self, user: User, rf: RequestFactory):
@@ -68,7 +64,7 @@ class TestUserUpdateView:
         view.form_valid(form)
 
         messages_sent = [m.message for m in messages.get_messages(request)]
-        assert messages_sent == ["Information successfully updated"]
+        assert messages_sent == [_("Information successfully updated")]
 
 
 class TestUserRedirectView:
@@ -78,7 +74,6 @@ class TestUserRedirectView:
         request.user = user
 
         view.request = request
-
         assert view.get_redirect_url() == f"/users/{user.username}/"
 
 
@@ -86,7 +81,6 @@ class TestUserDetailView:
     def test_authenticated(self, user: User, rf: RequestFactory):
         request = rf.get("/fake-url/")
         request.user = UserFactory()
-
         response = user_detail_view(request, username=user.username)
 
         assert response.status_code == 200
@@ -94,7 +88,6 @@ class TestUserDetailView:
     def test_not_authenticated(self, user: User, rf: RequestFactory):
         request = rf.get("/fake-url/")
         request.user = AnonymousUser()
-
         response = user_detail_view(request, username=user.username)
         login_url = reverse(settings.LOGIN_URL)
 

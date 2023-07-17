@@ -159,9 +159,8 @@ typings/
 !.vscode/extensions.json
 *.code-workspace
 
-# Local History for Visual Studio Code
-.history/
-
+# Local History for devcontainer
+.devcontainer/bash_history
 
 
 
@@ -268,6 +267,9 @@ Session.vim
 
 # Auto-generated tag files
 tags
+
+# Redis dump file
+dump.rdb
 
 ### Project template
 mosquito_alert/media/

@@ -8,6 +8,6 @@ class UsersConfig(AppConfig):
 
     def ready(self):
         try:
-            import mosquito_alert.users.signals  # noqa F401
+            import mosquito_alert.users.signals  # noqa: F401
         except ImportError:
             pass
