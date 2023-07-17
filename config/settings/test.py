@@ -31,4 +31,7 @@ TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore # noqa F405
 
 # Your stuff...
 # ------------------------------------------------------------------------------
-INSTALLED_APPS += ["mosquito_alert.geo.tests"]  # noqa F405
+INSTALLED_APPS += [  # noqa F405
+    "mosquito_alert.geo.tests",
+    "mosquito_alert.utils.tests",
+]

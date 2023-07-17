@@ -6,30 +6,24 @@ from ..models import NodeExpandedQueriesMixin, ParentManageableNodeMixin
 
 
 class DummyMPModel(MP_Node):
-    class Meta:
-        app_label = "utils_test"
+    pass
 
 
 class DummyMP_NodeParentManageableModel(ParentManageableNodeMixin, MP_Node):
-    class Meta:
-        app_label = "utils_test"
+    pass
 
 
 class DummyAL_NodeParentManageableModel(ParentManageableNodeMixin, AL_Node):
-    class Meta:
-        app_label = "utils_test"
+    pass
 
 
 class DummyNS_NodeParentManageableModel(ParentManageableNodeMixin, NS_Node):
-    class Meta:
-        app_label = "utils_test"
+    pass
 
 
 class DummyNonNodeParentManageableModel(ParentManageableNodeMixin):
-    class Meta:
-        app_label = "utils_test"
+    pass
 
 
 class DummyMP_NodeExpandedQueriesModel(NodeExpandedQueriesMixin, MP_Node):
-    class Meta:
-        app_label = "utils_test"
+    pass
