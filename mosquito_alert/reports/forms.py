@@ -8,7 +8,6 @@ from .models import BiteReport, BreedingSiteReport, IndividualReport, Report
 
 
 class ReportForm(forms.ModelForm):
-
     location_point = gisforms.PointField(
         srid=Location._meta.get_field("point").srid,
         required=True,
@@ -20,17 +19,20 @@ class ReportForm(forms.ModelForm):
         if instance := kwargs.get("instance", None):
             if hasattr(instance, "location"):
                 self.declared_fields["location_point"].initial = instance.location.point
-                self.declared_fields["location_point"].disabled = True
+                # self.declared_fields["location_point"].disabled = True
         super().__init__(*args, **kwargs)
 
     def save(self, commit=True):
-
         if self.instance._state.adding:
             self.instance.user = self.request.user
 
             self.instance.location = Location.objects.create(
                 point=self.cleaned_data["location_point"]
             )
+        else:
+            if "location_point" in self.changed_data:
+                self.instance.location.point = self.cleaned_data["location_point"]
+                self.instance.location.save()
 
         return super().save(commit)
 
@@ -53,7 +55,6 @@ class BreedingSiteReportForm(ReportForm):
 
 class IndividualReportForm(ReportForm):
     def save(self, commit=True):
-
         if self.instance._state.adding:
             self.instance.individual = Individual.objects.create()
             self.instance.individual.taxon = self.cleaned_data["taxon"]

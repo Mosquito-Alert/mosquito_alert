@@ -62,7 +62,6 @@ class DiseaseVector(models.Model):
 
 
 class MonthlyDistribution(TaxaMonthlyDistribution):
-
     objects = MonthlyDistributionManager()
 
     class Meta:

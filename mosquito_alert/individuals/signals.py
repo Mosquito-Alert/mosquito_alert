@@ -7,6 +7,7 @@ from mosquito_alert.reports.models import IndividualReport
 @receiver(m2m_changed, sender=IndividualReport.photos.through)
 def sync_individual_photos_with_reported(sender, instance, action, pk_set, **kwargs):
     if action == "post_add":
+        # TODO: check if raise when duplicates
         instance.individual.photos.add(*pk_set)
     elif action == "post_remove":
         instance.individual.photos.remove(*pk_set)

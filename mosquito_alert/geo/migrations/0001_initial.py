@@ -10,96 +10,189 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Boundary',
+            name="Boundary",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('path', models.CharField(max_length=255, unique=True)),
-                ('depth', models.PositiveIntegerField()),
-                ('numchild', models.PositiveIntegerField(default=0)),
-                ('code', models.CharField(db_index=True, max_length=16)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('name', models.CharField(db_index=True, max_length=128)),
-                ('name_en', models.CharField(db_index=True, max_length=128, null=True)),
-                ('name_ca', models.CharField(db_index=True, max_length=128, null=True)),
-                ('name_es', models.CharField(db_index=True, max_length=128, null=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("path", models.CharField(max_length=255, unique=True)),
+                ("depth", models.PositiveIntegerField()),
+                ("numchild", models.PositiveIntegerField(default=0)),
+                ("code", models.CharField(db_index=True, max_length=16)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("name", models.CharField(db_index=True, max_length=128)),
+                ("name_en", models.CharField(db_index=True, max_length=128, null=True)),
+                ("name_ca", models.CharField(db_index=True, max_length=128, null=True)),
+                ("name_es", models.CharField(db_index=True, max_length=128, null=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Boundary',
-                'verbose_name_plural': 'Boundaries',
+                "verbose_name": "Boundary",
+                "verbose_name_plural": "Boundaries",
             },
         ),
         migrations.CreateModel(
-            name='BoundaryGeometry',
+            name="BoundaryGeometry",
             fields=[
-                ('boundary', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='geometry_model', serialize=False, to='geo.boundary')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('geometry', django.contrib.gis.db.models.fields.MultiPolygonField(geography=True, srid=4326)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "boundary",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        related_name="geometry_model",
+                        serialize=False,
+                        to="geo.boundary",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "geometry",
+                    django.contrib.gis.db.models.fields.MultiPolygonField(srid=4326),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'boundary geometry',
-                'verbose_name_plural': 'boundary geometries',
+                "verbose_name": "boundary geometry",
+                "verbose_name_plural": "boundary geometries",
             },
             bases=(django_lifecycle.mixins.LifecycleModelMixin, models.Model),
         ),
         migrations.CreateModel(
-            name='Location',
+            name="Location",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('point', django.contrib.gis.db.models.fields.PointField(geography=True, srid=4326)),
-                ('location_type', models.CharField(blank=True, choices=[('VEH', 'Inside a vehicle.'), ('BUI', 'Inside a building.'), ('OUT', 'Outdoors.')], max_length=3, null=True)),
-                ('boundaries', models.ManyToManyField(blank=True, related_name='locations', to='geo.boundary')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "point",
+                    django.contrib.gis.db.models.fields.PointField(srid=4326),
+                ),
+                (
+                    "location_type",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("VEH", "Inside a vehicle."),
+                            ("BUI", "Inside a building."),
+                            ("OUT", "Outdoors."),
+                        ],
+                        max_length=3,
+                        null=True,
+                    ),
+                ),
+                (
+                    "boundaries",
+                    models.ManyToManyField(
+                        blank=True, related_name="locations", to="geo.boundary"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'location',
-                'verbose_name_plural': 'locations',
+                "verbose_name": "location",
+                "verbose_name_plural": "locations",
             },
             bases=(django_lifecycle.mixins.LifecycleModelMixin, models.Model),
         ),
         migrations.CreateModel(
-            name='BoundaryLayer',
+            name="BoundaryLayer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('path', models.CharField(max_length=255, unique=True)),
-                ('depth', models.PositiveIntegerField()),
-                ('numchild', models.PositiveIntegerField(default=0)),
-                ('boundary_type', models.CharField(choices=[('adm', 'Administrative'), ('sta', 'Statistical')], db_index=True, max_length=3)),
-                ('name', models.CharField(max_length=64)),
-                ('level', models.PositiveSmallIntegerField(blank=True, db_index=True, help_text='Will use its depth inside the tree by default.')),
-                ('description', models.TextField(blank=True, null=True)),
-                ('boundary', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='boundary_layers', to='geo.boundary')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("path", models.CharField(max_length=255, unique=True)),
+                ("depth", models.PositiveIntegerField()),
+                ("numchild", models.PositiveIntegerField(default=0)),
+                (
+                    "boundary_type",
+                    models.CharField(
+                        choices=[("adm", "Administrative"), ("sta", "Statistical")],
+                        db_index=True,
+                        max_length=3,
+                    ),
+                ),
+                ("name", models.CharField(max_length=64)),
+                (
+                    "level",
+                    models.PositiveSmallIntegerField(
+                        blank=True,
+                        db_index=True,
+                        help_text="Will use its depth inside the tree by default.",
+                    ),
+                ),
+                ("description", models.TextField(blank=True, null=True)),
+                (
+                    "boundary",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="boundary_layers",
+                        to="geo.boundary",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'boundary layer',
-                'verbose_name_plural': 'boundary layers',
-                'ordering': ['boundary_type', 'level', 'name'],
+                "verbose_name": "boundary layer",
+                "verbose_name_plural": "boundary layers",
+                "ordering": ["boundary_type", "level", "name"],
             },
         ),
         migrations.AddField(
-            model_name='boundary',
-            name='boundary_layer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='boundaries', to='geo.boundarylayer'),
+            model_name="boundary",
+            name="boundary_layer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="boundaries",
+                to="geo.boundarylayer",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='boundarylayer',
-            constraint=models.UniqueConstraint(fields=('boundary', 'boundary_type', 'level'), name='unique_type-level_with_boundary'),
+            model_name="boundarylayer",
+            constraint=models.UniqueConstraint(
+                fields=("boundary", "boundary_type", "level"),
+                name="unique_type-level_with_boundary",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='boundarylayer',
-            constraint=models.UniqueConstraint(condition=models.Q(('boundary', None)), fields=('boundary_type', 'level'), name='unique_type-level_without_boundary'),
+            model_name="boundarylayer",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("boundary", None)),
+                fields=("boundary_type", "level"),
+                name="unique_type-level_without_boundary",
+            ),
         ),
         migrations.AddIndex(
-            model_name='boundary',
-            index=models.Index(fields=['boundary_layer', 'code'], name='geo_boundar_boundar_f5b7d9_idx'),
+            model_name="boundary",
+            index=models.Index(
+                fields=["boundary_layer", "code"], name="geo_boundar_boundar_f5b7d9_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='boundary',
-            constraint=models.UniqueConstraint(fields=('boundary_layer', 'code'), name='unique_boundarylayer_code'),
+            model_name="boundary",
+            constraint=models.UniqueConstraint(
+                fields=("boundary_layer", "code"), name="unique_boundarylayer_code"
+            ),
         ),
     ]

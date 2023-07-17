@@ -3,7 +3,15 @@ from django.contrib.gis.db import models
 from django.db.models import Q
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
+from django_lifecycle import (
+    AFTER_CREATE,
+    AFTER_UPDATE,
+    BEFORE_CREATE,
+    BEFORE_UPDATE,
+    LifecycleModel,
+    LifecycleModelMixin,
+    hook,
+)
 from treebeard.mp_tree import MP_Node
 
 from ..utils.models import ParentManageableNodeMixin
@@ -31,7 +39,7 @@ from .managers import BoundaryManager, GeoLocatedManager, LocationManager
 # This is a hierarchical system for dividing up the territory.
 
 
-class BoundaryLayer(MP_Node, ParentManageableNodeMixin):
+class BoundaryLayer(ParentManageableNodeMixin, LifecycleModelMixin, MP_Node):
     class BoundaryType(models.TextChoices):
         ADMINISTRATIVE = "adm", _("Administrative")
         STATISTICAL = "sta", _("Statistical")
@@ -64,8 +72,13 @@ class BoundaryLayer(MP_Node, ParentManageableNodeMixin):
     node_order_by = ["name"]  # Needed for django-treebeard
 
     # Methods
-    def save(self, *args, **kwargs):
+    @hook(AFTER_UPDATE, when="boundary")
+    def update_descendants_boundaries(self):
+        # NOTE: update() does not call save method. So post_save, pre_save signals
+        #       will not be called for these cases.
+        self.get_descendants().update(boundary=self.boundary)
 
+    def save(self, *args, **kwargs):
         try:
             if not self.is_root() and (root := self.get_root()):
                 if self.boundary_type != root.boundary_type:
@@ -102,12 +115,6 @@ class BoundaryLayer(MP_Node, ParentManageableNodeMixin):
 
         super().save(*args, **kwargs)
 
-        # Make the descendants inherit same boundary as self.
-        if self.boundary:
-            # NOTE: update() does not call save method. So post_save, pre_save signals
-            #       will not be called for these cases.
-            self.get_descendants().update(boundary=self.boundary)
-
     # Meta and String
     class Meta:
         verbose_name = _("boundary layer")
@@ -129,7 +136,7 @@ class BoundaryLayer(MP_Node, ParentManageableNodeMixin):
         return f"{self.boundary_type}{self.level}: {self.name}"
 
 
-class Boundary(MP_Node, ParentManageableNodeMixin):
+class Boundary(ParentManageableNodeMixin, MP_Node):
     # Relations
     boundary_layer = models.ForeignKey(
         BoundaryLayer, on_delete=models.CASCADE, related_name="boundaries"
@@ -172,14 +179,26 @@ class Boundary(MP_Node, ParentManageableNodeMixin):
 
         # Updating geometry if it has been manually set.
         if "geometry" in self.__dict__.keys():
-            # If geometry has changed or been called
-            current_geometry = self.get_geometry()
+            old_geometry = self.get_geometry()
+            new_geometry = self.__dict__["geometry"]
 
-            if current_geometry is None or not self.geometry.equals(current_geometry):
-                # If current geometry is not set OR is different.
-                BoundaryGeometry.objects.update_or_create(
-                    defaults={"geometry": self.geometry}, boundary=self
-                )
+            if new_geometry:
+                if old_geometry:
+                    if not new_geometry.equals(old_geometry):
+                        geom_model = self.geometry_model
+                        geom_model.geometry = new_geometry
+                        geom_model.save()
+
+                        # Deleting cached property
+                        del self.geometry
+                else:
+                    BoundaryGeometry.objects.create(
+                        boundary=self, geometry=new_geometry
+                    )
+                    # Deleting cached property
+                    del self.geometry
+            else:
+                BoundaryGeometry.objects.filter(boundary=self).delete()
                 # Deleting cached property
                 del self.geometry
 
@@ -216,41 +235,46 @@ class BoundaryGeometry(LifecycleModel):
 
     # Attributes - Mandatory
     created_at = models.DateTimeField(auto_now_add=True)
-    geometry = models.MultiPolygonField(geography=True)
+    geometry = models.MultiPolygonField(geography=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     # Attributes - Optional
     # Object Manager
     # Custom Properties
     # Methods
+    def __init__(self, *args, **kwargs):
+        geometry = kwargs.get("geometry", None)
+        if geometry and isinstance(geometry, geos.Polygon):
+            kwargs.update({"geometry": geos.MultiPolygon(geometry)})
+        super().__init__(*args, **kwargs)
+
+    @hook(BEFORE_CREATE)
+    @hook(BEFORE_UPDATE, when="geometry", has_changed=True)
+    def _validate_geometry(self):
+        # if geom is a Polygon, make it into a MultiPolygon
+        if self.geometry:
+            if self.geometry.empty:
+                raise ValueError("The new geometry can not be empty.")
+
     @hook(AFTER_UPDATE, when="geometry", has_changed=True)
     def update_linked_location(self):
         # Get Location objects linked to this Boundary, and which point now rest outside
         # the boundary.
         loc_qs = Location.objects.filter(
             boundaries=self.boundary
-        ).filter_by_polygon_intersection(boundaries=self.geometry, negate=True)
+        ).filter_by_polygon_intersection(polygon=self.geometry, negate=True)
         for loc in loc_qs.all():
             loc.boundaries.remove(self.boundary)
 
         self._link_boundary_to_location()
 
+    @hook(AFTER_CREATE)
     def _link_boundary_to_location(self):
-        loc_qs = Location.objects.filter_by_polygon_intersection(self.geometry).exclude(
-            boundaries=self.boundary
-        )
+        loc_qs = Location.objects.filter_by_polygon_intersection(
+            polygon=self.geometry
+        ).exclude(boundaries=self.boundary)
         for loc in loc_qs.all():
             loc.boundaries.add(self.boundary)
-
-    def save(self, *args, **kwargs):
-        # if geom is a Polygon, make it into a MultiPolygon
-        if self.geometry and isinstance(self.geometry, geos.Polygon):
-            self.geometry = geos.MultiPolygon(self.geometry)
-
-        if self._state.adding:
-            self._link_boundary_to_location()
-
-        super().save(*args, **kwargs)
 
     # Meta and String
     class Meta:
@@ -268,7 +292,7 @@ class Location(LifecycleModel):
     boundaries = models.ManyToManyField(Boundary, blank=True, related_name="locations")
 
     # Attributes - Mandatory
-    point = models.PointField(geography=True)
+    point = models.PointField(geography=False)
     location_type = models.CharField(
         max_length=3, choices=LocationType.choices, null=True, blank=True
     )
@@ -280,24 +304,10 @@ class Location(LifecycleModel):
 
     # Custom Properties
     # Methods
+    @hook(AFTER_CREATE)
     @hook(AFTER_UPDATE, when="point", has_changed=True)
     def update_linked_boundaries(self):
-        self._recompute_boundaries()
-
-    def _recompute_boundaries(self):
-        # TODO check if signals are sent. otherwise, manually add/delete
         self.boundaries.set(Boundary.objects.reverse_geocoding(point=self.point).all())
-
-    def save(self, *args, **kwargs) -> None:
-
-        is_adding = self._state.adding
-
-        super().save(*args, **kwargs)
-
-        # On create: Adding boundaries to this location
-        if is_adding:
-            # TODO: make async
-            self._recompute_boundaries()
 
     # Meta and String
     class Meta:
@@ -305,15 +315,13 @@ class Location(LifecycleModel):
         verbose_name_plural = _("locations")
 
     def __str__(self) -> str:
-        return (
-            f"{str(self.point)} ({self.location_type})"
-            if self.location_type
-            else str(self.point)
-        )
+        result = f"{str(self.point.coords)}"
+        if self.location_type:
+            result = result + f" ({self.location_type})"
+        return result
 
 
 class GeoLocatedModel(models.Model):
-
     # Relations
     location = models.OneToOneField(
         Location,

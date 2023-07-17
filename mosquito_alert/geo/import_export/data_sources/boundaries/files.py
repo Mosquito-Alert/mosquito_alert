@@ -6,7 +6,6 @@ from urllib.parse import urlencode, urlparse
 
 
 class GdalVirtualFileHandler(ABC):
-
     SYNTAX = "/{name}/{uri}"
 
     @classmethod
@@ -34,7 +33,12 @@ class GdalVirtualFileHandler(ABC):
     def format_syntax(cls, name, **kwargs):
         return cls.SYNTAX.format(name=name, **kwargs)
 
-    def get_vsi_path(self, uri=None):
+    def _validate_uri(cls, uri):
+        if not cls.matches_uri(uri=uri):
+            raise ValueError(f"Scheme for {uri} is not supported in {cls}")
+
+    def get_vsi_path(self, uri):
+        self._validate_uri(uri=uri)
         return self.format_syntax(name=self.NAME, uri=uri, **self.options)
 
 
@@ -42,19 +46,21 @@ class OnlineGdalFileHandler(GdalVirtualFileHandler):
     # See: https://gdal.org/user/virtual_file_systems.html#vsicurl-http-https-ftp-files-random-access
 
     NAME = "vsicurl"
-    SYNTAX = "/{name}{url_encoded_params}/{url}"
+    SYNTAX = "/{name}{url_encoded_params}{url}"
     ALLOWED_SCHEMES = ("http", "https", "ftp")
 
     @classmethod
     def format_syntax(cls, name, uri, **kwargs):
+        url_encoded_params = ""
         if kwargs:
             # Add url param with the path if other params
-            kwargs["url"] = uri
+            url_encoded_params = "?" + urlencode(kwargs)
+            url_encoded_params += f"&url={uri}"
 
         return super().format_syntax(
             name=name,
-            url_encoded_params="?" + urlencode(kwargs) if kwargs else "",
-            url=kwargs.get("url") or uri,
+            url="/" + uri if not url_encoded_params else "",
+            url_encoded_params=url_encoded_params,
         )
 
 
@@ -71,7 +77,8 @@ class BucketGdalFileHandler(GdalVirtualFileHandler):
 
     SYNTAX = "/{name}/{uri}"
 
-    def get_vsi_path(self, uri=None):
+    def get_vsi_path(self, uri):
+        self._validate_uri(uri=uri)
         parsed = urlparse(uri)
         bucket_type = parsed.scheme
         logging.debug(f"Detected {bucket_type} bucket")
@@ -106,19 +113,20 @@ class CompressedGdalFile(GdalVirtualFileHandler):
     @classmethod
     def guess_compression_type(cls, uri):
         logging.debug(f"Guessing compression type for {uri}")
-        mime_type, _ = mimetypes.guess_type(url=uri)
+        mime_type, encoding = mimetypes.guess_type(url=uri)
         logging.debug(f"mimetype is {mime_type}")
 
         if mime_type is None:
-            return None
+            return encoding
 
         extension = mimetypes.guess_extension(type=mime_type)
         try:
-            result = cls.INFER_COMPRESSION_DICT[extension]
-            logging.debug(f"Compression type is {result}")
+            return cls.INFER_COMPRESSION_DICT[extension]
         except KeyError:
-            return None
-        return result
+            if encoding:
+                return encoding
+            else:
+                return None
 
     @classmethod
     def matches_uri(cls, uri):
@@ -128,18 +136,20 @@ class CompressedGdalFile(GdalVirtualFileHandler):
         """
         return cls.guess_compression_type(uri) in cls.ALLOWED_COMPRESSIONS
 
-    def get_vsi_path(self, path=None, dst_path=None, compression_type=None):
-        if compression_type and compression_type not in self.ALLOWED_COMPRESSIONS:
-            raise ValueError(
-                f"compression_type must be one of {self.ALLOWED_COMPRESSIONS}"
-            )
+    def get_vsi_path(self, path, dst_path=""):
+        self._validate_uri(uri=path)
 
-        if compression_type is None:
-            compression_type = self.guess_compression_type(uri=path)
+        compression_type = self.guess_compression_type(uri=path)
+
+        # Cas None to ""
+        dst_path = dst_path or ""
+        uri = path
+        if dst_path:
+            uri = os.path.join(path, dst_path.lstrip("/"))
 
         return self.format_syntax(
             name=self.NAME[compression_type],
-            uri=os.path.join(path, dst_path) if dst_path else path,
+            uri=uri,
             **self.options,
         )
 
@@ -161,10 +171,13 @@ def uri_to_vsi_path(uri: str, options={}) -> str:
 
     result = uri
     # regular URI
-    if OnlineGdalFileHandler.matches_uri(uri=uri):
-        result = OnlineGdalFileHandler(options=options).get_vsi_path(uri=uri)
-    elif BucketGdalFileHandler.matches_uri(uri=uri):
-        result = BucketGdalFileHandler(options=options).get_vsi_path(uri=uri)
+    if urlparse(url=uri).scheme:
+        if OnlineGdalFileHandler.matches_uri(uri=uri):
+            result = OnlineGdalFileHandler(options=options).get_vsi_path(uri=uri)
+        elif BucketGdalFileHandler.matches_uri(uri=uri):
+            result = BucketGdalFileHandler(options=options).get_vsi_path(uri=uri)
+        else:
+            raise ValueError("Uri does not matches any file handler.")
 
     if CompressedGdalFile.matches_uri(uri=result):
         result = CompressedGdalFile(options=options).get_vsi_path(

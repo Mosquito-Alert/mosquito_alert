@@ -12,9 +12,9 @@ class ZippedShapefileFormat(TablibFormat):
 
     def create_dataset(self, in_stream):
         """
-        Create dataset from given string.
+        Create dataset from given datasource stream.
         """
-        # Getting only first layer
+        # Getting only first layer from datasource
         layer = in_stream[0]
         dataset = tablib.Dataset(headers=layer.fields + ["geometry"])
 
