@@ -26,7 +26,6 @@ RUN pip wheel --wheel-dir /usr/src/app/wheels  \
 FROM python as python-run-stage
 
 LABEL org.opencontainers.image.source=https://github.com/Mosquito-Alert/mosquito_alert
-LABEL org.opencontainers.image.licenses=gpl-3.0
 
 ARG BUILD_ENVIRONMENT
 ARG APP_HOME=/app
