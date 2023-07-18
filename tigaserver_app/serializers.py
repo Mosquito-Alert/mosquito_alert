@@ -2,6 +2,7 @@ from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
+from tigacrafting.models import AimaAlertLog
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
@@ -425,6 +426,12 @@ class NotificationSerializer(serializers.ModelSerializer):
         #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
         #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
         fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'map_notification')
+
+
+class DataTableAimalertSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AimaAlertLog
+        fields = ('xvb','report','report_datetime','locCode','catId','species','certainty','status','hit','review_species','review_status','review_datetime')
 
 
 class DataTableNotificationSerializer(serializers.ModelSerializer):

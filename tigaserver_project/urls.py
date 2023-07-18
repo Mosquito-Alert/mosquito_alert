@@ -12,7 +12,7 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
 from tigaserver_app.views import lookup_photo
-from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages, expert_geo_report_assign, report_expiration
+from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages, expert_geo_report_assign, report_expiration, aimalog_datatable, aimalog
 from tigaserver_messages.views import compose_w_data, reply_w_data, compose
 from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
@@ -207,6 +207,8 @@ urlpatterns += i18n_patterns(
     path('notifications/list', notifications_table, name='notifications_table'),
     path('notifications/apilist', user_notifications_datatable, name='user_notifications_datatable'),
     path('notifications/detail/<int:notification_id>', notification_detail, name='notification_detail'),
+    path('aimalog/', aimalog, name='aimalog'),
+    path('aimalog/apilist/', aimalog_datatable, name='aimalog_datatable'),
 
     ## should stay out
     #url(r'^coveragestats/$', show_fix_users),

@@ -37,7 +37,7 @@ import django.utils.html
 from django.db import connection
 from itertools import chain
 from tigacrafting.messaging import send_message_android,send_message_ios
-from tigaserver_app.serializers import custom_render_notification, NotificationSerializer, DataTableNotificationSerializer
+from tigaserver_app.serializers import custom_render_notification, NotificationSerializer, DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
@@ -1978,6 +1978,10 @@ def notifications(request,user_uuid=None):
     return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
 
 @login_required
+def aimalog(request):
+    return render(request, 'tigacrafting/aimalog.html',{})
+
+@login_required
 def notifications_version_two(request,user_uuid=None):
     this_user = request.user
     this_user_is_notifier = this_user.groups.filter(name='expert_notifier').exists()
@@ -2085,6 +2089,16 @@ def generic_datatable_list_endpoint(request,search_field_list,queryset, classSer
         recordsFiltered = recordsTotal
 
     return Response({'draw': draw, 'recordsTotal': recordsTotal, 'recordsFiltered': recordsFiltered, 'data': serializer.data})
+
+@api_view(['GET'])
+def aimalog_datatable(request):
+    if request.method == 'GET':
+        search_field_list = ('xvb','report','report_datetime','locCode','catId','species','certainty','status','hit','review_species','review_status','review_datetime')
+        queryset = AimaAlertLog.objects.all()
+        field_translation_list = {'xvb':'xvb','report':'report','report_datetime':'report_datetime','locCode':'locCode','catId':'catId','species':'species','certainty':'certainty','status':'status','hit':'hit','review_species':'review_species','review_status':'review_status','review_datetime':'review_datetime'}
+        sort_translation_list = {'xvb':'xvb','report':'report','report_datetime':'report_datetime','locCode':'locCode','catId':'catId','species':'species','certainty':'certainty','status':'status','hit':'hit','review_species':'review_species','review_status':'review_status','review_datetime':'review_datetime'}
+        response = generic_datatable_list_endpoint(request, search_field_list, queryset, DataTableAimalertSerializer, field_translation_list, sort_translation_list)
+        return response
 
 @api_view(['GET'])
 def user_notifications_datatable(request):

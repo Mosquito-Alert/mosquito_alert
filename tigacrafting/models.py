@@ -545,7 +545,7 @@ class FavoritedReports(models.Model):
 
 class AimaAlertLog(models.Model):
     xvb = models.BooleanField('Stands for expert validation based - if True, means that the alert was sent after expert validation. For False, it was sent before')
-    report = models.ForeignKey('tigaserver_app.Report', related_name='alerts', help_text='Report related with the alert', on_delete=models.CASCADE)
+    report = models.CharField(help_text='Report related with the alert',max_length=40)
     report_datetime = models.DateTimeField()
     locCode = models.CharField('Locale code - can be either a nuts3 code, or a nuts3_natcode (natcode is a municipality code) for spanish reports',max_length=25)
     catId = models.IntegerField('aima species category id')
