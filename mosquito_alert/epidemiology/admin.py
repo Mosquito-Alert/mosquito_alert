@@ -1,10 +1,9 @@
 from django.contrib import admin
 from modeltranslation.admin import TranslationAdmin
 
-from mosquito_alert.taxa.admin import MonthlyDistributionAdmin
+from mosquito_alert.taxa.admin import SpecieDistributionAdmin
 
-from .models import Disease, DiseaseVector
-from .models import MonthlyDistribution as VectorMonthlyDistribution
+from .models import Disease, DiseaseVector, DiseaseVectorDistribution
 
 
 class DiseaseVectorsInlineAdmin(admin.TabularInline):
@@ -12,12 +11,14 @@ class DiseaseVectorsInlineAdmin(admin.TabularInline):
     extra = 0
 
 
+@admin.register(Disease)
 class DiseasesAdmin(TranslationAdmin):
     inlines = [
         DiseaseVectorsInlineAdmin,
     ]
 
 
+@admin.register(DiseaseVector)
 class DiseaseVectorsAdmin(admin.ModelAdmin):
     autocomplete_fields = ("taxon",)
     search_fields = ("taxon__name",)
@@ -37,11 +38,7 @@ class DiseaseVectorsAdmin(admin.ModelAdmin):
         return ", ".join([d.name for d in obj.diseases.all()])
 
 
-class VectorMonthlyDistributionAdmin(MonthlyDistributionAdmin):
+@admin.register(DiseaseVectorDistribution)
+class DiseaseVectorDistributionAdmin(SpecieDistributionAdmin):
     def has_add_permission(self, request) -> bool:
         return False
-
-
-admin.site.register(Disease, DiseasesAdmin)
-admin.site.register(DiseaseVector, DiseaseVectorsAdmin)
-admin.site.register(VectorMonthlyDistribution, VectorMonthlyDistributionAdmin)

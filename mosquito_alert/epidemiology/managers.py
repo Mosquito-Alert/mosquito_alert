@@ -1,7 +1,7 @@
 from django.db.models import Manager
 
 
-class MonthlyDistributionManager(Manager):
+class DiseaseVectorDistributionManager(Manager):
     def get_queryset(self):
         """Sets the custom queryset as the default."""
         return (

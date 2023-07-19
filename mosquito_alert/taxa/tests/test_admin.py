@@ -1,7 +1,10 @@
 from django.urls import reverse
 
+from mosquito_alert.geo.tests.factories import BoundaryFactory
+
 from ..admin import TaxonAdmin
-from ..models import Taxon
+from ..models import SpecieDistribution, Taxon
+from .factories import SpecieDistributionFactory
 
 
 class TestTaxonAdmin:
@@ -43,6 +46,88 @@ class TestTaxonAdmin:
         url = reverse(
             "admin:taxa_taxon_change",
             kwargs={"object_id": taxon_specie.pk},
+        )
+        response = admin_client.get(url)
+        assert response.status_code == 200
+
+
+class TestSpecieDistributionAdmin:
+    def test_changelist(self, admin_client):
+        url = reverse("admin:taxa_speciedistribution_changelist")
+        response = admin_client.get(url)
+        assert response.status_code == 200
+
+    def test_search(self, admin_client):
+        url = reverse("admin:taxa_speciedistribution_changelist")
+        response = admin_client.get(url, data={"q": "test"})
+        assert response.status_code == 200
+
+    def test_add(self, admin_client, taxon_specie):
+        url = reverse("admin:taxa_speciedistribution_add")
+        response = admin_client.get(url)
+        assert response.status_code == 200
+
+        assert SpecieDistribution.objects.all().count() == 0
+
+        boundary = BoundaryFactory()
+
+        data_source = SpecieDistribution.DataSource.SELF
+
+        response = admin_client.post(
+            url,
+            data={
+                "boundary": f"{boundary.pk}",
+                "taxon": f"{taxon_specie.pk}",
+                "source": {data_source.value},
+                "status": {SpecieDistribution.DistributionStatus.ABSENT.value},
+            },
+        )
+        assert response.status_code == 302
+        assert SpecieDistribution.objects.filter(boundary=boundary.pk, taxon=taxon_specie, source=data_source).exists()
+
+    def test_view(self, admin_client, taxon_specie):
+        distribution = SpecieDistributionFactory(taxon=taxon_specie)
+
+        url = reverse(
+            "admin:taxa_speciedistribution_change",
+            kwargs={"object_id": distribution.pk},
+        )
+        response = admin_client.get(url)
+        assert response.status_code == 200
+
+    def test_history(self, admin_client, taxon_specie):
+        distribution = SpecieDistributionFactory(taxon=taxon_specie)
+
+        url = reverse(
+            "admin:taxa_speciedistribution_history",
+            kwargs={"object_id": distribution.pk},
+        )
+        response = admin_client.get(url)
+        assert response.status_code == 200
+
+
+class TestSpecieDistributionHistoryAdmin:
+    def test_changelist(self, admin_client):
+        url = reverse("admin:taxa_historicalspeciedistribution_changelist")
+        response = admin_client.get(url)
+        assert response.status_code == 200
+
+    def test_search_is_by_parent_id(self, admin_client):
+        url = reverse("admin:taxa_historicalspeciedistribution_changelist")
+        response = admin_client.get(url, data={"q": "1"})
+        assert response.status_code == 200
+
+    def test_add_is_not_allowed(self, admin_client):
+        url = reverse("admin:taxa_historicalspeciedistribution_add")
+        response = admin_client.get(url)
+        assert response.status_code == 403
+
+    def test_view(self, admin_client, taxon_specie):
+        distribution = SpecieDistributionFactory(taxon=taxon_specie)
+
+        url = reverse(
+            "admin:taxa_historicalspeciedistribution_change",
+            kwargs={"object_id": distribution.history.first().pk},
         )
         response = admin_client.get(url)
         assert response.status_code == 200

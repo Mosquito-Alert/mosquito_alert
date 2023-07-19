@@ -96,6 +96,7 @@ THIRD_PARTY_APPS = [
     "nested_admin",
     "flag",
     "notifications",
+    "simple_history",
 ]
 
 LOCAL_APPS = [

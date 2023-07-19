@@ -3,7 +3,9 @@ from factory.django import DjangoModelFactory
 from faker import Faker
 from faker_biology.taxonomy import ModelOrganism
 
-from ..models import MonthlyDistribution, Taxon
+from mosquito_alert.geo.tests.factories import BoundaryFactory
+
+from ..models import SpecieDistribution, Taxon
 
 _bio_faker = Faker()
 _bio_faker.add_provider(ModelOrganism)
@@ -21,6 +23,13 @@ class TaxonFactory(DjangoModelFactory):
         django_get_or_create = ("name", "rank")
 
 
-class MonthlyDistributionFactory(DjangoModelFactory):
+class SpecieDistributionFactory(DjangoModelFactory):
+    boundary = factory.SubFactory(BoundaryFactory)
+    taxon = factory.SubFactory(TaxonFactory, rank=Taxon.TaxonomicRank.SPECIES)
+
+    source = factory.Faker("random_element", elements=SpecieDistribution.DataSource.values)
+    status = factory.Faker("random_element", elements=SpecieDistribution.DistributionStatus.values)
+
     class Meta:
-        model = MonthlyDistribution
+        model = SpecieDistribution
+        # django_get_or_create = ("boundary", "taxon", "source")

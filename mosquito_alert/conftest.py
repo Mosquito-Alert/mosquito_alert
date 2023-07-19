@@ -1,5 +1,7 @@
 import pytest
 
+from mosquito_alert.geo.models import BoundaryLayer
+from mosquito_alert.geo.tests.factories import BoundaryLayerFactory
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.taxa.tests.factories import TaxonFactory
 from mosquito_alert.users.models import User
@@ -24,3 +26,8 @@ def taxon_root(db):
 @pytest.fixture
 def taxon_specie(db, taxon_root):
     return TaxonFactory(rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
+
+
+@pytest.fixture()
+def country_bl(db):
+    return BoundaryLayerFactory(boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE, level=0, boundary=None)

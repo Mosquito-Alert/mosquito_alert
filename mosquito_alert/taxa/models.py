@@ -1,15 +1,15 @@
 from django.db import models
-from django.db.models import Count, Max, Q, Sum
+from django.db.models import Q
 from django.db.models.signals import ModelSignal
 from django.utils.translation import gettext_lazy as _
-from django_lifecycle import AFTER_UPDATE, LifecycleModel, hook
-from month.models import MonthField
+from django_lifecycle import AFTER_CREATE, AFTER_UPDATE, BEFORE_UPDATE, LifecycleModel, hook
 from treebeard.mp_tree import MP_Node
 
 from mosquito_alert.geo.models import Boundary
 from mosquito_alert.notifications.models import Notification
 from mosquito_alert.notifications.signals import notify_subscribers
 
+from ..utils.fields import ProxyAwareHistoricalRecords
 from ..utils.models import ParentManageableNodeMixin
 
 distribution_status_has_changed = ModelSignal()
@@ -77,45 +77,45 @@ class Taxon(ParentManageableNodeMixin, MP_Node):
         return f"{self.name} [{self.get_rank_display()}]"
 
 
-class MonthlyDistribution(LifecycleModel):
-    # TODO: See
-    #       * https://en.wikipedia.org/wiki/Slowly_changing_dimension
-    #       * https://dev.to/zhiyueyi/design-a-table-to-keep-historical-changes-in-database-10fn
-    #       * https://github.com/grantmcconnaughey/django-field-history/blob/master/field_history/models.py
-    #       * https://django-simple-history.readthedocs.io/en/latest/index.html
-    #       * https://github.com/MattWindsor91/django-lass-schedule/blob/master/schedule/models/timeslot.py
-    #       * django-fsm
-    #       * django-simple-history
-    # Despres de buscar, crec que el millor seria fer un SpeciesDistributionHistory SCD type2.
-    # El FSM nomes en cas que les alertes es tinguin que autoritzar per algu, llavors si que tenen
-    # estat.
-    """The manner in which a biological taxon is spatially arranged."""
+class SpecieDistribution(LifecycleModel):
+    class DataSource(models.TextChoices):
+        SELF = "self", "Mosquito Alert"
+        ECDC = "ecdc", _("European Centre for Disease Prevention and Control")
 
-    # TODO: duplicate previous month rows on first day of the month.
-
-    class DistributionStatus(models.IntegerChoices):
-        # NOTE: write in ascending status order!
-        ABSENT = 0, _("Absent")
-        INTRODUCED = 10, _("Introduced")
-        ESTABLISHED = 20, _("Established")
+    class DistributionStatus(models.TextChoices):
+        ABSENT = "abs", _("Absent")
+        REPORTED = "rep", _("Reported")
+        INTRODUCED = "int", _("Introduced")
+        ESTABLISHED = "est", _("Established")
 
     # Relations
-    # TODO: use unique_for_month instead of constraint?
-    boundary = models.ForeignKey(Boundary, on_delete=models.CASCADE, related_name="distribution")
-    taxon = models.ForeignKey(Taxon, on_delete=models.CASCADE, related_name="distribution")
+    boundary = models.ForeignKey(Boundary, on_delete=models.PROTECT, related_name="+")
+    taxon = models.ForeignKey(
+        Taxon,
+        limit_choices_to={"rank__gte": Taxon.TaxonomicRank.SPECIES_COMPLEX},
+        on_delete=models.PROTECT,
+        related_name="distribution",
+    )
 
     # Attributes - Mandatory
-    # TODO: add periodicity? It will let have monthly, weekly in same table
-    status = models.PositiveSmallIntegerField(choices=DistributionStatus.choices)
-    month = MonthField()
-    # TODO: add data-source?
+    source = models.CharField(max_length=8, choices=DataSource.choices)
+    status = models.CharField(max_length=3, choices=DistributionStatus.choices)
 
     # Attributes - Optional
+
     # Object Manager
     # Custom Properties
+    history = ProxyAwareHistoricalRecords(
+        inherit=True,
+        cascade_delete_history=True,
+        excluded_fields=["boundary", "taxon", "source"],  # Tracking status only
+    )
+
     # Methods
+    @hook(AFTER_CREATE)
     @hook(AFTER_UPDATE, when="status", has_changed=True)
     def notify_status_change(self):
+        # TODO: Change it, raise an alert.
         notify_subscribers.send(
             sender=self.taxon,
             verb="had its status updated to",
@@ -124,15 +124,18 @@ class MonthlyDistribution(LifecycleModel):
             status=self.status,
         )
 
+    @hook(AFTER_CREATE)
     @hook(AFTER_UPDATE, when="status", has_changed=True)
     def send_distributation_status_changed_signal(self):
+        # TODO: Remove: Use alert.
         distribution_status_has_changed.send(
             sender=self.__class__,
             instance=self,
             prev_status=self.initial_value(field_name="status"),
         )
 
-    @hook(AFTER_UPDATE, when="status", has_changed=True)
+    # TODO: Ask how to aggregate
+    # @hook(AFTER_UPDATE, when="status", has_changed=True)
     def update_relatives_on_status_change(self):
         # Update by boundary parent (same taxon)
         common_qs = self.__class__.objects.filter(
@@ -144,144 +147,36 @@ class MonthlyDistribution(LifecycleModel):
             future_distribution.save()
 
         if b_parent := self.boundary.parent:
-            ancestors_b_qs = common_qs.filter(
-                taxon=self.taxon,
-                boundary=b_parent,
-            )
+            ancestors_b_qs = common_qs.filter(taxon=self.taxon, boundary=b_parent, source=self.source)
             for ancestor_b in ancestors_b_qs:
                 ancestor_b.status = self.status
                 ancestor_b.save()
 
-        # Update by taxon parent (same boundary)
-        if t_parent := self.taxon.parent:
-            ancestors_t_qs = common_qs.filter(
-                taxon=t_parent,
-                boundary=self.boundary,
-            )
-            for ancestor_t in ancestors_t_qs:
-                ancestor_t.status = self.status
-                ancestor_t.save()
+    @hook(BEFORE_UPDATE, when="status", has_changed=False)
+    def _disable_history_record(self):
+        # See: django-simple-history docu
+        self.skip_history_when_saving = True
 
-    def _get_inherited_status(self):
-        # If any taxon/boundary descendant is found, use its status.
-        qs = self.__class__.objects.filter(month__lte=self.month)
+    def save(self, *args, **kwargs):
+        if hasattr(self, "taxon") and not self.taxon.is_specie:
+            raise ValueError("Taxon must be species rank.")
 
-        q_boundary = Q(boundary=self.boundary)
-        if b_descendants := self.boundary.get_descendants():
-            q_boundary = q_boundary | Q(boundary__in=b_descendants)
-        qs = qs.filter(q_boundary)
-
-        q_taxon = Q(taxon=self.taxon)
-        if t_descendants := self.taxon.get_descendants():
-            q_taxon = q_taxon | Q(taxon__in=t_descendants)
-        qs = qs.filter(q_taxon)
-
-        if self.pk:
-            qs = qs.exclude(pk=self.pk)
-
-        result = qs.annotate(max_status=Max("status")).values("month", "max_status").order_by("month").last()
-
-        return result
-
-    def recompute_status(self, commit=True):
-        # NOTE: placing import here to avoid circular import
-        from mosquito_alert.reports.models import IndividualReport
-
-        # TODO: Make new rules. Only for demo purposes.
-        # Getting the IndividualReports of interest:
-        #     * Report observation date previous than self.month
-        #     * Report location is self.boundary (or descendat)
-        #     * Individal has been marked as indentified
-        #     * The taxon assigned to individual is self.taxon
-        report_qs = (
-            IndividualReport.objects.filter(
-                observed_at__month__lte=self.month.month,
-                observed_at__year__lte=self.month.year,
-                individual__taxon__isnull=False,
-            )
-            .filter(Q(individual__taxon=self.taxon) | Q(individual__taxon__in=self.taxon.get_descendants()))
-            .filter_by_boundary(boundaries=self.boundary, include_descendants=True)
-        )
-        num_results = report_qs.annotate(num_of_individual=Count("individual")).aggregate(
-            total_individuals=Sum("num_of_individual", default=0)
-        )["total_individuals"]
-
-        result = self.DistributionStatus.ABSENT
-        if num_results > 0:
-            result = self.DistributionStatus.INTRODUCED
-        elif num_results > 5:
-            result = self.DistributionStatus.ESTABLISHED
-
-        if self.status is None or result > self.status:
-            self.status = result
-            if commit:
-                self.save()
-
-    def save(self, *args, **kwargs) -> None:
-        if self.status is None:
-            self.recompute_status(commit=False)
-
-        if self._state.adding:
-            # Create new for boundary parent (same taxon)
-            if b_parent := self.boundary.parent:
-                _ = self.__class__.objects.update_or_create(
-                    taxon=self.taxon,
-                    boundary=b_parent,
-                    month=self.month,
-                    defaults=dict(
-                        status=self.status,
-                    ),
-                )
-
-            # Create new for taxon parent (same boundary)
-            if t_parent := self.taxon.parent:
-                _ = self.__class__.objects.update_or_create(
-                    taxon=t_parent,
-                    boundary=self.boundary,
-                    month=self.month,
-                    defaults=dict(
-                        status=self.status,
-                    ),
-                )
-
-        if self.has_changed("status"):
-            affected_instances_qs = self.__class__.objects.filter(
-                month__gte=self.month,
-                status__gt=self.status,
-            ).filter(
-                Q(boundary__in=self.boundary.get_children())
-                | Q(boundary=self.boundary)
-                | Q(taxon__in=self.taxon.get_children())
-                | Q(taxon=self.taxon)
-            )
-
-            if affected_instances_qs.count():
-                raise ValueError(
-                    f"Can not change {self.boundary} status to {self.get_status_display()}."
-                    "It is lower than any of its relatives' status."
-                )
-
-        # TODO: discuss if a status can go backward.
-        #       If True, needs to check when adding new status.
-        # Getting previous month's status
-        # previous_status = self.__class__.objects.filter(
-        #     boundary=self.boundary,
-        #     taxon=self.taxon,
-        #     month=self.month - 1
-        # ).values_list('status', flat=True).first()
-
-        super().save(*args, **kwargs)
+        try:
+            super().save(*args, **kwargs)
+        finally:
+            if hasattr(self, "skip_history_when_saving"):
+                del self.skip_history_when_saving
 
     # Meta and String
     class Meta:
-        verbose_name = _("monthly distribution")
-        verbose_name_plural = _("monthly distributions")
+        verbose_name = _("specie distribution")
+        verbose_name_plural = _("species distribution")
         constraints = [
-            models.UniqueConstraint(
-                fields=["boundary", "taxon", "month"],
-                name="unique_taxon_boundary_month",
-            )
+            models.UniqueConstraint(fields=["boundary", "taxon", "source"], name="unique_boundary_taxon_source"),
         ]
 
     def __str__(self) -> str:
-        return f"[{self.boundary}] {self.taxon} ({self.month}): {self.get_status_display()}"
+        # See: https://github.com/jazzband/django-simple-history/issues/533
+        #      https://github.com/jazzband/django-simple-history/issues/521
+        # return f"[{self.get_source_display()}]: {self.get_status_display()}"
+        return super().__str__()
