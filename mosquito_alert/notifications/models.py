@@ -52,9 +52,7 @@ class NotificationSubscription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     # Attributes - Optional
-    level = models.CharField(
-        choices=Notification.LEVELS, max_length=20, null=True, blank=True
-    )
+    level = models.CharField(choices=Notification.LEVELS, max_length=20, null=True, blank=True)
 
     # Object Manager
     objects = NotificationSubscriptionManager()

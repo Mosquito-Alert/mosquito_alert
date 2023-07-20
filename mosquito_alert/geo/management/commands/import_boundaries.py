@@ -18,18 +18,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         boundary_layer_group = parser.add_argument_group("Boundary layer")
-        boundary_layer_group.add_argument(
-            "--bl_pk", type=int, help="Assign a boundary layer already found in the DB."
-        )
+        boundary_layer_group.add_argument("--bl_pk", type=int, help="Assign a boundary layer already found in the DB.")
         boundary_layer_group.add_argument(
             "--bl_type",
             type=str,
             choices=BoundaryLayer.BoundaryType.values,
             help="Assign a boundary layer type.",
         )
-        boundary_layer_group.add_argument(
-            "--bl_level", type=int, help="Assign a boundary layer level."
-        )
+        boundary_layer_group.add_argument("--bl_level", type=int, help="Assign a boundary layer level.")
         boundary_layer_group.add_argument(
             "--bl_boundary_pk",
             type=int,
@@ -61,9 +57,7 @@ class Command(BaseCommand):
         subparser = parser.add_subparsers(title="source", dest="source", required=True)
 
         for s in BOUNDARY_SOURCES:
-            s_parser = subparser.add_parser(
-                s.CLI_NAME, formatter_class=argparse.ArgumentDefaultsHelpFormatter
-            )
+            s_parser = subparser.add_parser(s.CLI_NAME, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
             s_parser.set_defaults(**{subparser.dest: s})
             s.add_arguments(s_parser)
 
@@ -77,9 +71,7 @@ class Command(BaseCommand):
 
         if options.get("bl_pk", None) is None:
             if None in itemgetter("bl_type", "bl_level")(options):
-                raise ValueError(
-                    "Either bl_pk or all [bl_type, bl_level] values must be set."
-                )
+                raise ValueError("Either bl_pk or all [bl_type, bl_level] values must be set.")
 
         sp = transaction.savepoint()
         logging.debug("Saved transaction savepoint.")
@@ -98,9 +90,7 @@ class Command(BaseCommand):
         else:
             _boundary_owner = None
             if options.get("bl_boundary_pk"):
-                _boundary_owner = Boundary.objects.filter(
-                    pk=options.get("bl_boundary_pk")
-                ).first()
+                _boundary_owner = Boundary.objects.filter(pk=options.get("bl_boundary_pk")).first()
             boundary_layer = BoundaryLayer(
                 boundary=_boundary_owner,
                 boundary_type=options.get("bl_type"),
@@ -121,11 +111,7 @@ class Command(BaseCommand):
             boundary_layer.save()
 
         logging.info(f"Using boundary_layer with pk {boundary_layer.pk}")
-        logging.info(
-            "Using boundary_layer parent with pk {}".format(
-                getattr(boundary_layer.parent, "pk", None)
-            )
-        )
+        logging.info("Using boundary_layer parent with pk {}".format(getattr(boundary_layer.parent, "pk", None)))
 
         result = self._do_import(
             boundary_ds=data_source,

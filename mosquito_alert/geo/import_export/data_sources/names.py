@@ -17,11 +17,7 @@ from geopy.geocoders import Nominatim
 from geopy.point import Point as GeopyPoint
 
 from .base import BaseDataSource, DownloadableDataSource
-from .utils import (
-    get_biggest_polygon,
-    get_country_from_iso_code,
-    get_language_from_iso_code,
-)
+from .utils import get_biggest_polygon, get_country_from_iso_code, get_language_from_iso_code
 
 LOCATION_CATEGORY_COUNTRY = "country"  # LEVEL 0
 LOCATION_CATEGORY_STATE = "state"  # LEVEL 1
@@ -67,9 +63,7 @@ class BaseBoundaryNameDataSource(BaseDataSource, ABC):
 
     @classmethod
     def add_arguments(cls, parser):
-        parser.add_argument(
-            "-l", "--location_type", choices=cls.LOCATION_DICT.keys(), required=False
-        )
+        parser.add_argument("-l", "--location_type", choices=cls.LOCATION_DICT.keys(), required=False)
 
         cls._add_custom_arguments(parser=parser)
 
@@ -84,9 +78,7 @@ class BaseBoundaryNameDataSource(BaseDataSource, ABC):
             raise ValueError(f"Location type must be one of {cls.LOCATION_DICT.keys()}")
 
     @abstractmethod
-    def reverse(
-        self, geometry, location_type, language_iso="en", exactly_one=True
-    ) -> Location:
+    def reverse(self, geometry, location_type, language_iso="en", exactly_one=True) -> Location:
         return NotImplementedError
 
 
@@ -107,9 +99,7 @@ class NominatimDataSource(BaseBoundaryNameDataSource):
 
     def __init__(self, **kwargs) -> None:
         geolocator = Nominatim(
-            user_agent="mosquito_alert_{rnd_str}".format(
-                rnd_str="".join(random.choices(string.ascii_letters, k=5))
-            )
+            user_agent="mosquito_alert_{rnd_str}".format(rnd_str="".join(random.choices(string.ascii_letters, k=5)))
         )
 
         self._reverse_func = RateLimiter(geolocator.reverse, min_delay_seconds=1)
@@ -133,11 +123,7 @@ class NominatimDataSource(BaseBoundaryNameDataSource):
         point = GeopyPoint(latitude=geometry_point.y, longitude=geometry_point.x)
 
         language_iso = get_language_from_iso_code(language_iso=language_iso)
-        language_iso = (
-            language_iso.alpha_2
-            if hasattr(language_iso, "alpha_2")
-            else language_iso.alpha_3
-        )
+        language_iso = language_iso.alpha_2 if hasattr(language_iso, "alpha_2") else language_iso.alpha_3
         result = self._reverse_func(
             query=point,
             exactly_one=exactly_one,
@@ -290,9 +276,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
             **kwargs,
         )
 
-    def __init__(
-        self, geonames_filepath, alternate_names_filepath, filters={}, **kwargs
-    ) -> None:
+    def __init__(self, geonames_filepath, alternate_names_filepath, filters={}, **kwargs) -> None:
         # Super init. TODO multiple file_path?
         super().__init__(file_path=None)
 
@@ -374,9 +358,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
 
         return data
 
-    def reverse(
-        self, geometry, location_type, language_iso="en", exactly_one=True
-    ) -> Location:
+    def reverse(self, geometry, location_type, language_iso="en", exactly_one=True) -> Location:
         result_ids = self.get_ids_by_region(
             geometry=geometry,
             **{"featurecode": self.get_field_by_location_type(value=location_type)},
@@ -471,9 +453,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
             except AttributeError:
                 pass
 
-            df_filtered = self.df.loc[
-                (id_filter) & (self.df["isolanguage"].isin(language_iso_list)),
-            ]
+            df_filtered = self.df.loc[(id_filter) & (self.df["isolanguage"].isin(language_iso_list)),]
         else:
             df_filtered = self.df.loc[(id_filter) & (self.df["isolanguage"].isnull()),]
 
@@ -506,9 +486,7 @@ class GeonamesDataSource(BaseBoundaryNameDataSource, DownloadableDataSource):
             matches = data[data["name"].str.contains(name, case=False, na=False)]
         else:
             # Use difflib to find matches
-            diffs = difflib.get_close_matches(
-                name, data["name"].tolist(), n=1, cutoff=0
-            )
+            diffs = difflib.get_close_matches(name, data["name"].tolist(), n=1, cutoff=0)
             matches = data[data["name"] == diffs[0]]
 
         for index, result in matches.iterrows():

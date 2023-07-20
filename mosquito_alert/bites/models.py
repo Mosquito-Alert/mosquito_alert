@@ -15,9 +15,7 @@ class Bite(models.Model):
         RIGHT_LEG = "RL", _("Right leg")
 
     # Relations
-    individual = models.ForeignKey(
-        Individual, null=True, blank=True, on_delete=models.PROTECT
-    )
+    individual = models.ForeignKey(Individual, null=True, blank=True, on_delete=models.PROTECT)
 
     # Attributes - Mandatory
     datetime = models.DateTimeField(auto_now_add=True)

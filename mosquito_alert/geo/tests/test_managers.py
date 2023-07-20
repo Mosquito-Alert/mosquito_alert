@@ -2,12 +2,7 @@ import pytest
 from django.contrib.gis.geos import MultiPoint, MultiPolygon, Point, Polygon
 
 from ..models import Boundary
-from .factories import (
-    BoundaryFactory,
-    BoundaryFactoryWithGeometry,
-    DummyGeoLocatedModelFactory,
-    LocationFactory,
-)
+from .factories import BoundaryFactory, BoundaryFactoryWithGeometry, DummyGeoLocatedModelFactory, LocationFactory
 
 
 def create_multipolygon_from_bbox(bbox):
@@ -26,16 +21,12 @@ def large_multipolygon():
 
 @pytest.fixture()
 def small_boundary(country_bl, small_multipolygon):
-    return BoundaryFactoryWithGeometry(
-        boundary_layer=country_bl, geometry_model__geometry=small_multipolygon
-    )
+    return BoundaryFactoryWithGeometry(boundary_layer=country_bl, geometry_model__geometry=small_multipolygon)
 
 
 @pytest.fixture()
 def large_boundary(country_bl, large_multipolygon):
-    return BoundaryFactoryWithGeometry(
-        boundary_layer=country_bl, geometry_model__geometry=large_multipolygon
-    )
+    return BoundaryFactoryWithGeometry(boundary_layer=country_bl, geometry_model__geometry=large_multipolygon)
 
 
 @pytest.mark.django_db
@@ -83,16 +74,12 @@ class TestBoundaryManager:
 
         boundary_a = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
         boundary_b = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=b_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
         assert list(self.objects.reverse_geocoding(point=point_in_a)) == [boundary_a]
@@ -112,32 +99,22 @@ class TestBoundaryManager:
 
         boundary_a = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
         boundary_b = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=b_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
-        assert list(self.objects.reverse_geocoding(point=multipoint_a_out)) == [
-            boundary_a
-        ]
-        assert frozenset(
-            list(self.objects.reverse_geocoding(point=multipoint_a_b))
-        ) == frozenset(
+        assert list(self.objects.reverse_geocoding(point=multipoint_a_out)) == [boundary_a]
+        assert frozenset(list(self.objects.reverse_geocoding(point=multipoint_a_b))) == frozenset(
             [
                 boundary_b,
                 boundary_a,
             ]
         )
-        assert list(self.objects.reverse_geocoding(point=multipoint_b_out)) == [
-            boundary_b
-        ]
+        assert list(self.objects.reverse_geocoding(point=multipoint_b_out)) == [boundary_b]
 
     def test_fuzzy_reverse_polygon_geocoding_should_raise_nonpolygon_input(self):
         with pytest.raises(ValueError):
@@ -156,28 +133,17 @@ class TestBoundaryManager:
 
         boundary_a = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
         boundary_b = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=b_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
-        assert list(
-            self.objects.fuzzy_reverse_polygon_geocoding(polygon=polygon_in_a)
-        ) == [boundary_a]
-        assert list(
-            self.objects.fuzzy_reverse_polygon_geocoding(polygon=polygon_in_b)
-        ) == [boundary_b]
-        assert (
-            list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=polygon_outside))
-            == []
-        )
+        assert list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=polygon_in_a)) == [boundary_a]
+        assert list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=polygon_in_b)) == [boundary_b]
+        assert list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=polygon_outside)) == []
 
     def test_fuzzy_reverse_polygon_geocoding_multi_polygon(self, country_bl):
         a_bbox = (0, 0, 10, 10)  # x0, y0, x1, y1
@@ -192,32 +158,22 @@ class TestBoundaryManager:
 
         boundary_a = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
         boundary_b = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=b_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
-        assert list(
-            self.objects.fuzzy_reverse_polygon_geocoding(polygon=multipoly_a_out)
-        ) == [boundary_a]
-        assert frozenset(
-            list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=multipoly_a_b))
-        ) == frozenset(
+        assert list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=multipoly_a_out)) == [boundary_a]
+        assert frozenset(list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=multipoly_a_b))) == frozenset(
             [
                 boundary_b,
                 boundary_a,
             ]
         )
-        assert list(
-            self.objects.fuzzy_reverse_polygon_geocoding(polygon=multipoly_b_out)
-        ) == [boundary_b]
+        assert list(self.objects.fuzzy_reverse_polygon_geocoding(polygon=multipoly_b_out)) == [boundary_b]
 
 
 @pytest.mark.django_db
@@ -238,24 +194,18 @@ class TestLocationManager:
 
         boundary_a = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
         boundary_a_child = BoundaryFactoryWithGeometry(
             parent=boundary_a,
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_child_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_child_bbox), srid=4326),
         )
 
         boundary_b = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=b_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
         model_qs = factory_cls._meta.model.objects.all()
@@ -265,26 +215,11 @@ class TestLocationManager:
 
         boundary_a.refresh_from_db()
 
-        assert list(
-            model_qs.filter_by_boundary(
-                boundaries=boundary_a, include_descendants=False
-            )
-        ) == [loc_in_a]
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_a, include_descendants=False)) == [loc_in_a]
 
-        assert list(
-            model_qs.filter_by_boundary(
-                boundaries=boundary_a_child, include_descendants=False
-            )
-        ) == [loc_in_a]
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_a_child, include_descendants=False)) == [loc_in_a]
 
-        assert (
-            list(
-                model_qs.filter_by_boundary(
-                    boundaries=boundary_b, include_descendants=False
-                )
-            )
-            == []
-        )
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_b, include_descendants=False)) == []
 
     def test_filter_by_boundary_with_descendants(self, factory_cls, country_bl):
         a_bbox = (0, 0, 10, 10)  # x0, y0, x1, y1
@@ -295,24 +230,18 @@ class TestLocationManager:
 
         boundary_a = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
         boundary_a_child = BoundaryFactoryWithGeometry(
             parent=boundary_a,
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=a_child_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_child_bbox), srid=4326),
         )
 
         boundary_b = BoundaryFactoryWithGeometry(
             boundary_layer=country_bl,
-            geometry_model__geometry=MultiPolygon(
-                Polygon.from_bbox(bbox=b_bbox), srid=4326
-            ),
+            geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
         model_qs = factory_cls._meta.model.objects.all()
@@ -322,39 +251,19 @@ class TestLocationManager:
 
         boundary_a.refresh_from_db()
 
-        assert (
-            list(
-                model_qs.filter_by_boundary(
-                    boundaries=boundary_a, include_descendants=False
-                )
-            )
-            == []
-        )
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_a, include_descendants=False)) == []
 
-        assert list(
-            model_qs.filter_by_boundary(
-                boundaries=boundary_a_child, include_descendants=False
-            )
-        ) == [loc_in_a_child]
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_a_child, include_descendants=False)) == [
+            loc_in_a_child
+        ]
 
-        assert list(
-            model_qs.filter_by_boundary(boundaries=boundary_a, include_descendants=True)
-        ) == [loc_in_a_child]
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_a, include_descendants=True)) == [loc_in_a_child]
 
-        assert list(
-            model_qs.filter_by_boundary(
-                boundaries=boundary_a_child, include_descendants=True
-            )
-        ) == [loc_in_a_child]
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_a_child, include_descendants=True)) == [
+            loc_in_a_child
+        ]
 
-        assert (
-            list(
-                model_qs.filter_by_boundary(
-                    boundaries=boundary_b, include_descendants=True
-                )
-            )
-            == []
-        )
+        assert list(model_qs.filter_by_boundary(boundaries=boundary_b, include_descendants=True)) == []
 
     def test_filter_by_polygon_intersection(self, factory_cls):
         a_poly = Polygon.from_bbox(bbox=(0, 0, 10, 10))
@@ -367,9 +276,7 @@ class TestLocationManager:
 
         model_qs = factory_cls._meta.model.objects.all()
 
-        assert list(
-            model_qs.filter_by_polygon_intersection(polygon=a_poly, negate=False)
-        ) == [loc_in_a]
+        assert list(model_qs.filter_by_polygon_intersection(polygon=a_poly, negate=False)) == [loc_in_a]
 
     def test_negate_filter_by_polygon_intersection(self, factory_cls):
         a_poly = Polygon.from_bbox(bbox=(0, 0, 10, 10))
@@ -382,9 +289,7 @@ class TestLocationManager:
 
         model_qs = factory_cls._meta.model.objects.all()
 
-        assert list(
-            model_qs.filter_by_polygon_intersection(polygon=a_poly, negate=True)
-        ) == [loc_out_a]
+        assert list(model_qs.filter_by_polygon_intersection(polygon=a_poly, negate=True)) == [loc_out_a]
 
     def test_first_by_distance(self, factory_cls):
         query_point = Point(0, 0, srid=4326)
@@ -432,20 +337,10 @@ class TestLocationManager:
 
         model_qs = factory_cls._meta.model.objects.all()
 
-        assert list(
-            model_qs.within_circle(
-                center_point=point_b, radius_meters=distance_between_points / 2
-            )
-        ) == [loc_b]
+        assert list(model_qs.within_circle(center_point=point_b, radius_meters=distance_between_points / 2)) == [loc_b]
 
         assert frozenset(
-            list(
-                model_qs.within_circle(
-                    center_point=point_a_b_mid, radius_meters=distance_between_points
-                )
-            )
+            list(model_qs.within_circle(center_point=point_a_b_mid, radius_meters=distance_between_points))
         ) == frozenset([loc_a, loc_b, loc_a_b_mid])
 
-        assert (
-            list(model_qs.within_circle(center_point=point_out, radius_meters=0)) == []
-        )
+        assert list(model_qs.within_circle(center_point=point_out, radius_meters=0)) == []

@@ -4,10 +4,7 @@ from operator import itemgetter
 from import_export import fields, widgets
 from tqdm import tqdm
 
-from ...utils.import_export.resources import (
-    ParentManageableModelResource,
-    TranslationModelResourceMixin,
-)
+from ...utils.import_export.resources import ParentManageableModelResource, TranslationModelResourceMixin
 from ..models import Boundary, BoundaryGeometry, BoundaryLayer
 from .widgets import GeoWidget
 
@@ -62,9 +59,7 @@ class BoundaryResource(ParentManageableModelResource, TranslationModelResourceMi
         code_fieldname = kwargs.pop("code_fieldname", None)
 
         if boundary_layer:
-            dataset.append_col(
-                [boundary_layer.pk] * len(dataset), header="boundary_layer__pk"
-            )
+            dataset.append_col([boundary_layer.pk] * len(dataset), header="boundary_layer__pk")
 
             self._parent_boundary_layer = boundary_layer.parent
 
@@ -78,9 +73,7 @@ class BoundaryResource(ParentManageableModelResource, TranslationModelResourceMi
     def before_import_row(self, row, row_number=None, **kwargs):
         if self.progress_bar:
             # Update progress_bar
-            self.progress_bar.set_description(
-                desc=self._get_descriptor_name_from_row(row=row) or str(row_number)
-            )
+            self.progress_bar.set_description(desc=self._get_descriptor_name_from_row(row=row) or str(row_number))
 
         if not row[self.fields["parent"].column_name] and self._parent_boundary_layer:
             if row[self.fields["geometry"].column_name]:

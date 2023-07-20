@@ -77,4 +77,3 @@ release: login  ## Make current docker tag to be retagged as 'latest'.
 	docker pull $(REPOSITORY):$(TAG)
 	docker tag  $(REPOSITORY):$(TAG) $(REPOSITORY):$(RELEASE_TAG)
 	docker push $(REPOSITORY):$(RELEASE_TAG)
-

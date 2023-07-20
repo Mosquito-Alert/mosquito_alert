@@ -15,9 +15,7 @@ class TestTempFolderZippedGDALFileSystemStorage:
         assert tmp_file.name == "test.zip"
 
     def test_read_returns_datasource(self, mocker):
-        m = mocker.patch(
-            "django.contrib.gis.gdal.datasource.DataSource.__init__", return_value=None
-        )
+        m = mocker.patch("django.contrib.gis.gdal.datasource.DataSource.__init__", return_value=None)
 
         tmp_file = TempFolderZippedGDALFileSystemStorage(name="/path/to/file.shp.zip")
         tmp_file.read()

@@ -11,9 +11,7 @@ class BreedingSite(GeoLocatedModel):
     # Relations
 
     # Attributes - Mandatory
-    type = models.CharField(
-        max_length=2, choices=BreedingSiteTypes.choices, null=True, blank=True
-    )
+    type = models.CharField(max_length=2, choices=BreedingSiteTypes.choices, null=True, blank=True)
 
     # Attributes - Optional
     # Object Manager

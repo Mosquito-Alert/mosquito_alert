@@ -49,9 +49,7 @@ class FileDataSource(CompressedDataSourceMixin, BaseDataSource):
 
     def __init__(self, file_path, **kwargs) -> None:
         self.file_path = file_path
-        self.file = (
-            self._process_file(file_path=file_path, **kwargs) if file_path else None
-        )
+        self.file = self._process_file(file_path=file_path, **kwargs) if file_path else None
         super().__init__(**kwargs)
 
 
@@ -89,17 +87,13 @@ class DownloadableDataSource(FileDataSource, OnlineDataSource):
 
     @classmethod
     def _get_download_file_extension(cls, url):
-        return cls.DOWNLOAD_FILE_SUFFIX or mimetypes.guess_extension(
-            type=mimetypes.guess_type(url=url)[0]
-        )
+        return cls.DOWNLOAD_FILE_SUFFIX or mimetypes.guess_extension(type=mimetypes.guess_type(url=url)[0])
 
     @classmethod
     def from_online_source(cls, **kwargs):
         url = kwargs.pop("url", None)
         url = cls._construct_url(url=url, **kwargs)
-        with tempfile.NamedTemporaryFile(
-            delete=True, suffix=cls._get_download_file_extension(url=url)
-        ) as tmpfile:
+        with tempfile.NamedTemporaryFile(delete=True, suffix=cls._get_download_file_extension(url=url)) as tmpfile:
             instance = cls(
                 url=url,
                 file_path=download_file(url=url, filename=tmpfile.name),

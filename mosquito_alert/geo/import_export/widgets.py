@@ -38,10 +38,7 @@ class GeoWidget(Widget):
         Given the OGRGeomType for a geometry and its associated GeometryField,
         determine whether the geometry should be turned into a GeometryCollection.
         """
-        return (
-            geom_type.num in cls.MULTI_TYPES
-            and model_field.__class__.__name__ == "Multi%s" % geom_type.django
-        )
+        return geom_type.num in cls.MULTI_TYPES and model_field.__class__.__name__ == "Multi%s" % geom_type.django
 
     def _verify_geom(self, geom):
         """
@@ -54,9 +51,7 @@ class GeoWidget(Widget):
             geom.coord_dim = self.model_field.dim
 
         # Check if model_field is single geometry and geom is multiple. Raise
-        if geom.geom_name.startswith(
-            "MULTI"
-        ) and not self.model_field.geom_type.startswith("MULTI"):
+        if geom.geom_name.startswith("MULTI") and not self.model_field.geom_type.startswith("MULTI"):
             raise GDALException(
                 f"Tried to convert multi geometry {geom.geom_name} single geometry {self.model_field.geom_type}."
             )
@@ -71,11 +66,7 @@ class GeoWidget(Widget):
 
         # Transforming the geometry with our Coordinate Transformation object.
         if geom.srs.srid != self.model_field.srid:
-            g.transform(
-                CoordTransform(
-                    source=geom.srs, target=SpatialReference(self.model_field.srid)
-                )
-            )
+            g.transform(CoordTransform(source=geom.srs, target=SpatialReference(self.model_field.srid)))
 
         # Returning the WKT of the geometry.
         return g.ewkt

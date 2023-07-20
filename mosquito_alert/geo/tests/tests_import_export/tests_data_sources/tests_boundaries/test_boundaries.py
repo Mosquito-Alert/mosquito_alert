@@ -3,10 +3,7 @@ from contextlib import nullcontext as does_not_raise
 
 import pytest
 
-from mosquito_alert.geo.import_export.data_sources.boundaries import (
-    GadmBoundarySource,
-    NutsBoundarySource,
-)
+from mosquito_alert.geo.import_export.data_sources.boundaries import GadmBoundarySource, NutsBoundarySource
 from mosquito_alert.geo.models import BoundaryLayer
 
 
@@ -15,10 +12,7 @@ class TestNutsBoundarySource:
         assert NutsBoundarySource.CLI_NAME == "nuts"
 
     def test_default_bl_type_is_stats(self):
-        assert (
-            NutsBoundarySource.DEFAULT_BOUNDARY_LEVEL_TYPE
-            == BoundaryLayer.BoundaryType.STATISTICAL
-        )
+        assert NutsBoundarySource.DEFAULT_BOUNDARY_LEVEL_TYPE == BoundaryLayer.BoundaryType.STATISTICAL
 
     def test_custom_arguments(self):
         obj = NutsBoundarySource
@@ -40,9 +34,7 @@ class TestNutsBoundarySource:
             return_value=None,
         )
 
-        NutsBoundarySource.from_online_source(
-            db_version="2021", scale="60M", coor="4326", level="0"
-        )
+        NutsBoundarySource.from_online_source(db_version="2021", scale="60M", coor="4326", level="0")
 
         vsi_handlers = "/vsizip//vsicurl/"
         url = "https://gisco-services.ec.europa.eu/distribution/v2/nuts/shp/NUTS_RG_60M_2021_4326_LEVL_0.shp.zip"
@@ -138,10 +130,7 @@ class TestGadmBoundarySource:
         assert GadmBoundarySource.CLI_NAME == "gadm"
 
     def test_default_bl_type_is_adm(self):
-        assert (
-            GadmBoundarySource.DEFAULT_BOUNDARY_LEVEL_TYPE
-            == BoundaryLayer.BoundaryType.ADMINISTRATIVE
-        )
+        assert GadmBoundarySource.DEFAULT_BOUNDARY_LEVEL_TYPE == BoundaryLayer.BoundaryType.ADMINISTRATIVE
 
     def test_custom_arguments(self):
         obj = GadmBoundarySource
@@ -160,9 +149,7 @@ class TestGadmBoundarySource:
             return_value=None,
         )
 
-        GadmBoundarySource.from_online_source(
-            db_version="4.1", country_code="ES", level=0
-        )
+        GadmBoundarySource.from_online_source(db_version="4.1", country_code="ES", level=0)
 
         vsi_handlers = "/vsizip//vsicurl/"
         url = "https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_ESP_shp.zip"

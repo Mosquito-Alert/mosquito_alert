@@ -123,8 +123,6 @@ def test_get_country_from_iso_code(country_iso, expected_iso2, expected_iso3, er
         ),
     ],
 )
-def test_get_biggest_polygon_single_poly_should_return(
-    geometry, expected_output, error
-):
+def test_get_biggest_polygon_single_poly_should_return(geometry, expected_output, error):
     with error:
         assert get_biggest_polygon(geometry=geometry) == expected_output

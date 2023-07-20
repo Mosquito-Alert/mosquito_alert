@@ -45,9 +45,7 @@ class TestCompressedDataSourceMixin:
 
         # Using default
         assert (
-            DummyCompressedDataSourceMixin._get_compressed_desired_filename(
-                variable="random"
-            )
+            DummyCompressedDataSourceMixin._get_compressed_desired_filename(variable="random")
             == "test_filename_random"
         )
 
@@ -88,9 +86,7 @@ class TestFileDataSourceCompressed:
         assert obj.file is None
 
     def test_init_file_path_is_path(self, dummy_zipfile_path):
-        obj = DummyCompressedFileDataSource(
-            file_path=dummy_zipfile_path, variable="test"
-        )
+        obj = DummyCompressedFileDataSource(file_path=dummy_zipfile_path, variable="test")
 
         assert obj.file_path == dummy_zipfile_path
         assert obj.file.read() == b"TEST CONTENT"
@@ -129,9 +125,7 @@ class TestOnlineDataSource:
         assert obj.url == "http://anotherweb.com"
 
     def test_from_online_source_kwargs(self):
-        obj = ConcreteOnlineDataSource.from_online_source(
-            url="http://anotherweb.com/{variable}/test", variable="page"
-        )
+        obj = ConcreteOnlineDataSource.from_online_source(url="http://anotherweb.com/{variable}/test", variable="page")
         assert obj.url == "http://anotherweb.com/page/test"
 
     def test_from_online_source_with_parms_arg(self):
@@ -146,16 +140,12 @@ class DummyDownloadableDataSource(DownloadableDataSource):
 
 class TestDownloadableDataSource:
     def test__get_download_file_extension(self):
-        ext = DownloadableDataSource._get_download_file_extension(
-            url="http://example.com/file.tgz"
-        )
+        ext = DownloadableDataSource._get_download_file_extension(url="http://example.com/file.tgz")
 
         assert ext == ".tar"
 
     def test__get_download_file_extension_when_overrided(self):
-        ext = DummyDownloadableDataSource._get_download_file_extension(
-            url="http://example.com/file.txt"
-        )
+        ext = DummyDownloadableDataSource._get_download_file_extension(url="http://example.com/file.txt")
         assert ext == ".random"
 
     def test_from_online_source(self, mocker, tmpdir):

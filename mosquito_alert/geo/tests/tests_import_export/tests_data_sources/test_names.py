@@ -36,9 +36,7 @@ class TestBaseBoundaryNameDataSource:
         dummy_parser.add_argument("--init", required=False)
         obj.add_arguments(parser=dummy_parser)
 
-        storeaction = next(
-            a for a in dummy_parser._actions if "--location_type" in a.option_strings
-        )
+        storeaction = next(a for a in dummy_parser._actions if "--location_type" in a.option_strings)
 
         assert list(storeaction.choices) == ["loc_key1"]
 
@@ -47,16 +45,12 @@ class TestBaseBoundaryNameDataSource:
         assert "location_type" in name_space
 
     def test_get_field_by_location_type(self):
-        value = ConcreteBaseBoundaryNameDataSource.get_field_by_location_type(
-            value="loc_key1"
-        )
+        value = ConcreteBaseBoundaryNameDataSource.get_field_by_location_type(value="loc_key1")
         assert value == "loc_val1"
 
     def test_get_field_by_invalid_location_type_should_raise_ValueError(self):
         with pytest.raises(ValueError):
-            ConcreteBaseBoundaryNameDataSource.get_field_by_location_type(
-                value="random_test"
-            )
+            ConcreteBaseBoundaryNameDataSource.get_field_by_location_type(value="random_test")
 
 
 class TestNominatimDataSource:
@@ -112,18 +106,12 @@ class TestNominatimDataSource:
         dummy_parser = ArgumentParser()
         obj.add_arguments(parser=dummy_parser)
 
-        storeaction = next(
-            a for a in dummy_parser._actions if "--location_type" in a.option_strings
-        )
+        storeaction = next(a for a in dummy_parser._actions if "--location_type" in a.option_strings)
 
-        assert frozenset(list(storeaction.choices)) == frozenset(
-            NominatimDataSource.LOCATION_DICT.keys()
-        )
+        assert frozenset(list(storeaction.choices)) == frozenset(NominatimDataSource.LOCATION_DICT.keys())
 
     def test_geopy_is_called_on_init_with_custom_user_agent(self, mocker):
-        m = mocker.patch(
-            "geopy.geocoders.nominatim.Nominatim.__init__", return_value=None
-        )
+        m = mocker.patch("geopy.geocoders.nominatim.Nominatim.__init__", return_value=None)
         mocker.patch("random.choices", return_value="rnd_test")
         _ = NominatimDataSource()
         m.assert_called_once_with(user_agent="mosquito_alert_rnd_test")
@@ -138,16 +126,12 @@ class TestNominatimDataSource:
 
     def test_reverse_uses_rate_limiter(self, mocker, single_reverse_result):
         obj = NominatimDataSource()
-        m = mocker.patch.object(
-            obj, "_reverse_func", return_value=single_reverse_result
-        )
+        m = mocker.patch.object(obj, "_reverse_func", return_value=single_reverse_result)
 
         obj.reverse(geometry=Point(0, 0), location_type="country")
         m.assert_called_once()
 
-    def test_reverse_returns_None_if_location_type_not_in_response(
-        self, mocker, multi_reverse_result
-    ):
+    def test_reverse_returns_None_if_location_type_not_in_response(self, mocker, multi_reverse_result):
         obj = NominatimDataSource()
         mocker.patch.object(obj, "_reverse_func", return_value=multi_reverse_result)
 
@@ -155,9 +139,7 @@ class TestNominatimDataSource:
 
         assert result is None
 
-    def test_reverse_can_deal_with_multiple_response(
-        self, mocker, multi_reverse_result
-    ):
+    def test_reverse_can_deal_with_multiple_response(self, mocker, multi_reverse_result):
         obj = NominatimDataSource()
         mocker.patch.object(obj, "_reverse_func", return_value=multi_reverse_result)
 
@@ -289,9 +271,7 @@ class TestNominatimDataSource:
         obj = NominatimDataSource()
         mocker.patch.object(obj, "_reverse_func", return_value=single_reverse_result)
 
-        result = obj.reverse(
-            geometry=Point(0, 0), location_type="country", language_iso="en"
-        )
+        result = obj.reverse(geometry=Point(0, 0), location_type="country", language_iso="en")
 
         assert result == Location(
             latitude=41.67,
@@ -346,9 +326,7 @@ class TestGeonamesDataSource:
         assert "filters" in name_space
 
     def test_create_for_country_call_from_online_source(self, mocker):
-        m = mocker.patch.object(
-            GeonamesDataSource, "from_online_source", return_value=None
-        )
+        m = mocker.patch.object(GeonamesDataSource, "from_online_source", return_value=None)
         GeonamesDataSource.create_for_country(country_iso="iso")
 
         m.assert_called_once_with(country_iso="iso")
@@ -357,9 +335,7 @@ class TestGeonamesDataSource:
         with pytest.raises(KeyError):
             GeonamesDataSource.from_online_source(country_iso="RND")
 
-    def test_from_online_source_calls_correct_urls(
-        self, mocker, module_mocker, tmp_path
-    ):
+    def test_from_online_source_calls_correct_urls(self, mocker, module_mocker, tmp_path):
         m_tmpfile = mocker.patch("tempfile.NamedTemporaryFile")
 
         dummy_file_path = tmp_path / "tmpfile.zip"
@@ -390,9 +366,7 @@ class TestGeonamesDataSource:
         "filters, expected_num",
         [({}, 145), ({"featurecode": "PPLA"}, 0), ({"featurecode": "ADM3"}, 145)],
     )
-    def test_init_with_filter(
-        self, geoname_filepath, alternate_names_filepath, filters, expected_num
-    ):
+    def test_init_with_filter(self, geoname_filepath, alternate_names_filepath, filters, expected_num):
         obj = GeonamesDataSource(
             geonames_filepath=geoname_filepath,
             alternate_names_filepath=alternate_names_filepath,
@@ -402,18 +376,14 @@ class TestGeonamesDataSource:
         assert len(obj.df) == expected_num
 
     def test_reverse_returns_None_if_location_type_not_in_response(self, geomnames_ds):
-        result = geomnames_ds.reverse(
-            geometry=Polygon.from_bbox(bbox=(-65, 18, -60, 20)), location_type="county"
-        )
+        result = geomnames_ds.reverse(geometry=Polygon.from_bbox(bbox=(-65, 18, -60, 20)), location_type="county")
 
         assert result is None
 
     def test_reverse_with_simple_polygon(self, geomnames_ds):
         poly = Polygon.from_bbox(bbox=(-65, 18, -60, 20))
 
-        result = geomnames_ds.reverse(
-            geometry=poly, location_type="village", language_iso="eng"
-        )
+        result = geomnames_ds.reverse(geometry=poly, location_type="village", language_iso="eng")
 
         assert result == Location(
             latitude=18.21667,
@@ -430,9 +400,7 @@ class TestGeonamesDataSource:
     def test_reverse_with_languages(self, geomnames_ds, language_iso, expected_name):
         poly = Polygon.from_bbox(bbox=(-65, 18, -60, 20))
 
-        result = geomnames_ds.reverse(
-            geometry=poly, location_type="village", language_iso=language_iso
-        )
+        result = geomnames_ds.reverse(geometry=poly, location_type="village", language_iso=language_iso)
 
         assert result == Location(
             latitude=18.21667,
@@ -447,9 +415,7 @@ class TestGeonamesDataSource:
         m_poly = MultiPolygon()
         m_poly.append(poly)
 
-        result = geomnames_ds.reverse(
-            geometry=m_poly, location_type="village", language_iso="eng"
-        )
+        result = geomnames_ds.reverse(geometry=m_poly, location_type="village", language_iso="eng")
 
         assert result == Location(
             latitude=18.21667,
@@ -463,28 +429,20 @@ class TestGeonamesDataSource:
         point = Point(18.21667, -63.05)
 
         with pytest.raises(ValueError):
-            _ = geomnames_ds.reverse(
-                geometry=point, location_type="village", language_iso="eng"
-            )
+            _ = geomnames_ds.reverse(geometry=point, location_type="village", language_iso="eng")
 
     def test_reverse_with_invalid_geometry_should_raise_ValueError(self, geomnames_ds):
         with pytest.raises(ValueError):
-            geomnames_ds.reverse(
-                geometry="string", location_type="village", language_iso="eng"
-            )
+            geomnames_ds.reverse(geometry="string", location_type="village", language_iso="eng")
 
-    def test_reverse_with_invalid_location_type_should_raise_ValueError(
-        self, geomnames_ds
-    ):
+    def test_reverse_with_invalid_location_type_should_raise_ValueError(self, geomnames_ds):
         with pytest.raises(ValueError):
             geomnames_ds.reverse(
                 geometry=Polygon.from_bbox(bbox=(-65, 18, -60, 20)),
                 location_type="random_loc",
             )
 
-    def test_reverse_with_invalid_language_iso_should_raise_KeyError(
-        self, geomnames_ds
-    ):
+    def test_reverse_with_invalid_language_iso_should_raise_KeyError(self, geomnames_ds):
         with pytest.raises(KeyError):
             geomnames_ds.reverse(
                 geometry=Polygon.from_bbox(bbox=(-65, 18, -60, 20)),
@@ -492,9 +450,7 @@ class TestGeonamesDataSource:
                 language_iso="rne",  # rne does not exist
             )
 
-    def test_reverse_with_invalid_language_arg_should_raise_ValueError(
-        self, geomnames_ds
-    ):
+    def test_reverse_with_invalid_language_arg_should_raise_ValueError(self, geomnames_ds):
         with pytest.raises(ValueError):
             geomnames_ds.reverse(
                 geometry=Polygon.from_bbox(bbox=(-65, 18, -60, 20)),
@@ -529,10 +485,7 @@ class TestGeonamesDataSource:
         [("eng", "Anguilla"), ("cat", "Anguilla"), (None, "Anguilla")],
     )
     def test_get_locale_by_id(self, geomnames_ds, lang_iso, expected_result):
-        assert (
-            geomnames_ds.get_locale_by_id(id=3573511, language_iso=lang_iso)
-            == expected_result
-        )
+        assert geomnames_ds.get_locale_by_id(id=3573511, language_iso=lang_iso) == expected_result
 
     def test_search(self, geomnames_ds):
         # TODO

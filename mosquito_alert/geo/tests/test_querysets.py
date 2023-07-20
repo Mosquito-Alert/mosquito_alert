@@ -1,11 +1,7 @@
 import pytest
 from polymorphic.managers import PolymorphicQuerySet
 
-from ..querysets import (
-    GeoLocatedModelQuerySet,
-    GeoLocatedPolymorphicModelQuerySet,
-    LocationQuerySet,
-)
+from ..querysets import GeoLocatedModelQuerySet, GeoLocatedPolymorphicModelQuerySet, LocationQuerySet
 
 
 class TestLocationQuerySet:
@@ -20,9 +16,7 @@ class TestLocationQuerySet:
         assert l_qs.field_prefix == "my_random_field__"
 
 
-@pytest.mark.parametrize(
-    "qs_cls", [GeoLocatedModelQuerySet, GeoLocatedPolymorphicModelQuerySet]
-)
+@pytest.mark.parametrize("qs_cls", [GeoLocatedModelQuerySet, GeoLocatedPolymorphicModelQuerySet])
 class TestGeoLocatedModelQuerySet:
     def test_default_field_prefix_is_location(self, qs_cls):
         assert qs_cls().field_prefix == "location__"

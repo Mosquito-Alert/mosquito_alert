@@ -54,12 +54,8 @@ class IdentifierUserProfileFactory(DjangoModelFactory):
 ##########################
 
 
-class IdentificationResultFactory(
-    BaseIndividualIdentificationCandidateFactory, DjangoModelFactory
-):
-    type = factory.Faker(
-        "random_element", elements=IdentificationResult.IdentificationResultType.values
-    )
+class IdentificationResultFactory(BaseIndividualIdentificationCandidateFactory, DjangoModelFactory):
+    type = factory.Faker("random_element", elements=IdentificationResult.IdentificationResultType.values)
 
     class Meta:
         model = IdentificationResult
@@ -81,9 +77,7 @@ class UserIdentificationSuggestionFactory(BaseIndividualIdentificationCandidateF
         model = UserIdentificationSuggestion
 
 
-class ComputerVisionIdentificationSuggestionFactory(
-    BaseIndividualIdentificationCandidateFactory
-):
+class ComputerVisionIdentificationSuggestionFactory(BaseIndividualIdentificationCandidateFactory):
     class Meta:
         model = ComputerVisionIdentificationSuggestion
 

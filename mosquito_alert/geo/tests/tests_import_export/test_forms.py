@@ -43,9 +43,7 @@ class TestShapefileImportForm:
             "name_field_name": "TEST_NAME",
         } | common_data
 
-        form = ShapefileImportForm(
-            data=data, files=common_files, import_formats=DEFAULT_FORMATS
-        )
+        form = ShapefileImportForm(data=data, files=common_files, import_formats=DEFAULT_FORMATS)
 
         assert not form.is_valid()
         assert "boundary_layer" in form.errors

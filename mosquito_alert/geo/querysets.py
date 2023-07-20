@@ -15,9 +15,7 @@ class BoundaryQuerySet(MP_NodeQuerySet):
         return self.filter(~Q(boundary_layer__depth=F("depth")))
 
     def first_by_area(self):
-        return (
-            self.annotate(area=Area("geometry_model__geometry")).order_by("area").last()
-        )
+        return self.annotate(area=Area("geometry_model__geometry")).order_by("area").last()
 
     def prefetch_geometry(self):
         return self.prefetch_related("geometry_model")
@@ -66,9 +64,7 @@ class LocationQuerySet(QuerySet):
         return self.order_by_distance(point=point).first()
 
     def order_by_distance(self, point):
-        return self.annotate(
-            distance=DistanceFunction(f"{self.field_prefix}point", point)
-        ).order_by("distance")
+        return self.annotate(distance=DistanceFunction(f"{self.field_prefix}point", point)).order_by("distance")
 
     def within_circle(self, center_point, radius_meters):
         # See: https://stackoverflow.com/a/31945883

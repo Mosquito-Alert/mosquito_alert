@@ -2,28 +2,17 @@ from django.contrib import admin
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import NestedTabularInline
 from nested_admin.polymorphic import NestedPolymorphicModelAdmin
-from polymorphic.admin import (
-    PolymorphicChildModelAdmin,
-    PolymorphicChildModelFilter,
-    PolymorphicParentModelAdmin,
-)
+from polymorphic.admin import PolymorphicChildModelAdmin, PolymorphicChildModelFilter, PolymorphicParentModelAdmin
 from reversion.admin import VersionAdmin
 
 from mosquito_alert.images.admin import m2mPhotoAdminInlineMixin
 from mosquito_alert.utils.admin import FlaggedContentInlineAdmin
 
-from .forms import (
-    BiteReportForm,
-    BreedingSiteReportForm,
-    IndividualReportForm,
-    ReportForm,
-)
+from .forms import BiteReportForm, BreedingSiteReportForm, IndividualReportForm, ReportForm
 from .models import BiteReport, BreedingSiteReport, IndividualReport, Report
 
 
-class ReadOnlyPhotoAdminInline(
-    SortableHiddenMixin, m2mPhotoAdminInlineMixin, NestedTabularInline
-):
+class ReadOnlyPhotoAdminInline(SortableHiddenMixin, m2mPhotoAdminInlineMixin, NestedTabularInline):
     model = Report.photos.through
     fields = m2mPhotoAdminInlineMixin.fields + [
         "sort_value",
@@ -75,11 +64,9 @@ class IndividualReportAdmin(ReportChildAdmin, VersionAdmin):
     readonly_fields = ["individual"]
 
 
+@admin.register(Report)
 class ReportParentAdmin(VersionAdmin, PolymorphicParentModelAdmin):
     base_model = Report
     child_models = (BiteReport, BreedingSiteReport, IndividualReport)
     list_filter = (PolymorphicChildModelFilter, "observed_at", "created_at")
     list_display = ["uuid", "user", "observed_at", "created_at", "updated_at"]
-
-
-admin.site.register(Report, ReportParentAdmin)

@@ -12,7 +12,6 @@ def get_probabilities_for_nodes(nodes):
 
 
 def create_tree_from_identifications(identifications):
-
     # 1. Create all nodes
     nodes = []
     for taxon, probability in identifications:
@@ -31,9 +30,7 @@ def create_tree_from_identifications(identifications):
     else:
         if len(nodes) > 1:
             # Intersect all ancestors and get the last() taxon (the deeper)
-            common_parent_qs = Taxon.objects.all().intersection(
-                *[x.taxon.get_ancestors() for x in nodes]
-            )
+            common_parent_qs = Taxon.objects.all().intersection(*[x.taxon.get_ancestors() for x in nodes])
             parent_node = TaxonProbNode(taxon=common_parent_qs.last(), probability=1)
         else:
             parent_node = TaxonProbNode(taxon=nodes[0].taxon.parent, probability=1)
@@ -49,7 +46,6 @@ def create_tree_from_identifications(identifications):
 
 class TaxonProbNode(AnyNode):
     def __init__(self, taxon, probability, **kwargs):
-
         self.taxon = taxon
         self.probability = probability
 
@@ -83,9 +79,7 @@ class TaxonProbNode(AnyNode):
     def apply_weight(self, weight):
         weight_decimal = Decimal(str(weight))
         self.apply_func_to_children(
-            func=lambda x: setattr(
-                x, "probability", float(Decimal(str(x.probability)) * weight_decimal)
-            ),
+            func=lambda x: setattr(x, "probability", float(Decimal(str(x.probability)) * weight_decimal)),
             include_self=True,
         )
 
@@ -95,9 +89,7 @@ class TaxonProbNode(AnyNode):
         if self.taxon.is_root():
             return self
 
-        return TaxonProbNode(
-            taxon=self.taxon.parent, probability=1, children=[self]
-        )._expand_parent()
+        return TaxonProbNode(taxon=self.taxon.parent, probability=1, children=[self])._expand_parent()
 
     def _expand_children(self):
         # Calling all children nodes recursively.
@@ -107,9 +99,7 @@ class TaxonProbNode(AnyNode):
         if self.taxon.is_leaf():
             return
 
-        missing_probability = max(
-            self.probability - get_probabilities_for_nodes(nodes=self.children), 0
-        )
+        missing_probability = max(self.probability - get_probabilities_for_nodes(nodes=self.children), 0)
 
         if missing_probability == 0:
             return
@@ -118,9 +108,7 @@ class TaxonProbNode(AnyNode):
         taxon_leafs_qs = self.taxon.get_descendants().filter(numchild=0)
 
         if self.children:
-            represented_leafs = [
-                x.taxon.pk for x in findall(self, filter_=lambda n: n.taxon.is_leaf())
-            ]
+            represented_leafs = [x.taxon.pk for x in findall(self, filter_=lambda n: n.taxon.is_leaf())]
 
             taxon_leafs_qs = taxon_leafs_qs.exclude(pk__in=represented_leafs)
 
@@ -132,15 +120,11 @@ class TaxonProbNode(AnyNode):
 
         # Will share probability equitative for each taxon leaf (specie)
         leaf_prob = missing_probability / num_missing_taxon_leafs
-        t_leafs = [
-            TaxonProbNode(taxon=t_leaf, probability=leaf_prob)
-            for t_leaf in taxon_leafs_qs
-        ]
+        t_leafs = [TaxonProbNode(taxon=t_leaf, probability=leaf_prob) for t_leaf in taxon_leafs_qs]
 
         self.link_descendants(nodes=t_leafs)
 
     def expand_tree(self):
-
         root_node = self._expand_parent()
         root_node._expand_children()
 
@@ -189,7 +173,6 @@ class TaxonProbNode(AnyNode):
             self.link_descendants(nodes=nodes)
 
     def __add__(self, other):
-
         if not other:
             return
 
@@ -198,9 +181,7 @@ class TaxonProbNode(AnyNode):
 
         old_children = list(self.children) + list(other.children)
         new_children = []
-        for _, children in groupby(
-            sorted(old_children, key=lambda x: x.taxon.pk), key=lambda x: x.taxon.pk
-        ):
+        for _, children in groupby(sorted(old_children, key=lambda x: x.taxon.pk), key=lambda x: x.taxon.pk):
             children = list(children)
             if len(children) == 1:
                 new_children += children

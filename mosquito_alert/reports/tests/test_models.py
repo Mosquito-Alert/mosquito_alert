@@ -20,12 +20,7 @@ from mosquito_alert.geo.tests.fuzzy import FuzzyPoint
 from mosquito_alert.individuals.tests.factories import IndividualFactory
 
 from ..models import IndividualReport
-from .factories import (
-    BiteReportFactory,
-    BreedingSiteReportFactory,
-    IndividualReportFactory,
-    ReportFactory,
-)
+from .factories import BiteReportFactory, BreedingSiteReportFactory, IndividualReportFactory, ReportFactory
 
 
 def create_random_point_at_distance(center_point, distance_meters):
@@ -46,13 +41,9 @@ def create_random_point_at_distance(center_point, distance_meters):
 
 def test_create_random_point_at_distance():
     point = FuzzyPoint(srid=4326).fuzz()
-    new_point = create_random_point_at_distance(
-        center_point=point, distance_meters=1000
-    )
+    new_point = create_random_point_at_distance(center_point=point, distance_meters=1000)
 
-    assert (
-        round(distance((point.y, point.x), (new_point.y, new_point.x)).meters) == 1000
-    )
+    assert round(distance((point.y, point.x), (new_point.y, new_point.x)).meters) == 1000
 
 
 @pytest.mark.django_db
@@ -130,15 +121,10 @@ class TestReport:
         oldest = factory_cls(created_at=t - timedelta(seconds=10))
         newest = factory_cls(created_at=t + timedelta(seconds=10))
 
-        assert frozenset(list(factory_cls._meta.model.objects.all())) == frozenset(
-            [oldest, old, newest]
-        )
+        assert frozenset(list(factory_cls._meta.model.objects.all())) == frozenset([oldest, old, newest])
 
     def test__str__(self, simple_report):
-        assert (
-            simple_report.__str__()
-            == f"{simple_report.__class__.__name__} ({simple_report.uuid})"
-        )
+        assert simple_report.__str__() == f"{simple_report.__class__.__name__} ({simple_report.uuid})"
 
 
 class BaseTestReversionedReport:
@@ -225,9 +211,7 @@ class TestBreedingSiteReport(BaseTestReversionedReport, TestReport):
 
         assert report.breeding_site == b_s
 
-    def test_breeding_site_blank_creates_new_breeding_site_if_not_near_found(
-        self, factory_cls
-    ):
+    def test_breeding_site_blank_creates_new_breeding_site_if_not_near_found(self, factory_cls):
         assert BreedingSite.objects.all().count() == 0
         report = factory_cls(breeding_site=None)
 
@@ -236,29 +220,14 @@ class TestBreedingSiteReport(BaseTestReversionedReport, TestReport):
 
     @pytest.mark.parametrize(
         "point",
-        [
-            Point(x=random.uniform(-180, 180), y=float(lat), srid=4326)
-            for lat in range(-90, 90, 5)
-        ],
+        [Point(x=random.uniform(-180, 180), y=float(lat), srid=4326) for lat in range(-90, 90, 5)],
     )
-    def test_breeding_site_blank_sets_nearest_object_in_50meters(
-        self, factory_cls, point
-    ):
-        BreedingSiteFactory(
-            point=create_random_point_at_distance(
-                center_point=point, distance_meters=100
-            )
-        )
+    def test_breeding_site_blank_sets_nearest_object_in_50meters(self, factory_cls, point):
+        BreedingSiteFactory(point=create_random_point_at_distance(center_point=point, distance_meters=100))
         nearest_b_s = BreedingSiteFactory(
-            point=create_random_point_at_distance(
-                center_point=point, distance_meters=20
-            )
+            point=create_random_point_at_distance(center_point=point, distance_meters=20)
         )
-        BreedingSiteFactory(
-            point=create_random_point_at_distance(
-                center_point=point, distance_meters=40
-            )
-        )
+        BreedingSiteFactory(point=create_random_point_at_distance(center_point=point, distance_meters=40))
 
         report = factory_cls(point=point, breeding_site=None)
 
@@ -266,19 +235,10 @@ class TestBreedingSiteReport(BaseTestReversionedReport, TestReport):
 
     @pytest.mark.parametrize(
         "point",
-        [
-            Point(x=random.uniform(-180, 180), y=float(lat), srid=4326)
-            for lat in range(-90, 90, 5)
-        ],
+        [Point(x=random.uniform(-180, 180), y=float(lat), srid=4326) for lat in range(-90, 90, 5)],
     )
-    def test_breeding_site_blank_creates_new_if_no_near_objects_found_in_50meteres(
-        self, factory_cls, point
-    ):
-        far_b_s = BreedingSiteFactory(
-            point=create_random_point_at_distance(
-                center_point=point, distance_meters=100
-            )
-        )
+    def test_breeding_site_blank_creates_new_if_no_near_objects_found_in_50meteres(self, factory_cls, point):
+        far_b_s = BreedingSiteFactory(point=create_random_point_at_distance(center_point=point, distance_meters=100))
 
         report = factory_cls(point=point, breeding_site=None)
 

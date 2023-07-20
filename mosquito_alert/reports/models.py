@@ -50,9 +50,7 @@ class Report(PolymorphicModel, GeoLocatedModel):
         blank=True,  # TODO: why blank?
         validators=[MaxValueValidator(limit_value=timezone.now)],
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True, validators=[MaxValueValidator(limit_value=timezone.now)]
-    )
+    created_at = models.DateTimeField(auto_now_add=True, validators=[MaxValueValidator(limit_value=timezone.now)])
     updated_at = models.DateTimeField(auto_now=True)
     published = models.BooleanField(default=False)
     # TODO: app_version, os
@@ -64,9 +62,7 @@ class Report(PolymorphicModel, GeoLocatedModel):
     objects = ReportManager()
     tags = TaggableManager(
         blank=True,
-        help_text=_(
-            "A comma-separated list of tags you can add to a report to make them easier to find."
-        ),
+        help_text=_("A comma-separated list of tags you can add to a report to make them easier to find."),
     )
 
     # Custom Properties
@@ -117,9 +113,7 @@ class BiteReport(Report):
 @reversion.register(follow=("report_ptr",))
 class BreedingSiteReport(Report):
     # Relations
-    breeding_site = models.ForeignKey(
-        BreedingSite, blank=True, on_delete=models.CASCADE, related_name="reports"
-    )
+    breeding_site = models.ForeignKey(BreedingSite, blank=True, on_delete=models.CASCADE, related_name="reports")
 
     # Attributes - Mandatory
     has_water = models.BooleanField()
@@ -157,9 +151,7 @@ class BreedingSiteReport(Report):
 class IndividualReport(Report):
     "An individual report records an encounter with an individual organism at a particular time and location."
     # Relations
-    individual = models.ForeignKey(
-        Individual, on_delete=models.CASCADE, related_name="reports"
-    )
+    individual = models.ForeignKey(Individual, on_delete=models.CASCADE, related_name="reports")
     taxon = models.ForeignKey(Taxon, null=True, blank=True, on_delete=models.PROTECT)
 
     # Attributes - Mandatory

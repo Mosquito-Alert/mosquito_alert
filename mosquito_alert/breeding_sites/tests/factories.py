@@ -6,9 +6,7 @@ from ..models import BreedingSite
 
 
 class BreedingSiteFactory(GeoLocatedModelFactory):
-    type = factory.Faker(
-        "random_element", elements=BreedingSite.BreedingSiteTypes.values
-    )
+    type = factory.Faker("random_element", elements=BreedingSite.BreedingSiteTypes.values)
 
     class Meta:
         model = BreedingSite

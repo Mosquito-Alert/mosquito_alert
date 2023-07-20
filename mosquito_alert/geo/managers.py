@@ -8,9 +8,7 @@ class BaseBoundaryManager(MP_NodeManager):
     def get_queryset(self):
         """Sets the custom queryset as the default."""
         # Get from BaseManager.get_queryset
-        return self._queryset_class(
-            model=self.model, using=self._db, hints=self._hints
-        ).order_by("path")
+        return self._queryset_class(model=self.model, using=self._db, hints=self._hints).order_by("path")
 
 
 BoundaryManager = BaseBoundaryManager.from_queryset(BoundaryQuerySet)

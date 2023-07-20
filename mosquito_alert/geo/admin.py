@@ -6,18 +6,13 @@ from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
-from ..utils.forms import (
-    AllowOnlyNodesFromSameTreeFormMixin,
-    ParentManageableMoveNodeForm,
-)
+from ..utils.forms import AllowOnlyNodesFromSameTreeFormMixin, ParentManageableMoveNodeForm
 from .import_export.admin import ShapefileImportMixin
 from .import_export.resources import BoundaryResource
 from .models import Boundary, BoundaryGeometry, BoundaryLayer
 
 
-class MoveNodeFormOnlyNodesFromSameTree(
-    AllowOnlyNodesFromSameTreeFormMixin, ParentManageableMoveNodeForm
-):
+class MoveNodeFormOnlyNodesFromSameTree(AllowOnlyNodesFromSameTreeFormMixin, ParentManageableMoveNodeForm):
     pass
 
 
@@ -26,15 +21,11 @@ class BoundaryGeometryInlineAdmin(GeoModelAdminMixin, admin.StackedInline):
     fields = ("geometry",)
     can_delete = False
 
-    gis_widget_kwargs = {
-        "attrs": {
-            "disabled": True  # Removing the 'Delete all Features' button from the map.
-        }
-    }
+    gis_widget_kwargs = {"attrs": {"disabled": True}}  # Removing the 'Delete all Features' button from the map.
 
 
+@admin.register(Boundary)
 class BoundaryAdmin(ShapefileImportMixin, TreeAdmin, TranslationAdmin):
-
     # Custom filters
     class ObjectsWithConflicts(admin.SimpleListFilter):
         title = _("conflict presence")
@@ -112,8 +103,8 @@ class BoundaryInlineAdmin(TabularInlinePaginated, TranslationTabularInline):
         return False
 
 
+@admin.register(BoundaryLayer)
 class BoundaryLayerAdmin(TreeAdmin):
-
     autocomplete_fields = ("boundary",)
 
     search_fields = ("name",)
@@ -159,7 +150,3 @@ class BoundaryLayerAdmin(TreeAdmin):
             ).all()
 
         return super().get_form(request, obj, change, **kwargs)
-
-
-admin.site.register(Boundary, BoundaryAdmin)
-admin.site.register(BoundaryLayer, BoundaryLayerAdmin)

@@ -52,27 +52,21 @@ class IndividualAdmin(NestedPolymorphicModelAdmin):
     @admin.display(description=_("Community suggestion probability tree"))
     def show_community_prob_tree(self, instance):
         if instance:
-            render = CommunityIdentificationResult.get_probability_tree(
-                individual=instance
-            ).get_tree_render()
+            render = CommunityIdentificationResult.get_probability_tree(individual=instance).get_tree_render()
 
             return format_html("<textarea readonly>{}</textarea>", render)
 
     @admin.display(description=_("Computer vision suggestion probability tree"))
     def show_computervision_prob_tree(self, instance):
         if instance:
-            render = ComputerVisionIdentificationSuggestion.get_probability_tree(
-                individual=instance
-            ).get_tree_render()
+            render = ComputerVisionIdentificationSuggestion.get_probability_tree(individual=instance).get_tree_render()
 
             return format_html("<textarea readonly>{}</textarea>", render)
 
     @admin.display(description=_("Final probability tree"))
     def show_result_prob_tree(self, instance):
         if instance:
-            render = EnsembledIdentificationResult.get_probability_tree(
-                individual=instance
-            ).get_tree_render()
+            render = EnsembledIdentificationResult.get_probability_tree(individual=instance).get_tree_render()
 
             return format_html("<textarea readonly>{}</textarea>", render)
 
