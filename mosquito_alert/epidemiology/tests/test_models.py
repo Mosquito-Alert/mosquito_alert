@@ -2,9 +2,9 @@ import pytest
 from django.db.utils import DataError, IntegrityError
 
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.taxa.tests.factories import MonthlyDistributionFactory, TaxonFactory
+from mosquito_alert.taxa.tests.factories import SpecieDistributionFactory, TaxonFactory
 
-from ..models import Disease, DiseaseVector, MonthlyDistribution
+from ..models import Disease, DiseaseVector, DiseaseVectorDistribution
 from .factories import DiseaseFactory, DiseaseVectorFactory
 
 
@@ -52,6 +52,10 @@ class TestDiseaseVectorModel:
 
         assert DiseaseVector.objects.all().count() == 0
 
+    def test_taxon_can_not_be_null(self):
+        with pytest.raises(IntegrityError, match=r"not-null constraint"):
+            DiseaseVectorFactory(taxon=None)
+
     def test_taxon_related_name(self, taxon_specie):
         dv = DiseaseVectorFactory(taxon=taxon_specie)
 
@@ -80,14 +84,14 @@ class TestDiseaseVectorModel:
 
 
 @pytest.mark.django_db
-class TestMonthlyDistributionModel:
-    def test_should_filter_by_taxon_vectors(self, taxon_root, taxon_specie):
-        taxon_not_vector = TaxonFactory(parent=taxon_root)
-        taxon_vector = DiseaseVectorFactory(taxon=taxon_specie)
+class TestDiseaseVectorDistribution:
+    def test_should_filter_by_taxon_vectors(self, taxon_root, country_bl):
+        taxon_not_vector = TaxonFactory(parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES)
+        disease_vector = DiseaseVectorFactory(taxon__parent=taxon_root, taxon__name="test")
 
-        _ = MonthlyDistributionFactory(taxon=taxon_not_vector)
-        _ = MonthlyDistributionFactory(taxon=taxon_vector)
+        _ = SpecieDistributionFactory(taxon=taxon_not_vector, boundary__boundary_layer=country_bl)
+        _ = SpecieDistributionFactory(taxon=disease_vector.taxon, boundary__boundary_layer=country_bl)
 
-        assert list(
-            MonthlyDistribution.objects.values_list("taxon", flat=True).all()
-        ) == [taxon_vector]
+        assert list(DiseaseVectorDistribution.objects.values_list("taxon", flat=True).all()) == [
+            disease_vector.taxon.pk
+        ]

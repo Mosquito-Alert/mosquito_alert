@@ -1,7 +1,7 @@
 from django.urls import reverse
 from pytest_django.asserts import assertContains
 
-from mosquito_alert.taxa.tests.factories import MonthlyDistributionFactory
+from mosquito_alert.taxa.tests.factories import SpecieDistributionFactory
 
 from ..models import Disease, DiseaseVector
 from .factories import DiseaseFactory, DiseaseVectorFactory
@@ -31,9 +31,7 @@ class TestDiseasesAdmin:
 
     def test_view(self, admin_client):
         disease = DiseaseFactory()
-        url = reverse(
-            "admin:epidemiology_disease_change", kwargs={"object_id": disease.pk}
-        )
+        url = reverse("admin:epidemiology_disease_change", kwargs={"object_id": disease.pk})
         response = admin_client.get(url)
         assert response.status_code == 200
 
@@ -92,30 +90,42 @@ class TestDiseaseVectorsAdmin:
         assert response.status_code == 200
 
 
-class TestVectorMonthlyDistributionAdmin:
+class TestDiseaseVectorDistributionAdmin:
     def test_changelist(self, admin_client):
-        url = reverse("admin:epidemiology_monthlydistribution_changelist")
+        url = reverse("admin:epidemiology_diseasevectordistribution_changelist")
         response = admin_client.get(url)
         assert response.status_code == 200
 
     def test_search(self, admin_client):
-        url = reverse("admin:epidemiology_monthlydistribution_changelist")
+        url = reverse("admin:epidemiology_diseasevectordistribution_changelist")
         response = admin_client.get(url, data={"q": "test"})
         assert response.status_code == 200
 
     def test_add_is_not_allowed(self, admin_client):
-        url = reverse("admin:epidemiology_monthlydistribution_add")
+        url = reverse("admin:epidemiology_diseasevectordistribution_add")
         response = admin_client.get(url)
         assert response.status_code == 403
 
     def test_view(self, admin_client, taxon_specie):
         taxon_vector = DiseaseVectorFactory(taxon=taxon_specie)
 
-        montlhy_distribution = MonthlyDistributionFactory(taxon=taxon_vector.taxon)
+        distribution = SpecieDistributionFactory(taxon=taxon_vector.taxon)
 
         url = reverse(
-            "admin:epidemiology_monthlydistribution_change",
-            kwargs={"object_id": montlhy_distribution.pk},
+            "admin:epidemiology_diseasevectordistribution_change",
+            kwargs={"object_id": distribution.pk},
+        )
+        response = admin_client.get(url)
+        assert response.status_code == 200
+
+    def test_history(self, admin_client, taxon_specie):
+        taxon_vector = DiseaseVectorFactory(taxon=taxon_specie)
+
+        distribution = SpecieDistributionFactory(taxon=taxon_vector.taxon)
+
+        url = reverse(
+            "admin:epidemiology_diseasevectordistribution_history",
+            kwargs={"object_id": distribution.pk},
         )
         response = admin_client.get(url)
         assert response.status_code == 200

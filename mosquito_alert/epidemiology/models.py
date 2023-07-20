@@ -1,10 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from mosquito_alert.taxa.models import MonthlyDistribution as TaxaMonthlyDistribution
-from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.taxa.models import SpecieDistribution, Taxon
 
-from .managers import MonthlyDistributionManager
+from .managers import DiseaseVectorDistributionManager
 
 
 class Disease(models.Model):
@@ -46,7 +45,7 @@ class DiseaseVector(models.Model):
 
     # Methods
     def save(self, *args, **kwargs):
-        if not self.taxon.is_specie:
+        if hasattr(self, "taxon") and not self.taxon.is_specie:
             raise ValueError("Taxon must be species rank.")
 
         super().save(*args, **kwargs)
@@ -61,10 +60,10 @@ class DiseaseVector(models.Model):
         return self.taxon.name
 
 
-class MonthlyDistribution(TaxaMonthlyDistribution):
-    objects = MonthlyDistributionManager()
+class DiseaseVectorDistribution(SpecieDistribution):
+    objects = DiseaseVectorDistributionManager()
 
     class Meta:
         proxy = True
-        verbose_name = _("monthly distribution")
-        verbose_name_plural = _("monthly distributions")
+        verbose_name = _("disease vector distribution")
+        verbose_name_plural = _("disease vectors distribution")

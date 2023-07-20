@@ -1,14 +1,6 @@
 import pytest
 
-from ..models import BoundaryLayer
-from .factories import BoundaryFactory, BoundaryLayerFactory
-
-
-@pytest.fixture()
-def country_bl(db):
-    return BoundaryLayerFactory(
-        boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE, level=0, boundary=None
-    )
+from .factories import BoundaryFactory
 
 
 @pytest.fixture()

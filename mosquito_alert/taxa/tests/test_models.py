@@ -1,8 +1,14 @@
+from contextlib import nullcontext as does_not_raise
+
 import pytest
+from django.core.exceptions import FieldDoesNotExist
+from django.db.models.deletion import ProtectedError
 from django.db.utils import DataError, IntegrityError
 
-from ..models import Taxon
-from .factories import TaxonFactory
+from mosquito_alert.geo.tests.factories import BoundaryFactory
+
+from ..models import SpecieDistribution, Taxon
+from .factories import SpecieDistributionFactory, TaxonFactory
 
 
 @pytest.mark.django_db
@@ -141,3 +147,130 @@ class TestTaxonModel:
         a_child.save()
 
         assert frozenset(Taxon.objects.all()) == frozenset([taxon_root, z_child, a_child, b_child])
+
+
+@pytest.mark.django_db
+class TestSpecieDistributionModel:
+    def test_boundary_can_not_be_null(self):
+        with pytest.raises(IntegrityError, match=r"not-null constraint"):
+            SpecieDistributionFactory(boundary=None)
+
+    def test_boundary_is_protected_on_delete(self):
+        sd = SpecieDistributionFactory()
+
+        with pytest.raises(ProtectedError):
+            sd.boundary.delete()
+
+    def test_taxon_can_not_be_null(self):
+        with pytest.raises(IntegrityError, match=r"not-null constraint"):
+            SpecieDistributionFactory(taxon=None)
+
+    def test_taxon_is_protected_on_delete(self):
+        sd = SpecieDistributionFactory()
+
+        with pytest.raises(ProtectedError):
+            sd.taxon.delete()
+
+    @pytest.mark.parametrize(
+        "taxon_rank, expected_raise",
+        [
+            (Taxon.TaxonomicRank.DOMAIN, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.KINGDOM, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.PHYLUM, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.CLASS, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.ORDER, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.FAMILY, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.GENUS, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.SUBGENUS, pytest.raises(ValueError)),
+            (Taxon.TaxonomicRank.SPECIES_COMPLEX, does_not_raise()),
+            (Taxon.TaxonomicRank.SPECIES, does_not_raise()),
+        ],
+    )
+    def test_taxon_is_allowed_to_be_species_only(self, taxon_rank, expected_raise):
+        with expected_raise:
+            assert SpecieDistributionFactory(taxon__rank=taxon_rank)
+
+    def test_taxon_related_name_is_distribution(self):
+        sd = SpecieDistributionFactory()
+
+        assert frozenset(sd.taxon.distribution.all()) == frozenset([sd])
+
+    @pytest.mark.parametrize(
+        "fieldname, expected_raise",
+        [
+            ("boundary", pytest.raises(FieldDoesNotExist)),
+            ("taxon", pytest.raises(FieldDoesNotExist)),
+            ("source", pytest.raises(FieldDoesNotExist)),
+            ("status", does_not_raise()),
+        ],
+    )
+    def test_monitored_changes_in_fields(self, fieldname, expected_raise):
+        with expected_raise:
+            SpecieDistribution.history.model._meta.get_field(fieldname)
+
+    def test_new_history_record_is_created_on_status_change(self):
+        sd = SpecieDistributionFactory(status=SpecieDistribution.DistributionStatus.ABSENT)
+
+        assert SpecieDistribution.objects.all().count() == 1
+        assert SpecieDistribution.history.all().count() == 1
+
+        assert sd.history.last().status == SpecieDistribution.DistributionStatus.ABSENT
+
+        sd.status = SpecieDistribution.DistributionStatus.REPORTED
+        sd.save()
+
+        assert SpecieDistribution.objects.all().count() == 1
+        assert SpecieDistribution.history.all().count() == 2
+
+        assert sd.history.first().history_type == "~"
+        assert sd.history.first().status == SpecieDistribution.DistributionStatus.REPORTED
+
+    def test_no_history_record_created_if_status_is_not_changed(self, country_bl, taxon_root):
+        sd = SpecieDistributionFactory(
+            boundary__boundary_layer=country_bl,
+            taxon=TaxonFactory(parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES),
+            source=SpecieDistribution.DataSource.SELF,
+        )
+
+        assert SpecieDistribution.objects.all().count() == 1
+        assert SpecieDistribution.history.all().count() == 1
+
+        sd.boundary = BoundaryFactory(boundary_layer=country_bl)
+        sd.save()
+
+        assert SpecieDistribution.objects.all().count() == 1
+        assert SpecieDistribution.history.all().count() == 1
+
+        sd.taxon = TaxonFactory(parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES)
+        sd.save()
+
+        assert SpecieDistribution.objects.all().count() == 1
+        assert SpecieDistribution.history.all().count() == 1
+
+        sd.source = SpecieDistribution.DataSource.ECDC
+        sd.save()
+
+        assert SpecieDistribution.objects.all().count() == 1
+        assert SpecieDistribution.history.all().count() == 1
+
+    def test_historic_record_type_is_created_on_creation(self):
+        sd = SpecieDistributionFactory()
+
+        assert sd.history.first().history_type == "+"
+
+    def test_historical_records_are_deleted_on_master_deletion(self):
+        sd = SpecieDistributionFactory(status=SpecieDistribution.DistributionStatus.ABSENT)
+
+        assert SpecieDistribution.objects.all().count() == 1
+        assert SpecieDistribution.history.all().count() == 1
+
+        sd.delete()
+
+        assert SpecieDistribution.objects.all().count() == 0
+        assert SpecieDistribution.history.all().count() == 0
+
+    def test_unique_contraint_boundary_taxon_source(self):
+        sd = SpecieDistributionFactory()
+
+        with pytest.raises(IntegrityError, match=r"unique constraint"):
+            _ = SpecieDistributionFactory(boundary=sd.boundary, taxon=sd.taxon, source=sd.source)
