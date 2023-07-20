@@ -17,9 +17,9 @@ $(document).ready(function () {
         'order': [[0, "desc"]],
         'columns': [
             {'data': 'xvb'},
-            {'data': 'report'},
+            {'data': 'report_id'},
             {'data': 'report_datetime'},
-            {'data': 'locCode'},
+            {'data': 'loc_code'},
             {'data': 'species'},
             {'data': 'certainty'},
             {'data': 'status'},
@@ -43,7 +43,7 @@ $(document).ready(function () {
             },
             {
                 'targets': 3,
-                'title': 'locCode'
+                'title': 'loc_code'
             },
             {
                 'targets': 4,

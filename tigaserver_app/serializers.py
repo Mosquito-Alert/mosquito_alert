@@ -431,7 +431,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class DataTableAimalertSerializer(serializers.ModelSerializer):
     class Meta:
         model = AimaAlertLog
-        fields = ('xvb','report','report_datetime','locCode','catId','species','certainty','status','hit','review_species','review_status','review_datetime')
+        fields = ('xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime')
 
 
 class DataTableNotificationSerializer(serializers.ModelSerializer):
