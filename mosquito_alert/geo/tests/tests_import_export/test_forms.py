@@ -53,7 +53,7 @@ class TestShapefileConfirmImportForm:
     @pytest.fixture
     def common_data(tmpdir_csv_file):
         return {
-            "import_file_name": "/tmp/path/filename.test",
+            "import_file_name": "/path/to/filename.test",
             "original_file_name": "original_filename.test",
             "input_format": "0",
         }
