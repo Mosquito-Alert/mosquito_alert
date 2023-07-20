@@ -59,7 +59,7 @@ def create_report(version_number, version_uuid, user, country):
         type='adult',
     )
     r.save()
-    p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+    p = Photo.objects.create(report=r, photo='./testdata/splash.png')
     p.save()
     return r
 
@@ -312,7 +312,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
         #queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
@@ -335,7 +335,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -363,7 +363,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -386,7 +386,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -409,7 +409,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -430,7 +430,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -459,7 +459,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
         a = 1
@@ -479,7 +479,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
         a = 1
@@ -499,7 +499,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -524,7 +524,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -546,7 +546,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -568,7 +568,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -695,7 +695,7 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
 
@@ -1115,7 +1115,7 @@ class NewReportAssignment(TestCase):
             type='adult',
         )
         r.save()
-        p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+        p = Photo.objects.create(report=r, photo='./testdata/splash.png')
         p.save()
         # queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
         Report.objects.all().update(server_upload_time=two_weeks_ago)

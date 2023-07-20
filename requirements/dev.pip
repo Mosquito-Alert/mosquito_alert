@@ -1,1 +1,4 @@
--r common.pip
+-r prod_20_04.pip
+
+coverage==7.2.7
+

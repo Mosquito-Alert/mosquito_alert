@@ -105,12 +105,14 @@ WSGI_APPLICATION = 'tigaserver_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
+        # Using defaults according to CI configuration.
+        # Will be replaced when importing the settings_local
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
-        'PORT': '',
+        'PORT': '5432',
     }
 }
 
@@ -311,7 +313,15 @@ SITE_ID = 1
 # number of days after a report is considered blocked
 ENTOLAB_LOCK_PERIOD = 14
 
-from tigaserver_project.settings_local import *
+FCM_API_KEY = ""
+DISABLE_PUSH_IOS = True
+DISABLE_PUSH_ANDROID = True
+DRY_RUN_PUSH = True
+
+try:
+    from tigaserver_project.settings_local import *
+except ModuleNotFoundError:
+    pass
 
 # Disable notifications for messaging system. It falls back to email if pinax not present
 DJANGO_MESSAGES_NOTIFY = False
