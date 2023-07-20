@@ -503,12 +503,12 @@ def assign_reports_to_regular_user(this_user):
                 '''
                 result = _do_assign(reports_validated_by_ns_non_exec,this_user,grabbed_reports,currently_taken)
                 grabbed_reports = result['grabbed_reports']
-                currently_taken = result['grabbed_reports']
+                currently_taken = result['currently_taken']
 
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
                     result = _do_assign(new_reports_own_country,this_user, grabbed_reports, currently_taken)
                     grabbed_reports = result['grabbed_reports']
-                    currently_taken = result['grabbed_reports']
+                    currently_taken = result['currently_taken']
                     '''
                     for this_report in new_reports_own_country:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
@@ -528,12 +528,12 @@ def assign_reports_to_regular_user(this_user):
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
                     result = _do_assign(new_reports_other_countries_not_null, this_user, grabbed_reports, currently_taken)
                     grabbed_reports = result['grabbed_reports']
-                    currently_taken = result['grabbed_reports']
+                    currently_taken = result['currently_taken']
 
                 if currently_taken < MAX_N_OF_PENDING_REPORTS:
                     result = _do_assign(new_reports_other_country_null, this_user, grabbed_reports, currently_taken)
                     grabbed_reports = result['grabbed_reports']
-                    currently_taken = result['grabbed_reports']
+                    currently_taken = result['currently_taken']
                     '''
                     for this_report in new_reports_other_countries:
                         new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
