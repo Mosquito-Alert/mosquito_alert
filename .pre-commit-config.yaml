@@ -67,6 +67,16 @@ repos:
         args: ["-ii", "-ll", "-c", "pyproject.toml"]
         additional_dependencies: ["bandit[toml]"]
 
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.16
+    hooks:
+      - id: mdformat
+        # Optionally add plugins
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-black
+          - mdformat-shfmt
+        args: ["--number"]
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
   autoupdate_schedule: weekly
