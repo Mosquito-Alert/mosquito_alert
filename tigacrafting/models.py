@@ -543,7 +543,7 @@ class FavoritedReports(models.Model):
         unique_together = ('user','report',)
 
 
-class AimaAlertLog(models.Model):
+class Alert(models.Model):
     xvb = models.BooleanField('Stands for expert validation based - if True, means that the alert was sent after expert validation. For False, it was sent before')
     report_id = models.CharField(help_text='Report related with the alert',max_length=40)
     report_datetime = models.DateTimeField()
