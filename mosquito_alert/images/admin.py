@@ -53,10 +53,8 @@ class PhotoAdmin(NestedPolymorphicModelAdmin):
         formatter = HtmlFormatter(style="colorful")
         # Highlight the data
         response = highlight(response, JsonLexer(), formatter)
-        # Get the stylesheet
-        style = "<style>" + formatter.get_style_defs() + "</style><br>"
         # Safe the output
-        return mark_safe(style + response)
+        return format_html("<style>{}</style><br>{}", formatter.get_style_defs(), mark_safe(response))  # nosec
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:
