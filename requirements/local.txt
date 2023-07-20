@@ -12,7 +12,6 @@ django-stubs==4.2.3  # https://github.com/typeddjango/django-stubs
 pytest==7.4.0  # https://github.com/pytest-dev/pytest
 pytest-sugar==0.9.7  # https://github.com/Frozenball/pytest-sugar
 pytest-mock==3.11.1 # https://github.com/pytest-dev/pytest-mock/
-pytest-cov==4.1.0  # https://github.com/pytest-dev/pytest-cov
 pytest-freezegun==0.4.2  # https://github.com/ktosiek/pytest-freezegun
 requests-mock==1.11.0  # https://github.com/jamielennox/requests-mock
 djangorestframework-stubs==3.14.2  # https://github.com/typeddjango/djangorestframework-stubs
