@@ -31,7 +31,6 @@ def event_handler(sender, **kwargs):
     users_subscribed_qs = User_model.objects.filter(pk__in=users_pk_to_notify)
 
     if recipient := kwargs.get("recipient"):
-
         if isinstance(recipient, Group):
             recipient = recipient.user_set.all()
 
@@ -56,9 +55,7 @@ def event_handler(sender, **kwargs):
 def send_notification_email(instance, created, *args, **kwargs):
     # TODO: send mail async + django-anymail
     if created:
-        if isinstance(instance.recipient, User_model) and (
-            email := instance.recipient.email
-        ):
+        if isinstance(instance.recipient, User_model) and (email := instance.recipient.email):
             message = instance.description
             is_sent = send_mail(
                 subject=str(instance),

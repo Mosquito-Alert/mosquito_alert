@@ -1,18 +1,9 @@
 import pytest
 from django.urls import reverse
 
-from ..admin import (
-    BiteReportChildAdmin,
-    BreedingSiteReportChildAdmin,
-    IndividualReportAdmin,
-    ReportParentAdmin,
-)
+from ..admin import BiteReportChildAdmin, BreedingSiteReportChildAdmin, IndividualReportAdmin, ReportParentAdmin
 from ..models import BiteReport, BreedingSiteReport, IndividualReport
-from .factories import (
-    BiteReportFactory,
-    BreedingSiteReportFactory,
-    IndividualReportFactory,
-)
+from .factories import BiteReportFactory, BreedingSiteReportFactory, IndividualReportFactory
 
 
 class BaseRecoverableReportMixin:

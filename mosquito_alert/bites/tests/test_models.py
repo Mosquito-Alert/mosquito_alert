@@ -33,7 +33,5 @@ class TestBiteModel:
     def test__str__(self, freezer):
         # freezer is fixture from pytest-freezegun
         bite = BiteFactory(body_part=Bite.BodyParts.HEAD)
-        expected_str = "{} ({})".format(
-            Bite.BodyParts.HEAD.label, timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-        )
+        expected_str = "{} ({})".format(Bite.BodyParts.HEAD.label, timezone.now().strftime("%Y-%m-%d %H:%M:%S"))
         assert bite.__str__() == expected_str

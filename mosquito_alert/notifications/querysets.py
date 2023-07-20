@@ -3,10 +3,7 @@ from django.db.models import Q, QuerySet
 
 
 class NotificationSubscriptionQuerySet(QuerySet):
-    def _filter_generic_field(
-        self, obj, content_type_fieldname, object_id_fieldname, allow_null=False
-    ):
-
+    def _filter_generic_field(self, obj, content_type_fieldname, object_id_fieldname, allow_null=False):
         q_nullable = Q(**{f"{content_type_fieldname}__isnull": True})
         if obj is None:
             q = q_nullable
@@ -25,7 +22,6 @@ class NotificationSubscriptionQuerySet(QuerySet):
         return self.filter(q)
 
     def for_actor(self, obj):
-
         return self._filter_generic_field(
             obj=obj,
             content_type_fieldname="actor_content_type",
@@ -33,7 +29,6 @@ class NotificationSubscriptionQuerySet(QuerySet):
         )
 
     def for_target(self, obj, allow_null=False):
-
         return self._filter_generic_field(
             obj=obj,
             content_type_fieldname="target_content_type",

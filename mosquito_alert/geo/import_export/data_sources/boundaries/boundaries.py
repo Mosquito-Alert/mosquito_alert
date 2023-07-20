@@ -23,11 +23,7 @@ class BaseBoundaryDataSource(BaseDataSource, CompressedDataSourceMixin, ABC):
         )
 
         if cls.DEFAULT_BOUNDARY_LEVEL_TYPE:
-            logging.debug(
-                "Setting parser defaults for bl_type to {}".format(
-                    cls.DEFAULT_BOUNDARY_LEVEL_TYPE.value
-                )
-            )
+            logging.debug(f"Setting parser defaults for bl_type to {cls.DEFAULT_BOUNDARY_LEVEL_TYPE.value}")
             parser.set_defaults(bl_type=cls.DEFAULT_BOUNDARY_LEVEL_TYPE.value)
 
         cls._add_custom_arguments(parser=parser)
@@ -116,17 +112,13 @@ class NutsBoundarySource(BaseOnlineBoundaryDataSource):
     @classmethod
     def from_online_source(cls, db_version, scale, coor, **kwargs):
         # Forcinig only arguments.
-        return super().from_online_source(
-            db_version=db_version, scale=scale, coor=coor, **kwargs
-        )
+        return super().from_online_source(db_version=db_version, scale=scale, coor=coor, **kwargs)
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
         if self.level < 0 or self.level > 3:
-            raise ValueError(
-                f"Invalid level ({self.level}). NUTS allowed levels are between 0 and 3"
-            )
+            raise ValueError(f"Invalid level ({self.level}). NUTS allowed levels are between 0 and 3")
 
     @property
     def code_field_name(self):
@@ -192,9 +184,7 @@ class GadmBoundarySource(BaseOnlineBoundaryDataSource):
         else:
             level_name = self.ds[0][0].get(f"ENGTYPE_{self.level}")
             # CamelCase splitting
-            level_name_groups = re.findall(
-                pattern=r"[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))", string=level_name
-            )
+            level_name_groups = re.findall(pattern=r"[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))", string=level_name)
             level_name = " ".join(level_name_groups)
         return level_name
 

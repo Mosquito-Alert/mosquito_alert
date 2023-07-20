@@ -26,9 +26,7 @@ class ReportForm(forms.ModelForm):
         if self.instance._state.adding:
             self.instance.user = self.request.user
 
-            self.instance.location = Location.objects.create(
-                point=self.cleaned_data["location_point"]
-            )
+            self.instance.location = Location.objects.create(point=self.cleaned_data["location_point"])
         else:
             if "location_point" in self.changed_data:
                 self.instance.location.point = self.cleaned_data["location_point"]

@@ -39,9 +39,7 @@ class TestUniqueParentManageableNodeMixin:
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "model_cls", [DummyMP_NodeParentManageableModel, DummyNS_NodeParentManageableModel]
-)
+@pytest.mark.parametrize("model_cls", [DummyMP_NodeParentManageableModel, DummyNS_NodeParentManageableModel])
 class TestParentManageableNodeMixin:
     def test_parent_property_return_None_on_parent_nodes(self, model_cls):
         node1 = model_cls.add_root()

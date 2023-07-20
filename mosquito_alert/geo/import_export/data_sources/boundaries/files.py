@@ -82,9 +82,7 @@ class BucketGdalFileHandler(GdalVirtualFileHandler):
         parsed = urlparse(uri)
         bucket_type = parsed.scheme
         logging.debug(f"Detected {bucket_type} bucket")
-        return self.format_syntax(
-            name=self.NAME[bucket_type], uri=parsed.netloc + parsed.path, **self.options
-        )
+        return self.format_syntax(name=self.NAME[bucket_type], uri=parsed.netloc + parsed.path, **self.options)
 
 
 class CompressedGdalFile(GdalVirtualFileHandler):

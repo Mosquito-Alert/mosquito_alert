@@ -25,9 +25,7 @@ class AllowOnlyNodesFromSameTreeFormMixin:
         return options
 
 
-class AllowOnlyNodesFromSameTreeForm(
-    AllowOnlyNodesFromSameTreeFormMixin, OriginalMoveNodeForm
-):
+class AllowOnlyNodesFromSameTreeForm(AllowOnlyNodesFromSameTreeFormMixin, OriginalMoveNodeForm):
     pass
 
 
@@ -51,9 +49,7 @@ class ParentManageableNodeFormMixin:
 class ParentManageableMoveNodeForm(ParentManageableNodeFormMixin, OriginalMoveNodeForm):
     @classmethod
     def _check_instance_class(cls, instance):
-        if not instance or not issubclass(
-            instance.__class__, ParentManageableNodeMixin
-        ):
+        if not instance or not issubclass(instance.__class__, ParentManageableNodeMixin):
             raise ValueError(
                 "{} only can be used with instances that subclass {}".format(
                     cls.__name__, ParentManageableNodeMixin.__name__

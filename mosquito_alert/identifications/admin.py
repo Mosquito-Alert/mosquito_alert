@@ -3,12 +3,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from nested_admin.nested import NestedStackedInline, NestedTabularInline
 
-from .models import (
-    IdentifierUserProfile,
-    ImageTaxonPrediction,
-    ImageTaxonPredictionRun,
-    UserIdentificationSuggestion,
-)
+from .models import IdentifierUserProfile, ImageTaxonPrediction, ImageTaxonPredictionRun, UserIdentificationSuggestion
 
 
 ##########################
@@ -46,6 +41,7 @@ class UserIdentificationSuggestionInline(NestedStackedInline):
     )
     readonly_fields = ["show_prob_tree"]
 
+    @admin.display(description=_("Probability tree"))
     def show_prob_tree(self, instance):
         if instance:
             render = UserIdentificationSuggestion.get_probability_tree(
@@ -53,15 +49,11 @@ class UserIdentificationSuggestionInline(NestedStackedInline):
             ).get_tree_render()
             return format_html("<textarea readonly>{}</textarea>", render)
 
-    show_prob_tree.short_description = _("Probability tree")
-
 
 ##########################
 # User-related admin
 ##########################
+@admin.register(IdentifierUserProfile)
 class IdentifierUserProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "is_superexpert")
     list_filter = ("is_superexpert",)
-
-
-admin.site.register(IdentifierUserProfile, IdentifierUserProfileAdmin)

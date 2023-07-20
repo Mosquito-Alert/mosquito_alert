@@ -82,6 +82,4 @@ class TestResource:
         assert instance.boundary_layer == country_bl
         assert instance.code == "ES"
         assert instance.name == "Spain"
-        assert instance.geometry == GEOSGeometry(
-            "MULTIPOLYGON (((0 0, 0 10, 10 10, 10 0, 0 0)))", srid=4326
-        )
+        assert instance.geometry == GEOSGeometry("MULTIPOLYGON (((0 0, 0 10, 10 10, 10 0, 0 0)))", srid=4326)

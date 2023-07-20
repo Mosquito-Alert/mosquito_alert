@@ -24,9 +24,7 @@ class TestBiteAdmin:
             },
         )
         assert response.status_code == 302
-        assert Bite.objects.filter(
-            body_part=Bite.BodyParts.HEAD.value, datetime=timezone.now()
-        ).exists()
+        assert Bite.objects.filter(body_part=Bite.BodyParts.HEAD.value, datetime=timezone.now()).exists()
 
     def test_view(self, admin_client):
         bite = BiteFactory()

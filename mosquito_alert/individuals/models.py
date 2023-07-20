@@ -2,13 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import ModelSignal
 from django.utils.translation import gettext_lazy as _
-from django_lifecycle import (
-    AFTER_UPDATE,
-    BEFORE_CREATE,
-    BEFORE_UPDATE,
-    LifecycleModel,
-    hook,
-)
+from django_lifecycle import AFTER_UPDATE, BEFORE_CREATE, BEFORE_UPDATE, LifecycleModel, hook
 
 from mosquito_alert.images.models import Photo
 from mosquito_alert.notifications.signals import notify, notify_subscribers
@@ -61,9 +55,7 @@ class Individual(LifecycleModel):
                         sender=r,
                         verb=_("was identified as"),
                         action_object=self.taxon,
-                        description=_(
-                            f"Your observation report has been identified as {self.taxon}"
-                        ),
+                        description=_(f"Your observation report has been identified as {self.taxon}"),
                     )
                 for b in r.location.boundaries.all():
                     notify_subscribers.send(
@@ -87,19 +79,13 @@ class Individual(LifecycleModel):
         verbose_name_plural = _("individuals")
 
     def __str__(self) -> str:
-        return (
-            str(self.taxon)
-            if self.taxon
-            else f"Not-identified individual (id={self.pk})"
-        )
+        return str(self.taxon) if self.taxon else f"Not-identified individual (id={self.pk})"
 
 
 class AnnotationAttribute(models.Model):
     # Relations
     # Those taxon that can be questioned with this anntoations: life, mammals, culex pipiens, etc
-    taxa = models.ForeignKey(
-        Taxon, on_delete=models.CASCADE, related_name="annotation_attributes"
-    )
+    taxa = models.ForeignKey(Taxon, on_delete=models.CASCADE, related_name="annotation_attributes")
 
     # Attributes - Mandatory
     label = models.CharField(max_length=128)  # the question
@@ -123,17 +109,13 @@ class AnnotationAttribute(models.Model):
 
 class AnnotationValue(models.Model):
     # Relations
-    annotation_attribute = models.ForeignKey(
-        AnnotationAttribute, on_delete=models.CASCADE, related_name="values"
-    )
+    annotation_attribute = models.ForeignKey(AnnotationAttribute, on_delete=models.CASCADE, related_name="values")
     taxa = models.ForeignKey(
         Taxon, on_delete=models.CASCADE, related_name="annotation_values"
     )  # Those taxon that can be questioned with this anntoations: life, mammals, culex pipiens, etc
 
     # Attributes - Mandatory
-    label = models.CharField(
-        max_length=128
-    )  # Dead, Alive | egg, pupa (only a set of taxons)
+    label = models.CharField(max_length=128)  # Dead, Alive | egg, pupa (only a set of taxons)
 
     # Attributes - Optional
     # Object Manager
@@ -142,9 +124,8 @@ class AnnotationValue(models.Model):
 
     # Methods
     def save(self, *args, **kwargs) -> None:
-        if (
-            self.taxa != self.annotation_attribute.taxa
-            or not self.taxa.is_descendant_of(self.annotation_attribute.taxa)
+        if self.taxa != self.annotation_attribute.taxa or not self.taxa.is_descendant_of(
+            self.annotation_attribute.taxa
         ):
             raise ValueError(
                 "Tried to assign an annotation value to a taxa that is not "
@@ -164,15 +145,9 @@ class AnnotationValue(models.Model):
 
 class Annotation(models.Model):
     # Relations
-    annotation_attribute = models.ForeignKey(
-        AnnotationAttribute, on_delete=models.PROTECT, related_name="annotations"
-    )
-    annotation_value = models.ForeignKey(
-        AnnotationValue, on_delete=models.PROTECT, related_name="annotations"
-    )
-    individual = models.ForeignKey(
-        Individual, on_delete=models.CASCADE, related_name="annotations"
-    )
+    annotation_attribute = models.ForeignKey(AnnotationAttribute, on_delete=models.PROTECT, related_name="annotations")
+    annotation_value = models.ForeignKey(AnnotationValue, on_delete=models.PROTECT, related_name="annotations")
+    individual = models.ForeignKey(Individual, on_delete=models.CASCADE, related_name="annotations")
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -191,9 +166,7 @@ class Annotation(models.Model):
     # Methods
     def save(self, *args, **kwargs) -> None:
         if self.annotation_value not in self.annotation_attribute.values:
-            raise ValueError(
-                "The annotation value is not a valid option for this annotation attribute."
-            )
+            raise ValueError("The annotation value is not a valid option for this annotation attribute.")
 
         super().save(*args, **kwargs)
 

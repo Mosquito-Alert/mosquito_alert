@@ -72,10 +72,7 @@ class TestIndividualAdmin:
 
         individual_admin = IndividualAdmin(model=Individual, admin_site=AdminSite())
 
-        assert (
-            individual_admin.thumbnail(i)
-            == f"<img src='{newest.image.url}' height='75' />"
-        )
+        assert individual_admin.thumbnail(i) == f"<img src='{newest.image.url}' height='75' />"
 
     def test_view(self, admin_client):
         i = IndividualFactory()

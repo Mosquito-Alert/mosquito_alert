@@ -30,9 +30,7 @@ class TestIndividual:
 
         assert i.is_identified
 
-    def test_is_identified_become_false_on_taxon_change_is_not_specie(
-        self, taxon_specie, taxon_root
-    ):
+    def test_is_identified_become_false_on_taxon_change_is_not_specie(self, taxon_specie, taxon_root):
         i = IndividualFactory(taxon=taxon_specie)
 
         assert i.is_identified

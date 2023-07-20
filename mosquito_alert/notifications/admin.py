@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import NotificationSubscription
 
 
+@admin.register(NotificationSubscription)
 class NotificationSubscriptionAdmin(admin.ModelAdmin):
     list_display = [
         "subscribed_actor",
@@ -12,6 +13,3 @@ class NotificationSubscriptionAdmin(admin.ModelAdmin):
         "created_at",
     ]
     list_filter = ["user"]
-
-
-admin.site.register(NotificationSubscription, NotificationSubscriptionAdmin)

@@ -31,7 +31,6 @@ class Command(BaseCommand):
     help = "Import boundaries data."
 
     def add_arguments(self, parser):
-
         parser.add_argument(
             "--bl_pk",
             type=int,
@@ -56,9 +55,7 @@ class Command(BaseCommand):
         subparser = parser.add_subparsers(title="source", dest="source", required=True)
 
         for s in NAME_SOURCES:
-            s_parser = subparser.add_parser(
-                s.CLI_NAME, formatter_class=argparse.ArgumentDefaultsHelpFormatter
-            )
+            s_parser = subparser.add_parser(s.CLI_NAME, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
             s_parser.set_defaults(**{subparser.dest: s})
             s.add_arguments(s_parser)
 
@@ -71,15 +68,11 @@ class Command(BaseCommand):
         )
 
         if not locations:
-            raise ReverseCandidatesException(
-                f"No naming candidate found for boundary {boundary} (pk: {boundary.pk})"
-            )
+            raise ReverseCandidatesException(f"No naming candidate found for boundary {boundary} (pk: {boundary.pk})")
         if len(locations) > 1:
             raise ReverseCandidatesException(
                 "Multiple location candidates found for boundary {} (pk: {}) -> {}. "
-                "Please edit it manually. Skipping...".format(
-                    boundary, boundary.pk, [x.name for x in locations]
-                )
+                "Please edit it manually. Skipping...".format(boundary, boundary.pk, [x.name for x in locations])
             )
 
         return locations[0].name
@@ -108,9 +101,7 @@ class Command(BaseCommand):
         _name_field = "name"
         trans_opts = translator.get_options_for_model(Boundary)
         if _name_field not in trans_opts.fields:
-            raise ValueError(
-                f"Field {_name_field} has no translation candidates {trans_opts}."
-            )
+            raise ValueError(f"Field {_name_field} has no translation candidates {trans_opts}.")
 
         trans_field = trans_opts.fields.get(_name_field)
 
@@ -135,9 +126,7 @@ class Command(BaseCommand):
                 continue
 
             # Merge translations results in the same order than the headers.
-            result = result + list(
-                itemgetter(*map(lambda x: x.language, trans_field))(result_translations)
-            )
+            result = result + list(itemgetter(*map(lambda x: x.language, trans_field))(result_translations))
 
             dataset.append(result)
 
@@ -145,7 +134,6 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-
         self.set_logging(verbosity=int(options["verbosity"]))
 
         sp = transaction.savepoint()

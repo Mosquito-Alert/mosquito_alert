@@ -33,9 +33,7 @@ def get_pycountry_param_from_iso_code(db_name, iso_code, raise_not_found=True):
         raise ValueError("ISO code must be iso2 or iso3.")
 
     if result is None and raise_not_found:
-        raise KeyError(
-            f"Could not find a record for {iso_code} in pycountry {db_name} db"
-        )
+        raise KeyError(f"Could not find a record for {iso_code} in pycountry {db_name} db")
 
     return result
 

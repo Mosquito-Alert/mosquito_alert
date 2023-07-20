@@ -54,9 +54,7 @@ class BoundaryLayer(ParentManageableNodeMixin, LifecycleModelMixin, MP_Node):
     )
 
     # Attributes - Mandatory
-    boundary_type = models.CharField(
-        max_length=3, choices=BoundaryType.choices, db_index=True
-    )
+    boundary_type = models.CharField(max_length=3, choices=BoundaryType.choices, db_index=True)
     name = models.CharField(max_length=64)  # State, Province, NUTS3, etc
     level = models.PositiveSmallIntegerField(
         blank=True,
@@ -82,9 +80,7 @@ class BoundaryLayer(ParentManageableNodeMixin, LifecycleModelMixin, MP_Node):
         try:
             if not self.is_root() and (root := self.get_root()):
                 if self.boundary_type != root.boundary_type:
-                    raise ValueError(
-                        f"Only {root.boundary_type} boundary layer nodes are allowed in {root} tree."
-                    )
+                    raise ValueError(f"Only {root.boundary_type} boundary layer nodes are allowed in {root} tree.")
         except self.__class__.DoesNotExist:
             # self.get_root() has not found any result.
             pass
@@ -104,9 +100,7 @@ class BoundaryLayer(ParentManageableNodeMixin, LifecycleModelMixin, MP_Node):
             if self.parent:
                 # Checking that the current level is smaller than its parent
                 if self.level <= self.parent.level:
-                    raise ValueError(
-                        "Level must be ascending order from parent to children."
-                    )
+                    raise ValueError("Level must be ascending order from parent to children.")
 
         # Inherit the boundary owner from the parent.
         if self.parent and (p_boundary := self.parent.boundary):
@@ -138,9 +132,7 @@ class BoundaryLayer(ParentManageableNodeMixin, LifecycleModelMixin, MP_Node):
 
 class Boundary(ParentManageableNodeMixin, MP_Node):
     # Relations
-    boundary_layer = models.ForeignKey(
-        BoundaryLayer, on_delete=models.CASCADE, related_name="boundaries"
-    )
+    boundary_layer = models.ForeignKey(BoundaryLayer, on_delete=models.CASCADE, related_name="boundaries")
 
     # Attributes - Mandatory
     code = models.CharField(max_length=16, db_index=True)
@@ -168,9 +160,7 @@ class Boundary(ParentManageableNodeMixin, MP_Node):
         try:
             # Query the BoundaryGeometry object and SELECT only
             # the geometry field.
-            return BoundaryGeometry.objects.values_list("geometry", flat=True).get(
-                boundary=self
-            )
+            return BoundaryGeometry.objects.values_list("geometry", flat=True).get(boundary=self)
         except BoundaryGeometry.DoesNotExist:
             return None
 
@@ -192,9 +182,7 @@ class Boundary(ParentManageableNodeMixin, MP_Node):
                         # Deleting cached property
                         del self.geometry
                 else:
-                    BoundaryGeometry.objects.create(
-                        boundary=self, geometry=new_geometry
-                    )
+                    BoundaryGeometry.objects.create(boundary=self, geometry=new_geometry)
                     # Deleting cached property
                     del self.geometry
             else:
@@ -207,9 +195,7 @@ class Boundary(ParentManageableNodeMixin, MP_Node):
         verbose_name = _("Boundary")
         verbose_name_plural = _("Boundaries")
         constraints = [
-            models.UniqueConstraint(
-                fields=["boundary_layer", "code"], name="unique_boundarylayer_code"
-            ),
+            models.UniqueConstraint(fields=["boundary_layer", "code"], name="unique_boundarylayer_code"),
         ]
         indexes = [models.Index(fields=["boundary_layer", "code"])]
 
@@ -260,9 +246,9 @@ class BoundaryGeometry(LifecycleModel):
     def update_linked_location(self):
         # Get Location objects linked to this Boundary, and which point now rest outside
         # the boundary.
-        loc_qs = Location.objects.filter(
-            boundaries=self.boundary
-        ).filter_by_polygon_intersection(polygon=self.geometry, negate=True)
+        loc_qs = Location.objects.filter(boundaries=self.boundary).filter_by_polygon_intersection(
+            polygon=self.geometry, negate=True
+        )
         for loc in loc_qs.all():
             loc.boundaries.remove(self.boundary)
 
@@ -270,9 +256,9 @@ class BoundaryGeometry(LifecycleModel):
 
     @hook(AFTER_CREATE)
     def _link_boundary_to_location(self):
-        loc_qs = Location.objects.filter_by_polygon_intersection(
-            polygon=self.geometry
-        ).exclude(boundaries=self.boundary)
+        loc_qs = Location.objects.filter_by_polygon_intersection(polygon=self.geometry).exclude(
+            boundaries=self.boundary
+        )
         for loc in loc_qs.all():
             loc.boundaries.add(self.boundary)
 
@@ -293,9 +279,7 @@ class Location(LifecycleModel):
 
     # Attributes - Mandatory
     point = models.PointField(geography=False)
-    location_type = models.CharField(
-        max_length=3, choices=LocationType.choices, null=True, blank=True
-    )
+    location_type = models.CharField(max_length=3, choices=LocationType.choices, null=True, blank=True)
     # TODO: add positional_accuray (The uncertainty in meters around the latitude and longitude.)
 
     # Attributes - Optional

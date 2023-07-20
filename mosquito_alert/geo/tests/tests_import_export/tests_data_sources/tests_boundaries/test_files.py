@@ -114,10 +114,7 @@ class TestOnlineGdalFileHandler:
     )
     def test_get_vsi_path(self, uri, options, expected_output, error):
         with error:
-            assert (
-                OnlineGdalFileHandler(options=options).get_vsi_path(uri=uri)
-                == expected_output
-            )
+            assert OnlineGdalFileHandler(options=options).get_vsi_path(uri=uri) == expected_output
 
 
 class TestBucketGdalFileHandler:
@@ -214,7 +211,4 @@ class TestCompressedGdalFile:
     )
     def test_get_vsi_path(self, path, dst_path, expected_output, error):
         with error:
-            assert (
-                CompressedGdalFile().get_vsi_path(path=path, dst_path=dst_path)
-                == expected_output
-            )
+            assert CompressedGdalFile().get_vsi_path(path=path, dst_path=dst_path) == expected_output

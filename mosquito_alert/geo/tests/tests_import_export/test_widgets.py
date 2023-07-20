@@ -1,12 +1,7 @@
 from contextlib import nullcontext as does_not_raise
 
 import pytest
-from django.contrib.gis.db.models.fields import (
-    MultiPointField,
-    MultiPolygonField,
-    PointField,
-    PolygonField,
-)
+from django.contrib.gis.db.models.fields import MultiPointField, MultiPolygonField, PointField, PolygonField
 from django.contrib.gis.gdal.error import GDALException
 from django.contrib.gis.gdal.geometries import OGRGeometry
 from django.contrib.gis.geos.geometry import GEOSGeometry

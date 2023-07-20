@@ -11,9 +11,7 @@ class BoundaryLayerFactory(DjangoModelFactory):
         "mosquito_alert.geo.tests.factories.BoundaryFactory",
         factory_related_name="boundary_layer",
     )
-    boundary_type = factory.Faker(
-        "random_element", elements=BoundaryLayer.BoundaryType.values
-    )
+    boundary_type = factory.Faker("random_element", elements=BoundaryLayer.BoundaryType.values)
     name = factory.Faker("name")
     level = factory.Faker("random_int", min=0, max=5)
     description = factory.Faker("paragraph")
@@ -57,9 +55,7 @@ class BoundaryGeometryFactory(DjangoModelFactory):
 
 class LocationFactory(DjangoModelFactory):
     point = FuzzyPoint(srid=4326)
-    location_type = factory.Faker(
-        "random_element", elements=Location.LocationType.values
-    )
+    location_type = factory.Faker("random_element", elements=Location.LocationType.values)
 
     @factory.post_generation
     def boundaries(self, create, extracted, **kwargs):

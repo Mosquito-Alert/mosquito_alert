@@ -3,13 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-from django_lifecycle import (
-    AFTER_CREATE,
-    AFTER_DELETE,
-    AFTER_UPDATE,
-    LifecycleModelMixin,
-    hook,
-)
+from django_lifecycle import AFTER_CREATE, AFTER_DELETE, AFTER_UPDATE, LifecycleModelMixin, hook
 
 from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual
@@ -52,7 +46,6 @@ class BaseIdentificationCandidate(ProbabilityTreeModelMixin, models.Model):
 
 
 class BaseIndividualIdentificationCandidate(BaseIdentificationCandidate):
-
     # Relations
     individual = models.ForeignKey(Individual, on_delete=models.CASCADE)
 
@@ -78,11 +71,8 @@ class MultipleIdentificationCandidateModel(
 # User Profile
 ##########################
 class IdentifierUserProfile(models.Model):
-
     # Relations
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True
-    )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     # TODO: reviewed_individuals = models.ManyToManyField(Individual)
 
     # Attributes - Mandatory
@@ -136,9 +126,7 @@ class IdentificationResult(MultipleIdentificationCandidateModel):
     @classmethod
     def _check_type(cls, value):
         if value not in cls.IdentificationResultType.values:
-            raise ValueError(
-                f"{value} is not an allowed type value: ({cls.IdentificationResultType.values})"
-            )
+            raise ValueError(f"{value} is not an allowed type value: ({cls.IdentificationResultType.values})")
 
     @classmethod
     def get_probability_tree(cls, individual, type):
@@ -150,9 +138,7 @@ class IdentificationResult(MultipleIdentificationCandidateModel):
     def get_probability_for_taxon(cls, taxon, individual, type):
         cls._check_type(value=type)
 
-        return super().get_probability_for_taxon(
-            taxon=taxon, individual=individual, type=type
-        )
+        return super().get_probability_for_taxon(taxon=taxon, individual=individual, type=type)
 
     @classmethod
     def _update_from_tree(cls, tree, individual, type):
@@ -170,9 +156,7 @@ class IdentificationResult(MultipleIdentificationCandidateModel):
     @classmethod
     def _update_by_type(cls, individual, type):
         def get_community_result_tree(individual=individual):
-            user_profiles = IdentifierUserProfile.objects.filter(
-                identifications__individual=individual
-            )
+            user_profiles = IdentifierUserProfile.objects.filter(identifications__individual=individual)
 
             if not user_profiles.exists():
                 return
@@ -210,10 +194,8 @@ class IdentificationResult(MultipleIdentificationCandidateModel):
                     type=cls.IdentificationResultType.COMMUNITY, individual=individual
                 )
 
-                computer_vision_result_tree = (
-                    ComputerVisionIdentificationSuggestion.get_probability_tree(
-                        individual=individual
-                    )
+                computer_vision_result_tree = ComputerVisionIdentificationSuggestion.get_probability_tree(
+                    individual=individual
                 )
 
                 if community_result_tree and computer_vision_result_tree:
@@ -225,18 +207,13 @@ class IdentificationResult(MultipleIdentificationCandidateModel):
                     if not result_tree:
                         return
 
-        IdentificationResult._update_from_tree(
-            individual=individual, type=type, tree=result_tree
-        )
+        IdentificationResult._update_from_tree(individual=individual, type=type, tree=result_tree)
 
         if type == cls.IdentificationResultType.COMMUNITY:
-            IdentificationResult._update_by_type(
-                individual=individual, type=cls.IdentificationResultType.ENSEMBLED
-            )
+            IdentificationResult._update_by_type(individual=individual, type=cls.IdentificationResultType.ENSEMBLED)
 
     @classmethod
     def update(cls, individual, type=None):
-
         # If updating community, ensembled needs to be updated too.
         type = type or cls.IdentificationResultType.COMMUNITY
         cls._check_type(value=type)
@@ -256,10 +233,7 @@ class IdentificationResult(MultipleIdentificationCandidateModel):
         ]
 
 
-class CommunityIdentificationResult(
-    IdentificationResultProxyMixin, IdentificationResult
-):
-
+class CommunityIdentificationResult(IdentificationResultProxyMixin, IdentificationResult):
     RESULT_TYPE = IdentificationResult.IdentificationResultType.COMMUNITY
 
     class Meta:
@@ -268,10 +242,7 @@ class CommunityIdentificationResult(
         verbose_name_plural = _("community identification results")
 
 
-class EnsembledIdentificationResult(
-    IdentificationResultProxyMixin, IdentificationResult
-):
-
+class EnsembledIdentificationResult(IdentificationResultProxyMixin, IdentificationResult):
     RESULT_TYPE = IdentificationResult.IdentificationResultType.ENSEMBLED
 
     class Meta:
@@ -283,10 +254,7 @@ class EnsembledIdentificationResult(
 ##########################
 # Individual Single Identification Models
 ##########################
-class BaseIdentificationResultChild(
-    LifecycleModelMixin, BaseIndividualIdentificationCandidate
-):
-
+class BaseIdentificationResultChild(LifecycleModelMixin, BaseIndividualIdentificationCandidate):
     PARENT_RESULT_MODEL = None  # instance of BaseIdentificationResultProxy
 
     @hook(AFTER_CREATE)
@@ -300,7 +268,6 @@ class BaseIdentificationResultChild(
 
 
 class BaseIdentificationSuggestion(BaseIdentificationResultChild):
-
     # Relations
 
     # Attributes - Mandatory
@@ -319,10 +286,7 @@ class BaseIdentificationSuggestion(BaseIdentificationResultChild):
         abstract = True
 
 
-class UserIdentificationSuggestion(
-    MultipleIndividualIdentificationCandidateMixin, BaseIdentificationSuggestion
-):
-
+class UserIdentificationSuggestion(MultipleIndividualIdentificationCandidateMixin, BaseIdentificationSuggestion):
     PARENT_RESULT_MODEL = CommunityIdentificationResult
 
     grouped_by_fields = MultipleIdentificationCandidateModel.grouped_by_fields + [
@@ -370,7 +334,6 @@ class UserIdentificationSuggestion(
 class ComputerVisionIdentificationSuggestion(
     MultipleIndividualIdentificationCandidateMixin, BaseIdentificationSuggestion
 ):
-
     PARENT_RESULT_MODEL = EnsembledIdentificationResult
 
     # Relations
@@ -382,20 +345,13 @@ class ComputerVisionIdentificationSuggestion(
     # Methods
     @classmethod
     def update(cls, individual):
-        predictions = ImageTaxonPredictionRun.objects.filter(
-            photo__individuals=individual
-        )
+        predictions = ImageTaxonPredictionRun.objects.filter(photo__individuals=individual)
 
         if not predictions.exists():
             return
 
         weight_factor = 1 / predictions.count()
-        result_tree = sum(
-            [
-                x.get_probability_tree().apply_weight(weight=weight_factor)
-                for x in predictions
-            ]
-        )
+        result_tree = sum([x.get_probability_tree().apply_weight(weight=weight_factor) for x in predictions])
 
         cls._update_from_tree(individual=individual, tree=result_tree)
 
@@ -410,9 +366,7 @@ class ComputerVisionIdentificationSuggestion(
 ##########################
 class ImageTaxonPredictionRun(models.Model):
     # Relations
-    photo = models.OneToOneField(
-        Photo, on_delete=models.CASCADE, related_name="taxon_prediction_run"
-    )
+    photo = models.OneToOneField(Photo, on_delete=models.CASCADE, related_name="taxon_prediction_run")
 
     # Attributes - Mandatory
     created_at = models.DateTimeField(auto_now_add=True)
@@ -436,9 +390,7 @@ class ImageTaxonPredictionRun(models.Model):
         if not qs.exists():
             return None
 
-        return create_tree_from_identifications(
-            [(x.taxon, x.probability) for x in qs.all()]
-        )
+        return create_tree_from_identifications([(x.taxon, x.probability) for x in qs.all()])
 
     # Meta and String
     class Meta:

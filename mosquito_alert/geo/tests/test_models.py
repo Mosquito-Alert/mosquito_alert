@@ -7,12 +7,7 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 
 from ..models import Boundary, BoundaryGeometry, BoundaryLayer, Location
-from .factories import (
-    BoundaryFactory,
-    BoundaryGeometryFactory,
-    BoundaryLayerFactory,
-    LocationFactory,
-)
+from .factories import BoundaryFactory, BoundaryGeometryFactory, BoundaryLayerFactory, LocationFactory
 from .fuzzy import FuzzyMultiPolygon, FuzzyPoint, FuzzyPolygon
 from .models import DummyGeoLocatedModel
 
@@ -58,9 +53,7 @@ class TestBoundaryLayerModel:
             )
 
     def test_auto_level_from_parent(self, country_bl):
-        bl = BoundaryLayerFactory(
-            level=None, parent=country_bl, boundary_type=country_bl.boundary_type
-        )
+        bl = BoundaryLayerFactory(level=None, parent=country_bl, boundary_type=country_bl.boundary_type)
 
         assert bl.level == country_bl.level + 1
 
@@ -70,9 +63,7 @@ class TestBoundaryLayerModel:
         assert bl.level == 0
 
     def test_raise_on_level_update_lower_than_parent(self, country_bl):
-        bl = BoundaryLayerFactory(
-            level=None, parent=country_bl, boundary_type=country_bl.boundary_type
-        )
+        bl = BoundaryLayerFactory(level=None, parent=country_bl, boundary_type=country_bl.boundary_type)
         bl.level = 0
 
         with pytest.raises(ValueError):
@@ -84,9 +75,7 @@ class TestBoundaryLayerModel:
         bl.boundary = boundary
         bl.save()
 
-        child_bl = BoundaryLayerFactory(
-            boundary=None, parent=bl, boundary_type=bl.boundary_type
-        )
+        child_bl = BoundaryLayerFactory(boundary=None, parent=bl, boundary_type=bl.boundary_type)
 
         assert child_bl.boundary == boundary
 
@@ -131,9 +120,7 @@ class TestBoundaryLayerModel:
             boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE.value,
             name="test",
         )
-        expected_str = "{}{}: {}".format(
-            BoundaryLayer.BoundaryType.ADMINISTRATIVE.value, 0, "test"
-        )
+        expected_str = "{}{}: {}".format(BoundaryLayer.BoundaryType.ADMINISTRATIVE.value, 0, "test")
         assert bl.__str__() == expected_str
 
 

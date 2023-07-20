@@ -10,9 +10,7 @@ class ShapefileImportForm(ImportForm):
 
     name_field_name = forms.CharField(label=_("Name field name"))
 
-    boundary_layer = forms.ModelChoiceField(
-        queryset=BoundaryLayer.objects.all(), required=True
-    )
+    boundary_layer = forms.ModelChoiceField(queryset=BoundaryLayer.objects.all(), required=True)
 
 
 class ShapefileConfirmImportForm(ConfirmImportForm):
@@ -20,6 +18,4 @@ class ShapefileConfirmImportForm(ConfirmImportForm):
 
     name_field_name = forms.CharField(label=_("Name field name"))
 
-    boundary_layer = forms.ModelChoiceField(
-        queryset=BoundaryLayer.objects.all(), required=True
-    )
+    boundary_layer = forms.ModelChoiceField(queryset=BoundaryLayer.objects.all(), required=True)

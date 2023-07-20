@@ -58,9 +58,7 @@ class TestBoundaryAdmin:
         b1 = BoundaryFactory(boundary_layer=country_bl)
 
         # Dummy province boundary layer
-        province_bl = BoundaryLayerFactory(
-            boundary=b1, boundary_type=country_bl.boundary_type, parent=country_bl
-        )
+        province_bl = BoundaryLayerFactory(boundary=b1, boundary_type=country_bl.boundary_type, parent=country_bl)
         b2 = BoundaryFactory(boundary_layer=province_bl, parent=b1)
 
         url = reverse("admin:geo_boundary_changelist")
@@ -86,9 +84,7 @@ class TestBoundaryAdmin:
 
     def test_filter_by_boundary_layer_type(self, admin_client):
         url = reverse("admin:geo_boundary_changelist")
-        response = admin_client.get(
-            url, data={"boundary_layer__boundary_type__exact": "adm"}
-        )
+        response = admin_client.get(url, data={"boundary_layer__boundary_type__exact": "adm"})
         assert response.status_code == 200
 
     def test_filter_by_boundary_layer(self, admin_client):
@@ -141,9 +137,7 @@ class TestBoundaryAdmin:
         url = reverse("admin:geo_boundary_import")
 
         # Generating post. Code is XAD
-        dummy_shp_zip = os.path.join(
-            os.path.dirname(__file__), "files", "islands_shp.zip"
-        )
+        dummy_shp_zip = os.path.join(os.path.dirname(__file__), "files", "islands_shp.zip")
 
         assert Boundary.objects.count() == 0
 
@@ -191,9 +185,7 @@ class TestBoundaryLayerAdmin:
     def test_search(self, admin_client, country_bl):
         url = reverse("admin:geo_boundarylayer_changelist")
 
-        province_bl = BoundaryLayerFactory(
-            name="Test", boundary_type=country_bl.boundary_type, parent=country_bl
-        )
+        province_bl = BoundaryLayerFactory(name="Test", boundary_type=country_bl.boundary_type, parent=country_bl)
 
         response = admin_client.get(url, data={"q": "test"})
         assert response.status_code == 200
@@ -233,9 +225,7 @@ class TestBoundaryLayerAdmin:
             },
         )
         assert response.status_code == 302
-        assert BoundaryLayer.objects.filter(
-            name="Test name", boundary_type="adm"
-        ).exists()
+        assert BoundaryLayer.objects.filter(name="Test name", boundary_type="adm").exists()
 
     def test_view(self, admin_client, country_bl):
         url = reverse(
