@@ -45,8 +45,25 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v3
 
-      - name: Build the Stack
-        run: docker compose -f docker-compose-local.yml build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          # Same as docker-compose
+          build-args: |
+            BUILD_ENVIRONMENT=local
+          # Same as Dockerfile service image name.
+          tags: mosquito_alert_local
+          push: false
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      #- name: Build the Stack
+      #  run: docker compose -f docker-compose-local.yml build
 
       #- name: Run DB Migrations
       #  run: docker compose -f docker-compose-local.yml run --rm django python manage.py migrate
