@@ -46,6 +46,11 @@ class TestDiseaseVectorModel:
         with pytest.raises(IntegrityError, match=r"unique constraint"):
             _ = DiseaseVectorFactory.create_batch(size=2, taxon=taxon_specie)
 
+    def test_disease_vector_pk_is_taxon(self, taxon_specie):
+        dv = DiseaseVectorFactory(taxon=taxon_specie)
+
+        assert dv.pk == taxon_specie.pk
+
     def test_cascade_taxon_deletion(self):
         dv = DiseaseVectorFactory()
         dv.taxon.delete()

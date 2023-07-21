@@ -51,7 +51,7 @@ class TestDiseaseVectorsAdmin:
         url = reverse("admin:epidemiology_diseasevector_changelist")
         response = admin_client.get(url, data={"q": "test"})
         assert response.status_code == 200
-        assertContains(response=response, text=f'value="{taxon_vector.id}"')
+        assertContains(response=response, text=f'value="{taxon_vector.pk}"')
 
     def test_taxon_filter(self, admin_client):
         url = reverse("admin:epidemiology_diseasevector_changelist")

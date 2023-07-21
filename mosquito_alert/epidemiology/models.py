@@ -31,6 +31,7 @@ class DiseaseVector(models.Model):
     # Relations
     taxon = models.OneToOneField(
         Taxon,
+        primary_key=True,
         on_delete=models.CASCADE,
         related_name="disease_vector",
         limit_choices_to={"rank__gte": Taxon.TaxonomicRank.SPECIES_COMPLEX},
