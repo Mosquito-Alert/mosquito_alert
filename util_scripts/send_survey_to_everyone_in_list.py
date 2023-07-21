@@ -72,7 +72,7 @@ SURVEY_TEXT = {
     }
   },
   "8":{
-    "8":{
+    "5":{
       "en": { "title":"Share your Insights","message":"We want to hear from you! Participate in our survey and share your views." },
       "es": { "title":"Comparte tus ideas","message": "¡Queremos conocer tu opinión! Participa en nuestra encuesta y comparte tus puntos de vista." },
       "ca": { "title":"Comparteix les teves idees","message": "Volem sentir la teva opinió! Participa en la nostra enquesta i comparteix les teves perspectives." },
@@ -80,7 +80,7 @@ SURVEY_TEXT = {
       "nl": { "title":"Deel je inzichten","message": "Wij willen graag jouw mening horen! Doe mee aan onze enquête en deel jouw visie." },
       "it": { "title":"Condividi le tue opinioni","message": "Vogliamo sentire la tua voce! Partecipa al nostro sondaggio e condividi le tue opinioni." }
     },
-    "19":{
+    "15":{
       "en": { "title":"Participate in our study","message":"Shape the future of science! Contribute to research, and help us improve by participating in our survey." },
       "es": { "title":"Participa en nuestro estudio","message": "¡Contribuye al futuro de la ciencia! Colabora en la investigación y ayúdanos a mejorar participando en nuestra encuesta." },
       "ca": { "title":"Participa en el nostre estudi","message": "Volem sentir la teva opinió! Participa en la nostra enquesta i comparteix les teves perspectives." },
