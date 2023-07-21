@@ -116,7 +116,7 @@ class NotificationTestCase(APITestCase):
                 type='adult',
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='/home/webuser/webapps/tigaserver/media/tigapics/splash.png')
+            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
         self.reritja_user = User.objects.get(pk=25)

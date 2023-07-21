@@ -6,8 +6,7 @@ import binascii
 #import urllib2
 import urllib
 import json
-from tigaserver_project import settings_local
-from tigaserver_project import settings
+from django.conf import settings
 from pyfcm import FCMNotification
 from datetime import date, datetime
 #from tigaserver_app.models import TigaUser
@@ -79,7 +78,7 @@ def send_message_android(token,title, message, notification=None):
     else:
         try:
             #token = 'eqFkux_dIuo:APA91bGmmOxn16z8VhHE3O0tB7VmDsPX5p0xBfzJpSPi8O8gNaCbyJlJDwTdOAm4cOADCZ4KK5JRgV1NvAH_1YriYZob00Y5QCBw9FefMrpbs2pCD5TAKrkWy3vUNbwZQZGkySOqLH79'
-            app_id = settings_local.ANDROID_GCM_API_KEY
+            app_id = settings.ANDROID_GCM_API_KEY
             # List of device tokens to send the message to. Can be 1 item
             private_keys = [token]
             #private_keys.append(token)
@@ -125,7 +124,7 @@ def send_message_android(token,title, message, notification=None):
 '''
 
 def generic_send_to_topic(topic_code, title, message, json_notif=None):
-    push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
+    push_service = FCMNotification(api_key=settings.FCM_API_KEY)
     notif_id = None
     if json_notif:
         notif_id = json_notif['id']
@@ -145,7 +144,7 @@ def generic_send_to_topic(topic_code, title, message, json_notif=None):
             "notification": {"id": notif_id}
         }
     }
-    dry_run = getattr(settings_local, 'DRY_RUN_PUSH', True)
+    dry_run = getattr(settings, 'DRY_RUN_PUSH', True)
     try:
         result = push_service.notify_topic_subscribers(topic_name=topic_code, message_body=message, message_title=title, data_message=data_message, dry_run=dry_run)
         return result
@@ -153,7 +152,7 @@ def generic_send_to_topic(topic_code, title, message, json_notif=None):
         return {'exception': str(e) }
 
 def generic_send(recipient_token, title, message, json_notif=None):
-    push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
+    push_service = FCMNotification(api_key=settings.FCM_API_KEY)
     registration_id = recipient_token
     notif_id = None
     if json_notif:
@@ -177,7 +176,7 @@ def generic_send(recipient_token, title, message, json_notif=None):
             "notification_id": notif_id
         }
     }
-    dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
+    dry_run = getattr(settings,'DRY_RUN_PUSH',True)
     try:
         result = push_service.notify_single_device(registration_id=registration_id, message_body=message, message_title=title, data_message=data_message, dry_run=dry_run)
         return result
@@ -201,7 +200,7 @@ def send_message_ios(tokens, alert_message, link_url, notification=None):
 
 
 def generic_multiple_send(token_list, title, message, json_notif=None):
-    push_service = FCMNotification(api_key=settings_local.FCM_API_KEY)
+    push_service = FCMNotification(api_key=settings.FCM_API_KEY)
     notif_id = None
     if json_notif:
         notif_id = str(json_notif['id'])
@@ -221,7 +220,7 @@ def generic_multiple_send(token_list, title, message, json_notif=None):
         }
     }
 
-    dry_run = getattr(settings_local,'DRY_RUN_PUSH',True)
+    dry_run = getattr(settings,'DRY_RUN_PUSH',True)
     try:
         result = push_service.notify_multiple_devices(registration_ids=token_list, data_message=data_message, dry_run=dry_run)
         return result
