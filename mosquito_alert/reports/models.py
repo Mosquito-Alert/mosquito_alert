@@ -2,13 +2,11 @@ import uuid
 
 import reversion
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.validators import MaxValueValidator
 from django.db.models.functions import Now
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from flag.models import Flag
 from polymorphic.models import PolymorphicModel
 from sortedm2m.fields import SortedManyToManyField
 from taggit.managers import TaggableManager
@@ -18,11 +16,12 @@ from mosquito_alert.breeding_sites.models import BreedingSite
 from mosquito_alert.geo.models import GeoLocatedModel
 from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual, Taxon
+from mosquito_alert.moderation.models import FlagModeratedModel
 
 from .managers import ReportManager
 
 
-class Report(PolymorphicModel, GeoLocatedModel):
+class Report(PolymorphicModel, GeoLocatedModel, FlagModeratedModel):
     """A detailed account of an event, based on what one has observed or asked questions about.
 
     Args:
@@ -38,7 +37,6 @@ class Report(PolymorphicModel, GeoLocatedModel):
         on_delete=models.SET_NULL,
     )
     photos = SortedManyToManyField(Photo, blank=True)
-    flags = GenericRelation(Flag)
 
     # Attributes - Mandatory
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

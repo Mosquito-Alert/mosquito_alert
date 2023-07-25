@@ -3,13 +3,13 @@ import uuid
 from pathlib import Path
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-from flag.models import Flag
 from imagekit.processors import ResizeToFit
 from PIL import ExifTags, Image
+
+from mosquito_alert.moderation.models import FlagModeratedModel
 
 from .fields import ProcessedImageField
 
@@ -29,7 +29,7 @@ def image_upload_to(instance, filename):
     return os.path.join("images", f"{uuid_str}{ext}")
 
 
-class Photo(models.Model):
+class Photo(FlagModeratedModel):
     # Relations
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -38,7 +38,6 @@ class Photo(models.Model):
         related_name="photos",
         on_delete=models.SET_NULL,
     )
-    flags = GenericRelation(Flag)
 
     # Attributes - Mandatory
     # NOTE: If a processor to autorotate is used, check that

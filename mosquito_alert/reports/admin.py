@@ -6,7 +6,7 @@ from polymorphic.admin import PolymorphicChildModelAdmin, PolymorphicChildModelF
 from reversion.admin import VersionAdmin
 
 from mosquito_alert.images.admin import m2mPhotoAdminInlineMixin
-from mosquito_alert.utils.admin import FlaggedContentInlineAdmin
+from mosquito_alert.moderation.admin import FlaggedContentNestedInlineAdmin
 
 from .forms import BiteReportForm, BreedingSiteReportForm, IndividualReportForm, ReportForm
 from .models import BiteReport, BreedingSiteReport, IndividualReport, Report
@@ -26,7 +26,7 @@ class ReportChildAdmin(NestedPolymorphicModelAdmin, PolymorphicChildModelAdmin):
     base_model = Report
     base_form = ReportForm
     show_in_index = True
-    inlines = [ReadOnlyPhotoAdminInline, FlaggedContentInlineAdmin]
+    inlines = [ReadOnlyPhotoAdminInline, FlaggedContentNestedInlineAdmin]
     list_filter = ["observed_at", "created_at"]
     list_display = ["uuid", "user", "observed_at", "created_at", "updated_at"]
 
