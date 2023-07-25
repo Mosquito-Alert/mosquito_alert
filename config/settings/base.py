@@ -94,7 +94,6 @@ THIRD_PARTY_APPS = [
     "sortedm2m",
     "adminsortable2",
     "nested_admin",
-    "flag",
     "notifications",
     "simple_history",
 ]
@@ -107,6 +106,8 @@ LOCAL_APPS = [
     "mosquito_alert.identifications",
     "mosquito_alert.images",
     "mosquito_alert.individuals",
+    "mosquito_alert.moderation",
+    "mosquito_alert.moderation.apps.FlagConfig",
     "mosquito_alert.notifications",
     "mosquito_alert.reports",
     "mosquito_alert.taxa",

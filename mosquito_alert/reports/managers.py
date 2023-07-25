@@ -1,5 +1,5 @@
 from polymorphic.managers import PolymorphicManager
 
-from mosquito_alert.geo.querysets import GeoLocatedPolymorphicModelQuerySet
+from .querysets import ReportQueryset
 
-ReportManager = PolymorphicManager.from_queryset(GeoLocatedPolymorphicModelQuerySet)
+ReportManager = PolymorphicManager.from_queryset(ReportQueryset)

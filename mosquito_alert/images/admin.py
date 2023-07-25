@@ -9,7 +9,7 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
 
 from mosquito_alert.identifications.admin import ImageTaxonPredictionRunAdminInline
-from mosquito_alert.utils.admin import FlaggedContentInlineAdmin
+from mosquito_alert.moderation.admin import FlaggedContentNestedInlineAdmin
 
 from .models import Photo
 
@@ -39,7 +39,7 @@ class PhotoAdmin(NestedPolymorphicModelAdmin):
     readonly_fields = ("preview", "created_at")
     list_per_page = 10
 
-    inlines = [FlaggedContentInlineAdmin, ImageTaxonPredictionRunAdminInline]
+    inlines = [FlaggedContentNestedInlineAdmin, ImageTaxonPredictionRunAdminInline]
 
     def preview(self, obj):
         if obj.pk:
