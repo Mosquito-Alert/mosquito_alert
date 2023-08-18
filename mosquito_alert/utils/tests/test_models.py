@@ -1,6 +1,11 @@
+from abc import ABC, abstractmethod
 from contextlib import nullcontext as does_not_raise
+from datetime import timedelta
 
 import pytest
+from django.db.utils import IntegrityError
+from django.utils import timezone
+from django.utils.timesince import timesince
 
 from .models import (
     DummyAL_NodeParentManageableModel,
@@ -8,6 +13,7 @@ from .models import (
     DummyMP_NodeParentManageableModel,
     DummyNonNodeParentManageableModel,
     DummyNS_NodeParentManageableModel,
+    DummyTimeStampedModel,
 )
 
 
@@ -253,3 +259,192 @@ class TestNodeExpandedQueriesMixin:
         root_node.add_child()
 
         assert root_node.has_children() is True
+
+
+@pytest.mark.django_db
+class BaseTestTimeStampedModel(ABC):
+    @property
+    @abstractmethod
+    def model(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def factory_cls(self):
+        raise NotImplementedError
+
+    # Fields
+    @pytest.mark.freeze_time
+    def test_created_at_default_is_now(self):
+        obj = self.factory_cls()
+
+        assert obj.created_at == timezone.now()
+
+    def test_created_at_is_not_editable(self):
+        assert not self.model._meta.get_field("created_at").editable
+
+    def test_created_at_is_blank(self):
+        assert self.model._meta.get_field("created_at").blank
+
+    @pytest.mark.freeze_time
+    def test_created_at_can_be_set_manually(self):
+        yesterday = timezone.now() - timedelta(days=1)
+        obj = self.factory_cls(created_at=yesterday)
+
+        assert obj.created_at == yesterday
+
+    @pytest.mark.freeze_time
+    def test_overriding_created_at_after_object_created(self):
+        obj = self.factory_cls()
+
+        yesterday = timezone.now() - timedelta(days=1)
+        obj.created_at = yesterday
+        obj.save()
+
+        assert obj.created_at == yesterday
+        assert obj.updated_at == timezone.now()
+
+    @pytest.mark.freeze_time
+    def test_updated_at_default_is_now(self):
+        obj = self.factory_cls()
+
+        assert obj.updated_at == timezone.now()
+
+    def test_updated_at_is_not_editable(self):
+        assert not self.model._meta.get_field("updated_at").editable
+
+    def test_updated_at_is_blank(self):
+        assert self.model._meta.get_field("updated_at").blank
+
+    @pytest.mark.freeze_time
+    def test_updated_at_is_same_as_created_at_if_not_set_on_create(self):
+        yesterday = timezone.now() - timedelta(days=1)
+        obj = self.factory_cls(created_at=yesterday)
+
+        assert obj.created_at == yesterday
+        assert obj.updated_at == yesterday
+
+    @pytest.mark.freeze_time
+    def test_values_are_preserved_if_both_set(self):
+        yesterday = timezone.now() - timedelta(days=1)
+        last_hour = timezone.now() - timedelta(hours=1)
+
+        obj = self.factory_cls(created_at=yesterday, updated_at=last_hour)
+
+        assert obj.created_at == yesterday
+        assert obj.updated_at == last_hour
+
+    def test_udpated_at_is_updated_on_save(self, freezer):
+        creation_time = timezone.now() - timedelta(days=1)
+        freezer.move_to(creation_time)
+
+        obj = self.factory_cls()
+
+        next_hour = timezone.now() + timedelta(hours=1)
+        freezer.move_to(next_hour)
+
+        obj.save()
+
+        assert obj.updated_at == next_hour
+
+    def test_overriding_updated_at_after_object_created_does_nothing(self, freezer):
+        yesterday = timezone.now() - timedelta(days=1)
+        freezer.move_to(yesterday)
+
+        obj = self.factory_cls()
+
+        assert obj.created_at == yesterday
+        assert obj.updated_at == yesterday
+
+        last_hour = timezone.now() - timedelta(hours=1)
+        obj.updated_at = last_hour
+        obj.save()
+
+        assert obj.created_at == yesterday
+        assert obj.updated_at != last_hour
+        assert obj.updated_at == timezone.now()
+
+    # properties
+    def test_created_ago(self):
+        obj = self.factory_cls()
+
+        assert obj.created_ago == timesince(obj.created_at)
+
+    def test_updated_ago(self):
+        obj = self.factory_cls()
+
+        assert obj.updated_ago == timesince(obj.updated_at)
+
+    # methods
+    @pytest.mark.freeze_time
+    def test_overrides_using_save(self):
+        """
+        The first time an object is saved, allow modification of both
+        created and updated_at fields.
+        After that, only created_at may be modified manually.
+        """
+        obj = self.model()
+        different_date = timezone.now() - timedelta(weeks=52)
+        obj.created_at = different_date
+        obj.updated_at = different_date
+        obj.save()
+
+        assert obj.created_at == different_date
+        assert obj.updated_at == different_date
+
+        different_date2 = timezone.now() - timedelta(weeks=26)
+        obj.created_at = different_date2
+        obj.updated_at = different_date2
+        obj.save()
+
+        assert obj.created_at == different_date2
+        assert obj.updated_at != different_date2
+        assert obj.updated_at == timezone.now()
+
+    @pytest.mark.parametrize(
+        "update_fields, updated_at_changed",
+        [
+            (["updated_at"], True),  # list
+            (("updated_at",), True),  # tuple
+            ({"updated_at"}, True),  # set
+            ([], False),  # list
+            ((), False),  # tuple
+            (set(), False),  # set
+            (None, True),
+        ],
+    )
+    def test_save_with_update_fields_overrides_updated_at(self, freezer, update_fields, updated_at_changed):
+        """
+        Tests if the save method updated updated_at field
+        accordingly when update_fields is used as an argument.
+        """
+        creation_date = timezone.now() - timedelta(days=10)
+        freezer.move_to(creation_date)
+
+        obj = self.factory_cls()
+
+        next_day = timezone.now() + timedelta(days=1)
+        freezer.move_to(next_day)
+
+        obj.save(update_fields=update_fields)
+
+        assert obj.updated_at == next_day if updated_at_changed else creation_date
+
+    # Meta
+    def test_constraint_created_at_can_not_be_futurible(self):
+        with pytest.raises(IntegrityError, match=r"violates check constraint"):
+            _ = self.factory_cls(created_at=timezone.now() + timedelta(seconds=10))
+
+    def test_constraint_updated_at_can_not_be_futurible(self):
+        with pytest.raises(IntegrityError, match=r"violates check constraint"):
+            _ = self.factory_cls(updated_at=timezone.now() + timedelta(seconds=10))
+
+    @pytest.mark.freeze_time
+    def test_updated_at_cannot_be_previous_to_created_at(self):
+        with pytest.raises(IntegrityError, match=r"violates check constraint"):
+            _ = self.factory_cls(created_at=timezone.now(), updated_at=timezone.now() - timedelta(seconds=1))
+
+
+class TestTimeStampedModel(BaseTestTimeStampedModel):
+    model = DummyTimeStampedModel
+    factory_cls = DummyTimeStampedModel.objects.create

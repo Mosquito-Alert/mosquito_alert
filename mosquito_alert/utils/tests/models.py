@@ -2,7 +2,7 @@ from treebeard.al_tree import AL_Node
 from treebeard.mp_tree import MP_Node
 from treebeard.ns_tree import NS_Node
 
-from ..models import NodeExpandedQueriesMixin, ParentManageableNodeMixin
+from ..models import NodeExpandedQueriesMixin, ParentManageableNodeMixin, TimeStampedModel
 
 
 class DummyMPModel(MP_Node):
@@ -27,3 +27,8 @@ class DummyNonNodeParentManageableModel(ParentManageableNodeMixin):
 
 class DummyMP_NodeExpandedQueriesModel(NodeExpandedQueriesMixin, MP_Node):
     pass
+
+
+class DummyTimeStampedModel(TimeStampedModel):
+    class Meta(TimeStampedModel.Meta):
+        pass

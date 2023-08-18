@@ -1,4 +1,8 @@
+from django.db import models
+from django.db.models.functions import Now
 from django.db.models.signals import ModelSignal
+from django.utils import timezone
+from django.utils.timesince import timesince
 from treebeard.al_tree import AL_Node
 from treebeard.models import Node
 from treebeard.mp_tree import MP_Node
@@ -111,3 +115,66 @@ class NodeExpandedQueriesMixin(Node):
 
     class Meta:
         abstract = True
+
+
+class TimeStampedModel(models.Model):
+    """An abstract base class model that provides self-updating
+    ``created_at`` and ``updated_at`` fields.
+    """
+
+    # Relations
+    # Attributes - Mandatory
+
+    # Attributes - Optional
+    created_at = models.DateTimeField(default=timezone.now, blank=True, editable=False)
+    updated_at = models.DateTimeField(blank=True, editable=False)
+
+    # Object Manager
+    # Custom Properties
+    @property
+    def created_ago(self) -> str:
+        """Humanize date"""
+        return timesince(d=self.created_at)
+
+    @property
+    def updated_ago(self) -> str:
+        """Humanize date"""
+        return timesince(d=self.updated_at)
+
+    # Methods
+    def save(self, *args, **kwargs):
+        """
+        Overriding the save method in order to make sure that
+        modified field is updated even if it is not given as
+        a parameter to the update field argument.
+        """
+        update_fields = kwargs.get("update_fields", None)
+        if update_fields:
+            kwargs["update_fields"] = set(update_fields).union({"updated_at"})
+
+        if self._state.adding:
+            # On object creation
+            if not self.updated_at:
+                self.updated_at = self.created_at
+        else:
+            # On saving (not creation)
+            self.updated_at = timezone.now()
+
+        super().save(*args, **kwargs)
+
+    # Meta and String
+    class Meta:
+        abstract = True
+
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(created_at__lte=Now()), name="%(app_label)s_%(class)s_created_at_cannot_be_future_dated"
+            ),
+            models.CheckConstraint(
+                check=models.Q(updated_at__lte=Now()), name="%(app_label)s_%(class)s_updated_at_cannot_be_future_dated"
+            ),
+            models.CheckConstraint(
+                check=models.Q(updated_at__gte=models.F("created_at")),
+                name="%(app_label)s_%(class)s_updated_at_cannot_be_before_created_at",
+            ),
+        ]
