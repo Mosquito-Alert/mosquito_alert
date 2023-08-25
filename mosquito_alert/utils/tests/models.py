@@ -1,8 +1,9 @@
+from django.db import models
 from treebeard.al_tree import AL_Node
 from treebeard.mp_tree import MP_Node
 from treebeard.ns_tree import NS_Node
 
-from ..models import NodeExpandedQueriesMixin, ParentManageableNodeMixin, TimeStampedModel
+from ..models import NodeExpandedQueriesMixin, ObservableMixin, ParentManageableNodeMixin, TimeStampedModel
 
 
 class DummyMPModel(MP_Node):
@@ -32,3 +33,10 @@ class DummyMP_NodeExpandedQueriesModel(NodeExpandedQueriesMixin, MP_Node):
 class DummyTimeStampedModel(TimeStampedModel):
     class Meta(TimeStampedModel.Meta):
         pass
+
+
+class DummyObservableModel(ObservableMixin, models.Model):
+    NOTIFY_ON_FIELD_CHANGE = ["name"]
+
+    name = models.CharField(max_length=20)
+    hidden_name = models.CharField(max_length=20)

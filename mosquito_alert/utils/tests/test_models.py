@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from contextlib import nullcontext as does_not_raise
 from datetime import timedelta
+from unittest.mock import Mock, call, patch
 
 import pytest
 from django.db.utils import IntegrityError
@@ -8,13 +9,14 @@ from django.utils import timezone
 from django.utils.timesince import timesince
 from factory import SubFactory
 
-from .factories import DummyTimeStampedModelFactory
+from .factories import DummyObservableModelFactory, DummyTimeStampedModelFactory
 from .models import (
     DummyAL_NodeParentManageableModel,
     DummyMP_NodeExpandedQueriesModel,
     DummyMP_NodeParentManageableModel,
     DummyNonNodeParentManageableModel,
     DummyNS_NodeParentManageableModel,
+    DummyObservableModel,
     DummyTimeStampedModel,
 )
 
@@ -462,3 +464,102 @@ class BaseTestTimeStampedModel(AbstractDjangoModelTestMixin, ABC):
 class TestTimeStampedModel(BaseTestTimeStampedModel):
     model = DummyTimeStampedModel
     factory_cls = DummyTimeStampedModelFactory
+
+
+@pytest.mark.django_db
+class BaseTestObservableMixin(AbstractDjangoModelTestMixin, ABC):
+    # methods
+    def test__init__skip_notify_changes_default_is_false(self):
+        assert not self.factory_cls.build().skip_notify_changes
+
+    @pytest.mark.parametrize("value", [True, False])
+    def test__skip_notify_changes_is_keep_after_save(self, value):
+        obj = self.factory_cls(skip_notify_changes=value)
+
+        assert obj.skip_notify_changes == value
+
+        obj.skip_notify_changes = not value
+        obj.save()
+
+        assert obj.skip_notify_changes == (not value)
+
+    @pytest.mark.parametrize("skip_notify_changes, expected_has_called_notify", [(True, False), (False, True)])
+    def test__notify_changes_is_called_after_create(self, skip_notify_changes, expected_has_called_notify):
+        manager = Mock()
+
+        obj = self.factory_cls.build(skip_notify_changes=skip_notify_changes)
+
+        with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
+            with patch("django.db.models.base.Model.save", return_value=None) as mocked_super_save:
+                manager.attach_mock(mocked_method, "mock_notify")
+                manager.attach_mock(mocked_super_save, "mock_super_save")
+
+                obj.save()
+
+        expected_calls = [call.mock_super_save()]
+
+        if expected_has_called_notify:
+            expected_calls.append(call.mock_notify())
+
+        manager.assert_has_calls(calls=expected_calls, any_order=False)
+
+    def test__notify_changes_is_not_called_after_create_if_NOTIFY_ON_CREATE_false(self):
+        obj = self.factory_cls.build()
+        obj.NOTIFY_ON_CREATE = False
+
+        with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
+            with patch("django.db.models.base.Model.save", return_value=None):
+                obj.save()
+
+                mocked_method.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "skip_notify_changes, mock_changes, expected_has_calls",
+        [(True, True, False), (False, True, True), (True, False, False), (False, False, False)],
+    )
+    def test__notify_changes_is_only_called_on_save_if_field_changes(
+        self, skip_notify_changes, mock_changes, expected_has_calls
+    ):
+        obj = self.factory_cls(skip_notify_changes=skip_notify_changes)
+
+        with patch.object(obj, "has_changed", return_value=mock_changes):
+            with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
+                obj.save()
+                if expected_has_calls:
+                    mocked_method.assert_called_once()
+                else:
+                    mocked_method.assert_not_called()
+
+    @pytest.mark.parametrize("skip_notify_changes, expected_has_called_notify", [(True, False), (False, False)])
+    def test__notify_changes_is_called_after_delete(self, skip_notify_changes, expected_has_called_notify):
+        obj = self.factory_cls(skip_notify_changes=skip_notify_changes)
+
+        manager = Mock()
+
+        with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
+            with patch("django.db.models.base.Model.delete", return_value=None) as mocked_super_delete:
+                manager.attach_mock(mocked_method, "mock_notify")
+                manager.attach_mock(mocked_super_delete, "mock_super_delete")
+
+                obj.delete()
+
+        expected_calls = [call.mock_super_delete()]
+
+        if expected_has_called_notify:
+            expected_calls.append(call.mock_notify())
+
+        manager.assert_has_calls(calls=expected_calls, any_order=False)
+
+    def test__notify_changes_is_not_called_after_delete_if_NOTIFY_ON_DELETE_false(self):
+        obj = self.factory_cls()
+        obj.NOTIFY_ON_DELETE = False
+
+        with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
+            obj.delete()
+
+            mocked_method.assert_not_called()
+
+
+class TestObservableModel(BaseTestObservableMixin):
+    model = DummyObservableModel
+    factory_cls = DummyObservableModelFactory

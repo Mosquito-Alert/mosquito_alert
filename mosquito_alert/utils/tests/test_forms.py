@@ -55,7 +55,6 @@ class TestAllowOnlyNodesFromSameTreeForm:
         DummyMPModel.add_root()
 
         form = self.form_cls(instance=children_node)
-        print(form.declared_fields["_ref_node_id"].choices)
         assert frozenset(form.declared_fields["_ref_node_id"].choices) == frozenset(
             [
                 (None, "-- root --"),

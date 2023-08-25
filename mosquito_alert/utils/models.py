@@ -3,6 +3,7 @@ from django.db.models.functions import Now
 from django.db.models.signals import ModelSignal
 from django.utils import timezone
 from django.utils.timesince import timesince
+from django_lifecycle import LifecycleModelMixin
 from treebeard.al_tree import AL_Node
 from treebeard.models import Node
 from treebeard.mp_tree import MP_Node
@@ -182,3 +183,45 @@ class TimeStampedModel(models.Model):
                 name="%(app_label)s_%(class)s_updated_at_must_be_after_created_at",
             ),
         ]
+
+
+class ObservableMixin(LifecycleModelMixin):
+    NOTIFY_ON_FIELD_CHANGE = []
+
+    NOTIFY_ON_CREATE = True
+    NOTIFY_ON_DELETE = True
+
+    def _notify_changes(self, *args, **kwargs):
+        # The function that is going to be called when changes/create/delete happen
+        pass
+
+    def __init__(self, *args, **kwargs):
+        # NOTE: __init__ signature can not be changed
+        # See: https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model
+        self.skip_notify_changes = kwargs.pop("skip_notify_changes", False)
+        super().__init__(*args, **kwargs)
+
+    def _get_changed_observable_fields(self):
+        return list(filter(lambda x: self.has_changed(field_name=x), self.NOTIFY_ON_FIELD_CHANGE))
+
+    def save(self, *args, **kwargs):
+        fields_changed = self._get_changed_observable_fields()
+
+        _is_creating = self._state.adding
+
+        super().save(*args, **kwargs)
+
+        if not self.skip_notify_changes:
+            if _is_creating and self.NOTIFY_ON_CREATE:
+                self._notify_changes()
+
+            if fields_changed:
+                self._notify_changes()
+
+    def delete(self, *args, **kwargs):
+        value = super().delete(*args, **kwargs)
+        if self.skip_notify_changes:
+            if self.NOTIFY_ON_DELETE:
+                self._notify_changes()
+
+        return value
