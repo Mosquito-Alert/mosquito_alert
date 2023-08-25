@@ -6,7 +6,9 @@ import pytest
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.utils.timesince import timesince
+from factory import SubFactory
 
+from .factories import DummyTimeStampedModelFactory
 from .models import (
     DummyAL_NodeParentManageableModel,
     DummyMP_NodeExpandedQueriesModel,
@@ -15,6 +17,18 @@ from .models import (
     DummyNS_NodeParentManageableModel,
     DummyTimeStampedModel,
 )
+
+
+class AbstractDjangoModelTestMixin(ABC):
+    @property
+    @abstractmethod
+    def model(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def factory_cls(self):
+        raise NotImplementedError
 
 
 class TestUniqueParentManageableNodeMixin:
@@ -262,23 +276,16 @@ class TestNodeExpandedQueriesMixin:
 
 
 @pytest.mark.django_db
-class BaseTestTimeStampedModel(ABC):
-    @property
-    @abstractmethod
-    def model(self):
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def factory_cls(self):
-        raise NotImplementedError
-
+class BaseTestTimeStampedModel(AbstractDjangoModelTestMixin, ABC):
     # Fields
     @pytest.mark.freeze_time
     def test_created_at_default_is_now(self):
         obj = self.factory_cls()
 
         assert obj.created_at == timezone.now()
+
+    def test_created_at_can_not_be_null(self):
+        assert not self.model._meta.get_field("created_at").null
 
     def test_created_at_is_not_editable(self):
         assert not self.model._meta.get_field("created_at").editable
@@ -383,7 +390,14 @@ class BaseTestTimeStampedModel(ABC):
         created and updated_at fields.
         After that, only created_at may be modified manually.
         """
-        obj = self.model()
+        # Creating related element in advance due to avoid
+        # saving objects without having saved their related
+        # objects.
+        build_kwargs = {}
+        for k, v in self.factory_cls._meta.declarations.items():
+            if isinstance(v, SubFactory):
+                build_kwargs[k] = v.get_factory().create()
+        obj = self.factory_cls.build(**build_kwargs)
         different_date = timezone.now() - timedelta(weeks=52)
         obj.created_at = different_date
         obj.updated_at = different_date
@@ -447,4 +461,4 @@ class BaseTestTimeStampedModel(ABC):
 
 class TestTimeStampedModel(BaseTestTimeStampedModel):
     model = DummyTimeStampedModel
-    factory_cls = DummyTimeStampedModel.objects.create
+    factory_cls = DummyTimeStampedModelFactory

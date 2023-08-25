@@ -127,7 +127,7 @@ class TimeStampedModel(models.Model):
 
     # Attributes - Optional
     created_at = models.DateTimeField(default=timezone.now, blank=True, editable=False)
-    updated_at = models.DateTimeField(blank=True, editable=False)
+    updated_at = models.DateTimeField(default=timezone.now, blank=True, editable=False)
 
     # Object Manager
     # Custom Properties
@@ -142,6 +142,15 @@ class TimeStampedModel(models.Model):
         return timesince(d=self.updated_at)
 
     # Methods
+    def __init__(self, *args, **kwargs):
+        if not hasattr(self, "pk"):
+            # Only on creation
+            if not kwargs.get("updated_at", None):
+                if created_at := kwargs.get("created_at", None):
+                    kwargs["updated_at"] = created_at
+
+        return super().__init__(*args, **kwargs)
+
     def save(self, *args, **kwargs):
         """
         Overriding the save method in order to make sure that
@@ -152,12 +161,7 @@ class TimeStampedModel(models.Model):
         if update_fields:
             kwargs["update_fields"] = set(update_fields).union({"updated_at"})
 
-        if self._state.adding:
-            # On object creation
-            if not self.updated_at:
-                self.updated_at = self.created_at
-        else:
-            # On saving (not creation)
+        if not self._state.adding:
             self.updated_at = timezone.now()
 
         super().save(*args, **kwargs)
@@ -175,6 +179,6 @@ class TimeStampedModel(models.Model):
             ),
             models.CheckConstraint(
                 check=models.Q(updated_at__gte=models.F("created_at")),
-                name="%(app_label)s_%(class)s_updated_at_cannot_be_before_created_at",
+                name="%(app_label)s_%(class)s_updated_at_must_be_after_created_at",
             ),
         ]
