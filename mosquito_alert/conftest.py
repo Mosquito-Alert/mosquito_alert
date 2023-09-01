@@ -3,7 +3,7 @@ import pytest
 from mosquito_alert.geo.models import BoundaryLayer
 from mosquito_alert.geo.tests.factories import BoundaryLayerFactory
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.taxa.tests.factories import TaxonFactory
+from mosquito_alert.taxa.tests.factories import TaxonFactory, get_or_create_root_taxon
 from mosquito_alert.users.models import User
 from mosquito_alert.users.tests.factories import UserFactory
 
@@ -20,7 +20,14 @@ def user(db) -> User:
 
 @pytest.fixture
 def taxon_root(db):
-    return TaxonFactory(name="life", rank=Taxon.TaxonomicRank.DOMAIN)
+    return get_or_create_root_taxon()
+
+
+@pytest.fixture(scope="session")
+def django_db_setup(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        # Create root on django_db_setup
+        get_or_create_root_taxon()
 
 
 @pytest.fixture

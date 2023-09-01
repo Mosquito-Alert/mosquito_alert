@@ -68,7 +68,7 @@ class TestDiseaseVectorModel:
 
     def test_taxon_should_be_species_rank(self):
         with pytest.raises(ValueError, match=r"Taxon must be species rank."):
-            DiseaseVectorFactory(taxon__rank=Taxon.TaxonomicRank.DOMAIN)
+            DiseaseVectorFactory(taxon__rank=Taxon.TaxonomicRank.CLASS)
 
     def test_default_ordering_is_taxon_name(self, taxon_root):
         dv1 = DiseaseVectorFactory(taxon__name="z", taxon__parent=taxon_root)
