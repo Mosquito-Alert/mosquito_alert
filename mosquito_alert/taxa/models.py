@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import ModelSignal
@@ -22,7 +24,7 @@ distribution_status_has_changed = ModelSignal()
 
 class Taxon(ParentManageableNodeMixin, MP_Node):
     @classmethod
-    def get_root(cls):
+    def get_root(cls) -> Taxon | None:
         return cls.get_root_nodes().first()
 
     class TaxonomicRank(models.IntegerChoices):
