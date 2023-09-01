@@ -21,6 +21,10 @@ distribution_status_has_changed = ModelSignal()
 
 
 class Taxon(ParentManageableNodeMixin, MP_Node):
+    @classmethod
+    def get_root(cls):
+        return cls.get_root_nodes().first()
+
     class TaxonomicRank(models.IntegerChoices):
         DOMAIN = 0, _("Domain")
         KINGDOM = 10, _("Kingdom")

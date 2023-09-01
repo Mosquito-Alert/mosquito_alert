@@ -13,6 +13,14 @@ from .factories import SpecieDistributionFactory, TaxonFactory
 
 @pytest.mark.django_db
 class TestTaxonModel:
+    def test_get_root_return_root_node(self, taxon_root):
+        assert Taxon.get_root() == taxon_root
+
+    def test_get_root_return_None_if_root_node_does_not_exist(self):
+        Taxon.objects.all().delete()
+
+        assert Taxon.get_root() is None
+
     @pytest.mark.parametrize(
         "name, rank, expected_result",
         [
@@ -82,7 +90,7 @@ class TestTaxonModel:
 
     def test_unique_root_constraint(self, taxon_root):
         with pytest.raises(IntegrityError):
-            TaxonFactory(name="", rank=taxon_root.rank)
+            TaxonFactory(parent=None, name="", rank=taxon_root.rank)
 
     def test_null_common_name_is_allowed(self, taxon_root):
         TaxonFactory(common_name=None, parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES)
