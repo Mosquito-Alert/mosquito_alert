@@ -141,6 +141,7 @@ LANGUAGES = (
     ('es', _('Spanish')),
     ('ca', _('Catalan')),
     ('eu', _('Basque')),
+    ('bn', _('Bengali')),
     ('en', _('English')),
     ('de', _('German')),
     ('sq', _('Albanian')),

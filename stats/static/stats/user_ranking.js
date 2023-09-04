@@ -62,11 +62,11 @@ $(document).ready(function() {
 
     var rank_to_label = function(value){
         var ranks = {
-            1: gettext("Novice"),
-            2: gettext("Contributor"),
-            3: gettext("Expert"),
-            4: gettext("Master"),
-            5: gettext("Grandmaster")
+            1: gettext('Novice'),
+            2: gettext('Contributor'),
+            3: gettext('Expert'),
+            4: gettext('Master'),
+            5: gettext('Grandmaster')
         }
         return ranks[value];
     }

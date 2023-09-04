@@ -1,0 +1,474 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mosquito Alert Server Po-files\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-08-13 16:44+0200\n"
+"PO-Revision-Date: 2023-08-01 05:17+0200\n"
+"Last-Translator: Agusti Escobar\n"
+"Language-Team: Bengali (Bangladesh)\n"
+"Language: bn-BD\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz\n"
+"X-Loco-Source-Locale: es-ES\n"
+"X-Loco-Project-Id: 95706\n"
+"X-Loco-Tagged: js_po, scoring\n"
+"X-Loco-Lookup: id\n"
+"X-Loco-Api-Version: 1.0.28 20230809-1"
+
+#: stats/static/stats/user_ranking.js:8
+msgid "Data last updated on"
+msgstr "ডেটা সর্বশেষ আপডেট করা হয়েছে"
+
+#: stats/templates/stats/chart.html:85 loco:5f3558c334e29c5953399543
+#| msgid "Participantes"
+msgid "number-of-citizen-scientists"
+msgstr "নাগরিক বিজ্ঞানীগণ"
+
+#: stats/templates/stats/user_ranking.html:30 loco:5f3558c334e29c5953399550
+#| msgid ""
+#| "Consulta tu puntuación y nivel alcanzados. En el menú de ajustes "
+#| "encontrarás información detallada sobre el sistema de puntuación de "
+#| "Mosquito Alert."
+msgid "user_ranking_info_text_1"
+msgstr ""
+"আপনার বর্তমান স্কোর এবং লেভেল পরীক্ষা করুন। সেটিংস মেন্যুতে আপনি মসকিউটো "
+"অ্যালার্ট স্কোরিং সিস্টেম সম্পর্কে বিস্তারিত তথ্য পাবেন।"
+
+#: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399551
+#| msgid "Más información sobre"
+msgid "user_ranking_info_text_2"
+msgstr "এ সম্পর্কে আরো তথ্য"
+
+#: stats/templates/stats/user_ranking.html:34 loco:5f3558c334e29c5953399552
+#| msgid "la puntuación"
+msgid "user_ranking_info_text_3"
+msgstr "স্কোরিং"
+
+#: stats/templates/stats/user_ranking.html:40 loco:5f3558c334e29c5953399553
+#| msgid ""
+#| "Todavía no tienes puntuación, así que no apareces en el ranking. Por "
+#| "favor, sube algunas observaciones y vuelve a consultar el ranking más "
+#| "tarde. Para saber cómo ganar puntos, sigue el enlace más abajo."
+msgid "no_score_yet"
+msgstr ""
+"আপনার এখনও কোনো স্কোর নেই তাই র‍্যাংকিং এ আপনাকে দেখাচ্ছে না। অনুগ্রহ করে, "
+"কিছু নোটিফিকেশন আপলোড করুন এবং পরবর্তীতে আবার যাচাই করুন। কিভাবে পয়েন্ট "
+"অর্জন করতে হয় তা জানতে নিচের লিংকটি অনুসরণ করুন।"
+
+#: stats/templates/stats/user_ranking.html:55
+#: stats/templates/stats/user_ranking.html:143 loco:5f3558c334e29c5953399554
+#| msgid "Mi posición"
+msgid "My position"
+msgstr "আমার অবস্থান"
+
+#: stats/templates/stats/user_ranking.html:59
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143 loco:5f3558c334e29c5953399555
+#| msgid "de"
+msgid "of"
+msgstr "এর"
+
+#: stats/templates/stats/user_ranking.html:75 loco:5f3558c334e29c5953399556
+#| msgid "Posición"
+msgid "Rank"
+msgstr "র‍্যাংক"
+
+#: stats/templates/stats/user_ranking.html:76 loco:5f3558c334e29c5953399557
+#| msgid "Usuario"
+msgid "User"
+msgstr "ব্যবহারকারী"
+
+#: stats/templates/stats/user_ranking.html:77 loco:5f3558c334e29c5953399558
+#| msgid "Rango general"
+msgid "Overall class"
+msgstr "সামগ্রিক শ্রেণী"
+
+#: stats/templates/stats/user_ranking.html:78 loco:5f3558c334e29c5953399559
+#| msgid "Puntuación"
+msgid "Score"
+msgstr "স্কোর"
+
+#: stats/templates/stats/user_ranking.html:84 loco:5f3558c334e29c595339955a
+#| msgid "¡Tú estás aquí!"
+msgid "This is you!"
+msgstr "এটি আপনি!"
+
+#: stats/templates/stats/user_ranking.html:121 loco:5f3558c334e29c595339955b
+#| msgid "Más detalles"
+msgid "Score details"
+msgstr "বিস্তারিত"
+
+#: stats/templates/stats/user_score.html:31 loco:5f3558c334e29c595339955d
+#| msgid ""
+#| "Avatar personal del participante. Gracias a la puntuación obtenida, se ha "
+#| "alcanzado el nivel de experiencia general de "
+msgid "this_is_your_personal_avatar"
+msgstr "এটি অংশগ্রহণকারীর অবতার। স্কোর অনুযায়ী বর্তমান অভিজ্ঞতার লেভেল হচ্ছে"
+
+#: stats/templates/stats/user_score.html:31 loco:5f3558c334e29c595339955e
+#| msgid ""
+#| "Hay 5 niveles posibles: Principiante, Colaborador, Experto, Maestro y "
+#| "Gran Maestro."
+msgid "there_are_5_levels"
+msgstr ""
+"এখানে ৫টি সম্ভাব্য লেভেল রয়েছে: শিক্ষানবিস, অবদানকারী, বিশেষজ্ঞ, মাস্টার "
+"এবং গ্র্যান্ড মাস্টার।"
+
+#: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c595339955f
+#| msgid "Empezó a participar hace"
+msgid "Joined"
+msgstr "ভূমিকা রাখা শুরু করেছেন"
+
+#: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399560
+#| msgid "Última actividad hace"
+msgid "Last active"
+msgstr "সর্বশেষ সক্রিয় সময়"
+
+#: stats/templates/stats/user_score.html:32 loco:5f3558c334e29c5953399561
+#| msgid "Nunca"
+msgid "Never"
+msgstr "কখনোই নয়"
+
+#: stats/templates/stats/user_score.html:34 loco:5f3558c334e29c5953399562
+#| msgid "Posición global - Sin posición"
+msgid "Overall rank - Unranked"
+msgstr "সামগ্রিক অবস্থান - র‍্যাংকবিহীন"
+
+#: stats/templates/stats/user_score.html:36 loco:5f3558c334e29c5953399563
+#| msgid "Posición global"
+msgid "Overall rank"
+msgstr "সামগ্রিক অবস্থান"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86
+#: stats/templates/stats/user_score.html:143 loco:5f3558c334e29c5953399564
+#| msgid "Estás entre el"
+msgid "Top"
+msgstr "আপনি শীর্ষে রয়েছেন"
+
+#: stats/templates/stats/user_score.html:37
+#: stats/templates/stats/user_score.html:86 loco:5f3558c334e29c5953399565
+#| msgid "participantes"
+msgid "participants"
+msgstr "অংশগ্রহণকারীগণ"
+
+#: stats/templates/stats/user_score.html:42
+#: stats/templates/stats/user_score.html:56
+#: stats/templates/stats/user_score.html:67
+#: stats/templates/stats/user_score.html:92
+#: stats/templates/stats/user_score.html:100
+#: stats/templates/stats/user_score.html:149
+#: stats/templates/stats/user_score.html:156 loco:5f3558c334e29c5953399566
+#| msgid "Puntos"
+msgid "XP"
+msgstr "পয়েন্ট"
+
+#: stats/templates/stats/user_score.html:49 loco:5f3558c334e29c5953399567
+#| msgid "Premios obtenidos"
+msgid "Other awards"
+msgstr "প্রদত্ত পুরস্কারসমূহ"
+
+#: stats/templates/stats/user_score.html:55 loco:5f3558c334e29c5953399568
+#| msgid "Concedido el"
+msgid "awarded_on"
+msgstr "প্রদান করা হয়েছে"
+
+#: stats/templates/stats/user_score.html:62 loco:5f3558c334e29c5953399569
+#| msgid "puntos, concedidos"
+msgid "XP, awarded on"
+msgstr "পয়েন্ট, দেওয়া হলো"
+
+#: stats/templates/stats/user_score.html:81
+#: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c595339956a
+#| msgid "Nivel alcanzado para"
+msgid "Level obtained for"
+msgstr "প্রাপ্ত লেভেল"
+
+#: stats/templates/stats/user_score.html:81 loco:5f3558c334e29c595339956b
+msgid "Mosquito"
+msgstr "মশা"
+
+#: stats/templates/stats/user_score.html:83 loco:5f3558c334e29c595339956c
+#| msgid "Posición específica para Mosquito - Sin clasificar"
+msgid "Mosquito rank - Unranked"
+msgstr "মশার জন্য নির্দিষ্ট অবস্থান - র‍্যাংকবিহীন"
+
+#: stats/templates/stats/user_score.html:85 loco:5f3558c334e29c595339956d
+#| msgid "Posición específica para Mosquito"
+msgid "Mosquito rank"
+msgstr "মশার জন্য নির্দিষ্ট অবস্থান"
+
+#: stats/templates/stats/user_score.html:87
+#: stats/templates/stats/user_score.html:144 loco:5f3558c334e29c595339956e
+#| msgid ""
+#| "Clica encima de los cuadros para ver los detalles de los datos enviados y "
+#| "los puntos conseguidos."
+msgid "click_score_instructions"
+msgstr ""
+"প্রদানকৃত তথ্য এবং প্রাপ্ত পুরস্কার বিস্তারিত দেখতে রঙিন বক্সগুলি ক্লিক করুন।"
+
+#: stats/templates/stats/user_score.html:115
+#: stats/templates/stats/user_score.html:171 loco:5f3558c334e29c595339956f
+#| msgid "puntos concedidos por"
+msgid "xp awarded for"
+msgstr "পয়েন্ট পাচ্ছেন"
+
+#: stats/templates/stats/user_score.html:120 loco:5f3558c334e29c5953399570
+#| msgid "No has obtenido puntos ya que"
+msgid "No awards because"
+msgstr "আপনি পয়েন্ট পাননি কারণ"
+
+#: stats/templates/stats/user_score.html:123
+#: stats/templates/stats/user_score.html:175 loco:5f3558c334e29c5953399571
+#| msgid "¡Este informe no tiene puntos concedidos!"
+msgid "No awards for this report!"
+msgstr "এই রিপোর্টের জন্য কোনো পুরষ্কার নেই!"
+
+#: stats/templates/stats/user_score.html:138 loco:5f3558c334e29c5953399572
+#| msgid "Lugares de cría"
+msgid "Breeding site"
+msgstr "প্রজনন স্থান"
+
+#: stats/templates/stats/user_score.html:140 loco:5f3558c334e29c5953399573
+#| msgid "Posición específica para Lugares de cría - Sin clasificar"
+msgid "Breeding site rank - Unranked"
+msgstr "নির্দিষ্ট প্রজনন স্থানের র‍্যাংক - র‍্যাংকবিহীন"
+
+#: stats/templates/stats/user_score.html:142 loco:5f3558c334e29c5953399574
+#| msgid "Posición específica para Lugares de cría"
+msgid "Breeding site rank"
+msgstr "নির্দিষ্ট প্রজনন স্থানের র‍্যাংক"
+
+#: tigamap/templates/tigamap/app.html:148
+#: tigamap/templates/tigamap/app_new.html:197
+#: tigamap/templates/tigamap/site_map.html:207
+#: tigamap/templates/tigamap/validated_report_map_filterable.html:386
+#: tigaserver_app/models.py:567 loco:5f3558c334e29c595339959f
+#| msgid "Otros"
+msgid "Other"
+msgstr "অন্যান্য"
+
+#: tigascoring/xp_scoring.py:185 tigascoring/xp_scoring.py:187
+#: tigascoring/xp_scoring.py:190 loco:5f3558c334e29c595339960a
+#| msgid "Principiante"
+msgid "Novice"
+msgstr "শিক্ষানবিস"
+
+#: tigascoring/xp_scoring.py:192 loco:5f3558c334e29c595339960b
+#| msgid "Colaborador"
+msgid "Contributor"
+msgstr "অবদানকারী"
+
+#: tigascoring/xp_scoring.py:194 loco:5f3558c334e29c595339960c
+#| msgid "Experto"
+msgid "Expert"
+msgstr "অভিজ্ঞ"
+
+#: tigascoring/xp_scoring.py:196 loco:5f3558c334e29c595339960d
+#| msgid "Maestro"
+msgid "Master"
+msgstr "মাস্টার"
+
+#: tigascoring/xp_scoring.py:198 loco:5f3558c334e29c595339960e
+#| msgid "Gran maestro"
+msgid "Grandmaster"
+msgstr "গ্র্যান্ডমাস্টার"
+
+#: tigascoring/xp_scoring.py:217 loco:5f3558c334e29c595339960f
+#| msgid "Primer informe de la temporada"
+msgid "start_of_season"
+msgstr "মৌসুমের শুরু"
+
+#: tigascoring/xp_scoring.py:218 loco:5f3558c334e29c5953399610
+#| msgid "ser el primer informe del día"
+msgid "daily_participation"
+msgstr "দিনের প্রথম রিপোর্ট আপলোড করা হচ্ছে"
+
+#: tigascoring/xp_scoring.py:219 loco:5f3558c334e29c5953399611
+#| msgid "haber mandado datos durante DOS días seguidos"
+msgid "fidelity_day_2"
+msgstr "পরপর দুই দিনের রিপোর্ট আপলোড করা হচ্ছে"
+
+#: tigascoring/xp_scoring.py:220 loco:5f3558c334e29c5953399612
+#| msgid "haber mandado datos durante TRES días seguidos"
+msgid "fidelity_day_3"
+msgstr "পরপর তিন দিনের রিপোর্ট আপলোড করা হচ্ছে"
+
+#: tigascoring/xp_scoring.py:221 loco:5f3558c334e29c5953399613
+#| msgid "10 datos enviados"
+msgid "achievement_10_reports"
+msgstr "১০টি তথ্য আপলোড হয়েছে"
+
+#: tigascoring/xp_scoring.py:222 loco:5f3558c334e29c5953399614
+#| msgid "20 datos enviados"
+msgid "achievement_20_reports"
+msgstr "২০টি তথ্য আপলোড করা হয়েছে"
+
+#: tigascoring/xp_scoring.py:223 loco:5f3558c334e29c5953399615
+#| msgid "50 datos enviados"
+msgid "achievement_50_reports"
+msgstr "৫০টি তথ্য আপলোড করা হয়েছে"
+
+#: tigascoring/xp_scoring.py:259 tigascoring/xp_scoring.py:302
+#: loco:5f3558c334e29c5953399616
+#| msgid "la foto"
+msgid "picture"
+msgstr "ছবি"
+
+#: tigascoring/xp_scoring.py:263 tigascoring/xp_scoring.py:309
+#: loco:5f3558c334e29c5953399617
+#| msgid "la geolocalización de los datos"
+msgid "location"
+msgstr "ভৌগলিক অবস্থানের তথ্য পাঠানো হয়েছে"
+
+#: tigascoring/xp_scoring.py:267 loco:5f3558c334e29c5953399618
+#| msgid "Es un sumidero"
+msgid "storm_drain"
+msgstr "এটি একটি নর্দমা"
+
+#: tigascoring/xp_scoring.py:271 loco:5f3558c334e29c5953399619
+#| msgid "haber respondido la pregunta del agua del lugar de cría"
+msgid "water_question"
+msgstr "প্রজনন স্থান রিপোর্টে পানি সম্পর্কিত প্রশ্নের উত্তর"
+
+#: tigascoring/xp_scoring.py:275 loco:5f3558c334e29c595339961a
+#| msgid "haber añadido un informe de mosquito al final"
+msgid "mosquito_report_follows_breeding_site"
+msgstr "পরবর্তীতে একটি মশার রিপোর্ট যোগ করা হচ্ছে"
+
+#: tigascoring/xp_scoring.py:305 loco:5f3558c334e29c595339961b
+#| msgid "no hay foto"
+msgid "no_picture"
+msgstr "কোনো ছবি নেই"
+
+#: tigascoring/xp_scoring.py:312 loco:5f3558c334e29c595339961c
+#| msgid "el informe no está geolocalizado"
+msgid "no_location"
+msgstr "রিপোর্টটিতে ভৌগলিক অবস্থান উল্লেখ নেই"
+
+#: tigascoring/xp_scoring.py:315 loco:5f3558c334e29c595339961d
+#| msgid "haber respondido el formulario del tórax del mosquito"
+msgid "thorax_question"
+msgstr "মশা রিপোর্টে মশার বক্ষ সম্পর্কিত প্রশ্নের উত্তর"
+
+#: tigascoring/xp_scoring.py:318 loco:5f3558c334e29c595339961e
+#| msgid "haber respondido el formulario del abdomen del mosquito"
+msgid "abdomen_question"
+msgstr "মশা রিপোর্টে মশার উদর সম্পর্কিত প্রশ্নের উত্তর"
+
+#: tigascoring/xp_scoring.py:321 loco:5f3558c334e29c595339961f
+#| msgid "haber respondido el formulario de las patas del mosquito"
+msgid "leg_question"
+msgstr "মশা রিপোর্টে মশার পা সম্পর্কিত প্রশ্নের উত্তর"
+
+#: tigascoring/xp_scoring.py:324 loco:5f3558c334e29c5953399620
+#| msgid ""
+#| "después de analizar la notificación, los expertos consideran que no "
+#| "corresponde a ninguna de las 5 especies objetivo de mosquito. Para más "
+#| "info, revisa el tutorial de la app."
+msgid "other_species"
+msgstr ""
+"আপনার প্রদত্ত তথ্য/ছবি বিশ্লেষণ করে বিশেষজ্ঞগণ এই সিদ্ধান্তে উপনীত হয়েছেন যে,"
+" এটি নির্ধারিত ৫ মশার প্রজাতির কোনোটিই নয়। আরো তথ্য জানতে, অ্যাপ "
+"টিউটোরিয়ালটি পুনরায় দেখুন।"
+
+#: tigascoring/xp_scoring.py:331 loco:5f3558c334e29c5953399621
+#| msgid "Lugares de cría"
+msgid "bite report follow"
+msgstr "বর্তমান রিপোর্টটি কামড় সম্পর্কিত রিপোর্টের পাশাপাশি অনুসরণ করা হচ্ছে"
+
+#: tigascoring/xp_scoring.py:371 loco:5f3558c334e29c5953399622
+#| msgid " años"
+msgid " years ago"
+msgstr "কয়েক বছর পূর্বে"
+
+#: tigascoring/xp_scoring.py:373 loco:5f3558c334e29c5953399623
+#| msgid " meses"
+msgid " months ago"
+msgstr "কয়েক মাস পূর্বে"
+
+#: tigascoring/xp_scoring.py:375 loco:5f3558c334e29c5953399624
+#| msgid " días"
+msgid " days ago"
+msgstr "কয়েক দিন পূর্বে"
+
+#: stats/static/stats/user_ranking.js:20 loco:5f355e391e841656806f0f12
+#| msgid "Nivel General"
+msgid "Overall"
+msgstr "সামগ্রিক স্তর"
+
+#: stats/static/stats/user_ranking.js:24 loco:5f355e391e841656806f0f13
+#| msgid "Nivel Mosquito"
+msgid "Adult"
+msgstr "মশার স্তর"
+
+#: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
+#: loco:5f355e391e841656806f0f14
+#| msgid "Datos enviados"
+msgid "Reports"
+msgstr "প্রেরিত তথ্য"
+
+#: stats/static/stats/user_ranking.js:34 loco:5f355e391e841656806f0f15
+#| msgid "Nivel Lugares de cría"
+msgid "Site"
+msgstr "স্থানের স্তর"
+
+#: tigacrafting/static/tigacrafting/jquery-ui/jquery-ui.min.js:10
+#: loco:5f355e391e841656806f0f16
+msgid "'"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
+#: loco:5f355e391e841656806f0f17
+msgid "v"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
+#: loco:5f355e391e841656806f0f18
+msgid "h"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/tinymce.min.js:8
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+#: loco:5f355e391e841656806f0f19
+msgid "blockquote"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+#: loco:5f355e391e841656806f0f1a
+msgid "UL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+#: loco:5f355e391e841656806f0f1b
+msgid "OL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+#: loco:5f355e391e841656806f0f1c
+msgid "DL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+#: loco:5f355e391e841656806f0f1d
+msgid "align"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+#: loco:5f355e391e841656806f0f1e
+msgid "p"
+msgstr ""
+
+#: loco:5f6c4cd56b0ff67fdb48fc13
+#| msgid "¡Acabas de recibir una recompensa de puntos!"
+msgid "you_just_received_a_points_award"
+msgstr "আপনি এই মাত্র একটি পয়েন্ট পেয়েছেন!"
+
+#: loco:5f7ac940d2929203275da372
+#| msgid "¡Tu foto ha sido validada por un experto!"
+msgid "your_picture_has_been_validated_by_an_expert"
+msgstr "আপনার পাঠানো ছবিটি একজন বিশেষজ্ঞ যাচাই করেছেন!"
