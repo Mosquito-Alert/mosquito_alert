@@ -1,0 +1,84 @@
+{% extends "tigahelp/base.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+About The Project
+{% endblock %}
+
+{% block content %}
+<div class='main_container'>
+
+    <div class='text_container'>
+
+
+        <div class="center">
+
+            <h1></h1>
+
+        </div>
+
+
+        <h2>Vad är Mosquito Alert?</h2>
+        <p>Mosquito Alert är en plattform för medborgarforskning som underlättar samarbete mellan olika aktörer för att studera, övervaka och kontrollera myggarter som bär på sjukdomar som dengue, Zika, chikungunya och West Nile-virus.</p>
+        <p>Projektet ger nyckelroller till medborgare, forskare, folkhälsoexperter och utbildare. Mosquito Alert låter vem som helst samla in och dela data (1) och engagera sig i datavalidering tillsammans med professionella entomologer, som märker myggrapporter och svarar på deltagarna (2). När data väl har validerats görs den tillgänglig för allmänheten via en interaktiv webbkarta (3). Det används också av forskare (4) och av folkhälsoaktörer( 5) för att studera och övervaka myggor som är vektorer för sjukdomar.</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/what_happens.jpg" %}">
+
+        </p>
+
+
+        <h2>Varför behövs Mosquito Alert?</h2>
+        <p>Under de senaste decennierna har antalet invasiva myggor och nya myggburna sjukdomar ökat på global nivå. Nya invasiva arter, främst av släktet Aedes, har etablerat sig i nya områden och fortsätter att expandera. Aedes-myggor är viktiga ur ett hälsoperspektiv på grund av deras förmåga att överföra sjukdomar som dengue, Zika och chikungunya. Likaså är husmyggan (Culex pipiens) viktig eftersom den kan överföra West Nile-viruset. Riskerna som myggor utgör för folkhälsan gör det viktigt att övervaka deras populationer.</p>
+        <p>Med tanke på problemets komplexitet öppnar Mosquito Alert upp myggövervakning och forskning för allmänheten, vilket möjliggör samarbete mellan olika aktörer genom appen och andra plattformar.</p>
+        <h2>Vilken data samlas in?</h2>
+        <p>Data samlas in på 5 olika myggarter: den asiatiska tigermyggan (<em>Aedes albopictus</em>), gula febermyggan (<em>Aedes aegypti</em>), kyrkogårdsmyggan (<em>Aedes japonicus</em>), regnvattensmyggan (<em>Aedes koreicus</em>) och husmyggan (<em>Culex pipiens</em>).</p>
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Mosquitos.jpg" %}">
+
+        </p>
+
+
+        <p>För dessa arter samlas data in om vuxna myggor och deras larvhabitatplatser och bett. Alla dessa data är viktiga för att bättre förstå dessa arter och för att övervaka och kontrollera dem.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/Buttons.jpg" %}">
+
+        </p>
+
+
+        <p>Mosquito Alert samlar också in de ungefärliga platserna för deltagarnas enheter, och samplar dessa platser vid 5 slumpmässiga tider varje dag om inte deltagaren har valt bort detta. Platser är maskerade på ett rutnät på 0,025 x 0,025 grader latitud och longitud (cirka 2x2 km) innan de skickas till Mosquito Alert-servern. Av integritetsskäl är det bara rutnätsfyrkant-identititeten som faktiskt delas med Mosquito Alert, inte den exakta platsen. Denna information är mycket värdefull ur ett vetenskapligt perspektiv, eftersom den gör det möjligt för forskare att göra bättre uppskattningar om myggpopulationer, genom att till exempel skilja platser med få myggor från platser med få deltagare (men potentiellt många myggor). Deltagarplatser ger information om vad som inom ekologi kallas provtagningsinsatsen.</p>
+
+
+        <p class="centeredImage">
+
+            <img style="max-width: 100%; height: auto;" src="{% static "tigahelp/BackgroundTracking.jpg" %}">
+
+        </p>
+
+
+        <h2>Vad används data till?</h2>
+        <p>Här är några exempel:</p>
+        <ul>
+            <li type="disc">De rapporter som människor skickar till Mosquito Alert har under de senaste åren visat sig utgöra ett effektivt system för tidig varning för invasion av nya myggarter Systemet används för att övervaka etablerade myggpopulationer och upptäcka nya populationer.
+            </li>
+            <li type="disc">Observationer av myggor, larvhabitatplatser och myggbett hjälper forskare och folkhälsoaktörer att bedöma risker och hantera populationer av sjukdomsvektorer. För att uppskatta förekomsten av myggor på en given plats är det viktigt att justera observationer baserat på provtagningsinsatser. För att göra detta samlar appen Mosquito Alert in data om enhetens ungefärliga position vid slumpmässiga tider på dygnet. Positioner är maskerade på ett rutnät på cirka 2x2 km för att skydda integriteten.
+            </li>
+            <li type="disc">Arbete pågår för närvarande med att utveckla ett dynamiskt system för förutsägelse av epidemiologiska risker i realtid.
+            </li>
+        </ul>
+        <h2>Var kan jag hitta mer information?</h2>
+        <p>Du hittar mer information på projektets hemsida och i sociala medier.</p>
+        <p><a href="http://www.mosquitoalert.com/en/">www.mosquitoalert.com</a></p>
+        <p>inställningarna för appen hittar du en användarguide för deltagare, en guide som hjälper dig att identifiera stickmyggor, integritetspolicyn och användarvillkoren, samt information om enheterna bakom detta projekt.</p>
+
+
+    </div>
+
+</div>
+{% endblock %}
