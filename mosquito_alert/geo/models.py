@@ -229,6 +229,8 @@ class BoundaryGeometry(LifecycleModel):
     # Custom Properties
     # Methods
     def __init__(self, *args, **kwargs):
+        # NOTE: __init__ signature can not be changed
+        # See: https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model
         geometry = kwargs.get("geometry", None)
         if geometry and isinstance(geometry, geos.Polygon):
             kwargs.update({"geometry": geos.MultiPolygon(geometry)})
