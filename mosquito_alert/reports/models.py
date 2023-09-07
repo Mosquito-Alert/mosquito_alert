@@ -15,8 +15,9 @@ from mosquito_alert.bites.models import Bite
 from mosquito_alert.breeding_sites.models import BreedingSite
 from mosquito_alert.geo.models import GeoLocatedModel
 from mosquito_alert.images.models import Photo
-from mosquito_alert.individuals.models import Individual, Taxon
+from mosquito_alert.individuals.models import Individual
 from mosquito_alert.moderation.models import FlagModeratedModel
+from mosquito_alert.taxa.models import Taxon
 
 from .managers import ReportManager
 
@@ -149,7 +150,7 @@ class BreedingSiteReport(Report):
 class IndividualReport(Report):
     "An individual report records an encounter with an individual organism at a particular time and location."
     # Relations
-    individual = models.ForeignKey(Individual, on_delete=models.CASCADE, related_name="reports")
+    individuals = models.ManyToManyField(Individual, related_name="reports")
     taxon = models.ForeignKey(Taxon, null=True, blank=True, on_delete=models.PROTECT)
 
     # Attributes - Mandatory
@@ -158,13 +159,6 @@ class IndividualReport(Report):
     # Object Manager
     # Custom Properties
     # Methods
-    def save(self, *args, **kwargs):
-        is_adding = self._state.adding
-        if is_adding:
-            if not hasattr(self, "individual"):
-                self.individual = Individual.objects.create()
-
-        super().save(*args, **kwargs)
 
     # Meta and String
     class Meta:

@@ -39,6 +39,7 @@ django-simple-history==3.3.0  # https://github.com/jazzband/django-simple-histor
 # Django Admin
 django-admin-sortable2==2.1.8  # https://github.com/jrief/django-admin-sortable2
 django-nested-admin==4.0.2  # https://github.com/theatlantic/django-nested-admin
+django-admin-numeric-filter==0.1.9  # https://github.com/lukasvinclav/django-admin-numeric-filter
 # Django REST Framework
 djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework
 django-cors-headers==4.2.0  # https://github.com/adamchainz/django-cors-headers

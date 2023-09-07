@@ -164,7 +164,6 @@ class TimeStampedModel(models.Model):
 
         if not self._state.adding:
             self.updated_at = timezone.now()
-
         super().save(*args, **kwargs)
 
     # Meta and String
@@ -191,7 +190,7 @@ class ObservableMixin(LifecycleModelMixin):
     NOTIFY_ON_CREATE = True
     NOTIFY_ON_DELETE = True
 
-    def _notify_changes(self, *args, **kwargs):
+    def _notify_changes(self, fields_changed=[]):
         # The function that is going to be called when changes/create/delete happen
         pass
 
@@ -206,21 +205,21 @@ class ObservableMixin(LifecycleModelMixin):
 
     def save(self, *args, **kwargs):
         fields_changed = self._get_changed_observable_fields()
-
         _is_creating = self._state.adding
 
         super().save(*args, **kwargs)
 
         if not self.skip_notify_changes:
-            if _is_creating and self.NOTIFY_ON_CREATE:
-                self._notify_changes()
-
-            if fields_changed:
-                self._notify_changes()
+            if _is_creating:
+                if self.NOTIFY_ON_CREATE:
+                    self._notify_changes()
+            else:
+                if fields_changed:
+                    self._notify_changes(fields_changed=fields_changed)
 
     def delete(self, *args, **kwargs):
         value = super().delete(*args, **kwargs)
-        if self.skip_notify_changes:
+        if not self.skip_notify_changes:
             if self.NOTIFY_ON_DELETE:
                 self._notify_changes()
 

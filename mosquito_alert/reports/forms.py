@@ -2,7 +2,6 @@ from django import forms
 from django.contrib.gis import forms as gisforms
 
 from mosquito_alert.geo.models import Location
-from mosquito_alert.individuals.models import Individual
 
 from .models import BiteReport, BreedingSiteReport, IndividualReport, Report
 
@@ -52,14 +51,6 @@ class BreedingSiteReportForm(ReportForm):
 
 
 class IndividualReportForm(ReportForm):
-    def save(self, commit=True):
-        if self.instance._state.adding:
-            self.instance.individual = Individual.objects.create()
-            self.instance.individual.taxon = self.cleaned_data["taxon"]
-            self.instance.individual.save()
-
-        return super().save(commit)
-
     class Meta:
         model = IndividualReport
         fields = ReportForm.Meta.fields + [

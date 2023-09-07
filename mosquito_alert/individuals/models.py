@@ -1,77 +1,60 @@
-from django.conf import settings
+from __future__ import annotations
+
+import typing
+
 from django.db import models
-from django.db.models.signals import ModelSignal
 from django.utils.translation import gettext_lazy as _
-from django_lifecycle import AFTER_UPDATE, BEFORE_CREATE, BEFORE_UPDATE, LifecycleModel, hook
 
 from mosquito_alert.images.models import Photo
-from mosquito_alert.notifications.signals import notify, notify_subscribers
 from mosquito_alert.taxa.models import Taxon
 
-post_identification_changed = ModelSignal(use_caching=True)
+from .managers import IndividualManager
+
+if typing.TYPE_CHECKING:
+    from mosquito_alert.identifications.models import IndividualIdentificationTaskResult
 
 
-class Individual(LifecycleModel):
+class Individual(models.Model):
+    @classmethod
+    def _get_default_identification_result_type(cls):
+        from mosquito_alert.identifications.models import BaseTaskResult
+
+        return BaseTaskResult.ResultType.ENSEMBLED
+
     # Relations
-    taxon = models.ForeignKey(
-        Taxon,
-        null=True,
-        blank=True,
-        on_delete=models.PROTECT,
-        related_name="individuals",
-    )
 
     # Attributes - Mandatory
-    is_identified = models.BooleanField(default=False, editable=False)
-
-    # TODO: through model that indicates a bounding box in the photos.
-    #       That is, an individual is found boxed in some place of the image.
-    photos = models.ManyToManyField(Photo, blank=True, related_name="individuals")
 
     # Attributes - Optional
     # Object Manager
+    objects = IndividualManager()
 
     # Custom Properties
+    @property
+    def default_identification_result(self) -> IndividualIdentificationTaskResult | None:
+        return self.get_identification_result_by_type(type=self._get_default_identification_result_type())
+
+    @property
+    def is_identified(self) -> bool:
+        return self.taxon is not None and self.taxon.is_specie
+
+    @property
+    def taxon(self) -> Taxon | None:
+        return self.default_identification_result.taxon if self.default_identification_result else None
+
+    @property
+    def photos(self) -> models.QuerySet[Photo]:
+        return self.get_photos_by_identification_result_type(type=self._get_default_identification_result_type())
 
     # Methods
-    @hook(BEFORE_CREATE)
-    @hook(BEFORE_UPDATE, when="taxon", has_changed=True)
-    def update_is_identified_on_taxon_change(self):
-        self.is_identified = self.taxon.is_specie if self.taxon else False
+    def get_photos_by_identification_result_type(self, type) -> models.QuerySet[Photo]:
+        return Photo.objects.filter(
+            photo_identification_tasks__task=self.identification_task,
+            photo_identification_tasks__results__type=type,
+        )
 
-    @hook(AFTER_UPDATE, when="taxon", has_changed=True, is_not=None)
-    def notify_identification(self):
-        # TODO: use signals and notify in reports app.
-        if not self.is_identified:
-            return
-
-        post_identification_changed.send(sender=self.__class__, instance=self)
-
-        if hasattr(self, "reports"):
-            for r in self.reports.all():
-                if user := r.user:
-                    notify.send(
-                        recipient=user,
-                        sender=r,
-                        verb=_("was identified as"),
-                        action_object=self.taxon,
-                        description=_(f"Your observation report has been identified as {self.taxon}"),
-                    )
-                for b in r.location.boundaries.all():
-                    notify_subscribers.send(
-                        sender=self.taxon,
-                        verb=_("was identified in"),
-                        target=b,
-                    )
-        else:
-            notify_subscribers.send(
-                sender=self.taxon,
-                verb=_("was identified"),
-            )
-
-    def delete(self, *args, **kwargs):
-        # TODO delete orphan images with no reports assigned to them.
-        super().delete(*args, **kwargs)
+    def get_identification_result_by_type(self, type) -> IndividualIdentificationTaskResult | None:
+        return self.identification_task.results.filter(type=type).first()
 
     # Meta and String
     class Meta:
@@ -80,106 +63,3 @@ class Individual(LifecycleModel):
 
     def __str__(self) -> str:
         return str(self.taxon) if self.taxon else f"Not-identified individual (id={self.pk})"
-
-
-class AnnotationAttribute(models.Model):
-    # Relations
-    # Those taxon that can be questioned with this anntoations: life, mammals, culex pipiens, etc
-    taxa = models.ForeignKey(Taxon, on_delete=models.CASCADE, related_name="annotation_attributes")
-
-    # Attributes - Mandatory
-    label = models.CharField(max_length=128)  # the question
-    # datatype = # TODO: numerics, text, choices
-
-    # Attributes - Optional
-    # Object Manager
-
-    # Custom Properties
-
-    # Methods
-
-    # Meta and String
-    class Meta:
-        verbose_name = _("annotation attribute")
-        verbose_name_plural = _("annotation attributes")
-
-    def __str__(self) -> str:
-        return self.label
-
-
-class AnnotationValue(models.Model):
-    # Relations
-    annotation_attribute = models.ForeignKey(AnnotationAttribute, on_delete=models.CASCADE, related_name="values")
-    taxa = models.ForeignKey(
-        Taxon, on_delete=models.CASCADE, related_name="annotation_values"
-    )  # Those taxon that can be questioned with this anntoations: life, mammals, culex pipiens, etc
-
-    # Attributes - Mandatory
-    label = models.CharField(max_length=128)  # Dead, Alive | egg, pupa (only a set of taxons)
-
-    # Attributes - Optional
-    # Object Manager
-
-    # Custom Properties
-
-    # Methods
-    def save(self, *args, **kwargs) -> None:
-        if self.taxa != self.annotation_attribute.taxa or not self.taxa.is_descendant_of(
-            self.annotation_attribute.taxa
-        ):
-            raise ValueError(
-                "Tried to assign an annotation value to a taxa that is not "
-                "same/descendant of annotation's attribute taxa."
-            )
-
-        super().save(*args, **kwargs)
-
-    # Meta and String
-    class Meta:
-        verbose_name = _("annotation value")
-        verbose_name_plural = _("annotation values")
-
-    def __str__(self) -> str:
-        return f"{self.label} ({self.annotation_attribute.label})"
-
-
-class Annotation(models.Model):
-    # Relations
-    annotation_attribute = models.ForeignKey(AnnotationAttribute, on_delete=models.PROTECT, related_name="annotations")
-    annotation_value = models.ForeignKey(AnnotationValue, on_delete=models.PROTECT, related_name="annotations")
-    individual = models.ForeignKey(Individual, on_delete=models.CASCADE, related_name="annotations")
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="annotations",
-    )
-
-    # Attributes - Mandatory
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    # Attributes - Optional
-    # Object Manager
-
-    # Custom Properties
-
-    # Methods
-    def save(self, *args, **kwargs) -> None:
-        if self.annotation_value not in self.annotation_attribute.values:
-            raise ValueError("The annotation value is not a valid option for this annotation attribute.")
-
-        super().save(*args, **kwargs)
-
-    # Meta and String
-    class Meta:
-        verbose_name = _("annotation")
-        verbose_name_plural = _("annotations")
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "individual", "annotation_attribute"],
-                name="unique_user_individual_annotation-attribute",
-            )
-        ]
-
-    def __str__(self) -> str:
-        return f"{self.annotation_attribute}->{self.annotation_attribute}"
