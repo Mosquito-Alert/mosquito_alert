@@ -17,7 +17,6 @@ from reversion.models import Version
 from mosquito_alert.breeding_sites.models import BreedingSite
 from mosquito_alert.breeding_sites.tests.factories import BreedingSiteFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyPoint
-from mosquito_alert.individuals.tests.factories import IndividualFactory
 
 from ..models import IndividualReport
 from .factories import BiteReportFactory, BreedingSiteReportFactory, IndividualReportFactory, ReportFactory
@@ -252,35 +251,8 @@ class TestIndividualReport(BaseTestReversionedReport, TestReport):
         return IndividualReportFactory
 
     # Custom tests
-    def test_individual_can_be_blank(self, factory_cls):
-        factory_cls(individual=None)
-
-    def test_inidividual_is_auto_created_if_blank(self, factory_cls):
-        report = factory_cls(individual=None)
-
-        assert report.individual is not None
-
-    def test_individual_is_kept_if_defined(self, factory_cls):
-        i = IndividualFactory()
-        report = factory_cls(individual=i)
-
-        assert report.individual == i
-
-    def test_individual_can_not_be_set_to_None(self, factory_cls):
-        report = factory_cls()
-
-        report.individual = None
-
-        with pytest.raises(IntegrityError, match=r"violates not-null constraint"):
-            report.save()
-
-    def test_individual_deletion_is_cascaded(self, factory_cls):
-        i = IndividualFactory()
-        report = factory_cls(individual=i)
-
-        i.delete()
-
-        assert IndividualReport.objects.filter(pk=report.pk).count() == 0
+    def test_individuals_related_name(self):
+        assert IndividualReport._meta.get_field("individuals").remote_field.related_name == "reports"
 
     def test_taxon_can_be_None(self, factory_cls):
         factory_cls(taxon=None)

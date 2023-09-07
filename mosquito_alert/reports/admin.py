@@ -13,6 +13,9 @@ from .models import BiteReport, BreedingSiteReport, IndividualReport, Report
 
 
 class ReadOnlyPhotoAdminInline(SortableHiddenMixin, m2mPhotoAdminInlineMixin, NestedTabularInline):
+    # WARNING: Using many2many as AdminInline does not trigger m2m_changed signals.
+    # See:  https://code.djangoproject.com/ticket/17688
+    #       https://docs.djangoproject.com/en/4.2/ref/contrib/admin/#working-with-many-to-many-models
     model = Report.photos.through
     fields = m2mPhotoAdminInlineMixin.fields + [
         "sort_value",
@@ -37,7 +40,7 @@ class ReportChildAdmin(NestedPolymorphicModelAdmin, PolymorphicChildModelAdmin):
 
 
 @admin.register(BiteReport)
-class BiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
+class BiteReportChildAdmin(VersionAdmin, ReportChildAdmin):
     class BitesInlineAdmin(NestedTabularInline):
         model = BiteReport.bites.through
         extra = 0
@@ -50,7 +53,7 @@ class BiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
 
 
 @admin.register(BreedingSiteReport)
-class BreedingSiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
+class BreedingSiteReportChildAdmin(VersionAdmin, ReportChildAdmin):
     base_model = BreedingSiteReport
     base_form = BreedingSiteReportForm
     list_filter = ReportChildAdmin.list_filter + ["has_water"]
@@ -58,10 +61,25 @@ class BreedingSiteReportChildAdmin(ReportChildAdmin, VersionAdmin):
 
 
 @admin.register(IndividualReport)
-class IndividualReportAdmin(ReportChildAdmin, VersionAdmin):
+class IndividualReportAdmin(VersionAdmin, ReportChildAdmin):
     base_model = IndividualReport
     base_form = IndividualReportForm
-    readonly_fields = ["individual"]
+
+    class Individualm2mAdminInline(NestedTabularInline):
+        def has_add_permission(self, request, obj=None) -> bool:
+            return False
+
+        def has_change_permission(self, request, obj=None) -> bool:
+            return False
+
+        is_sortable = False
+        can_delete = False
+        extra = 0
+
+        show_change_link = True
+        model = IndividualReport.individuals.through
+
+    inlines = ReportChildAdmin.inlines + [Individualm2mAdminInline]
 
 
 @admin.register(Report)

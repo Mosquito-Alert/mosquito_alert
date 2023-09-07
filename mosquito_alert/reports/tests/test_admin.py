@@ -162,6 +162,8 @@ class TestIndividualReportAdmin(BaseReportChildAdmin):
             data=self.common_payload
             | {
                 "taxon": "",
+                "IndividualReport_individuals-TOTAL_FORMS": 0,
+                "IndividualReport_individuals-INITIAL_FORMS": 0,
             },
         )
 

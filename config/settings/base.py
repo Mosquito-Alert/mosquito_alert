@@ -70,6 +70,7 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
     # "django.contrib.humanize", # Handy template tags
     "modeltranslation",  # Neet to be placed before django.contrib.admin
+    "admin_numeric_filter",
     "django.contrib.admin",
     "django.forms",
 ]
@@ -99,6 +100,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "mosquito_alert.annotations",
     "mosquito_alert.bites",
     "mosquito_alert.breeding_sites",
     "mosquito_alert.epidemiology",

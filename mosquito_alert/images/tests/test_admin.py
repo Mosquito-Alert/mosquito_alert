@@ -48,10 +48,8 @@ class TestPhotoAdmin:
                 "flag-flag-content_type-object_id-INITIAL_FORMS": "0",
                 "flag-flag-content_type-object_id-empty-flags-TOTAL_FORMS": "0",
                 "flag-flag-content_type-object_id-empty-flags-INITIAL_FORMS": "0",
-                "taxon_prediction_run-TOTAL_FORMS": "0",
-                "taxon_prediction_run-INITIAL_FORMS": "0",
-                "taxon_prediction_run-empty-image_taxon_predictions-TOTAL_FORMS": "0",
-                "taxon_prediction_run-empty-image_taxon_predictions-INITIAL_FORMS": "0",
+                "photo_identification_tasks-TOTAL_FORMS": "0",
+                "photo_identification_tasks-INITIAL_FORMS": "0",
             },
         )
 

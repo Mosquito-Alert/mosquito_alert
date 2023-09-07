@@ -490,11 +490,12 @@ class BaseTestObservableMixin(AbstractDjangoModelTestMixin, ABC):
         obj = self.factory_cls.build(skip_notify_changes=skip_notify_changes)
 
         with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
-            with patch("django.db.models.base.Model.save", return_value=None) as mocked_super_save:
-                manager.attach_mock(mocked_method, "mock_notify")
-                manager.attach_mock(mocked_super_save, "mock_super_save")
+            with patch.object(obj, "_run_hooked_methods", return_value=None):
+                with patch("django.db.models.base.Model.save", return_value=None) as mocked_super_save:
+                    manager.attach_mock(mocked_method, "mock_notify")
+                    manager.attach_mock(mocked_super_save, "mock_super_save")
 
-                obj.save()
+                    obj.save()
 
         expected_calls = [call.mock_super_save()]
 
@@ -508,10 +509,11 @@ class BaseTestObservableMixin(AbstractDjangoModelTestMixin, ABC):
         obj.NOTIFY_ON_CREATE = False
 
         with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
-            with patch("django.db.models.base.Model.save", return_value=None):
-                obj.save()
+            with patch.object(obj, "_run_hooked_methods", return_value=None):
+                with patch("django.db.models.base.Model.save", return_value=None):
+                    obj.save()
 
-                mocked_method.assert_not_called()
+                    mocked_method.assert_not_called()
 
     @pytest.mark.parametrize(
         "skip_notify_changes, mock_changes, expected_has_calls",
@@ -523,12 +525,26 @@ class BaseTestObservableMixin(AbstractDjangoModelTestMixin, ABC):
         obj = self.factory_cls(skip_notify_changes=skip_notify_changes)
 
         with patch.object(obj, "has_changed", return_value=mock_changes):
+            with patch.object(obj, "_run_hooked_methods", return_value=None):
+                with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
+                    obj.save()
+                    if expected_has_calls:
+                        mocked_method.assert_called_once()
+                    else:
+                        mocked_method.assert_not_called()
+
+    def assert__notify_changes_is_called_on_field_change(self, fieldname, expected_is_called=True):
+        obj = self.factory_cls()
+
+        # Force check changed to True
+        with patch.object(obj, "has_changed", side_effect=lambda field_name: field_name is fieldname):
             with patch.object(obj, "_notify_changes", return_value=None) as mocked_method:
-                obj.save()
-                if expected_has_calls:
-                    mocked_method.assert_called_once()
-                else:
-                    mocked_method.assert_not_called()
+                with patch("django.db.models.base.Model.save", return_value=None):
+                    obj.save()
+                    if expected_is_called:
+                        mocked_method.assert_called_once_with(fields_changed=[fieldname])
+                    else:
+                        mocked_method.assert_not_called()
 
     @pytest.mark.parametrize("skip_notify_changes, expected_has_called_notify", [(True, False), (False, False)])
     def test__notify_changes_is_called_after_delete(self, skip_notify_changes, expected_has_called_notify):
@@ -563,3 +579,9 @@ class BaseTestObservableMixin(AbstractDjangoModelTestMixin, ABC):
 class TestObservableModel(BaseTestObservableMixin):
     model = DummyObservableModel
     factory_cls = DummyObservableModelFactory
+
+    def test__notify_changes_is_called_on_name_change(self):
+        super().assert__notify_changes_is_called_on_field_change(fieldname="name")
+
+    def test__notify_changes_is_not_called_on_hidden_name_change(self):
+        super().assert__notify_changes_is_called_on_field_change(fieldname="hidden_name", expected_is_called=False)
