@@ -49,12 +49,20 @@ class TestTaxonClassificationCategorizedProbabilityCandidateForm(TestTaxonClassi
     def test_probability_is_humanized_if_instance_is_seed(self):
         form = self.form_cls(instance=TaxonClassificationCandidateFactory(is_seed=True))
 
-        assert form.fields["probability"].choices == [("1.0", "I'm sure"), ("0.75", "I'm doubting")]
+        assert form.fields["probability"].choices == [
+            ("1.0", "Certain"),
+            ("0.9", "Highly Likely"),
+            ("0.75", "I believe"),
+        ]
 
     def test_probability_if_new_instance(self):
         form = self.form_cls()
 
-        assert form.fields["probability"].choices == [("1.0", "I'm sure"), ("0.75", "I'm doubting")]
+        assert form.fields["probability"].choices == [
+            ("1.0", "Certain"),
+            ("0.9", "Highly Likely"),
+            ("0.75", "I believe"),
+        ]
 
     def test_probability_is_required_if_instance_is_seed(self):
         form = self.form_cls(instance=TaxonClassificationCandidateFactory(is_seed=True))

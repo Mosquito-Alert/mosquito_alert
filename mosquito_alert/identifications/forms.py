@@ -36,7 +36,9 @@ class TaxonClassificationCategorizedProbabilityCandidateForm(TaxonClassification
 
         if not self.instance.pk or self.instance.is_seed:
             self.fields["probability"] = forms.TypedChoiceField(
-                choices=(("1.0", _("I'm sure")), ("0.75", _("I'm doubting"))), coerce=Decimal, required=True
+                choices=(("1.0", _("Certain")), ("0.9", _("Highly Likely")), ("0.75", _("I believe"))),
+                coerce=Decimal,
+                required=True,
             )
 
     class Meta(TaxonClassificationCandidateForm.Meta):
