@@ -5,19 +5,8 @@ import factory.fuzzy
 from factory.django import DjangoModelFactory
 
 from mosquito_alert.images.tests.factories import PhotoFactory
-from mosquito_alert.users.tests.factories import UserFactory
 
 from ..models import BaseShape
-
-
-class BaseAnnotatorProfileFactory(DjangoModelFactory):
-    user = factory.SubFactory(UserFactory)
-
-    class Meta:
-        abstract = True
-        django_get_or_create = [
-            "user",
-        ]
 
 
 class BaseTaskFactory(DjangoModelFactory):

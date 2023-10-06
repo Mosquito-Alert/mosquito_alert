@@ -1,7 +1,10 @@
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.db.models import CharField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+
+from mosquito_alert.identifications.base import BaseIdentifierProfile
 
 
 class User(AbstractUser):
@@ -24,3 +27,17 @@ class User(AbstractUser):
 
         """
         return reverse("users:detail", kwargs={"username": self.username})
+
+
+class UserProfile(BaseIdentifierProfile):
+    # Relations
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, related_name="profile")
+
+    # Attributes - Mandatory
+    # Attributes - Optional
+    # Object Manager
+    # Custom Properties
+    # Methods
+    # Meta and String
+    class Meta(BaseIdentifierProfile.Meta):
+        pass

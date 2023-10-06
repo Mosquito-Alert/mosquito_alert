@@ -6,7 +6,6 @@ from django.urls import reverse
 
 from ..admin import (
     ExternalIdentificationAdminInline,
-    IdentifierProfileAdmin,
     IndividualIdentificationTaskAdmin,
     IndividualIdentificationTaskResultAdmin,
     IndividualIdentificationTaskResultAdminInline,
@@ -21,14 +20,12 @@ from ..admin import (
 from ..forms import TaxonClassificationCandidateForm, TaxonClassificationCategorizedProbabilityCandidateForm
 from ..formsets import TaxonClassificationCandidateFormSet
 from ..models import (
-    IdentifierProfile,
     IndividualIdentificationTask,
     IndividualIdentificationTaskResult,
     PhotoIdentificationTask,
     PhotoIdentificationTaskResult,
 )
 from .factories import (
-    IdentifierProfileFactory,
     IndividualIdentificationTaskFactory,
     IndividualIdentificationTaskResultFactory,
     PhotoIdentificationTaskFactory,
@@ -41,60 +38,6 @@ from .models import DummyBaseClassification
 ############################
 # admin.ModelAdmin tests
 ############################
-
-
-class TestidentifierprofileAdmin:
-    @pytest.mark.parametrize("fieldname", ["user__name", "user__username"])
-    def test_can_search_by(self, fieldname):
-        assert fieldname in IdentifierProfileAdmin.search_fields
-
-    def test_user_field_is_autocomplete(self):
-        assert "user" in IdentifierProfileAdmin.autocomplete_fields
-
-    @pytest.mark.django_db
-    def test_user_field_is_readonly_on_change(self, admin_user):
-        assert "user" in IdentifierProfileAdmin(model=IdentifierProfile, admin_site=AdminSite()).get_readonly_fields(
-            request=Mock(user=admin_user), obj=IdentifierProfileFactory()
-        )
-
-    @pytest.mark.parametrize("fieldname", ["is_superexpert", "is_active", "created_at", "updated_at"])
-    def test_list_filter(self, admin_user, fieldname):
-        list_filter = IdentifierProfileAdmin(model=IdentifierProfile, admin_site=AdminSite()).get_list_filter(
-            request=Mock(user=admin_user)
-        )
-
-        fields = [x if not isinstance(x, tuple) else x[0] for x in list_filter]
-
-        assert fieldname in fields
-
-    def test_add(self, admin_client, user):
-        url = reverse("admin:identifications_identifierprofile_add")
-        response = admin_client.get(url)
-        assert response.status_code == 200
-
-        response = admin_client.post(
-            url,
-            data={"user": user.pk, "is_superexpert": "1"},
-        )
-        assert response.status_code == 302
-        instance = IdentifierProfile.objects.get(user=user)
-
-        assert instance.pk == user.pk
-        assert instance.is_superexpert is True
-
-    def test_view(self, admin_client):
-        bite = IdentifierProfileFactory()
-        url = reverse(
-            "admin:identifications_identifierprofile_change",
-            kwargs={"object_id": bite.pk},
-        )
-        response = admin_client.get(url)
-        assert response.status_code == 200
-
-    def test_changelist(self, admin_client):
-        url = reverse("admin:identifications_identifierprofile_changelist")
-        response = admin_client.get(url)
-        assert response.status_code == 200
 
 
 class TestIndividualIdentificationTaskResultAdmin:
