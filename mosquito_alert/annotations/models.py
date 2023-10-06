@@ -1,6 +1,5 @@
 from abc import abstractmethod
 
-from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -14,36 +13,6 @@ from mosquito_alert.utils.models import TimeStampedModel
 ####################
 # NOTE: Until generic annotations is not needed, only abstractions will be defined.
 ####################
-
-####################
-# User Profile
-####################
-
-
-class BaseAnnotatorProfile(TimeStampedModel):
-    # Relations
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
-
-    # Attributes - Mandatory
-    is_active = models.BooleanField(
-        _("active"),
-        default=True,
-        help_text=_("Designates whether this user profile should be treated as active. "),
-    )
-    # Attributes - Optional
-
-    # Object Manager
-
-    # Custom Properties
-    # Methods
-
-    # Meta and String
-    class Meta(TimeStampedModel.Meta):
-        abstract = True
-
-    def __str__(self) -> str:
-        return str(self.user)
-
 
 ####################
 # Task

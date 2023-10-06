@@ -7,18 +7,17 @@ from factory.django import DjangoModelFactory
 
 from mosquito_alert.annotations.tests.factories import (
     BaseAnnotationFactory,
-    BaseAnnotatorProfileFactory,
     BasePhotoAnnotationTaskFactory,
     BaseTaskFactory,
     RectangularShapeFactory,
 )
 from mosquito_alert.taxa.tests.factories import TaxonFactory
+from mosquito_alert.users.tests.factories import UserFactory
 
 from ..models import (
     BaseClassification,
     BaseTaskResult,
     ExternalIdentification,
-    IdentifierProfile,
     IndividualIdentificationTask,
     IndividualIdentificationTaskResult,
     PhotoIdentificationTask,
@@ -39,16 +38,6 @@ class TaxonProbNodeFactory(factory.Factory):
     # children
     class Meta:
         model = TaxonProbNode
-
-
-##########################
-# User Profile
-##########################
-
-
-class IdentifierProfileFactory(BaseAnnotatorProfileFactory):
-    class Meta:
-        model = IdentifierProfile
 
 
 #############################
@@ -154,7 +143,7 @@ class BasePhotoIdentificationFactory(BaseIdentificationFactory, BaseTaskChildFac
 
 
 class UserIdentificationFactory(BasePhotoIdentificationFactory):
-    identifier_profile = factory.SubFactory(IdentifierProfileFactory)
+    user = factory.SubFactory(UserFactory)
 
     class Meta:
         model = UserIdentification

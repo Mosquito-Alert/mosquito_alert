@@ -12,35 +12,6 @@ from mosquito_alert.utils.tests.test_models import AbstractDjangoModelTestMixin,
 from ..models import BasePhotoAnnotationTask, BaseShape
 from ..shapes import Rectangle
 
-####################
-# User Profile
-####################
-
-
-class BaseTestBaseAnnotatorProfile(BaseTestTimeStampedModel, ABC):
-    # fields
-    def test_user_can_not_be_null(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            _ = self.factory_cls(user=None)
-
-    def test_pk_is_same_as_user(self):
-        u_profile = self.factory_cls()
-        assert u_profile.pk == u_profile.user.pk
-
-    def test_cascade_user_on_delete(self):
-        _on_delete = self.model._meta.get_field("user").remote_field.on_delete
-        assert _on_delete == models.CASCADE
-
-    def test_is_active_can_not_be_null(self):
-        assert not self.model._meta.get_field("is_active").null
-
-    def test_is_active_is_default_True(self):
-        assert self.model._meta.get_field("is_active").default
-
-    def test__str__(self, user):
-        u_profile = self.factory_cls(user=user)
-        assert u_profile.__str__() == user.__str__()
-
 
 ####################
 # Task

@@ -6,6 +6,7 @@ from operator import itemgetter
 from statistics import StatisticsError, mode
 from typing import List
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -15,13 +16,7 @@ from django.dispatch import Signal
 from django.utils.translation import gettext_lazy as _
 from django_lifecycle import AFTER_CREATE, AFTER_UPDATE, hook
 
-from mosquito_alert.annotations.models import (
-    BaseAnnotation,
-    BaseAnnotatorProfile,
-    BasePhotoAnnotationTask,
-    BaseShape,
-    BaseTask,
-)
+from mosquito_alert.annotations.models import BaseAnnotation, BasePhotoAnnotationTask, BaseShape, BaseTask
 from mosquito_alert.annotations.shapes import Rectangle, avg_rectangles, group_rectangles
 from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual
@@ -84,33 +79,6 @@ from .settings import MIN_CONSENSUS_PROB, MIN_IOU, NUM_USER_IDENTIFICATIONS_TO_C
 
 classification_has_changed = Signal()
 identification_task_has_changed = Signal()
-
-
-##########################
-# User Profile
-##########################
-class IdentifierProfile(BaseAnnotatorProfile):
-    # Relations
-
-    # Attributes - Mandatory
-    # TODO: role?
-    is_superexpert = models.BooleanField(default=False)
-    # precision = models.FloatField(
-    #    default=0.5, validators=[MinValueValidator(0), MaxValueValidator(1)]
-    # )  # TODO: Keep historic of weights? Select weight according to identification updated_date
-
-    # Attributes - Optional
-
-    # Object Manager
-
-    # Custom Properties
-    # Methods
-
-    # Meta and String
-    class Meta(BaseAnnotatorProfile.Meta):
-        verbose_name = _("identifier user profile")
-        verbose_name_plural = _("identifier user profiles")
-
 
 #############################
 
@@ -460,7 +428,7 @@ class IndividualIdentificationTask(BaseTaskWithResults):
 
     # Attributes - Mandatory
     # Attributes - Optional
-    # TODO: locked_by (identifier_profile/organization)/ lock_expire_at. Use settings.TASK_LOCK_DEFAULT_TTL
+    # TODO: locked_by (user/organization)/ lock_expire_at. Use settings.TASK_LOCK_DEFAULT_TTL
     is_locked = models.BooleanField(default=False, help_text=_("Whether it accepts or not more annotations."))
 
     # Object Manager
@@ -581,11 +549,12 @@ class UserIdentification(BasePhotoIdentification):
     NOTIFY_ON_FIELD_CHANGE = BasePhotoIdentification.NOTIFY_ON_FIELD_CHANGE + ["is_ground_truth", "was_skipped"]
 
     # Relations
-    identifier_profile = models.ForeignKey(
-        IdentifierProfile,
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         null=True,
         on_delete=models.SET_NULL,
         related_name="identifications",
+        limit_choices_to={"profile__is_identifier": True},
     )
 
     # Attributes - Mandatory
@@ -594,7 +563,7 @@ class UserIdentification(BasePhotoIdentification):
     lead_time = models.FloatField(
         _("lead time"), null=True, default=None, editable=False, help_text="How much time it took to annotate the task"
     )
-    # TODO: allow only superexpert to toggle this.
+    # TODO: allow only is_superidentifier to toggle this.
     is_ground_truth = models.BooleanField(default=False)
 
     was_skipped = models.BooleanField(default=False, help_text="User skipped the task")
@@ -635,7 +604,7 @@ class UserIdentification(BasePhotoIdentification):
         default_related_name = "user_identifications"
         constraints = BasePhotoIdentification.Meta.constraints + [
             models.UniqueConstraint(  # Allow single user identification for each task.
-                fields=["identifier_profile", "task"],
+                fields=["user", "task"],
                 name="unique_user_task",
             ),
             models.UniqueConstraint(  # Allow single ground truth for each task.

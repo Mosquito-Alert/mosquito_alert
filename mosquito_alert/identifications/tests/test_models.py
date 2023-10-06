@@ -14,7 +14,6 @@ from django.utils import timezone
 from mosquito_alert.annotations.models import BaseShape
 from mosquito_alert.annotations.tests.test_models import (
     BaseTestBaseAnnotation,
-    BaseTestBaseAnnotatorProfile,
     BaseTestBasePhotoAnnotationTask,
     BaseTestBaseShape,
     BaseTestBaseTask,
@@ -23,6 +22,7 @@ from mosquito_alert.images.tests.factories import PhotoFactory
 from mosquito_alert.individuals.tests.factories import IndividualFactory
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.taxa.tests.factories import TaxonFactory
+from mosquito_alert.users.tests.factories import UserFactory
 from mosquito_alert.utils.tests.test_models import BaseTestObservableMixin, BaseTestTimeStampedModel
 
 from ..models import (
@@ -30,7 +30,6 @@ from ..models import (
     BasePhotoIdentification,
     BaseTaskResult,
     ExternalIdentification,
-    IdentifierProfile,
     IndividualIdentificationTask,
     IndividualIdentificationTaskResult,
     PhotoIdentificationTask,
@@ -46,7 +45,6 @@ from ..settings import NUM_USER_IDENTIFICATIONS_TO_COMPLETE
 from .factories import (
     DummyClassificationFactory,
     ExternalIdentificationFactory,
-    IdentifierProfileFactory,
     IndividualIdentificationTaskFactory,
     IndividualIdentificationTaskResultFactory,
     PhotoIdentificationTaskFactory,
@@ -56,23 +54,6 @@ from .factories import (
     TaxonProbNodeFactory,
     UserIdentificationFactory,
 )
-
-##########################
-# User Profile
-##########################
-
-
-@pytest.mark.django_db
-class TestIdentifierProfile(BaseTestBaseAnnotatorProfile):
-    model = IdentifierProfile
-    factory_cls = IdentifierProfileFactory
-
-    # fields
-    def test_is_superexpert_can_not_be_null(self):
-        assert not self.model._meta.get_field("is_superexpert").null
-
-    def test_is_superexpert_is_default_False(self):
-        assert not self.model._meta.get_field("is_superexpert").default
 
 
 #############################
@@ -1008,15 +989,15 @@ class TestUserIdentification(BaseTestBasePhotoIdentification):
         )
 
     # fields
-    def test_identifier_profile_can_be_null(self):
-        assert self.model._meta.get_field("identifier_profile").null
+    def test_user_can_be_null(self):
+        assert self.model._meta.get_field("user").null
 
-    def test_identifier_profile_is_set_null_on_delete(self):
-        _on_delete = self.model._meta.get_field("identifier_profile").remote_field.on_delete
+    def test_user_is_set_null_on_delete(self):
+        _on_delete = self.model._meta.get_field("user").remote_field.on_delete
         assert _on_delete == models.SET_NULL
 
-    def test_identifier_profile_related_name(self):
-        assert self.model._meta.get_field("identifier_profile").remote_field.related_name == "identifications"
+    def test_user_related_name(self):
+        assert self.model._meta.get_field("user").remote_field.related_name == "identifications"
 
     def test_lead_time_can_be_null(self):
         assert self.model._meta.get_field("lead_time").null
@@ -1136,9 +1117,9 @@ class TestUserIdentification(BaseTestBasePhotoIdentification):
     # Meta
     def test_constraint_unique_user_by_task(self):
         task = PhotoIdentificationTaskFactory()
-        iden_profile = IdentifierProfileFactory()
+        user = UserFactory()
         with pytest.raises(IntegrityError, match=r"unique constraint"):
-            self.factory_cls.create_batch(size=2, identifier_profile=iden_profile, task=task)
+            self.factory_cls.create_batch(size=2, user=user, task=task)
 
     def test_constraint_unique_ground_truth_by_task(self):
         task = PhotoIdentificationTaskFactory()

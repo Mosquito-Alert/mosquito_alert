@@ -1,41 +1,10 @@
-from typing import Any
-
 from django import forms
 from django.contrib import admin
 from django.contrib.postgres.forms import SimpleArrayField
-from django.http.request import HttpRequest
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from mosquito_alert.utils.admin import TimeStampedModelAdminMixin
-
-
-class BaseAnnotatorProfileAdminMixin(TimeStampedModelAdminMixin):
-    _annotator_profile_fields = ("user", "is_active")
-
-    fields = None
-    readonly_fields = TimeStampedModelAdminMixin.readonly_fields
-    fieldsets = (
-        (
-            _("Profile information"),
-            {
-                "fields": _annotator_profile_fields,
-            },
-        ),
-    ) + TimeStampedModelAdminMixin._timestamp_fieldsets
-    autocomplete_fields = ("user",)
-
-    search_fields = ("user__username", "user__name")
-
-    list_display = _annotator_profile_fields + TimeStampedModelAdminMixin.list_display
-    list_filter = ("is_active",) + TimeStampedModelAdminMixin.list_filter
-
-    def get_readonly_fields(self, request: HttpRequest, obj: Any | None = ...) -> list[str] | tuple[Any, ...]:
-        result = TimeStampedModelAdminMixin.readonly_fields
-        if obj:
-            result += ("user",)
-
-        return result
 
 
 class BaseTaskAdminMixin(TimeStampedModelAdminMixin):

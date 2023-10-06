@@ -9,7 +9,6 @@ from nested_admin.nested import NestedGenericTabularInline, NestedModelAdmin, Ne
 
 from mosquito_alert.annotations.admin import (
     BaseAnnotationAdminMixin,
-    BaseAnnotatorProfileAdminMixin,
     BasePhotoAnnotationTaskAdminMixin,
     BaseShapeAdminMixin,
     BaseTaskAdminMixin,
@@ -20,7 +19,6 @@ from .forms import TaxonClassificationCandidateForm, TaxonClassificationCategori
 from .formsets import TaxonClassificationCandidateFormSet
 from .models import (
     ExternalIdentification,
-    IdentifierProfile,
     IndividualIdentificationTask,
     IndividualIdentificationTaskResult,
     PhotoIdentificationTask,
@@ -29,32 +27,6 @@ from .models import (
     TaxonClassificationCandidate,
     UserIdentification,
 )
-
-
-##########################
-# User profile admin
-##########################
-@admin.register(IdentifierProfile)
-class IdentifierProfileAdmin(BaseAnnotatorProfileAdminMixin, admin.ModelAdmin):
-    _identifier_profile_fields = ("is_superexpert",)
-
-    fields = None
-    fieldsets = BaseAnnotatorProfileAdminMixin.fieldsets + (
-        (
-            _("Identifier information"),
-            {
-                "fields": _identifier_profile_fields,
-            },
-        ),
-    )
-
-    list_display = (
-        BaseAnnotatorProfileAdminMixin._annotator_profile_fields
-        + _identifier_profile_fields
-        + BaseAnnotatorProfileAdminMixin._timestamp_fields
-    )
-    list_filter = ("is_superexpert",) + BaseAnnotatorProfileAdminMixin.list_filter
-
 
 ##########################
 # Candidates
@@ -311,13 +283,13 @@ class BasePhotoIdentificationAdminMixin(BaseTaskChildAdminMixin, BaseIdentificat
 
 class UserIdentificationAdminInline(BasePhotoIdentificationAdminMixin, NestedTabularInline):
     _user_identification_fields = (
-        "identifier_profile",
+        "user",
         "lead_time",
         "is_ground_truth",
         "was_skipped",
     )
 
-    autocomplete_fields = ("identifier_profile",)
+    autocomplete_fields = ("user",)
     fields = _user_identification_fields + BasePhotoIdentificationAdminMixin.fields
     readonly_fields = BasePhotoIdentificationAdminMixin.readonly_fields + ("lead_time",)
 
