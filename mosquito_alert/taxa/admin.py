@@ -17,6 +17,8 @@ class TaxonAdmin(TreeAdmin, TranslationAdmin):
     # For TreeAdmin
     form = movenodeform_factory(Taxon, form=ParentManageableMoveNodeForm)
 
+    group_fieldsets = True
+
 
 @admin.register(SpecieDistribution)
 class SpecieDistributionAdmin(SimpleHistoryAdmin):
