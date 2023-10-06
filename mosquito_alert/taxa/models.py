@@ -49,10 +49,18 @@ class Taxon(ParentManageableNodeMixin, MP_Node):
 
     # Attributes - Optional
     common_name = models.CharField(max_length=64, null=True, blank=True)
+    gbif_id = models.PositiveBigIntegerField(null=True, blank=True)
 
     # Object Manager
     # Custom Properties
     node_order_by = ["name"]  # Needed for django-treebeard
+
+    @property
+    def gbif_url(self) -> str:
+        if self.gbif_id:
+            return f"https://www.gbif.org/species/{self.gbif_id}"
+
+        return ""
 
     @property
     def is_specie(self):

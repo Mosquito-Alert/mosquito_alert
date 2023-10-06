@@ -156,6 +156,17 @@ class TestTaxonModel:
 
         assert frozenset(Taxon.objects.all()) == frozenset([taxon_root, z_child, a_child, b_child])
 
+    def test_gbif_id_can_be_null(self):
+        assert Taxon._meta.get_field("gbif_id").null
+
+    def test_gbif_id_can_be_blank(self):
+        assert Taxon._meta.get_field("gbif_id").blank
+
+    # properties
+    @pytest.mark.parametrize("gbif_id, expected_result", [(None, ""), (12345, "https://www.gbif.org/species/12345")])
+    def test_gbif_url(self, gbif_id, expected_result):
+        assert TaxonFactory(gbif_id=gbif_id).gbif_url == expected_result
+
 
 @pytest.mark.django_db
 class TestSpecieDistributionModel:
