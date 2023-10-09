@@ -14,7 +14,8 @@ from django_lifecycle import (
 )
 from treebeard.mp_tree import MP_Node
 
-from ..utils.models import ParentManageableNodeMixin
+from mosquito_alert.utils.models import ParentManageableNodeMixin, TimeStampedModel
+
 from .managers import BoundaryManager, GeoLocatedManager, LocationManager
 
 # Webs of interest:
@@ -130,15 +131,13 @@ class BoundaryLayer(ParentManageableNodeMixin, LifecycleModelMixin, MP_Node):
         return f"{self.boundary_type}{self.level}: {self.name}"
 
 
-class Boundary(ParentManageableNodeMixin, MP_Node):
+class Boundary(ParentManageableNodeMixin, TimeStampedModel, MP_Node):
     # Relations
     boundary_layer = models.ForeignKey(BoundaryLayer, on_delete=models.CASCADE, related_name="boundaries")
 
     # Attributes - Mandatory
     code = models.CharField(max_length=16, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     # Attributes - Optional
     # Object Manager
@@ -191,10 +190,10 @@ class Boundary(ParentManageableNodeMixin, MP_Node):
                 del self.geometry
 
     # Meta and String
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = _("Boundary")
         verbose_name_plural = _("Boundaries")
-        constraints = [
+        constraints = TimeStampedModel.Meta.constraints + [
             models.UniqueConstraint(fields=["boundary_layer", "code"], name="unique_boundarylayer_code"),
         ]
         indexes = [models.Index(fields=["boundary_layer", "code"])]
@@ -203,7 +202,7 @@ class Boundary(ParentManageableNodeMixin, MP_Node):
         return f"{self.name} ({self.code})"
 
 
-class BoundaryGeometry(LifecycleModel):
+class BoundaryGeometry(LifecycleModel, TimeStampedModel):
     """Stores the geometries of boundaries.
 
     We COULD have had a geometry column in the 'boundary' table, but geometries can get rather
@@ -220,9 +219,7 @@ class BoundaryGeometry(LifecycleModel):
     )
 
     # Attributes - Mandatory
-    created_at = models.DateTimeField(auto_now_add=True)
     geometry = models.MultiPolygonField(geography=False)
-    updated_at = models.DateTimeField(auto_now=True)
 
     # Attributes - Optional
     # Object Manager
@@ -265,7 +262,7 @@ class BoundaryGeometry(LifecycleModel):
             loc.boundaries.add(self.boundary)
 
     # Meta and String
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = _("boundary geometry")
         verbose_name_plural = _("boundary geometries")
 

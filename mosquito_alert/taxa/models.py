@@ -10,9 +10,8 @@ from treebeard.mp_tree import MP_Node
 from mosquito_alert.geo.models import Boundary
 from mosquito_alert.notifications.models import Notification
 from mosquito_alert.notifications.signals import notify_subscribers
-
-from ..utils.fields import ProxyAwareHistoricalRecords
-from ..utils.models import ParentManageableNodeMixin
+from mosquito_alert.utils.fields import ProxyAwareHistoricalRecords
+from mosquito_alert.utils.models import ParentManageableNodeMixin, TimeStampedModel
 
 distribution_status_has_changed = ModelSignal()
 
@@ -22,7 +21,7 @@ distribution_status_has_changed = ModelSignal()
 #     * (alternatives) https://www.ncbi.nlm.nih.gov/taxonomy
 
 
-class Taxon(ParentManageableNodeMixin, MP_Node):
+class Taxon(ParentManageableNodeMixin, TimeStampedModel, MP_Node):
     @classmethod
     def get_root(cls) -> Taxon | None:
         return cls.get_root_nodes().first()
@@ -45,7 +44,6 @@ class Taxon(ParentManageableNodeMixin, MP_Node):
     # Attributes - Mandatory
     rank = models.PositiveSmallIntegerField(choices=TaxonomicRank.choices)
     name = models.CharField(max_length=32)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     # Attributes - Optional
     common_name = models.CharField(max_length=64, null=True, blank=True)
@@ -79,10 +77,10 @@ class Taxon(ParentManageableNodeMixin, MP_Node):
         super().save(*args, **kwargs)
 
     # Meta and String
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = _("taxon")
         verbose_name_plural = _("taxa")
-        constraints = [
+        constraints = TimeStampedModel.Meta.constraints + [
             models.UniqueConstraint(fields=["name", "rank"], name="unique_name_rank"),
             models.UniqueConstraint(fields=["depth"], condition=Q(depth=1), name="unique_root"),
         ]

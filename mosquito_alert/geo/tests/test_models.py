@@ -1,10 +1,9 @@
-from datetime import timedelta
-
 import pytest
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db.models.deletion import ProtectedError
 from django.db.utils import IntegrityError
-from django.utils import timezone
+
+from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
 
 from ..models import Boundary, BoundaryGeometry, BoundaryLayer, Location
 from .factories import BoundaryFactory, BoundaryGeometryFactory, BoundaryLayerFactory, LocationFactory
@@ -125,7 +124,10 @@ class TestBoundaryLayerModel:
 
 
 @pytest.mark.django_db
-class TestBoundaryModel:
+class TestBoundaryModel(BaseTestTimeStampedModel):
+    model = Boundary
+    factory_cls = BoundaryFactory
+
     def test_boundary_layer_cannot_be_null(self):
         with pytest.raises(IntegrityError, match=r"not-null constraint"):
             BoundaryFactory(boundary_layer=None)
@@ -142,33 +144,6 @@ class TestBoundaryModel:
     @pytest.mark.parametrize("fieldname", ["code", "name"])
     def test_indexed_fields(self, fieldname):
         assert Boundary._meta.get_field(fieldname).db_index
-
-    def test_created_at_is_auto_added(self, freezer, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        assert b.created_at == timezone.now()
-
-    def test_created_at_does_not_change_on_update(self, freezer, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-
-        assert b.created_at == timezone.now()
-
-        b.code = "NEW rnd CODE"
-        b.save()
-
-        assert b.created_at == timezone.now()
-
-    def test_updated_at_is_updated_on_change(self, freezer, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-
-        assert b.updated_at == timezone.now()
-
-        future_datetime = timezone.now() + timedelta(days=10)
-        freezer.move_to(future_datetime)
-
-        b.code = "NEW rnd CODE"
-        b.save()
-
-        assert b.updated_at == future_datetime
 
     # def test_name_cannot_be_null(self):
     #    # NOTE: modeltranslation does not deal with nullable values
@@ -252,7 +227,10 @@ class TestBoundaryModel:
 
 
 @pytest.mark.django_db
-class TestBoundaryGeometryModel:
+class TestBoundaryGeometryModel(BaseTestTimeStampedModel):
+    model = BoundaryGeometry
+    factory_cls = BoundaryGeometryFactory
+
     def test_boundary_is_primary_key(self, country_bl):
         b = BoundaryFactory(boundary_layer=country_bl)
         b_geom = BoundaryGeometryFactory(boundary=b)
@@ -314,36 +292,6 @@ class TestBoundaryGeometryModel:
         with pytest.raises(TypeError):
             b_geom.geometry = polygon
             b_geom.save()
-
-    def test_created_at_is_auto_added(self, freezer, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        b_geom = BoundaryGeometryFactory(boundary=b)
-        assert b_geom.created_at == timezone.now()
-
-    def test_created_at_does_not_change_on_update(self, freezer, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        b_geom = BoundaryGeometryFactory(boundary=b)
-
-        assert b_geom.created_at == timezone.now()
-
-        b_geom.geometry = FuzzyMultiPolygon(srid=4326).fuzz()
-        b_geom.save()
-
-        assert b_geom.created_at == timezone.now()
-
-    def test_updated_at_is_updated_on_change(self, freezer, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        b_geom = BoundaryGeometryFactory(boundary=b)
-
-        assert b_geom.updated_at == timezone.now()
-
-        future_datetime = timezone.now() + timedelta(days=10)
-        freezer.move_to(future_datetime)
-
-        b_geom.geometry = FuzzyMultiPolygon(srid=4326).fuzz()
-        b_geom.save()
-
-        assert b_geom.updated_at == future_datetime
 
     def test_update_linked_locations_on_create(self, country_bl):
         bbox_poly_a = (0, 0, 10, 10)  # x0, y0, x1, y1
