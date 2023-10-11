@@ -51,24 +51,47 @@ class TestReport(BaseTestTimeStampedModel):
     model = Report
     factory_cls = ReportFactory
 
+    # fields
     def test_user_can_be_null(self):
         assert self.model._meta.get_field("user").null
+
+    def test_user_can_be_blank(self):
+        assert self.model._meta.get_field("user").blank
+
+    def test_user_is_not_editable(self):
+        assert not self.model._meta.get_field("user").editable
 
     def test_user_set_null_on_delete(self):
         _on_delete = self.model._meta.get_field("user").remote_field.on_delete
         assert _on_delete == models.SET_NULL
 
+    def test_user_related_name(self):
+        assert self.model._meta.get_field("user").remote_field.related_name == "reports"
+
+    def test_photos_can_be_blank(self):
+        assert self.model._meta.get_field("photos").blank
+
+    def test_photos_can_be_sorted(self):
+        assert self.model._meta.get_field("photos").sorted
+
     def test_uuid_raise_if_set_and_not_uuid(self):
         with pytest.raises(ValidationError, match=r"is not a valid UUID"):
             self.factory_cls(uuid="random_string")
 
-    def test_uuid_is_auto_set_to_uuidv4(self):
-        obj = self.factory_cls()
-        assert isinstance(obj.uuid, uuid.UUID)
-        assert obj.uuid.version == 4
+    def test_uuid_default_is_uuid4(self):
+        assert self.model._meta.get_field("uuid").default == uuid.uuid4
+
+    def test_uuid_is_not_editable(self):
+        assert not self.model._meta.get_field("uuid").editable
 
     def test_uuid_must_be_unique(self):
         assert self.model._meta.get_field("uuid").unique
+
+    def test_observed_at_can_not_be_null(self):
+        assert not self.model._meta.get_field("observed_at").null
+
+    def test_observed_at_can_be_blank(self):
+        assert self.model._meta.get_field("observed_at").blank
 
     @pytest.mark.freeze_time
     def test_observed_at_is_kept_when_set(self):
@@ -82,28 +105,35 @@ class TestReport(BaseTestTimeStampedModel):
         obj = self.factory_cls(observed_at=None, created_at=created_at)
         assert obj.observed_at == created_at
 
-    @pytest.mark.freeze_time
-    def test_observed_at_must_be_before_created_at(self):
-        with pytest.raises(IntegrityError, match=r"violates check constraint"):
-            self.factory_cls(
-                observed_at=timezone.now() + timedelta(seconds=10),
-            )
+    def test_published_can_not_be_null(self):
+        assert not self.model._meta.get_field("published").null
 
-    def test_published_default_value(self):
+    def test_published_default_value_is_False(self):
         assert not self.model._meta.get_field("published").default
 
     def test_notes_can_be_null(self):
         assert self.model._meta.get_field("notes").null
 
+    def test_notes_can_be_blank(self):
+        assert self.model._meta.get_field("notes").blank
+
     def test_tags_are_empty_by_default(self):
         assert self.factory_cls().tags.count() == 0
 
+    # meta
     def test_ordering_shows_newest_first(self):
         assert self.model._meta.ordering == ["-created_at"]
 
     def test__str__(self):
         obj = self.factory_cls()
         assert obj.__str__() == f"{obj.__class__.__name__} ({obj.uuid})"
+
+    @pytest.mark.freeze_time
+    def test_observed_at_must_be_before_created_at(self):
+        with pytest.raises(IntegrityError, match=r"violates check constraint"):
+            self.factory_cls(
+                observed_at=timezone.now() + timedelta(seconds=10),
+            )
 
 
 class BaseTestReversionedReport:
@@ -155,7 +185,9 @@ class TestBiteReport(BaseTestReversionedReport, TestReport):
     def test_published_default_value(self):
         assert self.factory_cls().published
 
-    # Custom tests
+    # fields
+    def test_bites_related_name(self):
+        assert self.model._meta.get_field("bites").remote_field.related_name == "reports"
 
 
 class TestBreedingSiteReport(BaseTestReversionedReport, TestReport):
@@ -172,6 +204,13 @@ class TestBreedingSiteReport(BaseTestReversionedReport, TestReport):
 
     def test_breeding_site_can_not_be_null(self):
         assert not self.model._meta.get_field("breeding_site").null
+
+    def test_breeding_site_deletion_is_cascade(self):
+        _on_delete = self.model._meta.get_field("breeding_site").remote_field.on_delete
+        assert _on_delete == models.CASCADE
+
+    def test_breeding_site_related_name(self):
+        assert self.model._meta.get_field("breeding_site").remote_field.related_name == "reports"
 
     def test_has_water_can_not_be_null(self):
         assert not self.model._meta.get_field("has_water").null
@@ -219,11 +258,14 @@ class TestIndividualReport(BaseTestReversionedReport, TestReport):
 
     # Custom tests
     def test_individuals_related_name(self):
-        assert IndividualReport._meta.get_field("individuals").remote_field.related_name == "reports"
+        assert self.model._meta.get_field("individuals").remote_field.related_name == "reports"
 
-    def test_taxon_can_be_None(self):
+    def test_taxon_can_be_null(self):
         assert self.model._meta.get_field("taxon").null
 
-    def test_taxon_deletion_is_protected(self, taxon_specie):
+    def test_taxon_can_be_blank(self):
+        assert self.model._meta.get_field("taxon").blank
+
+    def test_taxon_deletion_is_protected(self):
         _on_delete = self.model._meta.get_field("taxon").remote_field.on_delete
         assert _on_delete == models.PROTECT

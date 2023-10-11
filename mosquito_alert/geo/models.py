@@ -1,5 +1,6 @@
 from django.contrib.gis import geos
 from django.contrib.gis.db import models
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
@@ -77,36 +78,62 @@ class BoundaryLayer(ParentManageableNodeMixin, LifecycleModelMixin, MP_Node):
         #       will not be called for these cases.
         self.get_descendants().update(boundary=self.boundary)
 
-    def save(self, *args, **kwargs):
+    def clean_boundary_type_field(self):
         try:
             if not self.is_root() and (root := self.get_root()):
                 if self.boundary_type != root.boundary_type:
-                    raise ValueError(f"Only {root.boundary_type} boundary layer nodes are allowed in {root} tree.")
+                    raise ValidationError(
+                        f"Only {root.boundary_type} boundary layer nodes are allowed in {root} tree."
+                    )
         except self.__class__.DoesNotExist:
             # self.get_root() has not found any result.
             pass
 
+    def clean_level_field(self):
+        if not self.parent:
+            return
+
+        # Checking that the current level is smaller than its parent
+        if self.level <= self.parent.level:
+            raise ValidationError("Level must be ascending order from parent to children.")
+
+    def _clean_custom_fields(self, exclude=None) -> None:
+        if exclude is None:
+            exclude = []
+
+        errors = {}
+        if "boundary_type" not in exclude:
+            try:
+                self.clean_boundary_type_field()
+            except ValidationError as e:
+                errors["boundary_type"] = e.error_list
+
+        if "level" not in exclude:
+            try:
+                self.clean_level_field()
+            except ValidationError as e:
+                errors["level"] = e.error_list
+
+        if errors:
+            raise ValidationError(errors)
+
+    def clean_fields(self, exclude=None) -> None:
+        super().clean_fields(exclude=exclude)
+        self._clean_custom_fields(exclude=exclude)
+
+    def save(self, *args, **kwargs):
         # Using depth as level default value
         if self._state.adding:
-            # If creating
-            if self.parent:
-                # Getting from parent + 1
-                self.level = self.parent.level + 1
-            else:
-                # Getting from node depth.
-                # Substracting 1 since root depth starts from 1, while level start from 0.
-                self.level = 0
-        else:
-            # If updating object
-            if self.parent:
-                # Checking that the current level is smaller than its parent
-                if self.level <= self.parent.level:
-                    raise ValueError("Level must be ascending order from parent to children.")
+            if self.level is None:
+                self.level = self.parent.level + 1 if self.parent else 0
 
-        # Inherit the boundary owner from the parent.
-        if self.parent and (p_boundary := self.parent.boundary):
-            # NOTE: If someday we need to on self.boundary update, change the below update() method.
-            self.boundary = p_boundary
+            if self.boundary is None:
+                # Inherit the boundary owner from the parent.
+                if self.parent and (p_boundary := self.parent.boundary):
+                    # NOTE: If someday we need to on self.boundary update, change the below update() method.
+                    self.boundary = p_boundary
+
+        self._clean_custom_fields()
 
         super().save(*args, **kwargs)
 
@@ -146,13 +173,13 @@ class Boundary(ParentManageableNodeMixin, TimeStampedModel, MP_Node):
     # Custom Properties
     node_order_by = ["name"]  # Needed for django-treebeard
 
-    @cached_property
-    def geometry(self):
-        return self.get_geometry()
-
     @property
     def boundary_type(self):
         return self.boundary_layer.boundary_type
+
+    @cached_property
+    def geometry(self):
+        return self.get_geometry()
 
     # Methods
     def get_geometry(self):

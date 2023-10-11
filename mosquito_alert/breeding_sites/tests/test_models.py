@@ -1,13 +1,24 @@
 import pytest
 
+from mosquito_alert.utils.tests.test_models import AbstractDjangoModelTestMixin
+
+from ..models import BreedingSite
 from .factories import BreedingSiteFactory
 
 
 @pytest.mark.django_db
-class TestBreedingSiteModel:
-    def test_allow_null_type(self):
-        _ = BreedingSiteFactory(type=None)
+class TestBreedingSiteModel(AbstractDjangoModelTestMixin):
+    model = BreedingSite
+    factory_cls = BreedingSiteFactory
 
+    # fields
+    def test_type_can_be_null(self):
+        assert self.model._meta.get_field("type").null
+
+    def test_type_can_be_blank(self):
+        assert self.model._meta.get_field("type").blank
+
+    # meta
     def test__str__with_location_type(self):
         obj = BreedingSiteFactory()
         loc = obj.location

@@ -25,5 +25,12 @@ class DiseaseVectorFactory(DjangoModelFactory):
 
         self.diseases.add(*extracted)
 
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # diseases is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("diseases", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
+
     class Meta:
         model = DiseaseVector
