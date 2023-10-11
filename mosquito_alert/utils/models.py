@@ -164,6 +164,7 @@ class TimeStampedModel(models.Model):
 
         if not self._state.adding:
             self.updated_at = timezone.now()
+
         super().save(*args, **kwargs)
 
     # Meta and String

@@ -1,9 +1,9 @@
 import os
-from datetime import timedelta
 
 import pytest
-from django.utils import timezone
 from PIL import Image
+
+from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
 
 from ..models import Photo
 from . import testdata
@@ -11,12 +11,15 @@ from .factories import PhotoFactory
 
 
 @pytest.mark.django_db
-class TestPhoto:
+class TestPhoto(BaseTestTimeStampedModel):
+    model = Photo
+    factory_cls = PhotoFactory
+
     def test_user_can_be_null(self):
-        PhotoFactory(user=None)
+        self.factory_cls(user=None)
 
     def test_user_is_set_null_if_deleted(self, user):
-        p = PhotoFactory(user=user)
+        p = self.factory_cls(user=user)
 
         user.delete()
 
@@ -24,18 +27,18 @@ class TestPhoto:
         assert p.user is None
 
     def test_image_is_uploaded_in_images_path(self):
-        p = PhotoFactory()
+        p = self.factory_cls()
         assert os.path.dirname(p.image.name) == "images"
 
     def test_image_filaname_is_replaced_to_uuid(self, mocker):
         mocker.patch("uuid.uuid4", return_value="mocked_uuid")
 
-        p = PhotoFactory(image__filename="example.jpg")
+        p = self.factory_cls(image__filename="example.jpg")
         filename, _ = os.path.splitext(os.path.basename(p.image.name))
         assert filename == "mocked_uuid"
 
     def test_image_filename_is_kept_if_already_uuid(self):
-        p = PhotoFactory(image__filename="5c240771-4f46-4d0b-972e-a2c0edd31451.png")
+        p = self.factory_cls(image__filename="5c240771-4f46-4d0b-972e-a2c0edd31451.png")
         filename, _ = os.path.splitext(os.path.basename(p.image.name))
         assert filename == "5c240771-4f46-4d0b-972e-a2c0edd31451"
 
@@ -43,7 +46,7 @@ class TestPhoto:
         assert Photo._meta.get_field("image")._original_spec.format == "WEBP"
 
         # Check filename extension
-        p = PhotoFactory(image__filename="example.png", image__format="PNG")
+        p = self.factory_cls(image__filename="example.png", image__format="PNG")
         _, ext = os.path.splitext(os.path.basename(p.image.name))
         assert ext == ".webp"
 
@@ -51,7 +54,7 @@ class TestPhoto:
         assert Image.open(p.image).format == "WEBP"
 
     def test_image_is_resized_to_720p(self):
-        p = PhotoFactory(image__width=2049, image__height=1080)
+        p = self.factory_cls(image__width=2049, image__height=1080)
 
         target_sizing_factor = 1080 / 720
         # It should perform a downsizing for factor 1.5
@@ -61,17 +64,13 @@ class TestPhoto:
         assert p.image.height == 720
 
     def test_image_is_not_resized_if_smaller_than_720p(self):
-        p = PhotoFactory(image__width=1080, image__height=600)
+        p = self.factory_cls(image__width=1080, image__height=600)
 
         assert p.image.width == 1080
         assert p.image.height == 600
 
-    def test_created_at_field_is_automatically_set(self, freezer):
-        p = PhotoFactory()
-        assert p.created_at == timezone.now()
-
     def test_exif_is_preserved_from_original_image(self):
-        p = PhotoFactory(image__from_path=testdata.TESTEXIFIMAGE_PATH)
+        p = self.factory_cls(image__from_path=testdata.TESTEXIFIMAGE_PATH)
 
         original_exif = Image.Exif()
         original_exif.load(data=Image.open(testdata.TESTEXIFIMAGE_PATH).info["exif"])
@@ -82,7 +81,7 @@ class TestPhoto:
         assert original_exif == new_exif
 
     def test_exif_dict(self):
-        p = PhotoFactory(image__from_path=testdata.TESTEXIFIMAGE_PATH)
+        p = self.factory_cls(image__from_path=testdata.TESTEXIFIMAGE_PATH)
         assert p.exif_dict == {
             "ImageWidth": "4000",
             "ImageLength": "3000",
@@ -137,13 +136,8 @@ class TestPhoto:
         }
 
     def test_default_orderding_shows_newest_first(self):
-        t = timezone.now()
-        old = PhotoFactory(created_at=t)
-        oldest = PhotoFactory(created_at=t - timedelta(seconds=10))
-        newest = PhotoFactory(created_at=t + timedelta(seconds=10))
-
-        assert frozenset(list(Photo.objects.all())) == frozenset([oldest, old, newest])
+        assert self.model._meta.ordering == ["-created_at"]
 
     def test__str__(self):
-        p = PhotoFactory(image__filename="5c240771-4f46-4d0b-972e-a2c0edd31451.webp")
+        p = self.factory_cls(image__filename="5c240771-4f46-4d0b-972e-a2c0edd31451.webp")
         assert p.__str__() == "5c240771-4f46-4d0b-972e-a2c0edd31451.webp"

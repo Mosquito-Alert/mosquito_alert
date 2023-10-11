@@ -10,6 +10,7 @@ from imagekit.processors import ResizeToFit
 from PIL import ExifTags, Image
 
 from mosquito_alert.moderation.models import FlagModeratedModel
+from mosquito_alert.utils.models import TimeStampedModel
 
 from .fields import ProcessedImageField
 
@@ -29,7 +30,7 @@ def image_upload_to(instance, filename):
     return os.path.join("images", f"{uuid_str}{ext}")
 
 
-class Photo(FlagModeratedModel):
+class Photo(FlagModeratedModel, TimeStampedModel):
     # Relations
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -49,7 +50,6 @@ class Photo(FlagModeratedModel):
         format="WEBP",
         options={"quality": 85},
     )
-    created_at = models.DateTimeField(auto_now_add=True)
     # TODO: license + attributions
 
     # Attributes - Optional
@@ -80,10 +80,11 @@ class Photo(FlagModeratedModel):
     # Methods
 
     # Meta and String
-    class Meta:
+    class Meta(FlagModeratedModel.Meta, TimeStampedModel.Meta):
         verbose_name = _("photo")
         verbose_name_plural = _("photos")
         ordering = ["-created_at"]
+        constraints = TimeStampedModel.Meta.constraints
         permissions = [
             ("view_exif", _("Can view exif metadata")),
         ]

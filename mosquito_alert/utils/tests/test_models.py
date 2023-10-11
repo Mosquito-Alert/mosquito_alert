@@ -304,14 +304,15 @@ class BaseTestTimeStampedModel(AbstractDjangoModelTestMixin, ABC):
 
     @pytest.mark.freeze_time
     def test_overriding_created_at_after_object_created(self):
-        obj = self.factory_cls()
-
         yesterday = timezone.now() - timedelta(days=1)
-        obj.created_at = yesterday
+        obj = self.factory_cls(created_at=yesterday)
+
+        now = timezone.now()
+        obj.created_at = now
         obj.save()
 
-        assert obj.created_at == yesterday
-        assert obj.updated_at == timezone.now()
+        assert obj.created_at == now
+        assert obj.updated_at == now
 
     @pytest.mark.freeze_time
     def test_updated_at_default_is_now(self):
@@ -399,22 +400,22 @@ class BaseTestTimeStampedModel(AbstractDjangoModelTestMixin, ABC):
         for k, v in self.factory_cls._meta.declarations.items():
             if isinstance(v, SubFactory):
                 build_kwargs[k] = v.get_factory().create()
+        created_at = timezone.now() - timedelta(weeks=52)
         obj = self.factory_cls.build(**build_kwargs)
-        different_date = timezone.now() - timedelta(weeks=52)
-        obj.created_at = different_date
-        obj.updated_at = different_date
+        obj.created_at = created_at
+        obj.updated_at = created_at
         obj.save()
 
-        assert obj.created_at == different_date
-        assert obj.updated_at == different_date
+        assert obj.created_at == created_at
+        assert obj.updated_at == created_at
 
-        different_date2 = timezone.now() - timedelta(weeks=26)
-        obj.created_at = different_date2
-        obj.updated_at = different_date2
+        two_hours_ago = timezone.now() - timedelta(hours=2)
+        obj.created_at = two_hours_ago
+        obj.updated_at = two_hours_ago
         obj.save()
 
-        assert obj.created_at == different_date2
-        assert obj.updated_at != different_date2
+        assert obj.created_at == two_hours_ago
+        assert obj.updated_at != two_hours_ago
         assert obj.updated_at == timezone.now()
 
     @pytest.mark.parametrize(

@@ -3,9 +3,6 @@ import uuid
 import reversion
 from django.conf import settings
 from django.contrib.gis.db import models
-from django.core.validators import MaxValueValidator
-from django.db.models.functions import Now
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from polymorphic.models import PolymorphicModel
 from sortedm2m.fields import SortedManyToManyField
@@ -18,11 +15,12 @@ from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual
 from mosquito_alert.moderation.models import FlagModeratedModel
 from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.utils.models import TimeStampedModel
 
 from .managers import ReportManager
 
 
-class Report(PolymorphicModel, GeoLocatedModel, FlagModeratedModel):
+class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicModel):
     """A detailed account of an event, based on what one has observed or asked questions about.
 
     Args:
@@ -44,13 +42,7 @@ class Report(PolymorphicModel, GeoLocatedModel, FlagModeratedModel):
     # NOTE: in case licensing is needed, get inspiration from django-licensing (it does not work)
     # license = models.ForeignKey(License, on_delete=models.PROTECT)
     # TODO: add location_is_modified or another location for the event_location.
-    observed_at = models.DateTimeField(
-        default=timezone.now,
-        blank=True,  # TODO: why blank?
-        validators=[MaxValueValidator(limit_value=timezone.now)],
-    )
-    created_at = models.DateTimeField(auto_now_add=True, validators=[MaxValueValidator(limit_value=timezone.now)])
-    updated_at = models.DateTimeField(auto_now=True)
+    observed_at = models.DateTimeField(blank=True)
     published = models.BooleanField(default=False)
     # TODO: app_version, os
 
@@ -66,17 +58,17 @@ class Report(PolymorphicModel, GeoLocatedModel, FlagModeratedModel):
 
     # Custom Properties
     # Methods
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.observed_at = self.observed_at or self.created_at
+        super().save(*args, **kwargs)
 
     # Meta and String
-    class Meta:
+    class Meta(GeoLocatedModel.Meta, FlagModeratedModel.Meta, TimeStampedModel.Meta):
         verbose_name = _("report")
         verbose_name_plural = _("reports")
         ordering = ["-created_at"]
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(created_at__lte=Now()),
-                name="created_at_cannot_be_future_dated",
-            ),
+        constraints = TimeStampedModel.Meta.constraints + [
             models.CheckConstraint(
                 check=models.Q(observed_at__lte=models.F("created_at")),
                 name="observed_at_cannot_be_after_created_at",

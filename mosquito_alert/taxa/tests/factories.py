@@ -27,8 +27,6 @@ class TaxonFactory(DjangoModelFactory):
 
     common_name = factory.LazyFunction(_bio_faker.organism)
 
-    created_at = factory.Faker("date_time")
-
     @factory.sequence
     def name(n):
         max_length = 64  # See Taxon.name.max_length

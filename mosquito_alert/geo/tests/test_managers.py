@@ -1,8 +1,9 @@
 import pytest
 from django.contrib.gis.geos import MultiPoint, MultiPolygon, Point, Polygon
 
-from ..models import Boundary
+from ..models import Boundary, Location
 from .factories import BoundaryFactory, BoundaryFactoryWithGeometry, DummyGeoLocatedModelFactory, LocationFactory
+from .models import DummyGeoLocatedModel
 
 
 def create_multipolygon_from_bbox(bbox):
@@ -177,15 +178,14 @@ class TestBoundaryManager:
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("factory_cls", [LocationFactory, DummyGeoLocatedModelFactory])
 class TestLocationManager:
-    @pytest.fixture
-    def factory_cls(self):
-        return LocationFactory
+    model = Location
+    factory_cls = LocationFactory
 
-    # NOTE: All factories must allow init the 'point' param.
+    def create_object_from_point(cls, point, *args, **kwargs):
+        return cls.factory_cls(point=point, *args, **kwargs)
 
-    def test_filter_by_boundary_without_descendants(self, factory_cls, country_bl):
+    def test_filter_by_boundary_without_descendants(self, country_bl):
         a_bbox = (0, 0, 10, 10)  # x0, y0, x1, y1
         a_child_bbox = (1, 1, 5, 5)
         b_bbox = (100, 100, 110, 110)  # x0, y0, x1, y1
@@ -208,10 +208,10 @@ class TestLocationManager:
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
-        model_qs = factory_cls._meta.model.objects.all()
+        model_qs = self.model.objects.all()
 
         # Creating Location inside a (inside the a child)
-        loc_in_a = factory_cls(point=point_inside_a_child)
+        loc_in_a = self.create_object_from_point(point=point_inside_a_child)
 
         boundary_a.refresh_from_db()
 
@@ -221,7 +221,7 @@ class TestLocationManager:
 
         assert list(model_qs.filter_by_boundary(boundaries=boundary_b, include_descendants=False)) == []
 
-    def test_filter_by_boundary_with_descendants(self, factory_cls, country_bl):
+    def test_filter_by_boundary_with_descendants(self, country_bl):
         a_bbox = (0, 0, 10, 10)  # x0, y0, x1, y1
         a_child_bbox = (20, 20, 30, 30)
         b_bbox = (100, 100, 110, 110)  # x0, y0, x1, y1
@@ -244,10 +244,10 @@ class TestLocationManager:
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
 
-        model_qs = factory_cls._meta.model.objects.all()
+        model_qs = self.model.objects.all()
 
         # Creating Location inside a (inside the a child)
-        loc_in_a_child = factory_cls(point=point_inside_a_child)
+        loc_in_a_child = self.create_object_from_point(point=point_inside_a_child)
 
         boundary_a.refresh_from_db()
 
@@ -265,62 +265,62 @@ class TestLocationManager:
 
         assert list(model_qs.filter_by_boundary(boundaries=boundary_b, include_descendants=True)) == []
 
-    def test_filter_by_polygon_intersection(self, factory_cls):
+    def test_filter_by_polygon_intersection(self):
         a_poly = Polygon.from_bbox(bbox=(0, 0, 10, 10))
 
         point_in_a = Point(2, 2)
         point_out_a = Point(102, 102)
 
-        loc_in_a = factory_cls(point=point_in_a)
-        factory_cls(point=point_out_a)
+        loc_in_a = self.create_object_from_point(point=point_in_a)
+        self.create_object_from_point(point=point_out_a)
 
-        model_qs = factory_cls._meta.model.objects.all()
+        model_qs = self.model.objects.all()
 
         assert list(model_qs.filter_by_polygon_intersection(polygon=a_poly, negate=False)) == [loc_in_a]
 
-    def test_negate_filter_by_polygon_intersection(self, factory_cls):
+    def test_negate_filter_by_polygon_intersection(self):
         a_poly = Polygon.from_bbox(bbox=(0, 0, 10, 10))
 
         point_in_a = Point(2, 2)
         point_out_a = Point(102, 102)
 
-        factory_cls(point=point_in_a)
-        loc_out_a = factory_cls(point=point_out_a)
+        self.create_object_from_point(point=point_in_a)
+        loc_out_a = self.create_object_from_point(point=point_out_a)
 
-        model_qs = factory_cls._meta.model.objects.all()
+        model_qs = self.model.objects.all()
 
         assert list(model_qs.filter_by_polygon_intersection(polygon=a_poly, negate=True)) == [loc_out_a]
 
-    def test_first_by_distance(self, factory_cls):
+    def test_first_by_distance(self):
         query_point = Point(0, 0, srid=4326)
 
         near_point = Point(20, 20, srid=4326)
         far_point = Point(100, 100, srid=4326)
 
-        near_loc = factory_cls(point=near_point)
-        factory_cls(point=far_point)
+        near_loc = self.create_object_from_point(point=near_point)
+        self.create_object_from_point(point=far_point)
 
-        model_qs = factory_cls._meta.model.objects.all()
+        model_qs = self.model.objects.all()
 
         assert model_qs.first_by_distance(point=query_point) == near_loc
 
-    def test_order_by_distance(self, factory_cls):
+    def test_order_by_distance(self):
         query_point = Point(0, 0, srid=4326)
 
         near_point = Point(20, 20, srid=4326)
         far_point = Point(100, 100, srid=4326)
 
-        near_loc = factory_cls(point=near_point)
-        far_loc = factory_cls(point=far_point)
+        near_loc = self.create_object_from_point(point=near_point)
+        far_loc = self.create_object_from_point(point=far_point)
 
-        model_qs = factory_cls._meta.model.objects.all()
+        model_qs = self.model.objects.all()
 
         assert list(model_qs.order_by_distance(point=query_point)) == [
             near_loc,
             far_loc,
         ]
 
-    def test_within_circle(self, factory_cls):
+    def test_within_circle(self):
         point_a = Point(0, 0, srid=4326)
         point_b = Point(1, 1, srid=4326)
         point_a_b_mid = Point(0.5, 0.5, srid=4326)
@@ -331,11 +331,11 @@ class TestLocationManager:
         # for geodesic distance computation
         distance_between_points = 156899  # in meters
 
-        loc_a = factory_cls(point=point_a)
-        loc_b = factory_cls(point=point_b)
-        loc_a_b_mid = factory_cls(point=point_a_b_mid)
+        loc_a = self.create_object_from_point(point=point_a)
+        loc_b = self.create_object_from_point(point=point_b)
+        loc_a_b_mid = self.create_object_from_point(point=point_a_b_mid)
 
-        model_qs = factory_cls._meta.model.objects.all()
+        model_qs = self.model.objects.all()
 
         assert list(model_qs.within_circle(center_point=point_b, radius_meters=distance_between_points / 2)) == [loc_b]
 
@@ -344,3 +344,12 @@ class TestLocationManager:
         ) == frozenset([loc_a, loc_b, loc_a_b_mid])
 
         assert list(model_qs.within_circle(center_point=point_out, radius_meters=0)) == []
+
+
+@pytest.mark.django_db
+class TestDummyGeoLocatedManager(TestLocationManager):
+    model = DummyGeoLocatedModel
+    factory_cls = DummyGeoLocatedModelFactory
+
+    def create_object_from_point(cls, point, *args, **kwargs):
+        return cls.factory_cls(location__point=point, *args, **kwargs)

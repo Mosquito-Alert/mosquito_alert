@@ -6,13 +6,17 @@ from django.db.models.deletion import ProtectedError
 from django.db.utils import DataError, IntegrityError
 
 from mosquito_alert.geo.tests.factories import BoundaryFactory
+from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
 
 from ..models import SpecieDistribution, Taxon
 from .factories import SpecieDistributionFactory, TaxonFactory
 
 
 @pytest.mark.django_db
-class TestTaxonModel:
+class TestTaxonModel(BaseTestTimeStampedModel):
+    model = Taxon
+    factory_cls = TaxonFactory
+
     def test_get_root_return_root_node(self, taxon_root):
         assert Taxon.get_root() == taxon_root
 
@@ -35,7 +39,7 @@ class TestTaxonModel:
         ],
     )
     def test_name_is_capitalized_when_is_rank_specie(self, name, rank, expected_result):
-        taxon = TaxonFactory(name=name, rank=rank)
+        taxon = self.factory_cls(name=name, rank=rank)
         assert taxon.name == expected_result
 
         taxon.name = ""
@@ -47,7 +51,7 @@ class TestTaxonModel:
         assert taxon.name == expected_result
 
     def test_name_is_not_capitalized_when_not_species(self):
-        taxon = TaxonFactory(name="Aedes Albopictus", rank=Taxon.TaxonomicRank.SPECIES)
+        taxon = self.factory_cls(name="Aedes Albopictus", rank=Taxon.TaxonomicRank.SPECIES)
         assert taxon.name == "Aedes albopictus"
 
         # On change name
@@ -65,18 +69,18 @@ class TestTaxonModel:
         ],
     )
     def test_is_species_property(self, rank, expected_result):
-        taxon = TaxonFactory(rank=rank)
+        taxon = self.factory_cls(rank=rank)
         assert taxon.is_specie == expected_result
 
     def test__str__(self, taxon_root):
-        taxon = TaxonFactory(name="Aedes Albopictus", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
+        taxon = self.factory_cls(name="Aedes Albopictus", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
 
         expected_result = "Aedes albopictus [Species]"
         assert taxon.__str__() == expected_result
 
     def test_raise_when_rank_higher_than_parent_rank(self, taxon_specie):
         with pytest.raises(ValueError):
-            _ = TaxonFactory(rank=Taxon.TaxonomicRank.CLASS, parent=taxon_specie)
+            _ = self.factory_cls(rank=Taxon.TaxonomicRank.CLASS, parent=taxon_specie)
 
     def test_unique_name_rank_constraint(self, taxon_root):
         with pytest.raises(IntegrityError):
@@ -90,10 +94,10 @@ class TestTaxonModel:
 
     def test_unique_root_constraint(self, taxon_root):
         with pytest.raises(IntegrityError):
-            TaxonFactory(parent=None, name="", rank=taxon_root.rank)
+            self.factory_cls(parent=None, name="", rank=taxon_root.rank)
 
     def test_null_common_name_is_allowed(self, taxon_root):
-        TaxonFactory(common_name=None, parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES)
+        self.factory_cls(common_name=None, parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES)
 
     def test_null_name_is_not_allowed_on_change(self, taxon_specie):
         taxon_specie.name = None
@@ -103,7 +107,7 @@ class TestTaxonModel:
 
     def test_null_name_is_not_allowed_on_create(self, taxon_root):
         with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            TaxonFactory(name=None, parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES)
+            self.factory_cls(name=None, parent=taxon_root, rank=Taxon.TaxonomicRank.SPECIES)
 
     @pytest.mark.parametrize(
         "name, output_raises",
@@ -116,9 +120,9 @@ class TestTaxonModel:
     def test_name_max_length_is_32(self, name, output_raises):
         if output_raises:
             with pytest.raises(DataError):
-                TaxonFactory(name=name, rank=Taxon.TaxonomicRank.SPECIES)
+                self.factory_cls(name=name, rank=Taxon.TaxonomicRank.SPECIES)
         else:
-            TaxonFactory(name=name, rank=Taxon.TaxonomicRank.SPECIES)
+            self.factory_cls(name=name, rank=Taxon.TaxonomicRank.SPECIES)
 
     @pytest.mark.parametrize(
         "common_name, output_raises",
@@ -131,20 +135,20 @@ class TestTaxonModel:
     def test_common_name_max_length_is_64(self, common_name, output_raises):
         if output_raises:
             with pytest.raises(DataError):
-                TaxonFactory(common_name=common_name, rank=Taxon.TaxonomicRank.SPECIES)
+                self.factory_cls(common_name=common_name, rank=Taxon.TaxonomicRank.SPECIES)
         else:
-            TaxonFactory(common_name=common_name, rank=Taxon.TaxonomicRank.SPECIES)
+            self.factory_cls(common_name=common_name, rank=Taxon.TaxonomicRank.SPECIES)
 
     def test_tree_is_ordered_by_name_on_create(self, taxon_root):
-        z_child = TaxonFactory(name="z", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
-        a_child = TaxonFactory(name="a", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
+        z_child = self.factory_cls(name="z", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
+        a_child = self.factory_cls(name="a", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
 
         assert frozenset(Taxon.objects.all()) == frozenset([taxon_root, a_child, z_child])
 
     def test_tree_is_ordered_by_name_on_parent_change(self, taxon_root):
-        z_child = TaxonFactory(name="z", rank=Taxon.TaxonomicRank.GENUS, parent=taxon_root)
-        b_child = TaxonFactory(name="b", rank=Taxon.TaxonomicRank.SPECIES, parent=z_child)
-        a_child = TaxonFactory(name="a", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
+        z_child = self.factory_cls(name="z", rank=Taxon.TaxonomicRank.GENUS, parent=taxon_root)
+        b_child = self.factory_cls(name="b", rank=Taxon.TaxonomicRank.SPECIES, parent=z_child)
+        a_child = self.factory_cls(name="a", rank=Taxon.TaxonomicRank.SPECIES, parent=taxon_root)
         # NOTE: Need to refresh since last move changes the object.
         # See: https://django-treebeard.readthedocs.io/en/latest/caveats.html#raw-queries
         z_child.refresh_from_db()
@@ -165,7 +169,7 @@ class TestTaxonModel:
     # properties
     @pytest.mark.parametrize("gbif_id, expected_result", [(None, ""), (12345, "https://www.gbif.org/species/12345")])
     def test_gbif_url(self, gbif_id, expected_result):
-        assert TaxonFactory(gbif_id=gbif_id).gbif_url == expected_result
+        assert self.factory_cls(gbif_id=gbif_id).gbif_url == expected_result
 
 
 @pytest.mark.django_db

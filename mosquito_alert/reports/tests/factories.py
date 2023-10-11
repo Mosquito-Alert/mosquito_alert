@@ -30,6 +30,13 @@ class ReportFactory(GeoLocatedModelFactory):
             if deleted:
                 m2m_changed.connect(create_dummy_prediction, sender=self._meta.model.photos.through)
 
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # candidates is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("photos", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
+
     class Meta:
         model = Report
 
@@ -45,6 +52,13 @@ class BiteReportFactory(ReportFactory):
             # A list of bites were passed in, use them
             for bite in extracted:
                 self.bites.add(bite)
+
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # candidates is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("bites", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
 
     class Meta:
         model = BiteReport
@@ -77,6 +91,13 @@ class IndividualReportFactory(ReportFactory):
             return
 
         obj.individuals.set(extracted)
+
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # candidates is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("individuals", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
 
     class Meta:
         model = IndividualReport
