@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 from modeltranslation.admin import TranslationAdmin
 from simple_history.admin import SimpleHistoryAdmin
 from treebeard.admin import TreeAdmin
@@ -17,7 +18,10 @@ class TaxonAdmin(TreeAdmin, TranslationAdmin):
     # For TreeAdmin
     form = movenodeform_factory(Taxon, form=ParentManageableMoveNodeForm)
 
-    group_fieldsets = True
+    fieldsets = [
+        (_("Node position"), {"fields": ("_position", "_ref_node_id")}),
+        (_("Basic information"), {"fields": ("rank", "name", "gbif_id", "common_name")}),
+    ]
 
 
 @admin.register(SpecieDistribution)
