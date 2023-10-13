@@ -48,7 +48,7 @@ class Taxon(ParentManageableNodeMixin, TimeStampedModel, MP_Node):
 
     # Attributes - Optional
     common_name = models.CharField(max_length=64, null=True, blank=True)
-    gbif_id = models.PositiveBigIntegerField(null=True, blank=True)
+    gbif_id = models.PositiveBigIntegerField(null=True, blank=True, unique=True)
 
     # Object Manager
     # Custom Properties

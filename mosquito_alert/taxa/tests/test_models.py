@@ -58,6 +58,9 @@ class TestTaxonModel(BaseTestTimeStampedModel):
     def test_gbif_id_can_be_blank(self):
         assert self.model._meta.get_field("gbif_id").blank
 
+    def test_gbif_id_is_unique(self):
+        assert self.model._meta.get_field("gbif_id").unique
+
     # properties
     def test_node_order_by_name(self):
         assert self.model.node_order_by == ["name"]
