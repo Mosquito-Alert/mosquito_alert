@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import ModelSignal
@@ -65,14 +66,37 @@ class Taxon(ParentManageableNodeMixin, TimeStampedModel, MP_Node):
         return self.rank >= self.TaxonomicRank.SPECIES_COMPLEX
 
     # Methods
+    def clean_rank_field(self):
+        if not self.parent:
+            return
+
+        if self.rank <= self.parent.rank:
+            raise ValidationError("Child taxon must have a higher rank than their parent.")
+
+    def _clean_custom_fields(self, exclude=None) -> None:
+        if exclude is None:
+            exclude = []
+
+        errors = {}
+        if "rank" not in exclude:
+            try:
+                self.clean_rank_field()
+            except ValidationError as e:
+                errors["rank"] = e.error_list
+
+        if errors:
+            raise ValidationError(errors)
+
+    def clean_fields(self, exclude=None) -> None:
+        super().clean_fields(exclude=exclude)
+        self._clean_custom_fields(exclude=exclude)
+
     def save(self, *args, **kwargs):
         if self.name and self.is_specie:
             # Capitalize only first letter
             self.name = self.name.capitalize()
 
-        if self.parent:
-            if self.rank <= self.parent.rank:
-                raise ValueError("Child taxon must have a higher rank than their parent.")
+        self._clean_custom_fields()
 
         super().save(*args, **kwargs)
 
@@ -89,7 +113,7 @@ class Taxon(ParentManageableNodeMixin, TimeStampedModel, MP_Node):
         return f"{self.name} [{self.get_rank_display()}]"
 
 
-class SpecieDistribution(LifecycleModel):
+class SpecieDistribution(LifecycleModel, TimeStampedModel):
     class DataSource(models.TextChoices):
         SELF = "self", "Mosquito Alert"
         ECDC = "ecdc", _("European Centre for Disease Prevention and Control")
@@ -120,7 +144,7 @@ class SpecieDistribution(LifecycleModel):
     history = ProxyAwareHistoricalRecords(
         inherit=True,
         cascade_delete_history=True,
-        excluded_fields=["boundary", "taxon", "source"],  # Tracking status only
+        excluded_fields=("boundary", "taxon", "source", "created_at", "updated_at"),  # Tracking status only
     )
 
     # Methods
@@ -180,10 +204,10 @@ class SpecieDistribution(LifecycleModel):
                 del self.skip_history_when_saving
 
     # Meta and String
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = _("specie distribution")
         verbose_name_plural = _("species distribution")
-        constraints = [
+        constraints = TimeStampedModel.Meta.constraints + [
             models.UniqueConstraint(fields=["boundary", "taxon", "source"], name="unique_boundary_taxon_source"),
         ]
 

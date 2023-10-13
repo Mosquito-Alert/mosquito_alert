@@ -18,7 +18,7 @@ class FuzzyPolygon(factory.fuzzy.BaseFuzzyAttribute):
 
     def __init__(self, srid=None, length=None, **kwargs):
         if length is None:
-            length = random.randgen.randrange(3, 20, 1)
+            length = random.randgen.randrange(3, 6, 1)
         if length < 3:
             raise Exception("Polygon needs to be 3 or greater in length.")
         self.length = length
@@ -39,7 +39,7 @@ class FuzzyMultiPolygon(factory.fuzzy.BaseFuzzyAttribute):
 
     def __init__(self, srid=None, length=None, **kwargs):
         if length is None:
-            length = random.randgen.randrange(2, 20, 1)
+            length = random.randgen.randrange(2, 5, 1)
         if length < 2:
             raise Exception("MultiPolygon needs to be 2 or greater in length.")
         self.length = length

@@ -13,7 +13,6 @@ class BoundaryLayerFactory(DjangoModelFactory):
     )
     boundary_type = factory.Faker("random_element", elements=BoundaryLayer.BoundaryType.values)
     name = factory.Faker("name")
-    level = factory.Faker("random_int", min=0, max=5)
     description = factory.Faker("paragraph")
 
     class Meta:
@@ -60,6 +59,13 @@ class LocationFactory(DjangoModelFactory):
             return
 
         self.boundaries.add(*extracted)
+
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # boundaries is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("boundaries", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
 
     class Meta:
         model = Location

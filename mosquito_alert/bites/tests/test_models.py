@@ -1,37 +1,35 @@
 import pytest
-from django.db.models.deletion import ProtectedError
-from django.db.utils import IntegrityError
+from django.db import models
 from django.utils import timezone
 
-from mosquito_alert.individuals.tests.factories import IndividualFactory
+from mosquito_alert.utils.tests.test_models import AbstractDjangoModelTestMixin
 
 from ..models import Bite
 from .factories import BiteFactory
 
 
 @pytest.mark.django_db
-class TestBiteModel:
-    def test_bite_is_protected_on_individual_delete(self):
-        individual = IndividualFactory()
-        _ = BiteFactory(individual=individual)
+class TestBiteModel(AbstractDjangoModelTestMixin):
+    model = Bite
+    factory_cls = BiteFactory
 
-        with pytest.raises(ProtectedError):
-            individual.delete()
+    # fields
+    def test_individual_can_be_null(self):
+        assert self.model._meta.get_field("individual").null
 
-    def test_bite_allow_null_individual(self):
-        _ = BiteFactory(individual=None)
+    def test_individual_deletion_is_protected(self):
+        _on_delete = self.model._meta.get_field("individual").remote_field.on_delete
+        assert _on_delete == models.PROTECT
 
-    def test_do_not_allow_null_bodypart(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            _ = BiteFactory(body_part=None)
+    def test_datetime_auto_now_add(self):
+        assert self.model._meta.get_field("datetime").auto_now_add
 
-    def test_auto_datetime(self, freezer):
-        # freezer is fixture from pytest-freezegun
-        bite = BiteFactory()
-        assert bite.datetime == timezone.now()
+    def test_body_part_can_not_be_null(self):
+        assert not self.model._meta.get_field("body_part").null
 
-    def test__str__(self, freezer):
-        # freezer is fixture from pytest-freezegun
-        bite = BiteFactory(body_part=Bite.BodyParts.HEAD)
+    # meta
+    @pytest.mark.freeze_time
+    def test__str__(self):
+        bite = self.factory_cls(body_part=Bite.BodyParts.HEAD)
         expected_str = "{} ({})".format(Bite.BodyParts.HEAD.label, timezone.now().strftime("%Y-%m-%d %H:%M:%S"))
         assert bite.__str__() == expected_str

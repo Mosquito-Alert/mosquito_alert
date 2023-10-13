@@ -7,7 +7,6 @@ import pytest
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.utils.timesince import timesince
-from factory import SubFactory
 
 from .factories import DummyObservableModelFactory, DummyTimeStampedModelFactory
 from .models import (
@@ -393,18 +392,8 @@ class BaseTestTimeStampedModel(AbstractDjangoModelTestMixin, ABC):
         created and updated_at fields.
         After that, only created_at may be modified manually.
         """
-        # Creating related element in advance due to avoid
-        # saving objects without having saved their related
-        # objects.
-        build_kwargs = {}
-        for k, v in self.factory_cls._meta.declarations.items():
-            if isinstance(v, SubFactory):
-                build_kwargs[k] = v.get_factory().create()
         created_at = timezone.now() - timedelta(weeks=52)
-        obj = self.factory_cls.build(**build_kwargs)
-        obj.created_at = created_at
-        obj.updated_at = created_at
-        obj.save()
+        obj = self.factory_cls(created_at=created_at, updated_at=created_at)
 
         assert obj.created_at == created_at
         assert obj.updated_at == created_at

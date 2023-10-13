@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from django.db import models
 from PIL import Image
 
 from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
@@ -15,16 +16,19 @@ class TestPhoto(BaseTestTimeStampedModel):
     model = Photo
     factory_cls = PhotoFactory
 
+    # fields
     def test_user_can_be_null(self):
-        self.factory_cls(user=None)
+        assert self.model._meta.get_field("user").null
 
-    def test_user_is_set_null_if_deleted(self, user):
-        p = self.factory_cls(user=user)
+    def test_user_can_be_blank(self):
+        assert self.model._meta.get_field("user").blank
 
-        user.delete()
+    def test_user_on_delete_set_null(self):
+        _on_delete = self.model._meta.get_field("user").remote_field.on_delete
+        assert _on_delete == models.SET_NULL
 
-        p.refresh_from_db()
-        assert p.user is None
+    def test_user_related_name(self):
+        assert self.model._meta.get_field("user").remote_field.related_name == "photos"
 
     def test_image_is_uploaded_in_images_path(self):
         p = self.factory_cls()
@@ -43,7 +47,7 @@ class TestPhoto(BaseTestTimeStampedModel):
         assert filename == "5c240771-4f46-4d0b-972e-a2c0edd31451"
 
     def test_image_is_converted_to_webp(self):
-        assert Photo._meta.get_field("image")._original_spec.format == "WEBP"
+        assert self.model._meta.get_field("image")._original_spec.format == "WEBP"
 
         # Check filename extension
         p = self.factory_cls(image__filename="example.png", image__format="PNG")
@@ -80,6 +84,7 @@ class TestPhoto(BaseTestTimeStampedModel):
 
         assert original_exif == new_exif
 
+    # properties
     def test_exif_dict(self):
         p = self.factory_cls(image__from_path=testdata.TESTEXIFIMAGE_PATH)
         assert p.exif_dict == {
@@ -135,6 +140,7 @@ class TestPhoto(BaseTestTimeStampedModel):
             "WhiteBalance": "0",
         }
 
+    # meta
     def test_default_orderding_shows_newest_first(self):
         assert self.model._meta.ordering == ["-created_at"]
 

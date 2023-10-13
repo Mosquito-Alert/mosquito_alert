@@ -1,90 +1,120 @@
+from abc import ABC
+from unittest.mock import patch
+
 import pytest
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-from django.db.models.deletion import ProtectedError
+from django.core.exceptions import ValidationError
+from django.db import models
 from django.db.utils import IntegrityError
 
-from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
+from mosquito_alert.utils.tests.test_models import AbstractDjangoModelTestMixin, BaseTestTimeStampedModel
 
 from ..models import Boundary, BoundaryGeometry, BoundaryLayer, Location
-from .factories import BoundaryFactory, BoundaryGeometryFactory, BoundaryLayerFactory, LocationFactory
+from .factories import (
+    BoundaryFactory,
+    BoundaryGeometryFactory,
+    BoundaryLayerFactory,
+    DummyGeoLocatedModelFactory,
+    LocationFactory,
+)
 from .fuzzy import FuzzyMultiPolygon, FuzzyPoint, FuzzyPolygon
 from .models import DummyGeoLocatedModel
 
 
 @pytest.mark.django_db
-class TestBoundaryLayerModel:
+class TestBoundaryLayerModel(AbstractDjangoModelTestMixin):
+    model = BoundaryLayer
+    factory_cls = BoundaryLayerFactory
+
+    # fields
     def test_boundary_can_be_null(self):
-        BoundaryLayerFactory(boundary=None)
+        assert self.model._meta.get_field("boundary").null
+
+    def test_boundary_can_be_blank(self):
+        assert self.model._meta.get_field("boundary").blank
+
+    def test_boundary_on_delete_is_protected(self):
+        _on_delete = self.model._meta.get_field("boundary").remote_field.on_delete
+        assert _on_delete == models.PROTECT
+
+    def test_boundary_related_name(self):
+        assert self.model._meta.get_field("boundary").remote_field.related_name == "boundary_layers"
 
     def test_boundary_type_can_not_be_null(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            BoundaryLayerFactory(boundary_type=None)
+        assert not self.model._meta.get_field("boundary_type").null
+
+    def test_boundary_type_is_db_index(self):
+        assert self.model._meta.get_field("boundary_type").db_index
 
     def test_name_can_not_be_null(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            BoundaryLayerFactory(name=None)
+        assert not self.model._meta.get_field("name").null
 
-    @pytest.mark.parametrize("fieldname", ["boundary_type", "level"])
-    def test_indexed_fields(self, fieldname):
-        assert BoundaryLayer._meta.get_field(fieldname).db_index
+    def test_name_max_length_is_64(self):
+        assert self.model._meta.get_field("name").max_length == 64
+
+    def test_level_can_not_be_null(self):
+        assert not self.model._meta.get_field("level").null
+
+    def test_level_can_be_blank(self):
+        assert self.model._meta.get_field("level").blank
+
+    def test_level_is_db_index(self):
+        assert self.model._meta.get_field("level").db_index
 
     def test_description_can_be_null(self):
-        BoundaryLayerFactory(description=None)
+        assert self.model._meta.get_field("description").null
 
-    def test_protect_on_bounadary_delete(self):
-        bl = BoundaryLayerFactory(boundary=None)
-        boundary = BoundaryFactory(boundary_layer=bl)
-        bl.boundary = boundary
-        bl.save()
+    def test_description_can_be_blank(self):
+        assert self.model._meta.get_field("description").blank
 
-        with pytest.raises(ProtectedError):
-            boundary.delete()
+    # properties
+    def test_node_order_by_name(self):
+        assert self.model.node_order_by == ["name"]
 
-    def test_trees_must_have_same_boundary_type(self):
-        adm_root_node = BoundaryLayerFactory(
-            boundary=None, boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE.value
-        )
+    # methods
+    def test_children_layers_must_have_same_boundary_type_than_parents(self):
+        adm_root_node = self.factory_cls(boundary=None, boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE.value)
 
-        with pytest.raises(ValueError):
-            _ = BoundaryLayerFactory(
+        with pytest.raises(ValidationError):
+            _ = self.factory_cls(
                 boundary_type=BoundaryLayer.BoundaryType.STATISTICAL.value,
                 parent=adm_root_node,
             )
 
-    def test_auto_level_from_parent(self, country_bl):
-        bl = BoundaryLayerFactory(level=None, parent=country_bl, boundary_type=country_bl.boundary_type)
+    def test_level_is_inferred_from_parent_if_not_set(self, country_bl):
+        bl = self.factory_cls(level=None, parent=country_bl, boundary_type=country_bl.boundary_type)
 
         assert bl.level == country_bl.level + 1
 
     def test_auto_level_to_0_if_root(self):
-        bl = BoundaryLayerFactory(level=None, parent=None)
+        bl = self.factory_cls(level=None, parent=None)
 
         assert bl.level == 0
 
     def test_raise_on_level_update_lower_than_parent(self, country_bl):
-        bl = BoundaryLayerFactory(level=None, parent=country_bl, boundary_type=country_bl.boundary_type)
+        bl = self.factory_cls(level=None, parent=country_bl, boundary_type=country_bl.boundary_type)
         bl.level = 0
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             bl.save()
 
     def test_boundary_owner_is_inherited_from_parent(self):
-        bl = BoundaryLayerFactory(boundary=None)
+        bl = self.factory_cls(boundary=None)
         boundary = BoundaryFactory(boundary_layer=bl)
         bl.boundary = boundary
         bl.save()
 
-        child_bl = BoundaryLayerFactory(boundary=None, parent=bl, boundary_type=bl.boundary_type)
+        child_bl = self.factory_cls(boundary=None, parent=bl, boundary_type=bl.boundary_type)
 
         assert child_bl.boundary == boundary
 
     def test_update_descendants_boundaries_on_update(self):
-        bl = BoundaryLayerFactory(boundary=None)
+        bl = self.factory_cls(boundary=None)
         boundary = BoundaryFactory(boundary_layer=bl, code="code1")
         bl.boundary = boundary
         bl.save()
 
-        child_bl = BoundaryLayerFactory(parent=bl, boundary_type=bl.boundary_type)
+        child_bl = self.factory_cls(parent=bl, boundary_type=bl.boundary_type)
 
         new_boundary = BoundaryFactory(boundary_layer=bl, code="code2")
 
@@ -95,10 +125,11 @@ class TestBoundaryLayerModel:
 
         assert child_bl.boundary == new_boundary
 
+    # meta
     def test_unique_type_level_by_boundary(self):
         b = BoundaryFactory()
         with pytest.raises(IntegrityError, match=r"unique constraint"):
-            _ = BoundaryLayerFactory.create_batch(
+            _ = self.factory_cls.create_batch(
                 size=2,
                 boundary=b,
                 boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE.value,
@@ -107,7 +138,7 @@ class TestBoundaryLayerModel:
 
         # Same with bounary null
         with pytest.raises(IntegrityError, match=r"unique constraint"):
-            _ = BoundaryLayerFactory.create_batch(
+            _ = self.factory_cls.create_batch(
                 size=2,
                 boundary=None,
                 boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE.value,
@@ -115,7 +146,7 @@ class TestBoundaryLayerModel:
             )
 
     def test__str__(self):
-        bl = BoundaryLayerFactory(
+        bl = self.factory_cls(
             boundary_type=BoundaryLayer.BoundaryType.ADMINISTRATIVE.value,
             name="test",
         )
@@ -128,56 +159,50 @@ class TestBoundaryModel(BaseTestTimeStampedModel):
     model = Boundary
     factory_cls = BoundaryFactory
 
+    # fields
     def test_boundary_layer_cannot_be_null(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            BoundaryFactory(boundary_layer=None)
+        assert not self.model._meta.get_field("boundary_layer").null
 
-    def test_cascade_boundary_layer_deletion(self):
-        b = BoundaryFactory()
-        b.boundary_layer.delete()
-        assert Boundary.objects.all().count() == 0
+    def test_boundary_layer_on_delete_cascade(self):
+        _on_delete = self.model._meta.get_field("boundary_layer").remote_field.on_delete
+        assert _on_delete == models.CASCADE
 
     def test_code_cannot_be_null(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            _ = BoundaryFactory(code=None)
+        assert not self.model._meta.get_field("code").null
 
-    @pytest.mark.parametrize("fieldname", ["code", "name"])
-    def test_indexed_fields(self, fieldname):
-        assert Boundary._meta.get_field(fieldname).db_index
+    def test_code_max_length_is_16(self):
+        assert self.model._meta.get_field("code").max_length == 16
 
-    # def test_name_cannot_be_null(self):
-    #    # NOTE: modeltranslation does not deal with nullable values
-    #    with pytest.raises(IntegrityError, match=r"not-null constraint"):
-    #        _ = BoundaryFactory(name=None)
+    def test_code_is_db_index(self):
+        assert self.model._meta.get_field("code").db_index
+
+    def test_name_can_not_be_null(self):
+        assert not self.model._meta.get_field("name").null
+
+    def test_name_max_length_is_128(self):
+        assert self.model._meta.get_field("name").max_length == 128
+
+    def test_name_is_db_index(self):
+        assert self.model._meta.get_field("name").db_index
+
+    # custom properties
+    def test_node_order_by_name(self):
+        assert self.model.node_order_by == ["name"]
 
     def test_boundary_type_property(self):
-        b = BoundaryFactory()
+        b = self.factory_cls()
         assert b.boundary_type == b.boundary_layer.boundary_type
 
-    def test_geometry_property_return_None_if_no_boundarygeometry(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
+    def test_geometry_property_returns_same_as_get_geometry(self):
+        obj = self.factory_cls()
 
-        assert b.geometry is None
+        with patch.object(obj, "get_geometry", return_value="mocking_test") as mocked_method:
+            assert obj.geometry == "mocking_test"
 
-    def test_geometry_property_return_geometry(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        b_geom = BoundaryGeometryFactory(boundary=b)
-
-        assert b_geom.geometry == b.geometry
-
-    def test_get_geometry_method_returns_geometry(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        b_geom = BoundaryGeometryFactory(boundary=b)
-
-        assert b_geom.geometry.equals_exact(b.get_geometry())
-
-    def test_get_geometry_method_return_None_if_no_boudnarygeometry(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-
-        assert b.get_geometry() is None
+        mocked_method.assert_called_once()
 
     def test_geometry_property_is_cached(self, country_bl, django_assert_num_queries):
-        b = BoundaryFactory(boundary_layer=country_bl)
+        b = self.factory_cls(boundary_layer=country_bl)
         _ = BoundaryGeometryFactory(boundary=b)
 
         with django_assert_num_queries(1):
@@ -187,8 +212,20 @@ class TestBoundaryModel(BaseTestTimeStampedModel):
         with django_assert_num_queries(0):
             _ = b.geometry
 
+    # methods
+    def test_get_geometry_method_returns_geometry(self, country_bl):
+        b = self.factory_cls(boundary_layer=country_bl)
+        b_geom = BoundaryGeometryFactory(boundary=b)
+
+        assert b_geom.geometry.equals_exact(b.get_geometry())
+
+    def test_get_geometry_method_return_None_if_no_boudnarygeometry(self, country_bl):
+        b = self.factory_cls(boundary_layer=country_bl)
+
+        assert b.get_geometry() is None
+
     def test_update_geometry(self):
-        b = BoundaryFactory()
+        b = self.factory_cls()
         b_geom = BoundaryGeometryFactory(boundary=b)
 
         b_new_geom = FuzzyMultiPolygon(srid=4326).fuzz()
@@ -199,7 +236,7 @@ class TestBoundaryModel(BaseTestTimeStampedModel):
         assert b_geom.geometry.equals_exact(b_new_geom)
 
     def test_update_geometry_to_None(self):
-        b = BoundaryFactory()
+        b = self.factory_cls()
         _ = BoundaryGeometryFactory(boundary=b)
 
         b.geometry = None
@@ -208,7 +245,7 @@ class TestBoundaryModel(BaseTestTimeStampedModel):
         assert BoundaryGeometry.objects.filter(boundary=b).count() == 0
 
     def test_update_geometry_from_None(self):
-        b = BoundaryFactory()
+        b = self.factory_cls()
 
         mpoly = FuzzyMultiPolygon().fuzz()
         b.geometry = mpoly
@@ -216,12 +253,13 @@ class TestBoundaryModel(BaseTestTimeStampedModel):
 
         assert BoundaryGeometry.objects.get(boundary=b).geometry.equals_exact(mpoly)
 
+    # meta
     def test_unique_boundarylayer_code(self, country_bl):
         with pytest.raises(IntegrityError, match=r"unique constraint"):
-            BoundaryFactory.create_batch(size=2, code="ES", boundary_layer=country_bl)
+            self.factory_cls.create_batch(size=2, code="ES", boundary_layer=country_bl)
 
     def test__str__(self):
-        b = BoundaryFactory(name="Random boundary", code="RND")
+        b = self.factory_cls(name="Random boundary", code="RND")
         expected_output = "Random boundary (RND)"
         assert b.__str__() == expected_output
 
@@ -231,38 +269,31 @@ class TestBoundaryGeometryModel(BaseTestTimeStampedModel):
     model = BoundaryGeometry
     factory_cls = BoundaryGeometryFactory
 
-    def test_boundary_is_primary_key(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        b_geom = BoundaryGeometryFactory(boundary=b)
+    # fields
+    def test_boundary_fk_is_unique(self):
+        assert self.model._meta.get_field("boundary").unique
 
-        assert b_geom.pk == b.pk
+    def test_boundary_is_pk(self):
+        assert self.model._meta.get_field("boundary").primary_key
 
-    def test_cascading_deletion_on_boundary(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        _ = BoundaryGeometryFactory(boundary=b)
+    def test_boundary_can_not_be_null(self):
+        assert not self.model._meta.get_field("boundary").null
 
-        b.delete()
+    def test_boundary_on_delete_cascade(self):
+        _on_delete = self.model._meta.get_field("boundary").remote_field.on_delete
+        assert _on_delete == models.CASCADE
 
-        assert BoundaryGeometry.objects.all().count() == 0
+    def test_boundary_related_name(self):
+        assert self.model._meta.get_field("boundary").remote_field.related_name == "geometry_model"
 
-    def test_boundary_should_only_have_one_boundarygeometry(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        with pytest.raises(IntegrityError, match=r"unique"):
-            _ = BoundaryGeometryFactory.create_batch(size=2, boundary=b)
-
-    def test_boundary_related_name(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        b_geom = BoundaryGeometryFactory(boundary=b)
-
-        assert b.geometry_model == b_geom
+    def test_geometry_class_is_multipolygon(self):
+        assert self.model._meta.get_field("geometry").geom_class == MultiPolygon
 
     def test_geometry_srid_is_4326(self):
-        assert BoundaryGeometry._meta.get_field("geometry").srid == 4326
+        assert self.model._meta.get_field("geometry").srid == 4326
 
-    def test_geometry_can_not_be_null(self, country_bl):
-        b = BoundaryFactory(boundary_layer=country_bl)
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            _ = BoundaryGeometryFactory(boundary=b, geometry=None)
+    def test_geometry_can_not_be_null(self):
+        assert not self.model._meta.get_field("geometry").null
 
     def test_geometry_can_not_be_empty(self, country_bl):
         b = BoundaryFactory(boundary_layer=country_bl)
@@ -334,25 +365,33 @@ class TestBoundaryGeometryModel(BaseTestTimeStampedModel):
 
 
 @pytest.mark.django_db
-class TestLocationModel:
-    def test_point_srid_is_4326(self):
-        assert Location._meta.get_field("point").srid == 4326
+class TestLocationModel(AbstractDjangoModelTestMixin):
+    model = Location
+    factory_cls = LocationFactory
+
+    # fields
+    def test_boundaries_related_name(self):
+        assert self.model._meta.get_field("boundaries").remote_field.related_name == "locations"
+
+    def test_boundaries_can_be_blank(self):
+        assert self.model._meta.get_field("boundaries").blank
 
     def test_point_can_not_be_null(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            LocationFactory(point=None)
+        assert not self.model._meta.get_field("point").null
+
+    def test_point_can_not_be_blank(self):
+        assert not self.model._meta.get_field("point").blank
+
+    def test_point_srid_is_4326(self):
+        assert self.model._meta.get_field("point").srid == 4326
 
     def test_location_type_can_be_null(self):
-        LocationFactory(location_type=None)
+        assert self.model._meta.get_field("location_type").null
 
-    def test_boundaries_related_name(self):
-        b = BoundaryFactory()
+    def test_location_type_can_be_blank(self):
+        assert self.model._meta.get_field("location_type").blank
 
-        loc1 = LocationFactory(boundaries=[b])
-        loc2 = LocationFactory(boundaries=[b])
-
-        assert frozenset(list(b.locations.all())) == frozenset([loc1, loc2])
-
+    # methods
     def test_update_boundaries_on_create(self, country_bl):
         bbox_poly_a = (0, 0, 10, 10)  # x0, y0, x1, y1
         point_in_a = (5, 5)
@@ -401,6 +440,7 @@ class TestLocationModel:
 
         assert list(location_in_a.boundaries.all()) == [boundary_b]
 
+    # meta
     def test__str__with_location_type(self):
         point = FuzzyPoint(srid=4326).fuzz()
         loc = LocationFactory(point=point)
@@ -416,24 +456,31 @@ class TestLocationModel:
         assert loc.__str__() == expected_output
 
 
-@pytest.mark.django_db
-class TestGeoLocatedModel:
-    def test_null_location_should_raise(self):
-        with pytest.raises(IntegrityError, match=r"not-null constraint"):
-            _ = DummyGeoLocatedModel.objects.create(location=None)
+class BaseTestGeoLocatedModel(AbstractDjangoModelTestMixin, ABC):
+    def test_location_fk_is_unique(self):
+        assert self.model._meta.get_field("location").unique
 
-    def test_protect_deletion_from_location(self):
-        loc = LocationFactory()
-        _ = DummyGeoLocatedModel.objects.create(location=loc)
+    def test_location_can_not_be_null(self):
+        assert not self.model._meta.get_field("location").null
 
-        with pytest.raises(ProtectedError):
-            loc.delete()
+    def test_location_on_delete_protect(self):
+        _on_delete = self.model._meta.get_field("location").remote_field.on_delete
+        assert _on_delete == models.PROTECT
+
+    def test_location_related_name(self):
+        assert self.model._meta.get_field("location").remote_field.related_name == "+"
 
     def test_location_is_deleted_on_self_delete(self):
         loc = LocationFactory()
-        geo_loc = DummyGeoLocatedModel.objects.create(location=loc)
+        geo_loc = self.factory_cls(location=loc)
 
         assert Location.objects.all().count() == 1
 
         geo_loc.delete()
         assert Location.objects.all().count() == 0
+
+
+@pytest.mark.django_db
+class TestDummyGeoLocatedModel(BaseTestGeoLocatedModel):
+    model = DummyGeoLocatedModel
+    factory_cls = DummyGeoLocatedModelFactory

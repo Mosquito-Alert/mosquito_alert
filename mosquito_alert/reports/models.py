@@ -34,6 +34,7 @@ class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicM
         blank=True,
         editable=False,
         on_delete=models.SET_NULL,
+        related_name="reports",
     )
     photos = SortedManyToManyField(Photo, blank=True)
 
