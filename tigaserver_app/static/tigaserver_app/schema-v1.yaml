@@ -8,7 +8,8 @@ paths:
     put:
       operationId: Updatenotification_content
       tags:
-        - aima
+      - aima
+      - notifications
       requestBody:
         description: Create NotificationContent object
         required: true
@@ -60,7 +61,8 @@ paths:
     put:
       operationId: Updatesend_notifications
       tags:
-        - aima
+      - aima
+      - notifications
       requestBody:
         description: Send notification to single user, topic or group of users
         required: true
@@ -117,6 +119,7 @@ paths:
       summary: Marks a notification as read by a certain user
       tags:
       - notifications
+      - apps
       parameters:
         - name: user
           required: true
@@ -141,6 +144,7 @@ paths:
         summary: Subscribes a user to a given topic
         tags:
         - notifications
+        - apps
         description: This endpoint subscribes a user to a given topic. A topic behaves like a mail list,
           and if a push notification is sent to a topic, all users subscribed to this topic will receive the
           notification.
@@ -187,6 +191,7 @@ paths:
           sent to the topic.
         tags:
           - notifications
+          - apps
         operationId: Createunsub_from_topic
         parameters:
         - name: user
@@ -212,6 +217,7 @@ paths:
       description: A user can be subscribed to any number of topics. This endpoint lists all current subscriptions of a given user.
       tags:
         - notifications
+        - apps
       operationId: listtopics_subscribeds
       parameters:
         - name: user
@@ -250,6 +256,7 @@ paths:
       summary: Links an FCM token to a user or device
       tags:
         - notifications
+        - apps
       description: This call fills the field token in the user table. This allows the user to receive direct FCM push notifications.
       parameters:
         - name: user_id
@@ -284,6 +291,7 @@ paths:
       summary: Returns a list of notifications sent to a given user, by uuid
       tags:
         - notifications
+        - apps
       description: Returns a list of notifications sent to a given user, by uuid. All the notifications are at least translated to english and maybe to a second
         language. If this is the case and the locale parameter is sent, the text will be shown in this locale. If not, the language will default to english.
       parameters:
@@ -461,7 +469,6 @@ paths:
       summary: 'Returns score v2 details for a user given its uuid'
       description: 'Calculates and updates user score for a given user uuid. If the uuid is part of a profile, it updates the scores of all involved uuids'
       tags:
-      - apps
       - score
       parameters:      
       - name: user_id
@@ -475,86 +482,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  total_score:
-                    type: integer
-                    description: 'Accumulated score of the user. Equals the sum of scores given by adult + site reports'
-                  user_uuid:
-                    type: string
-                    description: 'Uuid of the user for which the score is being asked'
-                  identicon:
-                    type: string
-                    description: 'Relative path to the user identicon'
-                  score_detail:
-                    type: object
-                    description: 'Contains the detailed info regarding the user score'
-                    properties:
-                      adult:
-                        type: object
-                        description: 'Score details in regard to (adult) mosquito reports'
-                        properties:                          
-                          score:
-                            type: integer
-                            description: 'Accumulated (adult) mosquito reports score. It''s the sum of all xp given by each of the awards, minus the sum of all penalties'
-                          score_items:
-                            type: array
-                            items:
-                              properties:
-                                report:                                  
-                                  type: string
-                                  description: 'Report uuid'
-                                report_date:
-                                  type: string
-                                  format: date-time
-                                  description: 'Report creation time'
-                                report_score:
-                                  type: integer
-                                  description: 'Accumulated score granted by this report'
-                                awards:
-                                  type: array
-                                  description: 'List of awards granted to this report'
-                                  items:
-                                    properties:
-                                      reason: 
-                                        type: string
-                                        description: 'brief description of why this award was given'
-                                      xp_awarded:
-                                        type: integer
-                                        description: 'number of xp awarded to this report according to the reason previously stated'
-                                penalties:
-                                  type: array
-                                  description: 'List of penalties granted to this report'
-                                  items:
-                                    properties:
-                                      reason: 
-                                        type: string
-                                        description: 'brief description of why this penalty was imposed'
-                                      xp_awarded:
-                                        type: integer
-                                        description: 'number of xp substracted from this report according to the reason previously stated'
-                                report_photo:
-                                  type: string
-                                  description: 'url to the photo associated with this report, if available (not hidden)'
-                  class_value:
-                    type: integer
-                    minimum: 1
-                    maximum: 5
-                    description: 'number from 1 to 5, indicating the current user rank (beginner, etc) in respect to adult reports. The lower the number, the higher the rank'
-                  class_label:
-                    type: string
-                    description: 'Label corresponding to the class_value: i.e 1 for Grandmaster'
-                  rank_value:
-                    type: integer
-                    description: 'Ranking position of this user according to the adult score only'
-                  top_perc:
-                    type: number
-                    format: float
-                    description: 'Percentile of users that contains this user according to his mosquito rank'
-                  ranked_users:
-                    type: integer
-                    description: 'Number of users used to calculate the adult(mosquito) rank'
-
+                $ref: '#/components/schemas/Score'
           description: ''
   /api/photos_user/:
     get:
@@ -652,15 +580,79 @@ paths:
   /api/nearby_reports_nod/:
     get:
       operationId: listnearby_reports_no_dwindows
-      parameters: []
+      summary: 'Returns reports in a radius specified by coordinates supplied by the user'
+      description: 'Returns the reports closer to a point specified by coordinates, within a radius of default size 5000 meters. If a user_uuid is supplied, the endpoint also returns all reports from the user'
+      tags:
+        - apps
+      parameters:
+        - name: page
+          required: false
+          in: query
+          description: 'Pagination param, indicates page number of results. Defaults to 1'
+          schema:
+            type: integer
+        - name: page_size
+          required: false
+          in: query
+          description: 'Pagination param, indicates page size. Defaults to 10'
+          schema:
+            type: integer
+        - name: show_hidden
+          required: false
+          in: query
+          description: 'Wether to show or not deleted (version number == -1) reports. Defaults to 0 (do not show)'
+          schema:
+            type: integer
+        - name: lat
+          required: true
+          in: query
+          description: 'Latitude in decimal degrees of the buffer center'
+          schema:
+            type: float
+        - name: lon
+          required: true
+          in: query
+          description: 'Longitude in decimal degrees of the buffer center'
+          schema:
+            type: float
+        - name: user
+          required: false
+          in: query
+          description: 'User uuid of a given user. If supplied, the endpoint ensures that all reports belonging to the user are returned'
+          schema:
+            type: uuid
+        - name: radius
+          required: false
+          in: query
+          description: 'Radius in meters from the point specified by lat/lon where the reports will be returned. It defaults to 5000 meters'
+          schema:
+            type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                type: array
-                items: {}
-          description: ''
+                properties:
+                  user_uuids:
+                    type: array
+                    items:
+                      properties:
+                        user_uuid:
+                          type: string
+                          description: 'User uuids belonging to same user'
+                  count:
+                    type: integer
+                    description: 'Number of returned records'
+                  next:
+                    type: integer
+                    description: 'Next page number if available. If not, null'
+                  previous:
+                    type: integer
+                    description: 'Previous page number if available. If not, null'
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Report'
   /api/reports_id_filtered/:
     get:
       operationId: listreports_id_filtereds
@@ -724,14 +716,150 @@ paths:
   /api/profile/:
     get:
       operationId: listprofile_details
-      parameters: []
+      summary: 'Returns all the reports associated with a user profile'
+      description: 'Returns all the reports associated with a user profile. The endpoint accepts either a firebase
+      token or a uuid as parameters. If the uuid is supplied, and the user has several devices linked by a profile, the
+      endpoint returns all the reports of all the devices. The firebase auth token can be supplied alternatively, with the
+      same results since all devices share the same auth token.'
+      tags:
+        - apps
+      parameters:
+        - name: fbt
+          required: true
+          in: query
+          description: 'Firebase auth token which identifies a user across several devices with different uuids'
+          schema:
+            type: string
+        - name: usr_uuid
+          required: true
+          in: query
+          description: 'Uuid for the device the user is currently logged in'
+          schema:
+            type: string
       responses:
         '200':
           content:
             application/json:
               schema:
                 type: array
-                items: {}
+                items:
+                  properties:
+                    version_UUID:
+                      type: string
+                    version_number:
+                      type: integer
+                    report_id:
+                      type: string
+                    phone_upload_time:
+                      type: string
+                      format: date-time
+                    creation_time:
+                      type: string
+                      format: date-time
+                    version_time:
+                      type: string
+                      format: date-time
+                    type:
+                      type: string
+                    location_choice:
+                      type: string
+                    current_location_lon:
+                      type: number
+                    current_location_lat:
+                      type: number
+                    selected_location_lon:
+                      type: number
+                    selected_location_lat:
+                      type: number
+                    note:
+                      type: string
+                    package_name:
+                      type: string
+                    package_version:
+                      type: integer
+                    device_manufacturer:
+                      type: string
+                    device_model:
+                      type: string
+                    os:
+                      type: string
+                    os_version:
+                      type: string
+                    os_language:
+                      type: string
+                    app_language:
+                      type: string
+                    responses:
+                      type: array
+                      items:
+                        properties:
+                          question:
+                            type: string
+                            description: Question that the user responded to.
+                            maxLength: 1000
+                          answer:
+                            type: string
+                            description: Answer that user selected.
+                            maxLength: 1000
+                          question_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the question.
+                          answer_id:
+                            type: integer
+                            maximum: 2147483647
+                            minimum: -2147483648
+                            nullable: true
+                            description: Numeric identifier of the answer.
+                          answer_value:
+                            type: string
+                            nullable: true
+                            description: 'The value right now can contain 2 things:
+                                                an integer representing the number or bites, or either
+                                                a WKT representation of a point for a location answer.
+                                                In all other cases, it will be blank'
+                            maxLength: 1000
+                        required:
+                          - question
+                          - answer
+                    server_upload_time:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                      description: Date and time on server when report uploaded. (Automatically
+                        generated by server.)
+                    hide:
+                      type: boolean
+                      description: Hide this report from public views?
+                    cached_visible:
+                      type: integer
+                      maximum: 2147483647
+                      minimum: -2147483648
+                      nullable: true
+                      description: Precalculated value of show_on_map_function
+                    point:
+                      type: string
+                      nullable: true
+                    user:
+                      type: string
+                      description: user_UUID for the user sending this report. Must
+                        be exactly 36 characters (32 hex digits plus 4 hyphens) and
+                        user must have already registered this ID.
+                    mission:
+                      type: integer
+                      nullable: true
+                      description: If this report was a response to a mission, the
+                        unique id field of that mission.
+                    country:
+                      type: string
+                      nullable: true
+                    session:
+                      type: integer
+                      nullable: true
+                      description: 'Session ID for session in which this report was
+                                          created '
           description: ''
   /api/stats/workload_data/user/:
     get:
@@ -808,15 +936,31 @@ paths:
   /api/stats/user_xp_data/:
     get:
       operationId: listget_user_xp_datas
-      parameters: []
+      summary: 'Returns the xp data belonging to a user'
+      description: 'This function returns a json structure containing all relevant info related to a user score. The user score
+      is cached and updated at regular intervals for users with activity (i.e new reports) since last update'
+      tags:
+        - apps
+      parameters:
+      - name: user_id
+        required: true
+        in: query
+        description: 'UUID of the user for which the xp data will be evaluated and returned'
+        schema:
+          type: string
+      - name: locale
+        required: false
+        in: query
+        description: 'Locale code for the language used in the translatable labels inside of the structure (i.e user
+        rank name). If not supplied or if the locale it''s unavailable, it defaults to "en" (english)'
+        schema:
+          type: string
       responses:
         '200':
           content:
             application/json:
               schema:
-                type: array
-                items: {}
-          description: ''
+                $ref: '#/components/schemas/Score'
   /api/users/:
     get:
       operationId: listTigaUsers
@@ -846,6 +990,10 @@ paths:
           description: ''
     post:
       operationId: createTigaUser
+      summary: 'Creates a new tigauser'
+      description: 'Creates a new tigauser. The user_uuid param is generated randomly on the phone and registered on the server.'
+      tags:
+        - apps
       parameters: []
       requestBody:
         content:
@@ -873,7 +1021,6 @@ paths:
                     maxLength: 36
                 required:
                 - user_UUID
-          description: ''
   /api/addresses/:
     get:
       operationId: listUsers
@@ -957,413 +1104,176 @@ paths:
               schema:
                 type: array
                 items:
-                  properties:
-                    version_UUID:
-                      type: string
-                    version_number:
-                      type: integer
-                    report_id:
-                      type: string
-                    phone_upload_time:
-                      type: string
-                      format: date-time
-                    creation_time:
-                      type: string
-                      format: date-time
-                    version_time:
-                      type: string
-                      format: date-time
-                    type:
-                      type: string
-                    location_choice:
-                      type: string
-                    current_location_lon:
-                      type: number
-                    current_location_lat:
-                      type: number
-                    selected_location_lon:
-                      type: number
-                    selected_location_lat:
-                      type: number
-                    note:
-                      type: string
-                    package_name:
-                      type: string
-                    package_version:
-                      type: integer
-                    device_manufacturer:
-                      type: string
-                    device_model:
-                      type: string
-                    os:
-                      type: string
-                    os_version:
-                      type: string
-                    os_language:
-                      type: string
-                    app_language:
-                      type: string
-                    responses:
-                      type: array
-                      items:
-                        properties:
-                          question:
-                            type: string
-                            description: Question that the user responded to.
-                            maxLength: 1000
-                          answer:
-                            type: string
-                            description: Answer that user selected.
-                            maxLength: 1000
-                          question_id:
-                            type: integer
-                            maximum: 2147483647
-                            minimum: -2147483648
-                            nullable: true
-                            description: Numeric identifier of the question.
-                          answer_id:
-                            type: integer
-                            maximum: 2147483647
-                            minimum: -2147483648
-                            nullable: true
-                            description: Numeric identifier of the answer.
-                          answer_value:
-                            type: string
-                            nullable: true
-                            description: 'The value right now can contain 2 things:
-                              an integer representing the number or bites, or either
-                              a WKT representation of a point for a location answer.
-                              In all other cases, it will be blank'
-                            maxLength: 1000
-                        required:
-                        - question
-                        - answer
-                    server_upload_time:
-                      type: string
-                      format: date-time
-                      readOnly: true
-                      description: Date and time on server when report uploaded. (Automatically
-                        generated by server.)
-                    hide:
-                      type: boolean
-                      description: Hide this report from public views?
-                    cached_visible:
-                      type: integer
-                      maximum: 2147483647
-                      minimum: -2147483648
-                      nullable: true
-                      description: Precalculated value of show_on_map_function
-                    point:
-                      type: string
-                      nullable: true
-                    user:
-                      type: string
-                      description: user_UUID for the user sending this report. Must
-                        be exactly 36 characters (32 hex digits plus 4 hyphens) and
-                        user must have already registered this ID.
-                    mission:
-                      type: integer
-                      nullable: true
-                      description: If this report was a response to a mission, the
-                        unique id field of that mission.
-                    country:
-                      type: string
-                      nullable: true
-                    session:
-                      type: integer
-                      nullable: true
-                      description: 'Session ID for session in which this report was
-                        created '
-                  required:
-                  - version_UUID
-                  - version_number
-                  - report_id
-                  - phone_upload_time
-                  - creation_time
-                  - version_time
-                  - type
-                  - location_choice
-                  - responses
-                  - user
-          description: ''
+                  $ref: "#/components/schemas/Report"
+#                  properties:
+#                    version_UUID:
+#                      type: string
+#                    version_number:
+#                      type: integer
+#                    report_id:
+#                      type: string
+#                    phone_upload_time:
+#                      type: string
+#                      format: date-time
+#                    creation_time:
+#                      type: string
+#                      format: date-time
+#                    version_time:
+#                      type: string
+#                      format: date-time
+#                    type:
+#                      type: string
+#                    location_choice:
+#                      type: string
+#                    current_location_lon:
+#                      type: number
+#                    current_location_lat:
+#                      type: number
+#                    selected_location_lon:
+#                      type: number
+#                    selected_location_lat:
+#                      type: number
+#                    note:
+#                      type: string
+#                    package_name:
+#                      type: string
+#                    package_version:
+#                      type: integer
+#                    device_manufacturer:
+#                      type: string
+#                    device_model:
+#                      type: string
+#                    os:
+#                      type: string
+#                    os_version:
+#                      type: string
+#                    os_language:
+#                      type: string
+#                    app_language:
+#                      type: string
+#                    responses:
+#                      type: array
+#                      items:
+#                        properties:
+#                          question:
+#                            type: string
+#                            description: Question that the user responded to.
+#                            maxLength: 1000
+#                          answer:
+#                            type: string
+#                            description: Answer that user selected.
+#                            maxLength: 1000
+#                          question_id:
+#                            type: integer
+#                            maximum: 2147483647
+#                            minimum: -2147483648
+#                            nullable: true
+#                            description: Numeric identifier of the question.
+#                          answer_id:
+#                            type: integer
+#                            maximum: 2147483647
+#                            minimum: -2147483648
+#                            nullable: true
+#                            description: Numeric identifier of the answer.
+#                          answer_value:
+#                            type: string
+#                            nullable: true
+#                            description: 'The value right now can contain 2 things:
+#                              an integer representing the number or bites, or either
+#                              a WKT representation of a point for a location answer.
+#                              In all other cases, it will be blank'
+#                            maxLength: 1000
+#                        required:
+#                        - question
+#                        - answer
+#                    server_upload_time:
+#                      type: string
+#                      format: date-time
+#                      readOnly: true
+#                      description: Date and time on server when report uploaded. (Automatically
+#                        generated by server.)
+#                    hide:
+#                      type: boolean
+#                      description: Hide this report from public views?
+#                    cached_visible:
+#                      type: integer
+#                      maximum: 2147483647
+#                      minimum: -2147483648
+#                      nullable: true
+#                      description: Precalculated value of show_on_map_function
+#                    point:
+#                      type: string
+#                      nullable: true
+#                    user:
+#                      type: string
+#                      description: user_UUID for the user sending this report. Must
+#                        be exactly 36 characters (32 hex digits plus 4 hyphens) and
+#                        user must have already registered this ID.
+#                    mission:
+#                      type: integer
+#                      nullable: true
+#                      description: If this report was a response to a mission, the
+#                        unique id field of that mission.
+#                    country:
+#                      type: string
+#                      nullable: true
+#                    session:
+#                      type: integer
+#                      nullable: true
+#                      description: 'Session ID for session in which this report was
+#                        created '
+#                  required:
+#                  - version_UUID
+#                  - version_number
+#                  - report_id
+#                  - phone_upload_time
+#                  - creation_time
+#                  - version_time
+#                  - type
+#                  - location_choice
+#                  - responses
+#                  - user
+#          description: ''
     post:
       operationId: createReport
+      summary: 'Creates a new report'
+      description: 'The summary is descriptive enough, this is the main endpoint used to upload reports to the server'
+      tags:
+        - apps
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              properties:
-                version_UUID:
-                  type: string
-                version_number:
-                  type: integer
-                report_id:
-                  type: string
-                phone_upload_time:
-                  type: string
-                  format: date-time
-                creation_time:
-                  type: string
-                  format: date-time
-                version_time:
-                  type: string
-                  format: date-time
-                type:
-                  type: string
-                location_choice:
-                  type: string
-                current_location_lon:
-                  type: number
-                current_location_lat:
-                  type: number
-                selected_location_lon:
-                  type: number
-                selected_location_lat:
-                  type: number
-                note:
-                  type: string
-                package_name:
-                  type: string
-                package_version:
-                  type: integer
-                device_manufacturer:
-                  type: string
-                device_model:
-                  type: string
-                os:
-                  type: string
-                os_version:
-                  type: string
-                os_language:
-                  type: string
-                app_language:
-                  type: string
-                responses:
-                  type: array
-                  items:
-                    properties:
-                      question:
-                        type: string
-                        description: Question that the user responded to.
-                        maxLength: 1000
-                      answer:
-                        type: string
-                        description: Answer that user selected.
-                        maxLength: 1000
-                      question_id:
-                        type: integer
-                        maximum: 2147483647
-                        minimum: -2147483648
-                        nullable: true
-                        description: Numeric identifier of the question.
-                      answer_id:
-                        type: integer
-                        maximum: 2147483647
-                        minimum: -2147483648
-                        nullable: true
-                        description: Numeric identifier of the answer.
-                      answer_value:
-                        type: string
-                        nullable: true
-                        description: 'The value right now can contain 2 things: an
-                          integer representing the number or bites, or either a WKT
-                          representation of a point for a location answer. In all
-                          other cases, it will be blank'
-                        maxLength: 1000
-                    required:
-                    - question
-                    - answer
-                hide:
-                  type: boolean
-                  description: Hide this report from public views?
-                cached_visible:
-                  type: integer
-                  maximum: 2147483647
-                  minimum: -2147483648
-                  nullable: true
-                  description: Precalculated value of show_on_map_function
-                point:
-                  type: string
-                  nullable: true
-                user:
-                  type: string
-                  description: user_UUID for the user sending this report. Must be
-                    exactly 36 characters (32 hex digits plus 4 hyphens) and user
-                    must have already registered this ID.
-                mission:
-                  type: integer
-                  nullable: true
-                  description: If this report was a response to a mission, the unique
-                    id field of that mission.
-                country:
-                  type: string
-                  nullable: true
-                session:
-                  type: integer
-                  nullable: true
-                  description: 'Session ID for session in which this report was created '
-              required:
-              - version_UUID
-              - version_number
-              - report_id
-              - phone_upload_time
-              - creation_time
-              - version_time
-              - type
-              - location_choice
-              - responses
-              - user
+              $ref: "#/components/schemas/Report"
       responses:
         '200':
           content:
             application/json:
               schema:
-                properties:
-                  version_UUID:
-                    type: string
-                  version_number:
-                    type: integer
-                  report_id:
-                    type: string
-                  phone_upload_time:
-                    type: string
-                    format: date-time
-                  creation_time:
-                    type: string
-                    format: date-time
-                  version_time:
-                    type: string
-                    format: date-time
-                  type:
-                    type: string
-                  location_choice:
-                    type: string
-                  current_location_lon:
-                    type: number
-                  current_location_lat:
-                    type: number
-                  selected_location_lon:
-                    type: number
-                  selected_location_lat:
-                    type: number
-                  note:
-                    type: string
-                  package_name:
-                    type: string
-                  package_version:
-                    type: integer
-                  device_manufacturer:
-                    type: string
-                  device_model:
-                    type: string
-                  os:
-                    type: string
-                  os_version:
-                    type: string
-                  os_language:
-                    type: string
-                  app_language:
-                    type: string
-                  responses:
-                    type: array
-                    items:
-                      properties:
-                        question:
-                          type: string
-                          description: Question that the user responded to.
-                          maxLength: 1000
-                        answer:
-                          type: string
-                          description: Answer that user selected.
-                          maxLength: 1000
-                        question_id:
-                          type: integer
-                          maximum: 2147483647
-                          minimum: -2147483648
-                          nullable: true
-                          description: Numeric identifier of the question.
-                        answer_id:
-                          type: integer
-                          maximum: 2147483647
-                          minimum: -2147483648
-                          nullable: true
-                          description: Numeric identifier of the answer.
-                        answer_value:
-                          type: string
-                          nullable: true
-                          description: 'The value right now can contain 2 things:
-                            an integer representing the number or bites, or either
-                            a WKT representation of a point for a location answer.
-                            In all other cases, it will be blank'
-                          maxLength: 1000
-                      required:
-                      - question
-                      - answer
-                  server_upload_time:
-                    type: string
-                    format: date-time
-                    readOnly: true
-                    description: Date and time on server when report uploaded. (Automatically
-                      generated by server.)
-                  hide:
-                    type: boolean
-                    description: Hide this report from public views?
-                  cached_visible:
-                    type: integer
-                    maximum: 2147483647
-                    minimum: -2147483648
-                    nullable: true
-                    description: Precalculated value of show_on_map_function
-                  point:
-                    type: string
-                    nullable: true
-                  user:
-                    type: string
-                    description: user_UUID for the user sending this report. Must
-                      be exactly 36 characters (32 hex digits plus 4 hyphens) and
-                      user must have already registered this ID.
-                  mission:
-                    type: integer
-                    nullable: true
-                    description: If this report was a response to a mission, the unique
-                      id field of that mission.
-                  country:
-                    type: string
-                    nullable: true
-                  session:
-                    type: integer
-                    nullable: true
-                    description: 'Session ID for session in which this report was
-                      created '
-                required:
-                - version_UUID
-                - version_number
-                - report_id
-                - phone_upload_time
-                - creation_time
-                - version_time
-                - type
-                - location_choice
-                - responses
-                - user
+                $ref: "#/components/schemas/Report"
           description: ''
   /api/sessions/:
     get:
       operationId: listSessions
+      summary: 'Session listing endpoint'
+      description: 'Can list a single session by session id or the list of sessions for a user by user_uuid'
+      tags:
+        - apps
       parameters:
       - name: id
         required: false
         in: query
-        description: id
+        description: 'Filter parameter. If supplied, the endpoint returns a single result or an empty list if not found'
         schema:
           type: string
       - name: user
         required: false
         in: query
-        description: user
+        description: 'User id filter. If supplied, the endpoint returns a list of all the sessions of the user'
         schema:
           type: string
+          format: uuid
       responses:
         '200':
           content:
@@ -1385,6 +1295,7 @@ paths:
                         increments by 1 for each session from a given user.
                     user:
                       type: string
+                      format: uuid
                       description: user_UUID for the user sending this report. Must
                         be exactly 36 characters (32 hex digits plus 4 hyphens) and
                         user must have already registered this ID.
@@ -1406,6 +1317,11 @@ paths:
           description: ''
     post:
       operationId: createSession
+      summary: 'Creates a new session'
+      description: 'Creates a session. A new session is created each time a user starts forming a report on the app, and
+      closes when the user ends filling and uploading the report'
+      tags:
+        - apps
       parameters: []
       requestBody:
         content:
@@ -1420,6 +1336,7 @@ paths:
                     by 1 for each session from a given user.
                 user:
                   type: string
+                  format: uuid
                   description: user_UUID for the user sending this report. Must be
                     exactly 36 characters (32 hex digits plus 4 hyphens) and user
                     must have already registered this ID.
@@ -1457,6 +1374,7 @@ paths:
                       increments by 1 for each session from a given user.
                   user:
                     type: string
+                    format: uuid
                     description: user_UUID for the user sending this report. Must
                       be exactly 36 characters (32 hex digits plus 4 hyphens) and
                       user must have already registered this ID.
@@ -1765,17 +1683,25 @@ paths:
           description: ''
     post:
       operationId: createPhoto
+      summary: 'Uploads a photo to the server'
+      description: 'API endpoint for uploading photos associated with a report. Data must be posted as multipart form,
+      with with _photo_ used as the form key for the file itself, and _report_ used as the key for the report
+      version_UUID linking this photo to a specific report version.'
+      tags:
+        - apps
       parameters: []
       requestBody:
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
               properties:
                 photo:
                   type: string
+                  format: binary
                   description: Photo uploaded by user.
                 report:
                   type: string
+                  format: uuid
                   description: Report and version to which this photo is associated
                     (36-digit report_UUID).
               required:
@@ -1815,96 +1741,21 @@ paths:
               schema:
                 type: array
                 items:
-                  properties:
-                    user_coverage_uuid:
-                      type: string
-                      nullable: true
-                      description: UUID randomly generated on phone to identify each
-                        unique user, but only within the coverage data so that privacy
-                        issues are not raised by linking this to the report data..
-                        Must be exactly 36 characters (32 hex digits plus 4 hyphens).
-                      maxLength: 36
-                    fix_time:
-                      type: string
-                      format: date-time
-                      description: Date and time when fix was recorded on phone. Format
-                        as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
-                    phone_upload_time:
-                      type: string
-                      format: date-time
-                      description: Date and time on phone when it uploaded fix. Format
-                        as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
-                    masked_lon:
-                      type: number
-                      description: Longitude rounded down to nearest 0.5 decimal degree
-                        (floor(lon/.5)*.5).
-                    masked_lat:
-                      type: number
-                      description: Latitude rounded down to nearest 0.5 decimal degree
-                        (floor(lat/.5)*.5).
-                    power:
-                      type: number
-                      nullable: true
-                      description: 'Power level of phone at time fix recorded, expressed
-                        as proportion of full charge. Range: 0-1.'
-                    mask_size:
-                      type: number
-                      nullable: true
-                      description: size of location mask used
-                  required:
-                  - fix_time
-                  - phone_upload_time
-                  - masked_lon
-                  - masked_lat
-          description: ''
+                  $ref: "#/components/schemas/Fix"
     post:
       operationId: createFix
+      summary: 'API endpoint for getting and posting masked location fixes.'
+      description: 'API endpoint for uploading photos associated with a report. Data must be posted as multipart form,
+      with with _photo_ used as the form key for the file itself, and _report_ used as the key for the report
+      version_UUID linking this photo to a specific report version.'
+      tags:
+        - apps
       parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              properties:
-                user_coverage_uuid:
-                  type: string
-                  nullable: true
-                  description: UUID randomly generated on phone to identify each unique
-                    user, but only within the coverage data so that privacy issues
-                    are not raised by linking this to the report data.. Must be exactly
-                    36 characters (32 hex digits plus 4 hyphens).
-                  maxLength: 36
-                fix_time:
-                  type: string
-                  format: date-time
-                  description: Date and time when fix was recorded on phone. Format
-                    as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
-                phone_upload_time:
-                  type: string
-                  format: date-time
-                  description: Date and time on phone when it uploaded fix. Format
-                    as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
-                masked_lon:
-                  type: number
-                  description: Longitude rounded down to nearest 0.5 decimal degree
-                    (floor(lon/.5)*.5).
-                masked_lat:
-                  type: number
-                  description: Latitude rounded down to nearest 0.5 decimal degree
-                    (floor(lat/.5)*.5).
-                power:
-                  type: number
-                  nullable: true
-                  description: 'Power level of phone at time fix recorded, expressed
-                    as proportion of full charge. Range: 0-1.'
-                mask_size:
-                  type: number
-                  nullable: true
-                  description: size of location mask used
-              required:
-              - fix_time
-              - phone_upload_time
-              - masked_lon
-              - masked_lat
+              $ref: "#/components/schemas/Fix"
       responses:
         '200':
           content:
@@ -2034,131 +1885,7 @@ paths:
               schema:
                 type: array
                 items:
-                  properties:
-                    version_UUID:
-                      type: string
-                    creation_time:
-                      type: string
-                      readOnly: true
-                    creation_date:
-                      type: string
-                      readOnly: true
-                    creation_day_since_launch:
-                      type: string
-                      readOnly: true
-                    creation_year:
-                      type: string
-                      readOnly: true
-                    creation_month:
-                      type: string
-                      readOnly: true
-                    site_cat:
-                      type: string
-                      readOnly: true
-                    type:
-                      type: string
-                    lon:
-                      type: string
-                      readOnly: true
-                    lat:
-                      type: string
-                      readOnly: true
-                    movelab_annotation:
-                      type: string
-                      readOnly: true
-                    movelab_annotation_euro:
-                      type: string
-                      readOnly: true
-                    tiger_responses:
-                      type: string
-                      readOnly: true
-                    tiger_responses_text:
-                      type: string
-                      readOnly: true
-                    site_responses:
-                      type: string
-                      readOnly: true
-                    site_responses_text:
-                      type: string
-                      readOnly: true
-                    tigaprob_cat:
-                      type: string
-                      readOnly: true
-                    visible:
-                      type: string
-                      readOnly: true
-                    latest_version:
-                      type: string
-                      readOnly: true
-                    n_photos:
-                      type: string
-                      readOnly: true
-                    final_expert_status_text:
-                      type: string
-                      readOnly: true
-                    responses:
-                      type: array
-                      items:
-                        properties:
-                          id:
-                            type: integer
-                            readOnly: true
-                          question_id:
-                            type: integer
-                            maximum: 2147483647
-                            minimum: -2147483648
-                            nullable: true
-                            description: Numeric identifier of the question.
-                          question:
-                            type: string
-                            description: Question that the user responded to.
-                            maxLength: 1000
-                          answer_id:
-                            type: integer
-                            maximum: 2147483647
-                            minimum: -2147483648
-                            nullable: true
-                            description: Numeric identifier of the answer.
-                          answer:
-                            type: string
-                            description: Answer that user selected.
-                            maxLength: 1000
-                          answer_value:
-                            type: string
-                            nullable: true
-                            description: 'The value right now can contain 2 things:
-                              an integer representing the number or bites, or either
-                              a WKT representation of a point for a location answer.
-                              In all other cases, it will be blank'
-                            maxLength: 1000
-                          report:
-                            type: string
-                            description: Report to which this response is associated.
-                        required:
-                        - question
-                        - answer
-                        - report
-                    cached_visible:
-                      type: integer
-                      maximum: 2147483647
-                      minimum: -2147483648
-                      nullable: true
-                      description: Precalculated value of show_on_map_function
-                    point:
-                      type: string
-                      nullable: true
-                    country:
-                      type: string
-                      nullable: true
-                    session:
-                      type: integer
-                      nullable: true
-                      description: 'Session ID for session in which this report was
-                        created '
-                  required:
-                  - version_UUID
-                  - type
-                  - responses
+                  $ref: '#/components/schemas/Report'
           description: ''
   /api/all_reports_paginated/:
     get:
@@ -2219,131 +1946,7 @@ paths:
                   results:
                     type: array
                     items:
-                      properties:
-                        version_UUID:
-                          type: string
-                        creation_time:
-                          type: string
-                          readOnly: true
-                        creation_date:
-                          type: string
-                          readOnly: true
-                        creation_day_since_launch:
-                          type: string
-                          readOnly: true
-                        creation_year:
-                          type: string
-                          readOnly: true
-                        creation_month:
-                          type: string
-                          readOnly: true
-                        site_cat:
-                          type: string
-                          readOnly: true
-                        type:
-                          type: string
-                        lon:
-                          type: string
-                          readOnly: true
-                        lat:
-                          type: string
-                          readOnly: true
-                        movelab_annotation:
-                          type: string
-                          readOnly: true
-                        movelab_annotation_euro:
-                          type: string
-                          readOnly: true
-                        tiger_responses:
-                          type: string
-                          readOnly: true
-                        tiger_responses_text:
-                          type: string
-                          readOnly: true
-                        site_responses:
-                          type: string
-                          readOnly: true
-                        site_responses_text:
-                          type: string
-                          readOnly: true
-                        tigaprob_cat:
-                          type: string
-                          readOnly: true
-                        visible:
-                          type: string
-                          readOnly: true
-                        latest_version:
-                          type: string
-                          readOnly: true
-                        n_photos:
-                          type: string
-                          readOnly: true
-                        final_expert_status_text:
-                          type: string
-                          readOnly: true
-                        responses:
-                          type: array
-                          items:
-                            properties:
-                              id:
-                                type: integer
-                                readOnly: true
-                              question_id:
-                                type: integer
-                                maximum: 2147483647
-                                minimum: -2147483648
-                                nullable: true
-                                description: Numeric identifier of the question.
-                              question:
-                                type: string
-                                description: Question that the user responded to.
-                                maxLength: 1000
-                              answer_id:
-                                type: integer
-                                maximum: 2147483647
-                                minimum: -2147483648
-                                nullable: true
-                                description: Numeric identifier of the answer.
-                              answer:
-                                type: string
-                                description: Answer that user selected.
-                                maxLength: 1000
-                              answer_value:
-                                type: string
-                                nullable: true
-                                description: 'The value right now can contain 2 things:
-                                  an integer representing the number or bites, or
-                                  either a WKT representation of a point for a location
-                                  answer. In all other cases, it will be blank'
-                                maxLength: 1000
-                              report:
-                                type: string
-                                description: Report to which this response is associated.
-                            required:
-                            - question
-                            - answer
-                            - report
-                        cached_visible:
-                          type: integer
-                          maximum: 2147483647
-                          minimum: -2147483648
-                          nullable: true
-                          description: Precalculated value of show_on_map_function
-                        point:
-                          type: string
-                          nullable: true
-                        country:
-                          type: string
-                          nullable: true
-                        session:
-                          type: integer
-                          nullable: true
-                          description: 'Session ID for session in which this report
-                            was created '
-                      required:
-                      - version_UUID
-                      - type
-                      - responses
+                      $ref: '#/components/schemas/Report'
           description: ''
   /api/hidden_reports/:
     get:
@@ -2380,131 +1983,7 @@ paths:
               schema:
                 type: array
                 items:
-                  properties:
-                    version_UUID:
-                      type: string
-                    creation_time:
-                      type: string
-                      readOnly: true
-                    creation_date:
-                      type: string
-                      readOnly: true
-                    creation_day_since_launch:
-                      type: string
-                      readOnly: true
-                    creation_year:
-                      type: string
-                      readOnly: true
-                    creation_month:
-                      type: string
-                      readOnly: true
-                    site_cat:
-                      type: string
-                      readOnly: true
-                    type:
-                      type: string
-                    lon:
-                      type: string
-                      readOnly: true
-                    lat:
-                      type: string
-                      readOnly: true
-                    movelab_annotation:
-                      type: string
-                      readOnly: true
-                    movelab_annotation_euro:
-                      type: string
-                      readOnly: true
-                    tiger_responses:
-                      type: string
-                      readOnly: true
-                    tiger_responses_text:
-                      type: string
-                      readOnly: true
-                    site_responses:
-                      type: string
-                      readOnly: true
-                    site_responses_text:
-                      type: string
-                      readOnly: true
-                    tigaprob_cat:
-                      type: string
-                      readOnly: true
-                    visible:
-                      type: string
-                      readOnly: true
-                    latest_version:
-                      type: string
-                      readOnly: true
-                    n_photos:
-                      type: string
-                      readOnly: true
-                    final_expert_status_text:
-                      type: string
-                      readOnly: true
-                    responses:
-                      type: array
-                      items:
-                        properties:
-                          id:
-                            type: integer
-                            readOnly: true
-                          question_id:
-                            type: integer
-                            maximum: 2147483647
-                            minimum: -2147483648
-                            nullable: true
-                            description: Numeric identifier of the question.
-                          question:
-                            type: string
-                            description: Question that the user responded to.
-                            maxLength: 1000
-                          answer_id:
-                            type: integer
-                            maximum: 2147483647
-                            minimum: -2147483648
-                            nullable: true
-                            description: Numeric identifier of the answer.
-                          answer:
-                            type: string
-                            description: Answer that user selected.
-                            maxLength: 1000
-                          answer_value:
-                            type: string
-                            nullable: true
-                            description: 'The value right now can contain 2 things:
-                              an integer representing the number or bites, or either
-                              a WKT representation of a point for a location answer.
-                              In all other cases, it will be blank'
-                            maxLength: 1000
-                          report:
-                            type: string
-                            description: Report to which this response is associated.
-                        required:
-                        - question
-                        - answer
-                        - report
-                    cached_visible:
-                      type: integer
-                      maximum: 2147483647
-                      minimum: -2147483648
-                      nullable: true
-                      description: Precalculated value of show_on_map_function
-                    point:
-                      type: string
-                      nullable: true
-                    country:
-                      type: string
-                      nullable: true
-                    session:
-                      type: integer
-                      nullable: true
-                      description: 'Session ID for session in which this report was
-                        created '
-                  required:
-                  - version_UUID
-                  - type
-                  - responses
+                  $ref: '#/components/schemas/Report'
           description: ''
   /api/tags/:
     get:
@@ -2620,16 +2099,66 @@ paths:
   /api/profile/new/:
     post:
       operationId: Createprofile_new
-      parameters: []
+      summary: 'API endpoint for creating a new user profile.'
+      description: 'Associates a profile, identified by a firebase auth token, with a device identified by a user uuid'
+      tags:
+        - apps
+      parameters:
+        - name: fbt
+          required: true
+          in: query
+          description: The firebase auth token.
+          schema:
+            type: string
+        - name: usr
+          required: true
+          in: query
+          description: The user uuid.
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           content:
             application/json:
-              schema: {}
-          description: ''
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: The id of the recently created profile
+                    type: integer
+                  firebase_token:
+                    description: The firebase token associated with the current device
+                    type: string
+                  score:
+                    description: The user score (old value, deprecated)
+                    type: integer
+                  profile_devices:
+                    description: List of all devices (uuids) associated with this profile
+                    type: array
+                    items:
+                      properties:
+                        user_UUID:
+                          description: The user_uuid of the device
+                          type: string
+                          format: uuid
+                        registration_time:
+                          description: Timezone aware Datetime of when the device was registered
+                          type: string
+                          format: datetime
+                        device_token:
+                          description: Firebase token for the device, used in FCM messaging
+                          type: string
+                        score:
+                          description: The user score (old value, deprecated)
+                          type: integer
   /api/session_update/{id}/:
     put:
       operationId: UpdateSession
+      summary: 'API endpoint for updating existing session.'
+      description: 'Usually used to close a session by setting the field session_end_time'
+      tags:
+        - apps
       parameters:
       - name: id
         in: path
@@ -2651,6 +2180,7 @@ paths:
                     by 1 for each session from a given user.
                 user:
                   type: string
+                  format: uuid
                   description: user_UUID for the user sending this report. Must be
                     exactly 36 characters (32 hex digits plus 4 hyphens) and user
                     must have already registered this ID.
@@ -2688,6 +2218,7 @@ paths:
                       increments by 1 for each session from a given user.
                   user:
                     type: string
+                    format: uuid
                     description: user_UUID for the user sending this report. Must
                       be exactly 36 characters (32 hex digits plus 4 hyphens) and
                       user must have already registered this ID.
@@ -2707,3 +2238,256 @@ paths:
                 - user
                 - session_start_time
           description: ''
+
+components:
+  schemas:
+    Report:
+      type: object
+      properties:
+        version_UUID:
+          type: string
+        version_number:
+          type: integer
+        report_id:
+          type: string
+        phone_upload_time:
+          type: string
+          format: date-time
+        creation_time:
+          type: string
+          format: date-time
+        version_time:
+          type: string
+          format: date-time
+        type:
+          type: string
+        location_choice:
+          type: string
+        current_location_lon:
+          type: number
+        current_location_lat:
+          type: number
+        selected_location_lon:
+          type: number
+        selected_location_lat:
+          type: number
+        note:
+          type: string
+        package_name:
+          type: string
+        package_version:
+          type: integer
+        device_manufacturer:
+          type: string
+        device_model:
+          type: string
+        os:
+          type: string
+        os_version:
+          type: string
+        os_language:
+          type: string
+        app_language:
+          type: string
+        responses:
+          type: array
+          items:
+            properties:
+              question:
+                type: string
+                description: Question that the user responded to.
+                maxLength: 1000
+              answer:
+                type: string
+                description: Answer that user selected.
+                maxLength: 1000
+              question_id:
+                type: integer
+                maximum: 2147483647
+                minimum: -2147483648
+                nullable: true
+                description: Numeric identifier of the question.
+              answer_id:
+                type: integer
+                maximum: 2147483647
+                minimum: -2147483648
+                nullable: true
+                description: Numeric identifier of the answer.
+              answer_value:
+                type: string
+                nullable: true
+                description: 'The value right now can contain 2 things:
+                                    an integer representing the number or bites, or either
+                                    a WKT representation of a point for a location answer.
+                                    In all other cases, it will be blank'
+                maxLength: 1000
+            required:
+              - question
+              - answer
+        server_upload_time:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Date and time on server when report uploaded. (Automatically
+            generated by server.)
+        hide:
+          type: boolean
+          description: Hide this report from public views?
+        cached_visible:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+          description: Precalculated value of show_on_map_function
+        point:
+          type: string
+          nullable: true
+        user:
+          type: string
+          format: uuid
+          description: user_UUID for the user sending this report. Must
+            be exactly 36 characters (32 hex digits plus 4 hyphens) and
+            user must have already registered this ID.
+        mission:
+          type: integer
+          nullable: true
+          description: If this report was a response to a mission, the
+            unique id field of that mission.
+        country:
+          type: string
+          nullable: true
+        session:
+          type: integer
+          nullable: true
+          description: 'Session ID for session in which this report was created'
+    ScoreSection:
+      type: object
+      description: 'Score details by category (site,adult or bite)'
+      properties:
+        score:
+          type: integer
+          description: 'Accumulated mosquito reports score for the given category (site,adult or bite). It''s the sum of all xp given by each of the awards, minus the sum of all penalties'
+        score_items:
+          type: array
+          items:
+            properties:
+              report:
+                type: string
+                description: 'Report uuid'
+              report_date:
+                type: string
+                format: date-time
+                description: 'Report creation time'
+              report_score:
+                type: integer
+                description: 'Accumulated score granted by this report'
+              awards:
+                type: array
+                description: 'List of awards granted to this report'
+                items:
+                  properties:
+                    reason:
+                      type: string
+                      description: 'brief description of why this award was given'
+                    xp_awarded:
+                      type: integer
+                      description: 'number of xp awarded to this report according to the reason previously stated'
+              penalties:
+                type: array
+                description: 'List of penalties granted to this report'
+                items:
+                  properties:
+                    reason:
+                      type: string
+                      description: 'brief description of why this penalty was imposed'
+                    xp_awarded:
+                      type: integer
+                      description: 'number of xp substracted from this report according to the reason previously stated'
+              report_photo:
+                type: string
+                description: 'url to the photo associated with this report, if available (not hidden)'
+    Score:
+      type: object
+      properties:
+        total_score:
+          type: integer
+          description: 'Accumulated score of the user. Equals the sum of scores given by adult + site reports'
+        user_uuid:
+          type: string
+          format: uuid
+          description: 'Uuid of the user for which the score is being asked'
+        identicon:
+          type: string
+          description: 'Relative path to the user identicon'
+        score_detail:
+          type: object
+          description: 'Contains the detailed info regarding the user score'
+          properties:
+            adult:
+              $ref: '#/components/schemas/ScoreSection'
+            bite:
+              $ref: '#/components/schemas/ScoreSection'
+            site:
+              $ref: '#/components/schemas/ScoreSection'
+        class_value:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 'number from 1 to 5, indicating the current user rank (beginner, etc) in respect to adult reports. The lower the number, the higher the rank'
+        class_label:
+          type: string
+          description: 'Label corresponding to the class_value: i.e 1 for Grandmaster'
+        rank_value:
+          type: integer
+          description: 'Ranking position of this user according to the adult score only'
+        top_perc:
+          type: number
+          format: float
+          description: 'Percentile of users that contains this user according to his mosquito rank'
+        ranked_users:
+          type: integer
+          description: 'Number of users used to calculate the adult(mosquito) rank'
+    Fix:
+      type: object
+      properties:
+        user_coverage_uuid:
+          type: string
+          format: uuid
+          nullable: true
+          description: UUID randomly generated on phone to identify each unique
+            user, but only within the coverage data so that privacy issues
+            are not raised by linking this to the report data.. Must be exactly
+            36 characters (32 hex digits plus 4 hyphens).
+          maxLength: 36
+        fix_time:
+          type: string
+          format: date-time
+          description: Date and time when fix was recorded on phone. Format
+            as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+        phone_upload_time:
+          type: string
+          format: date-time
+          description: Date and time on phone when it uploaded fix. Format
+            as ECMA 262 date time string (e.g. "2014-05-17T12:34:56.123+01:00".
+        masked_lon:
+          type: number
+          description: Longitude rounded down to nearest 0.5 decimal degree
+            (floor(lon/.5)*.5).
+        masked_lat:
+          type: number
+          description: Latitude rounded down to nearest 0.5 decimal degree
+            (floor(lat/.5)*.5).
+        power:
+          type: number
+          nullable: true
+          description: 'Power level of phone at time fix recorded, expressed
+                          as proportion of full charge. Range: 0-1.'
+        mask_size:
+          type: number
+          nullable: true
+          description: size of location mask used
+        required:
+          - fix_time
+          - phone_upload_time
+          - masked_lon
+          - masked_lat
