@@ -286,6 +286,69 @@ paths:
         '404':
           description: 'If the user identified by the parameter user_id does not exist'
   /api/user_notifications/:
+    post:
+      deprecated: true
+      operationId: notification_update
+      summary: Marks notification as read
+      tags:
+        - apps
+      description: Creates a record which indicates that the user has tapped on a notification message in the app
+      parameters:
+        - name: id
+          required: true
+          in: query
+          description: id of the notification to be marked as acknowledged
+          schema:
+            type: integer
+        - name: acknowledged
+          required: false
+          in: query
+          description: The value of acknowledged (either True, False or ignore to leave untouched)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    report_id:
+                      type: string
+                      description: 'Id of the report which originated this notification. Can be null.'
+                    user_id:
+                      type: string
+                      description: 'Id of the user to which the notification was sent. Can be null, if the notification was sent to a topic.'
+                    topic:
+                      type: string
+                      description: 'Topic code (lower case, no special chars) to which the notification was sent. Can be null, if the notification was sent to a user.'
+                    user_score:
+                      type: integer
+                      description: 'Value for old user score. Ignore this field because it is deprecated and only present for backwards compatibility'
+                    user_score_label:
+                      type: string
+                      description: 'Can be user_score_pro, user_score_advanced or user_score_beginner. Categorized string for user_score. Also deprecated'
+                    expert_id:
+                      type: integer
+                      description: 'User id for the user(expert) that sent the notification.'
+                    date_comment:
+                      type: string
+                      format: date-time
+                      description: 'ISO timestamp for when the notification was issued, server time.'
+                    expert_comment:
+                      type: string
+                      description: 'Plain text with the notification title.'
+                    expert_html:
+                      type: string
+                      description: 'HTML Text with the full notification body.'
+                    acknowledged:
+                      type: boolean
+                      description: 'Boolean fields which says if the user tapped on the notification in the mobile apps. If true, the user opened the notification. If false, the notification is unread.'
+                    public:
+                      type: boolean
+                      description: 'Boolean fields which indicates if this notification can be shown on the public map.'
     get:
       operationId: listuser_notifications
       summary: Returns a list of notifications sent to a given user, by uuid
