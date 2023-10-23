@@ -11,8 +11,10 @@ from pyfcm import FCMNotification
 from datetime import date, datetime
 #from tigaserver_app.models import TigaUser
 #from tigaserver_app.models import Notification
+import logging
 
 
+logger_notification = logging.getLogger('mosquitoalert.notification')
 
 
 def stringify_date(notification):
@@ -179,6 +181,7 @@ def generic_send(recipient_token, title, message, json_notif=None):
     dry_run = getattr(settings,'DRY_RUN_PUSH',True)
     try:
         result = push_service.notify_single_device(registration_id=registration_id, message_body=message, message_title=title, data_message=data_message, dry_run=dry_run)
+        logger_notification.info("Notification result - " + str(result))
         return result
     except Exception as e:
         return {'exception': str(e) }
@@ -186,6 +189,7 @@ def generic_send(recipient_token, title, message, json_notif=None):
 
 
 def send_message_android(tokens, title, message, notification=None):
+    logger_notification.info("Sending android notification")
     if settings.DISABLE_PUSH_ANDROID:
         return "DISABLED"
     else:
@@ -193,6 +197,7 @@ def send_message_android(tokens, title, message, notification=None):
 
 
 def send_message_ios(tokens, alert_message, link_url, notification=None):
+    logger_notification.info("Sending ios notification")
     if settings.DISABLE_PUSH_IOS:
         return "DISABLED"
     else:
