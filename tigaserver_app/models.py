@@ -2167,16 +2167,28 @@ class Report(models.Model):
     def get_final_photo_html(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
             super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
-            if super_photos:
+            if super_photos.count() > 0:
                 winning_photo_id = Counter(super_photos).most_common()[0][0]
                 if winning_photo_id:
                     winning_photo = Photo.objects.filter(pk=winning_photo_id)
                     if winning_photo and winning_photo.count() > 0:
                         return Photo.objects.get(pk=winning_photo_id)
+            else:
+                expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,best_photo__isnull=False).values_list('best_photo', flat=True)
+                if expert_photos.count() > 0:
+                    winning_photo_id = Counter(expert_photos).most_common()[0][0]
+                    if winning_photo_id:
+                        winning_photo = Photo.objects.filter(pk=winning_photo_id)
+                        if winning_photo and winning_photo.count() > 0:
+                            return Photo.objects.get(pk=winning_photo_id)
+                else:
+                    photos = Photo.objects.filter(report=self).exclude(hide=True).order_by('-id')
+                    if photos and len(photos) > 0:
+                        return photos[0]
             return None
         else:
             expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, best_photo__isnull=False).values_list('best_photo', flat=True)
-            if expert_photos:
+            if expert_photos.count() > 0:
                 winning_photo_id = Counter(expert_photos).most_common()[0][0]
                 if winning_photo_id:
                     winning_photo = Photo.objects.filter(pk=winning_photo_id)
