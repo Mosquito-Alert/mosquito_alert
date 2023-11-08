@@ -108,12 +108,6 @@ class NodeExpandedQueriesMixin(Node):
         """
         return self.get_tree(self)
 
-    def get_num_children(self):
-        return self.get_children().count()
-
-    def has_children(self):
-        return self.get_num_children() > 0
-
     class Meta:
         abstract = True
 

@@ -253,28 +253,6 @@ class TestNodeExpandedQueriesMixin:
 
         assert list(root_node.get_descendants_and_self()) == [root_node, child_node]
 
-    def test_get_num_children_is_0_on_single_root_node(self):
-        root_node = DummyMP_NodeExpandedQueriesModel.add_root()
-
-        assert root_node.get_num_children() == 0
-
-    def test_has_children_is_False_on_single_root_node(self):
-        root_node = DummyMP_NodeExpandedQueriesModel.add_root()
-
-        assert root_node.has_children() is False
-
-    def test_get_num_children_is_on_tree(self):
-        root_node = DummyMP_NodeExpandedQueriesModel.add_root()
-        root_node.add_child()
-
-        assert root_node.get_num_children() == 1
-
-    def test_has_children_is_True_on_tree(self):
-        root_node = DummyMP_NodeExpandedQueriesModel.add_root()
-        root_node.add_child()
-
-        assert root_node.has_children() is True
-
 
 @pytest.mark.django_db
 class BaseTestTimeStampedModel(AbstractDjangoModelTestMixin, ABC):
