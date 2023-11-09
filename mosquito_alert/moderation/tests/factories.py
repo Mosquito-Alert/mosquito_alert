@@ -21,6 +21,15 @@ class FlagFactory(DjangoModelFactory):
         exclude = ["content_object"]
         model = Flag
 
+    class Params:
+        is_banned = factory.Trait(state=factory.Faker("random_element", elements=FlagModeratedModel.IS_BANNED_STATES))
+
+        is_permitted = factory.Trait(
+            state=factory.Faker(
+                "random_element", elements=list(set(Flag.State) - set(FlagModeratedModel.IS_BANNED_STATES))
+            )
+        )
+
 
 class FlagInstanceFactory(DjangoModelFactory):
     flag = factory.SubFactory(FlagFactory)
@@ -42,20 +51,5 @@ class DummyFlagModeratedModelFactory(DjangoModelFactory):
         model = DummyFlagModeratedModel
 
     class Params:
-        is_banned = factory.Trait(
-            flags=factory.RelatedFactory(
-                FlagFactory,
-                factory_related_name="content_object",
-                state=factory.Faker("random_element", elements=FlagModeratedModel.IS_BANNED_STATES),
-            )
-        )
-
-        is_permitted = factory.Trait(
-            flags=factory.RelatedFactory(
-                FlagFactory,
-                factory_related_name="content_object",
-                state=factory.Faker(
-                    "random_element", elements=list(set(Flag.State) - set(FlagModeratedModel.IS_BANNED_STATES))
-                ),
-            )
-        )
+        is_banned = factory.Trait(flags__is_banned=True)
+        is_permitted = factory.Trait(flags__is_permitted=True)

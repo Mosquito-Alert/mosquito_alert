@@ -2,8 +2,12 @@ import factory
 from django.db.models.signals import post_save
 from factory.django import DjangoModelFactory
 
+from mosquito_alert.identifications.models import IndividualIdentificationTaskResult
 from mosquito_alert.identifications.signals import create_identification_task_on_individual_creation
-from mosquito_alert.identifications.tests.factories import IndividualIdentificationTaskFactory
+from mosquito_alert.identifications.tests.factories import (
+    IndividualIdentificationTaskFactory,
+    IndividualIdentificationTaskResultFactory,
+)
 
 from ..models import Individual
 
@@ -24,6 +28,20 @@ class IndividualFactory(DjangoModelFactory):
         finally:
             post_save.connect(create_identification_task_on_individual_creation, sender=cls._meta.model)
         return instance
+
+    @factory.post_generation
+    def taxon(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        # If taxon is defined on create
+        if extracted:
+            _ = IndividualIdentificationTaskResultFactory(
+                task=self.identification_task,
+                type=IndividualIdentificationTaskResult.ResultType.ENSEMBLED,
+                label=extracted,
+                probability=1,
+            )
 
     class Meta:
         model = Individual
