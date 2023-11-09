@@ -17,7 +17,7 @@ from mosquito_alert.moderation.models import FlagModeratedModel
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.utils.models import TimeStampedModel
 
-from .managers import ReportManager
+from .managers import IndividualReportManager, ReportManager
 
 
 class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicModel):
@@ -150,6 +150,7 @@ class IndividualReport(Report):
 
     # Attributes - Optional
     # Object Manager
+    objects = IndividualReportManager()
     # Custom Properties
     # Methods
 

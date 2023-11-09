@@ -17,6 +17,7 @@ from reversion.models import Version
 from mosquito_alert.breeding_sites.models import BreedingSite
 from mosquito_alert.breeding_sites.tests.factories import BreedingSiteFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyPoint
+from mosquito_alert.individuals.tests.factories import IndividualFactory
 from mosquito_alert.moderation.models import Flag
 from mosquito_alert.moderation.tests.factories import FlagFactory
 from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
@@ -299,3 +300,22 @@ class TestIndividualReport(BaseTestReversionedReport, TestReport):
     def test_taxon_deletion_is_protected(self):
         _on_delete = self.model._meta.get_field("taxon").remote_field.on_delete
         assert _on_delete == models.PROTECT
+
+    # objects
+    def test_objects_with_identified_taxon(self, taxon_root, taxon_specie):
+        ind1 = IndividualFactory(taxon=taxon_specie)
+        ind2 = IndividualFactory(taxon=taxon_root)
+
+        obj_yes = self.factory_cls(individuals=[ind1])
+        _ = self.factory_cls(individuals=[ind2])
+        _ = self.factory_cls()
+
+        assert list(self.model.objects.with_identified_taxon(taxon=taxon_specie).all()) == [obj_yes]
+
+    def test_objects_with_identified_taxon_when_individuals_return_none(self, taxon_root, taxon_specie):
+        ind1 = IndividualFactory(taxon=taxon_specie)
+
+        _ = self.factory_cls(individuals=[ind1])
+        _ = self.factory_cls()
+
+        assert not self.model.objects.with_identified_taxon(taxon=taxon_root).exists()
