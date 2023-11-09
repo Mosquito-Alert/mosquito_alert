@@ -1,6 +1,7 @@
+from django.db.models import Subquery
 from django.dispatch import receiver
 
-# from mosquito_alert.geo.models import Location
+from mosquito_alert.geo.models import Boundary
 from mosquito_alert.identifications.models import (
     BaseTaskResult,
     IndividualIdentificationTaskResult,
@@ -10,9 +11,10 @@ from mosquito_alert.identifications.models import (
 from .models import SpecieDistribution
 
 
-# TODO: test signals
+# TODO: trigger on individual taxon change.
 @receiver(classification_has_changed, sender=IndividualIdentificationTaskResult)
 def update_distribution_on_identification_change(sender, instance, *args, **kwargs):
+    # TODO: run for previous taxon (before change) and current taxon and recompute distribution for both.
     if not instance.task.is_completed:
         return
 
@@ -20,17 +22,18 @@ def update_distribution_on_identification_change(sender, instance, *args, **kwar
     if not instance.type == BaseTaskResult.ResultType.ENSEMBLED:
         return
 
-    for r in instance.task.individual.reports.all():
-        for b in r.location.boundaries.all():
-            # By default, status is computed automatically on create.
-            obj, created = SpecieDistribution.objects.get_or_create(
-                boundary=b,
-                taxon=instance.taxon,
-                month=r.observed_at,
-            )
-            if not created:
-                # Update status
-                obj.recompute_status(commit=True)
+    if not instance.taxon.is_specie:
+        return
+
+    reports_qs = instance.task.individual.reports.browsable()
+
+    first_reported_datetime = None
+    if reports_qs.exists():
+        first_reported_datetime = reports_qs.order_by("observed_at").first().observed_at
+
+    for b in Boundary.objects.filter(numchild=0, locations__in=Subquery(reports_qs.values("location__pk"))).distinct():
+        # By default, status is computed automatically on create.
+        SpecieDistribution.update_for(boundary=b, taxon=instance.taxon, from_datetime=first_reported_datetime)
 
 
 # @receiver(m2m_changed, sender=Location.boundaries.through)

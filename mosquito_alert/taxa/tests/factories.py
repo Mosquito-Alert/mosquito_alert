@@ -52,7 +52,6 @@ class SpecieDistributionFactory(DjangoModelFactory):
     taxon = factory.SubFactory(TaxonFactory, rank=Taxon.TaxonomicRank.SPECIES)
 
     source = factory.Faker("random_element", elements=SpecieDistribution.DataSource.values)
-    status = factory.Faker("random_element", elements=SpecieDistribution.DistributionStatus.values)
 
     class Meta:
         model = SpecieDistribution

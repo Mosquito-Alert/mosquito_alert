@@ -104,30 +104,3 @@ class TestSpecieDistributionAdmin:
         )
         response = admin_client.get(url)
         assert response.status_code == 200
-
-
-class TestSpecieDistributionHistoryAdmin:
-    def test_changelist(self, admin_client):
-        url = reverse("admin:taxa_historicalspeciedistribution_changelist")
-        response = admin_client.get(url)
-        assert response.status_code == 200
-
-    def test_search_is_by_parent_id(self, admin_client):
-        url = reverse("admin:taxa_historicalspeciedistribution_changelist")
-        response = admin_client.get(url, data={"q": "1"})
-        assert response.status_code == 200
-
-    def test_add_is_not_allowed(self, admin_client):
-        url = reverse("admin:taxa_historicalspeciedistribution_add")
-        response = admin_client.get(url)
-        assert response.status_code == 403
-
-    def test_view(self, admin_client, taxon_specie):
-        distribution = SpecieDistributionFactory(taxon=taxon_specie)
-
-        url = reverse(
-            "admin:taxa_historicalspeciedistribution_change",
-            kwargs={"object_id": distribution.history.first().pk},
-        )
-        response = admin_client.get(url)
-        assert response.status_code == 200
