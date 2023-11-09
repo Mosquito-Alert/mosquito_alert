@@ -17,6 +17,8 @@ from reversion.models import Version
 from mosquito_alert.breeding_sites.models import BreedingSite
 from mosquito_alert.breeding_sites.tests.factories import BreedingSiteFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyPoint
+from mosquito_alert.moderation.models import Flag
+from mosquito_alert.moderation.tests.factories import FlagFactory
 from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
 
 from ..models import BiteReport, BreedingSiteReport, IndividualReport, Report
@@ -119,6 +121,34 @@ class TestReport(BaseTestTimeStampedModel):
 
     def test_tags_are_empty_by_default(self):
         assert self.factory_cls().tags.count() == 0
+
+    # objects
+    def test_objects_browsable_returns_published_and_not_flagged(self):
+        # Start as unpublished
+        obj = self.factory_cls()
+
+        # Setting here since there are reports that auto set to True
+        obj.published = False
+        obj.save()
+
+        assert not self.model.objects.browsable().exists()
+
+        # Set to published
+        obj.published = True
+        obj.save()
+
+        assert list(self.model.objects.browsable().all()) == [obj]
+
+        # Apply banned flag
+        flag = FlagFactory(content_object=obj, is_banned=True)
+
+        assert not self.model.objects.browsable().exists()
+
+        # Keep banned but change it status to allowed state.
+        flag.state = Flag.State.REJECTED
+        flag.save()
+
+        assert list(self.model.objects.browsable().all()) == [obj]
 
     # meta
     def test_ordering_shows_newest_first(self):
