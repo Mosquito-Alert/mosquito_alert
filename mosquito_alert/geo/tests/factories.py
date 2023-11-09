@@ -59,6 +59,7 @@ class LocationFactory(DjangoModelFactory):
             return
 
         self.boundaries.add(*extracted)
+        self.skip_hooks = True
 
     @classmethod
     def _after_postgeneration(cls, instance, create, results=None):
@@ -66,6 +67,7 @@ class LocationFactory(DjangoModelFactory):
         if results:
             _ = results.pop("boundaries", None)
         super()._after_postgeneration(instance=instance, create=create, results=results)
+        instance.skip_hooks = False
 
     class Meta:
         model = Location
