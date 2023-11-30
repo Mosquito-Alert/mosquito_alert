@@ -2,7 +2,7 @@ import pytest
 from django.contrib.gis.geos import MultiPoint, MultiPolygon, Point, Polygon
 
 from ..models import Boundary, Location
-from .factories import BoundaryFactory, BoundaryFactoryWithGeometry, DummyGeoLocatedModelFactory, LocationFactory
+from .factories import BoundaryFactory, DummyGeoLocatedModelFactory, LocationFactory
 from .models import DummyGeoLocatedModel
 
 
@@ -22,12 +22,12 @@ def large_multipolygon():
 
 @pytest.fixture()
 def small_boundary(country_bl, small_multipolygon):
-    return BoundaryFactoryWithGeometry(boundary_layer=country_bl, geometry_model__geometry=small_multipolygon)
+    return BoundaryFactory(with_geometry=True, boundary_layer=country_bl, geometry_model__geometry=small_multipolygon)
 
 
 @pytest.fixture()
 def large_boundary(country_bl, large_multipolygon):
-    return BoundaryFactoryWithGeometry(boundary_layer=country_bl, geometry_model__geometry=large_multipolygon)
+    return BoundaryFactory(with_geometry=True, boundary_layer=country_bl, geometry_model__geometry=large_multipolygon)
 
 
 @pytest.mark.django_db
@@ -73,12 +73,14 @@ class TestBoundaryManager:
         point_in_b = Point(105, 105)
         point_outside = Point(-10, -10)
 
-        boundary_a = BoundaryFactoryWithGeometry(
+        boundary_a = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
-        boundary_b = BoundaryFactoryWithGeometry(
+        boundary_b = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
@@ -98,12 +100,14 @@ class TestBoundaryManager:
         multipoint_a_b = MultiPoint(point_in_a, point_in_b)
         multipoint_b_out = MultiPoint(point_outside, point_in_b)
 
-        boundary_a = BoundaryFactoryWithGeometry(
+        boundary_a = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
-        boundary_b = BoundaryFactoryWithGeometry(
+        boundary_b = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
@@ -132,12 +136,14 @@ class TestBoundaryManager:
         polygon_in_b = Polygon.from_bbox(bbox=(104, 104, 106, 106))
         polygon_outside = Polygon.from_bbox(bbox=(-10, -10, -15, -15))
 
-        boundary_a = BoundaryFactoryWithGeometry(
+        boundary_a = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
-        boundary_b = BoundaryFactoryWithGeometry(
+        boundary_b = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
@@ -157,12 +163,14 @@ class TestBoundaryManager:
         multipoly_a_b = MultiPolygon(polygon_in_a, polygon_in_b)
         multipoly_b_out = MultiPolygon(polygon_outside, polygon_in_b)
 
-        boundary_a = BoundaryFactoryWithGeometry(
+        boundary_a = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
-        boundary_b = BoundaryFactoryWithGeometry(
+        boundary_b = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
@@ -192,18 +200,21 @@ class TestLocationManager:
 
         point_inside_a_child = Point(2, 2)
 
-        boundary_a = BoundaryFactoryWithGeometry(
+        boundary_a = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
-        boundary_a_child = BoundaryFactoryWithGeometry(
+        boundary_a_child = BoundaryFactory(
+            with_geometry=True,
             parent=boundary_a,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_child_bbox), srid=4326),
         )
 
-        boundary_b = BoundaryFactoryWithGeometry(
+        boundary_b = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )
@@ -228,18 +239,21 @@ class TestLocationManager:
 
         point_inside_a_child = Point(21, 21)
 
-        boundary_a = BoundaryFactoryWithGeometry(
+        boundary_a = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_bbox), srid=4326),
         )
 
-        boundary_a_child = BoundaryFactoryWithGeometry(
+        boundary_a_child = BoundaryFactory(
+            with_geometry=True,
             parent=boundary_a,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=a_child_bbox), srid=4326),
         )
 
-        boundary_b = BoundaryFactoryWithGeometry(
+        boundary_b = BoundaryFactory(
+            with_geometry=True,
             boundary_layer=country_bl,
             geometry_model__geometry=MultiPolygon(Polygon.from_bbox(bbox=b_bbox), srid=4326),
         )

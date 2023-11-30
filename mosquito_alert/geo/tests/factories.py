@@ -7,17 +7,28 @@ from .models import DummyGeoLocatedModel
 
 
 class BoundaryLayerFactory(DjangoModelFactory):
-    boundary = factory.RelatedFactory(
-        "mosquito_alert.geo.tests.factories.BoundaryFactory",
-        factory_related_name="boundary_layer",
-    )
     boundary_type = factory.Faker("random_element", elements=BoundaryLayer.BoundaryType.values)
     name = factory.Faker("name")
     description = factory.Faker("paragraph")
 
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # boundary is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("boundary", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
+
     class Meta:
         model = BoundaryLayer
         # django_get_or_create = ["boundary_type", "level"]
+
+    class Params:
+        with_boundary = factory.Trait(
+            boundary=factory.RelatedFactory(
+                "mosquito_alert.geo.tests.factories.BoundaryFactory",
+                factory_related_name="boundary_layer",
+            )
+        )
 
 
 class BoundaryFactory(DjangoModelFactory):
@@ -25,18 +36,23 @@ class BoundaryFactory(DjangoModelFactory):
     code = factory.Sequence(lambda n: "CODE%s" % n)
     name = factory.Faker("country")
 
-    class Meta:
-        model = Boundary
-
-
-class BoundaryFactoryWithGeometry(BoundaryFactory):
-    geometry_model = factory.RelatedFactory(
-        "mosquito_alert.geo.tests.factories.BoundaryGeometryFactory",
-        factory_related_name="boundary",
-    )
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # geometry_model is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("geometry_model", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
 
     class Meta:
         model = Boundary
+
+    class Params:
+        with_geometry = factory.Trait(
+            geometry_model=factory.RelatedFactory(
+                "mosquito_alert.geo.tests.factories.BoundaryGeometryFactory",
+                factory_related_name="boundary",
+            )
+        )
 
 
 class BoundaryGeometryFactory(DjangoModelFactory):
