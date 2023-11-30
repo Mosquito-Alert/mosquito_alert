@@ -12,6 +12,7 @@ geopandas==0.12.2  # https://github.com/geopandas/geopandas
 tqdm==4.64.1
 geopy==2.3.0  # https://github.com/geopy/geopy
 anytree==2.8.0  # https://github.com/c0fec0de/anytree
+timezonefinder==6.2.0  # https://github.com/jannikmi/timezonefinder
 
 # Django
 # ------------------------------------------------------------------------------
@@ -37,6 +38,7 @@ django-notifications-hq==1.8.2  # https://github.com/django-notifications/django
 django-lb-health-check==1.0.1  # https://github.com/Hovercross/django-lb-health-check
 django-simple-history==3.3.0  # https://github.com/jazzband/django-simple-history
 django-jsonform==2.19.1  # https://github.com/bhch/django-jsonform
+django-timezone-field==6.1.0  # https://github.com/mfogel/django-timezone-field/
 # Django Admin
 django-admin-sortable2==2.1.8  # https://github.com/jrief/django-admin-sortable2
 django-nested-admin==4.0.2  # https://github.com/theatlantic/django-nested-admin

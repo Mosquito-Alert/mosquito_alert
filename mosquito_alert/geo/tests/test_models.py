@@ -385,11 +385,31 @@ class TestLocationModel(AbstractDjangoModelTestMixin):
     def test_point_srid_is_4326(self):
         assert self.model._meta.get_field("point").srid == 4326
 
+    def test_timezone_can_be_null(self):
+        assert self.model._meta.get_field("timezone").null
+
+    def test_timezone_can_be_blank(self):
+        assert self.model._meta.get_field("timezone").blank
+
+    def test_timezone_is_not_editable(self):
+        assert not self.model._meta.get_field("timezone").editable
+
     def test_location_type_can_be_null(self):
         assert self.model._meta.get_field("location_type").null
 
     def test_location_type_can_be_blank(self):
         assert self.model._meta.get_field("location_type").blank
+
+    # properties
+    def test_latitude(self):
+        obj = self.factory_cls(point=Point(x=2.79, y=41.67, srid=4326))
+
+        obj.latitude == 41.67
+
+    def test_longitude(self):
+        obj = self.factory_cls(point=Point(x=2.79, y=41.67, srid=4326))
+
+        obj.latitude == 2.79
 
     # methods
     def test_update_boundaries_on_create(self, country_bl):
@@ -439,6 +459,30 @@ class TestLocationModel(AbstractDjangoModelTestMixin):
         location_in_a.save()
 
         assert list(location_in_a.boundaries.all()) == [boundary_b]
+
+    def test_timezone_is_auto_set_on_create(self):
+        # Blanes
+        obj = self.factory_cls(point=Point(x=2.70, y=41.61, srid=4326))
+        assert obj.timezone == "Europe/Madrid"
+
+    def test_timezone_is_updated_on_point_change(self):
+        # Blanes
+        obj = self.factory_cls(point=Point(x=2.70, y=41.61, srid=4326))
+        assert obj.timezone == "Europe/Madrid"
+
+        # Paris
+        obj.point = Point(x=2.37, y=49.03, srid=4326)
+        obj.save()
+        assert obj.timezone == "Europe/Paris"
+
+    def test_timezone_does_not_raise_on_ETC_timezones(self):
+        # Middle of the ocean
+        obj = self.factory_cls(point=Point(x=-36.38, y=41.50, srid=4326))
+        assert obj.timezone == "Etc/GMT+2"
+
+    def test_timezone_is_set_to_None_if_timezone_finder_raises(self):
+        obj = self.factory_cls(point=Point(x=80000, y=80000, srid=4326))
+        assert obj.timezone is None
 
     # meta
     def test__str__with_location_type(self):

@@ -13,6 +13,7 @@ from django_lifecycle import (
     LifecycleModelMixin,
     hook,
 )
+from timezone_field import TimeZoneField
 from treebeard.mp_tree import MP_Node
 
 from mosquito_alert.utils.models import ParentManageableNodeMixin, TimeStampedModel
@@ -305,6 +306,7 @@ class Location(LifecycleModel):
 
     # Attributes - Mandatory
     point = models.PointField(geography=False)
+    timezone = TimeZoneField(null=True, blank=True, editable=False)
     location_type = models.CharField(max_length=3, choices=LocationType.choices, null=True, blank=True)
     # TODO: add positional_accuray (The uncertainty in meters around the latitude and longitude.)
 
@@ -313,11 +315,31 @@ class Location(LifecycleModel):
     objects = LocationManager()
 
     # Custom Properties
+    @property
+    def latitude(self):
+        return self.point.y
+
+    @property
+    def longitude(self):
+        return self.point.x
+
     # Methods
     @hook(AFTER_CREATE)
     @hook(AFTER_UPDATE, when="point", has_changed=True)
     def update_linked_boundaries(self):
         self.boundaries.set(Boundary.objects.reverse_geocoding(point=self.point).all())
+
+    @hook(BEFORE_CREATE)
+    @hook(BEFORE_UPDATE, when="point", has_changed=True)
+    def _update_timezone(self):
+        # Access the TimezoneFinder object from the AppConfig
+        timezone_finder = self._meta.app_config.timezone_finder
+
+        # Set the timezone using latitude and longitude
+        try:
+            self.timezone = timezone_finder.timezone_at(lat=self.latitude, lng=self.longitude)
+        except Exception:
+            pass
 
     # Meta and String
     class Meta:
