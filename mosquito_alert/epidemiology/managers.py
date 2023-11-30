@@ -1,7 +1,7 @@
-from django.db.models import Manager
+from mosquito_alert.taxa.managers import SpecieDistributionManager
 
 
-class DiseaseVectorDistributionManager(Manager):
+class DiseaseVectorDistributionManager(SpecieDistributionManager):
     def get_queryset(self):
         """Sets the custom queryset as the default."""
         return (

@@ -97,6 +97,7 @@ THIRD_PARTY_APPS = [
     "nested_admin",
     "notifications",
     "simple_history",
+    "django_jsonform",
 ]
 
 LOCAL_APPS = [
@@ -170,6 +171,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 # STATIC

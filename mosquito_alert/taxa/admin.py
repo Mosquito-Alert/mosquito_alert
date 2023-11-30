@@ -1,4 +1,7 @@
+from typing import Any
+
 from django.contrib import admin
+from django.http.request import HttpRequest
 from django.utils.translation import gettext_lazy as _
 from modeltranslation.admin import TranslationAdmin
 from simple_history.admin import SimpleHistoryAdmin
@@ -27,36 +30,32 @@ class TaxonAdmin(TreeAdmin, TranslationAdmin):
 @admin.register(SpecieDistribution)
 class SpecieDistributionAdmin(SimpleHistoryAdmin):
     list_display = ("boundary", "taxon", "source", "status")
-    history_list_display = ["status"]
     list_filter = (
-        ("boundary", admin.RelatedOnlyFieldListFilter),
         ("taxon", admin.RelatedOnlyFieldListFilter),
         "source",
         "status",
     )
+    search_fields = ("boundary__name",)
+    ordering = ["taxon", "boundary", "status"]
+
+    history_list_display = ["status", "stats_summary"]
+
+    fields = ("boundary", "taxon", "source", ("status", "status_since"), "pretty_stats_summary")
+
+    autocomplete_fields = ("boundary", "taxon")
 
     def status(self, obj):
-        # Needed to show the displayable value.
+        # Needed to show the displayable value in history view.
         # Not working otherwise...
         return obj.get_status_display()
 
+    def get_readonly_fields(self, request: HttpRequest, obj: Any | None = ...) -> list[str] | tuple[Any, ...]:
+        readonly_fields = ["pretty_stats_summary", "status_since"]
 
-class SpecieDistributionHistoryAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "history_date",
-        "history_type",
-        "status",
-    )
-    search_fields = ("id",)
-    list_filter = (
-        "history_date",
-        "history_type",
-        "status",
-    )
+        if obj:
+            readonly_fields += ["boundary", "taxon", "source"]
+            if obj.source == SpecieDistribution.DataSource.SELF:
+                # Not allowing editing status since it is auto computed.
+                readonly_fields += ["status"]
 
-    def has_add_permission(self, request) -> bool:
-        return False
-
-
-admin.site.register(SpecieDistribution.history.model, SpecieDistributionHistoryAdmin)
+        return tuple(readonly_fields)

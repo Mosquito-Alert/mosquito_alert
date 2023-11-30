@@ -16,6 +16,7 @@ pytest-freezegun==0.4.2  # https://github.com/ktosiek/pytest-freezegun
 requests-mock==1.11.0  # https://github.com/jamielennox/requests-mock
 djangorestframework-stubs==3.14.2  # https://github.com/typeddjango/djangorestframework-stubs
 faker-biology==0.6.0  # https://github.com/richarda23/faker-biology
+django-mock-queries==2.2.0  # https://github.com/stphivos/django-mock-queries
 
 # Documentation
 # ------------------------------------------------------------------------------
