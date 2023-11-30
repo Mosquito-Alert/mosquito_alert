@@ -67,6 +67,9 @@ class TestIndividual:
 
     # objects
     def test_filter_by_taxon(self, taxon_root, taxon_specie):
+        i_result0 = IndividualIdentificationTaskResultFactory(
+            type=BaseTaskResult.ResultType.ENSEMBLED, label=taxon_root
+        )
         i_result1 = IndividualIdentificationTaskResultFactory(
             type=BaseTaskResult.ResultType.ENSEMBLED, label=taxon_specie
         )
@@ -74,12 +77,14 @@ class TestIndividual:
             type=BaseTaskResult.ResultType.ENSEMBLED, label=taxon_specie
         )
         # Other cases
-        _ = IndividualIdentificationTaskResultFactory(type=BaseTaskResult.ResultType.ENSEMBLED, label=taxon_root)
         _ = IndividualIdentificationTaskResultFactory(type=BaseTaskResult.ResultType.COMMUNITY, label=taxon_specie)
 
-        expected_result = frozenset([i_result1.task.individual, i_result2.task.individual])
-
-        assert frozenset(self.model.objects.filter_by_taxon(taxon=taxon_specie).all()) == expected_result
+        assert frozenset(self.model.objects.filter_by_taxon(taxon=taxon_specie).all()) == frozenset(
+            [i_result1.task.individual, i_result2.task.individual]
+        )
+        assert frozenset(
+            self.model.objects.filter_by_taxon(taxon=taxon_root, include_descendants=True).all()
+        ) == frozenset([i_result0.task.individual, i_result1.task.individual, i_result2.task.individual])
 
     # methods
     def test_get_photos_by_identification_result_type(self):

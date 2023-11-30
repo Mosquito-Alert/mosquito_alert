@@ -306,11 +306,14 @@ class TestIndividualReport(BaseTestReversionedReport, TestReport):
         ind1 = IndividualFactory(taxon=taxon_specie)
         ind2 = IndividualFactory(taxon=taxon_root)
 
-        obj_yes = self.factory_cls(individuals=[ind1])
-        _ = self.factory_cls(individuals=[ind2])
+        obj_specie = self.factory_cls(individuals=[ind1])
+        obj_root = self.factory_cls(individuals=[ind2])
         _ = self.factory_cls()
 
-        assert list(self.model.objects.with_identified_taxon(taxon=taxon_specie).all()) == [obj_yes]
+        assert list(self.model.objects.with_identified_taxon(taxon=taxon_specie).all()) == [obj_specie]
+        assert frozenset(
+            self.model.objects.with_identified_taxon(taxon=taxon_root, include_descendants=True).all()
+        ) == frozenset([obj_root, obj_specie])
 
     def test_objects_with_identified_taxon_when_individuals_return_none(self, taxon_root, taxon_specie):
         ind1 = IndividualFactory(taxon=taxon_specie)

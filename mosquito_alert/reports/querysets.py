@@ -11,6 +11,6 @@ class ReportQueryset(GeoLocatedPolymorphicModelQuerySet, FlagModeratedPolymorphi
 
 
 class IndividualReportQueryset(ReportQueryset):
-    def with_identified_taxon(self, taxon):
-        individuals = Individual.objects.filter_by_taxon(taxon=taxon)
+    def with_identified_taxon(self, taxon, include_descendants=False):
+        individuals = Individual.objects.filter_by_taxon(taxon=taxon, include_descendants=include_descendants)
         return self.filter(individuals__in=Subquery(individuals.values("pk")))
