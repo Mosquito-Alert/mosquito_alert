@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
@@ -6,6 +7,10 @@ from tigacrafting.models import Alert
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
+from django.utils import timezone
+
+from .fields import AutoTimeZoneDatetimeField
+from .mixins import AutoTimeZoneOrInstantUploadSerializerMixin
 
 def score_label(score):
     if score > 66:
@@ -164,15 +169,18 @@ class ReportResponseSerializer(serializers.ModelSerializer):
         fields = ['question', 'answer', 'question_id', 'answer_id', 'answer_value']
 
 
-class ReportSerializer(serializers.ModelSerializer):
+class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer):
+
+    # For AutoTimeZoneOrInstantUploadSerializerMixin
+    CLIENT_CREATION_FIELD = 'version_time'
 
     user = UserListingField
     version_UUID = serializers.CharField()
     version_number = serializers.IntegerField()
     report_id = serializers.CharField()
-    phone_upload_time = serializers.DateTimeField()
-    creation_time = serializers.DateTimeField()
-    version_time = serializers.DateTimeField()
+    phone_upload_time = AutoTimeZoneDatetimeField()
+    creation_time = AutoTimeZoneDatetimeField()
+    version_time = AutoTimeZoneDatetimeField()
     type = serializers.CharField()
     mission = MissionListingField
     location_choice = serializers.CharField()
@@ -191,6 +199,55 @@ class ReportSerializer(serializers.ModelSerializer):
     app_language = serializers.CharField(required=False)
     responses = ReportResponseSerializer(many=True)
     session = SessionListingField
+
+    def _get_dict_applied_tz(self, data: OrderedDict, *args, **kwargs) -> OrderedDict:
+        data_result = super()._get_dict_applied_tz(data=data, *args, **kwargs)
+
+        # If version_time is in data_result, that means that TZ has been applied.
+        if "version_time" in data_result:
+            version_time_field = self.fields['version_time']
+            _original_version_time = version_time_field.run_validation(
+                data=version_time_field.get_value(data)
+            )
+            data_result["datetime_fix_offset"] = (
+                data_result["version_time"] - timezone.make_aware(_original_version_time)
+            ).total_seconds()
+
+        return data_result
+
+    def _get_fields_to_apply_tz_from_instant_upload(self, data) -> list:
+        # This are fields to apply only if using the TZ from instant upload approach.
+        field_names = super()._get_fields_to_apply_tz_from_instant_upload(data=data)
+
+        # If version_number is not 0
+        # and version_time when not aware on the POST request.
+        if data['version_number'] != 0 and not timezone.is_aware(data['version_time']):
+            # Apply version_time after getting tz from the instant upload approach.
+            if "version_time" not in field_names:
+                field_names.append('version_time')
+
+        return field_names
+
+    def _get_fields_to_apply_tz(self, data) -> list:
+        # This are fields to apply only if using the TZ from location.
+        field_names = super()._get_fields_to_apply_tz(data=data)
+
+        if data['version_number'] != 0:
+            # Removing creation_time and phone_upload_time
+            # since they must be the same than the original version
+            field_names = list(set(field_names) - set(['phone_upload_time', 'creation_time']))
+
+            # If it's been more than 1 day between the original
+            # version of the report and this report version, we consider
+            # we can not waranty the user have moved and possibly
+            # changed its timezone. So, remove version_time too
+            # from the candidate list.
+            original_version_upload_time = timezone.make_aware(data['phone_upload_time'], is_dst=False) if not timezone.is_aware(data['phone_upload_time']) else data['phone_upload_time']
+            current_version_upload_time = timezone.make_aware(data['version_time'], is_dst=False) if not timezone.is_aware(data['version_time']) else data['version_time']
+            if abs(original_version_upload_time - current_version_upload_time).total_seconds() > 24 * 3600:
+                field_names = list(set(field_names) - set(['version_time']))
+
+        return field_names
 
     def validate_report_UUID(self, attrs):
         """
@@ -236,7 +293,13 @@ class SessionSerializer(serializers.ModelSerializer):
         model = Session
         fields = ['id', 'session_ID', 'user', 'session_start_time', 'session_end_time']
 
-class FixSerializer(serializers.ModelSerializer):
+class FixSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer):
+
+    # For AutoTimeZoneOrInstantUploadSerializerMixin
+    CLIENT_CREATION_FIELD = 'phone_upload_time'
+
+    fix_time = AutoTimeZoneDatetimeField()
+    phone_upload_time = AutoTimeZoneDatetimeField()
 
     class Meta:
         model = Fix
@@ -572,3 +635,4 @@ class OrganizationPinsSerializer(serializers.ModelSerializer):
             return { "lat": obj.point.y, "long": obj.point.x}
         else:
             return None
+
