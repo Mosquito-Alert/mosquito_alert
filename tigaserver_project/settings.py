@@ -272,6 +272,8 @@ DISABLE_PUSH_IOS = False
 DISABLE_PUSH_ANDROID = False
 #Completely disables notifications for achievements/rewards
 DISABLE_ACHIEVEMENT_NOTIFICATIONS = False
+#Disables automatic award granting when creating reports
+DISABLE_MAYBE_GIVE_AWARDS = False
 #Minimum package version for scoring notifications
 MINIMUM_PACKAGE_VERSION_SCORING_NOTIFICATIONS = 32
 

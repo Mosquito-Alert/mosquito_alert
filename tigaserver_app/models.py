@@ -2456,7 +2456,7 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
-    if created:
+    if created and not settings.DISABLE_MAYBE_GIVE_AWARDS:
         try:
             profile_uuids = None
             if instance.user.profile is not None:
