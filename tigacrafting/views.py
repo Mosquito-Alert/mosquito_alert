@@ -1691,6 +1691,43 @@ def auto_annotate_notsure(report, request):
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
+def auto_annotate_probably_albopictus(report, request):
+    users = []
+    users.append(User.objects.get(username="innie"))
+    users.append(User.objects.get(username="minnie"))
+    users.append(User.objects.get(username="manny"))
+    super_reritja = User.objects.get(username="super_reritja")
+    photo = report.photos.first()
+    report_locale = report.app_language
+    user_notes = albopictus.get(report_locale, albopictus['en'])
+    for u in users:
+        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+            new_annotation = ExpertReportAnnotation(report=report, user=u)
+            if u.username == 'innie':
+                new_annotation.edited_user_notes = user_notes
+                new_annotation.best_photo_id = photo.id
+                new_annotation.simplified_annotation = False
+            else:
+                new_annotation.simplified_annotation = True
+            new_annotation.tiger_certainty_notes = 'auto'
+            new_annotation.tiger_certainty_category = 2
+            new_annotation.aegypti_certainty_category = -2
+            new_annotation.status = 1
+            new_annotation.category = Categories.objects.get(pk=4)
+            new_annotation.validation_complete = True
+            # probably albopictus
+            new_annotation.validation_value = 1
+            new_annotation.save()
+    try:
+        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    except ExpertReportAnnotation.DoesNotExist:
+        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+
+    roger_annotation.validation_complete = True
+    roger_annotation.save()
+    current_domain = get_current_domain(request)
+    issue_notification(roger_annotation, current_domain)
+
 def auto_annotate_albopictus(report, request):
     users = []
     users.append(User.objects.get(username="innie"))
@@ -1843,6 +1880,8 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
                                 auto_annotate_other_species(report, request)
                             if f.cleaned_data['probably_culex']:
                                 auto_annotate_culex(report, request)
+                            if f.cleaned_data['probably_albopictus']:
+                                auto_annotate_probably_albopictus(report, request)
                             if f.cleaned_data['sure_albopictus']:
                                 auto_annotate_albopictus(report, request)
                             if f.cleaned_data['not_sure']:
