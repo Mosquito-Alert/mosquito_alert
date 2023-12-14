@@ -106,6 +106,7 @@ sklearn==0.0
 sqlparse==0.2.2
 tablib==0.14.0
 text-unidecode==1.3
+tqdm==4.66.1
 traitlets==4.3.2
 tzlocal==1.1.1
 uritemplate==3.0.1

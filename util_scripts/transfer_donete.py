@@ -1,8 +1,7 @@
+from datetime import datetime
 import os, sys
 import time
-import csv
-
-import django.db.utils
+from tqdm import tqdm
 
 # **** Before running this, make sure the parameter DISABLE_MAYBE_GIVE_AWARDS = True in the settings ****
 # this avoids creating awards automatically when saving a report
@@ -15,226 +14,151 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from tigaserver_app.models import (TigaUser, Report, ReportResponse, Photo, Award, UserSubscription, SentNotification,
-                                   Notification, NotificationContent, AcknowledgedNotification)
 from django.db import transaction
+from django.db.models import ForeignKey
+from django.utils import timezone
 
+from tigaserver_app.models import TigaUser, Report, Fix, AcknowledgedNotification
+
+# NOTE: it is recommended to set DISABLE_PUSH_ANDROID and DISABLE_PUSH_IOS to True in settings
+
+# Define constants
+FROM_DATETIME_UTC = datetime(year=2022, month=7, day=5, tzinfo=timezone.utc)
+FROM_DATABASE = "donete"
+TO_DATABASE = "default"
+
+
+def get_diff_objects_between_databases(model, filters=None, from_db=FROM_DATABASE):
+    from_qs = model.objects.using(from_db)
+    if filters:
+        from_qs = from_qs.filter(**filters)
+    ids_not_found = set(from_qs.values_list("pk", flat=True)) - set(
+        model.objects.values_list("pk", flat=True)
+    )
+    return model.objects.using(from_db).filter(pk__in=ids_not_found)
+
+
+def create_replica(obj, skip_fields=[], using=TO_DATABASE):
+    replica_data = {}
+    for field in obj._meta.fields:
+        if field.name in skip_fields:
+            continue
+
+        field_value = getattr(obj, field.name)
+        replica_data[field.name] = field_value
+        # Check if the field is a ForeignKey and not from current database alias
+        if (
+            field_value is not None
+            and isinstance(field, ForeignKey)
+            and field_value._state.db != using
+        ):
+            # Refresh from the database
+            refreshed_value = field.related_model.objects.using(using).get(
+                pk=field_value.pk
+            )
+            replica_data[field.name] = refreshed_value
+
+    # Create a new instance of the model with the replica data
+    return obj._meta.model(**replica_data)
+
+
+@transaction.atomic(using=TO_DATABASE)
 def main():
+    # Moving users
+    users_not_in_prod = get_diff_objects_between_databases(
+        model=TigaUser, filters=dict(registration_time__gte=FROM_DATETIME_UTC)
+    )
+
+    for user in tqdm(
+        users_not_in_prod.prefetch_related("user_subscriptions")
+        .order_by("registration_time")
+        .iterator(),
+        desc="Moving users",
+        unit="user",
+        total=users_not_in_prod.count(),
+    ):
+        new_user = create_replica(obj=user, using=TO_DATABASE)
+        new_user.save(using=TO_DATABASE)
+
+        for user_subscription in user.user_subscriptions.all():
+            _new_user_subscription = create_replica(
+                obj=user_subscription, skip_fields=["id", "user"], using=TO_DATABASE
+            )
+            _new_user_subscription.pk = None
+            # Setting user here to avoid extra queries on create_replica
+            _new_user_subscription.user = new_user
+            _new_user_subscription.save(using=TO_DATABASE)
+
+    # Create reports
+    reports_not_in_prod = get_diff_objects_between_databases(
+        model=Report, filters=dict(server_upload_time__gte=FROM_DATETIME_UTC)
+    )
+
+    for report in tqdm(
+        reports_not_in_prod.prefetch_related("photos", "responses")
+        .order_by("server_upload_time")
+        .iterator(),
+        desc="Moving reports",
+        unit="report",
+        total=reports_not_in_prod.count(),
+    ):
+        new_report = create_replica(
+            obj=report,
+            skip_fields=[
+                "country",
+                "nuts_3",
+                "nuts_2",
+            ],  # See Report.save(), these fields are auto generated
+            using=TO_DATABASE,
+        )
+        new_report.save(using=TO_DATABASE)
+
+        # ACK all notifications
+        for notification in new_report.report_notifications.all():
+            _ = AcknowledgedNotification.objects.using(TO_DATABASE).create(
+                user=new_report.user,
+                notification=notification,
+            )
+
+        for photo in report.photos.all():
+            _new_photo = create_replica(
+                obj=photo, skip_fields=["id", "report"], using=TO_DATABASE
+            )
+            _new_photo.pk = None
+            # Setting report here to avoid extra queries on create_replica
+            _new_photo.report = new_report
+            _new_photo.save(using=TO_DATABASE)
+
+        for response in report.responses.all():
+            _new_response = create_replica(
+                obj=response, skip_fields=["id", "report"], using=TO_DATABASE
+            )
+            _new_response.pk = None
+            # Setting report here to avoid extra queries on create_replica
+            _new_response.report = new_report
+            _new_response.save(using=TO_DATABASE)
+
+    # Create user fixes
+    fixes_not_in_prod = Fix.objects.using(FROM_DATABASE).filter(
+        server_upload_time__gte=FROM_DATETIME_UTC
+    )
+
+    for fix in tqdm(
+        fixes_not_in_prod.order_by("server_upload_time").iterator(),
+        desc="Moving fixes",
+        unit="fix",
+        total=fixes_not_in_prod.count(),
+    ):
+        _new_fix = create_replica(obj=fix, using=TO_DATABASE)
+        _new_fix.pk = None
+        _new_fix.save(using=TO_DATABASE)
+
+
+if __name__ == "__main__":
     start = time.time()
 
-    production_user_ids = TigaUser.objects.values_list('pk', flat=True)
-    donete_user_ids = TigaUser.objects.using("donete").values_list('pk', flat=True)
-    #temp_notification = Notification.objects.using("donete").get(pk=1)
-
-    production_user_ids_set = set(production_user_ids)
-    donete_user_ids_set = set(donete_user_ids)
-
-    users_not_in_production = donete_user_ids_set - production_user_ids_set
-
-    n_users = len(users_not_in_production)
-    print("Processing {0} users".format( n_users ))
-    user_n = 1
-
-    with transaction.atomic():
-        # #
-        # # Notification content for topic notifications
-        # #
-        # topics_donete = UserSubscription.objects.using("donete").filter(user_id__in=users_not_in_production).values('topic_id').distinct()
-        # notification_id_topics_donete = SentNotification.objects.using("donete").filter(sent_to_topic_id__in=topics_donete).values('notification_id').distinct()
-        # notification_topics_donete = Notification.objects.using("donete").filter(id__in=notification_id_topics_donete).values('notification_content_id').distinct()
-        # notificationcontent_topics_donete = NotificationContent.objects.using("donete").filter(id__in=notification_topics_donete)
-        # notificationcontent_topic_table = {}
-        # for notification_content_topic_donete in notificationcontent_topics_donete:
-        #     notification_content_topic_donete_id = notification_content_topic_donete.id
-        #     notification_content_topic_donete.id = None
-        #     notification_content_topic_donete.save(using="default")
-        #     notificationcontent_topic_table[notification_content_topic_donete_id] = notification_content_topic_donete.id
-        #     print("\t\t\tSaved topic notification content with new id {0} to production, old id {1}".format(notification_content_topic_donete.id, notification_content_topic_donete_id))
-        #
-        # #
-        # # Notifications for topics
-        # #
-        # notifcation_topics_donete_notif = Notification.objects.using("donete").filter(id__in=notification_id_topics_donete)
-        # notification_topic_table = {}
-        # for notification_topic_donete in notifcation_topics_donete_notif:
-        #     notification_topic_donete_id = notification_topic_donete.id
-        #     notification_content_topic_donete_id = notification_topic_donete.notification_content.id
-        #     notification_topic_donete.id = None
-        #     notification_topic_donete.notification_content = None
-        #     notification_topic_donete.save(using="default")
-        #     notification_topic_donete.notification_content = NotificationContent.objects.get(pk=notificationcontent_topic_table[notification_content_topic_donete_id])
-        #     notification_topic_donete.save(update_fields=['notification_content'])
-        #     notification_topic_table[notification_topic_donete_id] = notification_topic_donete.id
-        #     print("\t\t\tSaved topic notification with new id {0} to production, old id {1}".format(notification_topic_donete.id, notification_topic_donete_id))
-        #
-        # #
-        # # sent notification to topics
-        # #
-        # sent_notifications_topics_donete = SentNotification.objects.using("donete").filter(sent_to_topic_id__in=topics_donete)
-        # for sent_notification_topic_donete in sent_notifications_topics_donete:
-        #     sent_notification_topic_donete_id = sent_notification_topic_donete.notification.id
-        #     sent_notification_topic_donete.id = None
-        #     sent_notification_topic_donete.save(using="default")
-        #     sent_notification_topic_donete.notification = Notification.objects.get(pk=notification_topic_table[sent_notification_topic_donete_id])
-        #     sent_notification_topic_donete.save(update_fields=['notification'])
-        #     print("\t\t\tSaved sent topic notification with new id {0} to production".format(sent_notification_topic_donete.id))
-        #
-        #
-        # #
-        # # acknowledged notifications
-        # #
-        # acknowledged_notifications_topics_donete = AcknowledgedNotification.objects.using("donete").filter(notification_id__in=notification_id_topics_donete)
-        # for acknowledged_notification_topic_donete in acknowledged_notifications_topics_donete:
-        #     acknowledged_notification_topic_donete.id = None
-        #     acknowledged_notification_topic_donete_notification_id = acknowledged_notification_topic_donete.notification.id
-        #     if not AcknowledgedNotification.objects.filter(user__user_UUID=acknowledged_notification_topic_donete.user.user_UUID).filter(notification__id=acknowledged_notification_topic_donete.notification.id).exists():
-        #         acknowledged_notification_topic_donete.save(using="default")
-        #         acknowledged_notification_topic_donete.notification = Notification.objects.get(pk=notification_topic_table[acknowledged_notification_topic_donete_notification_id])
-        #         acknowledged_notification_topic_donete.save(update_fields=['notification'])
-        #         print("\t\t\tSaved acknowledged topic notification with new id {0} to production".format(acknowledged_notification_topic_donete.id))
-        #     else:
-        #         print("\t\t\tAcknowledged record already exists in production for user {0}, notification {1}".format(acknowledged_notification_topic_donete.user.user_UUID,acknowledged_notification_topic_donete.notification.id))
-
-
-
-        # this is for testing, good user some reports with photos, etc
-
-        # users_not_in_production = ['5dac0358-3a5d-485c-80e9-bc3c8264c506']
-        for donete_user_uuid in users_not_in_production:
-            #
-            # #1 Save user
-            #
-            print("\tGetting user {0} from donete".format(donete_user_uuid))
-            donete_user = TigaUser.objects.using("donete").get(pk=donete_user_uuid)
-            original_registration_date_donete = donete_user.registration_time
-            print("\tSaving user {0} to production database".format(donete_user_uuid))
-            donete_user.save(using="default")
-
-            print("\tUser saved to production, adjusting registration time")
-            donete_user.registration_time = original_registration_date_donete
-            donete_user.save(update_fields=['registration_time'])
-
-            #
-            # #2 Save user reports
-            #
-            print("\tGetting reports for user {0} from donete".format(donete_user_uuid))
-            donete_reports = Report.objects.using("donete").filter(user__user_UUID=donete_user_uuid)
-            for donete_report in donete_reports:
-                original_server_upload_time = donete_report.server_upload_time
-                donete_report.save(using="default")
-                print("\t\tSaved report {0} to production, adjusting server_upload_time".format(donete_report.version_UUID))
-                donete_report.server_upload_time = original_server_upload_time
-                donete_report.save(update_fields=['server_upload_time'])
-
-                #
-                # 3 save report responses for report
-                #
-                print("\t\tGetting report responses for user {0} from donete".format(donete_user_uuid))
-                report_responses_donete = ReportResponse.objects.using("donete").filter(report__version_UUID=donete_report.version_UUID)
-                for report_response in report_responses_donete:
-                    report_response.id = None
-                    report_response.save(using="default")
-                    print("\t\t\tSaved report response {0} to production".format(report_response.id))
-
-                #
-                # 4 save photos for report
-                #
-                print("\t\tGetting photos for user {0} from donete".format(donete_user_uuid))
-                photos_donete = Photo.objects.using("donete").filter(report__version_UUID=donete_report.version_UUID)
-                for photo in photos_donete:
-                    photo.id = None
-                    photo.save(using="default")
-                    print("\t\t\tSaved photo {0} to production".format(photo.id))
-
-                #
-                # 5 save awards for report
-                #
-                print("\t\tGetting awards for user {0} from donete".format(donete_user_uuid))
-                awards_donete = Award.objects.using("donete").filter(report__version_UUID=donete_report.version_UUID)
-                for award in awards_donete:
-                    award.id = None
-                    award.save(using="default")
-                    print("\t\t\tSaved award {0} to production".format(award.id))
-
-            #
-            # 6 save user subscriptions for user
-            #
-            print("\t\tGetting user subscriptions for user {0} from donete".format(donete_user_uuid))
-            subscriptions_donete = UserSubscription.objects.using("donete").filter(user__user_UUID=donete_user_uuid)
-            for subscription in subscriptions_donete:
-                subscription.id = None
-                subscription.save(using="default")
-                print("\t\t\tSaved subscription {0} to production".format(subscription.id))
-
-            #
-            # 7 save notification content for user notifications
-            #
-            print("\t\tGetting notification content for user {0} from donete".format(donete_user_uuid))
-            sent_notifications_in_donete = SentNotification.objects.using("donete").filter(sent_to_user__user_UUID=donete_user_uuid)
-            notifications_in_donete = Notification.objects.using("donete").filter(id__in=sent_notifications_in_donete.values('notification').distinct())
-            notification_content_in_donete = NotificationContent.objects.using("donete").filter( id__in=notifications_in_donete.values('notification_content').distinct() )
-            notification_content_table = {}
-            for notification_content_donete in notification_content_in_donete:
-                notification_content_donete_id = notification_content_donete.id
-                notification_content_donete.id = None
-                notification_content_donete.save(using="default")
-                notification_content_table[notification_content_donete_id] = notification_content_donete.id
-                print("\t\t\tSaved notification content with new id {0} to production, old id {1}".format(notification_content_donete.id, notification_content_donete_id))
-
-            #
-            # 8 save notifications
-            #
-            notification_table = {}
-            for notification_donete in notifications_in_donete:
-                notification_donete_id = notification_donete.id
-                notification_original_date_comment = notification_donete.date_comment
-                notification_content_donete_id = notification_donete.notification_content.id
-                notification_donete.id = None
-                notification_donete.notification_content = None
-                notification_donete.save(using="default")
-                notification_donete.notification_content = NotificationContent.objects.get(pk=notification_content_table[notification_content_donete_id])
-                notification_donete.date_comment = notification_original_date_comment
-                notification_donete.save(update_fields=['notification_content','date_comment'])
-                notification_table[notification_donete_id] = notification_donete.id
-                print("\t\t\tSaved notification with new id {0} to production, old id {1}".format(notification_donete.id, notification_donete_id))
-
-            #
-            # 9 save sent notifications
-            #
-            for sent_notification_donete in sent_notifications_in_donete:
-                sent_notification_donete_id = sent_notification_donete.notification.id
-                sent_notification_donete.id = None
-                sent_notification_donete.save(using="default")
-                sent_notification_donete.notification = Notification.objects.get(pk=notification_table[sent_notification_donete_id])
-                sent_notification_donete.save(update_fields=['notification'])
-                print("\t\t\tSaved sent notification with new id {0} to production".format(sent_notification_donete.id))
-
-            #
-            # 10 acknowledged notification
-            #
-            acknowledged_notifications_donete = AcknowledgedNotification.objects.using("donete").filter(user__user_UUID=donete_user_uuid)
-            for acknowledged_notification_donete in acknowledged_notifications_donete:
-                acknowledged_notification_donete_notification_id = acknowledged_notification_donete.notification.id
-                try:
-                    production_notification_id = notification_table[acknowledged_notification_donete_notification_id]
-                    acknowledged_notification_donete.id = None
-                    acknowledged_notification_donete.save(using="default")
-                    acknowledged_notification_donete.notification = Notification.objects.get(pk=production_notification_id)
-                    acknowledged_notification_donete.save(update_fields=['notification'])
-                    print("\t\t\tSaved acknowledged notification with new id {0} to production".format(acknowledged_notification_donete.id))
-                except KeyError:
-                    print("Skip ack notification for notification id {0}, is global notification".format(production_notification_id))
-
-            print("\tDone user {0} of {1}".format( user_n, n_users ))
-            user_n += 1
-
-            print("")
-
-            end = time.time()
-            elapsed = end - start
-            print("Elapsed time {0}".format( str(elapsed) ))
-
-
-
-if __name__ == '__main__':
     main()
+
+    end = time.time()
+    elapsed = end - start
+    print("Elapsed time {0}".format(str(elapsed)))
