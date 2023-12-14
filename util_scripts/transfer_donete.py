@@ -2,6 +2,8 @@ import os, sys
 import time
 import csv
 
+import django.db.utils
+
 # **** Before running this, make sure the parameter DISABLE_MAYBE_GIVE_AWARDS = True in the settings ****
 # this avoids creating awards automatically when saving a report
 
@@ -22,7 +24,7 @@ def main():
 
     production_user_ids = TigaUser.objects.values_list('pk', flat=True)
     donete_user_ids = TigaUser.objects.using("donete").values_list('pk', flat=True)
-    temp_notification = Notification.objects.using("donete").get(pk=1)
+    #temp_notification = Notification.objects.using("donete").get(pk=1)
 
     production_user_ids_set = set(production_user_ids)
     donete_user_ids_set = set(donete_user_ids)
@@ -33,11 +35,72 @@ def main():
     print("Processing {0} users".format( n_users ))
     user_n = 1
 
-    # this is for testing, good user some reports with photos, etc
     with transaction.atomic():
-        users_not_in_production = ['5dac0358-3a5d-485c-80e9-bc3c8264c506']
+        # #
+        # # Notification content for topic notifications
+        # #
+        # topics_donete = UserSubscription.objects.using("donete").filter(user_id__in=users_not_in_production).values('topic_id').distinct()
+        # notification_id_topics_donete = SentNotification.objects.using("donete").filter(sent_to_topic_id__in=topics_donete).values('notification_id').distinct()
+        # notification_topics_donete = Notification.objects.using("donete").filter(id__in=notification_id_topics_donete).values('notification_content_id').distinct()
+        # notificationcontent_topics_donete = NotificationContent.objects.using("donete").filter(id__in=notification_topics_donete)
+        # notificationcontent_topic_table = {}
+        # for notification_content_topic_donete in notificationcontent_topics_donete:
+        #     notification_content_topic_donete_id = notification_content_topic_donete.id
+        #     notification_content_topic_donete.id = None
+        #     notification_content_topic_donete.save(using="default")
+        #     notificationcontent_topic_table[notification_content_topic_donete_id] = notification_content_topic_donete.id
+        #     print("\t\t\tSaved topic notification content with new id {0} to production, old id {1}".format(notification_content_topic_donete.id, notification_content_topic_donete_id))
+        #
+        # #
+        # # Notifications for topics
+        # #
+        # notifcation_topics_donete_notif = Notification.objects.using("donete").filter(id__in=notification_id_topics_donete)
+        # notification_topic_table = {}
+        # for notification_topic_donete in notifcation_topics_donete_notif:
+        #     notification_topic_donete_id = notification_topic_donete.id
+        #     notification_content_topic_donete_id = notification_topic_donete.notification_content.id
+        #     notification_topic_donete.id = None
+        #     notification_topic_donete.notification_content = None
+        #     notification_topic_donete.save(using="default")
+        #     notification_topic_donete.notification_content = NotificationContent.objects.get(pk=notificationcontent_topic_table[notification_content_topic_donete_id])
+        #     notification_topic_donete.save(update_fields=['notification_content'])
+        #     notification_topic_table[notification_topic_donete_id] = notification_topic_donete.id
+        #     print("\t\t\tSaved topic notification with new id {0} to production, old id {1}".format(notification_topic_donete.id, notification_topic_donete_id))
+        #
+        # #
+        # # sent notification to topics
+        # #
+        # sent_notifications_topics_donete = SentNotification.objects.using("donete").filter(sent_to_topic_id__in=topics_donete)
+        # for sent_notification_topic_donete in sent_notifications_topics_donete:
+        #     sent_notification_topic_donete_id = sent_notification_topic_donete.notification.id
+        #     sent_notification_topic_donete.id = None
+        #     sent_notification_topic_donete.save(using="default")
+        #     sent_notification_topic_donete.notification = Notification.objects.get(pk=notification_topic_table[sent_notification_topic_donete_id])
+        #     sent_notification_topic_donete.save(update_fields=['notification'])
+        #     print("\t\t\tSaved sent topic notification with new id {0} to production".format(sent_notification_topic_donete.id))
+        #
+        #
+        # #
+        # # acknowledged notifications
+        # #
+        # acknowledged_notifications_topics_donete = AcknowledgedNotification.objects.using("donete").filter(notification_id__in=notification_id_topics_donete)
+        # for acknowledged_notification_topic_donete in acknowledged_notifications_topics_donete:
+        #     acknowledged_notification_topic_donete.id = None
+        #     acknowledged_notification_topic_donete_notification_id = acknowledged_notification_topic_donete.notification.id
+        #     if not AcknowledgedNotification.objects.filter(user__user_UUID=acknowledged_notification_topic_donete.user.user_UUID).filter(notification__id=acknowledged_notification_topic_donete.notification.id).exists():
+        #         acknowledged_notification_topic_donete.save(using="default")
+        #         acknowledged_notification_topic_donete.notification = Notification.objects.get(pk=notification_topic_table[acknowledged_notification_topic_donete_notification_id])
+        #         acknowledged_notification_topic_donete.save(update_fields=['notification'])
+        #         print("\t\t\tSaved acknowledged topic notification with new id {0} to production".format(acknowledged_notification_topic_donete.id))
+        #     else:
+        #         print("\t\t\tAcknowledged record already exists in production for user {0}, notification {1}".format(acknowledged_notification_topic_donete.user.user_UUID,acknowledged_notification_topic_donete.notification.id))
+
+
+
+        # this is for testing, good user some reports with photos, etc
+
+        # users_not_in_production = ['5dac0358-3a5d-485c-80e9-bc3c8264c506']
         for donete_user_uuid in users_not_in_production:
-        #for donete_user_uuid in [single_user]:
             #
             # #1 Save user
             #
@@ -124,12 +187,14 @@ def main():
             notification_table = {}
             for notification_donete in notifications_in_donete:
                 notification_donete_id = notification_donete.id
+                notification_original_date_comment = notification_donete.date_comment
                 notification_content_donete_id = notification_donete.notification_content.id
                 notification_donete.id = None
                 notification_donete.notification_content = None
                 notification_donete.save(using="default")
                 notification_donete.notification_content = NotificationContent.objects.get(pk=notification_content_table[notification_content_donete_id])
-                notification_donete.save(update_fields=['notification_content'])
+                notification_donete.date_comment = notification_original_date_comment
+                notification_donete.save(update_fields=['notification_content','date_comment'])
                 notification_table[notification_donete_id] = notification_donete.id
                 print("\t\t\tSaved notification with new id {0} to production, old id {1}".format(notification_donete.id, notification_donete_id))
 
@@ -137,12 +202,11 @@ def main():
             # 9 save sent notifications
             #
             for sent_notification_donete in sent_notifications_in_donete:
-                sent_notification_donete_id = sent_notification_donete.id
+                sent_notification_donete_id = sent_notification_donete.notification.id
                 sent_notification_donete.id = None
-                sent_notification_donete.notification = temp_notification
                 sent_notification_donete.save(using="default")
                 sent_notification_donete.notification = Notification.objects.get(pk=notification_table[sent_notification_donete_id])
-                notification_donete.save(update_fields=['notification'])
+                sent_notification_donete.save(update_fields=['notification'])
                 print("\t\t\tSaved sent notification with new id {0} to production".format(sent_notification_donete.id))
 
             #
@@ -150,13 +214,16 @@ def main():
             #
             acknowledged_notifications_donete = AcknowledgedNotification.objects.using("donete").filter(user__user_UUID=donete_user_uuid)
             for acknowledged_notification_donete in acknowledged_notifications_donete:
-                acknowledged_notification_donete.id = None
                 acknowledged_notification_donete_notification_id = acknowledged_notification_donete.notification.id
-                acknowledged_notification_donete.notification = temp_notification
-                acknowledged_notification_donete.save(using="default")
-                acknowledged_notification_donete.notification = Notification.objects.get(pk=notification_table[acknowledged_notification_donete_notification_id])
-                acknowledged_notification_donete.save(update_fields=['notification'])
-                print("\t\t\tSaved acknowledged notification with new id {0} to production".format(acknowledged_notification_donete.id))
+                try:
+                    production_notification_id = notification_table[acknowledged_notification_donete_notification_id]
+                    acknowledged_notification_donete.id = None
+                    acknowledged_notification_donete.save(using="default")
+                    acknowledged_notification_donete.notification = Notification.objects.get(pk=production_notification_id)
+                    acknowledged_notification_donete.save(update_fields=['notification'])
+                    print("\t\t\tSaved acknowledged notification with new id {0} to production".format(acknowledged_notification_donete.id))
+                except KeyError:
+                    print("Skip ack notification for notification id {0}, is global notification".format(production_notification_id))
 
             print("\tDone user {0} of {1}".format( user_n, n_users ))
             user_n += 1
