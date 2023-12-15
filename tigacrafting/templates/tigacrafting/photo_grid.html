@@ -15,6 +15,7 @@
         .other_sp {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .probably_culex {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .sure_albopictus {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
+        .probably_albopictus {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .not_sure {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .ia_val {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
         .ia_graph {background-color: lightgray; margin-bottom: 0px; height: 30px; text-align: right; padding-right: 10px;}
@@ -283,6 +284,10 @@
                 <label>Probably culex</label>
                 {{ form.probably_culex }}
             </div>
+            <div data-id="{{ form.instance.version_UUID }}" class="probably_albopictus {{form.instance.type}}" style="">
+                <label>Probably albopictus</label>
+                {{ form.probably_albopictus }}
+            </div>
             <div data-id="{{ form.instance.version_UUID }}" class="sure_albopictus {{form.instance.type}}" style="">
                 <label>Definitely albopictus</label>
                 {{ form.sure_albopictus }}
@@ -312,7 +317,7 @@
 
 </div>
 
-<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}?v=3"></script>
+<script src="{% static 'tigacrafting/javascript/fastSavingButton.js' %}?v=4"></script>
 <script src="{% static 'tigacrafting/javascript/hover-preview.min.js' %}?v=1"></script>
 </body>
 <script>

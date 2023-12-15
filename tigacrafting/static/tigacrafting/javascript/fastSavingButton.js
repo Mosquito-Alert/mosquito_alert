@@ -35,6 +35,17 @@ $( document ).ready(function() {
             });
         }
     });
+    $('.probablyAlbopictusClass').change(function() {
+        var id = $(this).parent().data('id');
+        if( $(this).prop('checked') ){
+            $('*[data-id="' + id + '"]').each(function (index, element) {
+                if(!$(this).attr("class").startsWith("probably_albopictus")){
+                    var check = $(this).find("input");
+                    check.prop('checked', false);
+                }
+            });
+        }
+    });
     $('.sureAlbopictusClass').change(function() {
         var id = $(this).parent().data('id');
         if( $(this).prop('checked') ){
