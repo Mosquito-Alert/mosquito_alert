@@ -38,25 +38,16 @@ def get_diff_objects_between_databases(model, filters=None, from_db=FROM_DATABAS
     return model.objects.using(from_db).filter(pk__in=ids_not_found)
 
 
-def create_replica(obj, skip_fields=[], using=TO_DATABASE):
+def create_replica(obj, skip_fields=[]):
     replica_data = {}
     for field in obj._meta.fields:
         if field.name in skip_fields:
             continue
 
-        field_value = getattr(obj, field.name)
-        replica_data[field.name] = field_value
-        # Check if the field is a ForeignKey and not from current database alias
-        if (
-            field_value is not None
-            and isinstance(field, ForeignKey)
-            and field_value._state.db != using
-        ):
-            # Refresh from the database
-            refreshed_value = field.related_model.objects.using(using).get(
-                pk=field_value.pk
-            )
-            replica_data[field.name] = refreshed_value
+        if isinstance(field, ForeignKey):
+            replica_data[field.name + "_id"] = getattr(obj, field.name + "_id")
+        else:
+            replica_data[field.name] = getattr(obj, field.name)
 
     # Create a new instance of the model with the replica data
     return obj._meta.model(**replica_data)
