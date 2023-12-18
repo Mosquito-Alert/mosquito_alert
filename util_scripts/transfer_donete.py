@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import islice
 import os, sys
 import time
 from tqdm import tqdm
@@ -18,7 +19,16 @@ from django.db import transaction
 from django.db.models import ForeignKey
 from django.utils import timezone
 
-from tigaserver_app.models import TigaUser, Report, Fix, AcknowledgedNotification
+from tigaserver_app.models import (
+    TigaUser,
+    Report,
+    Fix,
+    AcknowledgedNotification,
+    UserSubscription,
+    Photo,
+    ReportResponse,
+    Notification,
+)
 
 # NOTE: it is recommended to set DISABLE_PUSH_ANDROID and DISABLE_PUSH_IOS to True in settings
 
@@ -53,96 +63,119 @@ def create_replica(obj, skip_fields=[]):
     return obj._meta.model(**replica_data)
 
 
+def create_objects(
+    model, generator, total, bulk=True, batch_size=1000, using=TO_DATABASE
+):
+    with tqdm(
+        total=total,
+        desc=f"Moving {model._meta.verbose_name_plural}",
+        unit=str(model._meta.verbose_name_plural),
+    ) as progress_bar:
+        if bulk:
+            while True:
+                batch = list(islice(generator, batch_size))
+                if not batch:
+                    break
+                model.objects.using(using).bulk_create(
+                    objs=batch, batch_size=batch_size
+                )
+                progress_bar.update(len(batch))
+        else:
+            for obj in generator:
+                obj.save(using=using)
+                progress_bar.update(1)
+
+
+def move_objects(queryset, skip_fields=["id"], *args, **kwargs):
+    generator = (
+        create_replica(obj=x, skip_fields=skip_fields) for x in queryset.iterator()
+    )
+    create_objects(
+        model=queryset.model,
+        generator=generator,
+        total=queryset.count(),
+        *args,
+        **kwargs,
+    )
+
+
 @transaction.atomic(using=TO_DATABASE)
 def main():
+    ##############################
+    # USER
+    ##############################
     # Moving users
     users_not_in_prod = get_diff_objects_between_databases(
         model=TigaUser, filters=dict(registration_time__gte=FROM_DATETIME_UTC)
+    ).order_by("registration_time")
+    move_objects(
+        queryset=users_not_in_prod,
+        # setting skip_field to [] because we want to keep the original pk (UUID)
+        skip_fields=[],
     )
 
-    for user in tqdm(
-        users_not_in_prod.prefetch_related("user_subscriptions")
-        .order_by("registration_time")
-        .iterator(),
-        desc="Moving users",
-        unit="user",
-        total=users_not_in_prod.count(),
-    ):
-        new_user = create_replica(obj=user, using=TO_DATABASE)
-        new_user.save(using=TO_DATABASE)
+    # Moving users subscriptions
+    move_objects(
+        queryset=UserSubscription.objects.using(FROM_DATABASE).filter(
+            user__in=users_not_in_prod
+        )
+    )
 
-        for user_subscription in user.user_subscriptions.all():
-            _new_user_subscription = create_replica(
-                obj=user_subscription, skip_fields=["id", "user"], using=TO_DATABASE
-            )
-            _new_user_subscription.pk = None
-            # Setting user here to avoid extra queries on create_replica
-            _new_user_subscription.user = new_user
-            _new_user_subscription.save(using=TO_DATABASE)
-
-    # Create reports
+    ##############################
+    # REPORT
+    ##############################
+    # Moving reports
     reports_not_in_prod = get_diff_objects_between_databases(
         model=Report, filters=dict(server_upload_time__gte=FROM_DATETIME_UTC)
+    ).order_by("server_upload_time")
+
+    move_objects(
+        queryset=reports_not_in_prod,
+        # Skipping auto generated fields (see Report.save()). Keeping the original pk (UUID)
+        skip_fields=["country", "nuts_3", "nuts_2"],
+        bulk=False,  # Calling without bulk (calling save) -> post_save signal triggers award creation.
     )
 
-    for report in tqdm(
-        reports_not_in_prod.prefetch_related("photos", "responses")
-        .order_by("server_upload_time")
-        .iterator(),
-        desc="Moving reports",
-        unit="report",
-        total=reports_not_in_prod.count(),
-    ):
-        new_report = create_replica(
-            obj=report,
-            skip_fields=[
-                "country",
-                "nuts_3",
-                "nuts_2",
-            ],  # See Report.save(), these fields are auto generated
-            using=TO_DATABASE,
+    # Moving photos
+    photos_not_in_prod = Photo.objects.using(FROM_DATABASE).filter(
+        report__in=reports_not_in_prod
+    )
+    move_objects(queryset=photos_not_in_prod)
+
+    # Moving report responses
+    reponses_not_in_prod = ReportResponse.objects.using(FROM_DATABASE).filter(
+        report__in=reports_not_in_prod
+    )
+    move_objects(queryset=reponses_not_in_prod)
+
+    # Create ACK for all notifications created related to new reports.
+    # Using list and values_list since using two different databases...
+    notifications_to_ack = Notification.objects.using(TO_DATABASE).filter(
+        report__in=list(reports_not_in_prod.values_list("pk", flat=True))
+    )
+    ack_notifications_generator = (
+        AcknowledgedNotification(
+            user=notification.report.user, notification=notification
         )
-        new_report.save(using=TO_DATABASE)
-
-        # ACK all notifications
-        for notification in new_report.report_notifications.all():
-            _ = AcknowledgedNotification.objects.using(TO_DATABASE).create(
-                user=new_report.user,
-                notification=notification,
-            )
-
-        for photo in report.photos.all():
-            _new_photo = create_replica(
-                obj=photo, skip_fields=["id", "report"], using=TO_DATABASE
-            )
-            _new_photo.pk = None
-            # Setting report here to avoid extra queries on create_replica
-            _new_photo.report = new_report
-            _new_photo.save(using=TO_DATABASE)
-
-        for response in report.responses.all():
-            _new_response = create_replica(
-                obj=response, skip_fields=["id", "report"], using=TO_DATABASE
-            )
-            _new_response.pk = None
-            # Setting report here to avoid extra queries on create_replica
-            _new_response.report = new_report
-            _new_response.save(using=TO_DATABASE)
-
-    # Create user fixes
-    fixes_not_in_prod = Fix.objects.using(FROM_DATABASE).filter(
-        server_upload_time__gte=FROM_DATETIME_UTC
+        for notification in notifications_to_ack.select_related(
+            "report__user"
+        ).iterator()
+    )
+    create_objects(
+        model=AcknowledgedNotification,
+        generator=ack_notifications_generator,
+        total=notifications_to_ack.count(),
     )
 
-    for fix in tqdm(
-        fixes_not_in_prod.order_by("server_upload_time").iterator(),
-        desc="Moving fixes",
-        unit="fix",
-        total=fixes_not_in_prod.count(),
-    ):
-        _new_fix = create_replica(obj=fix, using=TO_DATABASE)
-        _new_fix.pk = None
-        _new_fix.save(using=TO_DATABASE)
+    ##############################
+    # USER FIXES
+    ##############################
+    fixes_not_in_prod = (
+        Fix.objects.using(FROM_DATABASE)
+        .filter(server_upload_time__gte=FROM_DATETIME_UTC)
+        .order_by("server_upload_time")
+    )
+    move_objects(queryset=fixes_not_in_prod)
 
 
 if __name__ == "__main__":
