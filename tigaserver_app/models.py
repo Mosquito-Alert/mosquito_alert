@@ -524,7 +524,7 @@ class Report(models.Model):
                                     ORDER BY d limit 1
                                 """, (point.x, point.y,))
                 row = cursor.fetchone()
-                if row[0] < 0.1:
+                if row and row[0] < 0.1:
                     n = NutsEurope.objects.get(pk=row[2])
                     return n.nuts_id
                 cursor.close()
@@ -550,7 +550,7 @@ class Report(models.Model):
                                     ORDER BY d limit 1
                                 """, (point.x, point.y,))
                 row = cursor.fetchone()
-                if row[0] < 0.1:
+                if row and row[0] < 0.1:
                     n = NutsEurope.objects.get(pk=row[2])
                     return n.nuts_id
                 cursor.close()
@@ -584,7 +584,7 @@ class Report(models.Model):
                 """, ( self.point.x, self.point.y, self.point.x, self.point.y, ) )
                 '''
                 row = cursor.fetchone()
-                if row[0] < 0.1:
+                if row and row[0] < 0.1:
                     c = EuropeCountry.objects.get(pk=row[2])
                     logger_report_geolocation.debug('report with id {0} assigned to NEARBY country {1} with code {2}'.format(self.version_UUID,c.name_engl, c.iso3_code, ))
                     return c
