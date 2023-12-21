@@ -388,7 +388,7 @@ class StormDrainUserSetup(StormDrainVersioningMixin, BaseManager):
                 # remove the field
                 if (not self.request.user.is_root() and
                         len(result[iduser][version][fieldname]) == 1 and
-                        result[iduser][version][fieldname][0] is 'null'):
+                        result[iduser][version][fieldname][0] == 'null'):
                     del result[iduser][version][fieldname]
 
         return result

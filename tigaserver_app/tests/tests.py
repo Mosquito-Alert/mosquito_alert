@@ -430,7 +430,6 @@ class NotificationTestCase(APITestCase):
             'title': 'This is the message title'
         }
         response = self.client.post('/api/msg_android/?' + urllib.parse.urlencode(data))
-        print(response)
         self.client.logout()
 
     def test_favorite_endpoint(self):
