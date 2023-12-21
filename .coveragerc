@@ -1,0 +1,7 @@
+[run]
+include = 
+    tiga*/*
+
+omit = 
+    */migrations/*
+    */tests/*

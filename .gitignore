@@ -22,3 +22,14 @@ tigatrapp-server/media
 /media
 tigatrapp-server/media
 /media
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
