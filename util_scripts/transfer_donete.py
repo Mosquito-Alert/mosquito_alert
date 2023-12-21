@@ -4,9 +4,6 @@ import os, sys
 import time
 from tqdm import tqdm
 
-# **** Before running this, make sure the parameter DISABLE_MAYBE_GIVE_AWARDS = True in the settings ****
-# this avoids creating awards automatically when saving a report
-
 proj_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
 sys.path.append(proj_path)
