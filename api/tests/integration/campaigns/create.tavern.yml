@@ -1,0 +1,24 @@
+---
+
+test_name: Create is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Create is disabeld
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "POST"
+    response:
+      status_code: 405

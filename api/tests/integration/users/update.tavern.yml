@@ -1,0 +1,37 @@
+test_name: Make sure users can update device_token field
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Update device_token
+    request:
+      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      json:
+        device_token: "987654321"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "{method}"
+    response:
+      status_code: 200
+  - name: Update device_token is not allowed for unauthorized
+    request:
+      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      json:
+        device_token: "987654321"
+      method: "{method}"
+    response:
+      status_code: 403
