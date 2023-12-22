@@ -28,10 +28,11 @@ admin.autodiscover()
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/', include('tigaserver_app.urls')),
+    #path('api/', include('tigaserver_app.urls')), # TODO: uncomment
+    path('api/v1/', include('tigaserver_app.api.urls')),
     #This is used for dynamic schema generation
     #path('openapi/',get_schema_view(title="Mosquito Alert API",description="Dynamic API schema generator"), name='openapi-schema'),
-    path('api-docs/', TemplateView.as_view(template_name='swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
+    #path('api-docs/', TemplateView.as_view(template_name='swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
     path('help/<platform>/<language>/', show_help),
     path('about/<platform>/<language>/', show_about),
     path('credits/', show_credit_image, name='show_credit_image'),

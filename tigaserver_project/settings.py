@@ -63,7 +63,7 @@ INSTALLED_APPS = (
     'django_messages',
     'tigaserver_messages',
     'tigascoring',
-    'rest_framework_swagger',
+    'drf_yasg',
     'django.contrib.sites',
     'django_filters',
     'corsheaders',
@@ -192,6 +192,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = ''
 
 REST_FRAMEWORK = {
+    # Needed for drf_yasg
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    # Enable pagination
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.CursorPagination",
+    "PAGE_SIZE": 100,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',

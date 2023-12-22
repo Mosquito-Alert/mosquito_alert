@@ -197,7 +197,7 @@ class RankingData(models.Model):
 
 
 class TigaUser(models.Model):
-    user_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
+    user_UUID = models.CharField(max_length=36, primary_key=True, editable=False, help_text='UUID randomly generated on '
                                                                             'phone to identify each unique user. Must be exactly 36 '
                                                                             'characters (32 hex digits plus 4 hyphens).')
     registration_time = models.DateTimeField(auto_now_add=True, help_text='The date and time when user '
@@ -3013,6 +3013,11 @@ class SentNotification(models.Model):
     #both sent_to_user and sent_to_topic can be null, but they can't be null at the same time. In other words, a sending
     #you either send a notification to a user, or to a group of users via topics
     notification = models.ForeignKey(Notification, related_name="notification_sendings", help_text='The notification which has been sent', on_delete=models.CASCADE, )
+    
+    def send_push_notification(self):
+        # TODO: finish, see views.send_notifications
+        pass
+    
 
 
 class AwardCategory(models.Model):
