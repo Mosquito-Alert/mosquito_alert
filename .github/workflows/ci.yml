@@ -6,6 +6,8 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 on:
+  # See: https://docs.github.com/en/actions/using-workflows/reusing-workflows
+  workflow_call:
   pull_request:
     branches: ["master"]
 
@@ -17,48 +19,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tests:
-    runs-on: ubuntu-20.04
-    services:
-      postgres:
-        image: postgis/postgis:12-3.2
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
         with:
-          python-version: "3.8.10"
-          cache: pip
-          cache-dependency-path: |
-            requirements/prod_20_04.pip
-            requirements/dev.pip
+          context: .
+          # Same as Dockerfile service image name.
+          tags: mosquito_alert_v1_local
+          push: false
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Apt Update
-        run: |
-          sudo apt-get update
+      - name: Run DB Migrations
+        run: docker compose -f docker-compose-local.yml run --rm django python3 manage.py migrate
 
-      - name: Install packages
-        run: |
-          # https://stackoverflow.com/questions/7496547/does-python-scipy-need-blas
-          sudo apt-get -y install gfortran libopenblas-dev liblapack-dev
-          # GIS dependencies. See: https://docs.djangoproject.com/en/dev/ref/contrib/gis/install/geolibs/
-          sudo apt-get -y install binutils libproj-dev gdal-bin
+      - name: Run Django Tests
+        # Need to run as root because we are writing the results into the shared volume.
+        run: docker compose -f docker-compose-local.yml run -u root --rm django coverage run manage.py test --noinput
 
-      - name: Install Dependencies
-        run: |
-          # Some considerations here:
-          #     setuptools<58.0.0 required for anyjson
-          #     cython<3.0.0 required for the pyyaml version we are using (https://stackoverflow.com/questions/7496547/does-python-scipy-need-blas)
-          pip install --upgrade pip "setuptools<58.0.0" "wheel==0.40.0" "cython<3.0.0"
-          pip install numpy==1.23.1  # Solved bug when install scikit. Use same version as dev.pip
-          pip install -r requirements/dev.pip
+      - name: Create coverage XML report
+        # Need to run as root because we are writing the results into the shared volume.
+        run: docker compose -f docker-compose-local.yml run -u root --rm django coverage xml
 
-      - name: Run tests
-        run: python manage.py test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Tear down the Stack
+        run: docker-compose -f docker-compose-local.yml down
