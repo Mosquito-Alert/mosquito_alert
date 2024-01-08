@@ -1,0 +1,21 @@
+version: '3.9'
+
+volumes:
+  mosquito_alert_v1_local_postgres_donete_data: {}
+
+services:
+  django:
+    depends_on:
+      - postgres
+      - postgres_donete
+    environment:
+      - DJANGO_SETTINGS_MODULE=tigaserver_project.settings_donete
+
+  postgres_donete:
+    image: postgis/postgis:12-3.2
+    container_name: mosquito_alert_v1_local_postgres_donete
+    volumes:
+      - mosquito_alert_v1_local_postgres_donete_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    command: "-c log_statement=all"
