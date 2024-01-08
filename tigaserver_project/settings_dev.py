@@ -21,7 +21,7 @@ CACHES["default"] = {
 DISABLE_PUSH_IOS = True
 DISABLE_PUSH_ANDROID = True
 DRY_RUN_PUSH = False
-DISABLE_ACHIEVEMENT_NOTIFICATIONS = True
+DISABLE_ACHIEVEMENT_NOTIFICATIONS = False
 
 HOST_NAME = "localhost"
 SITE_URL = "http://localhost:8000/static/tigapublic/"
