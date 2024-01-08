@@ -5,7 +5,7 @@ import time
 from tqdm import tqdm
 
 proj_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings_donete")
 sys.path.append(proj_path)
 
 from django.core.wsgi import get_wsgi_application
