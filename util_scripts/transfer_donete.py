@@ -13,7 +13,7 @@ import django
 django.setup()
 
 from django.db import transaction
-from django.db.models import ForeignKey
+from django.db.models import ForeignKey, Count
 from django.utils import timezone
 
 from tigaserver_app.models import (
@@ -125,6 +125,15 @@ def main():
     reports_not_in_prod = get_diff_objects_between_databases(
         model=Report, filters=dict(server_upload_time__gte=FROM_DATETIME_UTC)
     ).order_by("server_upload_time")
+
+    print("Report count by type:")
+    # Display count by report typ
+    for entry in (
+        reports_not_in_prod.values("type")
+        .annotate(type_count=Count("type"))
+        .order_by("-type_count")
+    ):
+        print(f"\tType: {entry['type']}, Count: {entry['type_count']}")
 
     move_objects(
         queryset=reports_not_in_prod,
