@@ -5,6 +5,7 @@ from django.db.models.expressions import RawSQL
 from django.contrib.auth.models import User
 from django.db.models import Count
 from django.db.models import Q
+from django.utils import timezone
 from datetime import date, datetime, timedelta
 import logging
 import operator
@@ -93,7 +94,7 @@ def assign_reports_to_national_supervisor(this_user):
         reports_supervised_country = get_base_adults_qs().filter(country__gid=supervised_country.gid).annotate(n_annotations=Count('expert_report_annotations'))
 
         # These are unassigned reports from supervised country, should be prioritized
-        reports_supervised_country = reports_supervised_country.filter(n_annotations=0).exclude( Q(country=supervised_country) & ~Q(server_upload_time__gte=datetime.now() - timedelta(days=supervised_country.national_supervisor_report_expires_in)) )
+        reports_supervised_country = reports_supervised_country.filter(n_annotations=0).exclude( Q(country=supervised_country) & ~Q(server_upload_time__gte=timezone.now() - timedelta(days=supervised_country.national_supervisor_report_expires_in)) )
 
         # list of countries with supervisor (excluding present)
         country_with_supervisor_other_than_this = EuropeCountry.objects.filter(gid__in=country_with_supervisor).exclude(gid=supervised_country.gid)
@@ -103,7 +104,7 @@ def assign_reports_to_national_supervisor(this_user):
                 expiration_period = country.national_supervisor_report_expires_in
             else:
                 expiration_period = 14
-            reserved_for_supervised_countries_operator_list.append(Q(country=country) & Q(server_upload_time__gte=datetime.now() - timedelta(days=country.national_supervisor_report_expires_in)))
+            reserved_for_supervised_countries_operator_list.append(Q(country=country) & Q(server_upload_time__gte=timezone.now() - timedelta(days=country.national_supervisor_report_expires_in)))
         new_reports_unfiltered = get_base_adults_qs().exclude(country__in=bounding_boxes).exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
         #reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(functools.reduce(operator.or_, reserved_for_supervised_countries_operator_list))
         for condition in reserved_for_supervised_countries_operator_list:
@@ -215,11 +216,11 @@ def get_progress_available_reports(country):
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:
             expiration_period_days = country.national_supervisor_report_expires_in
-        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days))
+        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=timezone.now() - timedelta(days=expiration_period_days))
     # exclude reports assigned to supervisor but not yet validated
     reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(
         user__userstat__national_supervisor_of=country).filter(report__type='adult').filter(validation_complete=False)
-    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=expiration_period_days)))
+    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=timezone.now() - timedelta(days=expiration_period_days)))
     reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
     blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
     reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(version_UUID__in=blocked_by_experts)
@@ -233,10 +234,10 @@ def get_unassigned_available_reports(country):
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:
             expiration_period_days = country.national_supervisor_report_expires_in
-        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days))
+        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=timezon.now() - timedelta(days=expiration_period_days))
     # exclude reports assigned to supervisor but not yet validated
     reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of=country).filter(report__type='adult').filter(validation_complete=False)
-    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=expiration_period_days)))
+    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=timezone.now() - timedelta(days=expiration_period_days)))
     reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
     blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
     reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(version_UUID__in=blocked_by_experts)
@@ -249,10 +250,10 @@ def get_crisis_report_available_reports(country):
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:
             expiration_period_days = country.national_supervisor_report_expires_in
-        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days))
+        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=timezone.now() - timedelta(days=expiration_period_days))
     # exclude reports assigned to supervisor but not yet validated
     reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of=country).filter(report__type='adult').filter(validation_complete=False)
-    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=expiration_period_days)))
+    reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=timezone.now() - timedelta(days=expiration_period_days)))
     reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
     blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
     reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(version_UUID__in=blocked_by_experts)
@@ -274,10 +275,10 @@ def assign_crisis_report(this_user, country):
         if UserStat.objects.filter(national_supervisor_of=country).exists():
             if country.national_supervisor_report_expires_in is not None:
                 expiration_period_days = country.national_supervisor_report_expires_in
-            new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period_days))
+            new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=timezone.now() - timedelta(days=expiration_period_days))
         #exclude reports assigned to supervisor but not yet validated
         reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of=country).filter(report__type='adult').filter(validation_complete=False)
-        reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=expiration_period_days)) )
+        reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=timezone.now() - timedelta(days=expiration_period_days)) )
         reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.values('report').distinct()
         blocked_by_experts = get_base_adults_qs().filter(version_UUID__in=reports_assigned_to_supervisor_not_yet_validated)
         reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude(version_UUID__in=blocked_by_experts)
@@ -354,7 +355,7 @@ def assign_reports_to_regular_user(this_user):
                 expiration_period = country.national_supervisor_report_expires_in
             else:
                 expiration_period = 14
-            reserved_for_supervised_countries_operator_list.append( Q(country=country) & Q(server_upload_time__gte=datetime.now() - timedelta(days=expiration_period)) )
+            reserved_for_supervised_countries_operator_list.append( Q(country=country) & Q(server_upload_time__gte=timezone.now() - timedelta(days=expiration_period)) )
         new_reports_unfiltered = get_base_adults_qs().exclude(country__in=bounding_boxes).exclude(version_UUID__in=my_reports).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
         #reports_unfiltered_excluding_reserved_ns = new_reports_unfiltered.exclude( functools.reduce(operator.or_, reserved_for_supervised_countries_operator_list) )
         for condition in reserved_for_supervised_countries_operator_list:
@@ -372,7 +373,7 @@ def assign_reports_to_regular_user(this_user):
         reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of__in=country_with_supervisor).filter(report__type='adult').filter(validation_complete=False)
         for country in supervised_countries:
             country_supervisor = User.objects.get( userstat__national_supervisor_of=country )
-            reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=datetime.now() - timedelta(days=country.national_supervisor_report_expires_in)) )
+            reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude( Q(report__country=country) & Q(report__server_upload_time__lt=timezone.now() - timedelta(days=country.national_supervisor_report_expires_in)) )
             # this weird second filter is to ensure that reports assigned to a national supervisor but not from their own country are blocked
             # if this wasn't here, a French report assigned to the NS of Austria could be considered blocked
             reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.filter( Q(user=country_supervisor) & Q(report__country=country) )
