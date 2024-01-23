@@ -67,6 +67,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django_filters',
     'corsheaders',
+    'simple_history',
 )
 
 '''
@@ -324,6 +325,9 @@ try:
     from tigaserver_project.settings_local import *
 except ModuleNotFoundError:
     pass
+
+# Disable history reverting
+SIMPLE_HISTORY_REVERT_DISABLED=True
 
 # Disable notifications for messaging system. It falls back to email if pinax not present
 DJANGO_MESSAGES_NOTIFY = False

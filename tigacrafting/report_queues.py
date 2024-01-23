@@ -1,7 +1,6 @@
 from tigaserver_app.models import Report, ExpertReportAnnotation, EuropeCountry
 from django.core.exceptions import ObjectDoesNotExist
 from tigacrafting.models import UserStat
-from django.db.models.expressions import RawSQL
 from django.contrib.auth.models import User
 from django.db.models import Count
 from django.db.models import Q
@@ -56,28 +55,28 @@ def filter_reports_for_superexpert(reports):
     # not deleted, last version, completely validated by at least three experts
     #deleted_adult_reports = get_deleted_adult_reports(reports)
     # not deleted
-    undeleted = reports.exclude(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
-    # last version
-    latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
-    #latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number",()))
+    reports_qs = reports.non_deleted()
     # fully validated
     experts = User.objects.filter(groups__name='expert')
-    fully_validated = ExpertReportAnnotation.objects.filter(report__in=latest_versions).filter(user__in=experts).filter(validation_complete=True).values('report').annotate(n_validations=Count('report')).filter(n_validations__gte=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
+    fully_validated = ExpertReportAnnotation.objects.filter(
+        report__in=reports_qs,
+        user__in=experts,
+        validation_complete=True
+    ).values('report').annotate(
+        n_validations=Count('report')
+    ).filter(
+        n_validations__gte=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT
+    )
+
     report_ids = set(fully_validated.values_list('report', flat=True))
-    filtered_reports = latest_versions.filter(version_UUID__in=report_ids)
+    filtered_reports = reports_qs.filter(version_UUID__in=report_ids)
     #filtered_reports = filter(lambda x: len(list(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))) >= 3, latest_versions)
     return filtered_reports
 
 
 def filter_reports(reports):
     #not deleted, last version
-    #deleted_adult_reports = get_deleted_adult_reports(reports)
-    # not deleted
-    undeleted = reports.exclude(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",()))
-    # last version
-    latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
-    #latest_versions = undeleted.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number",()))
-    return latest_versions
+    return reports.non_deleted()
 
 
 def assign_reports_to_national_supervisor(this_user):

@@ -7,6 +7,7 @@ from tigacrafting.models import Alert
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
+from django.db import models
 from django.utils import timezone
 
 from .fields import AutoTimeZoneDatetimeField
@@ -271,7 +272,10 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
             raise serializers.ValidationError("Make sure type is 'adult', 'site', 'mission' or 'bite'.")
         return attrs
 
-    def create(self,validated_data):
+    def create(self, validated_data):
+        # Adding _history_user
+        validated_data['_history_user'] = validated_data.get('user')
+
         responses_data = validated_data.pop('responses')
         report = Report(**validated_data)
 
@@ -293,6 +297,56 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
             response.save(skip_report_update=True)
 
         return report
+
+    def update(self, instance, validated_data):
+        # Adding _history_user
+        validated_data['_history_user'] = validated_data.get('user')
+
+        # Do not updates on the following fields:
+        #   - fields marked as non editable
+        #   - fields Auto generated
+        #   - FKs
+        #   - PKs
+        non_editable_fields = [
+            field.name for field in Report._meta.get_fields() if (
+                not field.editable
+                or isinstance(field, models.AutoField)
+                or isinstance(field, models.ForeignKey)
+                or field.primary_key
+            )
+        ]
+
+        responses_data = validated_data.pop('responses')
+        for field in non_editable_fields:
+            if field in validated_data:
+                del validated_data[field]
+
+        # Create/update the report response and updating report fields
+        # without saving. We want to save all changes at once.
+        responses = []
+        for response in responses_data:
+            try:
+                report_response = ReportResponse.objects.get(
+                    report=instance, question=response['question']
+                )
+                # Perform update
+                for k, v in response.items():
+                    setattr(report_response, k, v)
+            except ReportResponse.DoesNotExist:
+                report_response = ReportResponse(report=instance, **response)
+
+            report_response._update_report_value(
+                commit=False
+            )
+            responses.append(report_response)
+
+        # Saving reports (already updated) + responses.
+        instance = super().update(instance=instance, validated_data=validated_data)
+
+        for response in responses:
+            response.save(skip_report_update=True)
+
+        return instance
 
     class Meta:
         model = Report
@@ -416,8 +470,8 @@ class MapDataSerializer(serializers.ModelSerializer):
     site_responses = serializers.ReadOnlyField()
     site_responses_text = serializers.ReadOnlyField()
     tigaprob_cat = serializers.ReadOnlyField()
+    latest_version = serializers.SerializerMethodField()
     visible = serializers.ReadOnlyField()
-    latest_version = serializers.ReadOnlyField()
     n_photos = serializers.ReadOnlyField()
     final_expert_status_text = serializers.SerializerMethodField(method_name='get_final_expert_status')
     responses = FullReportResponseSerializer(many=True)
@@ -425,6 +479,9 @@ class MapDataSerializer(serializers.ModelSerializer):
 
     def get_final_expert_status(self, obj):
         return obj.get_final_expert_status()
+
+    def get_latest_version(self):
+        return True
 
     def get_country(self,obj):
         if obj.country is None:

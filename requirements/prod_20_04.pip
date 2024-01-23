@@ -26,6 +26,7 @@ django-import-export==1.2.0
 django-leaflet==0.13.2
 django-messages==0.6.0
 django-rest-swagger==2.2.0
+django-simple-history==3.0.0
 django-sslserver==0.22
 django-taggit==1.1.0
 djangorestframework==3.10.3

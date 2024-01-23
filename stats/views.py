@@ -1016,7 +1016,7 @@ def show_fix_users(request):
 
 
 def show_report_users(request):
-    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)) if report.latest_version]
+    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))]
     tz = get_localzone()
     ref_date = datetime.datetime(2014, 6, 13,  tzinfo=tz)
     end_date = tz.localize(datetime.datetime.now())
@@ -1087,10 +1087,9 @@ def get_hashtag_map_data(request):
         r = Report.objects.filter(note__icontains=hashtag).order_by('-server_upload_time')[:200]
         n = 0
         for report in r:
-            if report.latest_version:
-                n = n + 1
-                dates.append(report.server_upload_time)
-                data.append({ 'note': report.note, 'picture': report.photo_html, 'lat': report.lat, 'lon': report.lon, 'date_uploaded': report.server_upload_time.strftime('%d-%m-%Y / %H:%M:%S') })
+            n = n + 1
+            dates.append(report.server_upload_time)
+            data.append({ 'note': report.note, 'picture': report.photo_html, 'lat': report.lat, 'lon': report.lon, 'date_uploaded': report.server_upload_time.strftime('%d-%m-%Y / %H:%M:%S') })
     min_date_str = ''
     max_date_str = ''
     if len(dates) == 0:
