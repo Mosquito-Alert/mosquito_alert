@@ -116,44 +116,14 @@ class ScoringTestCase(TestCase):
         report_in_other_season.save()
         self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2018).count(), 1)
 
-        report_in_other_season_version = Report(
-            version_UUID='00000000-0000-0000-0000-000000000004',
-            version_number=1,
-            report_id=report_in_other_season.report_id,
-            user_id=report_in_other_season.user.user_UUID,
-            phone_upload_time=report_in_other_season.phone_upload_time,
-            server_upload_time=report_in_other_season.server_upload_time,
-            creation_time=report_in_other_season.creation_time,
-            version_time=report_in_other_season.version_time,
-            location_choice="current",
-            current_location_lon=report_in_other_season.lon,
-            current_location_lat=report_in_other_season.lat,
-            type='adult',
-        )
-        report_in_other_season_version.save()
-        #award should be transferred to report_in_other_season_version
-        self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2018).count(), 1)
-        self.assertEqual(Award.objects.filter(category__id=1).filter(report=report_in_other_season_version).count(),1)
-        self.assertEqual(Award.objects.filter(category__id=1).filter(report=report_in_other_season).count(), 0)
+        # Creating a new version
+        report_in_other_season.location_choice = "current"
+        report_in_other_season.type = 'adult'
+        report_in_other_season.save()
 
-        report_in_other_season_version_2 = Report(
-            version_UUID='00000000-0000-0000-0000-000000000005',
-            version_number=2,
-            report_id=report_in_other_season_version.report_id,
-            user_id=report_in_other_season_version.user.user_UUID,
-            phone_upload_time=report_in_other_season_version.phone_upload_time,
-            server_upload_time=report_in_other_season_version.server_upload_time,
-            creation_time=report_in_other_season_version.creation_time,
-            version_time=report_in_other_season_version.version_time,
-            location_choice="current",
-            current_location_lon=report_in_other_season_version.lon,
-            current_location_lat=report_in_other_season_version.lat,
-            type='adult',
-        )
-        report_in_other_season_version_2.save()
+        #award should be kept
         self.assertEqual(Award.objects.filter(category__id=1).filter(given_to__user_UUID=user_id).filter(report__creation_time__year=2018).count(), 1)
-        self.assertEqual(Award.objects.filter(category__id=1).filter(report=report_in_other_season_version_2).count(), 1)
-        self.assertEqual(Award.objects.filter(category__id=1).filter(report=report_in_other_season_version).count(), 0)
+        self.assertEqual(Award.objects.filter(category__id=1).filter(report=report_in_other_season).count(), 1)
 
     def test_first_of_day(self):
         user_id = '00000000-0000-0000-0000-000000000000'
