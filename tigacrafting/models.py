@@ -15,7 +15,7 @@ def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
 
 class CrowdcraftingTask(models.Model):
     task_id = models.IntegerField(unique=True, null=True, default=None)
-    photo = models.OneToOneField('tigaserver_app.Photo', on_delete=models.DO_NOTHING, )
+    photo = models.OneToOneField('tigaserver_app.Photo', on_delete=models.PROTECT, )
 
     def __unicode__(self):
         return str(self.task_id)
@@ -127,8 +127,8 @@ class CrowdcraftingUser(models.Model):
 
 class CrowdcraftingResponse(models.Model):
     response_id = models.IntegerField()
-    task = models.ForeignKey('tigacrafting.CrowdcraftingTask', related_name="responses", on_delete=models.DO_NOTHING, )
-    user = models.ForeignKey('tigacrafting.CrowdcraftingUser', related_name="responses", blank=True, null=True, on_delete=models.DO_NOTHING, )
+    task = models.ForeignKey('tigacrafting.CrowdcraftingTask', related_name="responses", on_delete=models.CASCADE, )
+    user = models.ForeignKey('tigacrafting.CrowdcraftingUser', related_name="responses", blank=True, null=True, on_delete=models.SET_NULL, )
     user_lang = models.CharField(max_length=10, blank=True)
     mosquito_question_response = models.CharField(max_length=100)
     tiger_question_response = models.CharField(max_length=100)
@@ -142,8 +142,8 @@ class CrowdcraftingResponse(models.Model):
 
 
 class Annotation(models.Model):
-    user = models.ForeignKey('auth.User', related_name='annotations', on_delete=models.DO_NOTHING, )
-    task = models.ForeignKey('tigacrafting.CrowdcraftingTask', related_name='annotations', on_delete=models.DO_NOTHING, )
+    user = models.ForeignKey('auth.User', related_name='annotations', on_delete=models.PROTECT, )
+    task = models.ForeignKey('tigacrafting.CrowdcraftingTask', related_name='annotations', on_delete=models.CASCADE, )
     tiger_certainty_percent = models.IntegerField('Degree of belief',validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
     value_changed = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
@@ -156,7 +156,7 @@ class Annotation(models.Model):
 
 
 class MoveLabAnnotation(models.Model):
-    task = models.OneToOneField(CrowdcraftingTask, related_name='movelab_annotation', on_delete=models.DO_NOTHING, )
+    task = models.OneToOneField(CrowdcraftingTask, related_name='movelab_annotation', on_delete=models.CASCADE, )
     CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
     tiger_certainty_category = models.IntegerField('Certainty', choices=CATEGORIES, blank=True, null=True)
     certainty_notes = models.TextField(blank=True)
@@ -181,8 +181,8 @@ STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
 
 VALIDATION_CATEGORIES = ((2, 'Definitely'), (1, 'Probably'))
 class ExpertReportAnnotation(models.Model):
-    user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.DO_NOTHING, )
-    report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.DO_NOTHING, )
+    user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
+    report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.CASCADE, )
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
     tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
@@ -195,15 +195,15 @@ class ExpertReportAnnotation(models.Model):
     last_modified = models.DateTimeField(default=timezone.now)
     validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
-    best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.DO_NOTHING, )
+    best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True)
     simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
     tags = TaggableManager(blank=True)
-    category = models.ForeignKey('tigacrafting.Categories', related_name='expert_report_annotations', null=True, blank=True, help_text='Simple category assigned by expert or superexpert. Mutually exclusive with complex. If this field has value, then probably there is a validation value', on_delete=models.DO_NOTHING, )
-    complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value', on_delete=models.DO_NOTHING, )
+    category = models.ForeignKey('tigacrafting.Categories', related_name='expert_report_annotations', null=True, blank=True, help_text='Simple category assigned by expert or superexpert. Mutually exclusive with complex. If this field has value, then probably there is a validation value', on_delete=models.SET_NULL, )
+    complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value', on_delete=models.SET_NULL, )
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
-    other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.DO_NOTHING, )
+    other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.SET_NULL, )
     validation_complete_executive = models.BooleanField(default=False, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
 
     class Meta:
@@ -415,14 +415,14 @@ class ExpertReportAnnotation(models.Model):
 class UserStat(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, )
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
-    national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.DO_NOTHING, )
-    native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.DO_NOTHING, )
+    national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.PROTECT, )
+    native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.SET_NULL, )
     license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
     # When in crisis mode, several regional restrictions are disabled and the user preferently receives reports
     # from places where there has been a spike
     crisis_mode = models.BooleanField('Tells if the validator is working in crisis mode or not', default=False)
-    last_emergency_mode_grab = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True,related_name="emergency_pullers", help_text='Last country user pulled map data from', on_delete=models.DO_NOTHING, )
-    nuts2_assignation = models.ForeignKey('tigaserver_app.NutsEurope', blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.DO_NOTHING, )
+    last_emergency_mode_grab = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True,related_name="emergency_pullers", help_text='Last country user pulled map data from', on_delete=models.SET_NULL, )
+    nuts2_assignation = models.ForeignKey('tigaserver_app.NutsEurope', blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.SET_NULL, )
 
     def has_accepted_license(self):
         return self.license_accepted
