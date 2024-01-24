@@ -20,7 +20,6 @@ from collections import Counter
 from datetime import datetime, timedelta
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import connection
 import logging
 import tigacrafting.html_utils as html_utils
 import pydenticon
@@ -45,6 +44,8 @@ from io import BytesIO
 from django.core.files import File
 import html.entities
 from common.translation import get_locale_for_en, get_translation_in, get_locale_for_native
+from django.contrib.gis.db.models.functions import Distance as DistanceFunction
+from django.contrib.gis.measure import Distance as DistanceMeasure
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
@@ -508,98 +509,48 @@ class Report(models.Model):
         p = GEOSGeometry(wkt_point.format(self.get_lon(), self.get_lat()), srid=4326)
         return p
 
-    def get_nuts3_is_in(self, country, point):
-        if country is not None:
-            #country nuts3
-            candidates = NutsEurope.objects.filter(europecountry=country).filter(levl_code=3)
-            nuts3 = candidates.filter(geom__contains=point)
-            if len(nuts3) == 0:
-                cursor = connection.cursor()
-                # K nearest neighbours,
-                # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
-                cursor.execute("""
-                                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d, name_latn, gid
-                                    FROM nuts_europe
-                                    where levl_code = 3
-                                    ORDER BY d limit 1
-                                """, (point.x, point.y,))
-                row = cursor.fetchone()
-                if row and row[0] < 0.1:
-                    n = NutsEurope.objects.get(pk=row[2])
-                    return n.nuts_id
-                cursor.close()
-            if len(nuts3) == 1:
-                return nuts3[0].nuts_id
-            elif len(nuts3) > 1:
-                return nuts3[0].nuts_id
-        return None
+    def get_nuts_is_in(self, levl_code):
+        if not self.country or not self.point:
+            return
 
-    def get_nuts2_is_in(self, country, point):
-        if country is not None:
-            #country nuts3
-            candidates = NutsEurope.objects.filter(europecountry=country).filter(levl_code=2)
-            nuts2 = candidates.filter(geom__contains=point)
-            if len(nuts2) == 0:
-                cursor = connection.cursor()
-                # K nearest neighbours,
-                # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
-                cursor.execute("""
-                                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d, name_latn, gid
-                                    FROM nuts_europe
-                                    where levl_code = 2
-                                    ORDER BY d limit 1
-                                """, (point.x, point.y,))
-                row = cursor.fetchone()
-                if row and row[0] < 0.1:
-                    n = NutsEurope.objects.get(pk=row[2])
-                    return n.nuts_id
-                cursor.close()
-            if len(nuts2) == 1:
-                return nuts2[0].nuts_id
-            elif len(nuts2) > 1:
-                return nuts2[0].nuts_id
-        return None
+        max_distance = DistanceMeasure(km=11.1) # 0.1 degrees
+        nuts = NutsEurope.objects.filter(
+            europecountry=self.country,
+            levl_code=levl_code
+        ).annotate(
+            distance=DistanceFunction("geom", self.point)
+        ).filter(distance__lt=max_distance).order_by("distance").first()
+
+        return nuts
 
     def get_country_is_in(self):
-        logger_report_geolocation.debug('retrieving country for report with id {0}'.format(self.version_UUID, ))
-        if self.point is not None:
-            countries = EuropeCountry.objects.filter(geom__contains=self.point)
-            logger_report_geolocation.debug('report with id {0} has {1} country candidates'.format(self.version_UUID, len(countries)))
-            if len(countries) == 0:
-                logger_report_geolocation.debug('report with id {0} has no candidates, assigning to NEARBY country (within 0.1 degrees)'.format(self.version_UUID))
-                cursor = connection.cursor()
-                # K nearest neighbours,
-                # fetch nearest polygon to point, if it's closer than 0.1 degrees (~10km), assign. else, is in the sea
-                cursor.execute("""
-                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d, name_engl, gid
-                    FROM europe_countries
-                    ORDER BY d limit 1
-                """, ( self.point.x, self.point.y, ) )
-                # Changed this because some odd behaviour which messed the ordering (0 appeared lower than other distances)
-                '''
-                cursor.execute("""
-                    SELECT st_distance(geom, 'SRID=4326;POINT(%s %s)'::geometry) as d,name_engl,gid
-                    FROM europe_countries
-                    ORDER BY geom <-> 'SRID=4326;POINT(%s %s)'::geometry limit 1
-                """, ( self.point.x, self.point.y, self.point.x, self.point.y, ) )
-                '''
-                row = cursor.fetchone()
-                if row and row[0] < 0.1:
-                    c = EuropeCountry.objects.get(pk=row[2])
-                    logger_report_geolocation.debug('report with id {0} assigned to NEARBY country {1} with code {2}'.format(self.version_UUID,c.name_engl, c.iso3_code, ))
-                    return c
-                else:
-                    logger_report_geolocation.debug('report with id {0} found no NEARBY countries, setting country as none'.format(self.version_UUID))
-                return None
-            elif len(countries) == 1:
-                logger_report_geolocation.debug('report with id {0} has SINGLE candidate, country {1} with code {2}'.format(self.version_UUID, countries[0].name_engl, countries[0].iso3_code, ))
-                return countries[0]
-            else: #more than 1 country
-                logger_report_geolocation.debug( 'report with id {0} is inside MULTIPLE countries ({1} countries), using country {2} with code {3}'.format( self.version_UUID, countries[0].name_engl, countries[0].name_engl, countries[0].iso3_code, ) )
-                return countries[0]
+        logger_report_geolocation.debug('retrieving country for report with id {0}'.format(self.pk))
 
-        logger_report_geolocation.debug('report with id {0} has no associated geolocation'.format(self.version_UUID, ))
-        return None
+        if not self.point:
+            logger_report_geolocation.debug('report with id {0} has no associated geolocation'.format(self.pk))
+            return None
+
+        max_distance = DistanceMeasure(km=11.1) # 0.1 degrees
+        country = EuropeCountry.objects.annotate(
+            distance=DistanceFunction("geom", self.point)
+        ).filter(distance__lt=max_distance).order_by("distance").first()
+
+        if country:
+            if country.distance.m == 0:
+                # Case point is contained (distance = 0 meters)
+                logger_report_geolocation.debug(
+                    'report with id {0} has SINGLE candidate, country {1} with code {2}'.format(self.pk, country.name_engl, country.iso3_code))
+            else:
+                # Case point was not cointained, but near
+                logger_report_geolocation.debug(
+                        'report with id {0} assigned to NEARBY country {1} with code {2}'.format(self.pk, country.name_engl, country.iso3_code)
+                    )
+        else:
+            logger_report_geolocation.debug(
+                'report with id {0} found no NEARBY countries, setting country as none'.format(self.pk)
+            )
+
+        return country
 
     def is_spain(self):
         return self.country is None or self.country.gid == 17
@@ -2251,20 +2202,26 @@ class Report(models.Model):
     # save is overriden to initialize the point spatial field with the coordinates supplied
     # to the Report object. See method get_point
     def save(self, *args, **kwargs):
-        if not self.point:
-            point = self.get_point()
-            self.point = point
-        if not self.country:
-            c = self.get_country_is_in()
-            if c is None:
-                logger_report_geolocation.debug('report with id {0} assigned to no country'.format(self.version_UUID,))
-            else:
-                logger_report_geolocation.debug('report with id {0} assigned to country {1} with code {2}'.format(self.version_UUID,c.name_engl,c.iso3_code,))
-            self.country = c
 
-        if self.point is not None and self.country is not None:
-            self.nuts_3 = self.get_nuts3_is_in(self.country, self.point)
-            self.nuts_2 = self.get_nuts2_is_in(self.country, self.point)
+        # Recreate the Point (just in case lat/lon has changed)
+        _old_point = self.point
+        self.point = self.get_point()
+
+        # Fill the country field
+        if not self.country or _old_point != self.point:
+            self.country = self.get_country_is_in()
+            if not self.country:
+                logger_report_geolocation.debug(
+                    'report with id {0} assigned to no country'.format(self.pk)
+                )
+            else:
+                logger_report_geolocation.debug(
+                    'report with id {0} assigned to country {1} with code {2}'.format(self.pk, self.country.name_engl, self.country.iso3_code)
+                )
+
+        if self.point and self.country:
+            self.nuts_3 = self.get_nuts_is_in(levl_code=3)
+            self.nuts_2 = self.get_nuts_is_in(levl_code=2)
 
         super(Report, self).save(*args, **kwargs)
 
