@@ -201,7 +201,6 @@ class TigaUser(models.Model):
     class Meta:
         verbose_name = "user"
         verbose_name_plural = "users"
-        ordering = ('user_UUID',)
 
 
 class Mission(models.Model):
@@ -2320,7 +2319,7 @@ class Report(models.Model):
     is_spain_p = property(is_spain)
 
     class Meta:
-        unique_together = ("user", "version_UUID")
+        pass
 
 
 def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
