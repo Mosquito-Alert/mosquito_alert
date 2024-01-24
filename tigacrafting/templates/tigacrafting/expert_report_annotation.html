@@ -1723,10 +1723,8 @@
 
                 final_status = {
                     score: {{form.instance.report.get_final_combined_expert_score}},
-                    //category: '{{form.instance.report.get_final_combined_expert_category}}',
                     category: '{{form.instance.report.get_final_combined_expert_category_euro}}',
                     category_struct: {{form.instance.report.get_final_combined_expert_category_euro_struct_json | safe}},
-                    //selector_data : {{ form.instance.report.get_selector_data | safe }},
                     status: {{form.instance.report.get_final_expert_status }},
                     photo: '{{form.instance.report.get_final_photo_html.id}}',
                     public_note: '{{form.instance.report.get_final_public_note | linebreaksbr }}',

@@ -1,51 +1,37 @@
-from django.db import models
-import uuid
-import os
-import os.path
-import urllib
-from PIL import Image
-import datetime
-from math import floor
-from django.utils.timezone import utc
-from django.utils.translation import ugettext_lazy as _
-from django.db.models import Max, Min
-from tigacrafting.models import CrowdcraftingTask, MoveLabAnnotation, ExpertReportAnnotation, AEGYPTI_CATEGORIES
-#from django.core.urlresolvers import reverse
-from django.db.models import Count
-from django.conf import settings
-from django.db.models import Q
-from django.contrib.auth.models import User, Group
-from tigacrafting.models import SITE_CATEGORIES, TIGER_CATEGORIES_SEPARATED, AEGYPTI_CATEGORIES_SEPARATED, STATUS_CATEGORIES, TIGER_CATEGORIES, Categories
 from collections import Counter
 from datetime import datetime, timedelta
-from django.contrib.gis.db import models
-from django.contrib.gis.geos import GEOSGeometry
+import json
 import logging
-import tigacrafting.html_utils as html_utils
+from math import floor
+from PIL import Image
 import pydenticon
-import os.path
-import tigaserver_project.settings as conf
+import os
+from slugify import slugify
+from typing import Optional
+import uuid
+
 from django.conf import settings
-import pytz
+from django.contrib.auth.models import User
+from django.contrib.gis.db import models
+from django.contrib.gis.db.models.functions import Distance as DistanceFunction
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from slugify import slugify
-from django.utils import translation
-from django.template.loader import render_to_string
-from tigacrafting.messaging import send_message_android,send_message_ios
-from django.utils import translation
-from django.utils.translation import ugettext
-import json
-from django.db.models import Manager as GeoManager
-from django.utils.deconstruct import deconstructible
+from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.urls import reverse
-from django.template.loader import TemplateDoesNotExist
-from io import BytesIO
-from django.core.files import File
-import html.entities
-from common.translation import get_locale_for_en, get_translation_in, get_locale_for_native
-from django.contrib.gis.db.models.functions import Distance as DistanceFunction
-from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.utils import translation
+from django.utils.deconstruct import deconstructible
+from django.utils.timezone import utc
+from django.utils.translation import ugettext_lazy as _
+
+from common.translation import get_translation_in, get_locale_for_native
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
+import tigacrafting.html_utils as html_utils
+import tigaserver_project.settings as conf
+from tigacrafting.messaging import send_message_android, send_message_ios
+
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
@@ -137,6 +123,59 @@ def grant_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_exp
     if award_category is not None:
         a.category = award_category
     a.save()
+
+def get_icon_for_blood_genre(blood_genre) -> str:
+    blood_genre_table = {
+        BLOOD_GENRE[0][0]: '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
+        BLOOD_GENRE[1][0]: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
+        BLOOD_GENRE[2][0]: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
+        BLOOD_GENRE[3][0]: '<label title="Female gravid"><i class="moon" aria-hidden="true"></i> Gravid</label>',
+        BLOOD_GENRE[4][0]: '<label title="Female gravid + blood"><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
+        BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
+    }
+    if blood_genre is None:
+        return ''
+    else:
+        try:
+            return str(blood_genre_table[blood_genre])
+        except KeyError:
+            #return blood_genre_table['dk']
+            return ''
+
+def get_translated_species_name(locale,untranslated_species) -> str:
+    current_locale = 'en'
+    for l in settings.LANGUAGES:
+        if locale==l[0]:
+            current_locale = locale
+    translation.activate(current_locale)
+    translations_table_species_name = {
+        "Unclassified": _("species_unclassified"),
+        "Other species": _("species_other"),
+        "Aedes albopictus": _("species_albopictus"),
+        "Aedes aegypti": _("species_aegypti"),
+        "Aedes japonicus": _("species_japonicus"),
+        "Aedes koreicus": _("species_koreicus"),
+        "Complex": _("species_complex"),
+        "Not sure": _("species_notsure"),
+        "Culex sp.": _("species_culex")
+    }
+    retval = translations_table_species_name.get(untranslated_species, "Unknown")
+    translation.deactivate()
+    return str(retval)
+
+def get_translated_value_name(locale, untranslated_value) -> str:
+    current_locale = 'en'
+    for l in settings.LANGUAGES:
+        if locale == l[0]:
+            current_locale = locale
+    translation.activate(current_locale)
+    translations_table_value_name = {
+        1: _("species_value_possible"),
+        2: _("species_value_confirmed")
+    }
+    retval = translations_table_value_name.get(untranslated_value, "Unknown")
+    translation.deactivate()
+    return str(retval)
 
 class TigaProfile(models.Model):
     firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
@@ -261,7 +300,7 @@ class Mission(models.Model):
         return self.title_catalan
 
     def active_missions(self):
-        return self.expiration_time >= datetime.datetime.utcnow().replace(tzinfo=utc)
+        return self.expiration_time >= datetime.utcnow().replace(tzinfo=utc)
 
 
 class MissionTrigger(models.Model):
@@ -335,8 +374,6 @@ class EuropeCountry(models.Model):
     pending_crisis_reports = models.IntegerField(blank=True, null=True, help_text='Number of reports in country assignable to non-supervisors')
     last_crisis_report_n_update = models.DateTimeField(help_text="Last time count was updated", null=True, blank=True)
 
-    objects = GeoManager()
-
     class Meta:
         managed = True
         ordering = ['name_engl']
@@ -361,7 +398,6 @@ class NutsEurope(models.Model):
     fid = models.CharField(max_length=5, blank=True, null=True)
     geom = models.MultiPolygonField(blank=True, null=True)
     europecountry = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="nuts", on_delete=models.SET_NULL)
-    objects = GeoManager()
 
     class Meta:
         managed = True
@@ -380,485 +416,248 @@ class Session(models.Model):
 
 
 class Report(models.Model):
-    version_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
-                                                'phone to identify each unique report version. Must be exactly 36 '
-                                                'characters (32 hex digits plus 4 hyphens).')
-    version_number = models.IntegerField(db_index=True, help_text='The report version number. Should be an integer that increments '
-                                                   'by 1 for each repor version. Note that the user keeps only the '
-                                                   'most recent version on the device, but all versions are stored on the server.')
-    user = models.ForeignKey(TigaUser, help_text='user_UUID for the user sending this report. Must be exactly 36 '
-                                                 'characters (32 hex digits plus 4 hyphens) and user must have '
-                                                 'already registered this ID.', related_name="user_reports", on_delete=models.DO_NOTHING, )
-    report_id = models.CharField(db_index=True, max_length=4, help_text='4-digit alpha-numeric code generated on user phone to '
-                                                         'identify each unique report from that user. Digits should '
-                                                         'lbe randomly drawn from the set of all lowercase and '
-                                                         'uppercase alphabetic characters and 0-9, but excluding 0, '
-                                                         'o, and O to avoid confusion if we ever need user to be able to refer to a report ID in correspondence with MoveLab (as was previously the case when we had them sending samples).')
-    updated_at = models.DateTimeField(auto_now=True, blank=True, editable=False, help_text="Date and time when the report was last modified")
-    server_upload_time = models.DateTimeField(auto_now_add=True, help_text='Date and time on server when report '
-                                                                           'uploaded. (Automatically generated by '
-                                                                           'server.)')
-    phone_upload_time = models.DateTimeField(help_text='Date and time on phone when it uploaded fix. Format '
-                                                       'as ECMA '
-                                                       '262 date time string (e.g. "2014-05-17T12:34:56'
-                                                       '.123+01:00".')
-    creation_time = models.DateTimeField(help_text='Date and time on phone when first version of report was created. '
-                                                   'Format '
-                                                       'as ECMA '
-                                                       '262 date time string (e.g. "2014-05-17T12:34:56'
-                                                       '.123+01:00".')
-    version_time = models.DateTimeField(help_text='Date and time on phone when this version of report was created. '
-                                                  'Format '
-                                                       'as ECMA '
-                                                       '262 date time string (e.g. "2014-05-17T12:34:56'
-                                                       '.123+01:00".')
-    TYPE_CHOICES = (('bite', 'Bite'), ('adult', 'Adult'), ('site', 'Breeding Site'), ('mission', 'Mission'),)
-    type = models.CharField(max_length=7, choices=TYPE_CHOICES, help_text="Type of report: 'adult', 'site', "
-                                                                         "or 'mission'.", )
-    mission = models.ForeignKey(Mission, blank=True, null=True, help_text='If this report was a response to a '
-                                                                          'mission, the unique id field of that '
-                                                                          'mission.', on_delete=models.SET_NULL, )
-    LOCATION_CHOICE_CHOICES = (('current', "Current location detected by user's device"), ('selected',
-                                                                                           'Location selected by '
-                                                                                           'user from map'),
-                               ('missing', 'No location choice submitted - should be used only for missions'))
-    location_choice = models.CharField(max_length=8, choices=LOCATION_CHOICE_CHOICES, help_text='Did user indicate '
-                                                                                                'that report relates '
-                                                                                                'to current location '
-                                                                                                'of phone ("current") or to a location selected manually on the map ("selected")? Or is the choice missing ("missing")')
-    current_location_lon = models.FloatField(blank=True, null=True, help_text="Longitude of user's current location. "
-                                                                              "In decimal degrees.")
-    current_location_lat = models.FloatField(blank=True, null=True, help_text="Latitude of user's current location. "
-                                                                              "In decimal degrees.")
-    selected_location_lon = models.FloatField(blank=True, null=True, help_text="Latitude of location selected by "
-                                                                               "user on map. "
-                                                                              "In decimal degrees.")
-    selected_location_lat = models.FloatField(blank=True, null=True, help_text="Longitude of location selected by "
-                                                                               "user on map. "
-                                                                              "In decimal degrees.")
-    note = models.TextField(blank=True, null=True, help_text='Note user attached to report.')
-    package_name = models.CharField(db_index=True, max_length=400, blank=True, help_text='Name of tigatrapp package from which this '
-                                                                          'report was submitted.')
-    package_version = models.IntegerField(db_index=True, blank=True, null=True, help_text='Version number of tigatrapp package from '
-                                                                           'which this '
-                                                                          'report was submitted.')
-    device_manufacturer = models.CharField(max_length=200, blank=True, help_text='Manufacturer of device from which '
-                                                                                'this '
-                                                                          'report was submitted.')
-    device_model = models.CharField(max_length=200, blank=True, help_text='Model of device from '
-                                                                         'which this '
-                                                                          'report was submitted.')
-    os = models.CharField(max_length=200, blank=True, help_text='Operating system of device from which this '
-                                                                          'report was submitted.')
-    os_version = models.CharField(max_length=200, blank=True, help_text='Operating system version of device from '
-                                                                        'which this '
-                                                                          'report was submitted.')
-    os_language = models.CharField(max_length=10, blank=True, help_text='Language setting of operating system on '
-                                                                         'device from '
-                                                                        'which this '
-                                                                          'report was submitted. 2-digit '
-                                                                        'ISO-639-1 language code.')
-    app_language = models.CharField(max_length=10, blank=True, help_text='Language setting, within tigatrapp, '
-                                                                        'of device '
-                                                                          'from '
-                                                                        'which this '
-                                                                          'report was submitted. 2-digit '
-                                                                        'ISO-639-1 language code.')
+    TYPE_BITE = "bite"
+    TYPE_ADULT = "adult"
+    TYPE_SITE = "site"
+    TYPE_MISSION = "mission"
 
-    hide = models.BooleanField(default=False, help_text='Hide this report from public views?')
+    TYPE_CHOICES = (
+        (TYPE_BITE, _("Bite")),
+        (TYPE_ADULT, _("Adult")),
+        (TYPE_SITE, _("Breeding Site")),
+        (TYPE_MISSION, _("Mission")),
+    )
 
-    # Several viewsets, especially those involving loading hidden/not hidden reports, are EXTREMELY slow. This happens because
-    # whether a report is or not visible delegates on show_on_map. This function performs a lot of database queries; so calling
-    # this function on all reports takes a lot of time. For unknown reasons, there are a few views which are executed when the
-    # app first starts. For example:
-    # AllReportsMapViewSetPaginated
-    # AllReportsMapViewSet
-    # NonVisibleReportsMapViewSet
-    # This causes the app to take forever to start and in several occasions leads to timeouts. The solution to avoid this
-    # is to create this cached_visible field, and populate with 1 if show_on_map is True, 0 on the contrary. If the value
-    # is undefined, show_on_map executes normally. This accelerates a great deal the application startup, but implies that
-    # there must be an external periodic task which populates this field
-    cached_visible = models.IntegerField(blank=True, null=True, help_text='Precalculated value of show_on_map_function')
+    LOCATION_CURRENT = "current"
+    LOCATION_SELECTED = "selected"
+    LOCATION_MISSING = "missing"
+    LOCATION_CHOICE_CHOICES = (
+        (LOCATION_CURRENT, _("Current location detected by user's device")),
+        (LOCATION_SELECTED, _("Location selected by user from map")),
+        (
+            LOCATION_MISSING,
+            _("No location choice submitted - should be used only for missions"),
+        ),
+    )
 
-    point = models.PointField(blank=True,null=True,srid=4326)
+    # Relations
+    user = models.ForeignKey(
+        TigaUser,
+        on_delete=models.DO_NOTHING,
+        related_name="user_reports",
+        help_text="user_UUID for the user sending this report. Must be exactly 36 characters (32 hex digits plus 4 hyphens) and user must have already registered this ID.",
+    )
+    mission = models.ForeignKey(
+        Mission,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        help_text="If this report was a response to a mission, the unique id field of that mission.",
+    )
+    country = models.ForeignKey(
+        EuropeCountry, on_delete=models.PROTECT, blank=True, null=True
+    )
+    session = models.ForeignKey(
+        Session,
+        related_name="session_reports",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        help_text="Session ID for session in which this report was created",
+    )
 
-    country = models.ForeignKey(EuropeCountry, blank=True, null=True, on_delete=models.PROTECT, )
+    # Attributes - Mandatory
+    version_UUID = models.CharField(
+        primary_key=True,
+        max_length=36,
+        help_text="UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens).",
+    )
+    version_number = models.IntegerField(
+        db_index=True,
+        help_text="The report version number. Should be an integer that increments by 1 for each repor version. Note that the user keeps only the most recent version on the device, but all versions are stored on the server.",
+    )
+    report_id = models.CharField(
+        max_length=4,
+        db_index=True,
+        help_text="4-digit alpha-numeric code generated on user phone to identify each unique report from that user. Digits should lbe randomly drawn from the set of all lowercase and uppercase alphabetic characters and 0-9, but excluding 0, o, and O to avoid confusion if we ever need user to be able to refer to a report ID in correspondence with MoveLab (as was previously the case when we had them sending samples).",
+    )
 
-    session = models.ForeignKey(Session, blank=True, null=True, help_text='Session ID for session in which this report was created ', related_name="session_reports", on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        blank=True,
+        editable=False,
+        help_text="Date and time when the report was last modified",
+    )
+    server_upload_time = models.DateTimeField(
+        auto_now_add=True,
+        blank=True,
+        editable=False,
+        help_text="Date and time on server when report uploaded. (Automatically generated by server.)",
+    )
+    phone_upload_time = models.DateTimeField(
+        help_text="Date and time on phone when it uploaded fix. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+    )
+    creation_time = models.DateTimeField(
+        help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+    )
+    version_time = models.DateTimeField(
+        help_text="Date and time on phone when this version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+    )
 
-    nuts_3 = models.CharField(max_length=5, null=True, blank=True)
+    type = models.CharField(
+        max_length=7,
+        choices=TYPE_CHOICES,
+        help_text="Type of report: 'adult', 'site', or 'mission'.",
+    )
+
+    hide = models.BooleanField(
+        default=False, help_text="Hide this report from public views?"
+    )
+
+    location_choice = models.CharField(
+        max_length=8,
+        choices=LOCATION_CHOICE_CHOICES,
+        help_text="Did user indicate that report relates to current location of phone ('current') or to a location selected manually on the map ('selected')? Or is the choice missing ('missing')",
+    )
+
+    # Attributes - Optional
+    current_location_lon = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Longitude of user's current location. In decimal degrees.",
+    )
+    current_location_lat = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Latitude of user's current location. In decimal degrees.",
+    )
+    selected_location_lon = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Latitude of location selected by user on map. In decimal degrees.",
+    )
+    selected_location_lat = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Longitude of location selected by user on map. In decimal degrees.",
+    )
+    point = models.PointField(null=True, blank=True, srid=4326)
+
+    note = models.TextField(
+        null=True, blank=True, help_text="Note user attached to report."
+    )
 
     nuts_2 = models.CharField(max_length=4, null=True, blank=True)
+    nuts_3 = models.CharField(max_length=5, null=True, blank=True)
 
-    ia_filter_1 = models.FloatField(default=None, blank=True, null=True, help_text='Value ranging from -1.0 to 1.0 positive values indicate possible insect, negative values indicate spam(non-insect)')
+    ia_filter_1 = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Value ranging from -1.0 to 1.0 positive values indicate possible insect, negative values indicate spam(non-insect)",
+    )
+    ia_filter_2 = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Score for best classified image. 0 indicates not classified, 1.xx indicates classified with score xx, 2.xx classified with alert with score xx.",
+    )
 
-    ia_filter_2 = models.FloatField(default=None, blank=True, null=True, help_text='Score for best classified image. 0 indicates not classified, 1.xx indicates classified with score xx, 2.xx classified with alert with score xx. ')
+    cached_visible = models.IntegerField(
+        null=True, blank=True, help_text="Precalculated value of show_on_map_function"
+    )
 
-    objects = GeoManager()
+    package_name = models.CharField(
+        max_length=400,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Name of tigatrapp package from which this report was submitted.",
+    )
+    package_version = models.IntegerField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Version number of tigatrapp package from which this report was submitted.",
+    )
 
-    def __unicode__(self):
-        return self.version_UUID
+    device_manufacturer = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="Manufacturer of device from which this report was submitted.",
+    )
+    device_model = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="Model of device from which this report was submitted.",
+    )
+    os = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="Operating system of device from which this report was submitted.",
+    )
+    os_version = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="Operating system version of device from which this report was submitted.",
+    )
+    os_language = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="Language setting of operating system on device from which this report was submitted. 2-digit ISO-639-1 language code.",
+    )
+    app_language = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="Language setting, within tigatrapp, of device from which this report was submitted. 2-digit ISO-639-1 language code.",
+    )
 
-    #this is called previous to saving the object and initializes the spatial field
-    #it supplies
-    def get_point(self):
-        if (self.get_lon() == -1 and self.get_lat() == -1) or self.get_lon() is None or self.get_lat() is None:
-            return None
-        # longitude, latitude
-        wkt_point = 'POINT( {0} {1} )'
-        p = GEOSGeometry(wkt_point.format(self.get_lon(), self.get_lat()), srid=4326)
-        return p
+    # Object Manager
 
-    def get_nuts_is_in(self, levl_code):
-        if not self.country or not self.point:
-            return
-
-        max_distance = DistanceMeasure(km=11.1) # 0.1 degrees
-        nuts = NutsEurope.objects.filter(
-            europecountry=self.country,
-            levl_code=levl_code
-        ).annotate(
-            distance=DistanceFunction("geom", self.point)
-        ).filter(distance__lt=max_distance).order_by("distance").first()
-
-        return nuts
-
-    def get_country_is_in(self):
-        logger_report_geolocation.debug('retrieving country for report with id {0}'.format(self.pk))
-
-        if not self.point:
-            logger_report_geolocation.debug('report with id {0} has no associated geolocation'.format(self.pk))
-            return None
-
-        max_distance = DistanceMeasure(km=11.1) # 0.1 degrees
-        country = EuropeCountry.objects.annotate(
-            distance=DistanceFunction("geom", self.point)
-        ).filter(distance__lt=max_distance).order_by("distance").first()
-
-        if country:
-            if country.distance.m == 0:
-                # Case point is contained (distance = 0 meters)
-                logger_report_geolocation.debug(
-                    'report with id {0} has SINGLE candidate, country {1} with code {2}'.format(self.pk, country.name_engl, country.iso3_code))
-            else:
-                # Case point was not cointained, but near
-                logger_report_geolocation.debug(
-                        'report with id {0} assigned to NEARBY country {1} with code {2}'.format(self.pk, country.name_engl, country.iso3_code)
-                    )
-        else:
-            logger_report_geolocation.debug(
-                'report with id {0} found no NEARBY countries, setting country as none'.format(self.pk)
-            )
-
-        return country
-
-    def is_spain(self):
-        return self.country is None or self.country.gid == 17
-
-    def get_country_label(self):
-        if self.is_spain():
+    # Custom Properties
+    @property
+    def country_label(self) -> str:
+        if self.is_spain:
             return "Spain/Other"
         else:
             return "Europe/" + self.country.name_engl
 
-    def get_lat(self):
-        if self.location_choice == 'selected' and self.selected_location_lat is not None:
-            return self.selected_location_lat
-        else:
-            return self.current_location_lat
-
-    def get_lon(self):
-        if self.location_choice == 'selected' and self.selected_location_lon is not None:
-            return self.selected_location_lon
-        else:
-            return self.current_location_lon
-
-    def has_location(self):
-        return self.get_lat() is not None and self.get_lon() is not None
-
-    def get_tigaprob(self):
-        these_responses = self.responses.only('answer').values('answer').iterator()
-        response_score = 0
-        total = 0
-        for response in these_responses:
-            total += 1
-            if 'Y' in response['answer'] or 'S' in response['answer']:
-                response_score += 1
-            elif 'No' in response.values():
-                response_score -= 1
-        if total == 0:
-            total = 1
-        return float(response_score)/total
-
-    def get_tigaprob_cat(self):
-        return int(round(2.499999 * self.get_tigaprob(), 0))
-
-    def get_response_html(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID).order_by('question')
-        result = ''
-        for this_response in these_responses:
-            result = result + '<br/>' + this_response.question + '&nbsp;' + this_response.answer
-        return result
-
-    def get_response_string(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID).order_by('question')
-        result = ''
-        for this_response in these_responses:
-            result = result + '{' + this_response.question + ' ' + this_response.answer + '}'
-        return result
-
-    def get_tigaprob_text(self):
-        if self.tigaprob == 1.0:
-            return _('High')
-        elif 0.0 < self.tigaprob < 1.0:
-            return _('Medium')
-        else:
-            return _('Low')
-
-    def get_site_type(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = ''
-        for this_response in these_responses:
-            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer
-        return result
-
-    def get_site_type_trans(self):
-        if self.embornals:
-            return _('storm-drain')
-        if self.fonts:
-            return _('Fountain')
-        if self.basins:
-            return _('Basin')
-        if self.wells:
-            return _('Well')
-        if self.other:
-            return _('Other')
-
-    def get_site_embornals(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = False
-        for this_response in these_responses:
-            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type') or \
-                    this_response.question.startswith('Is this a storm drain') or \
-                    this_response.question.startswith(u'\xc9s un embornal') or \
-                    this_response.question.startswith(u'\xbfEs un imbornal'):
-                result = this_response.answer.startswith('Embornal') or this_response.answer.startswith('Sumidero') or this_response.answer.startswith('Storm') or this_response.answer.startswith('Yes') or this_response.answer.startswith(u'S\xed')
-        for this_response in these_responses:
-            if this_response.question_id == 12 and this_response.answer_id == 121:
-                return True
-        return result
-
-    def get_site_fonts(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = False
-        for this_response in these_responses:
-            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer.startswith('Font') or this_response.answer.startswith('Fountain') or this_response.answer.startswith('Fuente')
-        return result
-
-    def get_site_basins(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = False
-        for this_response in these_responses:
-            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer.startswith('Basin') or this_response.answer.startswith('Basses') or this_response.answer.startswith('Balsa') or this_response.answer.startswith('Bassa') or this_response.answer.startswith('Small basin') or 'balsas' in this_response.answer
-        return result
-
-    def get_site_buckets(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = False
-        for this_response in these_responses:
-            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer.startswith('Bucket') or this_response.answer.startswith('Small container') or this_response.answer.startswith('Bidones') or this_response.answer.startswith('Recipiente') or this_response.answer.startswith('Recipient') or this_response.answer.startswith('Bidons')
-        return result
-
-    def get_site_wells(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = False
-        for this_response in these_responses:
-            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer == 'Well' or this_response.answer == 'Pozos' or \
-                    this_response.answer == 'Pous'
-        return result
-
-    def get_site_other(self):
-        these_responses = ReportResponse.objects.filter(report__version_UUID=self.version_UUID)
-        result = False
-        for this_response in these_responses:
-            if this_response.question.startswith('Tipo') or this_response.question.startswith('Selecciona') or \
-                    this_response.question.startswith('Type'):
-                result = this_response.answer == 'Other' or this_response.answer == 'Altres' or \
-                    this_response.answer == 'Otros'
-        return result
-
-    def get_site_cat(self):
-        if self.get_site_embornals():
-            return 0
-        elif self.get_site_fonts():
-            return 1
-        elif self.get_site_basins():
-            return 2
-        elif self.get_site_buckets():
-            return 3
-        elif self.get_site_wells():
-            return 4
-        else:
-            return 5
-
-    def get_masked_lat(self):
-        if self.lat is not None:
-            return round(floor(self.lat/.05)*.05, 2)
-        else:
-            return None
-
-    def get_masked_lon(self):
-        if self.lon is not None:
-            return round(floor(self.lon/.05)*.05, 2)
-        else:
-            return None
-
-    def get_n_visible_photos(self):
-        return Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True).count()
-
-    def get_n_photos(self):
-        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID)
-        return len(these_photos)
-
-    def get_photo_html(self):
-        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-        result = ''
-        for photo in these_photos:
-            result = result + photo.small_image_() + '&nbsp;'
-        return result
-
-    # def get_photo_html_for_report_validation_wblood(self):
-    #     these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-    #     result = ''
-    #     for photo in these_photos:
-    #         male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
-    #         female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
-    #         fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-    #         dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
-    #         fg_status = 'checked="checked"' if photo.blood_genre == 'fg' else ''
-    #         fgb_status = 'checked="checked"' if photo.blood_genre == 'fgb' else ''
-    #         result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
-    #                     '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
-    #                 '</div>' \
-    #                 '<br>' \
-    #                 '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>' \
-    #                '<div id="blood_status_' + str(self.version_UUID) + '_' + str(photo.id) + '">' \
-    #                '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
-    #                '</div>' \
-    #                '<br>'
-    #     return result
-
-    # def get_photo_html_for_report_validation(self):
-    #     these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-    #     result = ''
-    #     for photo in these_photos:
-    #         result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
-    #                 '<input type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:' \
-    #                 '</div>' \
-    #                 '<br>' \
-    #                 '<div style="border: 1px solid #333333;margin:1px;">' + photo.medium_image_for_validation_() + '</div>' \
-    #                 '<br>'
-    #     return result
-
-    # def get_photo_html_for_report_validation_superexpert(self):
-    #     these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-    #     result = ''
-    #
-    #     for photo in these_photos:
-    #         best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
-    #         border_style = "3px solid green" if best_photo else "1px solid #333333"
-    #         male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
-    #         female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
-    #         fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-    #         dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
-    #         fg_status = 'checked="checked"' if photo.blood_genre == 'fg' else ''
-    #         fgb_status = 'checked="checked"' if photo.blood_genre == 'fgb' else ''
-    #         result += '<div id="div_for_photo_to_display_report_' + str(self.version_UUID) + '">' \
-    #                     '<input data-best="' + str(best_photo) + '" type="radio" name="photo_to_display_report_' + str(self.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '"/>Display this photo on public map:'\
-    #                     '</div>' \
-    #                     '<br>' \
-    #                     '<div style="border:' + border_style + ';margin:1px;position: relative;">' + photo.medium_image_for_validation_() + '</div>' \
-    #                     '<div id="blood_status_' + str(self.version_UUID) + '_' + str(photo.id) + '">' \
-    #                     '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="fa fa-dot-circle-o fa-lg" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-    #                     '<label title="Dont know" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_dk" name="fblood_' + str(photo.id) + '" ' + dk_status + '><i class="fa fa-question fa-lg" aria-hidden="true"></i></label>' \
-    #                     '</div>' \
-    #                     '<br>'
-    #     return result
-        # '<a class="btn btn-default infoPhoto bottom-right" value="' + str(self.version_UUID) + '__' + str(photo.id) + '">'
-        # '<i aria-hidden="true" title="Image EXIF metadata" class="glyphicon glyphicon-info-sign"></i>'
-        # '</a>'
-
-    def get_icon_for_blood_genre(self, blood_genre):
-        blood_genre_table = {
-            BLOOD_GENRE[0][0]: '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
-            BLOOD_GENRE[1][0]: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
-            BLOOD_GENRE[2][0]: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
-            BLOOD_GENRE[3][0]: '<label title="Female gravid"><i class="moon" aria-hidden="true"></i> Gravid</label>',
-            BLOOD_GENRE[4][0]: '<label title="Female gravid + blood"><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
-            BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
-        }
-        if blood_genre is None:
-            return ''
-        else:
-            try:
-                return blood_genre_table[blood_genre]
-            except KeyError:
-                #return blood_genre_table['dk']
-                return ''
-
-    def get_photo_html_for_report_validation_completed(self):
-        these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
-        result = ''
-        for photo in these_photos:
-            best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
-            border_style = "3px solid green" if best_photo else "1px solid #333333"
-            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_() + '</div><div>' + self.get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
-        return result
-
-    def get_formatted_date(self):
+    @property
+    def formatted_date(self) -> str:
         return self.version_time.strftime("%d-%m-%Y %H:%M")
 
-    def get_is_deleted(self):
-        result = False
-        all_versions = Report.objects.filter(report_id=self.report_id).filter(type=self.type).filter(user=self.user).order_by('version_number')
-        if all_versions[0].version_number == -1:
-            result = True
-        return result
+    @property
+    def deleted(self) -> bool:
+        return Report.objects.filter(
+            report_id=self.report_id,
+            type=self.type,
+            user=self.user,
+            version_number=-1
+        ).exists()
 
-    def get_other_versions(self):
-        all_versions = Report.objects.filter(report_id=self.report_id).exclude(version_UUID=self.version_UUID).order_by('version_number')
-        result = ''
-        for this_version in all_versions:
-            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (this_version.version_UUID, this_version.version_number)
-        return result
-
-    def get_is_latest(self):
+    @property
+    def latest_version(self) -> bool:
         if self.version_number == -1:
             return False
-        elif Report.objects.filter(report_id=self.report_id).filter(type=self.type).filter(user=self.user).count() == 1:
+        elif (
+            Report.objects.filter(report_id=self.report_id)
+            .filter(type=self.type)
+            .filter(user=self.user)
+            .count()
+            == 1
+        ):
             return True
         else:
-            all_versions = Report.objects.filter(report_id=self.report_id).filter(type=self.type).filter(user=self.user).order_by('version_number')
+            all_versions = (
+                Report.objects.filter(report_id=self.report_id)
+                .filter(type=self.type)
+                .filter(user=self.user)
+                .order_by("version_number")
+            )
             if all_versions[0].version_number == -1:
                 return False
             elif all_versions.reverse()[0].version_number == self.version_number:
@@ -866,17 +665,866 @@ class Report(models.Model):
             else:
                 return False
 
+    @property
+    def is_spain(self) -> bool:
+        return self.country is None or self.country.gid == 17
+
+    @property
+    def language(self) -> str:
+        if self.language_code:
+            return translation.get_language_info(self.language_code)["name"]
+        else:
+            return "English"
+
+    @property
+    def language_code(self) -> str:
+        app_language = self.app_language
+        if app_language is not None and app_language != "":
+            return app_language
+        return "en"
+
+    @property
+    def located(self) -> bool:
+        return self.lat is not None and self.lon is not None
+
+    @property
+    def lat(self) -> Optional[float]:
+        if (
+            self.location_choice == self.LOCATION_SELECTED
+            and self.selected_location_lat is not None
+        ):
+            return self.selected_location_lat
+        else:
+            return self.current_location_lat
+
+    @property
+    def masked_lat(self) -> Optional[float]:
+        if self.lat is not None:
+            return round(floor(self.lat / 0.05) * 0.05, 2)
+        else:
+            return None
+
+    @property
+    def lon(self) -> Optional[float]:
+        if (
+            self.location_choice == self.LOCATION_SELECTED
+            and self.selected_location_lon is not None
+        ):
+            return self.selected_location_lon
+        else:
+            return self.current_location_lon
+
+    @property
+    def masked_lon(self) -> Optional[float]:
+        if self.lon is not None:
+            return round(floor(self.lon / 0.05) * 0.05, 2)
+        else:
+            return None
+
+    @property
+    def other_versions(self) -> str:
+        all_versions = (
+            Report.objects.filter(report_id=self.report_id)
+            .exclude(version_UUID=self.version_UUID)
+            .order_by("version_number")
+        )
+        result = ""
+        for this_version in all_versions:
+            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
+                this_version.version_UUID,
+                this_version.version_number,
+            )
+        return result
+
+    @property
+    def response_html(self) -> str:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        ).order_by("question")
+        result = ""
+        for this_response in these_responses:
+            result = (
+                result
+                + "<br/>"
+                + this_response.question
+                + "&nbsp;"
+                + this_response.answer
+            )
+        return result
+
+    @property
+    def response_string(self) -> str:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        ).order_by("question")
+        result = ""
+        for this_response in these_responses:
+            result = (
+                result + "{" + this_response.question + " " + this_response.answer + "}"
+            )
+        return result
+
+    @property
+    def tigaprob(self) -> float:
+        these_responses = self.responses.only("answer").values("answer").iterator()
+        response_score = 0
+        total = 0
+        for response in these_responses:
+            total += 1
+            if "Y" in response["answer"] or "S" in response["answer"]:
+                response_score += 1
+            elif "No" in response.values():
+                response_score -= 1
+        if total == 0:
+            total = 1
+        return float(response_score) / total
+
+    @property
+    def tigaprob_cat(self) -> int:
+        return int(round(2.499999 * self.tigaprob, 0))
+
+    @property
+    def tigaprob_text(self) -> str:
+        if self.tigaprob == 1.0:
+            return _("High")
+        elif 0.0 < self.tigaprob < 1.0:
+            return _("Medium")
+        else:
+            return _("Low")
+
+    @property
+    def visible(self) -> bool:
+        return self.show_on_map()
+
+    @property
+    def visible_photos(self):
+        return self.photos.all().exclude(hide=True)
+
+    @property
+    def n_visible_photos(self) -> int:
+        return self.visible_photos.count()
+
+    @property
+    def n_photos(self) -> int:
+        return self.photos.all().count()
+
+    @property
+    def photo_html(self) -> str:
+        result = ""
+        for photo in self.visible_photos:
+            result = result + photo.small_image_() + "&nbsp;"
+        return result
+
+    # Custom properties related to annotations
+    @property
+    def movelab_annotation_euro(self) -> Optional[dict]:
+        expert_validated = ExpertReportAnnotation.objects.filter(
+            report=self, user__groups__name="expert", validation_complete=True
+        ).count() >= 3 or ExpertReportAnnotation.objects.filter(
+            report=self,
+            user__groups__name="superexpert",
+            validation_complete=True,
+            revise=True,
+        )
+        if self.creation_time.year == 2014 and not expert_validated:
+            if self.type == self.TYPE_ADULT:
+                max_movelab_annotation = (
+                    MoveLabAnnotation.objects.filter(task__photo__report=self)
+                    .exclude(hide=True)
+                    .order_by("tiger_certainty_category")
+                    .last()
+                )
+                if max_movelab_annotation is not None:
+                    return {
+                        "tiger_certainty_category": max_movelab_annotation.tiger_certainty_category,
+                        "crowdcrafting_score_cat": max_movelab_annotation.task.tiger_validation_score_cat,
+                        "crowdcrafting_n_response": max_movelab_annotation.task.crowdcrafting_n_responses,
+                        "edited_user_notes": max_movelab_annotation.edited_user_notes,
+                        "photo_html": max_movelab_annotation.task.photo.popup_image(),
+                    }
+        else:
+            if expert_validated:
+                result = {"edited_user_notes": self.get_final_public_note()}
+                if self.get_final_photo_html():
+                    result["photo_html"] = self.get_final_photo_html().popup_image()
+                if self.type == self.TYPE_ADULT:
+                    classification = (
+                        self.get_final_combined_expert_category_euro_struct()
+                    )
+                    if classification["conflict"] is True:
+                        result["class_name"] = "Conflict"
+                        result["class_label"] = "conflict"
+                    else:
+                        if classification["category"] is not None:
+                            if classification["complex"] is not None:
+                                result["class_name"] = classification[
+                                    "complex"
+                                ].description
+                                result["class_label"] = slugify(
+                                    classification["category"].name
+                                )
+                                result["class_id"] = classification["category"].id
+                                result["class_value"] = classification["complex"].id
+                                # result['class_value'] = classification['value']
+                            else:
+                                result["class_name"] = classification["category"].name
+                                result["class_label"] = slugify(
+                                    classification["category"].name
+                                )
+                                result["class_id"] = classification["category"].id
+                                result["class_value"] = classification["value"]
+                elif self.type == self.TYPE_SITE:
+                    result["class_name"] = "site"
+                    result["class_label"] = "site"
+                    result["site_certainty_category"] = self.get_final_expert_score()
+                return result
+        return None
+
+    @property
+    def movelab_annotation(self) -> Optional[dict]:
+        expert_validated = ExpertReportAnnotation.objects.filter(
+            report=self, user__groups__name="expert", validation_complete=True
+        ).count() >= 3 or ExpertReportAnnotation.objects.filter(
+            report=self,
+            user__groups__name="superexpert",
+            validation_complete=True,
+            revise=True,
+        )
+        if self.creation_time.year == 2014 and not expert_validated:
+            if self.type == self.TYPE_ADULT:
+                max_movelab_annotation = (
+                    MoveLabAnnotation.objects.filter(task__photo__report=self)
+                    .exclude(hide=True)
+                    .order_by("tiger_certainty_category")
+                    .last()
+                )
+                if max_movelab_annotation is not None:
+                    return {
+                        "tiger_certainty_category": max_movelab_annotation.tiger_certainty_category,
+                        "crowdcrafting_score_cat": max_movelab_annotation.task.tiger_validation_score_cat,
+                        "crowdcrafting_n_response": max_movelab_annotation.task.crowdcrafting_n_responses,
+                        "edited_user_notes": max_movelab_annotation.edited_user_notes,
+                        "photo_html": max_movelab_annotation.task.photo.popup_image(),
+                    }
+        else:
+            if expert_validated:
+                result = {"edited_user_notes": self.get_final_public_note()}
+                if self.get_final_photo_html():
+                    result["photo_html"] = self.get_final_photo_html().popup_image()
+                    if hasattr(self.get_final_photo_html(), "crowdcraftingtask"):
+                        result[
+                            "crowdcrafting_score_cat"
+                        ] = (
+                            self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat
+                        )
+                        result[
+                            "crowdcrafting_n_response"
+                        ] = (
+                            self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
+                        )
+                if self.type == self.TYPE_ADULT:
+                    result["tiger_certainty_category"] = self.get_final_expert_score()
+                    result[
+                        "aegypti_certainty_category"
+                    ] = self.get_final_expert_score_aegypti()
+                    classification = self.get_mean_combined_expert_adult_score()
+                    result["score"] = int(round(classification["score"]))
+                    if result["score"] <= 0:
+                        result["classification"] = "none"
+                    else:
+                        if classification["is_aegypti"] == True:
+                            result["classification"] = "aegypti"
+                        elif classification["is_albopictus"] == True:
+                            result["classification"] = "albopictus"
+                        elif classification["is_none"] == True:
+                            result["classification"] = "none"
+                        else:
+                            # This should NEVER happen. however...
+                            result["classification"] = "conflict"
+                elif self.type == self.TYPE_SITE:
+                    result["site_certainty_category"] = self.get_final_expert_score()
+                return result
+        return None
+
+    @property
+    def simplified_annotation(self) -> Optional[dict]:
+        if ExpertReportAnnotation.objects.filter(
+            report=self, user__groups__name="expert", validation_complete=True
+        ).count() >= 3 or ExpertReportAnnotation.objects.filter(
+            report=self,
+            user__groups__name="superexpert",
+            validation_complete=True,
+            revise=True,
+        ):
+            result = {}
+            if self.type == self.TYPE_ADULT:
+                classification = self.get_mean_combined_expert_adult_score()
+                result["score"] = int(round(classification["score"]))
+                if classification["is_aegypti"] == True:
+                    result["classification"] = "aegypti"
+                elif classification["is_albopictus"] == True:
+                    result["classification"] = "albopictus"
+                elif classification["is_none"] == True:
+                    result["classification"] = "none"
+                else:
+                    # This should NEVER happen. however...
+                    result["classification"] = "conflict"
+            return result
+        return None
+
+    @property
+    def movelab_score(self) -> Optional[int]:
+        if self.type != self.TYPE_ADULT:
+            return None
+        max_movelab_annotation = (
+            MoveLabAnnotation.objects.filter(task__photo__report=self)
+            .exclude(hide=True)
+            .order_by("tiger_certainty_category")
+            .last()
+        )
+        if max_movelab_annotation is None:
+            return None
+        return max_movelab_annotation.tiger_certainty_category
+
+    @property
+    def is_validated_by_two_experts_and_superexpert(self) -> bool:
+        """
+        This is used to locate reports validated by two experts and the superexpert. This commonly
+        happens as a consequence of detecting some reports validated 2 times by the same expert; to solve
+        this situation, one of the two repeated annotations is removed. As a consequence, the report
+        is validated by 2 experts and 1 superexpert
+        :return: True if the report is validqted by exactly 2 experts and 1 superexpert
+        """
+        return (
+            ExpertReportAnnotation.objects.filter(
+                report=self, user__groups__name="expert", validation_complete=True
+            ).count()
+            == 2
+            and ExpertReportAnnotation.objects.filter(
+                report=self, user__groups__name="superexpert", validation_complete=True
+            ).count()
+            == 1
+        )
+
+    @property
+    def crowd_score(self):
+        if self.type != self.TYPE_ADULT:
+            return None
+        max_movelab_annotation = (
+            MoveLabAnnotation.objects.filter(task__photo__report=self)
+            .exclude(hide=True)
+            .order_by("tiger_certainty_category")
+            .last()
+        )
+        if max_movelab_annotation is None:
+            return None
+        return max_movelab_annotation.task.tiger_validation_score_cat
+
+    # Custom properties related to breeding sites
+    @property
+    def basins(self) -> bool:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        )
+        result = False
+        for this_response in these_responses:
+            if (
+                this_response.question.startswith("Tipo")
+                or this_response.question.startswith("Selecciona")
+                or this_response.question.startswith("Type")
+            ):
+                result = (
+                    this_response.answer.startswith("Basin")
+                    or this_response.answer.startswith("Basses")
+                    or this_response.answer.startswith("Balsa")
+                    or this_response.answer.startswith("Bassa")
+                    or this_response.answer.startswith("Small basin")
+                    or "balsas" in this_response.answer
+                )
+        return result
+
+    @property
+    def buckets(self) -> bool:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        )
+        result = False
+        for this_response in these_responses:
+            if (
+                this_response.question.startswith("Tipo")
+                or this_response.question.startswith("Selecciona")
+                or this_response.question.startswith("Type")
+            ):
+                result = (
+                    this_response.answer.startswith("Bucket")
+                    or this_response.answer.startswith("Small container")
+                    or this_response.answer.startswith("Bidones")
+                    or this_response.answer.startswith("Recipiente")
+                    or this_response.answer.startswith("Recipient")
+                    or this_response.answer.startswith("Bidons")
+                )
+        return result
+
+    @property
+    def embornals(self) -> bool:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        )
+        result = False
+        for this_response in these_responses:
+            if (
+                this_response.question.startswith("Tipo")
+                or this_response.question.startswith("Selecciona")
+                or this_response.question.startswith("Type")
+                or this_response.question.startswith("Is this a storm drain")
+                or this_response.question.startswith("\xc9s un embornal")
+                or this_response.question.startswith("\xbfEs un imbornal")
+            ):
+                result = (
+                    this_response.answer.startswith("Embornal")
+                    or this_response.answer.startswith("Sumidero")
+                    or this_response.answer.startswith("Storm")
+                    or this_response.answer.startswith("Yes")
+                    or this_response.answer.startswith("S\xed")
+                )
+        for this_response in these_responses:
+            if this_response.question_id == 12 and this_response.answer_id == 121:
+                return True
+        return result
+
+    @property
+    def fonts(self) -> bool:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        )
+        result = False
+        for this_response in these_responses:
+            if (
+                this_response.question.startswith("Tipo")
+                or this_response.question.startswith("Selecciona")
+                or this_response.question.startswith("Type")
+            ):
+                result = (
+                    this_response.answer.startswith("Font")
+                    or this_response.answer.startswith("Fountain")
+                    or this_response.answer.startswith("Fuente")
+                )
+        return result
+
+    @property
+    def other(self) -> bool:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        )
+        result = False
+        for this_response in these_responses:
+            if (
+                this_response.question.startswith("Tipo")
+                or this_response.question.startswith("Selecciona")
+                or this_response.question.startswith("Type")
+            ):
+                result = (
+                    this_response.answer == "Other"
+                    or this_response.answer == "Altres"
+                    or this_response.answer == "Otros"
+                )
+        return result
+
+    @property
+    def wells(self) -> bool:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        )
+        result = False
+        for this_response in these_responses:
+            if (
+                this_response.question.startswith("Tipo")
+                or this_response.question.startswith("Selecciona")
+                or this_response.question.startswith("Type")
+            ):
+                result = (
+                    this_response.answer == "Well"
+                    or this_response.answer == "Pozos"
+                    or this_response.answer == "Pous"
+                )
+        return result
+
+    @property
+    def site_type(self) -> str:
+        these_responses = ReportResponse.objects.filter(
+            report__version_UUID=self.version_UUID
+        )
+        result = ""
+        for this_response in these_responses:
+            if (
+                this_response.question.startswith("Tipo")
+                or this_response.question.startswith("Selecciona")
+                or this_response.question.startswith("Type")
+            ):
+                result = this_response.answer
+        return result
+
+    @property
+    def site_cat(self) -> int:
+        if self.embornals:
+            return 0
+        elif self.fonts:
+            return 1
+        elif self.basins:
+            return 2
+        elif self.buckets:
+            return 3
+        elif self.wells:
+            return 4
+        else:
+            return 5
+
+    @property
+    def site_type_trans(self) -> str:
+        if self.embornals:
+            return _("storm-drain")
+        if self.fonts:
+            return _("Fountain")
+        if self.basins:
+            return _("Basin")
+        if self.wells:
+            return _("Well")
+        if self.other:
+            return _("Other")
+
+    # Other properties
+    @property
+    def tiger_responses_text(self) -> Optional[dict]:
+        if self.type != self.TYPE_ADULT:
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        for response in these_responses:
+            result[response.question] = response.answer
+        return result
+
+    @property
+    def site_responses_text(self) -> Optional[dict]:
+        if self.type != self.TYPE_SITE:
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        for response in these_responses:
+            result[response.question] = response.answer
+        return result
+
+    @property
+    def tiger_responses(self) -> Optional[dict]:
+        if self.type != self.TYPE_ADULT:
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        if (
+            these_responses.filter(
+                Q(question="Is it small and black with white stripes?")
+                | Q(question="\xc9s petit i negre amb ratlles blanques?")
+                | Q(question="\xbfEs peque\xf1o y negro con rayas blancas?")
+            ).count()
+            > 0
+        ):
+            q1r = these_responses.get(
+                Q(question="Is it small and black with white stripes?")
+                | Q(question="\xc9s petit i negre amb ratlles blanques?")
+                | Q(question="\xbfEs peque\xf1o y negro con rayas blancas?")
+            ).answer
+            result["q1_response"] = (
+                1 if q1r in ["S\xed", "Yes"] else -1 if q1r == "No" else 0
+            )
+        if (
+            these_responses.filter(
+                Q(question="Does it have a white stripe on the head and thorax?")
+                | Q(question="T\xe9 una ratlla blanca al cap i al t\xf2rax?")
+                | Q(question="\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?")
+            ).count()
+            > 0
+        ):
+            q2r = these_responses.get(
+                Q(question="Does it have a white stripe on the head and thorax?")
+                | Q(question="T\xe9 una ratlla blanca al cap i al t\xf2rax?")
+                | Q(question="\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?")
+            ).answer
+            result["q2_response"] = (
+                1 if q2r in ["S\xed", "Yes"] else -1 if q2r == "No" else 0
+            )
+        if (
+            these_responses.filter(
+                Q(question="Does it have white stripes on the abdomen and legs?")
+                | Q(question="T\xe9 ratlles blanques a l'abdomen i a les potes?")
+                | Q(question="\xbfTiene rayas blancas en el abdomen y en las patas?")
+            ).count()
+            > 0
+        ):
+            q3r = these_responses.get(
+                Q(question="Does it have white stripes on the abdomen and legs?")
+                | Q(question="T\xe9 ratlles blanques a l'abdomen i a les potes?")
+                | Q(question="\xbfTiene rayas blancas en el abdomen y en las patas?")
+            ).answer
+            result["q3_response"] = (
+                1 if q3r in ["S\xed", "Yes"] else -1 if q3r == "No" else 0
+            )
+        return result
+
+    @property
+    def site_responses(self) -> Optional[dict]:
+        if self.type != self.TYPE_SITE:
+            return None
+        these_responses = self.responses.all()
+        result = {}
+        if self.package_name == "ceab.movelab.tigatrapp" and self.package_version >= 10:
+            if (
+                these_responses.filter(
+                    Q(question="Is it in a public area?")
+                    | Q(question="\xbfSe encuentra en la v\xeda p\xfablica?")
+                    | Q(question="Es troba a la via p\xfablica?")
+                ).count()
+                > 0
+            ):
+                q1r = these_responses.get(
+                    Q(question="Is it in a public area?")
+                    | Q(question="\xbfSe encuentra en la v\xeda p\xfablica?")
+                    | Q(question="Es troba a la via p\xfablica?")
+                ).answer
+                result["q1_response_new"] = 1 if q1r in ["S\xed", "Yes"] else -1
+
+            if (
+                these_responses.filter(
+                    Q(
+                        question="Does it contain stagnant water and/or mosquito larvae or pupae (any mosquito species)?"
+                    )
+                    | Q(
+                        question="Contiene agua estancada y/o larvas o pupas de mosquito (cualquier especie)?"
+                    )
+                    | Q(
+                        question="Cont\xe9 aigua estancada y/o larves o pupes de mosquit (qualsevol esp\xe8cie)?"
+                    )
+                ).count()
+                > 0
+            ):
+                q2r = these_responses.get(
+                    Q(
+                        question="Does it contain stagnant water and/or mosquito larvae or pupae (any mosquito species)?"
+                    )
+                    | Q(
+                        question="Contiene agua estancada y/o larvas o pupas de mosquito (cualquier especie)?"
+                    )
+                    | Q(
+                        question="Cont\xe9 aigua estancada y/o larves o pupes de mosquit (qualsevol esp\xe8cie)?"
+                    )
+                ).answer
+                result["q2_response_new"] = (
+                    1 if ("S\xed" in q2r or "Yes" in q2r) else -1
+                )
+
+            if (
+                these_responses.filter(
+                    Q(question="Have you seen adult mosquitoes nearby (<10 meters)?")
+                    | Q(question="\xbfHas visto mosquitos cerca (a <10 metros)?")
+                    | Q(question="Has vist mosquits a prop (a <10metres)?")
+                ).count()
+                > 0
+            ):
+                q3r = these_responses.get(
+                    Q(question="Have you seen adult mosquitoes nearby (<10 meters)?")
+                    | Q(question="\xbfHas visto mosquitos cerca (a <10 metros)?")
+                    | Q(question="Has vist mosquits a prop (a <10metres)?")
+                ).answer
+                result["q3_response_new"] = 1 if q3r in ["S\xed", "Yes"] else -1
+            return result
+        else:
+            if (
+                these_responses.filter(
+                    Q(question="Does it have stagnant water inside?")
+                    | Q(question="\xbfContiene agua estancada?")
+                    | Q(question="Cont\xe9 aigua estancada?")
+                ).count()
+                > 0
+            ):
+                q1r = these_responses.get(
+                    Q(question="Does it have stagnant water inside?")
+                    | Q(question="\xbfContiene agua estancada?")
+                    | Q(question="Cont\xe9 aigua estancada?")
+                ).answer
+                result["q1_response"] = (
+                    1 if q1r in ["S\xed", "Yes"] else -1 if q1r == "No" else 0
+                )
+            if (
+                these_responses.filter(
+                    Q(
+                        question="Have you seen mosquito larvae (not necessarily tiger mosquito) inside?"
+                    )
+                    | Q(
+                        question="\xbfContiene larvas o pupas de mosquito (de cualquier especie)?"
+                    )
+                    | Q(
+                        question="Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?"
+                    )
+                ).count()
+                > 0
+            ):
+                q2r = these_responses.get(
+                    Q(
+                        question="Have you seen mosquito larvae (not necessarily tiger mosquito) inside?"
+                    )
+                    | Q(
+                        question="\xbfContiene larvas o pupas de mosquito (de cualquier especie)?"
+                    )
+                    | Q(
+                        question="Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?"
+                    )
+                ).answer
+                result["q2_response"] = (
+                    1 if q2r in ["S\xed", "Yes"] else -1 if q2r == "No" else 0
+                )
+            return result
+
+    @property
+    def creation_year(self) -> int:
+        return self.creation_time.year
+
+    @property
+    def creation_month(self) -> int:
+        return self.creation_time.month
+
+    @property
+    def creation_date(self):
+        return self.creation_time.date()
+
+    @property
+    def creation_day_since_launch(self) -> int:
+        return (self.creation_time - settings.START_TIME).days
+
+    # Methods
+    def _get_country_is_in(self) -> Optional[EuropeCountry]:
+        logger_report_geolocation.debug(
+            "retrieving country for report with id {0}".format(self.pk)
+        )
+
+        if not self.point:
+            logger_report_geolocation.debug(
+                "report with id {0} has no associated geolocation".format(self.pk)
+            )
+            return None
+
+        max_distance = DistanceMeasure(km=11.1)  # 0.1 degrees
+        country = (
+            EuropeCountry.objects.annotate(
+                distance=DistanceFunction("geom", self.point)
+            )
+            .filter(distance__lt=max_distance)
+            .order_by("distance")
+            .first()
+        )
+
+        if country:
+            if country.distance.m == 0:
+                # Case point is contained (distance = 0 meters)
+                logger_report_geolocation.debug(
+                    "report with id {0} has SINGLE candidate, country {1} with code {2}".format(
+                        self.pk, country.name_engl, country.iso3_code
+                    )
+                )
+            else:
+                # Case point was not cointained, but near
+                logger_report_geolocation.debug(
+                    "report with id {0} assigned to NEARBY country {1} with code {2}".format(
+                        self.pk, country.name_engl, country.iso3_code
+                    )
+                )
+        else:
+            logger_report_geolocation.debug(
+                "report with id {0} found no NEARBY countries, setting country as none".format(
+                    self.pk
+                )
+            )
+
+        return country
+
+    def _get_nuts_is_in(self, levl_code) -> Optional[NutsEurope]:
+        if not self.country or not self.point:
+            return
+
+        max_distance = DistanceMeasure(km=11.1)  # 0.1 degrees
+        nuts = (
+            NutsEurope.objects.filter(europecountry=self.country, levl_code=levl_code)
+            .annotate(distance=DistanceFunction("geom", self.point))
+            .filter(distance__lt=max_distance)
+            .order_by("distance")
+            .first()
+        )
+
+        return nuts
+
+    def _get_point(self) -> Optional[GEOSGeometry]:
+        if (self.lon == -1 and self.lat == -1) or self.lon is None or self.lat is None:
+            return None
+        # longitude, latitude
+        wkt_point = "POINT( {0} {1} )"
+        p = GEOSGeometry(wkt_point.format(self.lon, self.lat), srid=4326)
+        return p
+
+    def save(self, *args, **kwargs):
+        # Recreate the Point (just in case lat/lon has changed)
+        _old_point = self.point
+        self.point = self._get_point()
+
+        # Fill the country field
+        if not self.country or _old_point != self.point:
+            self.country = self._get_country_is_in()
+            if not self.country:
+                logger_report_geolocation.debug(
+                    "report with id {0} assigned to no country".format(self.pk)
+                )
+            else:
+                logger_report_geolocation.debug(
+                    "report with id {0} assigned to country {1} with code {2}".format(
+                        self.pk, self.country.name_engl, self.country.iso3_code
+                    )
+                )
+
+        if self.point and self.country:
+            nuts3 = self._get_nuts_is_in(levl_code=3)
+            if nuts3:
+                self.nuts_3 = nuts3.nuts_id
+
+            nuts2 = self._get_nuts_is_in(levl_code=2)
+            if nuts2:
+                self.nuts_2 = nuts2.nuts_id
+
+        super(Report, self).save(*args, **kwargs)
+
+    # Meta and String
+    class Meta:
+        pass
+
+    def __unicode__(self):
+        return self.pk
+
+
+
+    def get_photo_html_for_report_validation_completed(self):
+        result = ''
+        for photo in self.visible_photos:
+            best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
+            border_style = "3px solid green" if best_photo else "1px solid #333333"
+            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_() + '</div><div>' + get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
+        return result
+
     def get_which_is_latest(self):
         all_versions = Report.objects.filter(report_id=self.report_id).order_by('version_number')
         return all_versions.reverse()[0].version_UUID
 
     def get_crowdcrafting_score(self):
-        if self.type not in ('site', 'adult'):
+        if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
             return None
         these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
         if these_photos.count() == 0:
             return None
-        if self.type == 'site':
+        if self.type == self.TYPE_SITE:
             scores = map(lambda x: x.crowdcraftingtask.site_validation_score, these_photos.iterator())
         else:
             scores = map(lambda x: x.crowdcraftingtask.tiger_validation_score, these_photos.iterator())
@@ -884,19 +1532,6 @@ class Report(models.Model):
             return None
         else:
             return max(scores)
-
-    def get_report_language(self):
-        app_language = self.app_language
-        if app_language is not None and app_language != '':
-            trans_info = translation.get_language_info(app_language)
-            return trans_info['name']
-        return 'English'
-
-    def get_report_language_code(self):
-        app_language = self.app_language
-        if app_language is not None and app_language != '':
-            return app_language
-        return 'en'
 
     def get_is_crowd_validated(self):
         if self.get_crowdcrafting_score():
@@ -912,14 +1547,14 @@ class Report(models.Model):
 
     def get_validated_photo_html(self):
         result = ''
-        if self.type not in ('site', 'adult'):
+        if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
             return result
         these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
         for photo in these_photos:
             result += '<br>' + photo.small_image_() + '<br>'
         return result
 
-    def show_on_map(self):
+    def show_on_map(self) -> bool:
         if self.creation_time.year == 2014:
             return True
         else:
@@ -927,261 +1562,6 @@ class Report(models.Model):
                 return (not self.photos.all().exists()) or ((ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists()) and self.get_final_expert_status() == 1)
             else:
                 return self.cached_visible == 1
-
-    def get_movelab_annotation_euro(self):
-        expert_validated = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True)
-        if self.creation_time.year == 2014 and not expert_validated:
-            if self.type == 'adult':
-                max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
-                if max_movelab_annotation is not None:
-                    return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category,
-                            'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat,
-                            'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses,
-                            'edited_user_notes': max_movelab_annotation.edited_user_notes,
-                            'photo_html': max_movelab_annotation.task.photo.popup_image()}
-        else:
-            if expert_validated:
-                result = {'edited_user_notes': self.get_final_public_note()}
-                if self.get_final_photo_html():
-                    result['photo_html'] = self.get_final_photo_html().popup_image()
-                if self.type == 'adult':
-                    classification = self.get_final_combined_expert_category_euro_struct()
-                    if classification['conflict'] is True:
-                        result['class_name'] = 'Conflict'
-                        result['class_label'] = 'conflict'
-                    else:
-                        if classification['category'] is not None:
-                            if classification['complex'] is not None:
-                                result['class_name'] = classification['complex'].description
-                                result['class_label'] = slugify(classification['category'].name)
-                                result['class_id'] = classification['category'].id
-                                result['class_value'] = classification['complex'].id
-                                # result['class_value'] = classification['value']
-                            else:
-                                result['class_name'] = classification['category'].name
-                                result['class_label'] = slugify(classification['category'].name)
-                                result['class_id'] = classification['category'].id
-                                result['class_value'] = classification['value']
-
-                    '''
-                    retval = {
-                        'category': None,
-                        'complex': None,
-                        'value': None,
-                        'conflict': False
-                    }
-                    '''
-                elif self.type == 'site':
-                    result['class_name'] = "site"
-                    result['class_label'] = "site"
-                    result['site_certainty_category'] = self.get_final_expert_score()
-                return result
-        return None
-
-    # note that I am making this really get movelab or expert annotation,
-    # but keeping name for now to avoid refactoring templates
-    def get_movelab_annotation(self):
-        expert_validated = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True)
-        if self.creation_time.year == 2014 and not expert_validated:
-            if self.type == 'adult':
-                max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
-                if max_movelab_annotation is not None:
-                    return {'tiger_certainty_category': max_movelab_annotation.tiger_certainty_category, 'crowdcrafting_score_cat': max_movelab_annotation.task.tiger_validation_score_cat, 'crowdcrafting_n_response': max_movelab_annotation.task.crowdcrafting_n_responses, 'edited_user_notes': max_movelab_annotation.edited_user_notes, 'photo_html': max_movelab_annotation.task.photo.popup_image()}
-        else:
-            if expert_validated:
-                result = {'edited_user_notes': self.get_final_public_note()}
-                if self.get_final_photo_html():
-                    result['photo_html'] = self.get_final_photo_html().popup_image()
-                    if hasattr(self.get_final_photo_html(), 'crowdcraftingtask'):
-                        result['crowdcrafting_score_cat'] = self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat
-                        result['crowdcrafting_n_response'] = self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
-                if self.type == 'adult':
-                    result['tiger_certainty_category'] = self.get_final_expert_score()
-                    result['aegypti_certainty_category'] = self.get_final_expert_score_aegypti()
-                    classification = self.get_mean_combined_expert_adult_score()
-                    result['score'] = int(round(classification['score']))
-                    if result['score'] <= 0:
-                        result['classification'] = 'none'
-                    else:
-                        if classification['is_aegypti'] == True:
-                            result['classification'] = 'aegypti'
-                        elif classification['is_albopictus'] == True:
-                            result['classification'] = 'albopictus'
-                        elif classification['is_none'] == True:
-                            result['classification'] = 'none'
-                        else:
-                            #This should NEVER happen. however...
-                            result['classification'] = 'conflict'
-                elif self.type == 'site':
-                    result['site_certainty_category'] = self.get_final_expert_score()
-                return result
-        return None
-
-    # Convenience method, used only in the nearby_reports API call
-    def get_simplified_adult_movelab_annotation(self):
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True):
-            result = {}
-            if self.type == 'adult':
-                classification = self.get_mean_combined_expert_adult_score()
-                result['score'] = int(round(classification['score']))
-                if classification['is_aegypti'] == True:
-                    result['classification'] = 'aegypti'
-                elif classification['is_albopictus'] == True:
-                    result['classification'] = 'albopictus'
-                elif classification['is_none'] == True:
-                    result['classification'] = 'none'
-                else:
-                    # This should NEVER happen. however...
-                    result['classification'] = 'conflict'
-            return result
-        return None
-
-    # return the aegypti category; if there are several superexperts (shouldn't happen, I think) with certainty values return smallest
-    def get_final_superexpert_aegypti_score(self):
-        annot = ExpertReportAnnotation.objects.filter(report=self,user__groups__name='superexpert',validation_complete=True).exclude(aegypti_certainty_category__isnull=True).order_by('aegypti_certainty_category').first()
-        if annot is not None:
-            return annot.aegypti_certainty_category
-        return None
-
-
-    def get_movelab_score(self):
-        if self.type != 'adult':
-            return None
-        max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
-        if max_movelab_annotation is None:
-            return None
-        return max_movelab_annotation.tiger_certainty_category
-
-    def get_crowd_score(self):
-        if self.type != 'adult':
-            return None
-        max_movelab_annotation = MoveLabAnnotation.objects.filter(task__photo__report=self).exclude(hide=True).order_by('tiger_certainty_category').last()
-        if max_movelab_annotation is None:
-            return None
-        return max_movelab_annotation.task.tiger_validation_score_cat
-
-    def get_tiger_responses_text(self):
-        if self.type != 'adult':
-            return None
-        these_responses = self.responses.all()
-        result = {}
-        for response in these_responses:
-            result[response.question] = response.answer
-        return result
-
-    def get_tiger_responses_json_friendly(self):
-        if self.type != 'adult':
-            return None
-        these_responses = self.responses.all()
-        result = {}
-        i = 1
-        for response in these_responses:
-            item = {}
-            item["q"] = response.question
-            item["a"] = response.answer
-            result["q_" + str(i)] = item
-            i = i + 1
-        return result
-
-    def get_tiger_responses(self):
-        if self.type != 'adult':
-            return None
-        these_responses = self.responses.all()
-        result = {}
-        if these_responses.filter(Q(question=u'Is it small and black with white stripes?') | Q(question=u'\xc9s petit i negre amb ratlles blanques?') | Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
-            q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?') | Q(question=u'\xc9s petit i negre amb ratlles blanques?') | Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
-            result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-        if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?') | Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?') | Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
-            q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?') | Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?') | Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
-            result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-        if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
-            q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?') | Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?") | Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
-            result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
-        return result
-
-    # def get_tiger_responses(self):
-    #     if self.type != 'adult':
-    #         return None
-    #     these_responses = self.responses.all()
-    #     result = {}
-    #
-    #     if these_responses.filter(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).count() > 0:
-    #         q1r = these_responses.get(Q(question=u'Is it small and black with white stripes?')|Q(question=u'\xc9s petit i negre amb ratlles blanques?')|Q(question=u'\xbfEs peque\xf1o y negro con rayas blancas?')).answer
-    #         result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q1r = these_responses.get(Q(question=u'What does your mosquito look like? Check the (i) button and select an answer:') | Q(question=u'Com \xe9s el teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:') | Q(question=u'\xbfC\xf3mo es tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q1_response'] = -2 if q1r in [u'Like Ae. albopictus', u'Com Ae. albopictus',u'Como Ae. albopictus'] else -3 if q1r in [u'Like Ae. aegypti', u'Com Ae. aegypti', u'Como Ae. aegypti'] else -4 if q1r in [u'Neither', u'Cap dels dos', u'None of them'] else -5
-    #
-    #     if these_responses.filter(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).count() > 0:
-    #         q2r = these_responses.get(Q(question=u'Does it have a white stripe on the head and thorax?')|Q(question=u'T\xe9 una ratlla blanca al cap i al t\xf2rax?')|Q(question=u'\xbfTiene una raya blanca en la cabeza y en el t\xf3rax?')).answer
-    #         result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q2r = these_responses.get(Q(question=u'What does the thorax of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s el t\xf2rax del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el t\xf3rax de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q2_response'] = -2 if q2r in [u'Thorax like Ae. albopictus', u'T\xf3rax com Ae. albopictus', u'T\xf3rax like Ae. albopictus'] else -3 if q2r in [u'Thorax like Ae. aegypti', u'T\xf3rax com Ae. aegypti', u'T\xf3rax como Ae. aegypti'] else -4 if q2r in [u'Neither', u'Cap dels dos', u'Ninguno de los dos'] else -5
-    #
-    #     if these_responses.filter(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).count() > 0:
-    #         q3r = these_responses.get(Q(question=u'Does it have white stripes on the abdomen and legs?')|Q(question=u"T\xe9 ratlles blanques a l'abdomen i a les potes?")|Q(question=u'\xbfTiene rayas blancas en el abdomen y en las patas?')).answer
-    #         result['q3_response'] = 1 if q3r in [u'S\xed', u'Yes'] else -1 if q3r == u'No' else 0
-    #     elif these_responses.filter(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).count() > 0:
-    #         q3r = these_responses.get(Q(question=u'What does the abdomen of your mosquito look like? Check the (i) button and select an answer:')|Q(question=u'Com \xe9s l\u2019abdomen del teu mosquit? Consulta el bot\xf3 (i) i selecciona una resposta:')|Q(question=u'\xbfC\xf3mo es el abdomen de tu mosquito? Consulta el bot\xf3n (i) y selecciona una respuesta:')).answer
-    #         result['q3_response'] = -2 if q3r in [u'Abdomen like a Ae. albopictus',u'Abdomen com Ae. albopictus',u'Abdomen como Ae. albopictus'] else -3 if q3r in [u'Abdomen like Ae. aegypti', u'Abdomen com Ae. aegypti',u'Abdomen como Ae. aegypti'] else -4 if q3r in [u'Neither', u'Cap dels dos',u'Ninguno de los dos'] else -5
-    #     return result
-
-    def get_site_responses_text(self):
-        if self.type != 'site':
-            return None
-        these_responses = self.responses.all()
-        result = {}
-        for response in these_responses:
-            result[response.question] = response.answer
-        return result
-
-    def get_site_responses(self):
-        if self.type != 'site':
-            return None
-        these_responses = self.responses.all()
-        result = {}
-        if self.package_name == 'ceab.movelab.tigatrapp' and self.package_version >= 10:
-            if these_responses.filter(Q(question=u'Is it in a public area?')|Q(question=u'\xbfSe encuentra en la v\xeda p\xfablica?')|Q(question=u'Es troba a la via p\xfablica?')).count() > 0:
-                q1r = these_responses.get(Q(question=u'Is it in a public area?')|Q(question=u'\xbfSe encuentra en la v\xeda p\xfablica?')|Q(question=u'Es troba a la via p\xfablica?')).answer
-                result['q1_response_new'] = 1 if q1r in [u'S\xed', u'Yes'] else -1
-
-            if these_responses.filter(Q(question=u'Does it contain stagnant water and/or mosquito larvae or pupae (any mosquito species)?')|Q(question=u'Contiene agua estancada y/o larvas o pupas de mosquito (cualquier especie)?')|Q(question=u'Cont\xe9 aigua estancada y/o larves o pupes de mosquit (qualsevol esp\xe8cie)?')).count() > 0:
-                q2r = these_responses.get(Q(question=u'Does it contain stagnant water and/or mosquito larvae or pupae (any mosquito species)?')|Q(question=u'Contiene agua estancada y/o larvas o pupas de mosquito (cualquier especie)?')|Q(question=u'Cont\xe9 aigua estancada y/o larves o pupes de mosquit (qualsevol esp\xe8cie)?')).answer
-                result['q2_response_new'] = 1 if (u'S\xed' in q2r or u'Yes' in q2r) else -1
-
-            if these_responses.filter(Q(question=u'Have you seen adult mosquitoes nearby (<10 meters)?')|Q(question=u'\xbfHas visto mosquitos cerca (a <10 metros)?')|Q(question=u'Has vist mosquits a prop (a <10metres)?')).count() > 0:
-                q3r = these_responses.get(Q(question=u'Have you seen adult mosquitoes nearby (<10 meters)?')|Q(question=u'\xbfHas visto mosquitos cerca (a <10 metros)?')|Q(question=u'Has vist mosquits a prop (a <10metres)?')).answer
-                result['q3_response_new'] = 1 if q3r in [u'S\xed', u'Yes'] else -1
-            return result
-        else:
-            if these_responses.filter(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).count() > 0:
-                q1r = these_responses.get(Q(question=u'Does it have stagnant water inside?')|Q(question=u'\xbfContiene agua estancada?')|Q(question=u'Cont\xe9 aigua estancada?')).answer
-                result['q1_response'] = 1 if q1r in [u'S\xed', u'Yes'] else -1 if q1r == u'No' else 0
-            if these_responses.filter(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?')).count() > 0:
-                q2r = these_responses.get(Q(question=u'Have you seen mosquito larvae (not necessarily tiger mosquito) inside?')|Q(question=u'\xbfContiene larvas o pupas de mosquito (de cualquier especie)?')|Q(question=u'Cont\xe9 larves o pupes de mosquit (de qualsevol esp\xe8cie)?')).answer
-                result['q2_response'] = 1 if q2r in [u'S\xed', u'Yes'] else -1 if q2r == u'No' else 0
-            return result
-
-    def get_creation_year(self):
-        return self.creation_time.year
-
-    def get_creation_month(self):
-        return self.creation_time.month
-
-    def get_creation_date(self):
-        return self.creation_time.date()
-
-    def get_creation_day_since_launch(self):
-        return (self.creation_time - settings.START_TIME).days
-
-    def get_n_expert_report_annotations_tiger_certainty(self):
-        n = ExpertReportAnnotation.objects.filter(report=self).exclude(tiger_certainty_category=None).count()
-        return n
-
-    def get_n_expert_report_annotations_site_certainty(self):
-        n = ExpertReportAnnotation.objects.filter(report=self).exclude(site_certainty_category=None).count()
-        return n
 
     def get_mean_expert_adult_score_aegypti(self):
         sum_scores = 0
@@ -1336,62 +1716,6 @@ class Report(models.Model):
 
         return status
 
-    def get_final_combined_expert_category_public_map(self,locale):
-        classification = self.get_mean_combined_expert_adult_score()
-        score = int(round(classification['score']))
-
-        ca = {'tiger':'Mosquit tigre','yellow':'Mosquit febre groga','unclassified':'No identificable','other': 'Altres especies'}
-        es = {'tiger':'Mosquito tigre','yellow':'Mosquito fiebre amarilla','unclassified':'No identificable','other': 'Otras especies'}
-        en = {'tiger':'Tiger mosquito','yellow':'Yellow fever mosquito','unclassified':'Unidentifiable', 'other': 'Other species'}
-        labels = {'ca':ca, 'es':es, 'en':en}
-
-        if classification['is_aegypti']:
-            if score == 1 or score == 2:
-                return labels[locale]['yellow']
-        elif classification['is_albopictus']:
-            if score == 1 or score == 2:
-                return labels[locale]['tiger']
-        else:
-            if score == 0 or score == -3:
-                return labels[locale]['unclassified']
-            elif score == -1 or score == -2:
-                return labels[locale]['other']
-
-    def get_translated_species_name(self,locale,untranslated_species):
-        current_locale = 'en'
-        for l in settings.LANGUAGES:
-            if locale==l[0]:
-                current_locale = locale
-        translation.activate(current_locale)
-        translations_table_species_name = {
-            "Unclassified": ugettext("species_unclassified"),
-            "Other species": ugettext("species_other"),
-            "Aedes albopictus": ugettext("species_albopictus"),
-            "Aedes aegypti": ugettext("species_aegypti"),
-            "Aedes japonicus": ugettext("species_japonicus"),
-            "Aedes koreicus": ugettext("species_koreicus"),
-            "Complex": ugettext("species_complex"),
-            "Not sure": ugettext("species_notsure"),
-            "Culex sp.": ugettext("species_culex")
-        }
-        retval = translations_table_species_name.get(untranslated_species, "Unknown")
-        translation.deactivate()
-        return retval
-
-    def get_translated_value_name(self, locale, untranslated_value):
-        current_locale = 'en'
-        for l in settings.LANGUAGES:
-            if locale == l[0]:
-                current_locale = locale
-        translation.activate(current_locale)
-        translations_table_value_name = {
-            1: ugettext("species_value_possible"),
-            2: ugettext("species_value_confirmed")
-        }
-        retval = translations_table_value_name.get(untranslated_value, "Unknown")
-        translation.deactivate()
-        return retval
-
     def get_final_combined_expert_category_public_map_euro(self, locale):
         classification = self.get_final_combined_expert_category_euro_struct()
         # retval = {
@@ -1414,11 +1738,9 @@ class Report(models.Model):
             else:
                 if c.specify_certainty_level == True:
                     untranslated_certainty = classification['value']
-                    return self.get_translated_species_name(locale,untranslated_category) + " - " + self.get_translated_value_name(locale,untranslated_certainty)
+                    return get_translated_species_name(locale,untranslated_category) + " - " + get_translated_value_name(locale,untranslated_certainty)
                 else:
-                    return self.get_translated_species_name(locale,untranslated_category)
-
-
+                    return get_translated_species_name(locale,untranslated_category)
 
     def get_most_voted_category(self, expert_annotations):
         most_frequent_item, most_frequent_count = None, 0
@@ -1444,28 +1766,6 @@ class Report(models.Model):
                     return None  # conflict
         return most_frequent_item
 
-    '''
-    def get_most_voted_category(self,expert_annotations):
-        score_table = {}
-        most_frequent_item, most_frequent_count = None, 0
-        for anno in expert_annotations:                            
-            item = anno.category if anno.complex is None else anno.complex
-            score_table[item] = score_table.get(item,0) + 1
-            if score_table[item] >= most_frequent_count:
-                most_frequent_count, most_frequent_item = score_table[item], item
-        # if there's a single key and it's Not sure, then not sure
-        if len(score_table.keys()) == 1:
-            for key in score_table:
-                if key.id == 9:
-                    return score_table[key]
-        # check for ties
-        for key in score_table:            
-            score = score_table[key]
-            if key != most_frequent_item and score >= most_frequent_count:
-                return None #conflict
-        return most_frequent_item
-    '''
-
     def get_score_for_category_or_complex(self, category):
         superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)
         expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category=category)
@@ -1486,41 +1786,9 @@ class Report(models.Model):
             return 1
         #return mean_score
 
-
     def get_html_color_for_label(self):
         label = self.get_final_combined_expert_category_euro()
         return html_utils.get_html_color_for_label(label)
-
-    def get_selector_data(self):
-        retVal = {
-            'id_category' : '',
-            'id_complex' : '',
-            'validation_value': ''
-        }
-        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True,category__isnull=False)
-        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category__isnull=False)
-
-        most_voted = None
-        if superexpert_annotations.count() > 1:
-            most_voted = self.get_most_voted_category(superexpert_annotations)
-        elif superexpert_annotations.count() == 1:
-            most_voted = superexpert_annotations[0].category
-        elif expert_annotations.count() >= 3:
-            most_voted = self.get_most_voted_category(expert_annotations)
-        else:
-            retVal['id_category'] = None
-
-        if most_voted is None:
-            retVal['id_category'] = -1
-        else:
-            retVal['id_category'] = most_voted.id
-            if most_voted.__class__.__name__ == 'Categories':
-                if most_voted.specify_certainty_level == True:
-                    score = self.get_score_for_category_or_complex(most_voted)
-                    retVal['validation_value'] = score
-            elif most_voted.__class__.__name__ == 'Complex':
-                retVal['id_complex'] = most_voted.id
-        return retVal
 
     # if superexpert has opinion then
     #   if more than 1 superexpert has opinion then
@@ -1629,25 +1897,6 @@ class Report(models.Model):
                 retval['complex'] = most_voted
                 retval['category'] = Categories.objects.get(pk=8)
         return retval
-
-    def get_final_combined_expert_category(self):
-        # if self.type == 'site':
-        #      return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
-        # elif self.type == 'adult':
-        #      return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[self.get_final_expert_score()]
-        classification = self.get_mean_combined_expert_adult_score()
-        score = int(round(classification['score']))
-        if score == -4:
-            return "Conflict"
-        if score <= 0:
-            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[score]
-        else:
-            if classification['is_aegypti']:
-                return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES_SEPARATED))[score]
-            elif classification['is_albopictus'] or classification['is_none']:
-                return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[score]
-            else:
-                return "Conflict"
 
     def get_mean_combined_expert_adult_score(self):
         status = self.get_mean_expert_adult_classification_data()
@@ -1778,7 +2027,6 @@ class Report(models.Model):
         #unreachable, in theory - left here for security purposes
         return classification
 
-
     def get_mean_expert_site_score(self):
         sum_scores = 0
         mean_score = -3
@@ -1801,23 +2049,11 @@ class Report(models.Model):
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
 
-    def get_final_combined_expert_score_euro(self):
-        score = -3
-        if self.type == 'site':
-            score = self.get_mean_expert_site_score()
-        elif self.type == 'adult':
-            classification = self.get_mean_combined_expert_adult_score_euro()
-            score = classification['score']
-        if score is not None:
-            return int(round(score))
-        else:
-            return -3
-
     def get_final_combined_expert_score(self):
         score = -3
-        if self.type == 'site':
+        if self.type == self.TYPE_SITE:
             score = self.get_mean_expert_site_score()
-        elif self.type == 'adult':
+        elif self.type == self.TYPE_ADULT:
             classification = self.get_mean_combined_expert_adult_score()
             score = classification['score']
         if score is not None:
@@ -1827,9 +2063,9 @@ class Report(models.Model):
 
     def get_final_expert_score(self):
         score = -3
-        if self.type == 'site':
+        if self.type == self.TYPE_SITE:
             score = self.get_mean_expert_site_score()
-        elif self.type == 'adult':
+        elif self.type == self.TYPE_ADULT:
             score = self.get_mean_expert_adult_score()
         if score is not None:
             return int(round(score))
@@ -1838,26 +2074,14 @@ class Report(models.Model):
 
     def get_final_expert_score_aegypti(self):
         score = -3
-        if self.type == 'site':
+        if self.type == self.TYPE_SITE:
             score = self.get_mean_expert_site_score()
-        elif self.type == 'adult':
+        elif self.type == self.TYPE_ADULT:
             score = self.get_mean_expert_adult_score_aegypti()
         if score is not None:
             return int(round(score))
         else:
             return -3
-
-    def get_final_expert_category(self):
-        if self.type == 'site':
-            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
-        elif self.type == 'adult':
-            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES_SEPARATED))[self.get_final_expert_score()]
-
-    def get_final_expert_category_aegypti(self):
-        if self.type == 'site':
-            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_final_expert_score()]
-        elif self.type == 'adult':
-            return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES_SEPARATED))[self.get_final_expert_score_aegypti()]
 
     def get_final_expert_status(self):
         result = 1
@@ -1882,43 +2106,8 @@ class Report(models.Model):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
         return result
 
-    def is_validated_by_two_experts_and_superexpert(self):
-        """
-        This is used to locate reports validated by two experts and the superexpert. This commonly
-        happens as a consequence of detecting some reports validated 2 times by the same expert; to solve
-        this situation, one of the two repeated annotations is removed. As a consequence, the report
-        is validated by 2 experts and 1 superexpert
-        :return: True if the report is validqted by exactly 2 experts and 1 superexpert
-        """
-        return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True).count() == 2 and ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True).count() == 1
-
     def get_is_expert_validated(self):
         return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3
-
-    def get_final_expert_score_bootstrap(self):
-        result = '<span class="label label-default" style="background-color:' + ('red' if self.get_final_expert_score() == 2 else ('orange' if self.get_final_expert_score() == 1 else ('white' if self.get_final_expert_score() == 0 else ('grey' if self.get_final_expert_score() == -1 else 'black')))) + ';">' + self.get_final_expert_category() + '</span>'
-        return result
-
-    def get_tags(self):
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        s = set()
-        for ano in these_annotations:
-            tags = ano.tags.all()
-            for tag in tags:
-                s.add(tag)
-        return s
-
-    def get_tags_string(self):
-        result = ''
-        s = self.get_tags()
-        if s:
-            i = 0
-            for tag in s:
-                result += tag.name
-                if i != len(s) - 1:
-                    result += ','
-                i += 1
-        return result
 
     def get_tags_bootstrap_superexpert(self):
         these_annotations = ExpertReportAnnotation.objects.filter(report=self)
@@ -1952,32 +2141,6 @@ class Report(models.Model):
     def get_single_report_view_link(self):
         result = reverse('single_report_view', kwargs={"version_uuid": self.version_UUID})
         return result
-
-    def get_who_has_list(self):
-        result = []
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        i = these_annotations.count()
-        for ano in these_annotations:
-            result.append(ano.user.username)
-        return result
-
-    def get_who_has_message_recipients(self):
-        result = ''
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        i = these_annotations.count()
-        for ano in these_annotations:
-            result += ano.user.username
-            i -= 1
-            if i > 0:
-                result += '+'
-        return result
-
-    def user_has_report(self, user):
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        assigned_to = []
-        for ano in these_annotations:
-            assigned_to.append(ano.user)
-        return user in assigned_to
 
     def get_who_has(self):
         result = ''
@@ -2046,45 +2209,6 @@ class Report(models.Model):
                 result += ' '
         return result
 
-    def get_expert_score_reports_bootstrap(self, user=None):
-        result = ''
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        if user:
-            these_annotations.exclude(user=user)
-        for ano in these_annotations:
-            result += '<div class="table-responsive"><table class="table table-condensed"><tbody><tr>'
-            result += '<td>' + ano.user.username + '</td>'
-            result += '<td>' + ano.get_status_bootstrap() + '</td>'
-            result += '<td>' + ano.get_score_bootstrap() + '</td>'
-            result += '<td><a role="button" data-toggle="collapse" href="#expert_collapse' + ano.report.version_UUID + str(ano.id) + '" aria-expanded="false" aria-controls="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><i class="fa fa-plus-square-o"></i></a></td>'
-            result += '</tr></tbody></table></div>'
-            result += '<div class="collapse" id="expert_collapse' + ano.report.version_UUID + str(ano.id) + '"><div class="well">'
-            result += '<div class="table-responsive"><table class="table table-condensed"><tbody>'
-            result += '<tr><td><strong>Expert:</strong></td><td>' + ano.user.username + '</td></tr>'
-            result += '<tr><td><strong>Last Edited:</strong></td><td>' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC</td>></tr>'
-            if self.type == 'adult':
-                result += '<tr><td><strong>Tiger Notes:</strong></td><td>' + ano.tiger_certainty_notes + '</td></tr>'
-            elif self.type == 'site':
-                result += '<tr><td><strong>Site Notes:</strong></td><td>' + ano.site_certainty_notes + '</td></tr>'
-            result += '<tr><td><strong>Selected photo:</strong></td><td>' + (ano.best_photo.popup_image() if ano.best_photo else "") + '</td></tr>'
-            result += '<tr><td><strong>Edited User Notes:</strong></td><td>' + ano.edited_user_notes + '</td></tr>'
-            result += '<tr><td><strong>Message To User:</strong></td><td>' + ano.message_for_user + '</td></tr>'
-            result += '</tbody></table></div></div></div>'
-        return result
-
-    def get_expert_annotations_html(self, this_user):
-        result = ''
-        for ano in self.expert_report_annotations.exclude(user=this_user):
-            result += '<p>User: ' + ano.user.username + ', Last Edited: ' + str(ano.last_modified) + '</p>'
-            if self.type == 'adult':
-                result += '<p>Tiger Certainty: ' + (ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "") + '</p>'
-                result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
-            elif self.type == 'site':
-                result += '<p>Site Certainty: ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '</p>'
-                result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
-            result += '<p>Status: ' + str(ano.statu) + '</p>'
-        return result
-
     def get_final_photo_url_for_notification(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
             super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
@@ -2109,11 +2233,7 @@ class Report(models.Model):
             return None
 
     def get_first_visible_photo(self):
-        photos = Photo.objects.filter(report=self)
-        for photo in photos:
-            if not photo.hide:
-                return photo
-        return None
+        return self.visible_photos.first()
 
     def get_final_photo_html(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
@@ -2133,7 +2253,7 @@ class Report(models.Model):
                         if winning_photo and winning_photo.count() > 0:
                             return Photo.objects.get(pk=winning_photo_id)
                 else:
-                    photos = Photo.objects.filter(report=self).exclude(hide=True).order_by('-id')
+                    photos = self.visible_photos.order_by('-id')
                     if photos and len(photos) > 0:
                         return photos[0]
             return None
@@ -2146,7 +2266,7 @@ class Report(models.Model):
                     if winning_photo and winning_photo.count() > 0:
                         return Photo.objects.get(pk=winning_photo_id)
             else:
-                photos = Photo.objects.filter(report=self).exclude(hide=True).order_by('-id')
+                photos = self.visible_photos.order_by('-id')
                 if photos and len(photos) > 0:
                     return photos[0]
             return None
@@ -2191,93 +2311,6 @@ class Report(models.Model):
         else:
             return ''
 
-    def can_be_first_of_season(self, year):
-        utc = pytz.UTC
-        # naive datetime
-        d = datetime(year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY)
-        # localized datetime
-        ld = utc.localize(d)
-        return self.creation_time >= ld
-
-    # save is overriden to initialize the point spatial field with the coordinates supplied
-    # to the Report object. See method get_point
-    def save(self, *args, **kwargs):
-
-        # Recreate the Point (just in case lat/lon has changed)
-        _old_point = self.point
-        self.point = self.get_point()
-
-        # Fill the country field
-        if not self.country or _old_point != self.point:
-            self.country = self.get_country_is_in()
-            if not self.country:
-                logger_report_geolocation.debug(
-                    'report with id {0} assigned to no country'.format(self.pk)
-                )
-            else:
-                logger_report_geolocation.debug(
-                    'report with id {0} assigned to country {1} with code {2}'.format(self.pk, self.country.name_engl, self.country.iso3_code)
-                )
-
-        if self.point and self.country:
-            self.nuts_3 = self.get_nuts_is_in(levl_code=3)
-            self.nuts_2 = self.get_nuts_is_in(levl_code=2)
-
-        super(Report, self).save(*args, **kwargs)
-
-    lon = property(get_lon)
-    lat = property(get_lat)
-    tigaprob = property(get_tigaprob)
-    tigaprob_cat = property(get_tigaprob_cat)
-    tigaprob_text = property(get_tigaprob_text)
-    site_type = property(get_site_type)
-    site_type_trans = property(get_site_type_trans)
-    site_cat = property(get_site_cat)
-    embornals = property(get_site_embornals)
-    fonts = property(get_site_fonts)
-    basins = property(get_site_basins)
-    buckets = property(get_site_buckets)
-    wells = property(get_site_wells)
-    other = property(get_site_other)
-    masked_lat = property(get_masked_lat)
-    masked_lon = property(get_masked_lon)
-    n_photos = property(get_n_photos)
-    n_visible_photos = property(get_n_visible_photos)
-    photo_html = property(get_photo_html)
-    #photo_html_for_report_validation= property(get_photo_html_for_report_validation)
-    #photo_html_for_report_validation_superexpert = property(get_photo_html_for_report_validation_superexpert)
-    formatted_date = property(get_formatted_date)
-    response_html = property(get_response_html)
-    response_string = property(get_response_string)
-    deleted = property(get_is_deleted)
-    other_versions = property(get_other_versions)
-    latest_version = property(get_is_latest)
-    visible = property(show_on_map)
-    movelab_annotation = property(get_movelab_annotation)
-    movelab_annotation_euro = property(get_movelab_annotation_euro)
-    simplified_annotation = property(get_simplified_adult_movelab_annotation)
-    movelab_score = property(get_movelab_score)
-    crowd_score = property(get_crowd_score)
-    tiger_responses = property(get_tiger_responses)
-    tiger_responses_text = property(get_tiger_responses_text)
-    site_responses = property(get_site_responses)
-    site_responses_text = property(get_site_responses_text)
-    creation_date = property(get_creation_date)
-    creation_day_since_launch = property(get_creation_day_since_launch)
-    creation_year = property(get_creation_year)
-    creation_month = property(get_creation_month)
-    n_photos = property(get_n_photos)
-    final_expert_status_text = property(get_final_expert_status)
-    is_validated_by_two_experts_and_superexpert = property(is_validated_by_two_experts_and_superexpert)
-    country_label = property(get_country_label)
-    language = property(get_report_language)
-    language_code = property(get_report_language_code)
-    located = property(has_location)
-    is_spain_p = property(is_spain)
-
-    class Meta:
-        pass
-
 
 def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
     day_before = r2_date_most_recent - timedelta(days=1)
@@ -2294,13 +2327,13 @@ def get_user_reports_count(user):
             user_uuids.append(p.user_UUID)
     else:
         user_uuids.append(user.user_UUID)
-    reports = Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type='bite')
+    reports = Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type=Report.TYPE_BITE)
     last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
     return len(list(last_versions))
 
 # def get_translation_in(string, locale):
 #     translation.activate(locale)
-#     val = ugettext(string)
+#     val = _(string)
 #     translation.deactivate()
 #     return val
 #
@@ -2429,7 +2462,7 @@ def maybe_give_awards(sender, instance, created, **kwargs):
             if n_reports == 50:
                 grant_50_reports_achievement(instance, super_movelab)
                 issue_notification(instance, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP, conf.HOST_NAME)
-            if instance.type == 'adult' or instance.type == 'site':
+            if instance.type == Report.TYPE_ADULT or instance.type == Report.TYPE_SITE:
                 # check award for first of season
                 current_year = instance.creation_time.year
                 if profile_uuids is None:
@@ -2437,7 +2470,8 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                 else:
                     awards = Award.objects.filter(given_to__user_UUID__in=profile_uuids).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
                 if awards.count() == 0:  # not yet awarded
-                    if instance.can_be_first_of_season(current_year):  # can be first of season?
+                    # can be first of season?
+                    if instance.creation_time.month >= conf.SEASON_START_MONTH and instance.creation_time.day >= conf.SEASON_START_DAY:
                         grant_first_of_season(instance, super_movelab)
                         issue_notification(instance, START_OF_SEASON, get_xp_value_of_category(START_OF_SEASON), conf.HOST_NAME)
                 else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version

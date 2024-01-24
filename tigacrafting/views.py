@@ -348,17 +348,17 @@ def filter_reports(reports, sort=True):
 
 def filter_spain_reports(reports, sort=True):
     if sort:
-        reports_filtered = sorted( filter(lambda x: x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
+        reports_filtered = sorted( filter(lambda x: x.is_spain, reports), key=attrgetter('n_annotations'), reverse=True)
     else:
-        reports_filtered = filter(lambda x: x.is_spain_p, reports)
+        reports_filtered = filter(lambda x: x.is_spain, reports)
     return reports_filtered
 
 
 def filter_eu_reports(reports, sort=True):
     if sort:
-        reports_filtered = sorted(filter(lambda x: not x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
+        reports_filtered = sorted(filter(lambda x: not x.is_spain, reports), key=attrgetter('n_annotations'), reverse=True)
     else:
-        reports_filtered = filter(lambda x: not x.is_spain_p, reports)
+        reports_filtered = filter(lambda x: not x.is_spain, reports)
     return reports_filtered
 
 

@@ -20,8 +20,8 @@ i = len(reports)
 j = 0
 for report in reports:
     if report.point is None:
-        if report.get_point() is not None:
-            report.point = report.get_point()
+        if report._get_point() is not None:
+            report.point = report._get_point()
             report.save()
     j = j + 1
     print 'Fixed report ' + str(j) + ' of ' + str(i)
