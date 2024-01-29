@@ -4,8 +4,14 @@
 SHELL			:= /bin/bash
 
 DOCKER_COMPOSE_DEV=docker-compose-local.yml
+DOCKER_COMPOSE_DEV_SSL=docker-compose-local-ssl.yml
 
 DOCKER_COMPOSE_FLAGS := -f $(DOCKER_COMPOSE_DEV)
+
+ifdef SSL
+    # If SSL is set, append the SSL compose file
+    DOCKER_COMPOSE_FLAGS += -f $(DOCKER_COMPOSE_DEV_SSL)
+endif
 
 help: # http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

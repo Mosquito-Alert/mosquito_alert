@@ -1,0 +1,57 @@
+version: '3.9'
+
+# NOTE: paste fullchain.pem and privkey.pem in compose/ssl folder + check permissions
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    networks:
+      - traefik-network
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/traefik_dynamic"
+      - "--providers.file.watch=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      # Add other Traefik-specific settings here
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./compose/ssl:/certs:ro
+      - ./compose/traefik-ssl.yml:/traefik_dynamic/traefik-ssl.yaml:ro
+
+  django:
+    depends_on:
+      - traefik
+      - postgres
+    environment:
+      - DJANGO_SETTINGS_MODULE=tigaserver_project.settings_dev_ssl
+    networks:
+      - traefik-network
+      - postgres-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django.rule=Host(`webserver.mosquitoalert.com`)"
+      - "traefik.http.routers.django.entrypoints=websecure"
+      - "traefik.http.routers.django.tls=true"
+
+  postgres:
+    networks:
+      - postgres-network
+
+networks:
+  traefik-network:
+    external: true
+
+  postgres-network:
+    external: true
