@@ -41,6 +41,7 @@ services:
       - postgres-network
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-network"
       - "traefik.http.routers.django.rule=Host(`webserver.mosquitoalert.com`)"
       - "traefik.http.routers.django.entrypoints=websecure"
       - "traefik.http.routers.django.tls=true"
