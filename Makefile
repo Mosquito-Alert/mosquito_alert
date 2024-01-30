@@ -48,6 +48,12 @@ shell:  ## Run shell inside django container.
 psql:  ## Start postgres command-line client.
 	docker compose $(DOCKER_COMPOSE_FLAGS) run --rm django python3 manage.py dbshell
 
+db_restore:  ## Restore data to postgres
+	docker compose $(DOCKER_COMPOSE_FLAGS) exec -T postgres bash -c "while ! pg_isready -U postgres -d postgres; do sleep 1; done && pg_restore -Fc -U postgres -d postgres" < $(file)
+
+clean_data:  ## Remove any data
+	docker compose $(DOCKER_COMPOSE_FLAGS) down postgres --volumes
+
 clean_docker:  ## Remove all container and images.
 	docker rm $(docker ps -a -q)
 	docker rmi $(docker image ls -q)
