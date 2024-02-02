@@ -71,7 +71,7 @@ $(function () {
         createGaugeChart(data[i].ns_country_code + '_unassigned',data[i].unassigned,'Unassigned reports','unassigned');
         createGaugeChart(data[i].ns_country_code + '_progress',data[i].progress,'Reports in progress','progress');
         createGaugeChart(data[i].ns_country_code + '_pending',data[i].pending,'Pending reports','pending');
-        createGaugeChart(data[i].ns_country_code + '_nsblocked',data[i].blocked_ns,'NS queue','ns queue');
+        createGaugeChart(data[i].ns_country_code + '_reserved',data[i].reserved,'Reserved for supervisor only','reserved');
     }
 
 

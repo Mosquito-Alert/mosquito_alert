@@ -1,9 +1,10 @@
-from typing import Optional, Literal
+from typing import List, Optional, Literal
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -15,8 +16,8 @@ from django.dispatch import receiver
 from treebeard.mp_tree import MP_Node
 
 import tigacrafting.html_utils as html_utils
-import pytz
 
+from .managers import ExpertReportAnnotationManager
 from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
 
 User = get_user_model()
@@ -189,15 +190,15 @@ AEGYPTI_CATEGORIES_SEPARATED = ((2, 'Definitely Aedes aegypti'), (1, 'Probably A
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
-STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
-
 class ExpertReportAnnotation(models.Model):
-    MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT = 3
-
     VALIDATION_CATEGORY_DEFINITELY = 2
     VALIDATION_CATEGORY_PROBABLY = 1
-
     VALIDATION_CATEGORIES = ((VALIDATION_CATEGORY_DEFINITELY, 'Definitely'), (VALIDATION_CATEGORY_PROBABLY, 'Probably'))
+
+    STATUS_HIDDEN = -1
+    STATUS_FLAGGED = 0
+    STATUS_PUBLIC = 1
+    STATUS_CATEGORIES = ((STATUS_PUBLIC, 'public'), (STATUS_FLAGGED, 'flagged'), (STATUS_HIDDEN, 'hidden'))
 
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.CASCADE, )
@@ -211,7 +212,7 @@ class ExpertReportAnnotation(models.Model):
     status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
     #last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
     last_modified = models.DateTimeField(default=timezone.now)
-    validation_complete = models.BooleanField(default=False, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
+    validation_complete = models.BooleanField(default=False, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
@@ -222,7 +223,9 @@ class ExpertReportAnnotation(models.Model):
     complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value', on_delete=models.SET_NULL, )
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
     other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.SET_NULL, )
-    validation_complete_executive = models.BooleanField(default=False, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
+    validation_complete_executive = models.BooleanField(default=False, db_index=True, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
+
+    objects = ExpertReportAnnotationManager()
 
     class Meta:
         constraints = [
@@ -237,17 +240,9 @@ class ExpertReportAnnotation(models.Model):
 
     @property
     def is_on_ns_executive_validation_period(self):
-        utc = pytz.UTC
-        if self.report.country is not None:
-            if UserStat.objects.filter(national_supervisor_of=self.report.country).exists():
-                expiration_period = self.report.country.national_supervisor_report_expires_in
-                if expiration_period is None:
-                    expiration_period = 14
-                date_now = datetime.now().replace(tzinfo=utc)
-                date_expiration = date_now - timedelta(days=expiration_period)
-                if self.report.server_upload_time >= date_expiration:
-                    return True
-        return False
+        from tigaserver_app.models import Report
+
+        return Report.objects.in_supervisor_exclusivity_period().filter(pk=self.report).exist()
 
     @classmethod
     def _get_auto_message(cls, category: 'Categories', validation_value: int, locale: str = 'en') -> Optional[str]:
@@ -319,9 +314,9 @@ class ExpertReportAnnotation(models.Model):
         username_replicas = ["innie", "minnie", "manny"]
 
         report_annotations = ExpertReportAnnotation.objects.filter(report=self.report).count()
-        if report_annotations >= self.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
+        if report_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
             return
-        num_missing_annotations = self.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - report_annotations
+        num_missing_annotations = settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - report_annotations
 
         fieldnames = [
             field.name for field in ExpertReportAnnotation._meta.fields if field.name not in ('id', 'user', 'report')
@@ -536,7 +531,7 @@ class ExpertReportAnnotation(models.Model):
         total_completed_annotations_qs = self.report.expert_report_annotations.all()
         return (
             total_completed_annotations_qs.filter(simplified_annotation=False).exists() or
-            total_completed_annotations_qs.count() < self.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
+            total_completed_annotations_qs.count() < settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
         )
 
     def save(self, *args, **kwargs):
@@ -615,6 +610,43 @@ class UserStat(models.Model):
     def num_pending_annotations(self) -> int:
         return self.pending_annotations.count()
 
+    @transaction.atomic
+    def assign_reports(self, country: Optional['EuropeCountry'] = None) -> List[Optional[ExpertReportAnnotation]]:
+        # Import here to avoid circular import error.
+        from tigaserver_app.models import Report
+
+        report_queue = Report.objects.queued(user_prioritized=self.user)
+        if country is not None:
+            report_queue = report_queue.filter(country=country)
+
+        if not self.is_superexpert():
+            # Only assign until reaching the maximum allowed.
+            current_pending = self.num_pending_annotations
+            if current_pending >= settings.MAX_N_OF_PENDING_REPORTS:
+                return
+
+            num_to_assign = settings.MAX_N_OF_PENDING_REPORTS - current_pending
+            report_queue = report_queue.all()[:num_to_assign]
+
+        result = []
+        for report in report_queue:
+            result.append(
+                ExpertReportAnnotation.objects.create(
+                    report=report,
+                    user=self.user
+                )
+            )
+            self.grabbed_reports += 1
+
+        self.save()
+
+        return result
+
+    def assign_crisis_report(self, country: 'EuropeCountry') -> List[Optional[ExpertReportAnnotation]]:
+        # NOTE: self.save() is called in assign_reports
+        self.last_emergency_mode_grab = country
+        return self.assign_reports(country=country)
+
     def has_accepted_license(self):
         return self.license_accepted
 
@@ -635,12 +667,6 @@ class UserStat(models.Model):
 
     def is_team_everywhere(self):
         return self.user.groups.exclude(name="team_not_bcn").exclude(name="team_bcn").exists()
-
-    def n_completed_annotations(self):
-        return self.user.expert_report_annotations.filter(validation_complete=True).count()
-
-    def n_pending_annotations(self):
-        return self.user.expert_report_annotations.filter(validation_complete=False).count()
 
     def is_bb_user(self):
         if self.native_of is not None:
