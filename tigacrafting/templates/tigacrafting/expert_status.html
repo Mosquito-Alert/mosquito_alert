@@ -65,7 +65,7 @@
                             <i class="fa fa-plus-square-o"></i>
                         </a>
                         <strong>Pending Reports</strong>
-                        <span class="badge">{{ user.userstat.n_pending_annotations }}</span>
+                        <span class="badge">{{ user.userstat.num_pending_annotations }}</span>
                     </p>
 
                     <div id="loading_{{ user.userstat.username_nopoint }}_{{ group.name }}_pending"></div>
@@ -101,7 +101,7 @@
                             <i class="fa fa-plus-square-o"></i>
                         </a>
                         <strong>Complete Reports</strong>
-                        <span class="badge">{{ user.userstat.n_completed_annotations }}</span>
+                        <span class="badge">{{ user.userstat.num_completed_annotations }}</span>
                     </p>
                     <div id="loading_{{ user.userstat.username_nopoint }}_{{ group.name }}_complete"></div>
                     <div class="collapse" id="current_status_collapse_complete{{ user.userstat.username_nopoint }}_{{ group.name }}">

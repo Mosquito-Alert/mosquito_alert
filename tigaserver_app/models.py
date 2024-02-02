@@ -40,7 +40,7 @@ from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
-from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
@@ -48,6 +48,7 @@ from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager, EuropeCountryManager
 from .messaging import send_new_award_notification
 from .mixins import TimeZoneModelMixin
+from .managers import ReportManager, EuropeCountryManager
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
@@ -670,8 +671,8 @@ class EuropeCountry(models.Model):
     x_max = models.FloatField(blank=True, null=True)
     y_min = models.FloatField(blank=True, null=True)
     y_max = models.FloatField(blank=True, null=True)
-    is_bounding_box = models.BooleanField(default=False, help_text='If true, this geometry acts as a bounding box. The bounding boxes act as little separate entolabs, in the sense that no reports located inside a bounding box should reach an expert outside this bounding box')
-    national_supervisor_report_expires_in = models.IntegerField(default=14, help_text='Number of days that a report in the queue is exclusively available to the nagional supervisor. For example, if the field value is 6, after report_creation_time + 6 days a report will be available to all users')
+    is_bounding_box = models.BooleanField(default=False, db_index=True, help_text='If true, this geometry acts as a bounding box. The bounding boxes act as little separate entolabs, in the sense that no reports located inside a bounding box should reach an expert outside this bounding box')
+    national_supervisor_report_expires_in = models.IntegerField(default=settings.DEFAULT_EXPIRATION_DAYS, db_index=True, help_text='Number of days that a report in the queue is exclusively available to the nagional supervisor. For example, if the field value is 6, after report_creation_time + 6 days a report will be available to all users')
 
     pending_crisis_reports = models.IntegerField(blank=True, null=True, help_text='Number of reports in country assignable to non-supervisors')
     last_crisis_report_n_update = models.DateTimeField(help_text="Last time count was updated", null=True, blank=True)
@@ -689,13 +690,6 @@ class EuropeCountry(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.gid, self.name_engl)
 
-class GlobalAssignmentStat(models.Model):
-    country = models.OneToOneField('tigaserver_app.EuropeCountry', primary_key=True, on_delete=models.CASCADE, )
-    unassigned_reports = models.IntegerField(default=0)
-    in_progress_reports = models.IntegerField(default=0)
-    pending_reports = models.IntegerField(default=0)
-    nsqueue_reports = models.IntegerField(default=0)
-    last_update = models.DateTimeField(help_text="Last time stats were updated", null=True, blank=True)
 
 class NutsEurope(models.Model):
     gid = models.AutoField(primary_key=True)
@@ -846,11 +840,12 @@ class Report(TimeZoneModelMixin, models.Model):
     type = models.CharField(
         max_length=7,
         choices=TYPE_CHOICES,
+        db_index=True,
         help_text="Type of report: 'adult', 'site', or 'mission'.",
     )
 
     hide = models.BooleanField(
-        default=False, help_text="Hide this report from public views?"
+        default=False, db_index=True, help_text="Hide this report from public views?"
     )
 
     location_choice = models.CharField(
@@ -2653,7 +2648,7 @@ class Report(TimeZoneModelMixin, models.Model):
         return 1
 
     def get_final_expert_status_text(self):
-        return dict(STATUS_CATEGORIES)[self.get_final_expert_status()]
+        return dict(ExpertReportAnnotation.STATUS_CATEGORIES)[self.get_final_expert_status()]
 
     def get_final_expert_status_bootstrap(self):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
@@ -2729,12 +2724,10 @@ class Report(TimeZoneModelMixin, models.Model):
     def get_expert_recipients_names(self):
         result = []
 
-        for ano in self.expert_report_annotations.all().select_related('user'):
-            if not ano.user.userstat.is_superexpert():
-                if ano.user.first_name and ano.user.last_name:
-                    result.append(ano.user.first_name + ' ' + ano.user.last_name)
-                else:
-                    result.append(ano.user.username)
+        for ano in self.expert_report_annotations.exclude(user__groups__name='superexpert').select_related("user"):
+            result.append(
+                ano.user.get_full_name() or ano.user.username
+            )
         return '+'.join(result)
 
     def get_who_has_bootstrap(self):
