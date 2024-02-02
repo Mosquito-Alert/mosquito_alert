@@ -312,13 +312,27 @@ HOST_NAME = 'webserver.mosquitoalert.com'
 
 SITE_ID = 1
 
-# number of days after a report is considered blocked
-ENTOLAB_LOCK_PERIOD = 14
-
 FCM_API_KEY = ""
 DISABLE_PUSH_IOS = True
 DISABLE_PUSH_ANDROID = True
 DRY_RUN_PUSH = True
+
+# Definning Barcelona Bounding Box
+BCN_BB = {
+    'min_lat': 41.321049,
+    'min_lon': 2.052380,
+    'max_lat': 41.468609,
+    'max_lon': 2.225610
+}
+
+# Entolab
+MAX_N_OF_PENDING_REPORTS = 5
+MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT = 3
+DEFAULT_EXPIRATION_DAYS = 14
+# number of days after a report is considered blocked
+ENTOLAB_LOCK_PERIOD = 14
+
+ADDITIONAL_EMAIL_RECIPIENTS = []
 
 try:
     from tigaserver_project.settings_local import *

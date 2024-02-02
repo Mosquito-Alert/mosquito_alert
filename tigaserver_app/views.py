@@ -18,8 +18,7 @@ import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
-from tigacrafting.models import FavoritedReports
-from tigacrafting.report_queues import assign_crisis_report
+from tigacrafting.models import FavoritedReports, UserStat
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -722,12 +721,11 @@ def crisis_report_assign(request, user_id=None, country_id=None):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     if country_id is None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    user = get_object_or_404(User.objects.all(), pk=user_id)
+    userstat = get_object_or_404(UserStat.objects.all(), pk=user_id)
     country = get_object_or_404(EuropeCountry.objects.all(), pk=country_id)
-    retval = assign_crisis_report(user, country)
-    user.userstat.last_emergency_mode_grab = country
-    user.userstat.save()
-    return Response(data=retval, status=status.HTTP_200_OK)
+
+    userstat.assign_crisis_report(country=country)
+    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -1966,71 +1964,59 @@ def profile_new(request):
 
 
 def send_unblock_email(name, email):
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
-    send_to = copy.copy(settings.ADDITIONAL_EMAIL_RECIPIENTS)
-    send_to.append(email)
+
+    send_to = (settings.ADDITIONAL_EMAIL_RECIPIENTS or []) + [email]
+
     subject = 'MOSQUITO ALERT - blocked report release warning'
     plaintext = get_template('tigaserver_app/report_release/report_release_template')
     context = {
         'name': name,
-        'n_days': lock_period
+        'n_days': settings.ENTOLAB_LOCK_PERIOD
     }
     text_content = plaintext.render(context)
     email = EmailMessage(subject, text_content, to=send_to)
     email.send(fail_silently=True)
 
 
+def delete_annotations_and_notify(annotations_qs):
+    recipients = []
+    for obj in annotations_qs.select_related('user'):
+        if obj.user.email is not None and obj.user.email != '':
+            recipients.append(obj.user)
+
+        obj.delete()
+
+    for r in set(recipients):
+        name = r.first_name if r.first_name != '' else r.username
+        email = r.email
+        send_unblock_email(name, email)
+
+
 @api_view(['DELETE'])
 def clear_blocked_all(request):
     if request.method == 'DELETE':
-        lock_period = settings.ENTOLAB_LOCK_PERIOD
-        superexperts = User.objects.filter(groups__name='superexpert')
-        annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
-        to_delete = []
-        recipients = []
-        for anno in annos:
-            elapsed = (datetime.now(timezone.utc) - anno.created).days
-            if elapsed > lock_period:
-                to_delete.append(anno.id)
-                if anno.user.email is not None and anno.user.email != '':
-                    if anno.user not in recipients:
-                        recipients.append(anno.user)
-        ExpertReportAnnotation.objects.filter(id__in=to_delete).delete()
-        for r in recipients:
-            name = r.first_name if r.first_name != '' else r.username
-            email = r.email
-            send_unblock_email( name, email )
+        delete_annotations_and_notify(
+            annotations_qs=ExpertReportAnnotation.objects.blocked()
+        )
+
         return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])
 def clear_blocked(request, username, report=None):
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
     if request.method == 'DELETE':
         if username is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        user = get_object_or_404(User.objects.all(), username=username)
-        actual_report = None
-        if report is not None:
-            actual_report = get_object_or_404(Report.objects.all(), pk=report)
-        if report is not None:
-            annotations_for_user = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report=actual_report)
-        else:
-            annotations_for_user = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False)
-        to_delete = []
-        recipients = []
-        for anno in annotations_for_user:
-            elapsed = (datetime.now(timezone.utc) - anno.created).days
-            if elapsed > lock_period:
-                to_delete.append(anno.id)
-                if anno.user.email is not None and anno.user.email != '':
-                    if anno.user not in recipients:
-                        recipients.append(anno.user)
-        ExpertReportAnnotation.objects.filter(id__in=to_delete).delete()
-        for r in recipients:
-            name = r.first_name if r.first_name != '' else r.username
-            email = r.email
-            send_unblock_email( name, email )
+        user = get_object_or_404(User, username=username)
+
+        annotations_qs = user.userstat.pending_annotations.blocked()
+
+        if report:
+            annotations_qs.filter(report=get_object_or_404(Report, pk=report))
+
+        delete_annotations_and_notify(
+            annotations_qs=annotations_qs
+        )
 
         return Response(status=status.HTTP_200_OK)
 
