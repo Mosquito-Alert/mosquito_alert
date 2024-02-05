@@ -46,6 +46,8 @@ from django.core.files import File
 import html.entities
 from common.translation import get_locale_for_en, get_translation_in, get_locale_for_native
 
+from .mixins import TimeZoneModelMixin
+
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
@@ -378,8 +380,7 @@ class Session(models.Model):
     class Meta:
         unique_together = ('session_ID', 'user',)
 
-
-class Report(models.Model):
+class Report(TimeZoneModelMixin, models.Model):
     version_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
                                                 'phone to identify each unique report version. Must be exactly 36 '
                                                 'characters (32 hex digits plus 4 hyphens).')
@@ -412,6 +413,17 @@ class Report(models.Model):
                                                        'as ECMA '
                                                        '262 date time string (e.g. "2014-05-17T12:34:56'
                                                        '.123+01:00".')
+    datetime_fix_offset = models.IntegerField(
+        default=None,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="An integer representing the offset (in seconds) applied to the original datetime values for fixing. "
+            "If None, it indicates that no information about the original time zone could be inferred or the timezone "
+            "was already provided when posting the report. To retrieve the original values, "
+            "use: original_value = current_value - datetime_fix_offset."
+            "Fields to apply (if necessary) are: 'phone_upload_time', 'creation_time' and 'version_time'."
+    )
     TYPE_CHOICES = (('bite', 'Bite'), ('adult', 'Adult'), ('site', 'Breeding Site'), ('mission', 'Mission'),)
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, help_text="Type of report: 'adult', 'site', "
                                                                          "or 'mission'.", )
@@ -498,6 +510,33 @@ class Report(models.Model):
 
     def __unicode__(self):
         return self.version_UUID
+    
+    # See TimeZoneModelMixin
+    def _get_latitude_for_timezone(self):
+        # By default taking the current_location which is the one provided by the phone
+        # If it's not available, and user has selected a specific location, will use that.
+        # NOTE: we are assuming the risk of user selecting a location with a different
+        #       timezone than the one where the mobile is at that moment.
+        #       Only valid for datetimes taken from the phone system, not being possible
+        #       for the user to edit.
+        return (
+            self.selected_location_lat
+            if not self.current_location_lat and self.location_choice == "selected"
+            else self.current_location_lat
+        )
+
+    def _get_longitude_for_timezone(self):
+        # By default taking the current_location which is the one provided by the phone
+        # If it's not available, and user has selected a specific location, will use that.
+        # NOTE: we are assuming the risk of user selecting a location with a different
+        #       timezone than the one where the mobile is at that moment.
+        #       Only valid for datetimes taken from the phone system, not being possible
+        #       for the user to edit.
+        return (
+            self.selected_location_lon
+            if not self.current_location_lon and self.location_choice == "selected"
+            else self.current_location_lon
+        )
 
     #this is called previous to saving the object and initializes the spatial field
     #it supplies
@@ -2681,7 +2720,7 @@ class Photo(models.Model):
     date = property(get_date)
 
 
-class Fix(models.Model):
+class Fix(TimeZoneModelMixin, models.Model):
     """
     Location fix uploaded by user.
     """
@@ -2715,6 +2754,14 @@ class Fix(models.Model):
         if self.user_coverage_uuid is not None:
             result = self.user_coverage_uuid
         return result
+
+    # See TimeZoneModelMixin
+    def _get_latitude_for_timezone(self):
+        return self.masked_lat
+
+    def _get_longitude_for_timezone(self):
+        return self.masked_lon
+
 
     class Meta:
         verbose_name = "fix"

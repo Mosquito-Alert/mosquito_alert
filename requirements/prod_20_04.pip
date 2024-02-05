@@ -10,7 +10,6 @@ cached-property==1.3.0
 cachetools==4.2.2
 celery==3.1.18
 certifi==2017.4.17
-cffi==1.14.5
 chardet==3.0.4
 coreapi==2.3.3
 coreschema==0.0.4
@@ -89,7 +88,6 @@ python-geohash==0.8.5
 python-magic==0.4.27
 python-slugify==4.0.1
 python3-memcached==1.51
-pytz==2017.2
 PyYAML==5.1.2
 rawpy==0.17.1
 redgreenunittest==0.1.1
@@ -105,7 +103,9 @@ six==1.16.0
 sklearn==0.0
 sqlparse==0.2.2
 tablib==0.14.0
+timezonefinder[pytz]==6.2.0
 text-unidecode==1.3
+tqdm==4.66.1
 traitlets==4.3.2
 tzlocal==1.1.1
 uritemplate==3.0.1

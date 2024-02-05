@@ -1,4 +1,6 @@
 from django.test import TestCase
+from datetime import datetime
+import uuid
 
 # Create your tests here.
 from django.test import TestCase
@@ -10,7 +12,7 @@ import tigaserver_project.settings as conf
 import os
 import requests
 from django.utils import timezone
-from tigaserver_app.models import TigaUser, Report, Photo
+from tigaserver_app.models import TigaUser, Report, Photo, Fix
 from tigacrafting.models import FavoritedReports
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
@@ -88,6 +90,524 @@ class PictureTestCase(APITestCase):
             self.assertEqual(img._getexif(), None)
 
 '''
+
+class ReportEndpointTestCase(APITestCase):
+    def setUp(self):
+        t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
+        t.device_token = "caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
+        t.save()
+
+        user = User.objects.create_user("dummy", "dummy@test.com", "dummypassword")
+        self.token = Token.objects.create(user=user)
+
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+
+        # Create simple payload
+        self.simple_payload = {
+            "version_UUID": str(uuid.uuid4()),
+            "version_number": 0,
+            "user": str(t.user_UUID),
+            "report_id": "test",
+            "phone_upload_time": timezone.now().isoformat(),
+            "creation_time": timezone.now().isoformat(),
+            "version_time": timezone.now().isoformat(),
+            "type": "bite",
+            "location_choice": "current",
+            "current_location_lat": 41.67419000,  # Blanes
+            "current_location_lon": 2.79036000,  # Blanes
+            "selected_location_lat": 28.291565,  # Tenerife
+            "selected_location_lon": -16.629129,  # Tenerife
+            "package_name": "testapp",
+            "package_version": "99",
+            "responses": [],
+            "device_manufacturer": "test",
+            "device_model": "test",
+            "os": "test",
+            "os_version": "99",
+            "app_language": "en",
+        }
+
+    def _test_datetime_field_is_corrected_if_not_POST_with_timezone(self, fieldname):
+        self.assertEqual(Report.objects.all().count(), 0)
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    fieldname: "2023-06-08T16:11:51.503921",
+                    "location_choice": "current",
+                },
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=14,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+        # Case selected with current location set -> use current location for TZ
+        Report.objects.all().delete()
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    fieldname: "2023-06-08T16:11:51.503921",
+                    "location_choice": "selected",
+                },
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=14,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+        # Case selected with current location NOT set -> use selected location for TZ
+        Report.objects.all().delete()
+        payload = {
+            **self.simple_payload,
+            **{
+                fieldname: "2023-06-08T16:11:51.503921",
+                "location_choice": "selected",
+            },
+        }
+        del payload["current_location_lat"]
+        del payload["current_location_lon"]
+        response = self.client.post(
+            "/api/reports/",
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=15,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+    def _test_datetime_field_is_kept_if_POST_with_timezone(self, fieldname):
+        self.assertEqual(Report.objects.all().count(), 0)
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    fieldname: "2023-06-08T16:11:51.503921Z",
+                    "location_choice": "current",
+                },
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=16,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+        # Case selected with current location set -> use current location for TZ
+        Report.objects.all().delete()
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    fieldname: "2023-06-08T16:11:51.503921Z",
+                    "location_choice": "selected",
+                },
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=16,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+        # Case selected with current location NOT set -> use selected location for TZ
+        Report.objects.all().delete()
+        payload = {
+            **self.simple_payload,
+            **{
+                fieldname: "2023-06-08T16:11:51.503921Z",
+                "location_choice": "selected",
+            },
+        }
+        del payload["current_location_lat"]
+        del payload["current_location_lon"]
+        response = self.client.post(
+            "/api/reports/",
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=16,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+    def _test_datetime_field_is_kept_if_POST_without_latlon(self, fieldname):
+        self.assertEqual(Report.objects.all().count(), 0)
+
+        # Without timezone
+        payload = {
+            **self.simple_payload,
+            **{
+                fieldname: "2023-06-08T16:11:51.503921",  # No timezone set
+                "location_choice": "current",
+            },
+        }
+        del payload["current_location_lat"]
+        del payload["current_location_lon"]
+        response = self.client.post(
+            "/api/reports/",
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=16,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+        # With timezone
+        Report.objects.all().delete()
+
+        payload = {
+            **self.simple_payload,
+            **{
+                fieldname: "2023-06-08T16:11:51.503921Z",  # With timezone set
+                "location_choice": "current",
+            },
+        }
+        del payload["current_location_lat"]
+        del payload["current_location_lon"]
+        response = self.client.post(
+            "/api/reports/",
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=16,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+    def _test_datetime_field_is_kept_if_version_number_not_0(self, fieldname):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    fieldname: "2024-01-01T01:00:00",
+                    "version_number": -1
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, fieldname),
+            datetime(
+                year=2024,
+                month=1,
+                day=1,
+                hour=1,
+                minute=0,
+                second=0,
+                tzinfo=timezone.utc
+            )
+        )
+
+    def test_version_time_is_corrected_if_not_POST_with_timezone(self):
+        self._test_datetime_field_is_corrected_if_not_POST_with_timezone(
+            fieldname="version_time"
+        )
+
+    def test_version_time_is_kept_if_POST_with_timezone(self):
+        self._test_datetime_field_is_kept_if_POST_with_timezone(
+            fieldname="version_time"
+        )
+
+    def test_version_time_is_kept_if_POST_without_latlon(self):
+        self._test_datetime_field_is_kept_if_POST_without_latlon(
+            fieldname="version_time"
+        )
+
+    def test_creation_time_is_corrected_if_not_POST_with_timezone(self):
+        self._test_datetime_field_is_corrected_if_not_POST_with_timezone(
+            fieldname="creation_time"
+        )
+
+    def test_creation_time_is_kept_if_POST_with_timezone(self):
+        self._test_datetime_field_is_kept_if_POST_with_timezone(
+            fieldname="creation_time"
+        )
+
+    def test_creation_time_is_kept_if_POST_without_latlon(self):
+        self._test_datetime_field_is_kept_if_POST_without_latlon(
+            fieldname="creation_time"
+        )
+
+    def test_phone_upload_time_is_corrected_if_not_POST_with_timezone(self):
+        self._test_datetime_field_is_corrected_if_not_POST_with_timezone(
+            fieldname="phone_upload_time"
+        )
+
+    def test_phone_upload_time_is_kept_if_POST_with_timezone(self):
+        self._test_datetime_field_is_kept_if_POST_with_timezone(
+            fieldname="phone_upload_time"
+        )
+
+    def test_phone_upload_time_is_kept_if_POST_without_latlon(self):
+        self._test_datetime_field_is_kept_if_POST_without_latlon(
+            fieldname="phone_upload_time"
+        )
+
+    def test_phone_upload_time_is_kept_when_version_number_is_not_0(self):
+        self._test_datetime_field_is_kept_if_version_number_not_0(
+            fieldname="phone_upload_time"
+        )
+
+    def test_creation_time_is_kept_when_version_number_is_not_0(self):
+        self._test_datetime_field_is_kept_if_version_number_not_0(
+            fieldname="creation_time"
+        )
+
+    def test_version_time_is_kept_when_upload_diff_is_gt_1day(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_time": "2024-01-05T01:00:00Z",
+                    "phone_upload_time": "2024-01-01T00:00:00Z",
+                    "version_number": -1
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+
+        self.assertEqual(
+            getattr(report, 'version_time'),
+            datetime(
+                year=2024,
+                month=1,
+                day=5,
+                hour=1,
+                minute=0,
+                second=0,
+                tzinfo=timezone.utc
+            )
+        )
+
+
+class FixEndpointTestCase(APITestCase):
+    def setUp(self):
+        user = User.objects.create_user("dummy", "dummy@test.com", "dummypassword")
+        self.token = Token.objects.create(user=user)
+
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+
+        # Create simple payload
+        self.simple_payload = {
+            "user_coverage_uuid": str(uuid.uuid4()),
+            "fix_time": timezone.now().isoformat(),
+            "phone_upload_time": timezone.now().isoformat(),
+            "masked_lat": 41.67419000,  # Blanes
+            "masked_lon": 2.79036000,  # Blanes
+            "power": 0,
+            "mask_size": 0,
+        }
+
+    def _test_datetime_field_is_corrected_if_not_POST_with_timezone(self, fieldname):
+        self.assertEqual(Fix.objects.all().count(), 0)
+
+        response = self.client.post(
+            "/api/fixes/",
+            {
+                **self.simple_payload,
+                **{
+                    fieldname: "2023-06-08T16:11:51.503921",
+                },
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        fix = Fix.objects.get(
+            user_coverage_uuid=self.simple_payload["user_coverage_uuid"]
+        )
+
+        self.assertEqual(
+            getattr(fix, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=14,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+    def _test_datetime_field_is_kept_if_POST_with_timezone(self, fieldname):
+        self.assertEqual(Fix.objects.all().count(), 0)
+
+        response = self.client.post(
+            "/api/fixes/",
+            {
+                **self.simple_payload,
+                **{
+                    fieldname: "2023-06-08T16:11:51.503921Z",
+                },
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        fix = Fix.objects.get(
+            user_coverage_uuid=self.simple_payload["user_coverage_uuid"]
+        )
+
+        self.assertEqual(
+            getattr(fix, fieldname),
+            datetime(
+                year=2023,
+                month=6,
+                day=8,
+                hour=16,
+                minute=11,
+                second=51,
+                microsecond=503921,
+                tzinfo=timezone.utc,
+            ),
+        )
+
+    def test_fix_time_is_corrected_if_not_POST_with_timezone(self):
+        self._test_datetime_field_is_corrected_if_not_POST_with_timezone(
+            fieldname="fix_time"
+        )
+
+    def test_fix_time_is_kept_if_POST_with_timezone(self):
+        self._test_datetime_field_is_kept_if_POST_with_timezone(fieldname="fix_time")
+
+    def test_phone_upload_time_is_corrected_if_not_POST_with_timezone(self):
+        self._test_datetime_field_is_corrected_if_not_POST_with_timezone(
+            fieldname="phone_upload_time"
+        )
+
+    def test_phone_upload_time_is_kept_if_POST_with_timezone(self):
+        self._test_datetime_field_is_kept_if_POST_with_timezone(
+            fieldname="phone_upload_time"
+        )
 
 class NotificationTestCase(APITestCase):
 
