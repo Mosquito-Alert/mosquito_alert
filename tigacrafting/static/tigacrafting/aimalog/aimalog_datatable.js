@@ -1,16 +1,30 @@
+var f;
 $(document).ready(function () {
     var table = $('#aimalog_table').DataTable({
         'ajax': {
             'url': _aimalog_list_url,
             'dataType': 'json',
             'data': function(d){
-                d.teststring = 'kk';
+                d.filter = $('#filter_value').val();
             }
         },
+        "initComplete": function(settings, json) {
+            // Bind the event listener to your external filter control
+            $('#filter').on('click', function() {
+                $('#filter_value').val(JSON.stringify(f.getJson()));
+                table.draw();
+            });
+            $('#remove_filter').on('click', function() {
+                f.clear();
+                $('#filter_value').val(JSON.stringify(f.getJson()));
+                table.draw();
+            });
+        },
+        'dom': 'lpftrip',
         'serverSide': true,
         'processing': true,
         'language': 'en',
-        'pageLength': 25,
+        'pageLength': 100,
         'pagingType': 'full_numbers',
         'bLengthChange': false, //allow changing number of entries per page
         'responsive': true,
@@ -26,7 +40,9 @@ $(document).ready(function () {
             {'data': 'hit'},
             {'data': 'review_species'},
             {'data': 'review_status'},
-            {'data': 'review_datetime'}
+            {'data': 'review_datetime'},
+            {'data': 'country'},
+            {'data': 'nuts_one'},
         ],
         'columnDefs': [
             {
@@ -72,7 +88,22 @@ $(document).ready(function () {
             {
                 'targets': 10,
                 'title': 'review_datetime',
+            },
+            {
+                'targets': 11,
+                'title': 'country',
+            },
+            {
+                'targets': 12,
+                'title': 'nuts_1',
             }
         ]
     });
+
+    $( "#date_from" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    $( "#date_to" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    $( "#review_date_from" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    $( "#review_date_to" ).datepicker({ dateFormat: 'dd/mm/yy' });
+
+    f = FilterControl.create();
 });

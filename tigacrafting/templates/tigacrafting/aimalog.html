@@ -8,13 +8,16 @@
     <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.min.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
+    <link rel="stylesheet" href={% static "stats/datatables.min.css" %}>
+    <style>
+        table.dataTable td {
+            font-size: 0.8em;
+        }
+    </style>
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
-    <!--<script src={% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}></script>!-->
-    <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
-        <script src={% static "tigacrafting/tinymce/js/tinymce/tinymce.min.js" %}></script>
+
         <div class="navbar-wrapper">
             <div id="notifications_navbar" class="navbar-fixed-top navbar navbar-inverse" role="navigation">
                 <div id="navbar" class="container">
@@ -53,18 +56,100 @@
     </head>
 <body>
     <div class="container">
-        <script src={% static "tigacrafting/aimalog/aimalog_datatable.js" %}></script>
-        <link rel="stylesheet" href={% static "stats/datatables.min.css" %}>
-        <script src={% static "stats/datatables.min.js" %}></script>
-
-        <div class="container">
-            <h1 class="text-center">Alert log</h1>
-            <table class="table table-striped table-bordered table-hover" id="aimalog_table" style="width:100%;"></table>
+        <h1 class="text-center">Alert log</h1>
+        <div class="alert alert-danger" role="alert">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="date_from" class="col-sm-2 control-label">Report date - From date</label>
+                    <div class="col-sm-4">
+                        <input id="date_from" type="text" class="form-control">
+                    </div>
+                    <label for="date_to" class="col-sm-2 control-label">Report date - To date</label>
+                    <div class="col-sm-4">
+                        <input id="date_to" type="text" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="review_date_from" class="col-sm-2 control-label">Review date - From date</label>
+                    <div class="col-sm-4">
+                        <input id="review_date_from" type="text" class="form-control">
+                    </div>
+                    <label for="review_date_to" class="col-sm-2 control-label">Review date - To date</label>
+                    <div class="col-sm-4">
+                        <input id="review_date_to" type="text" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="species" class="col-sm-2 control-label">Species</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="species">
+                            <option value="">-----</option>
+                            {% for f in species %}
+                            <option value="{{f.species}}">{{f.species}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <label for="review_species" class="col-sm-2 control-label">Review species</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="review_species">
+                            <option value="">-----</option>
+                            {% for f in review_species %}
+                            <option value="{{f.review_species}}">{{f.review_species}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="status" class="col-sm-2 control-label">Status</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="status">
+                            <option value="">-----</option>
+                            {% for f in status %}
+                            <option value="{{f.status}}">{{f.status}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <label for="review_status" class="col-sm-2 control-label">Review Status</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="review_status">
+                            <option value="">-----</option>
+                            {% for f in review_status %}
+                            <option value="{{f.review_status}}">{{f.review_status}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="nuts_0" class="col-sm-1 control-label">Nuts 0 (country)</label>
+                    <div class="col-sm-3">
+                        <select class="form-control" id="nuts_0">
+                            <option value="">-----</option>
+                            {% for f in nuts_0 %}
+                            <option value="{{f.cntr_code}}">{{ f.cntr_code }} - {{f.name_latn}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <label for="nuts_1" class="col-sm-1 control-label">Nuts 1</label>
+                    <div class="col-sm-3">
+                        <select class="form-control" id="nuts_1">
+                            <option value="">-----</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <button class="btn btn-primary navbar-right" type="button" id="remove_filter"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></button>
+                <button class="btn btn-primary navbar-right" type="button" id="filter"><span class="glyphicon glyphicon-filter" aria-hidden="true"></span></button>
+            </div>
         </div>
-        <script>
-            var _aimalog_list_url = '{% url 'aimalog_datatable' %}';
-        </script>
     </div>
+    <table class="table table-striped table-bordered table-hover" id="aimalog_table" style="width:100%;"></table>
+    <input id="filter_value" type="hidden" value="">
 </body>
-
+    <script src={% static "stats/datatables.min.js" %}></script>
+    <script>
+        var _aimalog_list_url = '{% url 'aimalog_datatable' %}';
+    </script>
+    <script src={% static "tigacrafting/aimalog/filter_control.js" %}></script>
+    <script src={% static "tigacrafting/aimalog/aimalog_datatable.js" %}></script>
 </html>

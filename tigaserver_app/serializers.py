@@ -6,6 +6,7 @@ from tigacrafting.models import Alert
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
+from tigaserver_app.data_singletons import CountryDict, NutsOneDict
 
 def score_label(score):
     if score > 66:
@@ -429,9 +430,22 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class DataTableAimalertSerializer(serializers.ModelSerializer):
+    report_datetime = serializers.DateTimeField(format="%d/%m/%Y %H:%M:%S")
+    review_datetime = serializers.DateTimeField(format="%d/%m/%Y %H:%M:%S")
+    country = serializers.SerializerMethodField()
+    nuts_one =  serializers.SerializerMethodField()
+
     class Meta:
         model = Alert
-        fields = ('xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime')
+        fields = ('xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one')
+
+    def get_country(self, obj):
+        country_dict_instance = CountryDict()
+        return country_dict_instance.get_country(obj.loc_code)
+
+    def get_nuts_one(self, obj):
+        nuts_one_dict_instance = NutsOneDict()
+        return nuts_one_dict_instance.get_nuts_one(obj.loc_code)
 
 
 class DataTableNotificationSerializer(serializers.ModelSerializer):

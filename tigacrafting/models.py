@@ -7,6 +7,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 import tigacrafting.html_utils as html_utils
 import pytz
+from tigacrafting.json_filter import append_chain_query
+from django.db.models import Q
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -558,6 +560,76 @@ class Alert(models.Model):
     review_datetime = models.DateTimeField('revision timestamp', blank=True, null=True )
     alert_sent = models.BooleanField('flag for alert sent or not yet', default=False)
     notes = models.TextField('Notes field for varied observations', blank=True, null=True)
+
+    @classmethod
+    def create_query_from_filter(cls, json_filter):
+        print(json_filter)
+        accum_query = None
+        try:
+            date_from_s = json_filter['date_from']
+            if date_from_s != '':
+                date_from = datetime.strptime(date_from_s, "%d/%m/%Y")
+                accum_query = append_chain_query(accum_query, Q(report_datetime__gte=date_from))
+        except KeyError:
+            pass
+        try:
+            date_to_s =  json_filter['date_to']
+            if date_to_s != '':
+                date_to = datetime.strptime(date_to_s, "%d/%m/%Y")
+                accum_query = append_chain_query(accum_query, Q(report_datetime__lte=date_to))
+        except KeyError:
+            pass
+        try:
+            review_date_from_s = json_filter['review_date_from']
+            if review_date_from_s != '':
+                review_date_from = datetime.strptime(review_date_from_s, "%d/%m/%Y")
+                accum_query = append_chain_query(accum_query, Q(review_datetime__gte=review_date_from))
+        except KeyError:
+            pass
+        try:
+            review_date_to_s =  json_filter['review_date_to']
+            if review_date_to_s != '':
+                review_date_to = datetime.strptime(review_date_to_s, "%d/%m/%Y")
+                accum_query = append_chain_query(accum_query, Q(review_datetime__lte=review_date_to))
+        except KeyError:
+            pass
+        try:
+            species =  json_filter['species']
+            if species != '':
+                accum_query = append_chain_query(accum_query, Q(species=species))
+        except KeyError:
+            pass
+        try:
+            review_species =  json_filter['review_species']
+            if review_species != '':
+                if review_species == 'None':
+                    accum_query = append_chain_query(accum_query, Q(review_species__isnull=True))
+                else:
+                    accum_query = append_chain_query(accum_query, Q(review_species=review_species))
+        except KeyError:
+            pass
+        try:
+            status =  json_filter['status']
+            if status != '':
+                accum_query = append_chain_query(accum_query, Q(status=status))
+        except KeyError:
+            pass
+        try:
+            review_status =  json_filter['review_status']
+            if review_status != '':
+                if review_status == 'None':
+                    accum_query = append_chain_query(accum_query, Q(review_status__isnull=True))
+                else:
+                    accum_query = append_chain_query(accum_query, Q(review_status=review_status))
+        except KeyError:
+            pass
+        try:
+            nuts_0 =  json_filter['nuts_0']
+            if nuts_0 != '':
+                accum_query = append_chain_query(accum_query, Q(loc_code__startswith=nuts_0))
+        except KeyError:
+            pass
+        return accum_query
 
 # class Species(models.Model):
 #     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')

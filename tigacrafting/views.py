@@ -8,7 +8,7 @@ import json
 from rest_framework.decorators import api_view
 
 from tigacrafting.models import *
-from tigaserver_app.models import Photo, Report, ReportResponse
+from tigaserver_app.models import Photo, Report, ReportResponse, NutsEurope
 import dateutil.parser
 from django.db.models import Count
 import pytz
@@ -1979,7 +1979,19 @@ def notifications(request,user_uuid=None):
 
 @login_required
 def aimalog(request):
-    return render(request, 'tigacrafting/aimalog.html',{})
+    species = Alert.objects.all().values('species').distinct().order_by('species')
+    review_species = Alert.objects.all().values('review_species').distinct().order_by('review_species')
+    status = Alert.objects.all().values('status').distinct().order_by('status')
+    review_status = Alert.objects.all().values('review_status').distinct().order_by('review_status')
+    nuts_0 = NutsEurope.objects.filter(levl_code=0).order_by('cntr_code')
+    context = {
+        'species': species,
+        'review_species': review_species,
+        'status': status,
+        'review_status': review_status,
+        'nuts_0': nuts_0
+    }
+    return render(request, 'tigacrafting/aimalog.html',context)
 
 @login_required
 def notifications_version_two(request,user_uuid=None):
@@ -2050,7 +2062,7 @@ def get_filter_clause(params_dict, fields, translation_dict=None):
     return filter_clause
 
 
-def generic_datatable_list_endpoint(request,search_field_list,queryset, classSerializer, field_translation_dict=None, order_translation_dict=None, paginate=True):
+def generic_datatable_list_endpoint(request,search_field_list,queryset, queryClass, classSerializer, field_translation_dict=None, order_translation_dict=None, paginate=True):
 
     draw = -1
     start = 0
@@ -2064,12 +2076,28 @@ def generic_datatable_list_endpoint(request,search_field_list,queryset, classSer
     except:
         pass
 
-    length = 25
-
     get_dict = parser.parse(request.GET.urlencode())
+
+    length = get_dict.get('length', 25)
+    #length = 25
 
     order_clause = get_order_clause(get_dict, order_translation_dict)
     filter_clause = get_filter_clause(get_dict, search_field_list, field_translation_dict)
+
+    q = None
+    try:
+        string_json = get_dict['filter']
+        if string_json != '':
+            json_filter_data = json.loads(string_json)
+            if getattr(queryClass, "create_query_from_filter", None) is not None:
+                q = queryClass.create_query_from_filter(json_filter=json_filter_data)
+    except KeyError:
+        pass
+
+    queryset = queryClass.objects.all()
+
+    if q:
+        queryset = queryset.filter(q)
 
     if len(filter_clause) == 0:
         queryset = queryset.order_by(*order_clause)
@@ -2097,7 +2125,7 @@ def aimalog_datatable(request):
         queryset = Alert.objects.all()
         field_translation_list = {'xvb':'xvb','report_id':'report_id','report_datetime':'report_datetime','loc_code':'loc_code','cat_id':'cat_id','species':'species','certainty':'certainty','status':'status','hit':'hit','review_species':'review_species','review_status':'review_status','review_datetime':'review_datetime'}
         sort_translation_list = {'xvb':'xvb','report_id':'report_id','report_datetime':'report_datetime','loc_code':'loc_code','cat_id':'cat_id','species':'species','certainty':'certainty','status':'status','hit':'hit','review_species':'review_species','review_status':'review_status','review_datetime':'review_datetime'}
-        response = generic_datatable_list_endpoint(request, search_field_list, queryset, DataTableAimalertSerializer, field_translation_list, sort_translation_list)
+        response = generic_datatable_list_endpoint(request, search_field_list, queryset, Alert, DataTableAimalertSerializer, field_translation_list, sort_translation_list)
         return response
 
 @api_view(['GET'])
@@ -2108,7 +2136,7 @@ def user_notifications_datatable(request):
         queryset = Notification.objects.filter(id__in=sent_to_topic).order_by('-date_comment')
         field_translation_list = {'date_comment': 'date_comment', 'title_en': 'notification_content__title_en', 'title_native': 'notification_content__title_native'}
         sort_translation_list = {'date_comment': 'date_comment', 'title_en': 'notification_content__title_en', 'title_native': 'notification_content__title_native'}
-        response = generic_datatable_list_endpoint(request, search_field_list, queryset, DataTableNotificationSerializer, field_translation_list, sort_translation_list)
+        response = generic_datatable_list_endpoint(request, search_field_list, queryset, SentNotification, DataTableNotificationSerializer, field_translation_list, sort_translation_list)
         return response
 
 @login_required
