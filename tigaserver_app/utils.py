@@ -15,12 +15,11 @@ def apply_tz_to_datetime(value: datetime, tz: pytz.timezone) -> datetime:
 def is_instant_upload_candidate(
     server_creation_datetime: datetime, user_creation_datetime: datetime
 ) -> bool:
-    # If greater than 1day, even the minutes and hour are the same,
-    # it's not an instant upload.
-    if (
-        abs(server_creation_datetime - user_creation_datetime).total_seconds()
-        > 24 * 3600
-    ):
+    # The UTC offset for time zones ranges from UTC-12:00 to UTC+14:00,
+    # so even if the minutes and hour are the same, it's not considered
+    # to be an instant upload
+    upload_diff = server_creation_datetime - user_creation_datetime
+    if upload_diff < timedelta(hours=-12) or upload_diff > timedelta(hours=14):
         return False
 
     # Cast datetimes to timedeltas (only take into account minutes,seconds,microseconds)

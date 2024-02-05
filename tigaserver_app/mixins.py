@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections import OrderedDict
-from datetime import datetime, timedelta, tzinfo
+from datetime import datetime, timedelta, tzinfo, timezone as dt_timezone
 import pytz
 from typing import Union
 
@@ -50,13 +50,13 @@ class TimeZoneModelMixin(models.Model):
 class AutoTimeZoneSerializerMixin(object):
     def _get_dict_applied_tz(self, data: OrderedDict, tz: pytz.timezone) -> OrderedDict:
         # Apply the Timezone to all fields that still not have a timezone set and
-        # cast to UTC.
+        # cast to the default timezone.
         # Return only the fields where the process has been applied.
         data_result = OrderedDict()
         for datetime_fieldname in self._get_fields_to_apply_tz(data=data):
             data_result[datetime_fieldname] = apply_tz_to_datetime(
                 data[datetime_fieldname], tz=tz
-            ).astimezone(timezone.utc)
+            ).astimezone(timezone.get_default_timezone())
 
         return data_result
 
@@ -100,7 +100,7 @@ class AutoTimeZoneSerializerMixin(object):
         # Ensure all AutoTimeZoneDatetimeField are aware
         for fname in self._get_auto_tz_datetime_fields():
             if not timezone.is_aware(data[fname]):
-                data[fname] = apply_tz_to_datetime(data[fname], tz=timezone.utc)
+                data[fname] = apply_tz_to_datetime(data[fname], tz=timezone.get_default_timezone())
 
         return data
 
@@ -126,10 +126,18 @@ class AutoTimeZoneOrInstantUploadSerializerMixin(AutoTimeZoneSerializerMixin):
         _client_creation_time_fix_coordiantes = tmp_data[self.CLIENT_CREATION_FIELD]
         if not timezone.is_aware(_client_creation_time_fix_coordiantes):
             _client_creation_time_fix_coordiantes = apply_tz_to_datetime(
-                _client_creation_time_fix_coordiantes, tz=timezone.utc
+                _client_creation_time_fix_coordiantes, tz=timezone.get_default_timezone()
             )
 
-        now = datetime.now(timezone.utc)
+        # Original creation field
+        _client_creation_field = data[self.CLIENT_CREATION_FIELD]
+        if not timezone.is_aware(_client_creation_field):
+            # If does not contain TZ, use the default timezone
+            _client_creation_field = apply_tz_to_datetime(
+                _client_creation_field, tz=timezone.get_default_timezone()
+            )
+
+        now = datetime.now(timezone.get_default_timezone())
         # If after applying the Timezone obtained from cooridinates,
         # the upload is still high (>15min)
         upload_elapsed_seconds = (
@@ -142,23 +150,28 @@ class AutoTimeZoneOrInstantUploadSerializerMixin(AutoTimeZoneSerializerMixin):
                 user_creation_datetime=_client_creation_time_fix_coordiantes,
             ):
                 interval_minutes = 15  # nearest 15min interval
-                timedelta_factor = timedelta(
-                    minutes=round(upload_elapsed_seconds / 60 / interval_minutes)
-                    * interval_minutes
-                )
+                try:
+                    timedelta_factor = timedelta(
+                        minutes=round(
+                            (
+                                _client_creation_field - now
+                            ).total_seconds() / 60 / interval_minutes
+                        ) * interval_minutes
+                    )
+                except ValueError:
+                    # case offset greater than 1day.
+                    timedelta_factor = timedelta(seconds=0)
 
                 for (
                     datetime_fieldname
                 ) in self._get_fields_to_apply_tz_from_instant_upload(data=data):
-                    _primitive_datetime_fieldname = tmp_data[datetime_fieldname]
-                    if not timezone.is_aware(_primitive_datetime_fieldname):
-                        # If timezone not set, set UTC.
-                        _primitive_datetime_fieldname = apply_tz_to_datetime(
+                    _primitive_datetime_fieldname = data[datetime_fieldname]
+                    if not timezone.is_naive(_primitive_datetime_fieldname):
+                        _primitive_datetime_fieldname = timezone.make_naive(_primitive_datetime_fieldname)
+
+                    data_result[datetime_fieldname] = apply_tz_to_datetime(
                             value=_primitive_datetime_fieldname,
-                            tz=timezone.utc
+                            tz=dt_timezone(offset=timedelta_factor)
                         )
-                    data_result[datetime_fieldname] = (
-                        _primitive_datetime_fieldname + timedelta_factor
-                    )
 
         return data_result

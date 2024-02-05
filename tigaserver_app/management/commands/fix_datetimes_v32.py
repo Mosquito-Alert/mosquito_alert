@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from tqdm import tqdm
 from itertools import islice
 import pandas as pd
-import pytz
 import re
 
 from django.core.management.base import BaseCommand
@@ -42,7 +41,7 @@ class AutoTzDateTimeProcess(ABC):
                 # Apply TZ and convert to UTC
                 datetime_field = apply_tz_to_datetime(
                     getattr(obj, fieldname), tz=tz
-                ).astimezone(timezone.utc)
+                ).astimezone(timezone.get_default_timezone())
 
                 # Saving original value in a variable
                 setattr(obj, "_" + fieldname + "_old", getattr(obj, fieldname))
@@ -173,17 +172,15 @@ class AutoTzOrInstantUploadTimeProcess(AutoTzDateTimeProcess):
         ):
             interval_minutes = 15  # nearest 15min interval
             try:
-                tz = pytz.FixedOffset(
-                    # In minutes
-                    offset=round(
-                        (
-                            getattr(obj, self.CLIENT_CREATION_FIELD)
-                            - getattr(obj, self.SERVER_CREATION_FIELD)
-                        ).total_seconds()
-                        / 60
-                        / interval_minutes
+                tz = dt_timezone(
+                    offset=timedelta(
+                        minutes=round(
+                            (
+                                getattr(obj, self.CLIENT_CREATION_FIELD)
+                                - getattr(obj, self.SERVER_CREATION_FIELD)
+                            ).total_seconds() / 60 / interval_minutes
+                        ) * interval_minutes
                     )
-                    * interval_minutes
                 )
             except ValueError:
                 # case offset greater than 1day.
@@ -272,10 +269,10 @@ class ReportAutoTzDateTimeProcess(AutoTzOrInstantUploadTimeProcess):
                         obj=report_version
                     )
 
-                # Apply the new TZ and convert to UTC.
+                # Apply the new TZ and convert to the default timezone.
                 new_version_time = apply_tz_to_datetime(
                     report_version.version_time, tz=report_version._tz
-                ).astimezone(timezone.utc)
+                ).astimezone(timezone.get_default_timezone())
 
                 # Save old value
                 report_version._version_time_old = report_version.version_time
