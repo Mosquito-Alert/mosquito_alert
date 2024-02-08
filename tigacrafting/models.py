@@ -564,6 +564,7 @@ class Alert(models.Model):
     @classmethod
     def create_query_from_filter(cls, json_filter):
         print(json_filter)
+        filter_by_municipality = False
         accum_query = None
         try:
             date_from_s = json_filter['date_from']
@@ -572,6 +573,7 @@ class Alert(models.Model):
                 accum_query = append_chain_query(accum_query, Q(report_datetime__gte=date_from))
         except KeyError:
             pass
+
         try:
             date_to_s =  json_filter['date_to']
             if date_to_s != '':
@@ -579,6 +581,7 @@ class Alert(models.Model):
                 accum_query = append_chain_query(accum_query, Q(report_datetime__lte=date_to))
         except KeyError:
             pass
+
         try:
             review_date_from_s = json_filter['review_date_from']
             if review_date_from_s != '':
@@ -586,6 +589,7 @@ class Alert(models.Model):
                 accum_query = append_chain_query(accum_query, Q(review_datetime__gte=review_date_from))
         except KeyError:
             pass
+
         try:
             review_date_to_s =  json_filter['review_date_to']
             if review_date_to_s != '':
@@ -593,12 +597,14 @@ class Alert(models.Model):
                 accum_query = append_chain_query(accum_query, Q(review_datetime__lte=review_date_to))
         except KeyError:
             pass
+
         try:
             species =  json_filter['species']
             if species != '':
                 accum_query = append_chain_query(accum_query, Q(species=species))
         except KeyError:
             pass
+
         try:
             review_species =  json_filter['review_species']
             if review_species != '':
@@ -608,12 +614,14 @@ class Alert(models.Model):
                     accum_query = append_chain_query(accum_query, Q(review_species=review_species))
         except KeyError:
             pass
+
         try:
             status =  json_filter['status']
             if status != '':
                 accum_query = append_chain_query(accum_query, Q(status=status))
         except KeyError:
             pass
+
         try:
             review_status =  json_filter['review_status']
             if review_status != '':
@@ -623,17 +631,27 @@ class Alert(models.Model):
                     accum_query = append_chain_query(accum_query, Q(review_status=review_status))
         except KeyError:
             pass
+
         try:
-            nuts_3 = json_filter['nuts_3']
-            nuts_2 = json_filter['nuts_2']
-            nuts_1 = json_filter['nuts_1']
-            nuts_0 = json_filter['nuts_0']
-            for nuts in [nuts_3, nuts_2, nuts_1, nuts_0]:
-                if nuts != '':
-                    accum_query = append_chain_query(accum_query, Q(loc_code__startswith=nuts))
-                    break
+            municipality = json_filter['municipality']
+            if municipality != '':
+                filter_by_municipality = True
+                accum_query = append_chain_query(accum_query, Q(loc_code__contains=municipality))
         except KeyError:
             pass
+
+        if not filter_by_municipality:
+            try:
+                nuts_3 = json_filter['nuts_3']
+                nuts_2 = json_filter['nuts_2']
+                nuts_1 = json_filter['nuts_1']
+                nuts_0 = json_filter['nuts_0']
+                for nuts in [nuts_3, nuts_2, nuts_1, nuts_0]:
+                    if nuts != '':
+                        accum_query = append_chain_query(accum_query, Q(loc_code__startswith=nuts))
+                        break
+            except KeyError:
+                pass
         return accum_query
 
 # class Species(models.Model):

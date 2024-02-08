@@ -80,5 +80,6 @@ urlpatterns = [
     url('favorite/$', views.favorite),
     url('user_favorites/$', views.user_favorites),
     url('nuts_below/$', views.nuts_below),
+    url('municipalities_below/$', views.municipalities_below),
     url('', include(router.urls)),
 ]

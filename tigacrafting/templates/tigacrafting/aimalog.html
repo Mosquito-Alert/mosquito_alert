@@ -60,28 +60,28 @@
         <div class="alert alert-danger" role="alert">
             <form class="form-horizontal">
                 <div class="form-group">
-                    <label for="date_from" class="col-sm-2 control-label">Report date - From date</label>
-                    <div class="col-sm-4">
+                    <label for="date_from" class="col-sm-1 control-label">Rep. date - From</label>
+                    <div class="col-sm-5">
                         <input id="date_from" type="text" class="form-control">
                     </div>
-                    <label for="date_to" class="col-sm-2 control-label">Report date - To date</label>
-                    <div class="col-sm-4">
+                    <label for="date_to" class="col-sm-1 control-label">Rep. date - To</label>
+                    <div class="col-sm-5">
                         <input id="date_to" type="text" class="form-control">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="review_date_from" class="col-sm-2 control-label">Review date - From date</label>
-                    <div class="col-sm-4">
+                    <label for="review_date_from" class="col-sm-1 control-label">Rev. date - From</label>
+                    <div class="col-sm-5">
                         <input id="review_date_from" type="text" class="form-control">
                     </div>
-                    <label for="review_date_to" class="col-sm-2 control-label">Review date - To date</label>
-                    <div class="col-sm-4">
+                    <label for="review_date_to" class="col-sm-1 control-label">Rev. date - To</label>
+                    <div class="col-sm-5">
                         <input id="review_date_to" type="text" class="form-control">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="species" class="col-sm-2 control-label">Species</label>
-                    <div class="col-sm-4">
+                    <label for="species" class="col-sm-1 control-label">Species</label>
+                    <div class="col-sm-5">
                         <select class="form-control" id="species">
                             <option value="">-----</option>
                             {% for f in species %}
@@ -89,8 +89,8 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <label for="review_species" class="col-sm-2 control-label">Review species</label>
-                    <div class="col-sm-4">
+                    <label for="review_species" class="col-sm-1 control-label">Review species</label>
+                    <div class="col-sm-5">
                         <select class="form-control" id="review_species">
                             <option value="">-----</option>
                             {% for f in review_species %}
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="status" class="col-sm-2 control-label">Status</label>
-                    <div class="col-sm-4">
+                    <label for="status" class="col-sm-1 control-label">Status</label>
+                    <div class="col-sm-5">
                         <select class="form-control" id="status">
                             <option value="">-----</option>
                             {% for f in status %}
@@ -109,8 +109,8 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <label for="review_status" class="col-sm-2 control-label">Review Status</label>
-                    <div class="col-sm-4">
+                    <label for="review_status" class="col-sm-1 control-label">Review Status</label>
+                    <div class="col-sm-5">
                         <select class="form-control" id="review_status">
                             <option value="">-----</option>
                             {% for f in review_status %}
@@ -151,6 +151,15 @@
                         <i id="nuts_3_spinner" class="fa fa-spinner fa-spin fa-fw" aria-hidden="true" style="display:none;"></i>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="municipality" class="col-sm-1 control-label">Municipality</label>
+                    <div class="col-sm-5">
+                        <select class="form-control" id="municipality" disabled>
+                            <option value="">-----</option>
+                        </select>
+                        <i id="municipality_spinner" class="fa fa-spinner fa-spin fa-fw" aria-hidden="true" style="display:none;"></i>
+                    </div>
+                </div>
             </form>
             <div class="row">
                 <button class="btn btn-primary navbar-right" type="button" id="remove_filter"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></button>
@@ -165,6 +174,7 @@
     <script>
         var _aimalog_list_url = '{% url 'aimalog_datatable' %}';
     </script>
+    <script src={% static "tigacrafting/cookies.js" %}></script>
     <script src={% static "tigacrafting/aimalog/filter_control.js" %}></script>
     <script src={% static "tigacrafting/aimalog/aimalog_datatable.js" %}></script>
 </html>

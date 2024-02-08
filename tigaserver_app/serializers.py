@@ -6,7 +6,7 @@ from tigacrafting.models import Alert
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
-from tigaserver_app.data_singletons import NutsDict
+from tigaserver_app.data_singletons import NutsDict, MunicipalitiesDict
 
 def score_label(score):
     if score > 66:
@@ -436,10 +436,11 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
     nuts_one =  serializers.SerializerMethodField()
     nuts_two = serializers.SerializerMethodField()
     nuts_three = serializers.SerializerMethodField()
+    municipality = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
-        fields = ('xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','alert_sent')
+        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent')
 
     def get_country(self, obj):
         nuts_dict_instance = NutsDict()
@@ -456,6 +457,13 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
     def get_nuts_three(self,obj):
         nuts_dict_instance = NutsDict()
         return nuts_dict_instance.get_nuts_name(obj.loc_code,3)
+
+    def get_municipality(self,obj):
+        if obj.loc_code and len(obj.loc_code.split('_')) > 1:
+            natcode = obj.loc_code.split('_')[1]
+            municipality_dict_instance = MunicipalitiesDict()
+            return municipality_dict_instance.get_municipality_name(natcode)
+        return 'Unknown'
 
 
 class DataTableNotificationSerializer(serializers.ModelSerializer):

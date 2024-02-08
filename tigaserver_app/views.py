@@ -17,7 +17,7 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, NutsEurope
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, NutsEurope, MunicipalitiesNatCode
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
 from math import ceil
@@ -2298,6 +2298,21 @@ def favorite(request):
             new_fav = FavoritedReports(user=user, report=report, note=note)
             new_fav.save()
             return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def municipalities_below(request):
+    if request.method == 'GET':
+        nuts_from = request.GET.get('nuts_from', -1)
+        qs = None
+        if len(nuts_from) == 4: #nuts_2
+            qs = MunicipalitiesNatCode.objects.filter(nuts_2_code=nuts_from).order_by('nameunit')
+        elif len(nuts_from) == 5: #nuts_3
+            qs = MunicipalitiesNatCode.objects.filter(nuts_3_code=nuts_from).order_by('nameunit')
+        else:
+            raise ParseError(detail='user_id param is mandatory')
+        retval = [{'natcode': municipality.natcode, 'nameunit': municipality.nameunit} for municipality in qs]
+        return Response(retval, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

@@ -5,22 +5,29 @@ $(document).ready(function () {
             'url': _aimalog_list_url,
             'dataType': 'json',
             'data': function(d){
-                d.filter = $('#filter_value').val();
+                var filter_cookie = getCookie('alerts_f');
+                if(filter_cookie){
+                    d.filter = filter_cookie;
+                }
+                //d.filter = $('#filter_value').val();
             }
         },
         "initComplete": function(settings, json) {
             // Bind the event listener to your external filter control
             $('#filter').on('click', function() {
-                $('#filter_value').val(JSON.stringify(f.getJson()));
+                //$('#filter_value').val(JSON.stringify(f.getJson()));
+                f.write_filter_cookie();
                 table.draw();
             });
             $('#remove_filter').on('click', function() {
                 f.clear();
-                $('#filter_value').val(JSON.stringify(f.getJson()));
+                //$('#filter_value').val(JSON.stringify(f.getJson()));
+                f.write_filter_cookie();
                 table.draw();
             });
         },
         'dom': 'lpftrip',
+        'stateSave': true,
         'serverSide': true,
         'processing': true,
         'language': 'en',
@@ -31,11 +38,12 @@ $(document).ready(function () {
         'order': [[2, "desc"]],
         'columns': [
             //{'data': 'xvb'},
+            {'data': 'id'},
             {'data': 'report_id'},
             {'data': 'report_datetime'},
             //{'data': 'loc_code'},
             {'data': 'species'},
-            {'data': 'certainty'},
+            //{'data': 'certainty'},
             {'data': 'status'},
             //{'data': 'hit'},
             {'data': 'review_species'},
@@ -45,89 +53,50 @@ $(document).ready(function () {
             {'data': 'nuts_one'},
             {'data': 'nuts_two'},
             {'data': 'nuts_three'},
+            {'data': 'municipality'},
             {'data': 'alert_sent'},
         ],
         'columnDefs': [
-            /*{
-                'targets': 0,
-                'title': 'xvb'
-            },*/
-            {
-                'targets': 0,
-                'title': 'report'
-            },
-            {
-                'targets': 1,
-                'title': 'report_datetime'
-            },
-            /*{
-                'targets': 3,
-                'title': 'loc_code'
-            },*/
-            {
-                'targets': 2,
-                'title': 'species',
-            },
-            {
-                'targets': 3,
-                'title': 'certainty',
-            },
-            {
-                'targets': 4,
-                'title': 'status',
-            },
-            /*{
-                'targets': 7,
-                'title': 'hit',
-            },*/
-            {
-                'targets': 5,
-                'title': 'review_species',
-            },
-            {
-                'targets': 6,
-                'title': 'review_status',
-            },
-            /*{
-                'targets': 10,
-                'title': 'review_datetime',
-            },*/
-            {
-                'targets': 7,
-                'title': 'country',
-            },
-            {
-                'targets': 8,
-                'title': 'nuts_1',
-            }
-            ,
-            {
-                'targets': 9,
-                'title': 'nuts_2',
-            }
-            ,
-            {
-                'targets': 10,
-                'title': 'nuts_3',
-            }
-            ,
-            {
-                'targets': 11,
-                'title': 'alert_sent',
+            /*{'targets': 0,'title': 'xvb'}*/
+            {'targets': 0,'title': 'id'}
+            ,{'targets': 1,'title': 'report'}
+            ,{'targets': 2,'title': 'report_datetime'}
+            /*,{'targets': 3,'title': 'loc_code'}
+            ,{'targets': 3, 'title': 'species',}*/
+            ,{'targets': 3,'title': 'species'}
+            ,{'targets': 4,'title': 'status'}
+            /*,{'targets': 7,'title': 'hit',},*/
+            ,{'targets': 5,'title': 'review_species'}
+            ,{'targets': 6,'title': 'review_status'}
+            /*,{'targets': 10,'title': 'review_datetime'}*/
+            ,{'targets': 7,'title': 'country'}
+            ,{'targets': 8,'title': 'nuts_1'}
+            ,{'targets': 9,'title': 'nuts_2'}
+            ,{'targets': 10,'title': 'nuts_3'}
+            ,{'targets': 11,'title': 'municipality'}
+            ,{'targets': 12,'title': 'alert_sent'}
+            ,{ 'targets': 13, 'sortable': false,
+                'render': function(value){
+                    return '<button title="" class="review_button btn btn-success"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>';
+                }
             }
         ]
     });
 
-    var load_nuts_level = function(parent_code, select_id){
+    /*
+    var load_municipalities = function(parent_nuts_code, select_id, id_name, name_name, init_select_val){
         $('#' + select_id + "_spinner").show();
         $.ajax({
-            url: '/api/nuts_below/?nuts_from=' + parent_code,
+            url: '/api/municipalities_below/?nuts_from=' + parent_nuts_code,
             type: "GET",
             dataType: "json",
             success: function(data) {
                 console.log(data);
-                load_data_to_control(select_id,data);
+                load_data_to_control(select_id,data,id_name,name_name);
                 $('#' + select_id + "_spinner").hide();
+                if(init_select_val != null){
+                    $('#' + select_id).val(init_select_val);
+                }
             },
             error: function(jqXHR, textStatus, errorThrown){
                 console.log(textStatus);
@@ -136,16 +105,38 @@ $(document).ready(function () {
         });
     }
 
-    var load_data_to_control = function(control_id, data){
+    var load_nuts_level = function(parent_code, select_id, id_name, name_name, init_select_val){
+        $('#' + select_id + "_spinner").show();
+        $.ajax({
+            url: '/api/nuts_below/?nuts_from=' + parent_code,
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                console.log(data);
+                load_data_to_control(select_id, data, id_name, name_name);
+                $('#' + select_id + "_spinner").hide();
+                if(init_select_val!=null){
+                    $('#' + select_id).val(init_select_val);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                console.log(textStatus);
+                $('#' + select_id + "_spinner").hide();
+            }
+        });
+    }
+
+    var load_data_to_control = function(control_id, data, id_name, name_name){
         $('#' + control_id).empty();
         var in_html = [];
         in_html.push('<option value="">-----</option>');
         for(var i = 0; i < data.length; i++){
-            in_html.push('<option value="' + data[i].nuts_id + '">' + data[i].name_latn + '</option>');
+            in_html.push('<option value="' + data[i][id_name] + '">' + data[i][name_name] + '</option>');
         }
         $('#' + control_id).html( in_html.join() );
         $('#' + control_id).prop('disabled', false);
     }
+    */
 
     $( "#date_from" ).datepicker({ dateFormat: 'dd/mm/yy' });
     $( "#date_to" ).datepicker({ dateFormat: 'dd/mm/yy' });
@@ -154,14 +145,27 @@ $(document).ready(function () {
 
     $('#nuts_0').on('change', function(){
         f.resetAllDropDown();
-        load_nuts_level($(this).val(), 'nuts_1');
+        f.load_nuts_level($(this).val(), 'nuts_1','nuts_id','name_latn');
     });
     $('#nuts_1').on('change', function(){
-        load_nuts_level($(this).val(), 'nuts_2');
+        f.load_nuts_level($(this).val(), 'nuts_2','nuts_id','name_latn');
     });
     $('#nuts_2').on('change', function(){
-        load_nuts_level($(this).val(), 'nuts_3');
+        f.load_nuts_level($(this).val(), 'nuts_3','nuts_id','name_latn');
+    });
+    $('#nuts_3').on('change', function(){
+        f.load_municipalities($(this).val(), 'municipality','natcode','nameunit');
     });
 
     f = FilterControl.create();
+
+    var filter_cookie = getCookie('alerts_f');
+    if(filter_cookie != null && filter_cookie != ''){
+        var filter_cookie_j = JSON.parse(filter_cookie);
+        f.toJson(filter_cookie_j);
+    }
+});
+
+$(window).bind('beforeunload', function(){
+    f.write_filter_cookie();
 });

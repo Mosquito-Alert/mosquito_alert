@@ -2933,3 +2933,10 @@ class IAScore(models.Model):
     y_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left y")
     y_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right y")
 
+
+class MunicipalitiesNatCode(models.Model):
+    natcode = models.CharField(max_length=11)
+    nameunit = models.CharField(max_length=100)
+    nuts_2_code = models.CharField(max_length=4)
+    nuts_3_code = models.CharField(max_length=5)
+    gisco_id = models.CharField(max_length=8, null=True)
