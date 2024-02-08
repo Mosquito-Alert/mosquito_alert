@@ -234,7 +234,7 @@ def get_unassigned_available_reports(country):
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:
             expiration_period_days = country.national_supervisor_report_expires_in
-        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=timezon.now() - timedelta(days=expiration_period_days))
+        new_reports_unfiltered = new_reports_unfiltered.exclude(server_upload_time__gte=timezone.now() - timedelta(days=expiration_period_days))
     # exclude reports assigned to supervisor but not yet validated
     reports_assigned_to_supervisor_not_yet_validated = ExpertReportAnnotation.objects.filter(user__userstat__national_supervisor_of=country).filter(report__type='adult').filter(validation_complete=False)
     reports_assigned_to_supervisor_not_yet_validated = reports_assigned_to_supervisor_not_yet_validated.exclude(Q(report__country=country) & Q(report__server_upload_time__lt=timezone.now() - timedelta(days=expiration_period_days)))
