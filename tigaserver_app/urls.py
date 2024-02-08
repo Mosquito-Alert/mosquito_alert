@@ -79,5 +79,6 @@ urlpatterns = [
     url('stats/user_xp_data/$', get_user_xp_data),
     url('favorite/$', views.favorite),
     url('user_favorites/$', views.user_favorites),
+    url('nuts_below/$', views.nuts_below),
     url('', include(router.urls)),
 ]

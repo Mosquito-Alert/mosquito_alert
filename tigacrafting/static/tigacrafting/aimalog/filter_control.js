@@ -16,6 +16,7 @@
         $('#status').val( "" );
         $('#review_status').val( "" );
         $('#nuts_0').val( "" );
+        this.resetAllDropDown();
     }
 
     FilterControl.getJson = function() {
@@ -28,8 +29,23 @@
             review_species : $('#review_species').val(),
             status: $('#status').val(),
             review_status: $('#review_status').val(),
-            nuts_0: $('#nuts_0').val()
+            nuts_0: $('#nuts_0').val(),
+            nuts_1: $('#nuts_1').val(),
+            nuts_2: $('#nuts_2').val(),
+            nuts_3: $('#nuts_3').val()
         }
+    }
+
+    FilterControl.resetDropDown = function(control_id){
+        $('#' + control_id).empty();
+        $('#' + control_id).html( '<option value="">-----</option>' );
+        $('#' + control_id).prop('disabled', true);
+    }
+
+    FilterControl.resetAllDropDown = function(){
+        this.resetDropDown('nuts_1');
+        this.resetDropDown('nuts_2');
+        this.resetDropDown('nuts_3');
     }
 
     FilterControl.toJson = function(json_data) {
@@ -42,6 +58,9 @@
         $('#status').val( json_data.status );
         $('#review_status').val( json_data.review_status );
         $('#nuts_0').val( json_data.nuts_0 );
+        $('#nuts_1').val( json_data.nuts_1 );
+        $('#nuts_2').val( json_data.nuts_2 );
+        $('#nuts_3').val( json_data.nuts_3 );
     }
 
 })();

@@ -624,9 +624,14 @@ class Alert(models.Model):
         except KeyError:
             pass
         try:
-            nuts_0 =  json_filter['nuts_0']
-            if nuts_0 != '':
-                accum_query = append_chain_query(accum_query, Q(loc_code__startswith=nuts_0))
+            nuts_3 = json_filter['nuts_3']
+            nuts_2 = json_filter['nuts_2']
+            nuts_1 = json_filter['nuts_1']
+            nuts_0 = json_filter['nuts_0']
+            for nuts in [nuts_3, nuts_2, nuts_1, nuts_0]:
+                if nuts != '':
+                    accum_query = append_chain_query(accum_query, Q(loc_code__startswith=nuts))
+                    break
         except KeyError:
             pass
         return accum_query

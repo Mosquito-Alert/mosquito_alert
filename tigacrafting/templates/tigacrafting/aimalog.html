@@ -121,7 +121,7 @@
                 </div>
                 <div class="form-group">
                     <label for="nuts_0" class="col-sm-1 control-label">Nuts 0 (country)</label>
-                    <div class="col-sm-3">
+                    <div class="col-sm-2">
                         <select class="form-control" id="nuts_0">
                             <option value="">-----</option>
                             {% for f in nuts_0 %}
@@ -130,10 +130,25 @@
                         </select>
                     </div>
                     <label for="nuts_1" class="col-sm-1 control-label">Nuts 1</label>
-                    <div class="col-sm-3">
-                        <select class="form-control" id="nuts_1">
+                    <div class="col-sm-2">
+                        <select class="form-control" id="nuts_1" disabled>
                             <option value="">-----</option>
                         </select>
+                        <i id="nuts_1_spinner" class="fa fa-spinner fa-spin fa-fw" aria-hidden="true" style="display:none;"></i>
+                    </div>
+                    <label for="nuts_2" class="col-sm-1 control-label">Nuts 2</label>
+                    <div class="col-sm-2">
+                        <select class="form-control" id="nuts_2" disabled>
+                            <option value="">-----</option>
+                        </select>
+                        <i id="nuts_2_spinner" class="fa fa-spinner fa-spin fa-fw" aria-hidden="true" style="display:none;"></i>
+                    </div>
+                    <label for="nuts_3" class="col-sm-1 control-label">Nuts 3</label>
+                    <div class="col-sm-2">
+                        <select class="form-control" id="nuts_3" disabled>
+                            <option value="">-----</option>
+                        </select>
+                        <i id="nuts_3_spinner" class="fa fa-spinner fa-spin fa-fw" aria-hidden="true" style="display:none;"></i>
                     </div>
                 </div>
             </form>

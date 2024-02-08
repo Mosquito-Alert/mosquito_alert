@@ -6,7 +6,7 @@ from tigacrafting.models import Alert
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
-from tigaserver_app.data_singletons import CountryDict, NutsOneDict
+from tigaserver_app.data_singletons import NutsDict
 
 def score_label(score):
     if score > 66:
@@ -434,18 +434,28 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
     review_datetime = serializers.DateTimeField(format="%d/%m/%Y %H:%M:%S")
     country = serializers.SerializerMethodField()
     nuts_one =  serializers.SerializerMethodField()
+    nuts_two = serializers.SerializerMethodField()
+    nuts_three = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
-        fields = ('xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one')
+        fields = ('xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','alert_sent')
 
     def get_country(self, obj):
-        country_dict_instance = CountryDict()
-        return country_dict_instance.get_country(obj.loc_code)
+        nuts_dict_instance = NutsDict()
+        return nuts_dict_instance.get_nuts_name(obj.loc_code, 0)
 
     def get_nuts_one(self, obj):
-        nuts_one_dict_instance = NutsOneDict()
-        return nuts_one_dict_instance.get_nuts_one(obj.loc_code)
+        nuts_dict_instance = NutsDict()
+        return nuts_dict_instance.get_nuts_name(obj.loc_code, 1)
+
+    def get_nuts_two(self,obj):
+        nuts_dict_instance = NutsDict()
+        return nuts_dict_instance.get_nuts_name(obj.loc_code,2)
+
+    def get_nuts_three(self,obj):
+        nuts_dict_instance = NutsDict()
+        return nuts_dict_instance.get_nuts_name(obj.loc_code,3)
 
 
 class DataTableNotificationSerializer(serializers.ModelSerializer):
