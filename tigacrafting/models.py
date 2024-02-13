@@ -652,6 +652,19 @@ class Alert(models.Model):
                         break
             except KeyError:
                 pass
+
+        try:
+            processed = json_filter['processed']
+            if processed and processed != '':
+                if processed == 'processed':
+                    accum_query = append_chain_query(accum_query, Q(alert_sent=True))
+                elif processed == 'unprocessed':
+                    accum_query = append_chain_query(accum_query, Q(alert_sent=False))
+                else:
+                    pass
+        except KeyError:
+            pass
+
         return accum_query
 
 # class Species(models.Model):

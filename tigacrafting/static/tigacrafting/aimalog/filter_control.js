@@ -72,10 +72,15 @@
         $('#status').val( "" );
         $('#review_status').val( "" );
         $('#nuts_0').val( "" );
+        $('#all').closest('.btn').button('toggle');
         this.resetAllDropDown();
     }
 
     FilterControl.getJson = function() {
+        var process_filter = $('input[name="processed"]:checked').val();
+        if(process_filter==null){
+            process_filter = '';
+        }
         return {
             date_from : $('#date_from').val(),
             date_to : $('#date_to').val(),
@@ -89,7 +94,8 @@
             nuts_1: $('#nuts_1').val(),
             nuts_2: $('#nuts_2').val(),
             nuts_3: $('#nuts_3').val(),
-            municipality: $('#municipality').val()
+            municipality: $('#municipality').val(),
+            processed: process_filter
         }
     }
 
@@ -127,6 +133,11 @@
         }
         if(json_data.nuts_3 != ''){
             FilterControl.load_municipalities(json_data.nuts_3,'municipality','natcode','nameunit', json_data.municipality);
+        }
+        if(json_data.processed == null || json_data.processed == ''){
+            $('#all').closest('.btn').button('toggle');
+        }else{
+            $('#' + json_data.processed).closest('.btn').button('toggle');
         }
     }
 

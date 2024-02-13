@@ -26,7 +26,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.forms.models import modelformset_factory
 from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription, MunicipalitiesNatCode
 from zipfile import ZipFile
 from io import BytesIO
 from operator import attrgetter
@@ -1976,6 +1976,74 @@ def notifications(request,user_uuid=None):
     user_uuid = request.GET.get('user_uuid',None)
     total_users = TigaUser.objects.all().count()
     return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
+
+def get_alert_location_from_code(loc_code):
+    data = {}
+    country_code = loc_code[:2]
+    try:
+        country = NutsEurope.objects.filter(levl_code=0).get(cntr_code=country_code)
+        data['country'] = country
+    except NutsEurope.DoesNotExist:
+        data['country'] = None
+    data['nuts_1'] = None
+    data['nuts_2'] = None
+    data['nuts_3'] = None
+    for n in [3,4,5]:
+        nuts_index = n - 2
+        nuts_key = 'nuts_' + str(nuts_index)
+        if len(loc_code) >= n:
+            try:
+                nutsn_code = loc_code[:n]
+                nuts = NutsEurope.objects.filter(levl_code=nuts_index).get(nuts_id=nutsn_code)
+                data[nuts_key] = nuts
+            except NutsEurope.DoesNotExist:
+                data[nuts_key] = None
+        else:
+            data[nuts_key] = None
+    data['municipality'] = None
+    if len(loc_code) > 5:
+        natcode = loc_code.split('_')[1]
+        try:
+            munic = MunicipalitiesNatCode.objects.get(natcode=natcode)
+            data['municipality'] = munic
+        except MunicipalitiesNatCode.DoesNotExist:
+            data['municipality'] = None
+    return data
+
+@login_required
+def process_ui(request, report_id=None, alert_id=None):
+    report = Report.objects.get(pk=report_id)
+    alert = Alert.objects.get(pk=alert_id)
+    admin_data = get_alert_location_from_code(alert.loc_code)
+    country = admin_data['country']
+    nuts_1 = admin_data['nuts_1']
+    nuts_2 = admin_data['nuts_2']
+    nuts_3 = admin_data['nuts_3']
+    municipality = admin_data['municipality']
+    alert_admin_info = []
+    labels = ['Country', 'Nuts 1', 'Nuts 2', 'Nuts 3']
+    review_species = [
+        'aegypti',
+        'albopictus',
+        'complex',
+        'culex',
+        'geniculatus',
+        'japonicus',
+        'koreicus',
+        'NC',
+        'not_sure',
+        'other_species',
+        'repeated',
+        'vittatus'
+    ]
+    for idx, elem in enumerate([country, nuts_1, nuts_2, nuts_3]):
+        alert_admin_info.append({ 'name': elem.name_latn if elem else 'Not defined', 'code': elem.nuts_id if elem else '', 'label': labels[idx]})
+    if municipality:
+        alert_admin_info.append({'name': municipality.nameunit, 'code': '', 'label': 'Municipality'})
+    else:
+        alert_admin_info.append({'name': 'Not defined', 'code': '' if elem else '','label': 'Municipality'})
+    return render(request, 'tigacrafting/aimalog_process.html',{ 'report': report, 'admin_info': alert_admin_info, 'alert': alert, 'review_species': review_species })
+
 
 @login_required
 def aimalog(request):

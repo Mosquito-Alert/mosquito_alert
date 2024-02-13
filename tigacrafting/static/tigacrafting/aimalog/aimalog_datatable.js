@@ -26,6 +26,14 @@ $(document).ready(function () {
                 table.draw();
             });
         },
+        'createdRow': function( row, data, dataIndex){
+            if( data.alert_sent == true ){
+                $(row).addClass('dtGreen');
+            }else{
+                $(row).addClass('dtOrange');
+            }
+        },
+        'stripeClasses': [],
         'dom': 'lpftrip',
         'stateSave': true,
         'serverSide': true,
@@ -74,10 +82,14 @@ $(document).ready(function () {
             ,{'targets': 9,'title': 'nuts_2'}
             ,{'targets': 10,'title': 'nuts_3'}
             ,{'targets': 11,'title': 'municipality'}
-            ,{'targets': 12,'title': 'alert_sent'}
-            ,{ 'targets': 13, 'sortable': false,
+            ,{ 'targets': 13, 'data': null, 'sortable': false,
                 'render': function(value){
-                    return '<button title="" class="review_button btn btn-success"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>';
+                    return '<a title="Process alert" class="review_button btn btn-success" href="/aimalog/process_ui/' + value.report_id + '/' + value.id + '/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>';
+                    /*if(value.alert_sent == true){
+                        return '<a class="review_button btn btn-info" href="#" target="_blank"><i class="fa fa-eye" aria-hidden="true"></i></a>';
+                    }else{
+                        return '<a title="Process alert" class="review_button btn btn-success" href="/aimalog/process_ui/' + value.report_id + '/' + value.id + '/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>';
+                    }*/
                 }
             }
         ]

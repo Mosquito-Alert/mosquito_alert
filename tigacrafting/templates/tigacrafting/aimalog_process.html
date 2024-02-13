@@ -1,0 +1,312 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+
+<head>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.min.css" %}>
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <style>
+        .report_info_wrapper {
+            padding: 20px;
+        }
+    </style>
+
+        <div class="navbar-wrapper">
+            <div id="notifications_navbar" class="navbar-fixed-top navbar navbar-inverse" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">
+                                MosquitoAlert IA Alert Log
+                            </span>
+
+                        </div>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                <a href="{% url 'expert_report_annotation' %}">Back to entolab</a>
+                            </li>
+                            <li>
+                                <p class="navbar-text">{{ request.user.username }}</p>
+                            </li>
+                            <li>
+                                <a href="{% url 'auth_logout' %}">logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Process Alert</h1>
+        <h3>Alert status</h3>
+        <div class="alert_info_wrapper alert alert-info">
+            <div class="row">
+                <div class="col-md-3">
+                    {% if alert.alert_sent %}
+                        <h1><span class="label label-success">Processed</span></h1>
+                    {% else %}
+                        <h1><span class="label label-warning">Unprocessed</span></h1>
+                    {% endif %}
+                </div>
+                <div class="col-md-9">
+                    {% if alert.alert_sent %}
+                    <div class="row">
+                        <div class="col-md-2"><b>Reviewed at:</b></div>
+                        <div class="col-md-10">{{ alert.review_datetime }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2"><b>Review species:</b></div>
+                        <div class="col-md-10">{{ alert.review_species }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2"><b>Review status:</b></div>
+                        <div class="col-md-10">{{ alert.review_status }}</div>
+                    </div>
+                    {% else %}
+                    <div class="row">
+                        <div class="col-md-2"><b>Review species:</b></div>
+                        <div class="col-md-8">
+                            <select class="form-control" >
+                                <option value="">-------</option>
+                                {% for f in review_species %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary">Review</button>
+                            <button class="btn btn-primary">Ok IA</button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <h3>Alert communication status</h3>
+        <div class="alert_info_wrapper alert alert-info">
+            <div class="row">
+            </div>
+        </div>
+        <h3>Alert information</h3>
+        <div class="alert_info_wrapper alert alert-info">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Alert Location</h4>
+                    <div class="alert_info_wrapper alert alert-success">
+                        {% for n in admin_info %}
+                        <div class="row">
+                            <div class="col-md-6"><b>{{ n.label }}</b></div>
+                            <div class="col-md-6">{{ n.name }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h4>AI Info</h4>
+                    <div class="alert_info_wrapper alert alert-success">
+                        <div class="row">
+                            <div class="col-md-6"><b>Species AI Classification</b></div>
+                            <div class="col-md-6">{{ alert.species }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6"><b>Species status in location</b></div>
+                            <div class="col-md-6">{{ alert.status }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h3>Report information</h3>
+        <div class="report_info_wrapper alert alert-info">
+            <div class="row" style="padding: 5px; background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
+                <div class="col-md-12">
+                    <h4>
+                        <strong>{{ report.type|capfirst }} Report {{ report.version_UUID }} </strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC - {{ report.country_label }} - {{ report.language }}
+                    </h4>
+                    <h5>
+                        <strong>Report code - {{ report.report_id }}</strong>
+                    </h5>
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px;padding-bottom:10px;">
+                {% if report.get_is_expert_validated and request.user.userstat.is_superexpert %}
+                    <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}?version_uuid={{ report.version_UUID }}">View this Report in Validation Mode <span class="glyphicon glyphicon-share-alt"></span></a>
+                {% endif %}
+            </div>
+            {% if report.deleted %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <strong>WARNING: THIS REPORT HAS BEEN DELETED BY THE USER. IT WILL NOT BE SENT FOR EXPERT VALIDATION OR DISPLAYED ON THE PUBLIC MAP.</strong>
+                    </div>
+                </div>
+            {% endif %}
+            {% if not report.deleted and not report.latest_version %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <strong>WARNING: THIS IS NOT THE LATEST VERSION OF THIS REPORT. IT WILL NOT BE SENT FOR EXPERT VALIDATION OR DISPLAYED ON THE PUBLIC MAP.</strong><br>The latest version of this report is <a href="{% url 'expert_report_status' %}?version_uuid={{ report.get_which_is_latest }}">{{ report.get_which_is_latest }}</a>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="row" style="margin-bottom: 3px;">
+                <div class="col-md-12">
+                    {% if report.get_is_expert_validated %}
+                        {{ report.get_final_expert_status_bootstrap | safe }}
+                        <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
+                    {% else %}
+                        <strong>Status:</strong> Not yet validated by three experts.
+                    {% endif %}
+                    <div class="table-responsive">
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Public Note</th>
+                                    <th>Note to User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ report.get_final_photo_html.popup_image | safe }}</td>
+                                    <td>
+                                        {% if report.get_final_public_note %}
+                                        {{ report.get_final_public_note | safe }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ report.get_final_note_to_user_html | safe }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div> <!-- table responsive -->
+                </div> <!-- col-md12 -->
+            </div> <!-- row -->
+            <div class="row">
+                <div class="col-md-12">
+                    <strong>Who has this report? </strong>
+                        {% if report.get_who_has_bootstrap %}
+                            {% if request.user.userstat.is_superexpert %}
+                                {{ report.get_who_has_bootstrap | safe }}
+                            {% else %}
+                                {% for who_has in who_has_list %}
+                                    {{ who_has | safe }}
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            Nobody - it has not yet been given to any experts.
+                        {% endif %}
+                </div><br>
+            </div>
+                {% if report.get_is_expert_validated %}<br>
+                    <div class="row">
+                        <strong>Individual Expert Responses</strong><br>
+                            {% for ano in report.expert_report_annotations.all %}
+                                {% if ano.validation_complete %}
+                                    <div class="col-md-6">
+                                        <table class="table table-condensed borderless" style="font-size: smaller;">
+                                            <thead>
+                                                <th></th>
+                                                <th></th>
+                                            </thead>
+                                            {% if ano.user.userstat.is_superexpert %}
+                                            <tbody style="border: 1px solid #333;padding:2px;background: #F5DA81;">
+                                            {% else %}
+                                                {% if not ano.simplified_annotation %}
+                                                    <tbody style="border: 1px solid #F00;padding:2px;">
+                                                {% else %}
+                                                    <tbody style="border: 1px solid #333;padding:2px;">
+                                                {% endif %}
+                                            {% endif %}
+                                                <tr>
+                                                    <td>
+                                                        {% if ano.user.username == this_user or request.user.userstat.is_superexpert or ano.user.userstat.is_superexpert %}
+                                                            <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by {{ ano.user.username }}">{{ ano.user.username }}<span class="glyphicon glyphicon-check"></span>
+                                                        {% else %}
+                                                            <span class="label label-success" title="" data-placement="bottom" data-toggle="tooltip" data-original-title="validated by an expert">expert<span class="glyphicon glyphicon-check"></span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <!-- $EURO_SWITCH -->
+                                                        <!-- {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %} -->
+                                                        {% if ano.user.userstat.is_superexpert %}
+                                                            {% if ano.revise == False and ano.validation_complete == True %}
+                                                                {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
+                                                            {% else %}
+                                                                {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}
+                                                            {% endif %}
+                                                        {% else %}
+                                                        {{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <strong>Internal cmts:</strong>
+                                                    </td>
+                                                    <td>
+                                                        {% if report.type == 'adult' %}
+                                                                {{ ano.tiger_certainty_notes }}<br>
+                                                        {% elif report.type == 'site' %}
+                                                            {{ ano.site_certainty_notes }}<br>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Public Note:</strong></td>
+                                                    <td> {{ ano.edited_user_notes }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Message To User:</strong></td>
+                                                    <td> {{ ano.message_for_user }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Linked ID:</strong></td>
+                                                    <td> {{ ano.linked_id }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Photo:</strong></td>
+                                                    <td>{% if ano.best_photo %}{{ ano.best_photo.popup_image | safe }}{% endif %}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- col-md-6 -->
+                                {% endif %}
+                        {% endfor %} <!-- for ano in report.expert_report_annotations.all -->
+                        </div>
+                {% endif %} <!-- report.get_is_expert_validated -->
+            <div class="row">
+                <div class="col-md-6">
+                    <br>
+                    <strong>Photos</strong>
+                    <div style="overflow: auto;">
+                        {{ report.get_photo_html_for_report_validation_completed | safe }}
+                    </div>
+                </div>
+            <br>
+            <div class="border-row">
+                <br>
+            </div>
+        </div>
+    </div>
+</body>
+    <script src={% static "stats/datatables.min.js" %}></script>
+    <script src={% static "tigacrafting/cookies.js" %}></script>
+</html>
