@@ -424,6 +424,22 @@ class UserStat(models.Model):
     last_emergency_mode_grab = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True,related_name="emergency_pullers", help_text='Last country user pulled map data from', on_delete=models.SET_NULL, )
     nuts2_assignation = models.ForeignKey('tigaserver_app.NutsEurope', blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.SET_NULL, )
 
+    @property
+    def completed_annotations(self):
+        return self.user.expert_report_annotations.filter(validation_complete=True)
+
+    @property
+    def num_completed_annotations(self) -> int:
+        return self.completed_annotations.count()
+
+    @property
+    def pending_annotations(self):
+        return self.user.expert_report_annotations.filter(validation_complete=False)
+
+    @property
+    def num_pending_annotations(self) -> int:
+        return self.pending_annotations.count()
+
     def has_accepted_license(self):
         return self.license_accepted
 
