@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0041_auto_20240123_1547'),
+        ('tigaserver_app', '0042_update_on_delete_actions'),
     ]
 
     operations = [

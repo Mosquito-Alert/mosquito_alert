@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0040_report_updated_at'),
+        ('tigaserver_app', '0041_report_datetime_fix_offset'),
     ]
 
     operations = [
