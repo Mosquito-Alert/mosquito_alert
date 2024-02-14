@@ -1632,13 +1632,11 @@ def nearby_reports_no_dwindow(request):
 
         #Older postgis versions didn't like the second ::geography cast
         sql = "SELECT \"version_UUID\"  " + \
-              "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
-              "ORDER BY point <-> 'SRID=4326;POINT({3} {4})'"
-
-        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+              "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(%s %s)'::geography) <= %s " + \
+              "ORDER BY point <-> 'SRID=4326;POINT(%s %s)'"
 
         cursor = connection.cursor()
-        cursor.execute(sql_formatted)
+        cursor.execute(sql, (float(center_buffer_lon), float(center_buffer_lat), float(radius), float(center_buffer_lon), float(center_buffer_lat)))
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
@@ -1759,13 +1757,11 @@ def nearby_reports_fast(request):
             return Response(status=400,data='invalid parameters')
 
         sql = "SELECT \"version_UUID\"  " + \
-            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
-            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
-
-        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(%s %s)'::geography) <= %s " + \
+            "ORDER BY point::geography <-> 'SRID=4326;POINT(%s %s)'::geography "
 
         cursor = connection.cursor()
-        cursor.execute(sql_formatted)
+        cursor.execute(sql, (float(center_buffer_lon), float(center_buffer_lat), float(radius), float(center_buffer_lon), float(center_buffer_lat)))
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
