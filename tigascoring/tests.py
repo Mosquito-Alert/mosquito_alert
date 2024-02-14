@@ -8,10 +8,11 @@ from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from django.utils import timezone
 from datetime import datetime, timedelta, date
 import pytz
-from random import seed, random
+import random
 from django.template.loader import render_to_string
 import html.entities
 from django.contrib.auth.models import User, Group
+import string
 
 VALIDATION_VALUE_POSSIBLE = 1
 VALIDATION_VALUE_CONFIRMED = 2
@@ -30,14 +31,14 @@ class ScoringTestCase(TestCase):
             second = 0
         d = datetime(year, month, day, hour, minute, second)
         ld = utc.localize(d)
-        seed(1)
-        value_x = random()
-        value_y = random()
+        value_x = random.random()
+        value_y = random.random()
         long = -180 + (value_x * (360))
         lat = -90 + (value_y * (180))
         r = Report(
             version_UUID=id,
             version_number=0,
+            report_id=''.join(random.choices(string.ascii_letters + string.digits, k=4)),
             user_id=user.user_UUID,
             phone_upload_time=ld,
             server_upload_time=ld,

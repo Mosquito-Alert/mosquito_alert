@@ -12,7 +12,7 @@ from tigaserver_app.models import Photo, Report, ReportResponse
 import dateutil.parser
 from django.db.models import Count
 import pytz
-from datetime import datetime, date, timedelta
+from datetime import datetime
 from django.db.models import Max,Min
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -35,15 +35,13 @@ from django.contrib.auth.models import User, Group
 import urllib
 import django.utils.html
 from django.db import connection
-from itertools import chain
 from tigacrafting.messaging import send_message_android,send_message_ios
-from tigaserver_app.serializers import custom_render_notification, NotificationSerializer, DataTableNotificationSerializer, DataTableAimalertSerializer
+from tigaserver_app.serializers import custom_render_notification, DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
 import logging
-from common.translation import get_translation_in, get_locale_for_en, get_locale_for_native
-import html.entities
+from common.translation import get_translation_in, get_locale_for_native
 from django.template.loader import TemplateDoesNotExist
 from django.utils.translation import gettext as _
 from tigacrafting.querystring_parser import parser
@@ -319,14 +317,6 @@ def filter_tasks(tasks):
     tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, tasks)
     return tasks_filtered
 
-
-def filter_false_validated(reports, sort=True):
-    if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports),key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
-    return reports_filtered
-
 def fast_filter_reports(reports):
     #these are all the report_id in reports, with its max version number and the number of versions
     #the values at the end drops everything into a dictionary
@@ -348,17 +338,17 @@ def filter_reports(reports, sort=True):
 
 def filter_spain_reports(reports, sort=True):
     if sort:
-        reports_filtered = sorted( filter(lambda x: x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
+        reports_filtered = sorted( filter(lambda x: x.is_spain, reports), key=attrgetter('n_annotations'), reverse=True)
     else:
-        reports_filtered = filter(lambda x: x.is_spain_p, reports)
+        reports_filtered = filter(lambda x: x.is_spain, reports)
     return reports_filtered
 
 
 def filter_eu_reports(reports, sort=True):
     if sort:
-        reports_filtered = sorted(filter(lambda x: not x.is_spain_p, reports), key=attrgetter('n_annotations'), reverse=True)
+        reports_filtered = sorted(filter(lambda x: not x.is_spain, reports), key=attrgetter('n_annotations'), reverse=True)
     else:
-        reports_filtered = filter(lambda x: not x.is_spain_p, reports)
+        reports_filtered = filter(lambda x: not x.is_spain, reports)
     return reports_filtered
 
 
@@ -578,44 +568,7 @@ def must_be_autoflagged(this_annotation, is_current_validated):
             if is_current_validated and len(classifications) == 3 and ( len(set(classifications)) == len(classifications) ):
                 return True
     return False
-    '''
-    if this_annotation is not None:
-        the_report = this_annotation.report
-        if the_report is not None:
-            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID, user__groups__name='expert').exclude(id=this_annotation.id)
-            anno_count = 0
-            one_positive_albopictus = False
-            one_positive_aegypti = False
-            one_unclassified_or_inconclusive = False
-            for anno in annotations:
-                validated = anno.validation_complete
-                if anno.tiger_certainty_category is not None and anno.tiger_certainty_category > 0 and validated == True:
-                    one_positive_albopictus = True
-                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category > 0 and validated == True:
-                    one_positive_aegypti = True
-                if anno.aegypti_certainty_category is not None and anno.aegypti_certainty_category <= 0 \
-                        and anno.tiger_certainty_category is not None and anno.tiger_certainty_category <= 0 \
-                        and validated == True:
-                    one_unclassified_or_inconclusive = True
-                if anno.aegypti_certainty_category is None and anno.tiger_certainty_category is None and validated == True:
-                    one_unclassified_or_inconclusive = True
-                anno_count += 1
-            validated = is_current_validated
-            if this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category > 0 and validated == True:
-                one_positive_albopictus = True
-            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category > 0 and validated == True:
-                one_positive_aegypti = True
-            if this_annotation.aegypti_certainty_category is not None and this_annotation.aegypti_certainty_category <= 0 \
-                    and this_annotation.tiger_certainty_category is not None and this_annotation.tiger_certainty_category <= 0 \
-                    and validated == True:
-                one_unclassified_or_inconclusive = True
-            if this_annotation.aegypti_certainty_category is None and this_annotation.tiger_certainty_category is None and validated == True:
-                one_unclassified_or_inconclusive = True
 
-            if one_positive_albopictus and one_positive_aegypti and one_unclassified_or_inconclusive and (anno_count + 1) == 3:
-                return True
-    return False
-    '''
 
 def get_sigte_map_info(report):
     cursor = connection.cursor()
@@ -706,247 +659,6 @@ def issue_notification(report_annotation,current_domain):
                 send_message_ios(recipient.device_token, notification_content.title_native, '')
             except Exception as e:
                 logger_notification.exception("Exception sending validation ios message")
-    '''
-    About to deploy epi data, let's put this in the fridge for now
-    # if there is a similar notification issued for this user recently
-    if not notification_already_issued(report_annotation.report, report_annotation.report.user, report_annotation.user, notification_content.title_es):
-        notification.save()
-        recipient = report_annotation.report.user
-        if recipient.device_token is not None and recipient.device_token != '':
-            if (recipient.user_UUID.islower()):
-                json_notif = custom_render_notification(notification, 'es')
-                try:
-                    send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-                except Exception as e:
-                    pass
-            else:
-                try:
-                    send_message_ios(recipient.device_token, notification_content.title_es, '')
-                except Exception as e:
-                    pass
-
-    #checks if a notification about this report, sent to user_sent_to, from expert_sent_from has been sent
-    #this will hopefully avoid multi-sent notifications
-    def notification_already_issued(report, user_sent_to, expert_sent_from, title_es):
-        return Notification.objects.filter(report=report,user=user_sent_to,expert=expert_sent_from,notification_content__title_es=title_es).exists()
-    '''
-
-
-# def assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, country_gid):
-#     """
-#     This function assigns reports to users in exclusive bounding boxes. These users receive only reports from their assigned
-#     bounding box.
-#
-#     :param this_user: The current user
-#     :param my_reports: adult reports already validated or assigned to this user
-#     :param current_pending: number of current pending reports for this_user
-#     :param max_pending: maximum number of pending reports per user
-#     :param max_given: number of users to which a report is given (excluding superexpert)
-#     :param country_gid: gid of the country that constitutes the exclusive bounding box
-#     """
-#     if current_pending < max_pending:
-#         my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
-#
-#         n_to_get = max_pending - current_pending
-#
-#         new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(
-#             note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(
-#             photos=None).filter(type='adult').annotate(
-#             n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-#
-#         new_reports_unfiltered_and_false_validated = Report.objects.exclude(
-#             creation_time__year=2014).exclude(note__icontains="#345").exclude(
-#             version_UUID__in=my_reports).exclude(hide=True).exclude(photos=None).filter(
-#             type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(
-#             n_annotations__lt=max_given + 1)
-#
-#         new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=country_gid)
-#
-#         if new_reports_unfiltered:
-#             new_filtered_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
-#             new_filtered_false_validated_reports = filter_false_validated(
-#                 new_reports_unfiltered_and_false_validated.order_by('creation_time'))
-#             new_reports = list(set(new_filtered_reports + new_filtered_false_validated_reports))
-#             reports_to_take = new_reports[0:n_to_get]
-#             user_stats = None
-#             try:
-#                 user_stats = UserStat.objects.get(user_id=this_user.id)
-#             except ObjectDoesNotExist:
-#                 pass
-#             grabbed_reports = -1
-#             if user_stats:
-#                 grabbed_reports = user_stats.grabbed_reports
-#             for this_report in reports_to_take:
-#                 if not this_report.user_has_report(this_user):
-#                     new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-#                     who_has_count = this_report.get_who_has_count()
-#                     if who_has_count == 0 or who_has_count == 1:
-#                         # No one has the report, is simplified
-#                         new_annotation.simplified_annotation = True
-#                     grabbed_reports += 1
-#                     new_annotation.save()
-#             if grabbed_reports != -1 and user_stats:
-#                 user_stats.grabbed_reports = grabbed_reports
-#                 user_stats.save()
-#
-#
-# def assign_reports_to_user(this_user, national_supervisor_ids, current_pending, country_with_supervisor_set, max_pending, max_given):
-#     """
-#     :param this_user: user to which the reports will be assigned
-#     :param national_supervisor_ids: list of national supervisor ids in dict format [{'user__id':id}...{}]
-#     :param current_pending: number of current pending reports for this_user
-#     :param country_with_supervisor_set: set of id_country which have supervisor
-#     :param max_pending: maximum number of pending reports per user
-#     :param max_given: number of users to which a report is given (excluding superexpert)
-#     """
-#     logger_report_assignment.debug('Begin ASSIGN REPORT for User {0}'.format(this_user,))
-#     logger_report_assignment.debug('Assigning reports to user {0}'.format(this_user, ))
-#     # dictionary or reports assigned to some supervisor
-#     report_assigned_to_supervisor = ExpertReportAnnotation.objects.filter(user__id__in=national_supervisor_ids).values('report').distinct()
-#     # set of these report ids
-#     report_assigned_to_supervisor_set = set([d['report'] for d in report_assigned_to_supervisor])
-#     this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
-#     this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-#     this_user_is_supervisor = this_user.userstat.is_national_supervisor()
-#     this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
-#     #this_user_is_spain = this_user.groups.filter(name='eu_group_spain').exists()
-#     this_user_is_spain = not this_user_is_europe
-#
-#     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
-#     if current_pending < max_pending:
-#         logger_report_assignment.debug('User {0} has less than {1} reports assigned (currently {2})'.format(this_user, max_pending, current_pending))
-#         n_to_get = max_pending - current_pending
-#         logger_report_assignment.debug('User {0} trying to get {1} reports'.format(this_user, n_to_get))
-#         new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
-#         # if there is bounding box venezuela
-#         # no normal users are assigned venezuelan reports
-#         # refactor this - create some kind of bounding box registry (i.e add a bounding box flag to EuropeCountry)
-#         #new_reports_unfiltered = new_reports_unfiltered.exclude( Q(country__gid=52) | Q(country__gid=53) )
-#         # exclude venezuela for now
-#         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(country__gid=53))
-#         '''
-#         if new_reports_unfiltered and this_user_is_team_bcn:
-#             new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current',current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
-#         if new_reports_unfiltered and this_user_is_team_not_bcn:
-#             new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'],BCN_BB['max_lat'])))
-#         '''
-#         if this_user_is_supervisor:
-#             #logger_report_assignment.debug('User {0} is supervisor'.format(this_user,))
-#             reports_supervised_country = new_reports_unfiltered.filter(country__gid=this_user.userstat.national_supervisor_of.gid)
-#             # list of countries with supervisor (excluding present)
-#             country_with_supervisor_other_than_this = UserStat.objects.filter(national_supervisor_of__isnull=False).exclude(national_supervisor_of__gid=this_user.userstat.national_supervisor_of.gid).values('national_supervisor_of__gid').distinct()
-#             # list of reports with supervisor and two annotations -> these reports are meant for the supervisor and should not be assigned
-#             reports_other_supervised_country_expecting_supervisor = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=2).filter(country__gid__in=country_with_supervisor_other_than_this)
-#             # so we remove them from the available reports for this expert
-#             reports_non_supervised_country = new_reports_unfiltered.exclude(version_UUID__in=reports_supervised_country.values('version_UUID')).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
-#             reports_supervised_country_filtered = filter_reports(reports_supervised_country.order_by('creation_time'))
-#             reports_non_supervised_country_filtered = filter_reports(reports_non_supervised_country.order_by('creation_time'))
-#             new_filtered_reports = reports_supervised_country_filtered + reports_non_supervised_country_filtered
-#         else:
-#             #logger_report_assignment.debug('User {0} is not supervisor'.format(this_user, ))
-#             country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-#             # these are the reports in supervised countries, already assigned to two experts, so they should be assigned to supervisor and no one else
-#             reports_other_supervised_country_expecting_supervisor = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=2).filter(country__gid__in=country_with_supervisor)
-#             # we put the countries with supervisor first on the list. This aims to reduce the amount of time the regional supervisor has to wait to be assigned last report
-#             # we EXCLUDE the reports_other_supervised_country_expecting_supervisor from both lists -- these are reserved reports for the supervisor
-#             reports_in_any_country_with_supervisor = new_reports_unfiltered.filter(country__gid__in=country_with_supervisor).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
-#             reports_in_country_without_supervisor = new_reports_unfiltered.exclude(country__gid__in=country_with_supervisor).exclude(version_UUID__in=reports_other_supervised_country_expecting_supervisor.values('version_UUID'))
-#             reports_in_any_country_with_supervisor_filtered = filter_reports(reports_in_any_country_with_supervisor.order_by('creation_time'))
-#             reports_in_country_without_supervisor_filtered = filter_reports(reports_in_country_without_supervisor.order_by('creation_time'))
-#             new_filtered_reports = reports_in_any_country_with_supervisor_filtered + reports_in_country_without_supervisor_filtered
-#         logger_report_assignment.debug('User {0} has {1} potentially assignable reports'.format(this_user, len(new_filtered_reports)))
-#
-#         if this_user_is_spain:
-#             logger_report_assignment.debug('User {0} is in spanish group'.format(this_user, ))
-#             new_reports = filter_spain_reports(new_filtered_reports)
-#             logger_report_assignment.debug('User {0} has {1} of {2} reports located in Spain/Other area'.format(this_user, len(new_reports), len(new_filtered_reports), ))
-#         elif this_user_is_europe:
-#             logger_report_assignment.debug('User {0} is in european group'.format(this_user, ))
-#             new_reports = filter_eu_reports(new_filtered_reports)
-#             logger_report_assignment.debug('User {0} has {1} of {2} reports located in Europe area'.format(this_user, len(new_reports),len(new_filtered_reports), ))
-#         else:
-#             new_reports = new_filtered_reports
-#
-#         grabbed_reports = -1
-#         reports_taken = 0
-#         logger_report_assignment.debug('Looping reports for User {0}'.format(this_user,))
-#         for this_report in new_reports:
-#             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-#             who_has_count = this_report.get_who_has_count()
-#             logger_report_assignment.debug('Report {0} assigned to {1} people'.format(this_report, who_has_count, ))
-#             if this_user_is_supervisor:
-#                 logger_report_assignment.debug('User {0} is supervisor for {1}'.format(this_user, this_user.userstat.national_supervisor_of.name_engl))
-#                 if this_user.userstat.is_national_supervisor_for_country(this_report.country):
-#                     logger_report_assignment.debug('User {0} is supervisor for country of report {1} which is {2}'.format(this_user, this_report, this_report.country, ))
-#                     if who_has_count == 2:
-#                         logger_report_assignment.debug('Assigning full report {0} to supervisor User {1} because it has been assigned to 2 other users'.format(this_report, this_user,))
-#                         new_annotation.simplified_annotation = False
-#                         grabbed_reports += 1
-#                         reports_taken += 1
-#                         new_annotation.save()
-#                     else:
-#                         logger_report_assignment.debug('NOT assigning report to supervisor User {0} because it has not yet been assigned to 2 other users (assigned to {1} other users)'.format(this_user, who_has_count,))
-#                 else:
-#                     logger_report_assignment.debug('User {0} is NOT supervisor for country of report {1} which is {2}'.format(this_user, this_report,this_report.country, ))
-#                     logger_report_assignment.debug('Assigning report {0} to supervisor User {1} because it is available'.format(this_report, this_user, ))
-#                     if who_has_count == 0 or who_has_count == 1:
-#                         logger_report_assignment.debug('Report assigned to supervisor User {0} as simplified'.format(this_user, ))
-#                         new_annotation.simplified_annotation = True
-#                     else:
-#                         logger_report_assignment.debug('Report assigned to supervisor User {0} as extended'.format(this_user, ))
-#                     grabbed_reports += 1
-#                     reports_taken += 1
-#                     new_annotation.save()
-#             else:
-#                 logger_report_assignment.debug('User {0} is NOT supervisor'.format(this_user, ))
-#                 if this_report.country is None:
-#                     logger_report_assignment.debug('Report {0} has no country'.format(this_report, ))
-#                     if who_has_count == 0 or who_has_count == 1:
-#                         logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
-#                         new_annotation.simplified_annotation = True
-#                     else:
-#                         logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
-#                         new_annotation.simplified_annotation = False
-#                     grabbed_reports += 1
-#                     reports_taken += 1
-#                     new_annotation.save()
-#                 else:
-#                     logger_report_assignment.debug('Report {0} is in country {1}'.format(this_report, this_report.country))
-#                     if this_report.country.gid in country_with_supervisor_set:
-#                         logger_report_assignment.debug('Report {0} is in country {1} which has a supervisor'.format(this_report, this_report.country))
-#                         #Assign only if only 1 other user or nobody is assigned
-#                         if who_has_count <= 1:
-#                             logger_report_assignment.debug('Report {0} is assigned to less or equal than 1 people ({1})'.format(this_report, who_has_count))
-#                             #if this_report.version_UUID in report_assigned_to_supervisor_set:
-#                             if who_has_count == 0 or who_has_count == 1:
-#                                 logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
-#                                 new_annotation.simplified_annotation = True
-#                             else:
-#                                 logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
-#                                 new_annotation.simplified_annotation = False
-#                             grabbed_reports += 1
-#                             reports_taken += 1
-#                             new_annotation.save()
-#                             #else:
-#                                 #logger_report_assignment.debug('Report {0} not yet assigned to supervisor, not assigning'.format(this_report, ))
-#                     else:
-#                         logger_report_assignment.debug('Report {0} is in country {1} which has NO supervisor'.format(this_report,this_report.country))
-#                         if who_has_count == 0 or who_has_count == 1:
-#                             logger_report_assignment.debug('Report assigned to normal User {0} as simplified'.format(this_user, ))
-#                             new_annotation.simplified_annotation = True
-#                         else:
-#                             logger_report_assignment.debug('Report assigned to normal User {0} as extended'.format(this_user, ))
-#                             new_annotation.simplified_annotation = False
-#                         grabbed_reports += 1
-#                         reports_taken += 1
-#                         new_annotation.save()
-#             if reports_taken == n_to_get:
-#                 break
-#         this_user.userstat.grabbed_reports = grabbed_reports
-#         this_user.userstat.save()
-#         logger_report_assignment.debug('End ASSIGN REPORT for User {0}'.format(this_user, ))
-#         logger_report_assignment.debug(' ')
-
 
 @login_required
 def entolab_license_agreement(request):
@@ -1250,38 +962,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         elif this_user_is_superexpert:
             assign_reports(this_user)
 
-        # if this_user_is_expert and load_new_reports == 'T':
-        #     if this_user_is_team_venezuela:
-        #         assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 52)
-        #     elif this_user_is_team_stlouis:
-        #         assign_reports_to_bounded_box_user(this_user, current_pending, max_pending, max_given, 53)
-        #     else:
-        #         national_supervisor_ids = UserStat.objects.filter(national_supervisor_of__isnull=False).values('user__id').distinct()
-        #         country_with_supervisor = UserStat.objects.filter(national_supervisor_of__isnull=False).values('national_supervisor_of__gid').distinct()
-        #         country_with_supervisor_set = set([d['national_supervisor_of__gid'] for d in country_with_supervisor])
-        #         assign_reports_to_user(this_user,national_supervisor_ids,current_pending,country_with_supervisor_set,max_pending,max_given)
-        # elif this_user_is_superexpert:
-        #     new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(creation_time__year=2015).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=max_given)
-        #     if new_reports_unfiltered and this_user_is_team_bcn:
-        #         new_reports_unfiltered = new_reports_unfiltered.filter(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-        #     if new_reports_unfiltered and this_user_is_team_not_bcn:
-        #         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'],BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])))
-        #     if this_user.id == 25: #it's roger, don't assign reports from barcelona prior to 03/10/2017
-        #         new_reports_unfiltered = new_reports_unfiltered.exclude(Q(Q(location_choice='selected', selected_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']), selected_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat'])) | Q(location_choice='current', current_location_lon__range=(BCN_BB['min_lon'], BCN_BB['max_lon']),current_location_lat__range=(BCN_BB['min_lat'], BCN_BB['max_lat']))) & Q(creation_time__lte=date(2017, 3, 10)))
-        #     if new_reports_unfiltered:
-        #         new_reports = filter_reports_for_superexpert(new_reports_unfiltered)
-        #         for this_report in new_reports:
-        #             new_annotation = ExpertReportAnnotation(report=this_report, user=this_user)
-        #             new_annotation.save()
 
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
 
-        # if loc == 'spain':
-        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        # elif loc == 'europe':
-        #     my_version_uuids = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        # else:
-        #     my_version_uuids = all_annotations.values('report__version_UUID').distinct()
 
         my_linked_ids = all_annotations.values('linked_id').distinct()
         if this_user_is_expert:

@@ -254,9 +254,6 @@
                aria-expanded="false" aria-controls="current_status_collapse{{ forloop.counter }}"><i
                     class="fa fa-plus-square-o"></i></a>
             {{ report.get_final_expert_status_bootstrap | safe }}
-            <!--<strong>Current Status <i>Albopictus</i>:</strong>  {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score text=report.get_final_expert_category %}-->
-            <!--<strong>Current Status <i>Aegypti</i>:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_expert_score_aegypti text=report.get_final_expert_category_aegypti %}-->
-            <!--<strong>Current Status:</strong> {% include "tigacrafting/score_label.html" with score=report.get_final_combined_expert_score text=report.get_final_combined_expert_category %}-->
             <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
         {% else %}
             <strong>Status:</strong> Not yet validated by three experts.

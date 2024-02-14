@@ -64,24 +64,6 @@ def create_report(version_number, version_uuid, user, country):
     return r
 
 
-# def filter_false_validated(reports, sort=True):
-#     if sort:
-#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports), key=attrgetter('n_annotations'), reverse=True)
-#     else:
-#         reports_filtered = filter(lambda x: (not x.deleted) and x.latest_version and x.is_validated_by_two_experts_and_superexpert, reports)
-#     return reports_filtered
-
-
-# def filter_reports(reports, sort=True):
-#     if sort:
-#         reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports),key=attrgetter('n_annotations'), reverse=True)
-#     else:
-#         reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-#     return reports_filtered
-
-###                END HELPER STUFF                #####################################################################
-
-
 class NewReportAssignment(TestCase):
     fixtures = ['europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
 

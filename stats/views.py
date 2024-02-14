@@ -1090,7 +1090,7 @@ def get_hashtag_map_data(request):
             if report.latest_version:
                 n = n + 1
                 dates.append(report.server_upload_time)
-                data.append({ 'note': report.note, 'picture': report.get_photo_html(), 'lat': report.get_lat(), 'lon': report.get_lon(), 'date_uploaded': report.server_upload_time.strftime('%d-%m-%Y / %H:%M:%S') })
+                data.append({ 'note': report.note, 'picture': report.photo_html, 'lat': report.lat, 'lon': report.lon, 'date_uploaded': report.server_upload_time.strftime('%d-%m-%Y / %H:%M:%S') })
     min_date_str = ''
     max_date_str = ''
     if len(dates) == 0:
