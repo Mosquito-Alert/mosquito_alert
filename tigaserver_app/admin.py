@@ -123,7 +123,13 @@ class ReportAdmin(admin.ModelAdmin):
         return False
 
     def other_versions_of_this_report(self, obj):
-        return obj.other_versions
+        result = []
+        for this_version in obj.other_versions:
+            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
+                this_version.version_UUID,
+                this_version.version_number,
+            )
+        return result
     other_versions_of_this_report.allow_tags = True
 
     def movelab_score(self, obj):
@@ -225,7 +231,13 @@ class PhotoAdmin(admin.ModelAdmin):
     report_link.allow_tags = True
 
     def other_report_versions(self, obj):
-        return obj.report.other_versions
+        result = []
+        for this_version in obj.report.other_versions:
+            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
+                this_version.version_UUID,
+                this_version.version_number,
+            )
+        return result
     other_report_versions.allow_tags = True
 
     def map_link(self, obj):

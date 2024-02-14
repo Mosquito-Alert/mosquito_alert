@@ -238,17 +238,17 @@
     {% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}
-        <div data-errorborder="{{ form.instance.version_UUID }}" class="grid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+        <div data-errorborder="{{ form.instance.version_UUID }}" class="grid {{form.instance.type}} {% if form.instance.site_cat == 0 %}storm_drain{% else %}other {% endif %}">
             {% for photo in form.instance.photos.all %}
                 {% if forloop.first %}
-                    <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}">
+                    <div class="grid-item-large valid {{form.instance.type}} {% if form.instance.site_cat == 0 %}storm_drain{% else %}other {% endif %}">
                         <p><a href="/single_simple/{{ form.instance.version_UUID }}" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> {{ form.instance.country.name_engl }}</span></a></p>
                         <p class="hide_check p-small" data-id="{{ form.instance.version_UUID }}"><span class="label label-info">Hide this report</span>{{ form.hide }}</p>
                         <p class="p-small"><span class="label label-success">Report id </span> {{ form.instance.version_UUID }}</p>
                         <p class="p-small"><span class="label label-success">Date </span> {{ form.instance.creation_time }}</p>
                         <p class="p-small"><span class="label label-success">User Notes </span> {{ form.instance.note }}</p>
                         {% if form.instance.type == 'site' %}
-                            {% if form.instance.get_site_cat == 0 %}
+                            {% if form.instance.site_cat == 0 %}
                                 <p class="p-medium"><span class="label label-warning">This is a storm drain</span></p>
                             {% else %}
                                 <p class="p-medium"><span class="label label-warning">This is an 'others' site</span></p>
@@ -271,7 +271,7 @@
         </div>
         <div class="reportID" style="display:none;">{{ form.instance.version_UUID }}</div>
         {% if form.instance.type == 'site' and form.instance.hide == False %}
-            <div data-id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.get_site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
+            <div data-id="{{ form.instance.version_UUID }}" class="fastCheck {{form.instance.type}} {% if form.instance.site_cat == 0 %}storm_drain{% else %}other {% endif %}" style="">
                 <label>Fast Upload</label>
                 {{ form.fastUpload }}
             </div>

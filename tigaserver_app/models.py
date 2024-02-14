@@ -623,8 +623,10 @@ class Report(models.Model):
     def country_label(self) -> str:
         if self.is_spain:
             return "Spain/Other"
-        else:
+        elif self.country:
             return "Europe/" + self.country.name_engl
+        else:
+            return "Unassigned"
 
     @property
     def formatted_date(self) -> str:
@@ -632,38 +634,17 @@ class Report(models.Model):
 
     @property
     def deleted(self) -> bool:
-        return Report.objects.filter(
-            report_id=self.report_id,
-            type=self.type,
-            user=self.user,
-            version_number=-1
-        ).exists()
+        return self.version_number == -1 or self.other_versions.filter(version_number=-1).exists()
 
     @property
     def latest_version(self) -> bool:
-        if self.version_number == -1:
-            return False
-        elif (
-            Report.objects.filter(report_id=self.report_id)
-            .filter(type=self.type)
-            .filter(user=self.user)
-            .count()
-            == 1
-        ):
-            return True
-        else:
-            all_versions = (
-                Report.objects.filter(report_id=self.report_id)
-                .filter(type=self.type)
-                .filter(user=self.user)
-                .order_by("version_number")
-            )
-            if all_versions[0].version_number == -1:
-                return False
-            elif all_versions.reverse()[0].version_number == self.version_number:
-                return True
-            else:
-                return False
+        last_version = Report.objects.filter(
+            report_id=self.report_id,
+            type=self.type,
+            user=self.user
+        ).latest("version_number")
+
+        return self.pk == last_version.pk
 
     @property
     def is_spain(self) -> bool:
@@ -722,25 +703,16 @@ class Report(models.Model):
             return None
 
     @property
-    def other_versions(self) -> str:
-        all_versions = (
-            Report.objects.filter(report_id=self.report_id)
-            .exclude(version_UUID=self.version_UUID)
-            .order_by("version_number")
-        )
-        result = ""
-        for this_version in all_versions:
-            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
-                this_version.version_UUID,
-                this_version.version_number,
-            )
-        return result
+    def other_versions(self):
+        return Report.objects.filter(
+            report_id=self.report_id,
+            user=self.user,
+            type=self.type
+        ).exclude(pk=self.pk)
 
     @property
     def response_html(self) -> str:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        ).order_by("question")
+        these_responses = self.responses.all().order_by("question")
         result = ""
         for this_response in these_responses:
             result = (
@@ -754,9 +726,7 @@ class Report(models.Model):
 
     @property
     def response_string(self) -> str:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        ).order_by("question")
+        these_responses = self.responses.all().order_by("question")
         result = ""
         for this_response in these_responses:
             result = (
@@ -766,12 +736,11 @@ class Report(models.Model):
 
     @property
     def tigaprob(self) -> float:
-        these_responses = self.responses.only("answer").values("answer").iterator()
         response_score = 0
         total = 0
-        for response in these_responses:
+        for response in self.responses.all():
             total += 1
-            if "Y" in response["answer"] or "S" in response["answer"]:
+            if "Y" in response.answer or "S" in response.answer:
                 response_score += 1
             elif "No" in response.values():
                 response_score -= 1
@@ -1023,11 +992,8 @@ class Report(models.Model):
     # Custom properties related to breeding sites
     @property
     def basins(self) -> bool:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        )
         result = False
-        for this_response in these_responses:
+        for this_response in self.responses.all():
             if (
                 this_response.question.startswith("Tipo")
                 or this_response.question.startswith("Selecciona")
@@ -1045,11 +1011,8 @@ class Report(models.Model):
 
     @property
     def buckets(self) -> bool:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        )
         result = False
-        for this_response in these_responses:
+        for this_response in self.responses.all():
             if (
                 this_response.question.startswith("Tipo")
                 or this_response.question.startswith("Selecciona")
@@ -1067,11 +1030,10 @@ class Report(models.Model):
 
     @property
     def embornals(self) -> bool:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        )
         result = False
-        for this_response in these_responses:
+        for this_response in self.responses.all():
+            if this_response.question_id == 12 and this_response.answer_id == 121:
+                return True
             if (
                 this_response.question.startswith("Tipo")
                 or this_response.question.startswith("Selecciona")
@@ -1087,18 +1049,12 @@ class Report(models.Model):
                     or this_response.answer.startswith("Yes")
                     or this_response.answer.startswith("S\xed")
                 )
-        for this_response in these_responses:
-            if this_response.question_id == 12 and this_response.answer_id == 121:
-                return True
         return result
 
     @property
     def fonts(self) -> bool:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        )
         result = False
-        for this_response in these_responses:
+        for this_response in self.responses.all():
             if (
                 this_response.question.startswith("Tipo")
                 or this_response.question.startswith("Selecciona")
@@ -1113,11 +1069,8 @@ class Report(models.Model):
 
     @property
     def other(self) -> bool:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        )
         result = False
-        for this_response in these_responses:
+        for this_response in self.responses.all():
             if (
                 this_response.question.startswith("Tipo")
                 or this_response.question.startswith("Selecciona")
@@ -1132,11 +1085,8 @@ class Report(models.Model):
 
     @property
     def wells(self) -> bool:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        )
         result = False
-        for this_response in these_responses:
+        for this_response in self.responses.all():
             if (
                 this_response.question.startswith("Tipo")
                 or this_response.question.startswith("Selecciona")
@@ -1151,11 +1101,8 @@ class Report(models.Model):
 
     @property
     def site_type(self) -> str:
-        these_responses = ReportResponse.objects.filter(
-            report__version_UUID=self.version_UUID
-        )
         result = ""
-        for this_response in these_responses:
+        for this_response in self.responses.all():
             if (
                 this_response.question.startswith("Tipo")
                 or this_response.question.startswith("Selecciona")
@@ -1516,7 +1463,7 @@ class Report(models.Model):
 
     def get_which_is_latest(self):
         all_versions = Report.objects.filter(report_id=self.report_id).order_by('version_number')
-        return all_versions.reverse()[0].version_UUID
+        return all_versions.reverse()[0].pk
 
     def get_crowdcrafting_score(self):
         if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
@@ -2330,22 +2277,6 @@ def get_user_reports_count(user):
     reports = Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type=Report.TYPE_BITE)
     last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
     return len(list(last_versions))
-
-# def get_translation_in(string, locale):
-#     translation.activate(locale)
-#     val = _(string)
-#     translation.deactivate()
-#     return val
-#
-# def get_locale_for_en(report):
-#     if report is not None:
-#         if report.app_language is not None and report.app_language != '':
-#             if report.app_language != 'ca' and report.app_language != 'en' and report.app_language != 'es':
-#                 report_locale = report.app_language
-#                 for lang in settings.LANGUAGES:
-#                     if lang[0] == report_locale:
-#                         return report_locale
-#     return 'en'
 
 
 def package_number_allows_notification(report):
