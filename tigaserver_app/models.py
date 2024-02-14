@@ -969,26 +969,6 @@ class Report(TimeZoneModelMixin, models.Model):
         return max_movelab_annotation.tiger_certainty_category
 
     @property
-    def is_validated_by_two_experts_and_superexpert(self) -> bool:
-        """
-        This is used to locate reports validated by two experts and the superexpert. This commonly
-        happens as a consequence of detecting some reports validated 2 times by the same expert; to solve
-        this situation, one of the two repeated annotations is removed. As a consequence, the report
-        is validated by 2 experts and 1 superexpert
-        :return: True if the report is validqted by exactly 2 experts and 1 superexpert
-        """
-        return (
-            ExpertReportAnnotation.objects.filter(
-                report=self, user__groups__name="expert", validation_complete=True
-            ).count()
-            == 2
-            and ExpertReportAnnotation.objects.filter(
-                report=self, user__groups__name="superexpert", validation_complete=True
-            ).count()
-            == 1
-        )
-
-    @property
     def crowd_score(self):
         if self.type != self.TYPE_ADULT:
             return None
@@ -2071,20 +2051,19 @@ class Report(TimeZoneModelMixin, models.Model):
             return -3
 
     def get_final_expert_status(self):
-        result = 1
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, status=-1).exists():
-            result = -1
-        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, status=0).exists():
-            result = 0
-        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, status=1).exists():
-            result = 1
-        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, status=-1).exists():
-            result = -1
-        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, status=0).exists():
-            result = 0
-        elif ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, status=1).exists():
-            result = 1
-        return result
+        finished_annotations = self.expert_report_annotations.filter(validation_complete=True)
+
+        super_expert_annotations = finished_annotations.filter(user__groups__name='superexpert', revise=True)
+        super_expert_status = super_expert_annotations.aggregate(min_status=models.Min('status'))
+
+        if super_expert_status['min_status'] is not None:
+            return super_expert_status['min_status']
+
+        expert_status = finished_annotations.filter(user__groups__name='expert').aggregate(min_status=models.Min('status'))
+        if expert_status['min_status'] is not None:
+            return expert_status['min_status']
+
+        return 1
 
     def get_final_expert_status_text(self):
         return dict(STATUS_CATEGORIES)[self.get_final_expert_status()]
@@ -2097,10 +2076,9 @@ class Report(TimeZoneModelMixin, models.Model):
         return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3
 
     def get_tags_bootstrap_superexpert(self):
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         result = ''
         s = set()
-        for ano in these_annotations:
+        for ano in self.expert_report_annotations.all():
             tags = ano.tags.all()
             for tag in tags:
                 if not tag in s:
@@ -2112,10 +2090,9 @@ class Report(TimeZoneModelMixin, models.Model):
         return result
 
     def get_tags_bootstrap(self):
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
         result = ''
         s = set()
-        for ano in these_annotations:
+        for ano in self.expert_report_annotations.all():
             tags = ano.tags.all()
             for tag in tags:
                 if not tag in s:
@@ -2130,54 +2107,42 @@ class Report(TimeZoneModelMixin, models.Model):
         return result
 
     def get_who_has(self):
-        result = ''
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        i = these_annotations.count()
-        for ano in these_annotations:
-            result += ano.user.username + (': validated' if ano.validation_complete else ': pending')
-            i -= 1
-            if i > 0:
-                result += ', '
-        return result
+        result = []
+        for ano in self.expert_report_annotations.all().select_related('user'):
+            result.append(
+                ano.user.username + (': validated' if ano.validation_complete else ': pending')
+            )
+
+        return ", ".join(result)
 
     def get_expert_has_been_assigned_long_validation(self):
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        for ano in these_annotations:
+        for ano in self.expert_report_annotations.all().select_related('user'):
             if not ano.user.userstat.is_superexpert():
                 if ano.simplified_annotation == False:
                     return True
         return False
 
     def get_who_has_count(self):
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        i = these_annotations.count()
-        return i
-
-    def get_annotations(self):
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        return these_annotations
+        return self.expert_report_annotations.all().count()
 
     def get_expert_recipients(self):
         result = []
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        for ano in these_annotations:
+        for ano in self.expert_report_annotations.all().select_related('user'):
             if not ano.user.userstat.is_superexpert():
                 result.append(ano.user.username)
         return '+'.join(result)
 
     def get_superexpert_completed_recipients(self):
         result = []
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        for ano in these_annotations:
+        for ano in self.expert_report_annotations.all().select_related('user'):
             if ano.validation_complete and ano.user.userstat.is_superexpert():
                 result.append(ano.user.username)
         return '+'.join(result)
 
     def get_expert_recipients_names(self):
         result = []
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
 
-        for ano in these_annotations:
+        for ano in self.expert_report_annotations.all().select_related('user'):
             if not ano.user.userstat.is_superexpert():
                 if ano.user.first_name and ano.user.last_name:
                     result.append(ano.user.first_name + ' ' + ano.user.last_name)
@@ -2186,15 +2151,12 @@ class Report(TimeZoneModelMixin, models.Model):
         return '+'.join(result)
 
     def get_who_has_bootstrap(self):
-        result = ''
-        these_annotations = ExpertReportAnnotation.objects.filter(report=self)
-        i = these_annotations.count()
-        for ano in these_annotations:
-            result += '<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by ' + ano.user.username) if ano.validation_complete else ('pending with ' + ano.user.username)) + '">' + ano.user.username + ' <span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>'
-            i -= 1
-            if i > 0:
-                result += ' '
-        return result
+        result = []
+        for ano in self.expert_report_annotations.all().select_related("user"):
+            result.append(
+                '<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by ' + ano.user.username) if ano.validation_complete else ('pending with ' + ano.user.username)) + '">' + ano.user.username + ' <span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>'
+            )
+        return ' '.join(result)
 
     def get_final_photo_url_for_notification(self):
         if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
