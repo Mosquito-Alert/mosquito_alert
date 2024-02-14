@@ -485,7 +485,7 @@
                     <strong>This is a simplified report - </strong>
                     {% else %}<strong>This is a full report - </strong>
                     {% endif %}
-                    <strong>Who has this report? </strong>{% for an in form.instance.report.get_annotations %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}superexpert {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
+                    <strong>Who has this report? </strong>{% for an in form.instance.report.expert_report_annotations.all %}<span class="label label-margin{% if an.validation_complete %} label-success {% else %} label-warning {% endif %}" data-placement="bottom">{% if an.user.username == request.user.username %}{{ an.user.username }} {% else %}{% if an.user.userstat.is_superexpert %}superexpert {% else %}expert {% endif %}{% endif %}<span class="glyphicon {% if an.validation_complete %} glyphicon-check {% else %} glyphicon-time {% endif %}"></span></span>{% endfor %}
                 </div>
                 <div class="col-md-6">
                     <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap | safe }}

@@ -1,10 +1,7 @@
-from tigaserver_app.models import Report, TigaUser, TigaProfile, Award, AwardCategory
+from tigaserver_app.models import Report, TigaUser, TigaProfile, Award
 from tigaserver_project import settings as conf
-import csv
-import time
 import pandas as pd
 import datetime
-from django.utils import translation
 from django.utils.translation import gettext as _
 
 XP = 12
@@ -44,19 +41,6 @@ STORM_DRAIN_ANSWER_ID = 121
 
 CULEX_CATEGORY_ID = 10
 AEDES_CATEGORY_IDS = [4, 5, 6, 7]
-
-
-'''
-from tigaserver_app.models import TigaUser
-#queryset to dataframe
-df = pd.DataFrame(list(TigaUser.objects.all().values()))
-#sort by scor
-df.sort_values("score_v2", inplace=True)
-#create rank column
-df["rank"] = df["score_v2"].rank(ascending=False)
-#get row by column value (in this case, user_uuid)
-df.loc[df['user_UUID']=='b7853081-eea8-4f3f-abad-6192ba7e4429']
-'''
 
 
 '''
@@ -196,39 +180,6 @@ def get_user_rank_value(sorted_dataframe, user_UUID):
     if subdf.empty:
         return 0
     return int(subdf.iloc[0])
-
-# def get_translated_category_label(label):
-#     retVal = label
-#     translations = {
-#         'start_of_season': _('start_of_season'),
-#         'daily_participation': _('daily_participation'),
-#         'fidelity_day_2': _('fidelity_day_2'),
-#         'fidelity_day_3': _('fidelity_day_3'),
-#         'achievement_10_reports': _('achievement_10_reports'),
-#         'achievement_20_reports': _('achievement_20_reports'),
-#         'achievement_50_reports': _('achievement_50_reports')
-#     }
-#     try:
-#         retVal = translations[label]
-#     except KeyError:
-#         pass
-#     return retVal
-
-'''
-def get_bite_report_score(report, result):
-    local_result = {}
-    local_result['report'] = report.version_UUID
-    local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
-    local_result['report_score'] = 0
-    local_result['awards'] = []
-    local_result['awards'].append({"reason": _("bite_report"), "xp_awarded": BITE_REWARD})
-    local_result['report_score'] = BITE_REWARD
-    for award in report.report_award.all():
-        local_result['awards'].append({"reason": get_translated_category_label(award.category.category_label), "xp_awarded": award.category.xp_points})
-        local_result['report_score'] += award.category.xp_points
-    result['score_detail']['bite']['score_items'].append(local_result)
-    return result
-'''
 
 def get_site_report_score(report, result):
     local_result = {}
