@@ -1349,7 +1349,7 @@ class Report(TimeZoneModelMixin, models.Model):
         #       for the user to edit.
         return (
             self.selected_location_lat
-            if not self.current_location_lat and self.location_choice == "selected"
+            if not self.current_location_lat and self.location_choice == self.LOCATION_SELECTED
             else self.current_location_lat
         )
 
@@ -1362,7 +1362,7 @@ class Report(TimeZoneModelMixin, models.Model):
         #       for the user to edit.
         return (
             self.selected_location_lon
-            if not self.current_location_lon and self.location_choice == "selected"
+            if not self.current_location_lon and self.location_choice == self.LOCATION_SELECTED
             else self.current_location_lon
         )
 
