@@ -33,6 +33,8 @@ import tigaserver_project.settings as conf
 from tigacrafting.messaging import send_message_android, send_message_ios
 
 
+from .mixins import TimeZoneModelMixin
+
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
@@ -415,7 +417,7 @@ class Session(models.Model):
         unique_together = ('session_ID', 'user',)
 
 
-class Report(models.Model):
+class Report(TimeZoneModelMixin, models.Model):
     TYPE_BITE = "bite"
     TYPE_ADULT = "adult"
     TYPE_SITE = "site"
@@ -502,6 +504,17 @@ class Report(models.Model):
     )
     version_time = models.DateTimeField(
         help_text="Date and time on phone when this version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+    )
+    datetime_fix_offset = models.IntegerField(
+        default=None,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="An integer representing the offset (in seconds) applied to the original datetime values for fixing. "
+            "If None, it indicates that no information about the original time zone could be inferred or the timezone "
+            "was already provided when posting the report. To retrieve the original values, "
+            "use: original_value = current_value - datetime_fix_offset."
+            "Fields to apply (if necessary) are: 'phone_upload_time', 'creation_time' and 'version_time'."
     )
 
     type = models.CharField(
@@ -1346,6 +1359,33 @@ class Report(models.Model):
         return (self.creation_time - settings.START_TIME).days
 
     # Methods
+    # See TimeZoneModelMixin
+    def _get_latitude_for_timezone(self):
+        # By default taking the current_location which is the one provided by the phone
+        # If it's not available, and user has selected a specific location, will use that.
+        # NOTE: we are assuming the risk of user selecting a location with a different
+        #       timezone than the one where the mobile is at that moment.
+        #       Only valid for datetimes taken from the phone system, not being possible
+        #       for the user to edit.
+        return (
+            self.selected_location_lat
+            if not self.current_location_lat and self.location_choice == "selected"
+            else self.current_location_lat
+        )
+
+    def _get_longitude_for_timezone(self):
+        # By default taking the current_location which is the one provided by the phone
+        # If it's not available, and user has selected a specific location, will use that.
+        # NOTE: we are assuming the risk of user selecting a location with a different
+        #       timezone than the one where the mobile is at that moment.
+        #       Only valid for datetimes taken from the phone system, not being possible
+        #       for the user to edit.
+        return (
+            self.selected_location_lon
+            if not self.current_location_lon and self.location_choice == "selected"
+            else self.current_location_lon
+        )
+
     def _get_country_is_in(self) -> Optional[EuropeCountry]:
         logger_report_geolocation.debug(
             "retrieving country for report with id {0}".format(self.pk)
@@ -2602,7 +2642,7 @@ class Photo(models.Model):
     date = property(get_date)
 
 
-class Fix(models.Model):
+class Fix(TimeZoneModelMixin, models.Model):
     """
     Location fix uploaded by user.
     """
@@ -2636,6 +2676,14 @@ class Fix(models.Model):
         if self.user_coverage_uuid is not None:
             result = self.user_coverage_uuid
         return result
+
+    # See TimeZoneModelMixin
+    def _get_latitude_for_timezone(self):
+        return self.masked_lat
+
+    def _get_longitude_for_timezone(self):
+        return self.masked_lon
+
 
     class Meta:
         verbose_name = "fix"

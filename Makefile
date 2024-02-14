@@ -13,6 +13,8 @@ ifdef SSL
     DOCKER_COMPOSE_FLAGS += -f $(DOCKER_COMPOSE_DEV_SSL)
 endif
 
+DB_CONTAINER = postgres
+
 help: # http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
@@ -49,10 +51,18 @@ psql:  ## Start postgres command-line client.
 	docker compose $(DOCKER_COMPOSE_FLAGS) run --rm django python3 manage.py dbshell
 
 db_restore:  ## Restore data to postgres
-	docker compose $(DOCKER_COMPOSE_FLAGS) exec -T postgres bash -c "while ! pg_isready -U postgres -d postgres; do sleep 1; done && pg_restore -Fc -U postgres -d postgres" < $(file)
+	@BACKUP_FILE_PATH=$(shell readlink -f $(file)); \
+	docker compose $(DOCKER_COMPOSE_FLAGS) cp $$BACKUP_FILE_PATH $(DB_CONTAINER):/backup.dump
+
+	CPU_CORES=$$(nproc); \
+	PERCENTAGE=90; \
+	NUM_JOBS=$$(echo "scale=0; if ($$CPU_CORES * $$PERCENTAGE / 100 < 1) 1 else $$CPU_CORES * $$PERCENTAGE / 100" | bc -l); \
+	NUM_JOBS=$$(printf "%.0f" $$NUM_JOBS); \
+	docker compose $(DOCKER_COMPOSE_FLAGS) exec -T $(DB_CONTAINER) bash -c "while ! pg_isready -U postgres -d postgres; do sleep 1; done && pg_restore -Fc -U postgres -d postgres -j $$NUM_JOBS /backup.dump" || true
+	docker compose $(DOCKER_COMPOSE_FLAGS) exec -T $(DB_CONTAINER) rm /backup.dump
 
 clean_data:  ## Remove any data
-	docker compose $(DOCKER_COMPOSE_FLAGS) down postgres --volumes
+	docker compose $(DOCKER_COMPOSE_FLAGS) down $(DB_CONTAINER) --volumes
 
 clean_docker:  ## Remove all container and images.
 	docker rm $(docker ps -a -q)
