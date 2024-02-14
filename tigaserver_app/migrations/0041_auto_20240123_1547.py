@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='award',
             name='category',
-            field=models.ForeignKey(blank=True, help_text='Category to which the award belongs. Can be blank for arbitrary awards', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='category_awards', to='tigaserver_app.AwardCategory'),
+            field=models.ForeignKey(blank=True, help_text='Category to which the award belongs. Can be blank for arbitrary awards', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='category_awards', to='tigaserver_app.AwardCategory'),
         ),
         migrations.AlterField(
             model_name='award',
@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='notification',
             name='report',
-            field=models.ForeignKey(blank=True, help_text='Report regarding the current notification', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='report_notifications', to='tigaserver_app.Report'),
+            field=models.ForeignKey(blank=True, help_text='Report regarding the current notification', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='report_notifications', to='tigaserver_app.Report'),
         ),
         migrations.AlterField(
             model_name='notification',
@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='nutseurope',
             name='europecountry',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='nuts', to='tigaserver_app.EuropeCountry'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='nuts', to='tigaserver_app.EuropeCountry'),
         ),
         migrations.AlterField(
             model_name='owcampaigns',
@@ -151,5 +151,15 @@ class Migration(migrations.Migration):
             model_name='usersubscription',
             name='user',
             field=models.ForeignKey(help_text='User which is subscribed to the topic', on_delete=django.db.models.deletion.CASCADE, related_name='user_subscriptions', to='tigaserver_app.TigaUser'),
+        ),
+        migrations.AlterField(
+            model_name='award',
+            name='given_to',
+            field=models.ForeignKey(blank=True, help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='user_awards', to='tigaserver_app.TigaUser'),
+        ),
+        migrations.AlterField(
+            model_name='report',
+            name='user',
+            field=models.ForeignKey(help_text='user_UUID for the user sending this report. Must be exactly 36 characters (32 hex digits plus 4 hyphens) and user must have already registered this ID.', on_delete=django.db.models.deletion.PROTECT, related_name='user_reports', to='tigaserver_app.TigaUser'),
         ),
     ]

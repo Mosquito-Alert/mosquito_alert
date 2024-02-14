@@ -397,7 +397,7 @@ class NutsEurope(models.Model):
     coast_type = models.SmallIntegerField(blank=True, null=True)
     fid = models.CharField(max_length=5, blank=True, null=True)
     geom = models.MultiPolygonField(blank=True, null=True)
-    europecountry = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="nuts", on_delete=models.SET_NULL)
+    europecountry = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="nuts", on_delete=models.CASCADE)
 
     class Meta:
         managed = True
@@ -443,7 +443,7 @@ class Report(models.Model):
     # Relations
     user = models.ForeignKey(
         TigaUser,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.PROTECT,
         related_name="user_reports",
         help_text="user_UUID for the user sending this report. Must be exactly 36 characters (32 hex digits plus 4 hyphens) and user must have already registered this ID.",
     )
@@ -2751,7 +2751,7 @@ class NotificationContent(models.Model):
 
 
 class Notification(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.SET_NULL, )
+    report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
     # The field 'user' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
     # and in all other cases is given a default value (null user 00000000-0000-0000-0000-000000000000)
     user = models.ForeignKey(TigaUser, default='00000000-0000-0000-0000-000000000000', related_name="user_notifications", help_text='User to which the notification will be sent', on_delete=models.CASCADE, )
@@ -2813,9 +2813,9 @@ class AwardCategory(models.Model):
 class Award(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', default=None, blank=True, null=True, related_name='report_award', help_text='Report which the award refers to. Can be blank for arbitrary awards', on_delete=models.CASCADE, )
     date_given = models.DateTimeField(default=datetime.now, help_text='Date in which the award was given')
-    given_to = models.ForeignKey(TigaUser, blank=True, null=True, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards', on_delete=models.DO_NOTHING, )
+    given_to = models.ForeignKey(TigaUser, blank=True, null=True, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards', on_delete=models.CASCADE, )
     expert = models.ForeignKey(User, null=True, blank=True, related_name="expert_awards", help_text='Expert that gave the award', on_delete=models.SET_NULL, )
-    category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards', on_delete=models.SET_NULL, )
+    category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards', on_delete=models.CASCADE, )
     special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
     special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')
 
