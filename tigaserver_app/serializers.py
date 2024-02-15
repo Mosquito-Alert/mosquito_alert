@@ -403,12 +403,12 @@ class MapDataSerializer(serializers.ModelSerializer):
     visible = serializers.ReadOnlyField()
     latest_version = serializers.ReadOnlyField()
     n_photos = serializers.ReadOnlyField()
-    final_expert_status_text = serializers.SerializerMethodField(method_name='get_final_expert_status_text')
+    final_expert_status_text = serializers.SerializerMethodField(method_name='get_final_expert_status')
     responses = FullReportResponseSerializer(many=True)
     country = serializers.SerializerMethodField(method_name='get_country')
 
-    def get_final_expert_status_text(self, obj):
-        return obj.get_final_expert_status_text()
+    def get_final_expert_status(self, obj):
+        return obj.get_final_expert_status()
 
     def get_country(self,obj):
         if obj.country is None:
