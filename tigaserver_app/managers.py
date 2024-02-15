@@ -270,8 +270,7 @@ class ReportQuerySet(models.QuerySet):
         ).filter(
             has_photos=True,
             server_upload_time__year__gt=2021,
-            hide=False,
-            type=self.model.TYPE_ADULT
+            hide=False
         )
 
     def with_max_annotations(self, state: bool = True) -> QuerySet:
@@ -292,7 +291,7 @@ class ReportQuerySet(models.QuerySet):
 
     def queued(self, user_prioritized: Optional[User] = None) -> QuerySet:
 
-        qs = self.queueable()
+        qs = self.queueable().filter(type=self.model.TYPE_ADULT)
 
         if user_prioritized and user_prioritized.userstat and user_prioritized.userstat.is_superexpert():
             # Only get reports with all annotations finished.

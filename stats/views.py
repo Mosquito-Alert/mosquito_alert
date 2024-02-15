@@ -134,7 +134,7 @@ def workload_available_reports(request):
             user_ids_arr = user_ids_string_to_int_array(user_ids_str)
             if len(user_ids_arr) > 0:
                 user_id_filter = user_ids_arr
-        current_pending = Report.objects.queueable().unassigned()
+        current_pending = Report.objects.queued().unassigned()
         current_progress = Report.objects.in_progress()
 
         overall_pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False)
