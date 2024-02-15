@@ -14,8 +14,7 @@ application = get_wsgi_application()
 from django.db.models import Count
 from tigaserver_app.models import EuropeCountry, Report, ExpertReportAnnotation, Categories
 
-
-current_progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0).order_by('-server_upload_time')
+current_progress = Report.objects.filter(type=Report.TYPE_ADULT).in_progress().order_by('-server_upload_time')
 reports_filtered = filter(lambda x: not x.deleted and x.latest_version, current_progress)
 for c in current_progress:
     country = 'None'

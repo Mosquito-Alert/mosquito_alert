@@ -315,16 +315,6 @@ def filter_tasks(tasks):
     tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, tasks)
     return tasks_filtered
 
-def fast_filter_reports(reports):
-    #these are all the report_id in reports, with its max version number and the number of versions
-    #the values at the end drops everything into a dictionary
-    keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
-    report_id_table = {}
-    for row in keys:
-        report_id_table[row['report_id']] = {'max_version':row['version_number__max'],'min_version':row['version_number__min'],'num_versions': row['version_number__count']}
-    reports_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), reports )
-    return reports_filtered
-
 
 def filter_reports(reports, sort=True):
     if sort:
@@ -1161,34 +1151,30 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         version_uuid = request.GET.get('version_uuid', version_uuid)
         reports_per_page = request.GET.get('reports_per_page', reports_per_page)
-        #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
-        #all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
-        #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
-        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('-creation_time')
+
         if version_uuid and version_uuid != 'na':
-            reports = Report.objects.filter(version_UUID=version_uuid)
+            reports = Report.objects.filter(pk=version_uuid)
             n_reports = 1
         elif linked_id and linked_id != 'na':
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            #reports = list(filter_reports(these_reports, sort=False))
-            reports = list(fast_filter_reports(these_reports))
+            reports = Report.objects.queueable().filter(type=Report.TYPE_ADULT).order_by('-server_upload_time')
             n_reports = len(reports)
+
         paginator = Paginator(reports, int(reports_per_page))
-        page = request.GET.get('page', 1)
-        try:
-            objects = paginator.page(page)
-        except PageNotAnInteger:
-            objects = paginator.page(1)
-        except EmptyPage:
-            objects = paginator.page(paginator.num_pages)
-        paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
+        page_num = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_num)
+
         reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
-        #context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
-        context = {'reports': paged_reports, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
-        context['objects'] = objects
-        context['pages'] = range(1, objects.paginator.num_pages+1)
+
+        context = {
+            'reports': page_obj,
+            'version_uuid': version_uuid,
+            'reports_per_page_choices': reports_per_page_choices,
+            'objects': page_obj,
+            'pages': range(1, paginator.num_pages+1)
+        }
 
         return render(request, 'tigacrafting/expert_report_status.html', context)
     else:
@@ -1269,16 +1255,10 @@ def expert_report_complete(request):
     return Response(context)
 
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
-    new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_embornal
+    return Report.objects.queueable().unassigned().filter(pk__in=reports_imbornal).order_by('-server_upload_time')
 
 def get_reports_unfiltered_sites_other(reports_imbornal):
-    new_reports_unfiltered_sites_other = Report.objects.exclude(type='adult').exclude(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_other
+    return Report.objects.queueable().unassigned().filter(pk__in=reports_imbornal).order_by('-server_upload_time')
 
 def get_reports_imbornal():
     reports_imbornal = ReportResponse.objects.filter(
@@ -1297,8 +1277,7 @@ def get_reports_imbornal():
     return  reports_imbornal | reports_imbornal_new
 
 def get_reports_unfiltered_adults():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
-    return new_reports_unfiltered_adults
+    return Report.objects.filter(type=Report.TYPE_ADULT).in_progress().order_by('-server_upload_time')
 
 def auto_annotate_notsure(report, request):
     users = []
@@ -1556,11 +1535,7 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
         if aithr == '':
             aithr = '0.75'
 
-    reports_qs = Report.objects.last_version_of_each().non_deleted().filter(
-        photos__isnull=False,
-    ).exclude(
-        note__icontains="#345",
-    ).unassigned().order_by('-server_upload_time')
+    reports_qs = Report.objects.queueable().unassigned().order_by('-server_upload_time')
 
     reports_imbornal = get_reports_imbornal()
     if type == 'adult':

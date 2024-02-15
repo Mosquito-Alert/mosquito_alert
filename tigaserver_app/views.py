@@ -1099,13 +1099,12 @@ def token(request):
 @api_view(['GET'])
 @cache_page(60 * 5)
 def report_stats(request):
-    user_id = request.query_params.get('user_id', -1)
-    if user_id == -1:
-        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
-    else:
-        user_reports = Report.objects.filter(user__user_UUID=user_id).filter(type='adult')
-        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(version_UUID__in=user_reports).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
-    content = {'report_count' : r_count}
+    user_id = request.query_params.get('user_id', None)
+
+    qs = Report.objects.with_finished_validation()
+    if user_id:
+        qs = qs.filter(user=user_id)
+    content = {'report_count' : qs.count()}
     return Response(content)
 
 
@@ -1638,50 +1637,21 @@ def nearby_reports_no_dwindow(request):
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
-        reports_adult = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True)\
-            .exclude(photos__isnull=True)\
-            .filter(type='adult')\
-            .annotate(n_annotations=Count('expert_report_annotations'))\
-            .filter(n_annotations__gte=3)
-        if user is not None:
-            if tigauser.profile is None:
-                reports_adult = reports_adult.exclude(user=user)
-            else:
-                reports_adult = reports_adult.exclude(user__user_UUID__in=user_uuids)
-        if show_hidden == 0:
-            reports_adult = reports_adult.exclude(version_number=-1)
+        finished_reports_qs = Report.objects.queueable().exclude(
+            cached_visible=0
+        ).filter(version_UUID__in=flattened_data)
 
-        reports_bite = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True) \
-            .filter(type='bite')
         if user is not None:
             if tigauser.profile is None:
-                reports_bite = reports_bite.exclude(user=user)
+                finished_reports_qs = finished_reports_qs.exclude(user=user)
             else:
-                reports_bite = reports_bite.exclude(user__user_UUID__in=user_uuids)
+                finished_reports_qs = finished_reports_qs.exclude(user__pk__in=user_uuids)
         if show_hidden == 0:
-            reports_bite = reports_bite.exclude(version_number=-1)
+            finished_reports_qs = finished_reports_qs.exclude(version_number=-1)
 
-        reports_site = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True) \
-            .filter(type='site')
-        if user is not None:
-            if tigauser.profile is None:
-                reports_site = reports_site.exclude(user=user)
-            else:
-                reports_site = reports_site.exclude(user__user_UUID__in=user_uuids)
-        if show_hidden == 0:
-            reports_site = reports_site.exclude(version_number=-1)
+        reports_adult = finished_reports_qs.with_finished_validation().filter(type=Report.TYPE_ADULT)
+        reports_bite = finished_reports_qs.with_finished_validation().filter(type=Report.TYPE_BITE)
+        reports_site = finished_reports_qs.filter(type=Report.TYPE_SITE)
 
         if show_versions == 0:
             #classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 and x.latest_version, reports_adult)
@@ -1690,12 +1660,11 @@ def nearby_reports_no_dwindow(request):
             # classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 , reports_adult)
             classified_reports_in_max_radius = filter(lambda x: x.show_on_map, reports_adult)
 
-
         if user is not None:
             if tigauser.profile is None:
                 user_reports = Report.objects.filter(user=user)
             else:
-                user_reports = Report.objects.filter(user__user_UUID__in=user_uuids)
+                user_reports = Report.objects.filter(user__pk__in=user_uuids)
             if show_hidden == 0:
                 user_reports = user_reports.exclude(version_number=-1)
             if show_versions == 0:
@@ -1763,16 +1732,13 @@ def nearby_reports_fast(request):
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
-        reports = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True)\
-            .exclude(photos__isnull=True)\
-            .filter(type='adult')\
-            .annotate(n_annotations=Count('expert_report_annotations'))\
-            .filter(n_annotations__gte=3)\
-            .exclude(creation_time__lte=date_n_days_ago)
+        reports = Report.objects.with_finished_validation().filter(
+            type=Report.TYPE_ADULT,
+            version_UUID__in=flattened_data
+        ).exclude(
+            cached_visible=0,
+            server_upload_time__lte=date_n_days_ago
+        )
 
         classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
 
@@ -1892,7 +1858,10 @@ def nearby_reports(request):
 
         center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
 
-        all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
+        all_reports = Report.objects.with_finished_validation().filter(
+            type=Report.TYPE_ADULT,
+            server_upload_time__gt=date_N_days_ago
+        )
         reports_in_max_radius = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=MAX_SEARCH_RADIUS)))
         classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,reports_in_max_radius)
         dst = distance_matrix(center_point_4326,classified_reports_in_max_radius)
