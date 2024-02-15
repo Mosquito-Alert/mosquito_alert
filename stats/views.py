@@ -33,9 +33,6 @@ from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
-from tigacrafting.report_queues import get_crisis_report_available_reports, get_unassigned_available_reports, get_progress_available_reports
-from tigacrafting.views import get_blocked_reports_by_country
-from tigacrafting.report_queues import filter_reports as queue_filter
 
 
 @xframe_options_exempt
@@ -137,12 +134,11 @@ def workload_available_reports(request):
             user_ids_arr = user_ids_string_to_int_array(user_ids_str)
             if len(user_ids_arr) > 0:
                 user_id_filter = user_ids_arr
-        current_pending = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-        current_progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
-        overall_pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
-        current_pending = filter_reports(current_pending)
-        current_progress = filter_reports(current_progress)
-        data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress), 'overall_pending': overall_pending.count()}
+        current_pending = Report.objects.queued().unassigned()
+        current_progress = Report.objects.in_progress()
+
+        overall_pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False)
+        data = { 'current_pending_n' : current_pending.count(), 'current_progress_n' : current_progress.count(), 'overall_pending': overall_pending.count()}
         return Response(data)
 
 
@@ -775,192 +771,123 @@ def report_stats_ccaa(request):
     return render(request, 'stats/report_stats_ccaa.html', context)
 
 
-def get_blocked_count(data):
-    n = 0
-    for item in data.items():
-        n = n + len(item[1])
-    return n
-
 @login_required
 def global_assignments(request):
     this_user = request.user
-    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
-    this_user_is_national_supervisor = this_user.userstat.is_national_supervisor()
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
-    if this_user_is_superexpert:
-        #national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
-        data = []
-        total_unassigned = 0
-        total_progress = 0
-        total_pending = 0
-        total_blocked = 0
-        # manually add spain
-        current_country = 17
-        country = EuropeCountry.objects.get(pk=current_country)
-        unassigned_filtered = get_unassigned_available_reports(country)
-        progress_filtered = get_progress_available_reports(country)
-        user_id_filter = settings.USERS_IN_STATS
-        pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(
-            validation_complete=False).filter(report__type='adult').values('report')
-        blocked = get_blocked_reports_by_country(17)
-        n_unassigned = unassigned_filtered.count()
-        n_progress = progress_filtered.count()
-        n_pending = pending.count()
-        n_blocked = get_blocked_count( blocked )
-        data.append(
-            {
-                "ns_id": 'N/A',
-                "ns_username": 'N/A',
-                "ns_country_id": 17,
-                "ns_country_code": 'ESP',
-                "ns_country_name": 'Spain',
-                "unassigned": n_unassigned,
-                "progress": n_progress,
-                "pending": n_pending,
-                "blocked": n_blocked
-            }
-        )
-        total_unassigned += n_unassigned
-        total_progress += n_progress
-        total_pending += n_pending
-        total_blocked += n_blocked
-        countries_with_at_least_one_expert = UserStat.objects.exclude(native_of__isnull=True).exclude(native_of__gid=17).values('native_of').distinct()
-        countries = EuropeCountry.objects.exclude(gid=17).filter(gid__in=countries_with_at_least_one_expert)
-        #for user in national_supervisors:
-        for current_country in countries:
-            try:
-                ns = UserStat.objects.get(national_supervisor_of=current_country)
-            except UserStat.DoesNotExist:
-                ns = None
-            #current_country = user.userstat.national_supervisor_of.gid
-            #unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-            #unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
-            unassigned_filtered = get_unassigned_available_reports(current_country)
-            progress_filtered = get_progress_available_reports(current_country)
-            user_id_filter = UserStat.objects.filter(native_of=current_country).values('user__id')
-            pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
-            blocked = get_blocked_reports_by_country(current_country)
-            n_unassigned = unassigned_filtered.count()
-            n_progress = progress_filtered.count()
-            n_pending = pending.count()
-            n_blocked = get_blocked_count(blocked)
-            data.append(
-                {
-                    "ns_id": ns.user.id if ns else None,
-                    "ns_username": ns.user.username if ns else None,
-                    "ns_country_id":current_country.gid,
-                    "ns_country_code": current_country.iso3_code,
-                    "ns_country_name":current_country.name_engl,
-                    "unassigned": n_unassigned,
-                    "progress": n_progress,
-                    "pending": n_pending,
-                    "blocked": n_blocked
-                }
-            )
-            total_unassigned += n_unassigned
-            total_progress += n_progress
-            total_pending += n_pending
-            total_blocked += n_blocked
-        summary = { 'total_unassigned':total_unassigned, 'total_progress':total_progress, 'total_pending':total_pending, 'total_blocked':total_blocked }
-        context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary, 'days': lock_period}
-        return render(request, 'stats/global_assignments.html', context)
-    elif this_user_is_national_supervisor:
-        #national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
-        data = []
-        total_unassigned = 0
-        total_progress = 0
-        total_pending = 0
-        current_country = this_user.userstat.national_supervisor_of.gid
-        # unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-        # unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
-        unassigned_filtered = get_unassigned_available_reports(this_user.userstat.national_supervisor_of)
-        progress_filtered = get_progress_available_reports(this_user.userstat.national_supervisor_of)
-        user_id_filter = UserStat.objects.filter(native_of__gid=current_country).values('user__id')
-        pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
-        n_unassigned = unassigned_filtered.count()
-        n_progress = progress_filtered.count()
-        n_pending = pending.count()
-        data.append(
-            {
-                "ns_id": this_user.id,
-                "ns_username": this_user.username,
-                "ns_country_id": this_user.userstat.national_supervisor_of.gid,
-                "ns_country_code": this_user.userstat.national_supervisor_of.iso3_code,
-                "ns_country_name": this_user.userstat.national_supervisor_of.name_engl,
-                "unassigned": n_unassigned,
-                "progress": n_progress,
-                "pending": n_pending
-            }
-        )
-        total_unassigned += n_unassigned
-        total_progress += n_progress
-        total_pending += n_pending
-        summary = {'total_unassigned': total_unassigned, 'total_progress': total_progress, 'total_pending': total_pending}
-        context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary}
-        return render(request, 'stats/global_assignments.html', context)
-    else:
+
+    is_national_supervisor = this_user.userstat.is_national_supervisor()
+    is_super_expert = this_user.userstat.is_superexpert()
+
+    if not (is_national_supervisor or is_super_expert):
         return HttpResponse("You need to be logged in as superexpert or be a national supervisor to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
+    report_qs = Report.objects
+    if is_national_supervisor:
+        # Only allow stats from its country
+        report_qs = report_qs.filter(country=this_user.userstat.national_supervisor_of)
+
+    n_unassigned = report_qs.queued().unassigned().in_supervisor_exclusivity_period(state=False).values('country').annotate(
+        total_count=Count(1)
+    ).values('country','total_count')
+
+    n_in_exclusivity_period = report_qs.queued().in_supervisor_exclusivity_period(state=True).values('country').annotate(
+        total_count=Count(1)
+    ).values('country','total_count')
+
+    n_progress = report_qs.in_progress().values('country').annotate(
+        total_count=Count(1)
+    ).values('country','total_count')
+
+    n_pending = report_qs.with_pending_validation_to_finish().values('country').annotate(
+        total_count=Count(1)
+    ).values('country','total_count')
+
+    n_blocked = report_qs.with_blocked_validations().values('country').annotate(
+        total_count=Count(1)
+    ).values('country','total_count')
+
+    # Create a dictionary to store merged data
+    stats_country_data = {}
+
+    # Merge data from each list of dicts
+    for data_list, fieldname in [(n_unassigned, "unassigned"), (n_progress, "progress"), (n_pending, "pending"), (n_blocked, "blocked"), (n_in_exclusivity_period, "reserved")]:
+        for entry in data_list:
+            country = entry['country'] or 'N/A'
+            if country not in stats_country_data:
+                stats_country_data[country] = {}
+            stats_country_data[country][fieldname] = entry['total_count']
+
+    country_info = list(EuropeCountry.objects.values('gid', 'iso3_code', 'name_engl', 'supervisors__user', 'supervisors__user__username'))
+
+    # Append case when country is None
+    country_info.append({'gid': 'N/A', 'iso3_code': 'Other', 'name_engl': 'Other', 'supervisors__user': None, 'supervisors__user__username': None})
+
+    data = []
+    for country in country_info:
+        stats = stats_country_data.get(country['gid'])
+        data.append(
+            {
+                "ns_id": country['supervisors__user'],
+                "ns_username": country['supervisors__user__username'],
+                "ns_country_id":country['gid'],
+                "ns_country_code": country['iso3_code'],
+                "ns_country_name":country['name_engl'],
+                "unassigned": stats.get('unassigned', 0) if stats else 0,
+                "progress": stats.get('progress', 0) if stats else 0,
+                "pending": stats.get('pending', 0) if stats else 0,
+                "blocked": stats.get('blocked', 0) if stats else 0,
+                "reserved": stats.get('reserved', 0) if stats else 0,
+            }
+        )
+
+    summary = {
+        'total_unassigned': sum(item['unassigned'] for item in data),
+        'total_progress': sum(item['progress'] for item in data),
+        'total_pending': sum(item['pending'] for item in data),
+        'total_blocked': sum(item['blocked'] for item in data),
+        'total_reserved': sum(item['reserved'] for item in data)
+    }
+    context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary, 'days': settings.ENTOLAB_LOCK_PERIOD}
+    return render(request, 'stats/global_assignments.html', context)
 
 @login_required
 def global_assignments_list(request, country_code=None, status=None):
-    countryID = EuropeCountry.objects.filter(iso3_code=country_code)
+    if country_code == 'Other':
+        country = None
+    else:
+        country = get_object_or_404(EuropeCountry, iso3_code=country_code)
 
-    for c in countryID:
-        countryGID = c.gid
-        countryName = c.name_engl
+    qs = Report.objects.filter(country=country)
 
-    report_id_table = {}
-    listas = []
-    reportStatus = ''
+    if status == 'pending':
+        qs = qs.with_pending_validation_to_finish()
+        title = 'Pending'
+    elif status == 'unassigned':
+        qs = qs.queued().unassigned()
+        title = 'Unassigned'
+    elif status == 'progress':
+        qs = qs.in_progress()
+        title = 'In progress'
+    elif status == 'reserved':
+        qs = qs.queued().in_supervisor_exclusivity_period(state=True)
+        title = 'Reserved for national supervisors'
+    else:
+        return HttpResponse('status not found.')
 
-    if status != 'pending':
-        if status == 'unassigned':
-            unassigned = get_unassigned_available_reports( EuropeCountry.objects.get(pk=countryGID) )
-            reportList = unassigned
-            reportStatus = 'Unassigned'
-        elif status == 'progress':
-            progress = get_progress_available_reports( EuropeCountry.objects.get(pk=countryGID) )
-            reportList = progress
-            reportStatus = 'In progress'
+    result = []
+    for obj in qs.order_by('-server_upload_time').prefetch_related('expert_report_annotations').iterator():
+        names = obj.get_expert_recipients_names()
 
-        i = 0
-        while i < len(reportList):
-            t = reportList[i].get_expert_recipients_names()
-
-            expNames = t.split("+")
-            expNamesJoined = ' / '.join(expNames)
-
-            listas.append({
-                'idReports': reportList[i].__unicode__(),
+        expNames = names.split("+")
+        expNamesJoined = ' / '.join(expNames)
+        result.append(
+            {
+                'idReports': obj.pk,
                 'experts': expNamesJoined,
-            })
-            i += 1
+            }
+        )
 
-    elif status == 'pending':
-        if countryGID == 17:
-            user_id_filter = settings.USERS_IN_STATS
-            reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
-        else:
-            user_id_filter = UserStat.objects.filter(native_of__gid=countryGID).values('user__id')
-            reportList = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult')
-
-        reportStatus = 'Pending'
-        i = 0
-        while i < len(reportList):
-
-            t = reportList[i].report.get_expert_recipients_names()
-
-            expNames = t.split("+")
-            expNamesJoined = ' / '.join(expNames)
-
-            listas.append({
-                'idReports': reportList[i].report.__unicode__(),
-                'experts': expNamesJoined
-            })
-            i += 1
-
-    context = {'data': listas, 'country': country_code, 'status': status, 'countryName': countryName, 'reportStatus': reportStatus}
+    context = {'data': result, 'country': country_code, 'status': status, 'countryName': country.name_engl, 'reportStatus': title}
 
     return render(request, 'stats/global_assignments_list.html', context)
 

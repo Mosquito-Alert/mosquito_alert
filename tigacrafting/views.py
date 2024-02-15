@@ -1,6 +1,6 @@
 # coding=utf-8
 from pydoc import visiblename
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 import requests
 import json
@@ -49,7 +49,6 @@ from django.db.models.expressions import RawSQL
 import functools
 import operator
 import math
-from tigacrafting.report_queues import get_crisis_report_available_reports
 
 #----------Metadades fotos----------#
 
@@ -59,7 +58,6 @@ from decimal import *
 from tigaserver_project.settings import *
 from rest_framework.response import Response
 import re
-from tigacrafting.report_queues import assign_reports, get_base_adults_qs
 from django.utils import timezone
 
 #-----------------------------------#
@@ -317,16 +315,6 @@ def filter_tasks(tasks):
     tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, tasks)
     return tasks_filtered
 
-def fast_filter_reports(reports):
-    #these are all the report_id in reports, with its max version number and the number of versions
-    #the values at the end drops everything into a dictionary
-    keys = Report.objects.exclude(creation_time__year=2014).filter(type='adult').values('report_id').annotate(Max('version_number')).annotate(Min('version_number')).annotate(Count('version_number'))
-    report_id_table = {}
-    for row in keys:
-        report_id_table[row['report_id']] = {'max_version':row['version_number__max'],'min_version':row['version_number__min'],'num_versions': row['version_number__count']}
-    reports_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), reports )
-    return reports_filtered
-
 
 def filter_reports(reports, sort=True):
     if sort:
@@ -536,9 +524,6 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
     else:
         return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
 
-
-BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
-
 ITALY_GEOMETRY = GEOSGeometry('{"type": "Polygon","coordinates": [[[7.250976562499999,43.70759350405294],[8.96484375,44.071800467511565],[10.96435546875,41.95131994679697],[7.822265625000001,41.0130657870063],[8.1298828125,38.788345355085625],[11.865234375,37.735969208590504],[14.1064453125,36.70365959719456],[14.985351562499998,36.31512514748051],[18.80859375,40.27952566881291],[12.45849609375,44.5278427984555],[13.86474609375,45.413876460821086],[14.04052734375,46.51351558059737],[12.238769531249998,47.264320080254805],[6.8994140625,46.10370875598026],[6.43798828125,45.120052841530544],[7.250976562499999,43.70759350405294]]]}')
 
 
@@ -699,8 +684,7 @@ def pending_reports_heatmap_data():
 
 
 def update_pending_data(country):
-    data = get_crisis_report_available_reports(country)
-    country.pending_crisis_reports = data.count()
+    country.pending_crisis_reports = Report.objects.queued().filter(country=country).count()
     country.last_crisis_report_n_update = timezone.now()
     country.save()
 
@@ -737,63 +721,36 @@ def expert_geo_report_assign(request):
         return HttpResponse("You don't have emergency mode permissions, so you can't see this page. Please contact your administrator.")
 
 
-def get_blocked_reports_by_country(country_id):
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
-    superexperts = User.objects.filter(groups__name='superexpert')
-    if country_id == 17: #Spain
-        country_experts = User.objects.filter(id__in=settings.USERS_IN_STATS)
-    else:
-        country_experts = User.objects.filter(userstat__native_of=country_id)
-    annos = ExpertReportAnnotation.objects.filter(validation_complete=False).filter(user__in=country_experts).exclude(user__in=superexperts).order_by('user__username', 'report')
-    data = {}
-    for anno in annos:
-        elapsed = (datetime.now(timezone.utc) - anno.created).days
-        if elapsed > lock_period:
-            try:
-                data[anno.user.username]
-            except KeyError:
-                data[anno.user.username] = []
-            data[anno.user.username].append({'annotation': anno, 'days': elapsed})
-    return data
-
-
-def sort_by_days(elem):
-    return elem[1][0]['days']
-
-
 @login_required
 def report_expiration(request, country_id=None):
     this_user = request.user
-    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
+
+    if not this_user.userstat.is_superexpert():
+        return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+    lock_period = settings.ENTOLAB_LOCK_PERIOD
+    qs = ExpertReportAnnotation.objects.blocked(days=lock_period)
+
     country = None
     if country_id is not None:
-        country = EuropeCountry.objects.get(pk=country_id)
-    if this_user_is_superexpert:
-        lock_period = settings.ENTOLAB_LOCK_PERIOD
-        superexperts = User.objects.filter(groups__name='superexpert')
-        if country_id is not None:
-            if country_id == 17:  # Spain
-                country_experts = User.objects.filter(id__in=settings.USERS_IN_STATS)
-            else:
-                country_experts = User.objects.filter(userstat__native_of=country_id)
-            annos = ExpertReportAnnotation.objects.filter(validation_complete=False).filter(user__in=country_experts).exclude(user__in=superexperts).order_by('user__username', 'report')
-        else:
-            annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
-        data = { }
-        sorted_data = []
-        for anno in annos:
-            elapsed = (datetime.now(timezone.utc) - anno.created).days
-            if elapsed > lock_period:
-                try:
-                    data[anno.user.username]
-                except KeyError:
-                    data[anno.user.username] = []
-                data[anno.user.username].append({'annotation': anno, 'days': elapsed})
-        sorted_data = sorted( data.items(), key=sort_by_days, reverse=True )
+        country = get_object_or_404(EuropeCountry, pk=country_id)
+        qs = qs.filter(report__country=country)
 
-        return render(request, 'tigacrafting/report_expiration.html', { 'data':sorted_data, 'lock_period': lock_period , 'country': country})
-    else:
-        return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+    data_dict = {}
+    for annotation in qs.select_related('user').iterator():
+        if annotation.user.username not in data_dict:
+            data_dict[annotation.user.username] = []
+
+        data_dict[annotation.user.username].append(
+            {
+                'annotation': annotation,
+                'days': (timezone.now() - annotation.created).days
+            }
+        )
+
+    sorted_data = sorted(data_dict.items(), key=lambda x: x[1][0]['days'], reverse=True)
+
+    return render(request, 'tigacrafting/report_expiration.html', { 'data':sorted_data, 'lock_period': settings.ENTOLAB_LOCK_PERIOD , 'country': country})
 
 
 def executive_auto_validate(annotation, request):
@@ -957,10 +914,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         flagged_final_reports = flagged_final_reports_superexpert | flagged_final_reports_expert
         public_final_reports = public_final_reports_superexpert | public_final_reports_expert
 
-        if load_new_reports == 'T':
-            assign_reports(this_user)
-        elif this_user_is_superexpert:
-            assign_reports(this_user)
+        if load_new_reports == 'T' or this_user_is_superexpert:
+            this_user.userstat.assign_reports()
 
 
         all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
@@ -1196,34 +1151,30 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
         version_uuid = request.GET.get('version_uuid', version_uuid)
         reports_per_page = request.GET.get('reports_per_page', reports_per_page)
-        #all_reports_version_uuids = Report.objects.filter(type__in=['adult', 'site']).values('version_UUID')
-        #all_reports_version_uuids = Report.objects.filter(type='adult').values('version_UUID')
-        #these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type__in=['adult', 'site'])
-        these_reports = Report.objects.exclude(creation_time__year=2014).exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').order_by('-creation_time')
+
         if version_uuid and version_uuid != 'na':
-            reports = Report.objects.filter(version_UUID=version_uuid)
+            reports = Report.objects.filter(pk=version_uuid)
             n_reports = 1
         elif linked_id and linked_id != 'na':
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            #reports = list(filter_reports(these_reports, sort=False))
-            reports = list(fast_filter_reports(these_reports))
+            reports = Report.objects.queueable().filter(type=Report.TYPE_ADULT).order_by('-server_upload_time')
             n_reports = len(reports)
+
         paginator = Paginator(reports, int(reports_per_page))
-        page = request.GET.get('page', 1)
-        try:
-            objects = paginator.page(page)
-        except PageNotAnInteger:
-            objects = paginator.page(1)
-        except EmptyPage:
-            objects = paginator.page(paginator.num_pages)
-        paged_reports = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
+        page_num = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_num)
+
         reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
-        #context = {'reports': paged_reports, 'all_reports_version_uuids': all_reports_version_uuids, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
-        context = {'reports': paged_reports, 'version_uuid': version_uuid, 'reports_per_page_choices': reports_per_page_choices}
-        context['objects'] = objects
-        context['pages'] = range(1, objects.paginator.num_pages+1)
+
+        context = {
+            'reports': page_obj,
+            'version_uuid': version_uuid,
+            'reports_per_page_choices': reports_per_page_choices,
+            'objects': page_obj,
+            'pages': range(1, paginator.num_pages+1)
+        }
 
         return render(request, 'tigacrafting/expert_report_status.html', context)
     else:
@@ -1304,16 +1255,10 @@ def expert_report_complete(request):
     return Response(context)
 
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
-    new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_embornal
+    return Report.objects.queueable().unassigned().filter(pk__in=reports_imbornal).order_by('-server_upload_time')
 
 def get_reports_unfiltered_sites_other(reports_imbornal):
-    new_reports_unfiltered_sites_other = Report.objects.exclude(type='adult').exclude(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_other
+    return Report.objects.queueable().unassigned().filter(pk__in=reports_imbornal).order_by('-server_upload_time')
 
 def get_reports_imbornal():
     reports_imbornal = ReportResponse.objects.filter(
@@ -1331,13 +1276,8 @@ def get_reports_imbornal():
 
     return  reports_imbornal | reports_imbornal_new
 
-def get_reports_unfiltered_adults_except_being_validated():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    return new_reports_unfiltered_adults
-
 def get_reports_unfiltered_adults():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
-    return new_reports_unfiltered_adults
+    return Report.objects.filter(type=Report.TYPE_ADULT).in_progress().order_by('-server_upload_time')
 
 def auto_annotate_notsure(report, request):
     users = []
@@ -1527,170 +1467,139 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
     this_user = request.user
     this_user_is_coarse = this_user.groups.filter(name='coarse_filter').exists()
     super_movelab = User.objects.get(pk=24)
-    if this_user_is_coarse:
-        args = {}
-        args.update(csrf(request))
-        PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0, can_order=True)
-        if request.method == 'POST':
-            save_formset = request.POST.get('save_formset', "F")
-            tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
-            if save_formset == "T":
-                formset = PictureValidationFormSet(request.POST)
-                if formset.is_valid():
-                    for f in formset:
-                        report = f.save(commit=False)
-                        #check that the report hasn't been assigned to anyone before saving, as a precaution to not hide assigned reports
-                        who_has = report.get_who_has()
-                        if who_has == '':
-                            report.save()
+
+    if not this_user_is_coarse:
+        return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+    args = {}
+    args.update(csrf(request))
+    PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0, can_order=False)
+    if request.method == 'POST':
+        save_formset = request.POST.get('save_formset', "F")
+        tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+        if save_formset == "T":
+            formset = PictureValidationFormSet(request.POST)
+            if formset.is_valid():
+                for f in formset:
+                    report = f.save(commit=False)
+                    #check that the report hasn't been assigned to anyone before saving, as a precaution to not hide assigned reports
+                    who_has = report.get_who_has()
+                    if who_has == '':
+                        report.save()
 
 ###############-------------------------------- FastUpload --------------------------------###############
 
-                            #print(f.cleaned_data)
-                            if f.cleaned_data['fastUpload']:
-                                #check that annotation does not exist, to avoid duplicates
-                                if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-                                    new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
-                                    photo = report.photos.first()
-                                    new_annotation.site_certainty_notes = 'auto'
-                                    new_annotation.best_photo_id = photo.id
-                                    new_annotation.validation_complete = True
-                                    new_annotation.revise = True
-                                    new_annotation.save()
+                        #print(f.cleaned_data)
+                        if f.cleaned_data['fastUpload']:
+                            #check that annotation does not exist, to avoid duplicates
+                            if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
+                                new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
+                                photo = report.photos.first()
+                                new_annotation.site_certainty_notes = 'auto'
+                                new_annotation.best_photo_id = photo.id
+                                new_annotation.validation_complete = True
+                                new_annotation.revise = True
+                                new_annotation.save()
 ###############------------------------------ FI FastUpload --------------------------------###############
 
-                            if f.cleaned_data['other_species']:
-                                auto_annotate_other_species(report, request)
-                            if f.cleaned_data['probably_culex']:
-                                auto_annotate_culex(report, request)
-                            if f.cleaned_data['probably_albopictus']:
-                                auto_annotate_probably_albopictus(report, request)
-                            if f.cleaned_data['sure_albopictus']:
-                                auto_annotate_albopictus(report, request)
-                            if f.cleaned_data['not_sure']:
-                                auto_annotate_notsure(report, request)
+                        if f.cleaned_data['other_species']:
+                            auto_annotate_other_species(report, request)
+                        if f.cleaned_data['probably_culex']:
+                            auto_annotate_culex(report, request)
+                        if f.cleaned_data['probably_albopictus']:
+                            auto_annotate_probably_albopictus(report, request)
+                        if f.cleaned_data['sure_albopictus']:
+                            auto_annotate_albopictus(report, request)
+                        if f.cleaned_data['not_sure']:
+                            auto_annotate_notsure(report, request)
 
+        page = request.POST.get('page')
+        visibility = request.POST.get('visibility')
+        usr_note = request.POST.get('usr_note')
+        type = request.POST.get('type', type)
+        country = request.POST.get('country', country)
+        aithr = request.POST.get('aithr', aithr)
+        if aithr == '':
+            aithr = '0.75'
 
-            page = request.POST.get('page')
-            visibility = request.POST.get('visibility')
-            usr_note = request.POST.get('usr_note')
-            type = request.POST.get('type', type)
-            country = request.POST.get('country', country)
-            aithr = request.POST.get('aithr', aithr)
-            if aithr == '':
-                aithr = '0.75'
+        if not page:
+            page = request.GET.get('page',"1")
+        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type + '&country=' + country + '&aithr=' + aithr)
+    else:
+        tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+        type = request.GET.get('type', type)
+        country = request.GET.get('country', country)
+        visibility = request.GET.get('visibility', visibility)
+        usr_note = request.GET.get('usr_note', usr_note)
+        aithr = request.GET.get('aithr', aithr)
+        if aithr == '':
+            aithr = '0.75'
 
-            if not page:
-                page = request.GET.get('page',"1")
-            return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type + '&country=' + country + '&aithr=' + aithr)
-        else:
-            tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
-            type = request.GET.get('type', type)
-            country = request.GET.get('country', country)
-            visibility = request.GET.get('visibility', visibility)
-            usr_note = request.GET.get('usr_note', usr_note)
-            aithr = request.GET.get('aithr', aithr)
-            if aithr == '':
-                aithr = '0.75'
+    reports_qs = Report.objects.queueable().unassigned().order_by('-server_upload_time')
 
-        #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
+    reports_imbornal = get_reports_imbornal()
+    if type == 'adult':
+        type_readable = "Adults"
+        reports_qs = reports_qs.filter(type=Report.TYPE_ADULT)
+    elif type == 'site':
+        reports_qs = reports_qs.filter(type=Report.TYPE_SITE).filter(pk__in=reports_imbornal)
+        type_readable = "Breeding sites - Storm drains"
+    elif type == 'site-o':
+        reports_qs = reports_qs.filter(type=Report.TYPE_SITE).exclude(pk__in=reports_imbornal)
+        type_readable = "Breeding sites - Other"
+    elif type == 'all':
+        type_readable = "All"
 
-        reports_imbornal = get_reports_imbornal()
-        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+    if visibility == 'visible':
+        reports_qs = reports_qs.filter(hide=False)
+    elif visibility == 'hidden':
+        reports_qs = reports_qs.filter(hide=True)
 
-        #new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( Q(ia_filter_1__lte=float(aithr)) | Q(ia_filter_1__isnull=True) )
-        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( ia_filter_1__lte=float(aithr) )
+    if usr_note and usr_note != '':
+        reports_qs = reports_qs.filter(note__icontains=usr_note)
 
-        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-        #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-        if type == 'adult':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
-            new_reports_unfiltered = new_reports_unfiltered_adults
-        elif type == 'site':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
-            new_reports_unfiltered = new_reports_unfiltered_sites_embornal
-        elif type == 'site-o':
-            new_reports_unfiltered = new_reports_unfiltered_sites_other
-        if visibility == 'visible':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
-        elif visibility == 'hidden':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
-        if usr_note and usr_note != '':
-            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
-        if country and country != '' and country != 'all':
-            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
-
-        # new_reports_unfiltered = filter_reports(new_reports_unfiltered, False)
-        #
-        # new_reports_unfiltered = list(new_reports_unfiltered)
-
-        #report_id_deleted_reports = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("report_id").distinct()
-        report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("version_UUID").distinct()
-        report_id_deleted_reports_sites = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'site' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("version_UUID").distinct()
-
-        new_reports_unfiltered = new_reports_unfiltered.exclude(version_UUID__in=report_id_deleted_reports_adults).exclude(version_UUID__in=report_id_deleted_reports_sites)
-
-        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
-        #new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number union select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'site' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number",()))
-
-        # for r in new_reports_unfiltered:
-        #      print("{0} {1} {2}".format(r.version_UUID, r.deleted, r.latest_version))
-
-        paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
-        page = request.GET.get('page', 1)
-        try:
-            objects = paginator.page(page)
-        except PageNotAnInteger:
-            objects = paginator.page(1)
-        except EmptyPage:
-            objects = paginator.page(paginator.num_pages)
-        page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
-        this_formset = PictureValidationFormSet(queryset=page_query)
-        args['formset'] = this_formset
-        args['objects'] = objects
-        args['page'] = page
-        args['pages'] = range(1, objects.paginator.num_pages + 1)
-        args['new_reports_unfiltered'] = page_query
-        args['tasks_per_page'] = tasks_per_page
-        args['aithr'] = aithr
-        args['visibility'] = visibility
-        args['usr_note'] = usr_note
-        args['type'] = type
-        args['country'] = country
-        country_readable = ''
+    if country and country != '':
         if country == 'all':
             country_readable = 'All'
-        elif country is not None and country != '':
-            try:
-                country_readable = EuropeCountry.objects.get(pk=int(country)).name_engl
-            except EuropeCountry.DoesNotExist:
-                pass
-        args['country_readable'] = country_readable
-        args['countries'] = EuropeCountry.objects.all().order_by('name_engl')
-        type_readable = ''
-        if type == 'site':
-            type_readable = "Breeding sites - Storm drains"
-        elif type == 'site-o':
-            type_readable = "Breeding sites - Other"
-        elif type == 'adult':
-            type_readable = "Adults"
-        elif type == 'all':
-            type_readable = "All"
-        args['type_readable'] = type_readable
-        #n_query_records = new_reports_unfiltered.count()
-        n_query_records = len(new_reports_unfiltered)
-        args['n_query_records'] = n_query_records
-        #args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
-        range_list = [ n for n in range(5, 101, 5) ]
-        args['tasks_per_page_choices'] = range_list + [200,300]
-        return render(request, 'tigacrafting/photo_grid.html', args)
-    else:
-        return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+        else:
+            country = get_object_or_404(EuropeCountry, int(country))
+            country_readable = country.name_engl
+            reports_qs = reports_qs.filter(country=country)
 
+    if aithr:
+        reports_qs = reports_qs.filter(ia_filter_1__lte=float(aithr))
+
+    reports_qs = reports_qs.prefetch_related('photos').select_related('country')
+    paginator = Paginator(reports_qs, int(tasks_per_page))
+    page_num = request.GET.get('page', 1)
+
+    page_obj = paginator.get_page(page_num)
+
+    this_formset = PictureValidationFormSet(queryset=page_obj.object_list)
+    args['formset'] = this_formset
+    args['objects'] = page_obj
+    args['page'] = page_num
+    args['pages'] = range(1, paginator.num_pages + 1)
+    args['new_reports_unfiltered'] = page_obj.object_list
+    args['tasks_per_page'] = tasks_per_page
+    args['aithr'] = aithr
+    args['visibility'] = visibility
+    args['usr_note'] = usr_note
+    args['type'] = type
+    args['country'] = country
+
+    args['country_readable'] = country_readable
+
+    args['countries'] = EuropeCountry.objects.all().order_by('name_engl')
+
+    args['type_readable'] = type_readable
+
+    args['n_query_records'] = reports_qs.count()
+
+    range_list = [ n for n in range(5, 101, 5) ]
+    args['tasks_per_page_choices'] = range_list + [200,300]
+
+    return render(request, 'tigacrafting/photo_grid.html', args)
 
 @login_required
 def notifications(request,user_uuid=None):
