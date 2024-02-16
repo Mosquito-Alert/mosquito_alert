@@ -283,9 +283,41 @@ the server map (although it will still be retained internally).
 * report_id: The 4-digit report ID.
 * type: The report type (adult, site, or mission).
     """
-    queryset = Report.objects.all()
+    queryset = Report.objects.all().prefetch_related("responses")
     serializer_class = ReportSerializer
     filter_fields = ('user', 'version_number', 'report_id', 'type')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Get the filters from the request
+        is_deleted = self.request.query_params.get('is_deleted', None)
+        is_last_version = self.request.query_params.get('is_last_version', None)
+
+        # Apply additional filters if provided
+        if is_deleted is not None:
+            if is_deleted.lower() not in ['true', 'false']:
+                raise ParseError("Invalid value for 'is_deleted'. It should be 'true', 'false', or not provided.")
+
+            if is_deleted.lower() == 'true':
+                # Filter queryset to include only deleted records
+                queryset = queryset.deleted(state=True)
+            elif is_deleted.lower() == 'false':
+                # Filter queryset to exclude deleted records
+                queryset = queryset.deleted(state=False)
+
+        if is_last_version is not None:
+            if is_last_version.lower() not in ['true', 'false']:
+                raise ParseError("Invalid value for 'is_last_version'. It should be 'true', 'false', or not provided.")
+
+            if is_last_version.lower() == 'true':
+                # Filter queryset to include only deleted records
+                queryset = queryset.last_version_of_each(state=True)
+            elif is_last_version.lower() == 'false':
+                # Filter queryset to exclude deleted records
+                queryset = queryset.last_version_of_each(state=False)
+
+        return queryset
 
 
 # For production version, substitute WriteOnlyModelViewSet
