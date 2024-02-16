@@ -29,7 +29,7 @@ from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
 from common.translation import get_translation_in, get_locale_for_native
-from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 from tigacrafting.messaging import send_message_android, send_message_ios
@@ -2074,7 +2074,7 @@ class Report(TimeZoneModelMixin, models.Model):
         return 1
 
     def get_final_expert_status_text(self):
-        return dict(STATUS_CATEGORIES)[self.get_final_expert_status()]
+        return dict(ExpertReportAnnotation.STATUS_CATEGORIES)[self.get_final_expert_status()]
 
     def get_final_expert_status_bootstrap(self):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'

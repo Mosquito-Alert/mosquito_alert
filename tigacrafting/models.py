@@ -182,10 +182,15 @@ AEGYPTI_CATEGORIES_SEPARATED = ((2, 'Definitely Aedes aegypti'), (1, 'Probably A
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
-STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
 
 VALIDATION_CATEGORIES = ((2, 'Definitely'), (1, 'Probably'))
 class ExpertReportAnnotation(models.Model):
+
+    STATUS_HIDDEN = -1
+    STATUS_FLAGGED = 0
+    STATUS_PUBLIC = 1
+    STATUS_CATEGORIES = ((STATUS_PUBLIC, 'public'), (STATUS_FLAGGED, 'flagged'), (STATUS_HIDDEN, 'hidden'))
+
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.CASCADE, )
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
@@ -480,17 +485,13 @@ class UserStat(models.Model):
 
         result = []
         for report in report_queue:
-            try:
-                with transaction.atomic():
-                    result.append(
-                        ExpertReportAnnotation.objects.create(
-                            report=report,
-                            user=self.user
-                        )
-                    )
-                    self.grabbed_reports += 1
-            except IntegrityError:
-                pass
+            result.append(
+                ExpertReportAnnotation.objects.create(
+                    report=report,
+                    user=self.user
+                )
+            )
+            self.grabbed_reports += 1
 
         self.save()
 
