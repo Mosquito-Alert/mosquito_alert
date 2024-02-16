@@ -283,7 +283,7 @@ the server map (although it will still be retained internally).
 * report_id: The 4-digit report ID.
 * type: The report type (adult, site, or mission).
     """
-    queryset = Report.objects.all().prefetch_related("responses")
+    queryset = Report.objects.all().prefetch_related("responses", "photos")
     serializer_class = ReportSerializer
     filter_fields = ('user', 'version_number', 'report_id', 'type')
 

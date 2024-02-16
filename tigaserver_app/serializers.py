@@ -168,7 +168,10 @@ class ReportResponseSerializer(serializers.ModelSerializer):
         model = ReportResponse
         fields = ['question', 'answer', 'question_id', 'answer_id', 'answer_value']
 
-
+class DetailedPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photo
+        fields = ['id', 'photo', 'uuid']
 class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer):
 
     # For AutoTimeZoneOrInstantUploadSerializerMixin
@@ -199,6 +202,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
     app_language = serializers.CharField(required=False)
     responses = ReportResponseSerializer(many=True)
     session = SessionListingField
+    photos = DetailedPhotoSerializer(many=True, read_only=True)
 
     def _get_dict_applied_tz(self, data: OrderedDict, *args, **kwargs) -> OrderedDict:
         data_result = super()._get_dict_applied_tz(data=data, *args, **kwargs)
@@ -314,10 +318,6 @@ class ConfigurationSerializer(serializers.ModelSerializer):
         model = Configuration
         fields = '__all__'
 
-class DetailedPhotoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Photo
-        fields = ['id', 'photo', 'uuid']
 
 class NearbyReportSerializer(serializers.ModelSerializer):
     user = UserListingField
