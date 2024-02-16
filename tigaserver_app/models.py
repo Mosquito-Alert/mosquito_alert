@@ -32,7 +32,7 @@ import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 from tigacrafting.messaging import send_message_android, send_message_ios
 
-
+from .managers import ReportManager
 from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -630,6 +630,7 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     # Object Manager
+    objects = ReportManager()
 
     # Custom Properties
     @property
