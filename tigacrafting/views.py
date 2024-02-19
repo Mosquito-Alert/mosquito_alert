@@ -787,182 +787,157 @@ def executive_auto_validate(annotation, request):
 @login_required
 def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na',loc='na'):
     this_user = request.user
-    if getattr(settings, 'SHOW_USER_AGREEMENT_ENTOLAB', False) == True:
+
+    if settings.SHOW_USER_AGREEMENT_ENTOLAB:
         if this_user.userstat:
             if not this_user.userstat.has_accepted_license():
                 return HttpResponseRedirect(reverse('entolab_license_agreement'))
         else:
             return HttpResponse("There is a problem with your current user. Please contact the EntoLab admin at " + settings.ENTOLAB_ADMIN)
+
     current_domain = get_current_domain(request)
-    this_user_is_expert = this_user.groups.filter(name='expert').exists()
-    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
-    this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
-    this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-    this_user_is_team_venezuela = this_user.groups.filter(name='team_venezuela').exists()
-    this_user_is_team_stlouis = this_user.groups.filter(name='team_stlouis').exists()
-    #this_user_is_team_italy = this_user.groups.filter(name='team_italy').exists()
-    #this_user_is_team_not_italy = this_user.groups.filter(name='team_not_italy').exists()
-    this_user_is_reritja = (this_user.id == 25)
 
-    if this_user_is_expert or this_user_is_superexpert:
-        args = {}
-        args.update(csrf(request))
-        args['scroll_position'] = scroll_position
-        if this_user_is_superexpert:
-            AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=SuperExpertReportAnnotationForm, extra=0)
-        else:
-            AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=ExpertReportAnnotationForm, extra=0)
-        if request.method == 'POST':
-            scroll_position = request.POST.get("scroll_position", '0')
-            orderby = request.POST.get('orderby', orderby)
-            tiger_certainty = request.POST.get('tiger_certainty', tiger_certainty)
-            site_certainty = request.POST.get('site_certainty', site_certainty)
-            pending = request.POST.get('pending', pending)
-            status = request.POST.get('status', status)
-            final_status = request.POST.get('final_status', final_status)
-            version_uuid = request.POST.get('version_uuid', version_uuid)
-            linked_id = request.POST.get('linked_id', linked_id)
-            ns_exec = request.POST.get('ns_exec', ns_exec)
-            tags_filter = request.POST.get('tags_filter', tags_filter)
-            checked = request.POST.get('checked', checked)
-            loc = request.POST.get('loc', loc)
-            tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
-            note_language = request.GET.get('note_language', "es")
-            load_new_reports = request.POST.get('load_new_reports', load_new_reports)
-            save_formset = request.POST.get('save_formset', "F")
-            if save_formset == "T":
-                formset = AnnotationFormset(request.POST)
-                if formset.is_valid():
-                    for f in formset:
-                        one_form = f.save(commit=False)
-                        auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
-                        if auto_flag:
-                            one_form.status = 0
-                        one_form.save()
-                        f.save_m2m()
-                        if one_form.validation_complete_executive:
-                            executive_auto_validate(one_form, request)
-                        if(this_user_is_reritja and one_form.validation_complete == True):
-                            issue_notification(one_form,current_domain)
-                        if auto_flag:
-                            autoflag_others(one_form.id)
-                else:
-                    return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
-            page = request.POST.get('page')
-            if not page:
-                page = '1'
-            return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&loc=' + loc + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
-        else:
-            tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
-            note_language = request.GET.get('note_language', note_language)
-            scroll_position = request.GET.get('scroll_position', scroll_position)
-            orderby = request.GET.get('orderby', orderby)
-            tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
-            site_certainty = request.GET.get('site_certainty', site_certainty)
-            pending = request.GET.get('pending', pending)
-            status = request.GET.get('status', status)
-            final_status = request.GET.get('final_status', final_status)
-            version_uuid = request.GET.get('version_uuid', version_uuid)
-            linked_id = request.GET.get('linked_id', linked_id)
-            ns_exec = request.GET.get('ns_exec', ns_exec)
-            tags_filter = request.GET.get('tags_filter', tags_filter)
-            checked = request.GET.get('checked', checked)
-            loc = request.GET.get('loc', loc)
-            load_new_reports = request.GET.get('load_new_reports', load_new_reports)
-            edit_mode = request.GET.get('edit_mode', edit_mode)
+    this_user_is_expert = this_user.userstat.is_expert()
+    this_user_is_superexpert = this_user.userstat.is_superexpert()
 
-        #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
-        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
-        #my_reports = ExpertReportAnnotation.objects.filter(user=this_user).values('report')
-        my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
+    this_user_is_reritja = this_user.id == 25
 
-        '''
+    if not (this_user_is_expert or this_user_is_superexpert):
+        return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
+
+    args = {}
+    args.update(csrf(request))
+    args['scroll_position'] = scroll_position
+
+    if this_user_is_superexpert:
+        AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=SuperExpertReportAnnotationForm, extra=0, can_order=False)
+    else:
+        AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=ExpertReportAnnotationForm, extra=0, can_order=False)
+
+    if request.method == 'POST':
+        scroll_position = request.POST.get("scroll_position", '0')
+        orderby = request.POST.get('orderby', orderby)
+        tiger_certainty = request.POST.get('tiger_certainty', tiger_certainty)
+        site_certainty = request.POST.get('site_certainty', site_certainty)
+        pending = request.POST.get('pending', pending)
+        status = request.POST.get('status', status)
+        final_status = request.POST.get('final_status', final_status)
+        version_uuid = request.POST.get('version_uuid', version_uuid)
+        linked_id = request.POST.get('linked_id', linked_id)
+        ns_exec = request.POST.get('ns_exec', ns_exec)
+        tags_filter = request.POST.get('tags_filter', tags_filter)
+        checked = request.POST.get('checked', checked)
+        loc = request.POST.get('loc', loc)
+        tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
+        note_language = request.GET.get('note_language', "es")
+        load_new_reports = request.POST.get('load_new_reports', load_new_reports)
+        save_formset = request.POST.get('save_formset', "F")
+        if save_formset == "T":
+            formset = AnnotationFormset(request.POST)
+            if formset.is_valid():
+                for f in formset:
+                    one_form = f.save(commit=False)
+                    auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
+                    if auto_flag:
+                        one_form.status = 0
+                    one_form.save()
+                    f.save_m2m()
+                    if one_form.validation_complete_executive:
+                        executive_auto_validate(one_form, request)
+                    if(this_user_is_reritja and one_form.validation_complete == True):
+                        issue_notification(one_form,current_domain)
+                    if auto_flag:
+                        autoflag_others(one_form.id)
+            else:
+                return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
+        page = request.POST.get('page')
+        if not page:
+            page = '1'
+        return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&loc=' + loc + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
+    else:
+        tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
+        note_language = request.GET.get('note_language', note_language)
+        scroll_position = request.GET.get('scroll_position', scroll_position)
+        orderby = request.GET.get('orderby', orderby)
+        tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
+        site_certainty = request.GET.get('site_certainty', site_certainty)
+        pending = request.GET.get('pending', pending)
+        status = request.GET.get('status', status)
+        final_status = request.GET.get('final_status', final_status)
+        version_uuid = request.GET.get('version_uuid', version_uuid)
+        linked_id = request.GET.get('linked_id', linked_id)
+        ns_exec = request.GET.get('ns_exec', ns_exec)
+        tags_filter = request.GET.get('tags_filter', tags_filter)
+        checked = request.GET.get('checked', checked)
+        loc = request.GET.get('loc', loc)
+        load_new_reports = request.GET.get('load_new_reports', load_new_reports)
+        edit_mode = request.GET.get('edit_mode', edit_mode)
+
+        # TODO: filter by adults?
+        report_qs = Report.objects.filter(
+            type=Report.TYPE_ADULT
+        )
+
+        spain_country = EuropeCountry.objects.spain()
         if loc == 'spain':
-            all_annotations = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17))
+            report_qs = report_qs.filter(country=spain_country)
         elif loc == 'europe':
-            all_annotations = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17))
-        else:
-            pass
-        '''
+            report_qs = report_qs.filter(
+                country__isnull=False
+            ).exclude(
+                country=spain_country
+            )
 
-        if loc == 'spain':
-            hidden_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=-1).filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-            flagged_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=0).filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True).distinct()
-            public_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=1).filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).exclude(report__version_UUID__in=hidden_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True).distinct()
-            hidden_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True, status=-1).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-            flagged_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True, status=0).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-            public_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True, status=1).exclude(report__version_UUID__in=flagged_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-        elif loc == 'europe':
-            hidden_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=-1).filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-            flagged_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=0).filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True).distinct()
-            public_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=1).filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).exclude(report__version_UUID__in=hidden_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True).distinct()
-            hidden_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=-1).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-            flagged_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=0).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-            public_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=1).exclude(report__version_UUID__in=flagged_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values_list('report', flat=True).distinct()
-        else:
-            hidden_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=-1).values_list('report', flat=True).distinct()
-            flagged_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=0).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True).distinct()
-            public_final_reports_superexpert = ExpertReportAnnotation.objects.filter(user__groups__name='superexpert', validation_complete=True,revise=True, status=1).exclude(report__version_UUID__in=hidden_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True).distinct()
-            hidden_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=-1).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=flagged_final_reports_superexpert).values_list('report', flat=True).distinct()
-            flagged_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=0).exclude(report__version_UUID__in=public_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True).distinct()
-            public_final_reports_expert = ExpertReportAnnotation.objects.filter(user__groups__name='expert', validation_complete=True,status=1).exclude(report__version_UUID__in=flagged_final_reports_superexpert).exclude(report__version_UUID__in=hidden_final_reports_superexpert).values_list('report', flat=True).distinct()
-
-        # hidden_final_reports = set(list(hidden_final_reports_superexpert) + list(hidden_final_reports_expert))
-        # flagged_final_reports = set(list(flagged_final_reports_superexpert) + list(flagged_final_reports_expert))
-        # public_final_reports = set(list(public_final_reports_superexpert) + list(public_final_reports_expert))
-        hidden_final_reports = hidden_final_reports_superexpert | hidden_final_reports_expert
-        flagged_final_reports = flagged_final_reports_superexpert | flagged_final_reports_expert
-        public_final_reports = public_final_reports_superexpert | public_final_reports_expert
+        public_final_reports = report_qs.filter_by_status(status=ExpertReportAnnotation.STATUS_PUBLIC)
+        flagged_final_reports = report_qs.filter_by_status(status=ExpertReportAnnotation.STATUS_FLAGGED)
+        hidden_final_reports = report_qs.filter_by_status(status=ExpertReportAnnotation.STATUS_HIDDEN)
 
         if load_new_reports == 'T' or this_user_is_superexpert:
             this_user.userstat.assign_reports()
 
-
-        all_annotations = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult')
-
-
-        my_linked_ids = all_annotations.values('linked_id').distinct()
+        user_assigned_reports = report_qs.filter(expert_report_annotations__user=this_user)
         if this_user_is_expert:
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not pending or pending == 'na'):
                 pending = 'pending'
+
         if this_user_is_superexpert:
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not final_status or final_status == 'na'):
                 final_status = 'public'
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
                 checked = 'unchecked'
-            n_flagged = all_annotations.filter(report__in=flagged_final_reports).count()
-            n_hidden = all_annotations.filter(report__in=hidden_final_reports).count()
-            n_public = all_annotations.filter(report__in=public_final_reports).exclude(report__in=flagged_final_reports).exclude(report__in=hidden_final_reports).count()
 
-            if loc == 'spain':
-                n_unchecked = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).filter(validation_complete=False).count()
-                n_confirmed = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).filter(validation_complete=True, revise=False).count()
-                n_revised = all_annotations.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).filter(validation_complete=True, revise=True).count()
-            elif loc == 'europe':
-                n_unchecked = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).filter(validation_complete=False).count()
-                n_confirmed = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).filter(validation_complete=True, revise=False).count()
-                n_revised = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).filter(validation_complete=True, revise=True).count()
-            else:
-                n_unchecked = all_annotations.filter(validation_complete=False).count()
-                n_confirmed = all_annotations.filter(validation_complete=True, revise=False).count()
-                n_revised = all_annotations.filter(validation_complete=True, revise=True).count()
+            # NOTE: dict where status is key and count is value
+            report_status_count_qs = user_assigned_reports.annotate_final_status().values('final_status').annotate(count=models.Count(1))
+            report_status_count = {
+                item['final_status']: item['count'] 
+                for item in report_status_count_qs
+            }
+            args['n_flagged'] = report_status_count.get(ExpertReportAnnotation.STATUS_FLAGGED, 0)
+            args['n_hidden'] = report_status_count.get(ExpertReportAnnotation.STATUS_HIDDEN, 0)
+            args['n_public'] = report_status_count.get(ExpertReportAnnotation.STATUS_PUBLIC, 0)
+
+            report_user_stats_qs = user_assigned_reports.values(
+                'expert_report_annotations__validation_complete',
+                'expert_report_annotations__revise'
+            ).annotate(
+                validation_complete=models.F('expert_report_annotations__validation_complete'),
+                revise=models.F('expert_report_annotations__revise'),
+                total_count=models.Count(1)
+            ).values('validation_complete', 'revise', 'total_count')
+            report_user_stats = list(report_user_stats_qs)
+
+            args['n_unchecked'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is False)
+            args['n_confirmed'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is True and item['revise'] is False)
+            args['n_revised'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is True and item['revise'] is True)
+
+            args['n_loc_spain'] = user_assigned_reports.filter(country=spain_country).count()
+            args['n_loc_europe'] = user_assigned_reports.filter(country__isnull=False).exclude(country=spain_country).count()
+            args['n_loc_all'] = user_assigned_reports.count()
 
 
-            n_spain = all_annotations.filter( Q(report__country__isnull=True) | Q(report__country__gid=17) ).count()
-            n_europe = all_annotations.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17) ).count()
-
-            args['n_flagged'] = n_flagged
-            args['n_hidden'] = n_hidden
-            args['n_public'] = n_public
-            args['n_unchecked'] = n_unchecked
-            args['n_confirmed'] = n_confirmed
-            args['n_revised'] = n_revised
-            args['n_loc_spain'] = n_spain
-            args['n_loc_europe'] = n_europe
-            args['n_loc_all'] = n_spain + n_europe
-
+        all_annotations = this_user.expert_report_annotations.all()
         if version_uuid and version_uuid != 'na':
-            all_annotations = all_annotations.filter(report__version_UUID=version_uuid)
+            all_annotations = all_annotations.filter(report__pk=version_uuid)
         if linked_id and linked_id != 'na':
             all_annotations = all_annotations.filter(linked_id=linked_id)
         if tags_filter and tags_filter != 'na' and tags_filter!='':
@@ -970,9 +945,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
             # any expert has put on the report
             # these are all (not only yours, but also) the reports that contain the filtered tag
-            everyones_tagged_reports = ExpertReportAnnotation.objects.filter(tags__name__in=tags_array).values('report').distinct()
             # we want the annotations of the reports which contain the tag(s)
-            all_annotations = all_annotations.filter(report__in=everyones_tagged_reports)
+            all_annotations = all_annotations.filter(tags__name__in=tags_array)
         if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter or tags_filter == 'na' or tags_filter==''):
             if year and year != 'all':
                 try:
@@ -983,7 +957,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if tiger_certainty and tiger_certainty != 'all':
                 try:
                     this_certainty = int(tiger_certainty)
-                    #all_annotations = all_annotations.filter(tiger_certainty_category=this_certainty)
                     all_annotations = all_annotations.filter(category__id=this_certainty)
                 except ValueError:
                     pass
@@ -996,8 +969,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if ns_exec and ns_exec != 'all':
                 try:
                     this_exec = int(ns_exec)
-                    annotated_by_exec = ExpertReportAnnotation.objects.filter(validation_complete_executive=True).filter(user_id=this_exec).values('report').distinct()
-                    all_annotations = all_annotations.filter(report_id__in=annotated_by_exec)
+                    all_annotations = all_annotations.filter(validation_complete_executive=True, user_id=this_exec)
                 except ValueError:
                     pass
 
@@ -1006,8 +978,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             elif pending == 'pending':
                 all_annotations = all_annotations.filter(validation_complete=False)
             elif pending == 'favorite':
-                my_favorites = FavoritedReports.objects.filter(user=this_user).values('report__version_UUID')
-                all_annotations = all_annotations.filter(report__version_UUID__in=my_favorites)
+                all_annotations = all_annotations.filter(report__favorites__user=this_user)
             if status == "flagged":
                 all_annotations = all_annotations.filter(status=0)
             elif status == "hidden":
@@ -1023,49 +994,35 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 elif checked == "revised":
                     all_annotations = all_annotations.filter(validation_complete=True, revise=True)
                 elif checked == "favorite":
-                    my_favorites = FavoritedReports.objects.filter(user=this_user).values('report__version_UUID')
-                    all_annotations = all_annotations.filter(report__version_UUID__in=my_favorites)
+                    all_annotations = all_annotations.filter(report__favorites__user=this_user)
 
                 if final_status == "flagged":
                     all_annotations = all_annotations.filter(report__in=flagged_final_reports)
                 elif final_status == "hidden":
                     all_annotations = all_annotations.filter(report__in=hidden_final_reports)
                 elif final_status == "public":
-                    all_annotations = all_annotations.filter(report__in=public_final_reports).exclude(report__in=flagged_final_reports).exclude(report__in=hidden_final_reports)
+                    all_annotations = all_annotations.filter(report__in=public_final_reports)
 
                 if loc == 'spain':
-                    all_annotations = all_annotations.filter( Q(report__country__isnull=True) | Q(report__country__gid=17) )
+                    all_annotations = all_annotations.filter(report__country=spain_country)
                 elif loc == 'europe':
-                    all_annotations = all_annotations.filter( Q(report__country__isnull=False) & ~Q(report__country__gid=17) )
-                else:
-                    pass
+                    all_annotations = all_annotations.filter(report__country__isnull=False).exclude(report__country=spain_country)
 
-        if all_annotations:
-            all_annotations = all_annotations.order_by('-report__creation_time')
-            if orderby == "tiger_score":
-                all_annotations = all_annotations.order_by('category__name')
-            # if orderby == "site_score":
-            #     all_annotations = all_annotations.order_by('site_certainty_category')
-            # elif orderby == "tiger_score":
-            #     all_annotations = all_annotations.order_by('tiger_certainty_category')
+        all_annotations = all_annotations.order_by('-report__server_upload_time')
+        if orderby == "tiger_score":
+            all_annotations = all_annotations.order_by('category__name')
+
         paginator = Paginator(all_annotations, int(tasks_per_page))
-        page = request.GET.get('page', 1)
-        try:
-            objects = paginator.page(page)
-        except PageNotAnInteger:
-            objects = paginator.page(1)
-        except EmptyPage:
-            objects = paginator.page(paginator.num_pages)
-        page_query = all_annotations.filter(id__in=[object.id for object in objects])
-        this_formset = AnnotationFormset(queryset=page_query)
+        page_num = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_num)
+
+        this_formset = AnnotationFormset(queryset=page_obj.object_list)
         args['formset'] = this_formset
-        args['objects'] = objects
-        args['pages'] = range(1, objects.paginator.num_pages+1)
-        #current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).count()
-        current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
+        args['objects'] = page_obj
+        args['pages'] = paginator.page_range
+        current_pending = this_user.userstat.num_pending_annotations
         args['n_pending'] = current_pending
-        #n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).count()
-        n_complete = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=True).filter(report__type='adult').count()
+        n_complete = this_user.userstat.num_completed_annotations
         args['n_complete'] = n_complete
         n_favorites = FavoritedReports.objects.filter(user=this_user).count()
         args['n_favorites'] = n_favorites
@@ -1103,8 +1060,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             else:
                 args['exec_validated_label'] = 'N/A'
         args['tags_filter'] = tags_filter
-        #args['my_version_uuids'] = my_version_uuids
-        args['my_linked_ids'] = my_linked_ids
+        args['my_linked_ids'] = this_user.expert_report_annotations.filter(report__type='adult').values('linked_id').distinct()
         args['tasks_per_page'] = tasks_per_page
         args['note_language'] = note_language
         args['scroll_position'] = scroll_position
@@ -1124,8 +1080,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['ns_list'] = User.objects.filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl')
 
         return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
-    else:
-        return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
 @login_required
 def single_report_view(request,version_uuid=None):

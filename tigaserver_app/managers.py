@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -104,9 +104,50 @@ class ReportQuerySet(models.QuerySet):
             has_finished_validation=state
         )
 
-    def with_blocked_validations(self, days=settings.ENTOLAB_LOCK_PERIOD):
-        from tigacrafting.models import ExpertReportAnnotation
+    def annotate_final_status(self):
+        return self.annotate(
+            superexpert_status=models.Subquery(
+                ExpertReportAnnotation.objects.filter(
+                    report=models.OuterRef('pk'),
+                    user__groups__name='superexpert',
+                    validation_complete=True,
+                    revise=True
+                ).order_by('-last_modified').values('status')[:1],
+                output_field=models.IntegerField()
+            ),
+            worst_expert_status=models.Subquery(
+                ExpertReportAnnotation.objects.filter(
+                    report=models.OuterRef('pk'),
+                    user__groups__name='expert',
+                    validation_complete=True,
+                ).values('status').annotate(
+                    worst_status=models.Case(
+                        models.When(
+                            validation_complete_executive=True, then=models.F('status')
+                        ),
+                        default=models.Min('status')
+                    )
+                ).values('worst_status')[:1],
+                output_field=models.IntegerField()
+            ),
+            final_status=models.Case(
+                models.When(
+                    models.Q(
+                        superexpert_status__isnull=False,
+                    ),
+                    then=models.F('superexpert_status')
+                ),
+                default=models.F("worst_expert_status"),
+                output_field=models.IntegerField()
+            )
+        )
 
+    def filter_by_status(self, status):
+        return self.annotate_final_status().filter(
+            final_status=status
+        )
+
+    def with_blocked_validations(self, days=settings.ENTOLAB_LOCK_PERIOD):
         return self.filter(
             pk__in=ExpertReportAnnotation.objects.blocked(days=days).values('report')
         )
