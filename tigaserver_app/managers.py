@@ -99,7 +99,7 @@ class ReportQuerySet(models.QuerySet):
         ).filter(report=models.OuterRef('pk'))
 
         return self.annotate(
-            has_finished_validation=models.Exists(subquery)
+            has_finished_validation=models.Exists(subquery.values('pk'))
         ).filter(
             has_finished_validation=state
         )
