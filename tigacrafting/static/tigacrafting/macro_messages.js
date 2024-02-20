@@ -17,7 +17,8 @@ var macro_messages = {
             bg: "Снимката е чудесна, тъй като могат да се видят много подробности по тялото на комара. Благодарим за участието. Добра работа!",
             fr: "La photo est spectaculaire et montre beaucoup de détails du corps du moustique. Merci de votre participation. Très bien fait!",
             nl: "Dit is een erg mooie foto omdat er veel details zichtbaar zijn op het lichaam van de mug. Bedankt voor uw deelname. Goed werk!",
-            hu: "Nagyon jó és látványos kép, mivel a szúnyog testének sok részlete látszik rajta. Köszönjük a részvételt! Nagyszerű munka!"
+            hu: "Nagyon jó és látványos kép, mivel a szúnyog testének sok részlete látszik rajta. Köszönjük a részvételt! Nagyszerű munka!",
+            sv: "Denna bild är enastående eftersom man kan se många detaljer på myggans kropp. Tack för ditt deltagande. Jättebra jobbat!"
         },
         not_sure_photo:{
             es: "Con esta foto no podemos identificar ninguna especie, ya que está borrosa y no se reconocen las características típicas de ninguna de ellas. Aun así, tu observación sigue siendo útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -36,7 +37,8 @@ var macro_messages = {
             bg: "С тази снимка не можем да идентифицираме нито един вид комари, защото е размазана и не могат да се разпознаят типичните белези на нито един от тях. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "L'identification d'une espècie n'est pas possible sur cette image qui est trop floue et ne montre pas suffisamment de traits pour la reconnaître. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "We kunnen geen muggensoort identificeren met deze foto omdat de foto wazig is en de typische kenmerken om muggensoorten van elkaar te onderscheiden hierdoor niet zichtbaar zijn. Toch is deze observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Sajnos ezzel a képpel nem tudunk azonosítani egyetlen szúnyogfajt sem, mert homályos és nem ismerhetőek fel egyik faj jellemző tulajdonságai sem. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra! A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Sajnos ezzel a képpel nem tudunk azonosítani egyetlen szúnyogfajt sem, mert homályos és nem ismerhetőek fel egyik faj jellemző tulajdonságai sem. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra! A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Med denna bild kan vi inte identifiera någon myggart eftersom den är suddig och man kan inte se några artspecifika karaktärer. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         },
         other_species:{
             es: "Esta foto parece ser de otra especie de mosquito, ya que no se parece a ninguna de las que buscamos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -55,7 +57,8 @@ var macro_messages = {
             bg: "Снимката не прилича на никой от нашите целеви видове комари, тъй като изглежда комерът е от друг вид. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Cette image ne ressemble pas à nos moustiques ciblés, s'agissant probablement d'une autre espèce. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "De mug op deze foto lijkt niet op een van onze doelsoorten, het lijkt op een andere muggensoort. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Ez a kép nem hasonlít egyik keresett szúnyogunkra sem, mivel úgy tűnik, hogy egy másik faj. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Ez a kép nem hasonlít egyik keresett szúnyogunkra sem, mivel úgy tűnik, hogy egy másik faj. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Denna bild ser inte ut att vara på en av våra målarter, utan av en annan stickmyggart. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         },
         other_insect: {
             es: "Esta foto muestra un insecto que no es un mosquito verdadero, es decir, no pertenece a la familia de los Culícidos. En www.mosquitoalert.com encontrarás trucos para reconocer estas especies y atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -74,7 +77,8 @@ var macro_messages = {
             bg: "На снимката е насекомо, което не е истински комар от семейство Culicidae. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Cette image décrit un insecte qui n'est pas un vrai moustique appartenant à la famille des Culicidés. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "Het insect op deze foto is geen mug uit de Culicidae familie. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en maken van foto's van deze insecten. Blijf alstublieft foto's insturen.",
-            hu: "Ezen a képen egy olyan rovar látható, amely nem az igazi szúnyogok (Culicidae) családjába tartozik. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Ezen a képen egy olyan rovar látható, amely nem az igazi szúnyogok (Culicidae) családjába tartozik. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Denna bild visar en insekt som inte är en stickmygga från familjen Culicidae. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         },
         conflict: {
             es: "Estamos seguros que este mosquito pertenece a una de las dos especies. Sin embargo, no nos es posible afirmar a cuál de ellas.",
@@ -93,7 +97,8 @@ var macro_messages = {
             bg: "Сигурни сме, че този комар принадлежи към един от двата вида. Не е възможно обаче да се каже кой.",
             fr: "Nous sommes certains que ce moustique appartient à l'une des deux espèces. Toutefois, il n'est pas possible d'établir laquelle. ",
             nl: "We zijn er zeker van dat deze mug tot een van de twee soorten behoort. We kunnen helaas niet zeggen welke.",
-            hu: "Biztosak vagyunk benne, hogy ez a szúnyog a két faj valamelyikébe tartozik. Azt azonban nem lehet megmondani, hogy melyik."
+            hu: "Biztosak vagyunk benne, hogy ez a szúnyog a két faj valamelyikébe tartozik. Azt azonban nem lehet megmondani, hogy melyik.",
+            sv: "Vi är säkra på att myggan hör till en av de två arterna. Det är dock inte möjligt att veta vilken."
         },
         yes_thorax_pattern:{
             es: "¡Muy buena foto! Has conseguido que se pueda identificar perfectamente al mosquito ya que se ven muy bien sus características típicas. ¡Gracias por participar!",
@@ -112,7 +117,8 @@ var macro_messages = {
             bg: "Много добра снимка! Успяхте да улесните разпознаването на комара, защото могат ясно да се видят характерните белези на вида. Благодарим за участието!",
             fr: "Très bonne image! Vous avez réussi à rendre le moustique facile à identifier puisque les détails typiques de l'espèce sont bien visibles. Merci de votre participation!",
             nl: "Een erg goede foto! De mug is makkelijk te identificeren omdat de karakteristieke kenmerken van deze soort goed zichtbaar zijn. Bedankt voor uw deelname!",
-            hu: "Nagyon jó kép! Ez alapján sikerült könnyen felismerni a szúnyogot, mert világosan észrevehetőek a faj jellemző vonásai. Köszönjük a részvételt!"
+            hu: "Nagyon jó kép! Ez alapján sikerült könnyen felismerni a szúnyogot, mert világosan észrevehetőek a faj jellemző vonásai. Köszönjük a részvételt!",
+            sv: "Mycket bra bild! Du har lyckats göra myggan lätt att identifiera eftersom man tydlig kan se de artspecifika karaktärerna. Tack för ditt deltagande!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente la especie del mosquito. No se aprecian lo suficientemente bien las características típicas. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -131,7 +137,8 @@ var macro_messages = {
             bg: "От тази снимка не можем да бъдем напълно сигурни за вида на комара.  Типичните белези не могат да се видят достатъчно добре. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Sur cette image nous ne pouvons pas assurer de quelle espèce il s'agit, puisque les détails nécéssaires ne sont pas suffisamment visibles. Toutefois, votre observation est utile.  Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "Met deze foto kunnen we niet met zekerheid zeggen om welke muggensoort het gaat. De kenmerken zijn niet goed genoeg zichtbaar. Toch is uw observatie belangrijk. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Sajnos ezzel a képpel nem lehetünk biztosak a szúnyog fajban. Nem látszanak eléggé a faj jellemző vonásai. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra! A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Sajnos ezzel a képpel nem lehetünk biztosak a szúnyog fajban. Nem látszanak eléggé a faj jellemző vonásai. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra! A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Med denna bild kan vi inte säkert säga vilken myggart det är. Man kan inte se de artspecifika karaktärerna bra nog. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         },
         discovery:{
             es: "¡Enhorabuena! Tu foto es muy importante, ya que posiblemente has encontrado un mosquito en una zona con poca información sobre la distribución de esta especie. Si encuentras más, no dudes en enviar más observaciones y fotos. ¡Gracias por participar!",
@@ -150,7 +157,8 @@ var macro_messages = {
             bg: "Поздравления! Вашата снимка е много важна, защото вероятно сте открили комар в зона с малко информация за разпространението на този вид. Ако намерите повече, моля изпратете още наблюдения и снимки. Благодарим за участието!",
             fr: "Félicitations! Votre image est très importante puisque vous avez très probablement trouvé une espèce sur une région où peu d'information en était disponible. Si vous en trouvez davantage, nous vous prions de nous en envoyer des nouvelles observations et des photos. Merci de votre participation!",
             nl: "Gefeliciteerd! Uw foto is erg belangrijk, omdat u waarschijnlijk een mug hebt gevonden in een gebied met weinig informatie over de verspreiding van deze soort. Stuur alstublieft meer observaties en foto's wanneer u meer exemplaren tegen komt.",
-            hu: "Gratulálunk! A képed nagyon fontos, mert valószínűleg találtál egy szúnyogot egy olyan területen, ahonnan még kevés információnk van ennek a fajnak az előfordulásáról. Ha többet is találsz, kérünk küldj még további megfigyeléseket és képeket! Köszönjük a részvételt!"
+            hu: "Gratulálunk! A képed nagyon fontos, mert valószínűleg találtál egy szúnyogot egy olyan területen, ahonnan még kevés információnk van ennek a fajnak az előfordulásáról. Ha többet is találsz, kérünk küldj még további megfigyeléseket és képeket! Köszönjük a részvételt!",
+            sv: "Grattis! Din bild är väldigt viktig för du har antagligen hittat en mygga i ett område med väldigt lite information om denna arts utbredning. Skicka gärna ytterligare observationer och bilder om du hittar fler. Tack för ditt deltagande!"
         },
         contact:{
             es: "Nos interesa mucho tu observación, ya que podría ser un descubrimiento excepcional. Si puedes, envíanos más fotos. Para explicarnos más detalles contacta con nosotros a través del e-mail info@mosquitoalert.com. Gracias por participar, ¡gran trabajo!",
@@ -169,7 +177,8 @@ var macro_messages = {
             bg: "Много сме заинтересовани от Вашето наблюдение, защото това може да бъде изключително откритие. Ако можете, моля изпратете ни още снимки. За да предоставите по-подробна информация, моля, свържете се с нас по имейл info@mosquitoalert.com. Благодарим за участието, страхотна работа!",
             fr: "Nous portons un grand intérêt à votre observation, qui pourrait être une découverte exceptionelle. Si vous pouvez, envoyez-nous encore d'autres images. Pour nous rapporter des informations nous vous prions de nous contacter sur info@mosquitoalert.com. Merci de votre participation par ce beau travail!",
             nl: "We zijn erg geïnteresseerd in uw observatie, het zou een uitzonderlijke vondst kunnen zijn. Stuur alstublieft meer foto's wanneer mogelijk. Voor het aanleveren van gedetailleerde informatie over uw vondst kunt u contact opnemen met info@mosquitoalert.com. Bedankt voor uw deelname!",
-            hu: "Nagyon érdekes számunkra a megfigyelésed, mert kivételes felfedezés lehet. Ha tudsz, küldj nekünk további képeket! Részletesebb információkért kérjük, lépj velünk kapcsolatba az info@mosquitoalert.com e-mail címen. Köszönjük a részvételt, nagyszerű munka!"
+            hu: "Nagyon érdekes számunkra a megfigyelésed, mert kivételes felfedezés lehet. Ha tudsz, küldj nekünk további képeket! Részletesebb információkért kérjük, lépj velünk kapcsolatba az info@mosquitoalert.com e-mail címen. Köszönjük a részvételt, nagyszerű munka!",
+            sv: "Vi är väldigt intresserade av din observation, eftersom det skulle kunna vara en exceptionell upptäckt. Om du kan, skicka oss gärna fler bilder. För att lämna mer detaljerad information, var god kontakta oss via email info@mosquitoalert.com. Tack för ditt deltagande, väldigt bra jobbat!"
         }
     },
     albopictus:{        
@@ -190,7 +199,8 @@ var macro_messages = {
             bg: "Много добра снимка! Успяхте да улесните разпознаването на тигровия комар, защото ясно може да се види характерната бяла ивица на гърба, освен другите белези. Благодарим за участието!",
             fr: "Très belle image! Vous avez réussi à rendre facile à identifier ce Moustique Tigre puisque la typique ligne blanche sur le thorax est très visible, en plus d'autres traits. Merci de votre participation!",
             nl: "Een erg goede foto! De door u gefotografeerde Aziatische tijgermug was makkelijk te identificeren, de karakteristieke witte streep op het borststuk is goed zichtbaar. Bedankt voor uw deelname!",
-            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a tigrisszúnyogot, mert eltekintve más karakterektől, a tor jellegzetes fehér csíkja jól látható. Köszönjük a részvételt!"
+            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a tigrisszúnyogot, mert eltekintve más karakterektől, a tor jellegzetes fehér csíkja jól látható. Köszönjük a részvételt!",
+            sv: "Mycket bra bild! Du har lyckats göra det lätt att identifiera tigermyggan eftersom man tydligt kan se den karaktäristiska vita linjen på mellankroppen, och andra karaktärer. Tack för ditt deltagande!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un mosquito tigre. No se ve bien la típica línea blanca en el tórax, aunque sí que se ven otras características del mosquito tigre. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -209,7 +219,8 @@ var macro_messages = {
             bg: "От тази снимка не можем да бъдем напълно сигурни, че става дума за тигров комар. Не може да се види типичната бяла ивица на гърба, но могат да се видят други типични белези на тигровия комар. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Sur cette image nous ne pouvons pas assurer tout à fait qu'il s'agisse d'un Moustique Tigre. La ligne blanche sur le thorax n'est pas visible, bien que d'autres trait typiques le soient. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "Met deze foto kunnen we niet vaststellen of het om een tijgermug gaat. De typische witte streep op het borststuk is niet zichtbaar, maar andere typische kenmerken van de Aziatische tijgermug zijn wel zichtbaar. Toch is uw observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy tigrisszúnyog. Nem látható a tor jellegzetes fehér csíkja, de a tigrisszúnyogok más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy tigrisszúnyog. Nem látható a tor jellegzetes fehér csíkja, de a tigrisszúnyogok más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Med denna bild kan vi inte vara helt säkra på om det är en tigermygga. Man kan inte se det typiska vita strecket på mellankroppen, men man kan se andra typiska karaktärer hos en tigermygga. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         }                   
     },
     aegypti:{
@@ -230,7 +241,8 @@ var macro_messages = {
             bg: "Много добра снимка! Успяхте да улесните идентифицирането на комара на жълтата треска, защото ясно може да се види характерната лировидна шарка на гърба, освен другите белези. Благодарим за участието!",
             fr: "Très belle image! Vous avez réussi à rendre facile à identifier ce moustique de la fièvre jaune puisque la typique forme en lyre sur le thorax est très visible, en plus d'autres traits. Merci de votre participation!",
             nl: "Een erg goede foto! De door u gefotografeerde gelekoortsmug was makkelijk te identificeren, de karakteristieke lier vorm op het borststuk was duidelijk zichtbaar. Bedankt voor uw deelname!",
-            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a sárgaláz szúnyogot, mert eltekintve más karakterektől, a tor jellegzetes lant alakú mintázata jól látható. Köszönjük a részvételt!"
+            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a sárgaláz szúnyogot, mert eltekintve más karakterektől, a tor jellegzetes lant alakú mintázata jól látható. Köszönjük a részvételt!",
+            sv: "Mycket bra bild! Du har lyckats göra det lätt att identifiera gula febern myggan eftersom man tydligt kan se det karaktäristiska lyrmönstret på mellankroppen, och andra karaktärer. Tack för ditt deltagande!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un mosquito de la fiebre amarilla. No se ve bien el típico dibujo en forma de lira en el tórax, aunque sí que se ven otras características del mosquito de la fiebre amarilla. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -249,7 +261,8 @@ var macro_messages = {
             bg: "От тази снимка не можем да бъдем напълно сигурни, че става дума за комара на жълтата треска. Не може да се види характерната лировидна шарка на гърба, но могат да се видят други типични белези на комара на жълтата треска. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Sur cette image nous ne pouvons pas assurer tout à fait qu'il s'agisse d'un moustique à la fièvre jaune. Le dessin en lyre sur le thorax n'est pas visible, bien que d'autres trait typiques le soient. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "Met deze foto kunnen we niet vaststellen of het om een gelekoortsmug gaat. De typische liervormige markeringen op het borststuk zijn niet zichtbaar, maar andere typische kenmerken van de gelekoortsmug zijn wel zichtbaar. Toch is uw observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy sárgaláz szúnyog. Nem látható a tor jellegzetes lant alakú mintázata, de a sárgaláz szúnyog más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy sárgaláz szúnyog. Nem látható a tor jellegzetes lant alakú mintázata, de a sárgaláz szúnyog más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Med denna bild kan vi inte vara helt säkra på att det är en gula febern mygga. Man kan inte se det typiska lyrformade mönstret på mellankroppen, men man kan se andra typiska karaktärer hos gula febern myggan. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         }
     },
     japonicus:{
@@ -270,7 +283,8 @@ var macro_messages = {
             bg: "Много добра снимка! Успяхте да улесните разпознаването на Aedes japonicus, защото може ясно да се види характерната шарка на гърба, заедно с белите ивици на краката. Благодарим за участието!",
             fr: "Très belle image! Vous avez réussi à rendre facile à identifier cet Aedes japonicus  puisque le typique dessin sur le thorax est très visible, en plus des pattes ornées de franges blanches. Merci de votre participation!",
             nl: "Een erg goede foto! De door u gefotografeerde Aziatische bosmug was makkelijk te identificeren, de karakteristieke vorm op het borststuk en de gestreepte poten waren duidelijk zichtbaar. Bedankt voor uw deelname!",
-            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a japán bozótszúnyogot, mert a tor jellegzetes mintázata és a lábakon lévő fehér gyűrűk jól látszanak. Köszönjük a részvételt!"
+            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a japán bozótszúnyogot, mert a tor jellegzetes mintázata és a lábakon lévő fehér gyűrűk jól látszanak. Köszönjük a részvételt!",
+            sv: "Mycket bra bild! Du har lyckats göra det lätt att identifiera Aedes japonicus eftersom man tydligt kan se det karaktäristiska mönstret på mellankroppen och benen med vita ränder. Tack för ditt deltagande!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un Aedes japonicus. No se ve bien la forma característica del tórax y las rayas blancas en las patas, aunque se aprecian otras características típicas del Aedes japonicus. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -289,7 +303,8 @@ var macro_messages = {
             bg: "От тази снимка не можем да бъдем напълно сигурни, че става дума за комара Aedes japonicus. Не могат едновременно да се видят шарката на гърба и ивиците на краката, но могат да се видят други характерни белези на Aedes japonicus. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Sur cette image nous ne pouvons pas assurer tout à fait qu'il s'agisse d'un Aedes japonicus. Le dessin sur le thorax n'est pas visible en même temps que les pattes ornées de franges blanches. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "Met deze foto kunnen we niet vaststellen of het om een Aziatische bosmug gaat. De typische markeringen op het borststuk en de gestreepte poten zijn niet beiden zichtbaar. Toch is uw observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy japán bozótszúnyog. Nem látható a tor jellegzetes mintázata és a lábak gyűrűi, de a japán bozótszúnyog más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy japán bozótszúnyog. Nem látható a tor jellegzetes mintázata és a lábak gyűrűi, de a japán bozótszúnyog más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Med denna bild kan vi inte vara helt säkra på att det är en Aedes japonicus mygga. Man kan inte samtidigt se mönstret på mellankroppen och ränderna på benen, men man kan se andra typiska karaktärer hos Aedes japonicus. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         }
     },
     koreicus:{
@@ -310,7 +325,8 @@ var macro_messages = {
             bg: "Много добра снимка! Успяхте да улесните разпознаването на Aedes koreicus, защото може ясно да се види характерната шарка на гърба, заедно с белите ивици на крака. Благодарим за участието!",
             fr: "Très belle image! Vous avez réussi à rendre facile à identifier cet Aedes koreicus puisque le typique dessin sur le thorax est bien visible, en plus des pattes ornées de franges blanches. Merci de votre participation!",
             nl: "Een erg goede foto! De door u gefotografeerde Aedes koreicus mug was makkelijk te identificeren, de karakteristieke vorm op het borststuk en de gestreepte poten waren duidelijk zichtbaar. Bedankt voor uw deelname!",
-            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a koreia szúnyogot, mert a tor jellegzetes mintázata és a lábakon lévő fehér gyűrűk jól látszanak. Köszönjük a részvételt!"
+            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a koreia szúnyogot, mert a tor jellegzetes mintázata és a lábakon lévő fehér gyűrűk jól látszanak. Köszönjük a részvételt!",
+            sv: "Mycket bra bild! Du har lyckats göra det lätt att identifiera Aedes koreicus eftersom man tydligt kan se det karaktäristiska mönstret på mellankroppen och benen med vita ränder. Tack för ditt deltagande!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un Aedes koreicus. No se ve bien la forma característica del tórax y las rayas blancas en las patas, aunque se aprecian otras características típicas del Aedes koreicus. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -329,7 +345,8 @@ var macro_messages = {
             bg: "От тази снимка не можем да бъдем напълно сигурни, че става дума за комара Aedes koreicus. Не могат едновременно да се видят шарката на гърба и ивиците на краката, но могат да се видят други характерни белези на Aedes koreicus. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Sur cette image nous ne pouvons pas assurer tout à fait qu'il s'agisse d'un Aedes koreicus. Le dessin sur le thorax n'est pas visible en même temps que les pattes ornées de franges blanches. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "Met deze foto kunnen we niet vaststellen of het om een Aedes koreicus mug gaat. De typische markeringen op het borststuk en de gestreepte poten zijn niet beiden zichtbaar. Toch is uw observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy koreai szúnyog. Nem látható a tor jellegzetes mintázata és a lábak gyűrűi, de a koreai szúnyog más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy koreai szúnyog. Nem látható a tor jellegzetes mintázata és a lábak gyűrűi, de a koreai szúnyog más tipikus karakterei látszanak. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Med denna bild kan vi inte vara helt säkra på att det är en Aedes koreicus mygga. Man kan inte samtidigt se både mönstret på mellankroppen och ränderna på benen, men man kan se andra typiska karaktärer hos Aedes koreicus. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         }
     },
     culex:{
@@ -350,7 +367,8 @@ var macro_messages = {
             bg: "Много добра снимка! Успяхте да улесните разпознаването на обикновения домашен комар. Благодарим за участието!",
             fr: "Très belle image! Vous avez réussi à rendre facile à identifier ce moustique commun. Merci de votre participation!",
             nl: "Een erg goede foto! De door u gefotografeerde huissteekmug was makkelijk te identificeren. Bedankt voor uw deelname!",
-            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a dalos szúnyogot. Köszönjük a részvételt!"
+            hu: "Nagyon jó kép! Sikerült könnyen azonosítani a dalos szúnyogot. Köszönjük a részvételt!",
+            sv: "Mycket bra bild! Du har lyckats göra det lätt att identifiera husmyggan. Tack för ditt deltagande!"
         },
         no_thorax_pattern:{
             es: "Con esta foto no podemos asegurar totalmente que sea un Culex. No pueden verse simultáneamente suficientes rasgos, aunque algunas características del mosquito común están presentes. Aun así, tu observación sigue siendo muy útil. En www.mosquitoalert.com encontrarás trucos para atrapar y fotografiar estos insectos. ¡Envía más fotos!",
@@ -369,7 +387,8 @@ var macro_messages = {
             bg: "От тази снимка не можем да бъдем напълно сигурни, че става дума за комар Culex. Не могат едновременно да се видят достатъчно белези, въпреки че присъстват и други характерни белези на обикновения домашен комар. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
             fr: "Sur cette image nous ne pouvons pas assurer tout à fait qu'il s'agisse d'un moustique Culex. Un nombre insuffisant de traits morphologiques y est visible, bien que certains d'autres, propres au moustique commun, y sont bien présents. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
             nl: "Met deze foto kunnen we niet vaststellen of het om een huissteekmug gaat. Er zijn niet genoeg kenmerken van de huissteekmug zichtbaar. Toch is uw observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy dalos szúnyog. Nem látható egyszerre elég jellemvonás, bár a dalos szúnyog általános karakterei megfigyelhetőek. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+            hu: "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy dalos szúnyog. Nem látható egyszerre elég jellemvonás, bár a dalos szúnyog általános karakterei megfigyelhetőek. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+            sv: "Med denna bild kan vi inte vara helt säkra på att det är en Culexmygga. Man kan inte se tillräckligt många karaktärer samtidigt, även om man kan se några typiska karaktärer hos husmyggan. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!"
         }
     }
 };
