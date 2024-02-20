@@ -832,7 +832,7 @@ def topics_subscribed(request):
         usr = TigaUser.objects.get(pk=user)
     except TigaUser.DoesNotExist:
         raise ParseError(detail='no user with this id')
-    subs = UserSubscription.objects.filter(user=user)
+    subs = UserSubscription.objects.filter(user=user).select_related("topic")
     serializer = UserSubscriptionSerializer(subs,many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
