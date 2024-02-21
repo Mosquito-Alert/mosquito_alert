@@ -111,17 +111,6 @@ def get_oe_rates(fix_list, report_list):
     return result
 
 
-def get_latest_reports(reports):
-    unique_report_ids = set([r.report_id for r in reports])
-    result = list()
-    for this_id in unique_report_ids:
-        these_reports = sorted([report for report in reports if report.report_id == this_id],
-                               key=attrgetter('version_number'))
-        if these_reports[0].version_number > -1:
-            result.append(these_reports[-1])
-    return result
-
-
 def show_map(request, report_type='adults', category='all', data='live', detail='none', validation=''):
     # set up hrefs and redirects
     if detail == 'detailed':
@@ -142,7 +131,7 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
 
     # set up reports for coverage
     if report_type == 'coverage':
-        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+        these_reports = Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
         coverage_areas = get_coverage(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
         this_title = _('coverage-map')
         context = {'coverage_list': coverage_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
@@ -150,7 +139,7 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
 
     # set up reports for oe-rates
     if report_type == 'oe':
-        these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+        these_reports = Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
         oe_areas = get_oe_rates(Fix.objects.filter(fix_time__gt='2014-06-13'), these_reports)
         this_title = _('Pseudo Occurrence-Exposure Map')
         context = {'area_list': oe_areas, 'title': this_title, 'redirect_to': redirect_path, 'hrefs': hrefs}
@@ -160,13 +149,13 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
     elif report_type == 'adults':
         if category == 'crowd_validated':
             this_title = _('Adult tiger mosquitoes: Validated reports')
-            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).annotate(n_responses=Count('photos__crowdcraftingtask__responses')).filter(n_responses__gte=30))
+            these_reports = Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).annotate(n_responses=Count('photos__crowdcraftingtask__responses')).filter(n_responses__gte=30)
             if these_reports:
                     report_list = filter(lambda x: x.get_crowdcrafting_score() is not None, these_reports)
             else:
                 report_list = None
         else:
-            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+            these_reports = Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
             if category == 'medium':
                 this_title = _('adult-tiger-mosquitoes-medium-and-high-probability-reports')
                 if these_reports:
@@ -187,13 +176,13 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
     elif report_type == 'sites':
         if category == 'crowd_validated':
             this_title = _('Breeding Sites: Validated reports')
-            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).annotate(n_responses=Count('photos__crowdcraftingtask__responses')).filter(n_responses__gte=30))
+            these_reports = Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).annotate(n_responses=Count('photos__crowdcraftingtask__responses')).filter(n_responses__gte=30)
             if these_reports:
                 report_list = filter(lambda x: x.get_crowdcrafting_score() is not None, these_reports)
             else:
                 report_list = None
         else:
-            these_reports = get_latest_reports(Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+            these_reports = Report.objects.exclude(hide=True).filter(type='site').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
             # TODO change these list comprehensions to filters if it gains speed (not sure it would)
             if category == 'drains_fountains':
                 this_title = _('breeding-sites-storm-drains-and-fountains')
@@ -212,7 +201,7 @@ def show_map(request, report_type='adults', category='all', data='live', detail=
                 report_list = these_reports
     else:
         this_title = _('adult-tiger-mosquitoes-all-reports')
-        report_list = get_latest_reports(Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)))
+        report_list = Report.objects.exclude(hide=True).filter(type='adult').filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
     context = {'title': this_title, 'report_list': report_list, 'report_type': report_type,
                'redirect_to': redirect_path, 'hrefs': hrefs, 'detailed': detail, 'validation': validation}
     return render(request, 'tigamap/report_map.html', context)
@@ -226,9 +215,9 @@ def show_detailed_map(request, report_type='adults', category='all', data='live'
 
 @xframe_options_exempt
 def show_embedded_webmap(request, detail='none'):
-    these_reports = get_latest_reports(Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
+    these_reports = Report.objects.filter(Q(package_name='Tigatrapp',  creation_time__gte=date(2014, 6, 24)) |
                                                                  Q(package_name='ceab.movelab.tigatrapp',
-                                                                   package_version__gt=3)).filter(type='adult').exclude(hide=True))
+                                                                   package_version__gt=3)).filter(type='adult').exclude(hide=True)
     context = {'report_list': these_reports, 'detailed': detail}
     return render(request, 'tigamap/embedded.html', context)
 
