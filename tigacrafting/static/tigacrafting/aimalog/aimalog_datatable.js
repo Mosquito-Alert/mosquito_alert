@@ -63,6 +63,7 @@ $(document).ready(function () {
             {'data': 'nuts_three'},
             {'data': 'municipality'},
             {'data': 'alert_sent'},
+            {'data': 'ia_hit'},
         ],
         'columnDefs': [
             /*{'targets': 0,'title': 'xvb'}*/
@@ -82,14 +83,21 @@ $(document).ready(function () {
             ,{'targets': 9,'title': 'nuts_2'}
             ,{'targets': 10,'title': 'nuts_3'}
             ,{'targets': 11,'title': 'municipality'}
-            ,{ 'targets': 13, 'data': null, 'sortable': false,
+            ,{'targets': 12,'title': 'alert_sent'}
+            ,{
+                'targets': 13, 'data': null, 'sortable': false, 'title': 'Alert validation',
+                'render': function(value){
+                    if(value){
+                        return '<h4 style="color:red;"><span title="Correct alert" class="glyphicon glyphicon-certificate"></span></h4>';
+                    }else{
+                        return '<h4 style="color:green;"><span title="Incorrect alert" class="glyphicon glyphicon-ban-circle"></span></h4>';
+                    }
+                }
+            }
+            ,{
+                'targets': 14, 'data': null, 'sortable': false,
                 'render': function(value){
                     return '<a title="Process alert" class="review_button btn btn-success" href="/aimalog/process_ui/' + value.report_id + '/' + value.id + '/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>';
-                    /*if(value.alert_sent == true){
-                        return '<a class="review_button btn btn-info" href="#" target="_blank"><i class="fa fa-eye" aria-hidden="true"></i></a>';
-                    }else{
-                        return '<a title="Process alert" class="review_button btn btn-success" href="/aimalog/process_ui/' + value.report_id + '/' + value.id + '/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>';
-                    }*/
                 }
             }
         ]

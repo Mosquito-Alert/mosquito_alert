@@ -437,10 +437,16 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
     nuts_two = serializers.SerializerMethodField()
     nuts_three = serializers.SerializerMethodField()
     municipality = serializers.SerializerMethodField()
+    ia_hit = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
-        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent')
+        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit')
+
+    def get_ia_hit(self,obj):
+        if obj.species == obj.review_species:
+            return True
+        return False
 
     def get_country(self, obj):
         nuts_dict_instance = NutsDict()
