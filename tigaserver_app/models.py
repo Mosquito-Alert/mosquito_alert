@@ -756,7 +756,7 @@ class Report(TimeZoneModelMixin, models.Model):
             total += 1
             if "Y" in response.answer or "S" in response.answer:
                 response_score += 1
-            elif "No" in response.values():
+            elif "No" in response.answer:
                 response_score -= 1
         if total == 0:
             total = 1
