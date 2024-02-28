@@ -56,14 +56,14 @@
 <body>
     <div class="container">
         <h1 class="text-center">Process Alert</h1>
-        <h3>Alert status</h3>
+        <h3>Review Alert status</h3>
         <div class="alert_info_wrapper alert alert-info">
             <div class="row">
                 <div class="col-md-3">
                     {% if alert.alert_sent %}
-                        <h1><span class="label label-success">Processed</span></h1>
+                        <h1><span title="This Alert has been reviewed" class="label label-success">Processed</span></h1>
                     {% else %}
-                        <h1><span class="label label-warning">Unprocessed</span></h1>
+                        <h1><span title="This Alert has yet to be reviewed" class="label label-warning">Unprocessed</span></h1>
                     {% endif %}
                 </div>
                 <div class="col-md-9">
@@ -133,6 +133,13 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Current alert status</h4>
+                    <div class="alert_info_wrapper alert alert-success">
+                        <h1><span class="label label-danger" title="According to the location and IA ID, this constitutes an Alert">Alert</span></h1>
+                    </div>
+                </div>
         </div>
         <h3>Report information</h3>
         <div class="report_info_wrapper alert alert-info">

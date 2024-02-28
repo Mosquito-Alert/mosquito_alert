@@ -67,7 +67,7 @@
         <div class="alert alert-info" role="alert">
             <form class="form-horizontal">
                 <div class="form-group">
-                    <label for="date_from" class="col-sm-1 control-label">Processed filter</label>
+                    <label for="" class="col-sm-1 control-label">Processed filter</label>
                     <div class="col-sm-5">
                         <div class="btn-group" data-toggle="buttons">
                           <label class="btn btn-default active">
@@ -78,6 +78,25 @@
                           </label>
                           <label class="btn btn-default">
                             <input type="radio" name="processed" value="unprocessed" id="unprocessed">Unprocessed
+                          </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="" class="col-sm-1 control-label">Species validation</label>
+                    <div class="col-sm-5">
+                        <div class="btn-group" data-toggle="buttons">
+                          <label class="btn btn-default active">
+                            <input type="radio" name="ia_hit" value="all_alert" id="all_alert">All
+                          </label>
+                          <label class="btn btn-default">
+                            <input type="radio" name="ia_hit" value="pending" id="pending">Pending <span title="Not yet evaluated" class="glyphicon glyphicon glyphicon-question-sign"></span>
+                          </label>
+                          <label class="btn btn-default">
+                            <input type="radio" name="ia_hit" value="alert_ok" id="alert_ok">Correct alert <span title="Correct alert" class="glyphicon glyphicon-certificate"></span>
+                          </label>
+                        <label class="btn btn-default">
+                            <input type="radio" name="ia_hit" value="alert_ko" id="alert_ko">Incorrect alert <span title="Incorrect alert" class="glyphicon glyphicon-ban-circle"></span>
                           </label>
                         </div>
                     </div>

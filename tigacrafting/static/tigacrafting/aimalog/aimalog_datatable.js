@@ -85,12 +85,14 @@ $(document).ready(function () {
             ,{'targets': 11,'title': 'municipality'}
             ,{'targets': 12,'title': 'alert_sent'}
             ,{
-                'targets': 13, 'data': null, 'sortable': false, 'title': 'Alert validation',
+                'targets': 13, 'data': null, 'sortable': false, 'title': 'Species validation',
                 'render': function(value){
-                    if(value){
+                    if(value == true){
                         return '<h4 style="color:red;"><span title="Correct alert" class="glyphicon glyphicon-certificate"></span></h4>';
-                    }else{
+                    }else if(value == false){
                         return '<h4 style="color:green;"><span title="Incorrect alert" class="glyphicon glyphicon-ban-circle"></span></h4>';
+                    }else{
+                        return '<h4 style="color:gray;"><span title="Not yet evaluated" class="glyphicon glyphicon glyphicon-question-sign"></span></h4>';
                     }
                 }
             }

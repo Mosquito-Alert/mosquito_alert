@@ -444,6 +444,8 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
         fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit')
 
     def get_ia_hit(self,obj):
+        if obj.review_species == None or obj.review_species == '':
+            return None
         if obj.species == obj.review_species:
             return True
         return False

@@ -8,7 +8,7 @@ from django.dispatch import receiver
 import tigacrafting.html_utils as html_utils
 import pytz
 from tigacrafting.json_filter import append_chain_query
-from django.db.models import Q
+from django.db.models import Q, F
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -660,6 +660,20 @@ class Alert(models.Model):
                     accum_query = append_chain_query(accum_query, Q(alert_sent=True))
                 elif processed == 'unprocessed':
                     accum_query = append_chain_query(accum_query, Q(alert_sent=False))
+                else:
+                    pass
+        except KeyError:
+            pass
+
+        try:
+            ia_hit = json_filter['ia_hit']
+            if ia_hit and ia_hit != '':
+                if ia_hit == 'pending':
+                    accum_query = append_chain_query(accum_query, Q(review_species__isnull=True) | Q(review_species=''))
+                elif ia_hit == 'alert_ok':
+                    accum_query = append_chain_query(accum_query, ~Q(review_species='') & Q(review_species=F('species')))
+                elif ia_hit == 'alert_ko':
+                    accum_query = append_chain_query(accum_query, ~Q(review_species='') & ~Q(review_species=F('species')))
                 else:
                     pass
         except KeyError:

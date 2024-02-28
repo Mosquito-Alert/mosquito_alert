@@ -73,6 +73,7 @@
         $('#review_status').val( "" );
         $('#nuts_0').val( "" );
         $('#all').closest('.btn').button('toggle');
+        $('#all_alert').closest('.btn').button('toggle');
         this.resetAllDropDown();
     }
 
@@ -80,6 +81,10 @@
         var process_filter = $('input[name="processed"]:checked').val();
         if(process_filter==null){
             process_filter = '';
+        }
+        var ia_hit_filter = $('input[name="ia_hit"]:checked').val();
+        if(ia_hit_filter==null){
+            ia_hit_filter = '';
         }
         return {
             date_from : $('#date_from').val(),
@@ -95,7 +100,8 @@
             nuts_2: $('#nuts_2').val(),
             nuts_3: $('#nuts_3').val(),
             municipality: $('#municipality').val(),
-            processed: process_filter
+            processed: process_filter,
+            ia_hit: ia_hit_filter
         }
     }
 
@@ -138,6 +144,11 @@
             $('#all').closest('.btn').button('toggle');
         }else{
             $('#' + json_data.processed).closest('.btn').button('toggle');
+        }
+        if(json_data.ia_hit == null || json_data.ia_hit == ''){
+            $('#all_alert').closest('.btn').button('toggle');
+        }else{
+            $('#' + json_data.ia_hit).closest('.btn').button('toggle');
         }
     }
 
