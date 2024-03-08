@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
 from tigaserver_app.data_singletons import NutsDict, MunicipalitiesDict
+import json
 
 def score_label(score):
     if score > 66:
@@ -438,16 +439,43 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
     nuts_three = serializers.SerializerMethodField()
     municipality = serializers.SerializerMethodField()
     ia_hit = serializers.SerializerMethodField()
+    sent = serializers.SerializerMethodField()
+    validation_status = serializers.SerializerMethodField()
+    comm_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
-        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit')
+        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit','sent', 'validation_status','comm_status')
 
     def get_ia_hit(self,obj):
         if obj.review_species == None or obj.review_species == '':
             return None
         if obj.species == obj.review_species:
             return True
+        return False
+
+    def get_comm_status(self, obj):
+        try:
+            return obj.alertmetadata.communication_status
+        except Alert.alertmetadata.RelatedObjectDoesNotExist:
+            pass
+        return 0
+
+    def get_sent(self,obj):
+        try:
+            if obj.alertmetadata.communication_status == 0:
+                return False
+            elif obj.alertmetadata.communication_status == 1:
+                return True
+        except Alert.alertmetadata.RelatedObjectDoesNotExist:
+            pass
+        return False
+
+    def get_validation_status(self,obj):
+        try:
+            return obj.alertmetadata.validation_status
+        except Alert.alertmetadata.RelatedObjectDoesNotExist:
+            pass
         return False
 
     def get_country(self, obj):

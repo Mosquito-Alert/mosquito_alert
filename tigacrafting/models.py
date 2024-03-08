@@ -9,6 +9,7 @@ import tigacrafting.html_utils as html_utils
 import pytz
 from tigacrafting.json_filter import append_chain_query
 from django.db.models import Q, F
+from django.utils import timezone
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -679,7 +680,41 @@ class Alert(models.Model):
         except KeyError:
             pass
 
+        try:
+            comm = json_filter['comm']
+            if comm and comm != '':
+                if comm == 'new_comm':
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__communication_status=0))
+                elif comm == 'accepted_comm':
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__communication_status=1))
+                elif comm == 'sent_comm':
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__communication_status=2))
+                else:
+                    pass
+        except KeyError:
+            pass
+
+        try:
+            val = json_filter['val']
+            if val and val != '':
+                if val == 'done_val':
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__validation_status=True))
+                elif val == 'pending_val':
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__validation_status=False))
+                else:
+                    pass
+        except KeyError:
+            pass
+
         return accum_query
+
+COMMUNICATION_STATUS = ((0, 'New'), (1, 'Accepted'), (2, 'Accepted and communicated'))
+class AlertMetadata(models.Model):
+    alert = models.OneToOneField(Alert, primary_key=True, on_delete=models.CASCADE, )
+    communication_status = models.IntegerField('Communication status of the alert', choices=COMMUNICATION_STATUS, blank=True, null=True, default=0)
+    review_comments = models.TextField('Review comments', null=True, blank=True)
+    date_reviewed = models.DateTimeField(default=timezone.now)
+    validation_status = models.BooleanField(null=True, default=False)
 
 # class Species(models.Model):
 #     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')

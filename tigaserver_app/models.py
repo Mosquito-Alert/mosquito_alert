@@ -1626,6 +1626,7 @@ class Report(models.Model):
             'complex_id': None,
             'value': None,
             'conflict': False,
+            'conflict': False,
             'in_progress': False
         }
         if original_struct.get('category',None) is not None:

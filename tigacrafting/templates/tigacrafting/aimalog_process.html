@@ -15,6 +15,9 @@
         .report_info_wrapper {
             padding: 20px;
         }
+         .button-review {
+            margin: 5px;
+        }
     </style>
 
         <div class="navbar-wrapper">
@@ -56,59 +59,81 @@
 <body>
     <div class="container">
         <h1 class="text-center">Process Alert</h1>
-        <h3>Review Alert status</h3>
-        <div class="alert_info_wrapper alert alert-info">
-            <div class="row">
-                <div class="col-md-3">
-                    {% if alert.alert_sent %}
-                        <h1><span title="This Alert has been reviewed" class="label label-success">Processed</span></h1>
-                    {% else %}
-                        <h1><span title="This Alert has yet to be reviewed" class="label label-warning">Unprocessed</span></h1>
-                    {% endif %}
+<!--        <h3>Review Alert status</h3>-->
+<!--        <div class="alert_info_wrapper alert alert-info">-->
+<!--            <div class="row">-->
+<!--                <div class="col-md-3">-->
+<!--                    {% if alert.alert_sent %}-->
+<!--                        <h1><span title="This Alert has been reviewed" class="label label-success">Processed</span></h1>-->
+<!--                    {% else %}-->
+<!--                        <h1><span title="This Alert has yet to be reviewed" class="label label-warning">Unprocessed</span></h1>-->
+<!--                    {% endif %}-->
+<!--                </div>-->
+<!--                <div class="col-md-9">-->
+<!--                    {% if alert.alert_sent %}-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-md-2"><b>Reviewed at:</b></div>-->
+<!--                        <div class="col-md-10">{{ alert.review_datetime }}</div>-->
+<!--                    </div>-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-md-2"><b>Review species:</b></div>-->
+<!--                        <div class="col-md-10">{{ alert.review_species }}</div>-->
+<!--                    </div>-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-md-2"><b>Review status:</b></div>-->
+<!--                        <div class="col-md-10">{{ alert.review_status }}</div>-->
+<!--                    </div>-->
+<!--                    {% else %}-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-md-2"><b>Review species:</b></div>-->
+<!--                        <div class="col-md-8">-->
+<!--                            <select id="review_species" class="form-control" >-->
+<!--                                <option value="">-&#45;&#45;&#45;&#45;&#45;&#45;</option>-->
+<!--                                {% for f in review_species %}-->
+<!--                                <option value="{{ f }}">{{ f }}</option>-->
+<!--                                {% endfor %}-->
+<!--                            </select>-->
+<!--                        </div>-->
+<!--                        <div class="col-md-2">-->
+<!--                            <button class="btn btn-primary button-review" id="review">Review <span class="glyphicon glyphicon-thumbs-down"></span></button>-->
+<!--                            <button class="btn btn-primary button-review" id="ok_ia">Ok IA <span class="glyphicon glyphicon-thumbs-up"></span></button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-md-2"><b>Review comments:</b></div>-->
+<!--                        <div class="col-md-8">-->
+<!--                            <textarea id="review_comment"></textarea>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    {% endif %}-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+        <div class="alert_communication_wrapper" style="display:{% if alert.alert_sent %}block{%else%}none{%endif%};">
+            <h3>Alert communication status</h3>
+            <div class="alert_info_wrapper alert alert-info">
+                <div class="row">
+                    <div class="btn-group col-md-12" data-toggle="buttons">
+                          <!--<label class="btn btn-default active alert">
+                            <input type="radio" name="communication_status" value="nono" id="nono">Not yet reviewed, not sent
+                          </label>-->
+                          <label class="btn btn-default alert">
+                            <input type="radio" name="communication_status" value="0" id="new_comm">New <span class="glyphicon glyphicon-exclamation-sign"></span>
+                          </label>
+                          <label class="btn btn-default alert">
+                            <input type="radio" name="communication_status" value="1" id="accepted_comm">Accepted <span class="glyphicon glyphicon-ok"></span>
+                          </label>
+                          <label class="btn btn-default alert">
+                            <input type="radio" name="communication_status" value="2" id="sent_comm">Accepted and communicated <span class="glyphicon glyphicon glyphicon-envelope"></span>
+                          </label>
+                    </div>
                 </div>
-                <div class="col-md-9">
-                    {% if alert.alert_sent %}
-                    <div class="row">
-                        <div class="col-md-2"><b>Reviewed at:</b></div>
-                        <div class="col-md-10">{{ alert.review_datetime }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-2"><b>Review species:</b></div>
-                        <div class="col-md-10">{{ alert.review_species }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-2"><b>Review status:</b></div>
-                        <div class="col-md-10">{{ alert.review_status }}</div>
-                    </div>
-                    {% else %}
-                    <div class="row">
-                        <div class="col-md-2"><b>Review species:</b></div>
-                        <div class="col-md-8">
-                            <select class="form-control" >
-                                <option value="">-------</option>
-                                {% for f in review_species %}
-                                <option value="{{ f }}">{{ f }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary">Review</button>
-                            <button class="btn btn-primary">Ok IA</button>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <h3>Alert communication status</h3>
-        <div class="alert_info_wrapper alert alert-info">
-            <div class="row">
             </div>
         </div>
         <h3>Alert information</h3>
         <div class="alert_info_wrapper alert alert-info">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <h4>Alert Location</h4>
                     <div class="alert_info_wrapper alert alert-success">
                         {% for n in admin_info %}
@@ -119,8 +144,19 @@
                         {% endfor %}
                     </div>
                 </div>
+            </div>
+            <div class="row">
                 <div class="col-md-6">
-                    <h4>AI Info</h4>
+                    <h4>Validation classification</h4>
+                    <div class="alert_info_wrapper alert alert-success">
+                        <div class="row">
+                            <div class="col-md-6"><b>Expert validation</b></div>
+                            <div class="col-md-6">{% if report_info.in_progress %}<span class="label label-default">Not yet determined</span>{% else %}<span class="label label-success">{{ report_info.category }}</span>{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h4>AI classification</h4>
                     <div class="alert_info_wrapper alert alert-success">
                         <div class="row">
                             <div class="col-md-6"><b>Species AI Classification</b></div>
@@ -135,12 +171,18 @@
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <h4>Current alert status</h4>
+                    <h4>Alert status before report validation</h4>
                     <div class="alert_info_wrapper alert alert-success">
                         <h1><span class="label label-danger" title="According to the location and IA ID, this constitutes an Alert">Alert</span></h1>
                     </div>
                 </div>
-        </div>
+                <div class="col-md-6">
+                    <h4>Alert status after report validation</h4>
+                    <div class="alert_info_wrapper alert alert-success">
+                        <h1><span class="label label-default" title="Alert not yet reviewed">Not yet reviewed</span></h1>
+                    </div>
+                </div>
+            </div>
         <h3>Report information</h3>
         <div class="report_info_wrapper alert alert-info">
             <div class="row" style="padding: 5px; background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
@@ -314,6 +356,12 @@
         </div>
     </div>
 </body>
+    <script>
+        var alert_id = {{ alert.id }};
+        var communication_status = '{{ alert.alertmetadata.communication_status }}';
+    </script>
     <script src={% static "stats/datatables.min.js" %}></script>
+    <script src={% static "tigacrafting/csrf_utils.js" %}></script>
     <script src={% static "tigacrafting/cookies.js" %}></script>
+    <script src={% static "tigacrafting/aimalog/aimalog_process.js" %}></script>
 </html>

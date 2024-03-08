@@ -74,6 +74,8 @@
         $('#nuts_0').val( "" );
         $('#all').closest('.btn').button('toggle');
         $('#all_alert').closest('.btn').button('toggle');
+        $('#all_comm').closest('.btn').button('toggle');
+        $('#any_val').closest('.btn').button('toggle');
         this.resetAllDropDown();
     }
 
@@ -85,6 +87,14 @@
         var ia_hit_filter = $('input[name="ia_hit"]:checked').val();
         if(ia_hit_filter==null){
             ia_hit_filter = '';
+        }
+        var comm_filter = $('input[name="comm_status"]:checked').val();
+        if(comm_filter==null){
+            comm_filter = '';
+        }
+        var val_filter = $('input[name="val_status"]:checked').val();
+        if(val_filter==null){
+            val_filter = '';
         }
         return {
             date_from : $('#date_from').val(),
@@ -101,7 +111,9 @@
             nuts_3: $('#nuts_3').val(),
             municipality: $('#municipality').val(),
             processed: process_filter,
-            ia_hit: ia_hit_filter
+            ia_hit: ia_hit_filter,
+            comm: comm_filter,
+            val: val_filter
         }
     }
 
@@ -149,6 +161,16 @@
             $('#all_alert').closest('.btn').button('toggle');
         }else{
             $('#' + json_data.ia_hit).closest('.btn').button('toggle');
+        }
+        if(json_data.comm == null || json_data.comm == ''){
+            $('#any_comm').closest('.btn').button('toggle');
+        }else{
+            $('#' + json_data.comm).closest('.btn').button('toggle');
+        }
+        if(json_data.val == null || json_data.val == ''){
+            $('#any_val').closest('.btn').button('toggle');
+        }else{
+            $('#' + json_data.val).closest('.btn').button('toggle');
         }
     }
 

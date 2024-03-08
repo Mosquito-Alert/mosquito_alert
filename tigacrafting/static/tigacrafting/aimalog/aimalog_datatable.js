@@ -27,10 +27,14 @@ $(document).ready(function () {
             });
         },
         'createdRow': function( row, data, dataIndex){
-            if( data.alert_sent == true ){
+            if( data.comm_status == 0 ){
+                $(row).addClass('dtRed');
+            }else if ( data.comm_status == 1 ){
+                $(row).addClass('dtOrange');
+            }else if ( data.comm_status == 2 ){
                 $(row).addClass('dtGreen');
             }else{
-                $(row).addClass('dtOrange');
+                $(row).addClass('dtRed');
             }
         },
         'stripeClasses': [],
@@ -62,8 +66,10 @@ $(document).ready(function () {
             {'data': 'nuts_two'},
             {'data': 'nuts_three'},
             {'data': 'municipality'},
-            {'data': 'alert_sent'},
+            //{'data': 'alert_sent'},
             {'data': 'ia_hit'},
+            {'data': 'comm_status'},
+            {'data': 'validation_status'},
         ],
         'columnDefs': [
             /*{'targets': 0,'title': 'xvb'}*/
@@ -83,9 +89,9 @@ $(document).ready(function () {
             ,{'targets': 9,'title': 'nuts_2'}
             ,{'targets': 10,'title': 'nuts_3'}
             ,{'targets': 11,'title': 'municipality'}
-            ,{'targets': 12,'title': 'alert_sent'}
+            //,{'targets': 12,'title': 'alert_sent'}
             ,{
-                'targets': 13, 'data': null, 'sortable': false, 'title': 'Species validation',
+                'targets': 12, 'data': null, 'sortable': false, 'title': 'Species match',
                 'render': function(value){
                     if(value == true){
                         return '<h4 style="color:red;"><span title="Correct alert" class="glyphicon glyphicon-certificate"></span></h4>';
@@ -97,7 +103,31 @@ $(document).ready(function () {
                 }
             }
             ,{
-                'targets': 14, 'data': null, 'sortable': false,
+                'targets': 13, 'data': null, 'sortable': false, 'title': 'Comm. status',
+                'render': function(value){
+                    if(value == 0){
+                        return '<h4 style="color:red;"><span title="New" class="glyphicon glyphicon-exclamation-sign"></span></h4>';
+                    }else if(value == 1){
+                        return '<h4 style="color:orange;"><span title="Accepted" class="glyphicon glyphicon-ok"></span></h4>';
+                    }else if(value == 2){
+                        return '<h4 style="color:green;"><span title="Accepted and communicated" class="glyphicon glyphicon-envelope"></span></h4>';
+                    }else{
+                        return '<h4 style="color:red;"><span title="New" class="glyphicon glyphicon-exclamation-sign"></span></h4>';
+                    }
+                }
+            }
+            ,{
+                'targets': 14, 'data': null, 'sortable': false, 'title': 'Validation complete',
+                'render': function(value){
+                    if(value == true){
+                        return '<h4 style="color:green;"><span title="Complete" class="glyphicon glyphicon-check"></span></h4>';
+                    }else{
+                        return '<h4 style="color:red;"><span title="Pending" class="glyphicon glyphicon-remove"></span></h4>';
+                    }
+                }
+            }
+            ,{
+                'targets': 15, 'data': null, 'sortable': false,
                 'render': function(value){
                     return '<a title="Process alert" class="review_button btn btn-success" href="/aimalog/process_ui/' + value.report_id + '/' + value.id + '/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>';
                 }

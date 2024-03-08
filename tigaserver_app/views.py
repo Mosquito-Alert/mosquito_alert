@@ -18,7 +18,7 @@ import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, NutsEurope, MunicipalitiesNatCode
-from tigacrafting.models import FavoritedReports
+from tigacrafting.models import FavoritedReports, AlertMetadata, Alert
 from tigacrafting.report_queues import assign_crisis_report
 from math import ceil
 from taggit.models import Tag
@@ -2298,6 +2298,40 @@ def favorite(request):
             new_fav = FavoritedReports(user=user, report=report, note=note)
             new_fav.save()
             return Response(status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def communication_status(request):
+    if request.method == 'POST':
+        alert_id = request.POST.get('alert_id', None)
+        _status = request.POST.get('communication_status', None)
+        if alert_id is None:
+            raise ParseError(detail='alert_id param is mandatory')
+        if _status is None:
+            raise ParseError('communication_status param is mandatory')
+        alertmetadata = AlertMetadata.objects.get(pk=alert_id)
+        alertmetadata.communication_status = int(_status)
+        alertmetadata.save()
+        return Response({},status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@transaction.atomic
+def review_alert(request):
+    if request.method == 'POST':
+        alert_id = request.POST.get('alert_id', None)
+        review_species = request.POST.get('review_species', None)
+        review_comments = request.POST.get('review_comments', None)
+        if alert_id is None:
+            raise ParseError(detail='alert_id param is mandatory')
+        if review_species is None:
+            raise ParseError(detail='review_species param is mandatory')
+        alertmetadata = AlertMetadata.objects.get(pk=alert_id)
+        alertmetadata.review_comments = review_comments
+        alertmetadata.save()
+        alertmetadata.alert.alert_sent = True
+        alertmetadata.alert.review_species = review_species
+        alertmetadata.alert.save()
+        return Response({ 'alert_id': alert_id, 'review_species': review_species, 'review_comments': review_comments }, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

@@ -2013,7 +2013,14 @@ def get_alert_location_from_code(loc_code):
 @login_required
 def process_ui(request, report_id=None, alert_id=None):
     report = Report.objects.get(pk=report_id)
+    report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
     alert = Alert.objects.get(pk=alert_id)
+    alert_metadata = None
+    try:
+        alert_metadata = AlertMetadata.objects.get(pk=alert_id)
+    except AlertMetadata.DoesNotExist:
+        alert_metadata = AlertMetadata(alert=alert, communication_status=0)
+        alert_metadata.save()
     admin_data = get_alert_location_from_code(alert.loc_code)
     country = admin_data['country']
     nuts_1 = admin_data['nuts_1']
@@ -2042,7 +2049,7 @@ def process_ui(request, report_id=None, alert_id=None):
         alert_admin_info.append({'name': municipality.nameunit, 'code': '', 'label': 'Municipality'})
     else:
         alert_admin_info.append({'name': 'Not defined', 'code': '' if elem else '','label': 'Municipality'})
-    return render(request, 'tigacrafting/aimalog_process.html',{ 'report': report, 'admin_info': alert_admin_info, 'alert': alert, 'review_species': review_species })
+    return render(request, 'tigacrafting/aimalog_process.html',{ 'report_info': report_info,'report': report, 'admin_info': alert_admin_info, 'alert': alert, 'alert_metadata': alert_metadata, 'review_species': review_species })
 
 
 @login_required
@@ -2190,7 +2197,7 @@ def generic_datatable_list_endpoint(request,search_field_list,queryset, queryCla
 def aimalog_datatable(request):
     if request.method == 'GET':
         search_field_list = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime')
-        queryset = Alert.objects.all()
+        queryset = Alert.objects.select_related('alertmetadata').all()
         field_translation_list = {'id':'id','xvb':'xvb','report_id':'report_id','report_datetime':'report_datetime','loc_code':'loc_code','cat_id':'cat_id','species':'species','certainty':'certainty','status':'status','hit':'hit','review_species':'review_species','review_status':'review_status','review_datetime':'review_datetime'}
         sort_translation_list = {'id':'id','xvb':'xvb','report_id':'report_id','report_datetime':'report_datetime','loc_code':'loc_code','cat_id':'cat_id','species':'species','certainty':'certainty','status':'status','hit':'hit','review_species':'review_species','review_status':'review_status','review_datetime':'review_datetime'}
         response = generic_datatable_list_endpoint(request, search_field_list, queryset, Alert, DataTableAimalertSerializer, field_translation_list, sort_translation_list)
