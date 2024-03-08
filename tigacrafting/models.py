@@ -10,6 +10,7 @@ import pytz
 from tigacrafting.json_filter import append_chain_query
 from django.db.models import Q, F
 from django.utils import timezone
+from django.apps import apps
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -562,6 +563,20 @@ class Alert(models.Model):
     alert_sent = models.BooleanField('flag for alert sent or not yet', default=False)
     notes = models.TextField('Notes field for varied observations', blank=True, null=True)
 
+    def get_alert_country(self):
+        loc_code = self.loc_code
+        if loc_code is not None and loc_code != '':
+            country_model = apps.get_model('tigaserver_app', 'EuropeCountry')
+            return country_model.objects.get(cntr_id=loc_code[:2])
+        return None
+
+    def get_contacts(self):
+        country = self.get_alert_country()
+        if country:
+            contacts = AlertNotificationContact.objects.filter(country=country)
+            return [c.email for c in contacts]
+        return None
+
     @classmethod
     def create_query_from_filter(cls, json_filter):
         print(json_filter)
@@ -716,7 +731,14 @@ class AlertMetadata(models.Model):
     date_reviewed = models.DateTimeField(default=timezone.now)
     validation_status = models.BooleanField(null=True, default=False)
 
-# class Species(models.Model):
+class AlertNotificationContact(models.Model):
+    country = models.ForeignKey('tigaserver_app.EuropeCountry',related_name='country_contacts', on_delete=models.CASCADE)
+    email = models.EmailField()
+
+    class Meta:
+        unique_together = ('country', 'email')
+
+    # class Species(models.Model):
 #     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
 #     composite = models.BooleanField(default=False, help_text='Indicates if this row is a single species or a combination')
 

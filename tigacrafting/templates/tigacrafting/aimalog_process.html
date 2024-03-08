@@ -147,7 +147,7 @@
         <h3>Alert information</h3>
         <div class="alert_info_wrapper alert alert-info">
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <h4>Alert Location</h4>
                     <div class="alert_info_wrapper alert alert-success">
                         {% for n in admin_info %}
@@ -156,6 +156,16 @@
                             <div class="col-md-6">{{ n.name }}</div>
                         </div>
                         {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h4>Contact information</h4>
+                    <div class="alert_info_wrapper alert alert-success">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <b>Notification contact email for country {{ alert.get_alert_country.name_engl }}: </b> {% for c in contacts %} {{ c }} {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,7 +217,7 @@
                     </div>
                 </div>
             </div>
-        <h3>Report information</h3>
+        <h4>Report information</h4>
         <div class="report_info_wrapper alert alert-info">
             <div class="row" style="padding: 5px; background-color:{% if report.type == 'adult' %}#F2BB66;{% else %}#736AFF;{% endif %}">
                 <div class="col-md-12">

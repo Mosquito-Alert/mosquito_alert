@@ -2015,6 +2015,7 @@ def process_ui(request, report_id=None, alert_id=None):
     report = Report.objects.get(pk=report_id)
     report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
     alert = Alert.objects.get(pk=alert_id)
+    contacts = alert.get_contacts()
     alert_metadata = None
     try:
         alert_metadata = AlertMetadata.objects.get(pk=alert_id)
@@ -2049,7 +2050,7 @@ def process_ui(request, report_id=None, alert_id=None):
         alert_admin_info.append({'name': municipality.nameunit, 'code': '', 'label': 'Municipality'})
     else:
         alert_admin_info.append({'name': 'Not defined', 'code': '' if elem else '','label': 'Municipality'})
-    return render(request, 'tigacrafting/aimalog_process.html',{ 'report_info': report_info,'report': report, 'admin_info': alert_admin_info, 'alert': alert, 'alert_metadata': alert_metadata, 'review_species': review_species })
+    return render(request, 'tigacrafting/aimalog_process.html',{ 'report_info': report_info,'report': report, 'admin_info': alert_admin_info, 'alert': alert, 'alert_metadata': alert_metadata, 'review_species': review_species, 'contacts': contacts})
 
 
 @login_required
