@@ -130,6 +130,20 @@
                 </div>
             </div>
         </div>
+        <h3>Alert comments</h3>
+        <div class="alert_info_wrapper alert alert-info">
+            <div class="row">
+                <div class="col-md-1">
+                    <b>Comments</b>
+                </div>
+                <div class="col-md-10">
+                    <textarea id="area_comments">{% if alert_metadata.review_comments %}{{ alert_metadata.review_comments }}{% endif %}</textarea>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-primary button-comment" id="comment"><span title="Save comment" class="glyphicon glyphicon-floppy-disk"></span></button>
+                </div>
+            </div>
+        </div>
         <h3>Alert information</h3>
         <div class="alert_info_wrapper alert alert-info">
             <div class="row">
@@ -151,7 +165,17 @@
                     <div class="alert_info_wrapper alert alert-success">
                         <div class="row">
                             <div class="col-md-6"><b>Expert validation</b></div>
-                            <div class="col-md-6">{% if report_info.in_progress %}<span class="label label-default">Not yet determined</span>{% else %}<span class="label label-success">{{ report_info.category }}</span>{% endif %}</div>
+                            <div class="col-md-6">
+                                {% if report_info.in_progress %}
+                                    <span class="label label-default">Not yet determined</span>
+                                {% else %}
+                                    {% if report_info.value == '1'%}
+                                        <h4><span class="label label-success">Probably {{ report_info.category }}</span></h4>
+                                    {% else %}
+                                        <h4><span class="label label-success">Definitely {{ report_info.category }}</span></h4>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>

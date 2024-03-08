@@ -2323,8 +2323,6 @@ def review_alert(request):
         review_comments = request.POST.get('review_comments', None)
         if alert_id is None:
             raise ParseError(detail='alert_id param is mandatory')
-        if review_species is None:
-            raise ParseError(detail='review_species param is mandatory')
         alertmetadata = AlertMetadata.objects.get(pk=alert_id)
         alertmetadata.review_comments = review_comments
         alertmetadata.save()

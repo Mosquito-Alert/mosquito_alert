@@ -74,7 +74,11 @@ $(document).ready(function () {
         'columnDefs': [
             /*{'targets': 0,'title': 'xvb'}*/
             {'targets': 0,'title': 'id'}
-            ,{'targets': 1,'title': 'report'}
+            ,{'targets': 1,'title': 'report',
+                'render':function(value){
+                    return '<a href="/en/experts/status/reports/single/' + value + '" target="_blank">' + value + '</a>';
+                }
+            }
             ,{'targets': 2,'title': 'report_datetime'}
             /*,{'targets': 3,'title': 'loc_code'}
             ,{'targets': 3, 'title': 'species',}*/

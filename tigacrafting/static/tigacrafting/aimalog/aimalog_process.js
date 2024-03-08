@@ -62,6 +62,11 @@ $(document).ready(function () {
         review(alert_id, review_species, review_comment);
     });
 
+    $('#comment').on('click',function(){
+        var comments = $('#area_comments').val();
+        review(alert_id, null, comments);
+    });
+
     update_ui();
 
 });
