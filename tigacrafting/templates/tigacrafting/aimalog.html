@@ -24,6 +24,10 @@
         .dtRed{
             background-color: #fe676e !important;
         }
+
+        .dtGray{
+            background-color: #e5e5e5 !important;
+        }
     </style>
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
@@ -117,6 +121,9 @@
                           </label>
                           <label class="btn btn-default">
                             <input type="radio" name="comm_status" value="accepted_comm" id="accepted_comm">Accepted <span title="Accepted" class="glyphicon glyphicon-ok"></span>
+                          </label>
+                            <label class="btn btn-default">
+                            <input type="radio" name="comm_status" value="rejected_comm" id="rejected_comm">Rejected <span title="Rejected" class="glyphicon glyphicon-remove"></span>
                           </label>
                           <label class="btn btn-default">
                             <input type="radio" name="comm_status" value="sent_comm" id="sent_comm">Accepted and communicated <span title="Accepted and communicated" class="glyphicon glyphicon-envelope"></span>

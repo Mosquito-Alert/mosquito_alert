@@ -33,6 +33,8 @@ $(document).ready(function () {
                 $(row).addClass('dtOrange');
             }else if ( data.comm_status == 2 ){
                 $(row).addClass('dtGreen');
+            }else if ( data.comm_status == 3 ){
+                $(row).addClass('dtGray');
             }else{
                 $(row).addClass('dtRed');
             }
@@ -70,6 +72,7 @@ $(document).ready(function () {
             {'data': 'ia_hit'},
             {'data': 'comm_status'},
             {'data': 'validation_status'},
+            {'data': 'comments'},
         ],
         'columnDefs': [
             /*{'targets': 0,'title': 'xvb'}*/
@@ -98,9 +101,9 @@ $(document).ready(function () {
                 'targets': 12, 'data': null, 'sortable': false, 'title': 'Species match',
                 'render': function(value){
                     if(value == true){
-                        return '<h4 style="color:red;"><span title="Correct alert" class="glyphicon glyphicon-certificate"></span></h4>';
+                        return '<h4 style="color:red;"><span title="Validation and IA match" class="glyphicon glyphicon-certificate"></span></h4>';
                     }else if(value == false){
-                        return '<h4 style="color:green;"><span title="Incorrect alert" class="glyphicon glyphicon-ban-circle"></span></h4>';
+                        return '<h4 style="color:green;"><span title="Validation and IA DO NOT match" class="glyphicon glyphicon-ban-circle"></span></h4>';
                     }else{
                         return '<h4 style="color:gray;"><span title="Not yet evaluated" class="glyphicon glyphicon glyphicon-question-sign"></span></h4>';
                     }
@@ -115,6 +118,8 @@ $(document).ready(function () {
                         return '<h4 style="color:orange;"><span title="Accepted" class="glyphicon glyphicon-ok"></span></h4>';
                     }else if(value == 2){
                         return '<h4 style="color:green;"><span title="Accepted and communicated" class="glyphicon glyphicon-envelope"></span></h4>';
+                    }else if(value == 3){
+                        return '<h4 style="color:gray;"><span title="Rejected" class="glyphicon glyphicon-remove"></span></h4>';
                     }else{
                         return '<h4 style="color:red;"><span title="New" class="glyphicon glyphicon-exclamation-sign"></span></h4>';
                     }
@@ -130,8 +135,9 @@ $(document).ready(function () {
                     }
                 }
             }
+            ,{'targets': 15, 'title': 'Comments', 'sortable': false}
             ,{
-                'targets': 15, 'data': null, 'sortable': false,
+                'targets': 16, 'data': null, 'sortable': false,
                 'render': function(value){
                     return '<a title="Process alert" class="review_button btn btn-success" href="/aimalog/process_ui/' + value.report_id + '/' + value.id + '/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>';
                 }

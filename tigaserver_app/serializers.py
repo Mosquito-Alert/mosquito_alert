@@ -442,10 +442,11 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
     sent = serializers.SerializerMethodField()
     validation_status = serializers.SerializerMethodField()
     comm_status = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
-        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit','sent', 'validation_status','comm_status')
+        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit','sent', 'validation_status','comm_status','comments')
 
     def get_ia_hit(self,obj):
         if obj.review_species == None or obj.review_species == '':
@@ -470,6 +471,13 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
         except Alert.alertmetadata.RelatedObjectDoesNotExist:
             pass
         return False
+
+    def get_comments(self,obj):
+        try:
+            return obj.alertmetadata.review_comments
+        except Alert.alertmetadata.RelatedObjectDoesNotExist:
+            pass
+        return ''
 
     def get_validation_status(self,obj):
         try:

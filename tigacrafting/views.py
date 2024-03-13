@@ -52,6 +52,7 @@ import functools
 import operator
 import math
 from tigacrafting.report_queues import get_crisis_report_available_reports
+import geopandas as gpd
 
 #----------Metadades fotos----------#
 
@@ -2044,13 +2045,22 @@ def process_ui(request, report_id=None, alert_id=None):
         'repeated',
         'vittatus'
     ]
+    statuses = [
+        'absent',
+        'established',
+        'introduced_both',
+        'introduced_ECDC',
+        'introduced_MA',
+        'noData',
+        'reported'
+    ]
     for idx, elem in enumerate([country, nuts_1, nuts_2, nuts_3]):
         alert_admin_info.append({ 'name': elem.name_latn if elem else 'Not defined', 'code': elem.nuts_id if elem else '', 'label': labels[idx]})
     if municipality:
         alert_admin_info.append({'name': municipality.nameunit, 'code': '', 'label': 'Municipality'})
     else:
         alert_admin_info.append({'name': 'Not defined', 'code': '' if elem else '','label': 'Municipality'})
-    return render(request, 'tigacrafting/aimalog_process.html',{ 'report_info': report_info,'report': report, 'admin_info': alert_admin_info, 'alert': alert, 'alert_metadata': alert_metadata, 'review_species': review_species, 'contacts': contacts})
+    return render(request, 'tigacrafting/aimalog_process.html',{ 'report_info': report_info,'report': report, 'admin_info': alert_admin_info, 'alert': alert, 'alert_metadata': alert_metadata, 'review_species': review_species, 'contacts': contacts, 'statuses': statuses})
 
 
 @login_required

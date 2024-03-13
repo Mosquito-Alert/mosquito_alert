@@ -46,6 +46,7 @@ from django.template.loader import get_template
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
+import geopandas as gpd
 
 #from celery.task.schedules import crontab
 #from celery.decorators import periodic_task
@@ -2006,6 +2007,31 @@ def clear_blocked_all(request):
             send_unblock_email( name, email )
         return Response(status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def validation_status(request, alert_id=None):
+    alert = get_object_or_404(Alert,pk=alert_id)
+    report = get_object_or_404(Report,pk=alert.report_id)
+    report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
+    location = alert.loc_code
+    category_id_to_ia_column = {
+        '4': 'albopictus',
+        '5': 'aegypti',
+        '6': 'japonicus',
+        '7': 'koreicus',
+        '10': 'culex',
+    }
+    report_category_id = report_info['category_id']
+    if report_category_id in ['4', '5', '6', '7', '10']:
+        filter_column = category_id_to_ia_column[report_category_id]
+        gdf = gpd.read_file(settings.PRESENCE_SHAPEFILE)
+        _status = gdf[gdf['locCode'] == location][filter_column].iloc[0]
+        n_reported = None
+        if _status == 'reported':
+            n_reported = Alert.objects.filter(loc_code=location).filter(review_status='reported').filter(species=alert.species).count()
+        return Response({'status': _status, 'n_reported': n_reported}, status=status.HTTP_200_OK)
+    else:
+        return Response({'status': 'species not currently tracked'}, status=status.HTTP_200_OK)
+    return Response({'status':'none'}, status=status.HTTP_200_OK)
 
 @api_view(['DELETE'])
 def clear_blocked(request, username, report=None):

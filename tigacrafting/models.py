@@ -570,6 +570,13 @@ class Alert(models.Model):
             return country_model.objects.get(cntr_id=loc_code[:2])
         return None
 
+    def get_alert_nuts2(self):
+        loc_code = self.loc_code
+        if loc_code is not None and loc_code != '' and len(loc_code) >= 4:
+            nuts_model = apps.get_model('tigaserver_app', 'NutsEurope')
+            return nuts_model.objects.get(nuts_id=loc_code[:4])
+        return None
+
     def get_contacts(self):
         country = self.get_alert_country()
         if country:
@@ -704,6 +711,8 @@ class Alert(models.Model):
                     accum_query = append_chain_query(accum_query, Q(alertmetadata__communication_status=1))
                 elif comm == 'sent_comm':
                     accum_query = append_chain_query(accum_query, Q(alertmetadata__communication_status=2))
+                elif comm == 'rejected_comm':
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__communication_status=3))
                 else:
                     pass
         except KeyError:
@@ -723,7 +732,7 @@ class Alert(models.Model):
 
         return accum_query
 
-COMMUNICATION_STATUS = ((0, 'New'), (1, 'Accepted'), (2, 'Accepted and communicated'))
+COMMUNICATION_STATUS = ((0, 'New'), (1, 'Accepted'), (2, 'Accepted and communicated'), (3, 'Rejected'))
 class AlertMetadata(models.Model):
     alert = models.OneToOneField(Alert, primary_key=True, on_delete=models.CASCADE, )
     communication_status = models.IntegerField('Communication status of the alert', choices=COMMUNICATION_STATUS, blank=True, null=True, default=0)
