@@ -1,0 +1,131 @@
+test_name: Delete is not allowed for non auth users
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - adult_report
+    - token_user
+
+stages:
+  - name: Non auth user can not delete
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: DELETE
+    response:
+      status_code: 403
+  - name: User without perm can not delete
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: DELETE
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+
+---
+test_name: User can only delete their reports.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - adult_report
+
+stages:
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{app_user.pk}"
+        device_token: "{app_user.device_token}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
+  - name: Report can be retrieved
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+  - name: App user delete their reports
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: DELETE
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 204
+  - name: Report not exist after delete
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404
+
+---
+
+test_name: User can not delete others' reports not published.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - adult_report
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: App user can not delete others reports
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: DELETE
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404
+
+---
+
+test_name: User can not delete others' reports published.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - published_adult_report
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: App user can not delete others reports
+    request:
+      url: "{api_live_url}/{endpoint}/{published_adult_report.pk}/"
+      method: DELETE
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 403

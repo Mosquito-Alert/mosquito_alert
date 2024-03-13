@@ -1,0 +1,28 @@
+test_name: Update is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - country
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Update is disabeld
+    request:
+      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "{method}"
+    response:
+      status_code: 404

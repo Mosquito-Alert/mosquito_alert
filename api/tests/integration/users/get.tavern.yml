@@ -1,0 +1,47 @@
+---
+
+test_name: Make sure users endpoint works
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Get user fails on unauthorized user
+    request:
+      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      method: GET
+    response:
+      status_code: 403
+  - name: Get user by authorized user
+    request:
+      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+      save:
+        json:
+          first_user_uuid: uuid
+  # Now simulate another user trying to access the first user data
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Get user by unauthorized user
+    request:
+      url: "{api_live_url}/{endpoint}/{first_user_uuid}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 403

@@ -1,0 +1,83 @@
+---
+
+test_name: Create method
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+  - parametrize:
+      key: power
+      vals:
+        - 10
+        - null
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Create method
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "POST"
+      json: &request_data
+        coverage_uuid: "fd03c8d7-9778-4617-9e43-eefebb60696a"
+        created_at: "2024-01-01T12:00:00Z"
+        sent_at: "2024-01-01T12:30:00Z"
+        point:
+          latitude: 41.6741900 
+          longitude: 2.79036
+        power: !force_format_include "{power}"
+    response:
+      status_code: 201
+      json:
+        <<: *request_data
+        received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        point: # NOTE: testing that point has been masked
+          latitude: 41.65
+          longitude: 2.775
+
+---
+
+test_name: All Datetimes requires Timezone
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+  - parametrize:
+      key: 
+        - created_at
+        - sent_at
+      vals:
+        - ["2024-01-01T12:00:00Z", "2024-01-01T12:30:00"]
+        - ["2024-01-01T12:00:00", "2024-01-01T12:30:00Z"]
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Create method using a field 
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "POST"
+      json:
+        coverage_uuid: "fd03c8d7-9778-4617-9e43-eefebb60696a"
+        created_at: "{created_at}"
+        sent_at: "{sent_at}"
+        point:
+          latitude: 41.6741900
+          longitude: 2.79036
+        power: 10
+    response:
+      status_code: 400

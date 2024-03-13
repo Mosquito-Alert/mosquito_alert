@@ -641,13 +641,9 @@ def stats_user_score(request, user_uuid=None):
             pass
 
     if user.score_v2_struct is None:
-        user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
-        user.score_v2_struct = json.dumps(user_score, indent=2, sort_keys=True, default=str)
-        user.last_score_update = datetime.datetime.now()
-        user.save()
-    else:
-        user_score = json.loads(user.score_v2_struct)
-    context = { "score_data": user_score, "score_last_update": user.last_score_update }
+        user.update_score(commit=True)
+
+    context = { "score_data": user.score_v2_struct, "score_last_update": user.last_score_update }
     return render(request, 'stats/user_score.html', context)
 
 
@@ -679,16 +675,11 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         try:
             user = TigaUser.objects.get(pk=user_uuid)
             user.get_identicon()
-            #user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
             if user.score_v2_struct is None:
-                user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
-                user.score_v2_struct = json.dumps(user_score, indent=2, sort_keys=True, default=str)
-                user.last_score_update = datetime.datetime.now()
-                user.save()
-            else:
-                user_score = json.loads( user.score_v2_struct )
-            if user_score['total_score'] > 0:
-                user_has_score = True
+                user.update_score(commit=True)
+
+            user_score = user.score_v2_struct
+            user_has_score = bool(user.score_v2)
 
         except TigaUser.DoesNotExist:
             pass
@@ -1060,13 +1051,9 @@ def get_user_xp_data(request):
     translation.activate(locale)
 
     if u.score_v2_struct is None:
-        retval = compute_user_score_in_xp_v2(user_id, update=True)
-        u.score_v2_struct = json.dumps(retval, indent=2, sort_keys=True, default=str)
-        u.last_score_update = datetime.datetime.now()
-        u.save()
-    else:
-        retval = json.loads(u.score_v2_struct)
+        u.update_score(commit=True)
 
+    retval = u.score_v2_struct
     retval['last_update'] = u.last_score_update
 
     return Response(retval)

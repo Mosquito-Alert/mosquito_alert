@@ -1,0 +1,21 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+variables:
+  endpoint: "partners"
+  response_data_validation: &retrieve_validation
+    id: !anyint
+    point:
+      latitude: !anystr
+      longitude: !anystr
+    description: !anystr
+    url: !anystr
+  response_list_data_validation: &response_list_validation
+    count: !anyint
+    next: !anything
+    previous: !anything
+    results: [
+      <<: *retrieve_validation
+    ]

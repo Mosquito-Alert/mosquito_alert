@@ -1,0 +1,108 @@
+---
+
+test_name: Retrieve method is not allowed for non auth user.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_notification
+    - token_user
+
+stages:
+  - name: Non auth user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Retrieve method is allowed for auth user with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_notification
+    - token_user_can_view
+
+stages:
+  - name: User with perm can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+
+---
+
+test_name: App user can only retrieve their notifications.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - user_notification
+
+stages:
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{app_user.pk}"
+        device_token: "{app_user.device_token}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
+  - name: App user can retrieve their notification
+    request:
+      url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+      json:
+        id: !int "{user_notification.pk}"
+        report_uuid: !anything
+        expert_id: !anything
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        title: !anystr
+        body: !anystr
+        seen: false
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: App user can not retrieve others notification
+    request:
+      url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404
+
