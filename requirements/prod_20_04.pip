@@ -3,6 +3,7 @@ anyjson==0.3.3
 apns==2.0.1
 appdirs==1.4.3
 backports.shutil-get-terminal-size==1.0.0
+beautifulsoup4==4.12.3
 billiard==3.3.0.23
 bleach==3.3.0
 CacheControl==0.12.6
@@ -78,7 +79,6 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
 pydenticon==0.3.1
-pyfcm==1.5.1
 Pygments==2.2.0
 pyheif==0.5.1
 pyparsing==2.4.7
