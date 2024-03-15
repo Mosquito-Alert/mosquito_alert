@@ -1,0 +1,46 @@
+---
+# TODO: check that it expire
+test_name: Make sure token is correct
+
+marks:
+- usefixtures:
+  - api_live_url
+
+stages:
+  - id: signup
+    type: ref
+  - id: get_jwt_token
+    name: Get JWT Token
+    request:
+      url: "{api_live_url}/token/"
+      method: POST
+      json:
+        uuid: "{user_uuid}"
+        device_token: "{user_device_token:s}"
+    response:
+      status_code: 200
+      verify_response_with: &verify_jwt_token
+        function: tavern.helpers:validate_jwt
+        extra_kwargs:
+          jwt_key: "access"
+          algorithms: ["HS256"]
+          key: 'dummy_secretkey' # get from settings_dev
+          options:
+            verify_signature: true
+            verify_exp: true
+      save:
+        json:
+          access_token: access
+          refresh_token: refresh
+  - id: refresh_jwt_token
+    name: Refresh JWT Token
+    request:
+      url: "{api_live_url}/token/refresh/"
+      method: POST
+      json:
+        refresh: "{refresh_token}"
+    response:
+      status_code: 200
+      verify_response_with:
+        <<: *verify_jwt_token
+

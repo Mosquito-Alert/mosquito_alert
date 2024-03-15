@@ -1,0 +1,188 @@
+---
+
+test_name: Published reports can be read by everybody.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_adult_report
+    - token_user
+
+stages:
+  - name: Non auth user can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{published_adult_report.pk}/"
+      method: "GET"
+    response:
+      status_code: 200
+  - name: User without perm view per retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{published_adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: App user can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{published_adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+
+---
+
+test_name: Deleted reports can not be read by anybody even if publsihed.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - deleted_published_adult_report
+    - token_user_can_view
+
+stages:
+  - name: Non auth user can not retrieve deleted reports
+    request:
+      url: "{api_live_url}/{endpoint}/{deleted_published_adult_report.pk}/"
+      method: "GET"
+    response:
+      status_code: 404
+  - name: User with perm view can not retrieve deleted reports
+    request:
+      url: "{api_live_url}/{endpoint}/{deleted_published_adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 404
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{app_user.pk}"
+        device_token: "{app_user.device_token}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
+  - name: App user owner can not retrieve deleted reports
+    request:
+      url: "{api_live_url}/{endpoint}/{deleted_published_adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: App user can retrieve deleted reports
+    request:
+      url: "{api_live_url}/{endpoint}/{deleted_published_adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404
+
+---
+
+test_name: App user can only retrieve their notifications if not published.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - adult_report
+    - token_user_can_view
+
+stages:
+  - name: User with perm view can retrieve non published reports
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{app_user.pk}"
+        device_token: "{app_user.device_token}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
+  - name: App user can retrieve their notification
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+      json:
+        uuid: "{adult_report.pk}"
+        short_id: !anystr
+        user_uuid: "{app_user.pk}"
+        type: adult
+        session_id: null
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        sent_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        location:
+          type: !anystr
+          point:
+            latitude: !anystr
+            longitude: !anystr
+          country_id: !anything
+          nuts_2: !anything
+          nuts_3: !anything
+        note: !anything
+        event_environment: !anything
+        event_moment: !anything
+        published: false
+        user_perceived_mosquito_specie: !anything
+        user_perceived_mosquito_thorax: !anything
+        user_perceived_mosquito_abdomen: !anything
+        user_perceived_mosquito_legs: !anything
+        photos: !anylist
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: App user can not retrieve others notification
+    request:
+      url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404
+

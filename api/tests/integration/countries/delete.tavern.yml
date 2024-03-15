@@ -1,0 +1,23 @@
+test_name: Delete is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - country
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Delete method return 405
+    request:
+      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "DELETE"
+    response:
+      status_code: 405

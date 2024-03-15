@@ -1,0 +1,28 @@
+test_name: Make sure users can not delete
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - partner
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Update is disabeld
+    request:
+      url: "{api_live_url}/{endpoint}/{partner.pk}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "{method}"
+    response:
+      status_code: 405

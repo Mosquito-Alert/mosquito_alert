@@ -1,0 +1,23 @@
+test_name: Retrieve is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Retrieve fixes is disabled
+    request:
+      url: "{api_live_url}/{endpoint}/1/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 404

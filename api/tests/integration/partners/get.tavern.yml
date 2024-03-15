@@ -1,0 +1,31 @@
+test_name: Make sure users can retrieve
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - partner
+
+stages:
+  - name: Retrieve campaign for unauthorized users must fail
+    request:
+      url: "{api_live_url}/{endpoint}/{partner.pk}/"
+      method: "GET"
+    response:
+      status_code: 403
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Retrieve campaign for authorized users & check schema result
+    request:
+      url: "{api_live_url}/{endpoint}/{partner.pk}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"

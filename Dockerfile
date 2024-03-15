@@ -36,6 +36,7 @@ RUN pip install numpy==1.23.1
 
 WORKDIR /app
 COPY . /app
+ENV PYTHONPATH "${PYTHONPATH}:/app/"
 
 RUN pip install -r requirements/dev.pip
 

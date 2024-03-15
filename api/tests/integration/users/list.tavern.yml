@@ -1,0 +1,22 @@
+test_name: Make sure users can not list
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List users must fail
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 405

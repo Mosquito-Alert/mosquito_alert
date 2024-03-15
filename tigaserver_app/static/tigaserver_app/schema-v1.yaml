@@ -1,8 +1,11 @@
 openapi: 3.0.2
 info:
   title: Mosquito Alert API
-  version: 1.0
-  description: Documentation for the Mosquito Alert server API
+  version: 0.1
+  deprecated: true
+  description: >
+    ![Deprecated](https://img.shields.io/badge/Maintenance-Deprecated-yellow.svg)
+    Please consider migrating to the new version of the API. You can find the new API documentation at: [Link](https://api.mosquitoalert.com/v1/).
 paths:
   /api/notification_content/:
     put:

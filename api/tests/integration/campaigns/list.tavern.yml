@@ -1,0 +1,197 @@
+test_name: Make sure users can not list
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - active_campaign
+
+stages:
+  - name: List campaigns for unauthorized users must fail
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 403
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List campaigns for authorized users & check schema result
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"
+
+---
+
+test_name: Test pagination
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - spanish_campaign
+
+stages:
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List campaigns in page 1
+    request:
+      url: "{api_live_url}/{endpoint}/?page=1"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{spanish_campaign.pk}"
+
+---
+
+test_name: Filter by country_id
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - es_country
+    - spanish_campaign
+    - italian_campaign
+
+stages:
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List campaigns for spain only
+    request:
+      url: "{api_live_url}/{endpoint}/?country_id={es_country.pk}"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - country_id: !int "{es_country.pk}"
+
+---
+
+test_name: Filter by is_active
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - active_campaign
+    - inactive_campaign
+
+stages:
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List active campaigns
+    request:
+      url: "{api_live_url}/{endpoint}/?is_active=true"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{active_campaign.pk}"
+  - name: List inactive campaigns
+    request:
+      url: "{api_live_url}/{endpoint}/?is_active=false"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{inactive_campaign.pk}"
+
+---
+
+test_name: Test ordering
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - first_campaign
+    - last_campaign
+
+stages:
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Sort campaigns by start_date ascending
+    request:
+      url: "{api_live_url}/{endpoint}/?order_by=start_date"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 2
+        results:
+          - id: !int "{first_campaign.pk}"
+          - id: !int "{last_campaign.pk}"
+  - name: Sort campaigns by start_date descending
+    request:
+      url: "{api_live_url}/{endpoint}/?order_by=-start_date"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 2
+        results:
+          - id: !int "{last_campaign.pk}"
+          - id: !int "{first_campaign.pk}"

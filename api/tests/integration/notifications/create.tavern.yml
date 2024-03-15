@@ -1,0 +1,97 @@
+---
+
+test_name: Create method is not allowed for non auth user and app users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+  - parametrize:
+      key:
+        - receiver_type
+        - user_uuid
+        - topic_code
+      vals:
+        - ["user", "a8b018aa-742e-438b-8c58-e78c746abaa6", null]
+        - ["topic", null, 'global']
+
+stages:
+  - id: signup
+    type: ref
+  - name: Non auth user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      json: &request_data
+        receiver_type: "{receiver_type}"
+        user_uuid: !force_format_include "{user_uuid}"
+        topic_code: !force_format_include "{topic_code}"
+        title_en: "english title"
+        body_en: "english body"
+    response:
+      status_code: 403
+  # App user can not create either
+  - id: login
+    type: ref
+  - name: App users can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      json:
+        <<: *request_data
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 403
+
+--- 
+
+test_name: Create notification
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - token_user_can_add
+    - topic
+
+stages:
+  - name: Create user notification using auth user with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        receiver_type: "user"
+        user_uuid: "{app_user.pk}"
+        report_uuid: null
+        title_en: "english title"
+        body_en: "english body"
+      headers:
+        Authorization: "Token {token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 201
+      json: &response_validation
+        id: !anyint
+        receiver_type: "user"
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+  - name: Create topic notification using auth user with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        receiver_type: "topic"
+        topic_code: "{topic.topic_code}"
+        title_en: "english title"
+        body_en: "english body"
+      headers:
+        Authorization: "Token {token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 201
+      json:
+        <<: *response_validation
+        receiver_type: "topic"

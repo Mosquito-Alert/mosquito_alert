@@ -1,0 +1,206 @@
+test_name: List is not allowed for non auth users
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - token_user
+
+stages:
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: List method is allowed for auth user with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - token_user_can_view
+    - user_notification
+
+stages:
+  - name: User with perm can list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+      json:
+        count: 1
+        next: !anything
+        previous: null
+        results:
+          - id: !int "{user_notification.pk}"
+            report_uuid: !anything
+            expert_id: !anything
+            created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+            title: !anystr
+            body: !anystr
+            seen: false
+---
+
+test_name: User list only their notifications.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - user_notification
+    - report_notification
+    - topic_notification
+
+stages:
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{app_user.pk}"
+        device_token: "{app_user.device_token}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
+  - name: App user list their notifications
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 3
+        results:
+          - id: !int "{user_notification.pk}"
+          - id: !int "{report_notification.pk}"
+          - id: !int "{topic_notification.pk}"
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: App user can are not shown others notifications
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+
+---
+
+test_name: Filter by seen
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - unseen_user_notification
+    - seen_user_notification
+
+stages:
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{app_user.pk}"
+        device_token: "{app_user.device_token}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
+  - name: App user list their notifications by seen
+    request:
+      url: "{api_live_url}/{endpoint}/?seen=true"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{seen_user_notification.pk}"
+
+---
+
+test_name: Filter by unseen
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - unseen_user_notification
+
+stages:
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{app_user.pk}"
+        device_token: "{app_user.device_token}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
+  - name: App user list their notifications by unseen
+    request:
+      url: "{api_live_url}/{endpoint}/?seen=false"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{unseen_user_notification.pk}"

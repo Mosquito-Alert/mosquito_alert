@@ -642,14 +642,6 @@ def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
     return retval
 
 
-def compute_all_user_scores():
-    all_users = TigaUser.objects.all()
-    for user in all_users:
-        score = compute_user_score_in_xp_v2( user.user_UUID )
-        user.score_v2 = score
-        user.save()
-
-
 def get_all_user_reports(user_uuid):
     user = TigaUser.objects.get(pk=user_uuid)
     user_uuids = None

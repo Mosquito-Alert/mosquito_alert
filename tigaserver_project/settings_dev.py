@@ -3,6 +3,8 @@ from .settings import *
 DEBUG = True
 TEMPLATE_DEBUG = True
 
+SECRET_KEY = "dummy_secretkey"
+
 # See docker-compose service.
 DATABASES["default"] = {
     "ENGINE": "django.contrib.gis.db.backends.postgis",

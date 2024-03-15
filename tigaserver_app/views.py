@@ -1258,8 +1258,8 @@ def user_score_v2(request):
     if user_id == -1:
         raise ParseError(detail='user_id is mandatory')
     user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
-    result = compute_user_score_in_xp_v2(user_id, update=True)
-    return Response(result)
+    user.update_score(commit=True)
+    return Response(user.score_v2_struct_dict)
 
 
 @api_view(['GET', 'POST'])
