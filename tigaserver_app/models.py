@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 import logging
 from math import floor
+from numpyencoder import NumpyEncoder
 from PIL import Image
 import pydenticon
 import os
@@ -16,14 +17,14 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.contrib.postgres.fields import JSONField
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.urls import reverse
-from django.utils import translation
+from django.utils import translation, timezone
 from django.utils.deconstruct import deconstructible
-from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
 from common.translation import get_translation_in, get_locale_for_native
@@ -214,7 +215,9 @@ class TigaUser(models.Model):
 
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True, on_delete=models.SET_NULL, )
 
-    score_v2_struct = models.TextField(help_text="Full cached score data", null=True, blank=True)
+    # NOTE using NumpyEncoder since compute_user_score_in_xp_v2 function get result from pandas dataframe
+    # and some integer are np.int64, which can not be encoded with the regular json library setup.
+    score_v2_struct = JSONField(encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True)
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
@@ -236,6 +239,34 @@ class TigaUser(models.Model):
             f.write(identicon_png)
             f.close()
         return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"
+
+    def update_score(self, commit: bool = True) -> None:
+        # NOTE: placing import here due to circular import
+        from tigascoring.xp_scoring import compute_user_score_in_xp_v2
+
+        score_dict = compute_user_score_in_xp_v2(user_uuid=self.pk)
+        self.score_v2_struct = score_dict
+
+        try:
+            self.score_v2_adult = score_dict['score_detail']['adult']['score']
+        except (KeyError, TypeError):
+            self.score_v2_adult = 0
+
+        try:
+            self.score_v2_bite = score_dict['score_detail']['bite']['score']
+        except (KeyError, TypeError):
+            self.score_v2_bite = 0
+
+        try:
+            self.score_v2_site = score_dict['score_detail']['site']['score']
+        except (KeyError, TypeError):
+            self.score_v2_site = 0
+
+        self.score_v2 = sum([self.score_v2_adult, self.score_v2_bite, self.score_v2_site])
+        self.last_score_update = timezone.now()
+
+        if commit:
+            self.save()
 
     n_reports = property(number_of_reports_uploaded)
     ios_user = property(is_ios)
@@ -302,7 +333,7 @@ class Mission(models.Model):
         return self.title_catalan
 
     def active_missions(self):
-        return self.expiration_time >= datetime.utcnow().replace(tzinfo=utc)
+        return self.expiration_time >= datetime.utcnow().replace(tzinfo=timezone.utc)
 
 
 class MissionTrigger(models.Model):
