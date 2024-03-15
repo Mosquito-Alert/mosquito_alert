@@ -26,6 +26,8 @@ from django.utils.deconstruct import deconstructible
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
+from shortuuid.django_fields import ShortUUIDField
+
 from common.translation import get_translation_in, get_locale_for_native
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
 import tigacrafting.html_utils as html_utils
@@ -478,9 +480,11 @@ class Report(TimeZoneModelMixin, models.Model):
         db_index=True,
         help_text="The report version number. Should be an integer that increments by 1 for each repor version. Note that the user keeps only the most recent version on the device, but all versions are stored on the server.",
     )
-    report_id = models.CharField(
-        max_length=4,
+    report_id = ShortUUIDField(
+        length=11,
+        unique=True,
         db_index=True,
+        alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-", # NOTE: safe URL characters from https://zelark.github.io/nano-id-cc/
         help_text="4-digit alpha-numeric code generated on user phone to identify each unique report from that user. Digits should lbe randomly drawn from the set of all lowercase and uppercase alphabetic characters and 0-9, but excluding 0, o, and O to avoid confusion if we ever need user to be able to refer to a report ID in correspondence with MoveLab (as was previously the case when we had them sending samples).",
     )
 
