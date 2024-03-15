@@ -1,4 +1,4 @@
-from tigaserver_app.models import Report, TigaUser, TigaProfile, Award
+from tigaserver_app.models import Report, TigaUser, Award
 from tigaserver_project import settings as conf
 import pandas as pd
 import datetime
@@ -324,106 +324,17 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
 #         return str(diff.days) + _(" days ago")
 
 
-def compute_user_score_in_xp_v2_fast(user_uuid):
+def compute_user_score_in_xp_v2(user_uuid):
 
     user = TigaUser.objects.get(pk=user_uuid)
     user_uuids = None
     if user.profile is not None:
         user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
 
-    result = {}
-    result['total_score'] = 0
-    result['user_uuid'] = user_uuid
-    result['score_detail'] = {}
-
-    if user_uuids is None:
-        user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
-    else:
-        user_reports = Report.objects.filter(user__user_UUID__in=user_uuids).order_by('-creation_time')
-
-    adults = user_reports.filter(type='adult')
-    #bites = user_reports.filter(type='bite')
-    sites = user_reports.filter(type='site')
-
-    adult_last_versions = adults.non_deleted().all()
-    #bite_last_versions = bites.non_deleted().all()
-    site_last_versions = sites.non_deleted().all()
-
-    results_adult = {}
-    results_adult['score'] = 0
-    results_adult['score_items'] = []
-    result['score_detail']['adult'] = results_adult
-
-    adult_score = 0
-    for report in adult_last_versions:
-        result = get_adult_report_score(report, result)
-        index = len(result['score_detail']['adult']['score_items']) - 1
-        result['score_detail']['adult']['score'] += result['score_detail']['adult']['score_items'][index][
-            'report_score']
-        adult_score += result['score_detail']['adult']['score_items'][index]['report_score']
-    result['total_score'] += adult_score
-
-    '''
-    results_bite = {}
-    results_bite['score'] = 0
-    results_bite['score_items'] = []
-    result['score_detail']['bite'] = results_bite
-
-    bite_score = 0
-    for report in bite_last_versions:
-        result = get_bite_report_score(report, result)
-        index = len(result['score_detail']['bite']['score_items']) - 1
-        result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
-        bite_score += result['score_detail']['bite']['score_items'][index]['report_score']
-    result['total_score'] += bite_score
-    '''
-
-    results_site = {}
-    results_site['score'] = 0
-    results_site['score_items'] = []
-    result['score_detail']['site'] = results_site
-
-    site_score = 0
-    for report in site_last_versions:
-        result = get_site_report_score(report, result)
-        index = len(result['score_detail']['site']['score_items']) - 1
-        result['score_detail']['site']['score'] += result['score_detail']['site']['score_items'][index]['report_score']
-        site_score += result['score_detail']['site']['score_items'][index]['report_score']
-    result['total_score'] += site_score
-
-    unrelated_score = get_unrelated_awards_score(user_uuid, user_uuids)
-
-    result['total_score'] += unrelated_score['score']
-
-    return result
-
-
-def get_uuid_replicas():
-    profiles = TigaProfile.objects.all()
-    exclude = []
-    for p in profiles:
-        if p.profile_devices.count() > 1:
-            i = 0
-            for d in p.profile_devices.all().order_by('user_UUID'):
-                if i > 0:
-                    exclude.append(d.user_UUID)
-                i+=1
-    return exclude
-
-
-def compute_user_score_in_xp_v2(user_uuid, update=False):
-
-    user = TigaUser.objects.get(pk=user_uuid)
-    user_uuids = None
-    if user.profile is not None:
-        user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
-
-    uuid_replicas = get_uuid_replicas()
-
-    qs_overall = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
-    qs_adult = TigaUser.objects.exclude(score_v2_adult=0).exclude(user_UUID__in=uuid_replicas)
-    qs_site = TigaUser.objects.exclude(score_v2_site=0).exclude(user_UUID__in=uuid_replicas)
-    #qs_bite = TigaUser.objects.exclude(score_v2_bite=0).exclude(user_UUID__in=uuid_replicas)
+    qs_overall = TigaUser.objects.exclude(score_v2=0)
+    qs_adult = TigaUser.objects.exclude(score_v2_adult=0)
+    qs_site = TigaUser.objects.exclude(score_v2_site=0)
+    #qs_bite = TigaUser.objects.exclude(score_v2_bite=0)
 
     overall_df = pd.DataFrame(list(qs_overall.values_list('score_v2', 'user_UUID')), columns=['score_v2', 'user_UUID'])
     adult_df = pd.DataFrame(list(qs_adult.values_list('score_v2_adult', 'user_UUID')), columns=['score_v2_adult', 'user_UUID'])
@@ -461,12 +372,7 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     #rank_value_bite = get_user_rank_value(bite_sorted_df, user_uuid)
     #min_max_bite = get_min_max(bite_sorted_df, 'score_v2_bite')
 
-    current_date = datetime.date.today()
-    if user is not None:
-        result['joined_value'] = user.registration_time.strftime("%d/%m/%Y")
-        #result['joined_label'] = get_elapsed_label(current_date, user.registration_time.date())
-    else:
-        result['joined_value'] = None
+    result['joined_value'] = user.registration_time.strftime("%d/%m/%Y")
 
     if user_uuids is None:
         user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
@@ -494,7 +400,7 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     result['score_detail']['adult'] = results_adult
 
     adult_score = 0
-    for report in adult_last_versions:
+    for report in adult_last_versions.iterator():
         result = get_adult_report_score(report, result)
         index = len(result['score_detail']['adult']['score_items']) - 1
         result['score_detail']['adult']['score'] += result['score_detail']['adult']['score_items'][index]['report_score']
@@ -508,7 +414,7 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
 
     '''
     bite_score = 0
-    for report in bite_last_versions:
+    for report in bite_last_versions.iterator():
         result = get_bite_report_score(report, result)
         index = len(result['score_detail']['bite']['score_items']) - 1
         result['score_detail']['bite']['score'] += result['score_detail']['bite']['score_items'][index]['report_score']
@@ -522,7 +428,7 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     result['score_detail']['site'] = results_site
 
     site_score = 0
-    for report in site_last_versions:
+    for report in site_last_versions.iterator():
         result = get_site_report_score(report, result)
         index = len(result['score_detail']['site']['score_items']) - 1
         result['score_detail']['site']['score'] += result['score_detail']['site']['score_items'][index]['report_score']
@@ -587,18 +493,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
         result['score_detail']['site']['top_perc'] = (float(site_number_below_rank) / float(site_number_total)) * 100.0
     result['score_detail']['site']['ranked_users'] = site_number_total
 
-    if update:
-        if user_uuids is not None:
-            all_users_in_profile = TigaUser.objects.filter(user_UUID__in=user_uuids)
-            all_users_in_profile.update(score_v2=result['total_score'])
-            all_users_in_profile.update(score_v2_adult=result['score_detail']['adult']['score'])
-            all_users_in_profile.update(score_v2_site=result['score_detail']['site']['score'])
-        else:
-            user.score_v2 = result['total_score']
-            user.score_v2_adult = result['score_detail']['adult']['score']
-            user.score_v2_site = result['score_detail']['site']['score']
-            user.save()
-
     '''
     if bite_number_below_rank == 0 and bite_number_total == 0:
         result['score_detail']['bite']['top_perc'] = 100.0
@@ -608,14 +502,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     '''
 
     return result
-
-
-def compute_all_user_scores():
-    all_users = TigaUser.objects.all()
-    for user in all_users:
-        score = compute_user_score_in_xp_v2( user.user_UUID )
-        user.score_v2 = score
-        user.save()
 
 
 def get_all_user_reports(user_uuid):

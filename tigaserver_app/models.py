@@ -8,6 +8,7 @@ from firebase_admin.exceptions import FirebaseError
 from firebase_admin.messaging import Message, Notification as FirebaseNotification, AndroidConfig, AndroidNotification
 import logging
 from math import floor
+from numpyencoder import NumpyEncoder
 from PIL import Image
 import pydenticon
 import os
@@ -21,16 +22,15 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.contrib.postgres.fields import JSONField
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.urls import reverse
-from django.utils import translation
+from django.utils import translation, timezone
 from django.utils.deconstruct import deconstructible
-from django.utils import timezone
-from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
 from simple_history.models import HistoricalRecords
@@ -222,7 +222,9 @@ class TigaUser(models.Model):
 
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True, on_delete=models.SET_NULL, )
 
-    score_v2_struct = models.TextField(help_text="Full cached score data", null=True, blank=True)
+    # NOTE using NumpyEncoder since compute_user_score_in_xp_v2 function get result from pandas dataframe
+    # and some integer are np.int64, which can not be encoded with the regular json library setup.
+    score_v2_struct = JSONField(encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True)
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
@@ -250,6 +252,34 @@ class TigaUser(models.Model):
             f.write(identicon_png)
             f.close()
         return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"
+
+    def update_score(self, commit: bool = True) -> None:
+        # NOTE: placing import here due to circular import
+        from tigascoring.xp_scoring import compute_user_score_in_xp_v2
+
+        score_dict = compute_user_score_in_xp_v2(user_uuid=self.pk)
+        self.score_v2_struct = score_dict
+
+        try:
+            self.score_v2_adult = score_dict['score_detail']['adult']['score']
+        except (KeyError, TypeError):
+            self.score_v2_adult = 0
+
+        try:
+            self.score_v2_bite = score_dict['score_detail']['bite']['score']
+        except (KeyError, TypeError):
+            self.score_v2_bite = 0
+
+        try:
+            self.score_v2_site = score_dict['score_detail']['site']['score']
+        except (KeyError, TypeError):
+            self.score_v2_site = 0
+
+        self.score_v2 = sum([self.score_v2_adult, self.score_v2_bite, self.score_v2_site])
+        self.last_score_update = timezone.now()
+
+        if commit:
+            self.save()
 
     n_reports = property(number_of_reports_uploaded)
     ios_user = property(is_ios)
@@ -345,7 +375,7 @@ class Mission(models.Model):
         return self.title_catalan
 
     def active_missions(self):
-        return self.expiration_time >= datetime.utcnow().replace(tzinfo=utc)
+        return self.expiration_time >= datetime.utcnow().replace(tzinfo=timezone.utc)
 
 
 class MissionTrigger(models.Model):
@@ -1625,6 +1655,8 @@ class Report(TimeZoneModelMixin, models.Model):
 
         super(Report, self).save(*args, **kwargs)
 
+        self.user.update_score()
+
     def soft_delete(self):
         self.deleted_at = timezone.now()
         self.version_number = -1
@@ -1634,6 +1666,10 @@ class Report(TimeZoneModelMixin, models.Model):
         self.deleted_at = None
         self.version_number = 0
         self.save_without_historical_record()
+
+    def delete(self, *args, **kwargs):
+        self.user.update_score()
+        return super().delete(*args, **kwargs)
 
     # Meta and String
     class Meta:
@@ -2030,8 +2066,11 @@ class Report(TimeZoneModelMixin, models.Model):
         elif expert_annotations.count() >= 3:
             most_voted = self.get_most_voted_category(expert_annotations)
         else:
-            most_voted = Categories.objects.get(name='Unclassified')
-            retval['in_progress'] = True
+            try:
+                most_voted = Categories.objects.get(name='Unclassified')
+                retval['in_progress'] = True
+            except Categories.DoesNotExist:
+                pass
 
         if most_voted is None:
             retval['conflict'] = True
@@ -2043,7 +2082,10 @@ class Report(TimeZoneModelMixin, models.Model):
                     retval['value'] = score
             elif most_voted.__class__.__name__ == 'Complex':
                 retval['complex'] = most_voted
-                retval['category'] = Categories.objects.get(pk=8)
+                try:
+                    retval['category'] = Categories.objects.get(pk=8)
+                except Categories.DoesNotExist:
+                    pass
         return retval
 
     def get_mean_combined_expert_adult_score(self):
@@ -3196,6 +3238,17 @@ class Award(models.Model):
     category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards', on_delete=models.CASCADE, )
     special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
     special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')
+
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        if self.given_to is not None:
+            self.given_to.update_score()
+
+    def delete(self, *args, **kwargs):
+        if self.given_to is not None:
+            self.given_to.update_score()
+
+        return super().delete(*args, **kwargs)
 
     def __str__(self):
         if self.category:
