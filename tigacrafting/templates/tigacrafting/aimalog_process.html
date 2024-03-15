@@ -458,7 +458,7 @@
                 <div id="save_block_modal_body" class="modal-body">
                     About to do the following changes:
                     <ul>
-                        <li> - Communication status will be set to <b>'Accepted and communicated'</b></li>
+                        <li> - <b>Communication status</b> will be set to <b><span style="color:green;">'Accepted and communicated'</span></b></li>
                         <li>
                              - <b>Send alert email</b> to the following recipients (country {{ alert.get_alert_country.name_engl }}):
                             <ul>
@@ -466,6 +466,9 @@
                                 <li> * <i>{{ c }}</i></li>
                                 {% endfor %}
                             </ul>
+                        </li>
+                        <li>
+                            - <b>Status in location</b> will be changed to: <b><span style="color:red;" id="status_change_dialog"></span></b>
                         </li>
                     </ul>
                 </div>
@@ -477,6 +480,10 @@
             </div>
         </div>
     </div>
+    <input type="hidden" id="reported_n">
+    <input type="hidden" id="status_in_location">
+    <input type="hidden" id="revised_category" value="{{ report_info.category_id }}">
+    <input type="hidden" id="loc_code" value="{{ alert.loc_code }}">
 </body>
     <script>
         var alert_id = {{ alert.id }};

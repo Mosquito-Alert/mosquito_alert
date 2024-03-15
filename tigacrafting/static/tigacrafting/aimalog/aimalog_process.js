@@ -20,6 +20,38 @@ $(document).ready(function () {
         });
     }
 
+    var status_update = function(expert_validation_category, status_in_location, loc_code, reported_n){
+        $.ajax({
+            url: '/api/status_update_info/',
+            data: {
+                'expert_validation_category': expert_validation_category,
+                'status_in_location': status_in_location,
+                'loc_code': loc_code,
+                'reported_n': reported_n
+            },
+            type: "POST",
+            dataType: "json",
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type)) {
+                    var csrftoken = getCookie('csrftoken');
+                    xhr.setRequestHeader('X-CSRFToken', csrftoken);
+                }
+            },
+            success: function(data) {
+                console.log(data);
+                $("#send_email_modal").modal('show');
+                if(data.opcode=='nochange'){
+                    $('#status_change_dialog').text('unchanged');
+                }else{
+                    $('#status_change_dialog').text(data.new_status);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                console.log(textStatus);
+            }
+        });
+    }
+
     var load_status = function(alert_id){
         $.ajax({
             url: '/api/validation_status/' + alert_id + '/',
@@ -33,13 +65,17 @@ $(document).ready(function () {
             success: function(data) {
                 $('#status_spinner').hide();
                 $('#status_label').text(data.status);
+                $('#status_in_location').val(data.status);
                 if(data.n_reported!=null){
                     $('#reported_count').text(data.n_reported);
+                    $('#reported_n').val(data.n_reported);
                 }
             },
             error: function(jqXHR, textStatus, errorThrown){
                 $('#status_spinner').hide();
                 $('#status_label').text("Error loading status: " + textStatus);
+                $('#reported_n').val('');
+                $('#status_in_location').val('');
             }
         });
     }
@@ -67,33 +103,28 @@ $(document).ready(function () {
 
     var update_ui = function(){
         if(communication_status != '' && communication_status == '0'){
-            //$('#new_comm').closest('.btn').button('toggle');
             $('input[name=communication_status][value=0]').attr('checked', true);
         }else if (communication_status != '' && communication_status == '1'){
             $('input[name=communication_status][value=1]').attr('checked', true);
-            //$('#accepted_comm').closest('.btn').button('toggle');
         }else if (communication_status != '' && communication_status == '2'){
             $('input[name=communication_status][value=2]').attr('checked', true);
-            //$('#sent_comm').closest('.btn').button('toggle');
         }else if (communication_status != '' && communication_status == '3'){
             $('input[name=communication_status][value=3]').attr('checked', true);
-            //$('#rejected_comm').closest('.btn').button('toggle');
         }
     };
 
-    /*
-    $('input[type=radio][name=communication_status]').change( function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        return false;
-
-    });*/
     $('[name="communication_status"]:radio').click(function(event) {
         if(this.value==2){
             event.preventDefault();
+            var expert_validation_category = $('#revised_category').val();
+            var status_in_location = $('#status_in_location').val();
+            var loc_code = $('#loc_code').val();
+            var reported_n = $('#reported_n').val();
+            status_update(expert_validation_category, status_in_location, loc_code, reported_n);
+        }else{
+            var _current_status = this.value;
+            set_communication_status(alert_id,_current_status);
         }
-        var _current_status = this.value;
-        set_communication_status(alert_id,_current_status);
     });
 
     $('#review').on('click', function(){
@@ -109,6 +140,5 @@ $(document).ready(function () {
 
     update_ui();
     load_status(alert_id);
-    $("#send_email_modal").modal('show');
 
 });

@@ -17,7 +17,7 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, NutsEurope, MunicipalitiesNatCode
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, NutsEurope, MunicipalitiesNatCode, Categories
 from tigacrafting.models import FavoritedReports, AlertMetadata, Alert
 from tigacrafting.report_queues import assign_crisis_report
 from math import ceil
@@ -47,6 +47,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
 import geopandas as gpd
+import fiona
 
 #from celery.task.schedules import crontab
 #from celery.decorators import periodic_task
@@ -2007,12 +2008,28 @@ def clear_blocked_all(request):
             send_unblock_email( name, email )
         return Response(status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def validation_status(request, alert_id=None):
-    alert = get_object_or_404(Alert,pk=alert_id)
-    report = get_object_or_404(Report,pk=alert.report_id)
-    report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
-    location = alert.loc_code
+
+def get_new_status(expert_validation_category, status_in_location, loc_code, reported_n = None):
+    c = Categories.objects.get(pk=int(expert_validation_category))
+    if expert_validation_category in ('4', '5', '6', '7', '10'):
+        if status_in_location == 'noData' or status_in_location == 'absent':
+            # set status for species as "reported" in location in SHAPEFILE
+            return {'opcode': 'change', 'location': loc_code, 'species': c.name, 'old_status': status_in_location, 'new_status': 'reported'}
+        elif status_in_location == 'reported' and reported_n is not None and int(reported_n) > 3:
+            return {'opcode': 'change', 'location': loc_code, 'species': c.name, 'old_status': status_in_location, 'new_status': 'established'}
+            # set status for species as established in location in SHAPEFILE
+    return {'opcode': 'nochange'}
+
+@api_view(['POST'])
+def status_update_info(request):
+    expert_validation_category = request.POST.get('expert_validation_category','')
+    status_in_location = request.POST.get('status_in_location', '')
+    loc_code = request.POST.get('loc_code', '')
+    reported_n = request.POST.get('reported_n', None)
+    new_status_data = get_new_status(expert_validation_category, status_in_location, loc_code, reported_n)
+    return Response(new_status_data, status=status.HTTP_200_OK)
+
+def check_status_in_shapefile(report_category_id, location, alert_species, presence_shapefile):
     category_id_to_ia_column = {
         '4': 'albopictus',
         '5': 'aegypti',
@@ -2020,18 +2037,38 @@ def validation_status(request, alert_id=None):
         '7': 'koreicus',
         '10': 'culex',
     }
-    report_category_id = report_info['category_id']
     if report_category_id in ['4', '5', '6', '7', '10']:
         filter_column = category_id_to_ia_column[report_category_id]
-        gdf = gpd.read_file(settings.PRESENCE_SHAPEFILE)
+        gdf = gpd.read_file(presence_shapefile)
         _status = gdf[gdf['locCode'] == location][filter_column].iloc[0]
         n_reported = None
         if _status == 'reported':
-            n_reported = Alert.objects.filter(loc_code=location).filter(review_status='reported').filter(species=alert.species).count()
-        return Response({'status': _status, 'n_reported': n_reported}, status=status.HTTP_200_OK)
+            n_reported = Alert.objects.filter(loc_code=location).filter(review_status='reported').filter(species=alert_species).count()
+        return {'status': _status, 'n_reported': n_reported}
+    else:
+        return {'status': 'species not currently tracked'}
+
+def write_status_to_shapefile(location, alert_species, new_status, presence_shapefile):
+    gdf = gpd.read_file(presence_shapefile)
+    row_index = gdf.index.get_loc(gdf[gdf['locCode'] == location].index[0])
+    old_status = gdf[gdf['locCode'] == location][alert_species].iloc[0]
+    gdf.at[row_index,alert_species] = new_status
+    gdf.to_file(presence_shapefile)
+    return { 'location': location, 'alert_species': alert_species, 'old_status': old_status, 'new_status': new_status }
+
+
+@api_view(['GET'])
+def validation_status(request, alert_id=None):
+    alert = get_object_or_404(Alert,pk=alert_id)
+    report = get_object_or_404(Report,pk=alert.report_id)
+    report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
+    location = alert.loc_code
+    report_category_id = report_info['category_id']
+    status_data = check_status_in_shapefile(report_category_id, location, alert.species, settings.PRESENCE_SHAPEFILE)
+    if report_category_id in ['4', '5', '6', '7', '10']:
+        return Response(status_data, status=status.HTTP_200_OK)
     else:
         return Response({'status': 'species not currently tracked'}, status=status.HTTP_200_OK)
-    return Response({'status':'none'}, status=status.HTTP_200_OK)
 
 @api_view(['DELETE'])
 def clear_blocked(request, username, report=None):

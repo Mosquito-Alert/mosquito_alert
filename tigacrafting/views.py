@@ -2011,6 +2011,7 @@ def get_alert_location_from_code(loc_code):
             data['municipality'] = None
     return data
 
+
 @login_required
 def process_ui(request, report_id=None, alert_id=None):
     report = Report.objects.get(pk=report_id)
