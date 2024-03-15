@@ -273,9 +273,25 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
 
     def create(self,validated_data):
         responses_data = validated_data.pop('responses')
-        report = Report.objects.create(**validated_data)
+        report = Report(**validated_data)
+
+        # Create the report response and updating report fields
+        # without saving. We want to save all changes at once.
+        responses = []
         for response in responses_data:
-            ReportResponse.objects.create(report=report, **response)
+            report_responses = ReportResponse(
+                report=report, **response
+            )
+            report_responses._update_report_value(
+                commit=False
+            )
+            responses.append(report_responses)
+
+        # Saving reports (already updated) + responses.
+        report.save()
+        for response in responses:
+            response.save(skip_report_update=True)
+
         return report
 
     class Meta:

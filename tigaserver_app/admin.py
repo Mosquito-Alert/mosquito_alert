@@ -7,6 +7,7 @@ import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
 from django.utils.html import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
 
 def export_full_csv(modeladmin, request, queryset):
@@ -107,14 +108,145 @@ class PhotoInline(admin.StackedInline):
 
 
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
-                    'package_version', 'os', 'n_photos', 'map_link', 'movelab_score', 'crowd_score')
-    inlines = [ReportResponseInline, PhotoInline]
-    ordering = ('creation_time', 'report_id', 'version_number')
-    readonly_fields = ('deleted', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time', 'updated_at', 'datetime_fix_offset', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link', 'movelab_score', 'crowd_score')
-    fields = ('hide', 'deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', ('creation_time', 'version_time', 'datetime_fix_offset'), ('server_upload_time','phone_upload_time'), 'updated_at', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'movelab_score', 'crowd_score')
+    list_display = (
+        'report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
+        'package_version', 'os', 'n_photos'
+    )
     list_filter = ['os', 'type', 'mission', 'package_name', 'package_version']
+
+    inlines = [ReportResponseInline, PhotoInline]
     actions = [export_full_csv, export_full_csv_sc]
+
+    readonly_fields = [
+        "deleted",
+        "report_id",
+        "version_number",
+        "type",
+        "user",
+        "mission",
+        "session",
+        "server_upload_time",
+        "updated_at",
+        "version_time",
+        "phone_upload_time",
+        "creation_time",
+        "other_versions_of_this_report"
+    ]
+
+    fieldsets = [
+        (
+            _('General info'),
+            {
+                "fields": [
+                    ("report_id", "version_number"),
+                    ("hide", "deleted"),
+                    "type",
+                    "user",
+                    ("mission","session"),
+                    "other_versions_of_this_report",
+                    ("server_upload_time", "updated_at"),
+                    ("version_time", "datetime_fix_offset"),
+                    ("creation_time", "phone_upload_time")
+                ]
+            }
+        ),
+        (
+            _("Location information"),
+            {
+                "fields": [
+                    ("country", "nuts_2", "nuts_3"),
+                    "location_choice",
+                    "point"
+                ]
+            }
+        ),
+        (
+            _("Other"),
+            {
+                "fields": [
+                    ("package_name", "package_version", "app_language"),
+                    ("device_manufacturer", "device_model"),
+                    ("os", "os_version", "os_language"),
+                    "note"
+                ],
+                "classes": ["collapse",]
+            }
+        )
+    ]
+
+    def get_readonly_fields(self, request, obj=None):
+        # Only allow to edit 'hide' field.
+        result = super().get_readonly_fields(request, obj)
+
+        readonly_fields = [field.name for field in self.model._meta.get_fields()]
+        allow_edit_fields = ['hide',]
+
+        for field_name in readonly_fields:
+            if not field_name in allow_edit_fields:
+                result.append(field_name)
+
+        return result
+
+    def get_fieldsets(self, request, obj = None):
+        result = super().get_fieldsets(request, obj)
+
+        if not obj:
+            return result
+
+        extra_fieldsets = []
+        if obj.type == Report.TYPE_ADULT:
+            extra_fieldsets.append(
+                (
+                    _("Classification"),
+                    {
+                        "fields": [
+                            "ia_filter_1", "ia_filter_2"
+                        ]
+                    }
+                )
+            )
+            extra_fieldsets.append(
+                (
+                    _("Specific information"),
+                    {
+                        "fields": [
+                            ("event_environment", "event_moment"),
+                            "user_perceived_mosquito_specie",
+                            ("user_perceived_mosquito_thorax", "user_perceived_mosquito_abdomen", "user_perceived_mosquito_legs")
+                        ]
+                    }
+                )
+            )
+        elif obj.type == Report.TYPE_BITE:
+            extra_fieldsets.append(
+                (
+                    _("Specific information"),
+                    {
+                        "fields": [
+                            ("event_environment", "event_moment"),
+                            "bite_count",
+                            ("head_bite_count", "left_arm_bite_count", "right_arm_bite_count", "chest_bite_count", "left_leg_bite_count", "right_leg_bite_count")
+                        ]
+                    }
+                )
+            )
+        elif obj.type == Report.TYPE_SITE:
+            extra_fieldsets.append(
+                (
+                    _("Specific information"),
+                    {
+                        "fields": [
+                            "breeding_site_type",
+                            "breeding_site_has_water",
+                            "breeding_site_in_public_area",
+                            "breeding_site_has_near_mosquitoes",
+                            "breeding_site_has_larvae"
+                        ]
+                    }
+                )
+            )
+
+        return result + extra_fieldsets
 
     def has_add_permission(self, request):
         return False
@@ -123,25 +255,14 @@ class ReportAdmin(admin.ModelAdmin):
         return False
 
     def other_versions_of_this_report(self, obj):
-        result = []
+        result = ""
         for this_version in obj.other_versions:
             result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
                 this_version.version_UUID,
                 this_version.version_number,
             )
-        return result
+        return mark_safe(result)
     other_versions_of_this_report.allow_tags = True
-
-    def movelab_score(self, obj):
-        return obj.movelab_score
-
-    def crowd_score(self, obj):
-        return obj.crowd_score
-
-    def map_link(self, obj):
-        return '<a href="/single_report_map/%s/">Show map</a>' % obj.version_UUID
-    map_link.allow_tags = True
-
 
 def export_csv_photo(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
@@ -237,7 +358,7 @@ class PhotoAdmin(admin.ModelAdmin):
                 this_version.version_UUID,
                 this_version.version_number,
             )
-        return result
+        return mark_safe(result)
     other_report_versions.allow_tags = True
 
     def map_link(self, obj):
