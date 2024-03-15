@@ -14,7 +14,7 @@ def update_field_based_on_responses(apps, fieldname, responses: Tuple[str, str],
             ],
             _connector=connector
         )
-    
+
     # Loading models
     Report = apps.get_model("tigaserver_app", "Report")
     ReportResponse = apps.get_model("tigaserver_app", "ReportResponse")
@@ -565,6 +565,14 @@ def populate_bite_count(apps, schema_editor):
                 output_field=Report._meta.get_field(fieldname).__class__()
             )}
         )
+
+        from tigaserver_app.models import Report as ModelReport
+
+        # Ensure bite report field are set to 0 as default.
+        Report.objects.filter(
+            type=ModelReport.TYPE_BITE,
+            **{f"{fieldname}__isnull": True}
+        ).update(**{f"{fieldname}": 0})
 
     # Loading models
     Report = apps.get_model("tigaserver_app", "Report")
