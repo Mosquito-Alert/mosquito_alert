@@ -2063,29 +2063,30 @@ def send_alert_email(alert):
 
 @api_view(['POST'])
 def accept_and_communicate_alert(request):
-    alert_id = request.POST.get('alert_id', -1)
-    new_status = request.POST.get('new_status', 'unchanged')
-    expert_validation_category = request.POST.get('expert_validation_category', None)
-    alert = get_object_or_404(Alert, pk=alert_id)
-    try:
-        if new_status != 'unchanged' and expert_validation_category in ['4', '5', '6', '7', '10']:
-            column_shapefile = CATEGORY_ID_TO_IA_COLUMN[expert_validation_category]
-            write_status_to_shapefile(
-                new_status=new_status,
-                location=alert.loc_code,
-                alert_species=column_shapefile,
-                presence_shapefile=conf.PRESENCE_SHAPEFILE
-            )
-        alertmetadata = alert.alertmetadata
-        if alertmetadata is None:
-            alertmetadata = AlertMetadata(communication_status=2)
-        else:
-            alertmetadata.communication_status = 2
-        send_alert_email(alert)
-        alertmetadata.save()
-        return Response({"msg":"Data correctly written"}, status=status.HTTP_200_OK)
-    except Exception as err:
-        return Response({"msg":"Error writing to database - {0}".format(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    with transaction.atomic():
+        alert_id = request.POST.get('alert_id', -1)
+        new_status = request.POST.get('new_status', 'unchanged')
+        expert_validation_category = request.POST.get('expert_validation_category', None)
+        alert = get_object_or_404(Alert, pk=alert_id)
+        try:
+            if new_status != 'unchanged' and expert_validation_category in ['4', '5', '6', '7', '10']:
+                column_shapefile = CATEGORY_ID_TO_IA_COLUMN[expert_validation_category]
+                write_status_to_shapefile(
+                    new_status=new_status,
+                    location=alert.loc_code,
+                    alert_species=column_shapefile,
+                    presence_shapefile=conf.PRESENCE_SHAPEFILE
+                )
+            alertmetadata = alert.alertmetadata
+            if alertmetadata is None:
+                alertmetadata = AlertMetadata(communication_status=2)
+            else:
+                alertmetadata.communication_status = 2
+            send_alert_email(alert)
+            alertmetadata.save()
+            return Response({"msg":"Data correctly written"}, status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response({"msg":"Error writing to database - {0}".format(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def status_update_info(request):
