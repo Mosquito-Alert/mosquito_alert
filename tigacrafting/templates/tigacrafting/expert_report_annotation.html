@@ -257,6 +257,11 @@
                             <li>
                                 <a href="{% url 'predefined_messages' %}" target="_blank">Predefined texts</a>
                             </li>
+                            {% if request.user.userstat.is_superexpert %}
+                            <li>
+                                <a href="{% url 'aimalog' %}" target="_blank">Alerts <span id="n_alerts" class="badge clear">0</span><i id="status_spinner" class="fa fa-spinner fa-spin fa-fw" style="display:none;" aria-hidden="true"></i></a>
+                            </li>
+                            {% endif %}
                             {% if user.userstat.is_national_supervisor %}
                             <li>
                                 <a href="{% url 'global_assignments' %}">Report queue</a>
@@ -2540,6 +2545,7 @@
     <script src={% static "tigacrafting/straight_emergency_grab.js" %}></script>
     <script src={% static "tigacrafting/csrf_utils.js" %}></script>
     <script src={% static "tigacrafting/blood_switch.js" %}></script>
+    <script src={% static "tigacrafting/alert_counter.js" %}></script>
     <script src={% static "tigacrafting/javascript/favorites.js" %}></script>
 
 

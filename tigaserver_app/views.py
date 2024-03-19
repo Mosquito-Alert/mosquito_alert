@@ -2060,6 +2060,10 @@ def send_alert_email(alert):
         email = EmailMessage(subject, text_content, to=[recipient_email])
         email.send(fail_silently=True)
 
+@api_view(['GET'])
+def n_alerts(request):
+    n = AlertMetadata.objects.filter(communication_status=0).count()
+    return Response({"n": n}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def accept_and_communicate_alert(request):
