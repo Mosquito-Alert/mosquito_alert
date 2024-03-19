@@ -570,6 +570,16 @@ class Alert(models.Model):
             return country_model.objects.get(cntr_id=loc_code[:2])
         return None
 
+    def get_alert_nuts3(self):
+        loc_code = self.loc_code
+        if loc_code is not None and loc_code != '' and len(loc_code) >= 5:
+            try:
+                nuts_model = apps.get_model('tigaserver_app', 'NutsEurope')
+                return nuts_model.objects.get(nuts_id=loc_code[:5])
+            except:
+                return None
+        return None
+
     def get_alert_nuts2(self):
         loc_code = self.loc_code
         if loc_code is not None and loc_code != '' and len(loc_code) >= 4:

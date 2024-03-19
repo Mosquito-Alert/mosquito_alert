@@ -41,9 +41,12 @@ $(document).ready(function () {
                 console.log(data);
                 $("#send_email_modal").modal('show');
                 if(data.opcode=='nochange'){
+                    $('#status_change_dialog').addClass('unchanged');
                     $('#status_change_dialog').text('unchanged');
+                    $('#new_status').val('unchanged');
                 }else{
                     $('#status_change_dialog').text(data.new_status);
+                    $('#new_status').val(data.new_status);
                 }
             },
             error: function(jqXHR, textStatus, errorThrown){
@@ -53,6 +56,7 @@ $(document).ready(function () {
     }
 
     var load_status = function(alert_id){
+        block_edit(true);
         $.ajax({
             url: '/api/validation_status/' + alert_id + '/',
             type: "GET",
@@ -70,12 +74,38 @@ $(document).ready(function () {
                     $('#reported_count').text(data.n_reported);
                     $('#reported_n').val(data.n_reported);
                 }
+                block_edit(false);
             },
             error: function(jqXHR, textStatus, errorThrown){
                 $('#status_spinner').hide();
                 $('#status_label').text("Error loading status: " + textStatus);
                 $('#reported_n').val('');
                 $('#status_in_location').val('');
+                block_edit(false);
+            }
+        });
+    }
+
+    var accept_and_communicate_alert = function(alert_id, new_status, expert_validation_category){
+        $.ajax({
+            url: '/api/accept_and_communicate_alert/',
+            data: {'alert_id':alert_id, 'new_status':new_status, 'expert_validation_category': expert_validation_category},
+            type: "POST",
+            dataType: "json",
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type)) {
+                    var csrftoken = getCookie('csrftoken');
+                    xhr.setRequestHeader('X-CSRFToken', csrftoken);
+                }
+            },
+            success: function(data) {
+                $("#send_email_modal").modal('hide');
+                $('#sent_comm').prop('checked', true);
+                toastr.success("Status correctly updated");
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                $("#send_email_modal").modal('hide');
+                toastr.error("Error changing status - " + errorThrown);
             }
         });
     }
@@ -111,6 +141,10 @@ $(document).ready(function () {
         }else if (communication_status != '' && communication_status == '3'){
             $('input[name=communication_status][value=3]').attr('checked', true);
         }
+        if( report_in_progress == 1){
+            block_edit(true);
+            $('#noedit_alert').show();
+        }
     };
 
     $('[name="communication_status"]:radio').click(function(event) {
@@ -133,10 +167,24 @@ $(document).ready(function () {
         review(alert_id, review_species, review_comment);
     });
 
+    $('#confirm_review').on('click', function(){
+        var expert_validation_category = $('#revised_category').val();
+        var new_status = $('#new_status').val();
+        accept_and_communicate_alert(alert_id, new_status, expert_validation_category);
+    });
+
+    $('#no_review').on('click', function(){
+        $("#send_email_modal").modal('hide');
+    });
+
     $('#comment').on('click',function(){
         var comments = $('#area_comments').val();
         review(alert_id, null, comments);
     });
+
+    var block_edit = function(state){
+        $('input[name=communication_status]').attr("disabled",state);
+    };
 
     update_ui();
     load_status(alert_id);

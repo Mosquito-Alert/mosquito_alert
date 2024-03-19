@@ -52,7 +52,13 @@ import fiona
 #from celery.task.schedules import crontab
 #from celery.decorators import periodic_task
 
-
+CATEGORY_ID_TO_IA_COLUMN = {
+    '4': 'albopictus',
+    '5': 'aegypti',
+    '6': 'japonicus',
+    '7': 'koreicus',
+    '10': 'culex',
+}
 
 class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
@@ -2020,6 +2026,67 @@ def get_new_status(expert_validation_category, status_in_location, loc_code, rep
             # set status for species as established in location in SHAPEFILE
     return {'opcode': 'nochange'}
 
+def send_alert_email(alert):
+    contacts = alert.get_contacts()
+    report = Report.objects.get(pk=alert.report_id)
+    report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
+    country = alert.get_alert_country()
+    nuts3 = alert.get_alert_nuts3()
+    for recipient_email in contacts:
+        recipient_name = None
+        try:
+            u = User.objects.get(email=recipient_email)
+            recipient_name = "{0} {1}".format( u.first_name, u.last_name )
+        except:
+            recipient_name = recipient_email
+        data = {
+            'recipient': recipient_name,
+            'report_version': report.version_UUID,
+            'user_id': report.user_id,
+            'report_date': report.server_upload_time,
+            'identified_species': alert.species,
+            'identified_score': alert.certainty,
+            'loc_code': alert.loc_code,
+            'loc_name': '',
+            'nuts3_name': '' if nuts3 is None else nuts3.name_latn,
+            'country_name': '' if country is None else country.name_engl,
+            'current_status': alert.status,
+            'bestImage': '',
+        }
+
+        subject = 'MOSQUITO ALERT - AI Alert'
+        plaintext = get_template('tigacrafting/aima_email_template.txt')
+        text_content = plaintext.render(data)
+        email = EmailMessage(subject, text_content, to=[recipient_email])
+        email.send(fail_silently=True)
+
+
+@api_view(['POST'])
+def accept_and_communicate_alert(request):
+    alert_id = request.POST.get('alert_id', -1)
+    new_status = request.POST.get('new_status', 'unchanged')
+    expert_validation_category = request.POST.get('expert_validation_category', None)
+    alert = get_object_or_404(Alert, pk=alert_id)
+    try:
+        if new_status != 'unchanged' and expert_validation_category in ['4', '5', '6', '7', '10']:
+            column_shapefile = CATEGORY_ID_TO_IA_COLUMN[expert_validation_category]
+            write_status_to_shapefile(
+                new_status=new_status,
+                location=alert.loc_code,
+                alert_species=column_shapefile,
+                presence_shapefile=conf.PRESENCE_SHAPEFILE
+            )
+        alertmetadata = alert.alertmetadata
+        if alertmetadata is None:
+            alertmetadata = AlertMetadata(communication_status=2)
+        else:
+            alertmetadata.communication_status = 2
+        send_alert_email(alert)
+        alertmetadata.save()
+        return Response({"msg":"Data correctly written"}, status=status.HTTP_200_OK)
+    except Exception as err:
+        return Response({"msg":"Error writing to database - {0}".format(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['POST'])
 def status_update_info(request):
     expert_validation_category = request.POST.get('expert_validation_category','')
@@ -2030,15 +2097,8 @@ def status_update_info(request):
     return Response(new_status_data, status=status.HTTP_200_OK)
 
 def check_status_in_shapefile(report_category_id, location, alert_species, presence_shapefile):
-    category_id_to_ia_column = {
-        '4': 'albopictus',
-        '5': 'aegypti',
-        '6': 'japonicus',
-        '7': 'koreicus',
-        '10': 'culex',
-    }
     if report_category_id in ['4', '5', '6', '7', '10']:
-        filter_column = category_id_to_ia_column[report_category_id]
+        filter_column = CATEGORY_ID_TO_IA_COLUMN[report_category_id]
         gdf = gpd.read_file(presence_shapefile)
         _status = gdf[gdf['locCode'] == location][filter_column].iloc[0]
         n_reported = None
@@ -2064,8 +2124,8 @@ def validation_status(request, alert_id=None):
     report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
     location = alert.loc_code
     report_category_id = report_info['category_id']
-    status_data = check_status_in_shapefile(report_category_id, location, alert.species, settings.PRESENCE_SHAPEFILE)
     if report_category_id in ['4', '5', '6', '7', '10']:
+        status_data = check_status_in_shapefile(report_category_id, location, alert.species, settings.PRESENCE_SHAPEFILE)
         return Response(status_data, status=status.HTTP_200_OK)
     else:
         return Response({'status': 'species not currently tracked'}, status=status.HTTP_200_OK)

@@ -6,6 +6,7 @@
     <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/toastr/toastr.min.css" %}/>
     <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.min.css" %}>
     <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
@@ -17,6 +18,12 @@
         }
          .button-review {
             margin: 5px;
+        }
+        .unchanged {
+            color: green;
+        }
+        .changed {
+            color: red;
         }
     </style>
 
@@ -138,6 +145,12 @@
                             </div>
                           <!--</label>-->
                     </div>
+                    <div id="noedit_alert" class="col-md-12 alert alert-danger" style="display:none;">
+                        <p style="color:red;">Edition is not allowed while report validation is in progress</p>
+                    </div>
+                </div>
+                <div class="row">
+
                 </div>
             </div>
         </div>
@@ -468,28 +481,31 @@
                             </ul>
                         </li>
                         <li>
-                            - <b>Status in location</b> will be changed to: <b><span style="color:red;" id="status_change_dialog"></span></b>
+                            - <b>Status in location</b> will be changed to: <b><span id="status_change_dialog"></span></b>
                         </li>
                     </ul>
                 </div>
                 <div class="modal-footer">
                     Do you want to proceed?
-                    <button type="button" class="btn btn-default">Yes</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                    <button type="button" id="confirm_review" class="btn btn-default">Yes</button>
+                    <button type="button" id="no_review" class="btn btn-default">No</button>
                 </div>
             </div>
         </div>
     </div>
     <input type="hidden" id="reported_n">
     <input type="hidden" id="status_in_location">
+    <input type="hidden" id="new_status">
     <input type="hidden" id="revised_category" value="{{ report_info.category_id }}">
     <input type="hidden" id="loc_code" value="{{ alert.loc_code }}">
 </body>
     <script>
         var alert_id = {{ alert.id }};
         var communication_status = '{{ alert.alertmetadata.communication_status }}';
+        var report_in_progress = {% if report_info.in_progress %}1{% else %}0{% endif %};
     </script>
     <script src={% static "stats/datatables.min.js" %}></script>
+    <script src={% static "tigacrafting/toastr/toastr.min.js" %}></script>
     <script src={% static "tigacrafting/csrf_utils.js" %}></script>
     <script src={% static "tigacrafting/cookies.js" %}></script>
     <script src={% static "tigacrafting/aimalog/aimalog_process.js" %}></script>

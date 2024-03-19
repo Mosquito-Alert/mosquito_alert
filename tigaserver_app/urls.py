@@ -85,5 +85,6 @@ urlpatterns = [
     url('communication_status/$', views.communication_status),
     url('validation_status/(?P<alert_id>\d+)/$', views.validation_status),
     url('status_update_info/$', views.status_update_info),
+    url('accept_and_communicate_alert/$', views.accept_and_communicate_alert),
     url('', include(router.urls)),
 ]
