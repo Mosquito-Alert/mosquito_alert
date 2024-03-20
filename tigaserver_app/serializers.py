@@ -431,6 +431,15 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class DataTableAimalertSerializer(serializers.ModelSerializer):
+
+    CATEGORY_ID_TO_IA_COLUMN = {
+        '4': 'albopictus',
+        '5': 'aegypti',
+        '6': 'japonicus',
+        '7': 'koreicus',
+        '10': 'culex',
+    }
+
     report_datetime = serializers.DateTimeField(format="%d/%m/%Y %H:%M:%S")
     review_datetime = serializers.DateTimeField(format="%d/%m/%Y %H:%M:%S")
     country = serializers.SerializerMethodField()
@@ -443,17 +452,29 @@ class DataTableAimalertSerializer(serializers.ModelSerializer):
     validation_status = serializers.SerializerMethodField()
     comm_status = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
+    validation_species = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
-        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit','sent', 'validation_status','comm_status','comments')
+        fields = ('id','xvb','report_id','report_datetime','loc_code','cat_id','species','certainty','status','hit','review_species','review_status','review_datetime','country','nuts_one','nuts_two','nuts_three','municipality','alert_sent','ia_hit','sent', 'validation_status','comm_status','comments', 'validation_species')
+
+
+    def get_validation_species(self, obj):
+        try:
+            return obj.alertmetadata.validation_species
+        except Alert.alertmetadata.RelatedObjectDoesNotExist:
+            pass
+        return None
 
     def get_ia_hit(self,obj):
-        if obj.review_species == None or obj.review_species == '':
+        try:
+            if obj.alertmetadata.validation_species is None:
+                return None
+            if obj.species == obj.alertmetadata.validation_species:
+                return True
+            return False
+        except Alert.alertmetadata.RelatedObjectDoesNotExist:
             return None
-        if obj.species == obj.review_species:
-            return True
-        return False
 
     def get_comm_status(self, obj):
         try:

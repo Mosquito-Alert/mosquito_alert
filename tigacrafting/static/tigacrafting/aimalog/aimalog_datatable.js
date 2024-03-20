@@ -60,9 +60,10 @@ $(document).ready(function () {
             //{'data': 'certainty'},
             {'data': 'status'},
             //{'data': 'hit'},
-            {'data': 'review_species'},
-            {'data': 'review_status'},
+            //{'data': 'review_species'},
+            //{'data': 'review_status'},
             //{'data': 'review_datetime'},
+            {'data': 'validation_species'},
             {'data': 'country'},
             {'data': 'nuts_one'},
             {'data': 'nuts_two'},
@@ -85,20 +86,22 @@ $(document).ready(function () {
             ,{'targets': 2,'title': 'report_datetime'}
             /*,{'targets': 3,'title': 'loc_code'}
             ,{'targets': 3, 'title': 'species',}*/
-            ,{'targets': 3,'title': 'species'}
-            ,{'targets': 4,'title': 'status'}
+            ,{'targets': 3,'title': 'AIMA species'}
+            ,{'targets': 4,'title': 'AIMA status'}
             /*,{'targets': 7,'title': 'hit',},*/
-            ,{'targets': 5,'title': 'review_species'}
+            ,{'targets': 5,'title': 'Validation species'}
+            /*,{'targets': 5,'title': 'review_species'}
             ,{'targets': 6,'title': 'review_status'}
+            */
             /*,{'targets': 10,'title': 'review_datetime'}*/
-            ,{'targets': 7,'title': 'country'}
-            ,{'targets': 8,'title': 'nuts_1'}
-            ,{'targets': 9,'title': 'nuts_2'}
-            ,{'targets': 10,'title': 'nuts_3'}
-            ,{'targets': 11,'title': 'municipality'}
+            ,{'targets': 6,'title': 'country'}
+            ,{'targets': 7,'title': 'nuts_1'}
+            ,{'targets': 8,'title': 'nuts_2'}
+            ,{'targets': 9,'title': 'nuts_3'}
+            ,{'targets': 10,'title': 'municipality'}
             //,{'targets': 12,'title': 'alert_sent'}
             ,{
-                'targets': 12, 'data': null, 'sortable': false, 'title': 'Species match',
+                'targets': 11, 'data': null, 'sortable': false, 'title': 'Species match',
                 'render': function(value){
                     if(value == true){
                         return '<h4 style="color:red;"><span title="Validation and IA match" class="glyphicon glyphicon-certificate"></span></h4>';
@@ -110,7 +113,7 @@ $(document).ready(function () {
                 }
             }
             ,{
-                'targets': 13, 'data': null, 'sortable': false, 'title': 'Comm. status',
+                'targets': 12, 'data': null, 'sortable': false, 'title': 'Comm. status',
                 'render': function(value){
                     if(value == 0){
                         return '<h4 style="color:red;"><span title="New" class="glyphicon glyphicon-exclamation-sign"></span></h4>';
@@ -126,7 +129,7 @@ $(document).ready(function () {
                 }
             }
             ,{
-                'targets': 14, 'data': null, 'sortable': false, 'title': 'Validation complete',
+                'targets': 13, 'data': null, 'sortable': false, 'title': 'Validation complete',
                 'render': function(value){
                     if(value == true){
                         return '<h4 style="color:green;"><span title="Complete" class="glyphicon glyphicon-check"></span></h4>';
@@ -135,9 +138,9 @@ $(document).ready(function () {
                     }
                 }
             }
-            ,{'targets': 15, 'title': 'Comments', 'sortable': false}
+            ,{'targets': 14, 'title': 'Comments', 'sortable': false}
             ,{
-                'targets': 16, 'data': null, 'sortable': false,
+                'targets': 15, 'data': null, 'sortable': false,
                 'render': function(value){
                     return '<a title="Process alert" class="review_button btn btn-success" href="/aimalog/process_ui/' + value.report_id + '/' + value.id + '/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>';
                 }

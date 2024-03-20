@@ -15,6 +15,17 @@ from tigacrafting.models import Alert, AlertMetadata
 from tigaserver_app.models import Report
 import json
 
+CATEGORY_ID_TO_IA_COLUMN = {
+    '2': 'other_species',
+    '4': 'albopictus',
+    '5': 'aegypti',
+    '6': 'japonicus',
+    '7': 'koreicus',
+    '8': 'japonicus-koreicus',
+    '9': 'not_sure',
+    '10': 'culex',
+}
+
 def main():
     report_alerts = Alert.objects.values('report_id')
     qs = Report.objects.filter(version_UUID__in=report_alerts)
@@ -26,6 +37,10 @@ def main():
         try:
             alert_md = alert.alertmetadata
             alert_md.validation_status = not report_table[alert.report_id]['in_progress']
+            try:
+                alert_md.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_table[alert.report_id]['category_id']]
+            except KeyError:
+                pass
             alert_md.save()
         except AlertMetadata.DoesNotExist:
             a = AlertMetadata(alert=alert,validation_status=not report_table[alert.report_id]['in_progress'])

@@ -702,11 +702,11 @@ class Alert(models.Model):
             ia_hit = json_filter['ia_hit']
             if ia_hit and ia_hit != '':
                 if ia_hit == 'pending':
-                    accum_query = append_chain_query(accum_query, Q(review_species__isnull=True) | Q(review_species=''))
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__validation_species__isnull=True))
                 elif ia_hit == 'alert_ok':
-                    accum_query = append_chain_query(accum_query, ~Q(review_species='') & Q(review_species=F('species')))
+                    accum_query = append_chain_query(accum_query, Q(alertmetadata__validation_species=F('species')))
                 elif ia_hit == 'alert_ko':
-                    accum_query = append_chain_query(accum_query, ~Q(review_species='') & ~Q(review_species=F('species')))
+                    accum_query = append_chain_query(accum_query, ~Q(alertmetadata__validation_species=F('species')))
                 else:
                     pass
         except KeyError:
@@ -749,6 +749,7 @@ class AlertMetadata(models.Model):
     review_comments = models.TextField('Review comments', null=True, blank=True)
     date_reviewed = models.DateTimeField(default=timezone.now)
     validation_status = models.BooleanField(null=True, default=False)
+    validation_species = models.CharField(max_length=255, null=True, blank=True)
 
 class AlertNotificationContact(models.Model):
     country = models.ForeignKey('tigaserver_app.EuropeCountry',related_name='country_contacts', on_delete=models.CASCADE)
