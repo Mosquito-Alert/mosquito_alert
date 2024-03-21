@@ -25,6 +25,7 @@
         .changed {
             color: red;
         }
+        .small-checkbox {width: 10px; height: 10px;}
     </style>
 
         <div class="navbar-wrapper">
@@ -228,6 +229,19 @@
             </div>
             <div class="row">
                 <div class="col-md-6">
+                    <h4>Alert classification</h4>
+                    <div class="alert_info_wrapper alert alert-success">
+                        <div class="row">
+                            <div class="col-md-6"><b>Alert Species  lassification</b></div>
+                            <div class="col-md-6">{{ alert.species }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6"><b>Alert status in location</b></div>
+                            <div class="col-md-6">{{ alert.status }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
                     <h4>Validation classification</h4>
                     <div class="alert_info_wrapper alert alert-success">
                         <div class="row">
@@ -258,19 +272,6 @@
                                     <i id="status_spinner" class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>
                                 {% endif %}
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h4>AI classification</h4>
-                    <div class="alert_info_wrapper alert alert-success">
-                        <div class="row">
-                            <div class="col-md-6"><b>Species AI Classification</b></div>
-                            <div class="col-md-6">{{ alert.species }}</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6"><b>Species status in location</b></div>
-                            <div class="col-md-6">{{ alert.status }}</div>
                         </div>
                     </div>
                 </div>
@@ -479,12 +480,23 @@
                              - <b>Send alert email</b> to the following recipients (country {{ alert.get_alert_country.name_engl }}):
                             <ul>
                                 {% for c in contacts %}
-                                <li> * <i>{{ c }}</i></li>
+                                <li><input class="small-checkbox" type="checkbox" value="{{ c }}" /> - {{ c }}</li>
                                 {% endfor %}
                             </ul>
                         </li>
                         <li>
                             - <b>Status in location</b> will be changed to: <b><span id="status_change_dialog"></span></b>
+                            <select id="selected_status">
+                                <option value="unchanged">unchanged</option>
+                                <option value="established">established</option>
+                                <option value="introduced_both">introduced_both</option>
+                                <option value="introduced_MA">introduced_MA</option>
+                                <option value="reported">reported</option>
+                            </select>
+                        </li>
+                        <li>
+                            - <b>Additional notes to send on email</b>
+                            <textarea id="email_notes" rows="15"></textarea>
                         </li>
                     </ul>
                 </div>

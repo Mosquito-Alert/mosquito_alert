@@ -168,10 +168,23 @@ $(document).ready(function () {
     });
 
     $('#confirm_review').on('click', function(){
-        var expert_validation_category = $('#revised_category').val();
+        /*var expert_validation_category = $('#revised_category').val();
         var new_status = $('#new_status').val();
-        accept_and_communicate_alert(alert_id, new_status, expert_validation_category);
+        accept_and_communicate_alert(alert_id, new_status, expert_validation_category);*/
+        var selected_emails = get_selected_emails();
+        var set_status = $('#selected_status').val();
+        var email_notes = $('#email_notes').val();
     });
+
+    var get_selected_emails = function(){
+        var retval = [];
+        $('.small-checkbox').each(function(){
+            if($(this).is(":checked")){
+                retval.push($(this).val());
+            }
+        });
+        return retval;
+    }
 
     $('#no_review').on('click', function(){
         $("#send_email_modal").modal('hide');
