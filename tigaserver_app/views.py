@@ -2026,39 +2026,40 @@ def get_new_status(expert_validation_category, status_in_location, loc_code, rep
             # set status for species as established in location in SHAPEFILE
     return {'opcode': 'nochange'}
 
-def send_alert_email(alert):
-    contacts = alert.get_contacts()
-    report = Report.objects.get(pk=alert.report_id)
-    report_info = json.loads(report.get_final_combined_expert_category_euro_struct_json())
-    country = alert.get_alert_country()
-    nuts3 = alert.get_alert_nuts3()
-    for recipient_email in contacts:
-        recipient_name = None
-        try:
-            u = User.objects.get(email=recipient_email)
-            recipient_name = "{0} {1}".format( u.first_name, u.last_name )
-        except:
-            recipient_name = recipient_email
-        data = {
-            'recipient': recipient_name,
-            'report_version': report.version_UUID,
-            'user_id': report.user_id,
-            'report_date': report.server_upload_time,
-            'identified_species': alert.species,
-            'identified_score': alert.certainty,
-            'loc_code': alert.loc_code,
-            'loc_name': '',
-            'nuts3_name': '' if nuts3 is None else nuts3.name_latn,
-            'country_name': '' if country is None else country.name_engl,
-            'current_status': alert.status,
-            'bestImage': '',
-        }
+def send_alert_email(alert, additional_email_text, selected_emails):
+    if len(selected_emails) > 0:
+        contacts = selected_emails
+        report = Report.objects.get(pk=alert.report_id)
+        country = alert.get_alert_country()
+        nuts3 = alert.get_alert_nuts3()
+        for recipient_email in contacts:
+            recipient_name = None
+            try:
+                u = User.objects.get(email=recipient_email)
+                recipient_name = "{0} {1}".format( u.first_name, u.last_name )
+            except:
+                recipient_name = recipient_email
+            data = {
+                'recipient': recipient_name,
+                'report_version': report.version_UUID,
+                'user_id': report.user_id,
+                'report_date': report.server_upload_time,
+                'identified_species': alert.species,
+                'identified_score': alert.certainty,
+                'loc_code': alert.loc_code,
+                'loc_name': '',
+                'nuts3_name': '' if nuts3 is None else nuts3.name_latn,
+                'country_name': '' if country is None else country.name_engl,
+                'current_status': alert.status,
+                'bestImage': '',
+                'additional_email_text': additional_email_text
+            }
 
-        subject = 'MOSQUITO ALERT - AI Alert'
-        plaintext = get_template('tigacrafting/aima_email_template.txt')
-        text_content = plaintext.render(data)
-        email = EmailMessage(subject, text_content, to=[recipient_email])
-        email.send(fail_silently=True)
+            subject = 'MOSQUITO ALERT - AI Alert'
+            plaintext = get_template('tigacrafting/aima_email_template.txt')
+            text_content = plaintext.render(data)
+            email = EmailMessage(subject, text_content, to=[recipient_email])
+            email.send(fail_silently=True)
 
 @api_view(['GET'])
 def n_alerts(request):
@@ -2070,12 +2071,15 @@ def accept_and_communicate_alert(request):
     with transaction.atomic():
         alert_id = request.POST.get('alert_id', -1)
         new_status = request.POST.get('new_status', 'unchanged')
+        additional_email_text = request.POST.get('additional_email_text', None)
+        selected_emails = request.POST.get('selected_emails[]', [])
         expert_validation_category = request.POST.get('expert_validation_category', None)
         alert = get_object_or_404(Alert, pk=alert_id)
+        write_status = None
         try:
             if new_status != 'unchanged' and expert_validation_category in ['4', '5', '6', '7', '10']:
                 column_shapefile = CATEGORY_ID_TO_IA_COLUMN[expert_validation_category]
-                write_status_to_shapefile(
+                write_status = write_status_to_shapefile(
                     new_status=new_status,
                     location=alert.loc_code,
                     alert_species=column_shapefile,
@@ -2086,9 +2090,9 @@ def accept_and_communicate_alert(request):
                 alertmetadata = AlertMetadata(communication_status=2)
             else:
                 alertmetadata.communication_status = 2
-            send_alert_email(alert)
+            send_alert_email(alert, additional_email_text, selected_emails)
             alertmetadata.save()
-            return Response({"msg":"Data correctly written"}, status=status.HTTP_200_OK)
+            return Response({"msg":"Data correctly written", "write_status": write_status}, status=status.HTTP_200_OK)
         except Exception as err:
             return Response({"msg":"Error writing to database - {0}".format(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

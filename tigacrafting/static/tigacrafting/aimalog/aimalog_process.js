@@ -86,10 +86,17 @@ $(document).ready(function () {
         });
     }
 
-    var accept_and_communicate_alert = function(alert_id, new_status, expert_validation_category){
+    var accept_and_communicate_alert = function(alert_id, new_status, expert_validation_category,additional_email_text, selected_emails){
+        block_modal_dialog(true);
         $.ajax({
             url: '/api/accept_and_communicate_alert/',
-            data: {'alert_id':alert_id, 'new_status':new_status, 'expert_validation_category': expert_validation_category},
+            data: {
+                'alert_id':alert_id,
+                'new_status':new_status,
+                'additional_email_text':additional_email_text,
+                'expert_validation_category': expert_validation_category,
+                'selected_emails': selected_emails
+            },
             type: "POST",
             dataType: "json",
             beforeSend: function(xhr, settings) {
@@ -99,11 +106,16 @@ $(document).ready(function () {
                 }
             },
             success: function(data) {
+                block_modal_dialog(false);
                 $("#send_email_modal").modal('hide');
                 $('#sent_comm').prop('checked', true);
+                if(data.write_status != null && data.write_status.new_status != null){
+                    $('#status_label').text(data.write_status.new_status);
+                }
                 toastr.success("Status correctly updated");
             },
             error: function(jqXHR, textStatus, errorThrown){
+                block_modal_dialog(false);
                 $("#send_email_modal").modal('hide');
                 toastr.error("Error changing status - " + errorThrown);
             }
@@ -168,12 +180,12 @@ $(document).ready(function () {
     });
 
     $('#confirm_review').on('click', function(){
-        /*var expert_validation_category = $('#revised_category').val();
-        var new_status = $('#new_status').val();
-        accept_and_communicate_alert(alert_id, new_status, expert_validation_category);*/
+        var expert_validation_category = $('#revised_category').val();
         var selected_emails = get_selected_emails();
-        var set_status = $('#selected_status').val();
-        var email_notes = $('#email_notes').val();
+        var new_status = $('#selected_status').val();
+        var additional_email_text = $('#email_notes').val();
+        var selected_emails = get_selected_emails();
+        accept_and_communicate_alert(alert_id, new_status, expert_validation_category,additional_email_text, selected_emails);
     });
 
     var get_selected_emails = function(){
@@ -198,6 +210,28 @@ $(document).ready(function () {
     var block_edit = function(state){
         $('input[name=communication_status]').attr("disabled",state);
     };
+
+    var block_modal_dialog = function(block){
+        if(block == true){
+            $('#confirm_review').addClass('disabled');
+            $('#no_review').addClass('disabled');
+            $('.small-checkbox').each(function(){
+                $(this).addClass('disabled');
+            });
+            $('#email_notes').attr('disabled', 'disabled');
+            $('#selected_status').attr('disabled', 'disabled');
+            $('#writing_status_spinner').show();
+        }else{
+            $('#confirm_review').removeClass('disabled');
+            $('#no_review').removeClass('disabled');
+            $('.small-checkbox').each(function(){
+                $(this).removeClass('disabled');
+            });
+            $('#selected_status').removeAttr('disabled');
+            $('#email_notes').removeAttr('disabled');
+            $('#writing_status_spinner').hide();
+        }
+    }
 
     update_ui();
     load_status(alert_id);
