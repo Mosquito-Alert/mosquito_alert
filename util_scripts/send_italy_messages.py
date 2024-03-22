@@ -11,9 +11,8 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from tigaserver_app.models import NotificationContent, Notification, TigaUser, SentNotification, NotificationTopic
+from tigaserver_app.models import NotificationContent, Notification, NotificationTopic
 from django.contrib.auth.models import User
-from tigacrafting.messaging import generic_send_to_topic
 
 send_to_1 = [
     'ITC2', #Valle d'Aosta
@@ -51,29 +50,18 @@ def main(pk_notif_1, pk_notif_2):
     sender = User.objects.get(pk=38)  # mosquitoalert
 
     notification_content_1 = NotificationContent.objects.get(pk=pk_notif_1)
-
     for topic_code in send_to_1:
         notification_1 = Notification(expert=sender, notification_content=notification_content_1)
         notification_1.save()
         topic = NotificationTopic.objects.get(topic_code=topic_code)
-        send_notification_1 = SentNotification(sent_to_topic=topic, notification=notification_1)
-        send_notification_1.save()
-        json_notif_1 = {'id': send_notification_1.id}
-        retval = generic_send_to_topic(topic_code=topic_code,title=notification_content_1.title_native,message="Segnalaci adesso una zanzara ! Nonostante l'inverno, a causa delle temperature miti alcune zanzare aliene continuino a circolare!", json_notif=json_notif_1)
-        print(retval)
+        notification_1.send_to_topic(topic=topic)
 
     notification_content_2 = NotificationContent.objects.get(pk=pk_notif_2)
-
     for topic_code in send_to_2:
         notification_2 = Notification(expert=sender, notification_content=notification_content_2)
         notification_2.save()
         topic = NotificationTopic.objects.get(topic_code=topic_code)
-        send_notification_2 = SentNotification(sent_to_topic=topic, notification=notification_2)
-        send_notification_2.save()
-        json_notif_2 = {'id': send_notification_2.id}
-        retval = generic_send_to_topic(topic_code=topic_code,title=notification_content_2.title_native,message="La stagione riproduttiva delle zanzare tigre va generalmente da maggio ad ottobre. Se ne vedi una segnalala! Potrebbe essere una segnalazione unica nel suo genere!", json_notif=json_notif_2)
-        print(retval)
-
+        notification_2.send_to_topic(topic=topic)
 
 if __name__ == '__main__':
     # args = sys.argv[1:]

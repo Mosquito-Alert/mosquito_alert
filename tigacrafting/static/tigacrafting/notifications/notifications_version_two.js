@@ -31,34 +31,14 @@
         }
     });
     format_report = function(data){
-        /*
-            {
-                'non_push_estimate_num': número de notificacions aprox,
-                'push_success': 'ALL' | 'NONE' | 'SOME' | 'NO_PUSH'
-                'push_results': List of status
-            }
-        var pushes = [];
-        for(var i = 0; i < data.push_results.length; i++){
-            pushes.push('<li>' + JSON.stringify(data.push_results[i]) + '</li>');
-        }
-        var detail_message = '<ul>' + pushes.join('') + '</ul>';
-        */
         var push_message;
-        var push_results = data.push_results;
-        switch(data.push_success){
-            case 'ALL':
-                push_message = '<li style="color:green;">All pushes sent successfully</li>';
-                break;
-            case 'NONE':
-                push_message = '<li style="color:red;">All pushes failed</li>';
-                break;
-            case 'SOME':
-                push_message = '<li style="color:orange;">Some pushes failed</li>';
-                break;
-            default:
-                push_message = '<li>No push notifications were issued</li>';
-                break;
+
+        if (data.push_success === true) {
+            push_message = '<li style="color:green;">All pushes sent successfully</li>';
+        } else {
+            push_message = '<li>No push notifications were issued</li>';
         }
+
         var message = '<ul>' +
             '	<li><h3>Notifications</h3>' +
             '		<ul>' +

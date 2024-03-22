@@ -29,7 +29,6 @@ from django.contrib.gis.measure import Distance
 from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
-from tigacrafting.messaging import send_message_ios, send_message_android, send_messages_ios, send_messages_android, generic_send_to_topic
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
 from tigascoring.maUsers import smmry
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
@@ -1037,60 +1036,23 @@ def force_refresh_cfs_reports(request):
         results = get_cfs_reports()
         return Response(results)
 
-
-@api_view(['POST'])
-def msgs_ios(request):
-    data = request.data
-    user_ids = data.get('user_ids', [])
-    alert_message = data.get('alert_message', -1)
-    link_url = data.get('link_url', -1)
-    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
-    tokens = [ u.profile.firebase_token for u in queryset ]
-    if alert_message != -1 and link_url != -1:
-        if len(tokens) > 0:
-            resp = send_messages_ios(tokens, alert_message, link_url)
-            return Response({'tokens': tokens, 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': resp})
-        else:
-            return Response({'tokens': [], 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': 'no_tokens'})
-    else:
-        raise ParseError(detail='Invalid parameters')
-
-
 @api_view(['POST'])
 def msg_ios(request):
     user_id = request.query_params.get('user_id', -1)
     alert_message = request.query_params.get('alert_message', -1)
     link_url = request.query_params.get('link_url', -1)
     if user_id != -1 and alert_message != -1 and link_url != -1:
-        queryset = TigaUser.objects.all()
-        this_user = get_object_or_404(queryset, pk=user_id)
-        if this_user.device_token is not None and this_user.device_token != '':
-            _token = this_user.device_token
-            try:
-                resp = send_message_ios(_token, alert_message, link_url)
-                return Response({'token':_token, 'alert_message': alert_message, 'link_url':link_url, 'push_status_msg':resp})
-            except Exception as e:
-                raise ParseError(detail=e.message)
-        else:
-            raise ParseError(detail='Token not set for user')
-    else:
-        raise ParseError(detail='Invalid parameters')
+        this_user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
+        notificaiton = Notification.objects.create(
+            notification_content=NotificationContent.objects.create(
+                title_en=alert_message,
+                body_html_en=link_url
+            )
+        )
+        push_message_id = notificaiton.send_to_user(user=this_user)
 
+        return Response({'token': this_user.device_token, 'alert_message': alert_message, 'link_url':link_url, 'push_is_success': bool(push_message_id)})
 
-@api_view(['POST'])
-def msgs_android(request):
-    data = request.data
-    user_ids = data.get('user_ids', [])
-    message = data.get('message', -1)
-    title = data.get('title', -1)
-    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
-    tokens = [ u.profile.firebase_token for u in queryset ]
-    if message != -1 and title != -1:
-        if len(tokens) > 0:
-            resp = send_messages_android(tokens, message, title)
-            return Response({'tokens': tokens, 'message': message, 'title': title, 'push_status_msg': resp})
-        else:
-            return Response({'tokens': [], 'message': message, 'title': title, 'push_status_msg': 'no_tokens'})
     else:
         raise ParseError(detail='Invalid parameters')
 
@@ -1101,17 +1063,16 @@ def msg_android(request):
     message = request.query_params.get('message', -1)
     title = request.query_params.get('title', -1)
     if user_id != -1 and message != -1 and title != -1:
-        queryset = TigaUser.objects.all()
-        this_user = get_object_or_404(queryset, pk=user_id)
-        if this_user.device_token is not None and this_user.device_token != '':
-            _token = this_user.device_token
-            try:
-                resp = send_message_android(_token, title, message)
-                return Response({'token': _token, 'message': message, 'title': title, 'push_status_msg':resp})
-            except Exception as e:
-                raise ParseError(detail=e.message)
-        else:
-            raise ParseError(detail='Token not set for user')
+        this_user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
+        notificaiton = Notification.objects.create(
+            notification_content=NotificationContent.objects.create(
+                title_en=title,
+                body_html_en=message
+            )
+        )
+        push_message_id = notificaiton.send_to_user(user=this_user)
+
+        return Response({'token': this_user.device_token, 'message': message, 'title': title, 'push_is_success': bool(push_message_id)})
     else:
         raise ParseError(detail='Invalid parameters')
 
@@ -1247,8 +1208,8 @@ def user_score(request):
 
 '''
 def custom_render_notification(notification,locale):
-    expert_comment = notification.notification_content.get_title_locale_safe(locale)
-    expert_html = notification.notification_content.get_body_locale_safe(locale)
+    expert_comment = notification.notification_content.get_title(language_code=locale)
+    expert_html = notification.notification_content.get_body_html(language_code=locale)
     content = {
         'id':notification.id,
         'report_id':notification.report.version_UUID,
@@ -1302,8 +1263,8 @@ def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
     ack_ids = [ a.notification.id for a in acknowledged_queryset ]
     for sent_notif in queryset:
         notification = sent_notif.notification
-        expert_comment = notification.notification_content.get_title_locale_safe(locale)
-        expert_html = notification.notification_content.get_body_locale_safe(locale)
+        expert_comment = notification.notification_content.get_title(language_code=locale)
+        expert_html = notification.notification_content.get_body_html(language_code=locale)
         this_content = {
             'id': notification.id,
             'report_id': notification.report.version_UUID if notification.report is not None else None,
@@ -1464,7 +1425,7 @@ def send_notifications(request):
         data = request.data
         id = data['notification_content_id']
         sender = data['user_id']
-        push = data['ppush']
+        push = bool(data['ppush'].lower() == 'true')
         # report with oldest creation date
         r = None
         try:
@@ -1478,16 +1439,6 @@ def send_notifications(request):
         recipients = data['recipients']
         topic = None
         send_to = None
-        push_results = []
-
-        # Can be
-        # ALL if all pushes were successful
-        # SOME if some pushes were successful
-        # NONE if no pushes were successful
-        # NO_PUSH
-        push_success = ''
-        if not push:
-            push_success = 'NO_PUSH'
 
         notification_estimate = 0
 
@@ -1517,103 +1468,29 @@ def send_notifications(request):
         n = Notification(expert_id=sender, notification_content=notification_content, report=report)
         n.save()
 
+        push_success = False
         if topic is not None:
             # send to topic
-            send_notification = SentNotification(sent_to_topic=topic,notification=n)
-            send_notification.save()
-            json_notif = custom_render_notification(sent_notification=send_notification, recipìent=None, locale='en')
-            if push:
-                try:
-                    push_result = generic_send_to_topic(topic_code=topic.topic_code, title=notification_content.title_en, message='',json_notif=json_notif)
-                    push_results.append(push_result)
-                except Exception as e:
-                    pass
-        else:
-            #send to recipient(s)
-            for recipient in send_to:
-                send_notification = SentNotification(sent_to_user=recipient, notification=n)
-                send_notification.save()
-                if push and recipient.device_token is not None and recipient.device_token != '':
-                    if (recipient.user_UUID.islower()):
-                        json_notif = custom_render_notification(send_notification, recipient, 'en')
-                        try:
-                            push_result = send_message_android(recipient.device_token, notification_content.title_en, '', json_notif)
-                            push_results.append(push_result)
-                        except Exception as e:
-                            pass
-                    else:
-                        try:
-                            push_result = send_message_ios(recipient.device_token, notification_content.title_en, '', json_notif)
-                            push_results.append(push_result)
-                        except Exception as e:
-                            pass
-
-        if push:
-            all_successes = True
-            all_failures = True
-            for result in push_results:
-                if result['failure'] > 0:
-                    all_successes = False
-                if result['success'] > 0:
-                    all_failures = False
-            if all_successes:
-                push_success = 'ALL'
-            elif all_failures:
-                push_success = 'NONE'
-            else:
-                push_success = 'SOME'
-
-
-        results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success, 'push_results': push_results}
-        return Response(results)
-
-        '''
-        elif recipients.startswith("uploaded"):
-            if(recipients=='uploaded_pictures'):
-                send_to = users_with_pictures()
-            elif(recipients=='uploaded_pictures_sd'):
-                send_to = users_with_storm_drain_pictures()
-        elif recipients.startswith("score_arbitrary"):
-            range = recipients.split('-')
-            send_to = users_with_score_range(range[1], range[2])
-        elif recipients.startswith("score"):
-            send_to = users_with_score(recipients)
-        else:
-            ids_list = recipients.split('$')
-            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
-        
-        notifications_issued = 0
-        notifications_failed = 0
-        push_issued_android = 0
-        push_failed_android = 0
-        push_issued_ios = 0
-        push_failed_ios = 0
-        for recipient in send_to:
-            n = Notification(report_id=r,user=recipient,expert_id=sender,notification_content=notification_content)
             try:
-                n.save()
-                notifications_issued = notifications_issued + 1
-            except Exception as e:
-                notifications_failed = notifications_failed + 1
-                #raise ParseError(detail=e.message)
-            if push and recipient.device_token is not None and recipient.device_token != '':
-                #send push
-                if(recipient.user_UUID.islower()):
-                    json_notif = custom_render_notification(n,'es')
-                    try:
-                        send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-                        push_issued_android = push_issued_android + 1
-                    except Exception as e:
-                        pass
-                else:
-                    try:
-                        send_message_ios(recipient.device_token,notification_content.title_es,'')
-                        push_issued_ios = push_issued_ios + 1
-                    except Exception as e:
-                        pass
-        results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
+                message_id = n.send_to_topic(topic=topic, push=push)
+            except Exception:
+                pass
+            else:
+                push_success = bool(message_id)
+        else:
+            # send to recipient(s)
+            message_ids = []
+            for recipient in send_to:
+                try:
+                    message_ids.append(
+                        n.send_to_user(user=recipient, push=push)
+                    )
+                except Exception:
+                    pass
+            push_success = bool(message_ids) and all(message_ids)
+
+        results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success}
         return Response(results)
-        '''
 
 
 @api_view(['GET'])

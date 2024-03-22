@@ -4,7 +4,7 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, SentNotification
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic
 from django.core.management import call_command
 import PIL.Image
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -782,8 +782,8 @@ class NotificationTestCase(APITestCase):
         n = Notification(expert=self.reritja_user, notification_content=nc)
         n.save()
         # send notif to global topic
-        sn = SentNotification(sent_to_topic=self.global_topic, notification=n)
-        sn.save()
+        n.send_to_topic(topic=self.global_topic, push=False)
+
         # the regular user should see this notification
         some_user = self.regular_user
         self.client.force_authenticate(user=self.reritja_user)
@@ -820,8 +820,7 @@ class NotificationTestCase(APITestCase):
         n.save()
 
         # send notif to regular topic
-        sn = SentNotification(sent_to_topic=self.some_topic, notification=n)
-        sn.save()
+        n.send_to_topic(topic=self.some_topic, push=False)
 
         self.client.force_authenticate(user=self.reritja_user)
         # list notifications for regular user
@@ -886,23 +885,20 @@ class NotificationTestCase(APITestCase):
         n1.save()
 
         # send notif to user
-        sn1 = SentNotification(sent_to_user=some_user, notification=n1)
-        sn1.save()
+        n1.send_to_user(user=some_user, push=False)
 
         # GLOBAL notification
         n3 = Notification(expert=self.reritja_user, notification_content=nc1)
         n3.save()
         # send notif to global topic
-        sn3 = SentNotification(sent_to_topic=self.global_topic, notification=n3)
-        sn3.save()
+        n3.send_to_topic(topic=self.global_topic, push=False)
 
         # SECOND direct  NOTIFICATION
         n2 = Notification(expert=self.reritja_user, notification_content=nc2)
         n2.save()
 
         # send notif to user
-        sn2 = SentNotification(sent_to_user=some_user, notification=n2)
-        sn2.save()
+        n2.send_to_user(user=some_user, push=False)
 
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)

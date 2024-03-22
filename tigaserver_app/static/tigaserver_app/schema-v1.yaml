@@ -105,13 +105,8 @@ paths:
                     type: integer
                     description: Number of non push messages sent. Useful for knowing the actual number of users when sent to topics
                   push_success:
-                    type: string
-                    description: Status code for push notifications. NO_PUSH - no pushes sent, ALL - all pushes sent successfully, NONE - all pushes failed, SOME - some pushes failed
-                  push_results:
-                    type: array
-                    items:
-                      type: string
-                    description: List containing detailed status messages for each push attempt
+                    type: bool
+                    description: All push messsage where successfully sent.
           description: ''
   /api/mark_notif_as_ack/:
     delete:

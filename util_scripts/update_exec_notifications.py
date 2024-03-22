@@ -11,7 +11,7 @@ sys.path.append(proj_path)
 
 application = get_wsgi_application()
 
-from tigaserver_app.models import NotificationContent, SentNotification, Notification
+from tigaserver_app.models import Notification
 from tigacrafting.models import ExpertReportAnnotation
 from common.translation import get_locale_for_native, get_translation_in
 from django.template.loader import TemplateDoesNotExist
