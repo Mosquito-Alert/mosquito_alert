@@ -2026,10 +2026,23 @@ def get_new_status(expert_validation_category, status_in_location, loc_code, rep
             # set status for species as established in location in SHAPEFILE
     return {'opcode': 'nochange'}
 
+def get_best_photo_url(report):
+    try:
+        photos = ExpertReportAnnotation.objects.filter(best_photo__isnull=False).filter(report=report).values('best_photo').distinct()
+        if photos.exists():
+            best_photo_id = photos.first()['best_photo']
+            best_photo = Photo.objects.get(pk=best_photo_id)
+            return best_photo.photo.url
+        return None
+    except:
+        return None
+
 def send_alert_email(alert, additional_email_text, selected_emails):
     if len(selected_emails) > 0:
         contacts = selected_emails
         report = Report.objects.get(pk=alert.report_id)
+        best_image = get_best_photo_url(report)
+
         country = alert.get_alert_country()
         nuts3 = alert.get_alert_nuts3()
         for recipient_email in contacts:
@@ -2051,7 +2064,7 @@ def send_alert_email(alert, additional_email_text, selected_emails):
                 'nuts3_name': '' if nuts3 is None else nuts3.name_latn,
                 'country_name': '' if country is None else country.name_engl,
                 'current_status': alert.status,
-                'bestImage': '',
+                'bestImage': best_image,
                 'additional_email_text': additional_email_text
             }
 
