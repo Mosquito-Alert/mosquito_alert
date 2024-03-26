@@ -44,6 +44,11 @@ def main():
             alert_md.save()
         except AlertMetadata.DoesNotExist:
             a = AlertMetadata(alert=alert,validation_status=not report_table[alert.report_id]['in_progress'])
+            a.validation_status = not report_table[alert.report_id]['in_progress']
+            try:
+                a.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_table[alert.report_id]['category_id']]
+            except KeyError:
+                pass
             a.save()
 
 

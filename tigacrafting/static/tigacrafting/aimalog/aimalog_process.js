@@ -153,10 +153,10 @@ $(document).ready(function () {
         }else if (communication_status != '' && communication_status == '3'){
             $('input[name=communication_status][value=3]').attr('checked', true);
         }
-        if( report_in_progress == 1){
+        /*if( report_in_progress == 1){
             block_edit(true);
             $('#noedit_alert').show();
-        }
+        }*/
     };
 
     $('[name="communication_status"]:radio').click(function(event) {
@@ -171,12 +171,6 @@ $(document).ready(function () {
             var _current_status = this.value;
             set_communication_status(alert_id,_current_status);
         }
-    });
-
-    $('#review').on('click', function(){
-        var review_species = $('#review_species').val();
-        var review_comment = $('#review_comment').val();
-        review(alert_id, review_species, review_comment);
     });
 
     $('#confirm_review').on('click', function(){
@@ -233,7 +227,7 @@ $(document).ready(function () {
         }
     }
 
-    update_ui();
     load_status(alert_id);
+    update_ui();
 
 });
