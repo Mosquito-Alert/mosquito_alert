@@ -173,12 +173,6 @@ $(document).ready(function () {
         }
     });
 
-    $('#review').on('click', function(){
-        var review_species = $('#review_species').val();
-        var review_comment = $('#review_comment').val();
-        review(alert_id, review_species, review_comment);
-    });
-
     $('#confirm_review').on('click', function(){
         var expert_validation_category = $('#revised_category').val();
         var selected_emails = get_selected_emails();
@@ -233,7 +227,7 @@ $(document).ready(function () {
         }
     }
 
-    update_ui();
     load_status(alert_id);
+    update_ui();
 
 });
