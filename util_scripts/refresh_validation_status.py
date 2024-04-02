@@ -35,21 +35,25 @@ def main():
     all_alerts = Alert.objects.all()
     for alert in all_alerts:
         try:
-            alert_md = alert.alertmetadata
-            alert_md.validation_status = not report_table[alert.report_id]['in_progress']
+            report_data = report_table[alert.report_id]
             try:
-                alert_md.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_table[alert.report_id]['category_id']]
-                alert_md.save()
-            except KeyError:
-                pass
-        except AlertMetadata.DoesNotExist:
-            a = AlertMetadata(alert=alert,validation_status=not report_table[alert.report_id]['in_progress'])
-            a.validation_status = not report_table[alert.report_id]['in_progress']
-            try:
-                a.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_table[alert.report_id]['category_id']]
-                a.save()
-            except KeyError:
-                pass
+                alert_md = alert.alertmetadata
+                alert_md.validation_status = not report_data['in_progress']
+                try:
+                    alert_md.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_data['category_id']]
+                    alert_md.save()
+                except KeyError:
+                    pass
+            except AlertMetadata.DoesNotExist:
+                a = AlertMetadata(alert=alert,validation_status=not report_data['in_progress'])
+                a.validation_status = not report_table[alert.report_id]['in_progress']
+                try:
+                    a.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_data['category_id']]
+                    a.save()
+                except KeyError:
+                    pass
+        except KeyError:
+            pass
 
 
 if __name__ == '__main__':
