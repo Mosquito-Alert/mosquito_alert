@@ -39,17 +39,17 @@ def main():
             alert_md.validation_status = not report_table[alert.report_id]['in_progress']
             try:
                 alert_md.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_table[alert.report_id]['category_id']]
+                alert_md.save()
             except KeyError:
                 pass
-            alert_md.save()
         except AlertMetadata.DoesNotExist:
             a = AlertMetadata(alert=alert,validation_status=not report_table[alert.report_id]['in_progress'])
             a.validation_status = not report_table[alert.report_id]['in_progress']
             try:
                 a.validation_species = CATEGORY_ID_TO_IA_COLUMN[report_table[alert.report_id]['category_id']]
+                a.save()
             except KeyError:
                 pass
-            a.save()
 
 
 if __name__ == '__main__':
