@@ -153,10 +153,10 @@ $(document).ready(function () {
         }else if (communication_status != '' && communication_status == '3'){
             $('input[name=communication_status][value=3]').attr('checked', true);
         }
-        if( report_in_progress == 1){
+        /*if( report_in_progress == 1){
             block_edit(true);
             $('#noedit_alert').show();
-        }
+        }*/
     };
 
     $('[name="communication_status"]:radio').click(function(event) {
