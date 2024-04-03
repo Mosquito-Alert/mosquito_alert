@@ -24,8 +24,8 @@ def score_label(score):
 recipient is the TigaUser to which the notification will be displayed
 '''
 def custom_render_notification(sent_notification, recipìent, locale):
-    expert_comment = sent_notification.notification.notification_content.get_title_locale_safe(locale)
-    expert_html = sent_notification.notification.notification_content.get_body_locale_safe(locale)
+    expert_comment = sent_notification.notification.notification_content.get_title(language_code=locale)
+    expert_html = sent_notification.notification.notification_content.get_body_html(language_code=locale)
 
     ack = False
     if recipìent is not None:

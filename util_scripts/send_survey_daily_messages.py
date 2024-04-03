@@ -17,10 +17,9 @@ application = get_wsgi_application()
 import logging
 import datetime
 import glob
-from tigaserver_app.models import NotificationContent, Notification, TigaUser, SentNotification
+from tigaserver_app.models import NotificationContent, Notification, TigaUser
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
-from tigacrafting.messaging import generic_send
 
 base_folder = proj_path + 'util_scripts/survey_files_2023/'
 logs_folder = base_folder + 'logs/'
@@ -112,23 +111,7 @@ def do_send_notification( uuid, category, language, number ):
 
     notification = Notification(expert=sender, notification_content=notification_content)
     notification.save()
-
-    send_notification = SentNotification(sent_to_user=user, notification=notification)
-    send_notification.save()
-
-    push_messages = {
-        'en': 'You have a new Mosquito Alert message, please check your messages in the app.',
-        'es': 'Tienes un nuevo mensaje de Mosquito Alert. Por favor, comprueba tus mensajes en la app.',
-        'ca': 'Tens un nou missatge de Mosquito Alert. Si us plau comprova els teus missatges dins la app.',
-        'el': 'Έχετε ένα νέο μήνυμα Mosquito Alert, ελέγξτε τα μηνύματά σας στην εφαρμογή.',
-        'nl': 'Je hebt een nieuw Mosquito Alert-bericht, controleer je berichten in de app.',
-        'it': 'Hai un nuovo messaggio di Mosquito Alert, controlla i tuoi messaggi nell\'app.'
-    }
-
-    push_message = push_messages[language]
-
-    generic_send( user.device_token, title, push_message )
-
+    notification.send_to_user(user=user)
 
 def get_uuid_tokens( uuids ):
     users = TigaUser.objects.filter(user_UUID__in=uuids)

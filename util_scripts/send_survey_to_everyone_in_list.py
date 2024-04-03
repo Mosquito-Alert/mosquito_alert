@@ -17,11 +17,9 @@ application = get_wsgi_application()
 
 import logging
 import datetime
-from tigaserver_app.models import NotificationContent, Notification, TigaUser, SentNotification, NotificationTopic, AcknowledgedNotification
+from tigaserver_app.models import NotificationContent, Notification, TigaUser, NotificationTopic, AcknowledgedNotification
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
-from tigacrafting.messaging import generic_send_to_topic
-from tigacrafting.messaging import generic_send
 
 base_folder = proj_path + 'util_scripts/survey_files_2023/'
 logs_folder = base_folder + 'logs/'
@@ -138,14 +136,9 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
     day = today.day
     month = today.month
 
-    user_language = 'en'
     try:
         user = TigaUser.objects.get(pk=this_uuid)
-        if len( user.user_reports.all() ) > 0:
-            first_report = user.user_reports.all().order_by('-creation_time').first()
-            os_language =  first_report.app_language
-            if os_language in ['en', 'es', 'ca', 'nl', 'el', 'it']:
-                user_language = os_language
+        user_language = user.language_iso2 if user.language_iso2 in SURVEY_TEXT_DEFAULT.keys() else 'en'
 
         title_and_message_native = get_today_title_and_message(month,day,user_language)
         title_native = title_and_message_native['title']
@@ -196,13 +189,7 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
         notification = Notification(expert=sender, notification_content=notification_content )
         notification.save()
 
-        send_notification = SentNotification(sent_to_user=user, notification=notification)
-        send_notification.save()
-
-        # then push notification
-        json_notif = custom_render_notification(sent_notification=send_notification, recipient=None, locale=user_language)
-        generic_send(user.device_token, title_native, message_native)
-
+        notification.send_to_user(user=user)
     except TigaUser.DoesNotExist:
         logging.error("User with uuid {0} does not exist, doing nothing!!".format(this_uuid))
 
@@ -242,8 +229,8 @@ def score_label(score):
 
 
 def custom_render_notification(sent_notification, recipient, locale):
-    expert_comment = sent_notification.notification.notification_content.get_title_locale_safe(locale)
-    expert_html = sent_notification.notification.notification_content.get_body_locale_safe(locale)
+    expert_comment = sent_notification.notification.notification_content.get_title(language_code=locale)
+    expert_html = sent_notification.notification.notification_content.get_body_html(language_code=locale)
 
     ack = False
     if recipient is not None:
@@ -275,12 +262,7 @@ def send_global_notification_reminder():
     notification = Notification(expert=sender, notification_content=notification_content)
     notification.save()
 
-    send_notification = SentNotification(sent_to_topic=topic, notification=notification)
-    send_notification.save()
-
-    json_notif = custom_render_notification(sent_notification=send_notification, recipient=None, locale='en')
-    push_result = generic_send_to_topic(topic_code=topic.topic_code, title=notification_content.title_en, message='', json_notif=json_notif)
-
+    notification.send_to_topic(topic=topic)
 
 
 if __name__ == '__main__':

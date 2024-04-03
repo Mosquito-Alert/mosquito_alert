@@ -35,7 +35,6 @@ from django.contrib.auth.models import User, Group
 import urllib
 import django.utils.html
 from django.db import connection
-from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification, DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
@@ -647,22 +646,7 @@ def issue_notification(report_annotation,current_domain):
     notification_content.save()
     notification = Notification(report=report_annotation.report, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
-    sent_notification = SentNotification(sent_to_user=report_annotation.report.user,notification=notification)
-    sent_notification.save()
-
-    recipient = report_annotation.report.user
-    if recipient.device_token is not None and recipient.device_token != '':
-        if (recipient.user_UUID.islower()):
-            json_notif = custom_render_notification(sent_notification, recipient, 'en')
-            try:
-                send_message_android(recipient.device_token, notification_content.title_native, '', json_notif)
-            except Exception as e:
-                logger_notification.exception("Exception sending validation android message")
-        else:
-            try:
-                send_message_ios(recipient.device_token, notification_content.title_native, '')
-            except Exception as e:
-                logger_notification.exception("Exception sending validation ios message")
+    notification.send_to_user(user=report_annotation.report.user)
 
 @login_required
 def entolab_license_agreement(request):
@@ -1695,13 +1679,6 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
-
-@login_required
-def notifications(request,user_uuid=None):
-    this_user = request.user
-    user_uuid = request.GET.get('user_uuid',None)
-    total_users = TigaUser.objects.all().count()
-    return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
 
 @login_required
 def aimalog(request):
