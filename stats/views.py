@@ -111,7 +111,7 @@ def workload_stats_per_user(request):
         user_slug = request.query_params.get('user_slug', -1)
         user = get_object_or_404(User, username=user_slug)
 
-        if not user.userstat:
+        if not hasattr(user, 'userstat'):
             return
 
         qs = user.userstat.completed_annotations.annotate(
