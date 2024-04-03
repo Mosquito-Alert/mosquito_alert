@@ -37,7 +37,7 @@ from tigacrafting.views import get_blocked_reports_by_country
 from django.db.models.functions import Extract, Trunc
 
 @xframe_options_exempt
-@cache_page(60 * 15)
+# @cache_page(60 * 15)
 def show_usage(request):
     def get_cumsum(qs, datetime_fieldname: str, trunc_by: str) -> dict:
         qs = qs.annotate(
@@ -84,7 +84,7 @@ def workload_pending_per_user(request):
         user_slug = request.query_params.get('user_slug', -1)
         user = get_object_or_404(User, username=user_slug)
 
-        if not user.userstat:
+        if not hasattr(user, 'userstat'):
             return
 
         pending_detail = []
