@@ -55,7 +55,7 @@ def main():
         for u in all_users:
             user_annotations = ExpertReportAnnotation.objects.filter(user=u).filter(validation_complete=True).exclude(report__creation_time__year=2014)
             for ano in user_annotations:
-                if ano.report.latest_version and not ano.report.deleted and ano.report.hide == False and ano.report.get_is_expert_validated() == True and ano.report.type=='adult':
+                if not ano.report.deleted and ano.report.hide == False and ano.report.get_is_expert_validated() == True and ano.report.type=='adult':
                     expert_opinion = ano.get_category_euro()
                     global_opinion = ano.report.get_final_combined_expert_category_euro()
                     all_annotations += 1

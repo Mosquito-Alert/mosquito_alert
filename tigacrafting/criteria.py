@@ -12,12 +12,12 @@ def filter_users_by_score(score):
     return score_user_ids
 
 def filter_users_with_storm_drain_pictures(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and x.embornals, reports)
+    reports_filtered = reports.non_deleted()
+    reports_filtered = filter(lambda x: x.embornals, reports_filtered)
     return reports_filtered
 
 def filter_users_with_pictures(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-    return reports_filtered
+    return list(reports.non_deleted().all())
 
 def users_with_pictures():
     return filter_reports('users_with_pictures')

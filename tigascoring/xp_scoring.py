@@ -345,9 +345,9 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
     #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
-    adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
-    site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
+    adult_last_versions = adults.non_deleted().all()
+    #bite_last_versions = bites.non_deleted().all()
+    site_last_versions = sites.non_deleted().all()
 
     results_adult = {}
     results_adult['score'] = 0
@@ -484,9 +484,9 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
-    adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
-    site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
+    adult_last_versions = adults.non_deleted().all()
+    #bite_last_versions = bites.non_deleted().all()
+    site_last_versions = sites.non_deleted().all()
 
     results_adult = {}
     results_adult['score'] = 0

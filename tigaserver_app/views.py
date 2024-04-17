@@ -46,6 +46,7 @@ from django.template.loader import get_template
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
+from django.shortcuts import get_object_or_404
 
 #from celery.task.schedules import crontab
 #from celery.decorators import periodic_task
@@ -188,7 +189,10 @@ version_UUID linking this photo to a specific report version.
 * report: The version_UUID of the report to which this photo is attached.
     """
     if request.method == 'POST':
-        this_report = Report.objects.get(version_UUID=request.data['report'])
+        try:
+            this_report = Report.objects.get(pk=request.data['report'])
+        except Report.DoesNotExist:
+            return Response()
         instance = Photo(photo=request.FILES['photo'], report=this_report)
         instance.save()
         return Response('uploaded')
@@ -292,7 +296,6 @@ the server map (although it will still be retained internally).
 
         # Get the filters from the request
         is_deleted = self.request.query_params.get('is_deleted', None)
-        is_last_version = self.request.query_params.get('is_last_version', None)
 
         # Apply additional filters if provided
         if is_deleted is not None:
@@ -306,24 +309,77 @@ the server map (although it will still be retained internally).
                 # Filter queryset to exclude deleted records
                 queryset = queryset.deleted(state=False)
 
-        if is_last_version is not None:
-            if is_last_version.lower() not in ['true', 'false']:
-                raise ParseError("Invalid value for 'is_last_version'. It should be 'true', 'false', or not provided.")
-
-            if is_last_version.lower() == 'true':
-                # Filter queryset to include only deleted records
-                queryset = queryset.last_version_of_each(state=True)
-            elif is_last_version.lower() == 'false':
-                # Filter queryset to exclude deleted records
-                queryset = queryset.last_version_of_each(state=False)
-
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        # For the legacy version, mobile app only use POST.
+        # Will emulate the following cases depending on the
+        #    version_number used in the POST call.
+        # - CREATE: Case version_number == 0
+        # - UPDATE: Case version_number > 0
+        # - DELETE: Case version_number == -1
+
+        version_number = request.data.get('version_number')
+
+        instance = None
+        if version_number != 0:
+            # Updates/deletion of the original version
+            instance = get_object_or_404(
+                self.get_queryset(),
+                **{
+                    # NOTE: version_UUID is different on every user's POST
+                    #'pk': request.data.get('version_UUID'),
+                    'user': request.data.get('user'),
+                    'report_id': request.data.get('report_id'),
+                    'type': request.data.get('type')
+                }
+            )
+            instance._history_user = instance.user
+
+            # May raise a permission denied
+            self.check_object_permissions(self.request, instance)
+
+        # NOTE: Always return 201
+        # See: https://github.com/Mosquito-Alert/Mosquito-Alert-Mobile-App/blob/6c5993a230a86f958c8dca8bcfef2994a6b93ebe/lib/api/api.dart#L381
+        result_status = status.HTTP_201_CREATED
+        if version_number >= 0:
+            serializer = self.get_serializer(instance, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+        if version_number == -1:
+            instance.soft_delete()
+            serializer = self.get_serializer(instance)
+
+        result_data = serializer.data
+        result_headers = self.get_success_headers(serializer.data)
+
+        return Response(data=result_data, status=result_status, headers=result_headers)
 
 
 # For production version, substitute WriteOnlyModelViewSet
 class PhotoViewSet(ReadWriteOnlyModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request=request, *args, **kwargs)
+
+        # Always return 200
+        # See: https://github.com/Mosquito-Alert/Mosquito-Alert-Mobile-App/blob/6c5993a230a86f958c8dca8bcfef2994a6b93ebe/lib/api/api.dart#L508
+        response.status = status.HTTP_200_OK
+        return response
+
+    def perform_create(self, serializer):
+        # Restrict image saving to the initial report creation only.
+        # Although the mobile app generates a new version_UUID for each
+        # report update or deletion, the reports are versioned, and
+        # only the original UUID is preserved. If the provided UUID is not
+        # found, indicating an update/deletion, image saving is bypassed.
+        if not Report.objects.filter(pk=serializer.report).exists():
+            return
+        else:
+            super().perform_create(serializer=serializer)
 
 
 # For production version, substitute WriteOnlyModelViewSet
@@ -1623,7 +1679,6 @@ def nearby_reports_no_dwindow(request):
         page = request.query_params.get('page', 1)
         page_size = request.query_params.get('page_size', 10)
         show_hidden = request.query_params.get('show_hidden', 0)
-        show_versions = request.query_params.get('show_versions', 0)
 
         center_buffer_lat = request.query_params.get('lat', None)
         center_buffer_lon = request.query_params.get('lon', None)
@@ -1687,7 +1742,7 @@ def nearby_reports_no_dwindow(request):
             else:
                 reports_adult = reports_adult.exclude(user__user_UUID__in=user_uuids)
         if show_hidden == 0:
-            reports_adult = reports_adult.exclude(version_number=-1)
+            reports_adult = reports_adult.non_deleted()
 
         reports_bite = Report.objects.exclude(cached_visible=0)\
             .filter(version_UUID__in=flattened_data)\
@@ -1701,7 +1756,7 @@ def nearby_reports_no_dwindow(request):
             else:
                 reports_bite = reports_bite.exclude(user__user_UUID__in=user_uuids)
         if show_hidden == 0:
-            reports_bite = reports_bite.exclude(version_number=-1)
+            reports_bite = reports_bite.non_deleted()
 
         reports_site = Report.objects.exclude(cached_visible=0)\
             .filter(version_UUID__in=flattened_data)\
@@ -1715,14 +1770,9 @@ def nearby_reports_no_dwindow(request):
             else:
                 reports_site = reports_site.exclude(user__user_UUID__in=user_uuids)
         if show_hidden == 0:
-            reports_site = reports_site.exclude(version_number=-1)
+            reports_site = reports_site.non_deleted()
 
-        if show_versions == 0:
-            #classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 and x.latest_version, reports_adult)
-            classified_reports_in_max_radius = filter(lambda x: x.latest_version and x.show_on_map, reports_adult)
-        else:
-            # classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0 , reports_adult)
-            classified_reports_in_max_radius = filter(lambda x: x.show_on_map, reports_adult)
+        classified_reports_in_max_radius = filter(lambda x: x.show_on_map, reports_adult)
 
 
         if user is not None:
@@ -1731,9 +1781,7 @@ def nearby_reports_no_dwindow(request):
             else:
                 user_reports = Report.objects.filter(user__user_UUID__in=user_uuids)
             if show_hidden == 0:
-                user_reports = user_reports.exclude(version_number=-1)
-            if show_versions == 0:
-                user_reports = filter(lambda x: x.latest_version, user_reports)
+                user_reports = user_reports.non_deleted()
             all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site) + list(user_reports)
         else:
             all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site)
@@ -2091,8 +2139,6 @@ def profile_detail(request):
                     if report['type'] == 'mission':
                         del device['user_reports'][idx]
                     r = Report.objects.get(pk=report['version_UUID'])
-                    if not r.latest_version:
-                        del device['user_reports'][idx]
 
             return Response(copied_data, status=status.HTTP_200_OK)
 
@@ -2103,7 +2149,7 @@ def reports_id_filtered(request):
         report_id = request.query_params.get('report_id', -1)
         if report_id == -1:
             raise ParseError(detail='report_id is mandatory')
-        qs = Report.objects.filter(type='adult').exclude(version_number=-1).filter(report_id__startswith=report_id).order_by('-version_time')
+        qs = Report.objects.filter(type='adult').non_deleted().filter(report_id__startswith=report_id).order_by('-version_time')
         serializer = ReportSerializer(qs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
