@@ -58,11 +58,20 @@ admin.site.register(Token, MyTokenAdmin)
 
 admin.site.disable_action('delete_selected')
 
+class ReportInline(admin.TabularInline):
+    model = Report
+    fields = ('version_UUID', 'report_id', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'os')
+    readonly_fields = ('version_UUID', 'report_id', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'os')
+    show_change_link = True
+    extra = 0
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
     readonly_fields = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
+    search_fields = ('user_UUID',)
+    ordering = ('registration_time',)
     actions = [export_full_csv, export_full_csv_sc]
+    inlines = [ReportInline,]
 
     def has_add_permission(self, request):
         return False
