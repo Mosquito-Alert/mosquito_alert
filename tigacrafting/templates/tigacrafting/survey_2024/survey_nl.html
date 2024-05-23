@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enquête</title>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <p>
+        {{ message }}
+    </p>
+    <p>
+        We zijn op zoek naar "citizen scientists" die geïnteresseerd zijn in het bestuderen en monitoren van muggen. We
+        hebben deze korte <a href="{{ survey_link }}" target="_blank">enquête</a> ontwikkeld. Jouw participatie zou ons enorm helpen; we hebben maar 5 minuten
+        van uw tijd nodig. Uw feedback helpt de ontwikkeling van de wetenschappelijke kennis over burgerparticipatie in
+        ecologische monitoringprojecten.
+
+    </p>
+    <p>Uw antwoorden blijven anoniem en geven inzicht in onze CS.</p>
+    <p>
+        <a href="{{ survey_link }}" target="_blank">Doe de enquête in het Nederlands.</a>
+    </p>
+    <p style="color:red; font-size: 20px">Als je problemen hebt met het openen van de eerdere links, kopieer en plak dan de volgende url in een browser:</p>
+    <p style="color:red; font-size: 20px">{{ survey_link }}</p>
+    <p>Het onderzoek maakt deel uit van een onderzoek dat is ontwikkeld door Mosquito Alert, CEAB-CSIC en UPF.</p>
+    <p class="centeredImage"><img style="max-width: 100%; height: auto; display: block; margin-left: auto; margin-right: auto;" src="https://www.mosquitoalert.com/wp-content/uploads/2022/06/ceab-upf.png"></p>
+</body>
+</html>

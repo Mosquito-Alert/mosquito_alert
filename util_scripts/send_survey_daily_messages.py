@@ -21,10 +21,10 @@ from tigaserver_app.models import NotificationContent, Notification, TigaUser
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 
-base_folder = proj_path + 'util_scripts/survey_files_2023/'
+base_folder = proj_path + 'util_scripts/survey_files_2024/'
 logs_folder = base_folder + 'logs/'
 
-message_content = 'tigacrafting/survey_2023/dailies/'
+message_content = 'tigacrafting/survey_2024/dailies/'
 
 
 def config_logging():
@@ -90,6 +90,7 @@ def do_send_notification( uuid, category, language, number ):
 
     user = TigaUser.objects.get(pk=uuid)
     sender = User.objects.get(pk=38)  # mosquitoalert
+    current_year = str(datetime.datetime.now().year)
 
     message_and_title = get_message_and_title(category, language, number)
 
@@ -97,7 +98,7 @@ def do_send_notification( uuid, category, language, number ):
     title = message_and_title['title']
     language = message_and_title['language']
 
-    notification_label = '{0}_{1}_{2}'.format(category, language, str(number))
+    notification_label = '{0}_{1}_{2}_{3}'.format(category, language, str(number), current_year)
 
     notification_content = NotificationContent(
         body_html_en=message,

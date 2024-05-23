@@ -21,7 +21,7 @@ from tigaserver_app.models import NotificationContent, Notification, TigaUser, N
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 
-base_folder = proj_path + 'util_scripts/survey_files_2023/'
+base_folder = proj_path + 'util_scripts/survey_files_2024/'
 logs_folder = base_folder + 'logs/'
 
 # SURVEY_TITLE = {
