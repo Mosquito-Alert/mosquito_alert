@@ -29,19 +29,11 @@ logs_folder = base_folder + 'logs/'
 SURVEY_TEXT_DEFAULT = sets.SET_DEFAULT
 
 SURVEY_TEXT = {
-  "7": {
-    "2": sets.SET_1,
-    "15": sets.SET_2,
-    "26": sets.SET_3
-  },
-  "8":{
-    "5": sets.SET_4,
-    "15": sets.SET_5,
-    "31": sets.SET_1
-  },
-  "9":{
-    "12": sets.SET_2
-  }
+  "6": { "3": sets.SET_1, "8": sets.SET_2, "13": sets.SET_3, "18": sets.SET_4, "23": sets.SET_5, "28": sets.SET_1, },
+  "7": { "3": sets.SET_1, "8": sets.SET_2, "13": sets.SET_3, "18": sets.SET_4, "23": sets.SET_5, "28": sets.SET_1, },
+  "8": { "2": sets.SET_1, "7": sets.SET_2, "12": sets.SET_3, "17": sets.SET_4, "22": sets.SET_5, "27": sets.SET_1, },
+  "9": { "1": sets.SET_1, "6": sets.SET_2, "11": sets.SET_3, "16": sets.SET_4, "21": sets.SET_5, "26": sets.SET_1, },
+  "10": { "1": sets.SET_1, "6": sets.SET_2, "11": sets.SET_3, "15": sets.SET_4, "20": sets.SET_5, "25": sets.SET_1, "30": sets.SET_2, }
 }
 
 
