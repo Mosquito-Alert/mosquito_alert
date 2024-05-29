@@ -21,7 +21,7 @@
     {% block bootstrap_css %}
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+        <!--<link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>-->
     {% endblock %}
 
     <!--script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script-->
@@ -88,6 +88,10 @@
             padding-top: 20px;
             margin-top: 10px;
             border-top: 1px solid #ccc !important;
+        }
+
+        div.btn-group.bootstrap-select {
+            display: none;
         }
 
     </style>
