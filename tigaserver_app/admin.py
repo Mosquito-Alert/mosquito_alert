@@ -58,11 +58,20 @@ admin.site.register(Token, MyTokenAdmin)
 
 admin.site.disable_action('delete_selected')
 
+class ReportInline(admin.TabularInline):
+    model = Report
+    fields = ('version_UUID', 'report_id', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'os')
+    readonly_fields = ('version_UUID', 'report_id', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'os')
+    show_change_link = True
+    extra = 0
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
     readonly_fields = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
+    search_fields = ('user_UUID',)
+    ordering = ('registration_time',)
     actions = [export_full_csv, export_full_csv_sc]
+    inlines = [ReportInline,]
 
     def has_add_permission(self, request):
         return False
@@ -107,12 +116,13 @@ class PhotoInline(admin.StackedInline):
 
 
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
+    list_display = ('version_UUID', 'report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
                     'package_version', 'os', 'n_photos', 'map_link', 'movelab_score', 'crowd_score')
     inlines = [ReportResponseInline, PhotoInline]
     ordering = ('creation_time', 'report_id', 'version_number')
     readonly_fields = ('deleted', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time', 'updated_at', 'datetime_fix_offset', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link', 'movelab_score', 'crowd_score')
     fields = ('hide', 'deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', ('creation_time', 'version_time', 'datetime_fix_offset'), ('server_upload_time','phone_upload_time'), 'updated_at', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'movelab_score', 'crowd_score')
+    search_fields = ('version_UUID',)
     list_filter = ['os', 'type', 'mission', 'package_name', 'package_version']
     actions = [export_full_csv, export_full_csv_sc]
 
