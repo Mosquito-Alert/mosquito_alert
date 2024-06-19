@@ -112,7 +112,7 @@ class ReportQuerySet(models.QuerySet):
                     user__groups__name='superexpert',
                     validation_complete=True,
                     revise=True
-                ).order_by('-last_modified').values('status')[:1],
+                ).order_by('status').values('status')[:1],
                 output_field=models.IntegerField()
             ),
             worst_expert_status=models.Subquery(
