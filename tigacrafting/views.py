@@ -930,7 +930,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             args['n_confirmed'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is True and item['revise'] is False)
             args['n_revised'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is True and item['revise'] is True)
 
-            args['n_loc_spain'] = user_assigned_reports.filter(country=spain_country).count()
+            args['n_loc_spain'] = user_assigned_reports.filter( Q(country=spain_country) | Q(country__isnull=True) ).count()
             args['n_loc_europe'] = user_assigned_reports.filter(country__isnull=False).exclude(country=spain_country).count()
             args['n_loc_all'] = user_assigned_reports.count()
 
