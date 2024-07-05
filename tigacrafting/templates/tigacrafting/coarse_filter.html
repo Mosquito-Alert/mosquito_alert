@@ -1,0 +1,120 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="{% block language %}'en'{% endblock %}">
+<head>
+    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <style>
+        .photo_grid {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .header_internal_wrapper {
+            display: flex;
+            flex-direction: row;
+        }
+        .header_country {
+            margin: 10px;
+        }
+        .header_ia {
+            margin: 10px;
+            margin-left: 30px;
+        }
+        .pictures_internal_grid {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 15px;
+            margin-left: 10px;
+            min-width: max-content;
+        }
+        .pictures_internal_grid_wrapper {
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        .buttons_internal_grid {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            margin: 10px;
+        }
+        .picture_item {
+            width: 100px;
+            height: 100px;
+            background-color: green;
+            margin: 5px;
+        }
+        .photo {
+            width: 500px;
+            height: 400px;
+            background-color: red;
+            margin: 10px;
+        }
+        .body_internal_wrapper {
+            margin: 20px;
+        }
+        .body_internal_wrapper p {
+            text-align: justify;
+            font-size: small;
+        }
+        .foot_btn {
+            //width: 25px;
+            //height: 25px;
+            margin: 2px;
+        }
+        .hrnomargin {
+            margin-top: 2px !important;
+            margin-bottom: 7px !important;
+        }
+        .site.storm_drain { background-color: #4169E1; }
+        .site.other { background-color: #a7b9f1; }
+        .adult { background-color: orange; }
+    </style>
+    <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/javascript/coarse_filter.js' %}"></script>
+    <script src="{% static 'tigacrafting/d3/d3.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/ia_graph.js' %}"></script>
+</head>
+<body>
+    <div class="navbar-wrapper"></div>
+    <div class="container">
+        <div id="photo_grid" class="photo_grid">
+            <!--
+            <div class="photo">
+                <div class="photo_internal_wrapper">
+                    <div class="header_internal_wrapper">
+                        <a href="/single_simple/36cd0b55-99ad-4356-9b61-8a190cee7239" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> Greece</span></a>
+                    </div>
+                    <hr>
+                    <div class="body_internal_wrapper">
+                        <p><span class="label label-success">Report id</span> 36cd0b55-99ad-4356-9b61-8a190cee7239</p>
+                        <p><span class="label label-success">Date</span> May 21, 2024, 11:33 p.m.</p>
+                        <p><span class="label label-success">User Notes</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                    </div>
+                    <hr>
+                    <div class="pictures_internal_grid_wrapper">
+                        <div class="pictures_internal_grid">
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                            <div class="picture_item"></div>
+                        </div>
+                    </div>
+                    <hr class="hrnomargin">
+                    <div class="buttons_internal_grid">
+                        <button type="button" class="btn btn-primary foot_btn">1</button>
+                        <button type="button" class="btn btn-primary foot_btn">2</button>
+                        <button type="button" class="btn btn-primary foot_btn">3</button>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+    </div>
+</body>

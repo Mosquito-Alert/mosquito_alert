@@ -639,3 +639,20 @@ class OrganizationPinsSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class CoarseReportSerializer(serializers.ModelSerializer):
+    photos = DetailedPhotoSerializer(many=True)
+    version_UUID = serializers.ReadOnlyField()
+    report_id = serializers.ReadOnlyField()
+    creation_time = serializers.ReadOnlyField()
+    type = serializers.ReadOnlyField()
+    note = serializers.ReadOnlyField()
+    country = EuropeCountrySimpleSerializer(many=False)
+    site_cat = serializers.SerializerMethodField(method_name='get_site_cat')
+    ia_filter_1 = serializers.ReadOnlyField()
+
+    def get_site_cat(self,obj):
+        return obj.site_cat
+
+    class Meta:
+        model = Report
+        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1')

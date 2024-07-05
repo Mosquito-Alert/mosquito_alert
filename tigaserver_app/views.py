@@ -16,7 +16,7 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
@@ -26,7 +26,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
-from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
+from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports,get_reports_unfiltered_adults_except_being_validated
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
@@ -36,7 +36,7 @@ from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
 from django.db import connection
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import timezone
@@ -2204,6 +2204,48 @@ def favorite(request):
             new_fav.save()
             return Response(status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def coarse_filter_reports(request):
+    if request.method == 'GET':
+        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
+        reports_imbornal = get_reports_imbornal()
+        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+
+        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+
+        limit = request.query_params.get("limit", 10)
+        offset = request.query_params.get("offset", 1)
+        results = new_reports_unfiltered
+
+        try:
+            paginator = Paginator(results, limit)
+        except:
+            paginator = Paginator(results, limit)
+
+        try:
+            results = paginator.page(offset)
+        except PageNotAnInteger:
+            results = paginator.page(offset)
+        except EmptyPage:
+            results = []
+
+        api_count = paginator.count
+        api_next = None if not results.has_next() else results.next_page_number()
+        api_previous = None if not results.has_previous() else results.previous_page_number()
+
+        #serializer = ReportSerializer(results, many=True)
+        serializer = CoarseReportSerializer(results, many=True)
+
+        data = {
+            'count': api_count,
+            'next': api_next,
+            'previous': api_previous,
+            'results': serializer.data
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def user_favorites(request):

@@ -1510,6 +1510,9 @@ def auto_annotate_other_species(report, request):
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
+def coarse_filter(request):
+    return render(request, 'tigacrafting/coarse_filter.html')
+
 @login_required
 def picture_validation(request,tasks_per_page='300',visibility='visible', usr_note='', type='all', country='all', aithr='1.00'):
     this_user = request.user
