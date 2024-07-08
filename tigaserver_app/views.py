@@ -45,6 +45,7 @@ from django.template.loader import get_template
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
+import math
 
 #from celery.task.schedules import crontab
 #from celery.decorators import periodic_task
@@ -2239,6 +2240,9 @@ def coarse_filter_reports(request):
         serializer = CoarseReportSerializer(results, many=True)
 
         data = {
+            'per_page': limit,
+            'count_pages': paginator.num_pages,
+            'current': offset,
             'count': api_count,
             'next': api_next,
             'previous': api_previous,

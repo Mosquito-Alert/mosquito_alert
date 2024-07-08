@@ -3,11 +3,13 @@
 <html lang="{% block language %}'en'{% endblock %}">
 <head>
     <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'tigacrafting/font-awesome-4.7.0/css/font-awesome.min.css' %}">
     <style>
         .photo_grid {
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
+            margin-top: 60px;
         }
         .header_internal_wrapper {
             display: flex;
@@ -40,7 +42,7 @@
         .picture_item {
             width: 100px;
             height: 100px;
-            background-color: green;
+            background-color: gray;
             margin: 5px;
         }
         .photo {
@@ -68,6 +70,13 @@
         .site.storm_drain { background-color: #4169E1; }
         .site.other { background-color: #a7b9f1; }
         .adult { background-color: orange; }
+        .miniform { margin-left: 15px; margin-top: 10px;}
+        li.miniform > span > span { color: white; }
+        .form-inline { display: inline; }
+        .spinner { width: 100%; height: 70px; margin-top: 60px;}
+        #filter_status {
+            margin-top: 60px;
+        }
     </style>
     <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
     <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
@@ -76,45 +85,151 @@
     <script src="{% static 'tigacrafting/ia_graph.js' %}"></script>
 </head>
 <body>
-    <div class="navbar-wrapper"></div>
-    <div class="container">
-        <div id="photo_grid" class="photo_grid">
-            <!--
-            <div class="photo">
-                <div class="photo_internal_wrapper">
-                    <div class="header_internal_wrapper">
-                        <a href="/single_simple/36cd0b55-99ad-4356-9b61-8a190cee7239" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> Greece</span></a>
-                    </div>
-                    <hr>
-                    <div class="body_internal_wrapper">
-                        <p><span class="label label-success">Report id</span> 36cd0b55-99ad-4356-9b61-8a190cee7239</p>
-                        <p><span class="label label-success">Date</span> May 21, 2024, 11:33 p.m.</p>
-                        <p><span class="label label-success">User Notes</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-                    </div>
-                    <hr>
-                    <div class="pictures_internal_grid_wrapper">
-                        <div class="pictures_internal_grid">
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
-                            <div class="picture_item"></div>
+
+<div class="navbar-wrapper">
+        <div class="container">
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div id="navbar" class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand">
+                            <span style="color:#ff9900; font-size: small">
+                                MosquitoAlert Picture Validation
+                            </span>
+
                         </div>
                     </div>
-                    <hr class="hrnomargin">
-                    <div class="buttons_internal_grid">
-                        <button type="button" class="btn btn-primary foot_btn">1</button>
-                        <button type="button" class="btn btn-primary foot_btn">2</button>
-                        <button type="button" class="btn btn-primary foot_btn">3</button>
+                    <div class="navbar-collapse collapse">
+
+                        <ul class="nav navbar-nav navbar-left">
+                            <li>
+                                <span data-toggle="modal" data-target="#myModal"><button type="button" class="btn btn-warning btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Filter" style="margin-left:5px"><span class="glyphicon glyphicon-filter"></span></button></span>
+                            </li>
+                            <li class="miniform">
+                                <span class="step-links">
+                                    <button id="previous_page_button" class="btn btn-default btn-sm active" data-offset="" type="button">Previous</button>
+                                    <span class="current">
+                                        Page ?? of ??
+                                    </span>
+                                    <button id="next_page_button" class="btn btn-default btn-sm active" data-offset="" type="button">Next</button>
+                                    <form role="form" class="form-inline">
+                                        <div class="form-group">
+                                            <input type="number" min="1" max="{{ objects.paginator.num_pages }}"
+                                           class="form-control input-sm" id="page_input" placeholder="Go to page"
+                                           style="width:100px;">
+                                            <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+                                        </div>
+                                    </form>
+                                </span>
+                            </li>
+                        </ul>
+
+
+                        <ul class="nav navbar-nav navbar-right">
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle"
+                                       data-toggle="dropdown">Reports per page
+                                        <span class="caret"></span></a>
+                                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                        {% for n in tasks_per_page_choices %}
+                                            <li>
+                                                <a class="n_choice" data-n_val="{{ n }}" href="#">{{ n }} <span class=""></span></a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                            <li><a href="{% url 'auth_logout' %}">logout</a>
+                            </li>
+                        </ul>
+
+
                     </div>
                 </div>
             </div>
-            -->
         </div>
     </div>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Filters</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="visibility_select" class="col-sm-4 control-label">Visibility:</label>
+                            <div class="col-sm-8">
+                                <select id="visibility_select" class="selectpicker show-tick form-control">
+                                    <option value="visible">Show visible</option>
+                                    <option value="hidden">Show hidden</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="type_select" class="col-sm-4 control-label">Report type:</label>
+                            <div class="col-sm-8">
+                                <select id="type_select" class="selectpicker show-tick form-control">
+                                    <option value="adult">Adults</option>
+                                    <option value="site">Breeding sites - storm drains</option>
+                                    <option value="site-o">Breeding sites - other</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="country_select" class="col-sm-4 control-label">Country:</label>
+                            <div class="col-sm-8">
+                                <select id="country_select" class="selectpicker show-tick form-control">
+                                    <option value="all">Show All</option>
+                                    {% for country in countries %}
+                                    <option value="{{ country.gid }}">{{ country.name_engl }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="slider" class="col-sm-4 control-label">Show only report adults with ia index less or equal than:</label>
+                            <div class="col-sm-8">
+                                <div id="slider"></div>
+                                <div id="slider_value">0.75</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="usernote_filter" class="col-sm-4 control-label">User note contains text:</label>
+                            <div class="col-sm-8">
+                                <input id="usernote_filter" type="text" maxlength="20" name="usernote_filter">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-primary" href="{% url 'picture_validation' %}">Clear Filters</a>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="filters_submit_button" class="btn btn-warning">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="spinner">
+            <i class="fa fa-spinner fa-spin fa-5x fa-fw" aria-hidden="true"></i>
+        </div>
+        <div id="filter_status">
+            <h1>Filter status</h1>
+        </div>
+        <div id="photo_grid" class="photo_grid">
+        </div>
+    </div>
+    <input id="n_per_page" type="hidden">
 </body>

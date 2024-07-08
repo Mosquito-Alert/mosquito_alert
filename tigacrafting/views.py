@@ -1511,7 +1511,11 @@ def auto_annotate_other_species(report, request):
     issue_notification(roger_annotation, current_domain)
 
 def coarse_filter(request):
-    return render(request, 'tigacrafting/coarse_filter.html')
+    range_list = [n for n in range(10, 101, 10)]
+    context = {
+        'tasks_per_page_choices': range_list + [200, 300]
+    }
+    return render(request, 'tigacrafting/coarse_filter.html', context)
 
 @login_required
 def picture_validation(request,tasks_per_page='300',visibility='visible', usr_note='', type='all', country='all', aithr='1.00'):
