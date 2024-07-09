@@ -1513,7 +1513,8 @@ def auto_annotate_other_species(report, request):
 def coarse_filter(request):
     range_list = [n for n in range(10, 101, 10)]
     context = {
-        'tasks_per_page_choices': range_list + [200, 300]
+        'tasks_per_page_choices': range_list + [200, 300],
+        'countries': EuropeCountry.objects.all().order_by('name_engl')
     }
     return render(request, 'tigacrafting/coarse_filter.html', context)
 

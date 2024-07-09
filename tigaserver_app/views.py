@@ -42,6 +42,7 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
+from django.db.models.expressions import RawSQL
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
@@ -2208,16 +2209,58 @@ def favorite(request):
 @api_view(['GET'])
 def coarse_filter_reports(request):
     if request.method == 'GET':
+        json_filter = None
         new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
         reports_imbornal = get_reports_imbornal()
         new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
         new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
         new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
 
+        q = request.query_params.get("q", '')
+        limit = request.query_params.get("limit", 100)
+        offset = request.query_params.get("offset", 1)
+
+        if q != '':
+            json_filter = json.loads(q);
+            aithr = json_filter['ia_threshold']
+            new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
+
         new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
 
-        limit = request.query_params.get("limit", 10)
-        offset = request.query_params.get("offset", 1)
+        if json_filter:
+            if json_filter['country'] != 'all':
+                new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(json_filter['country']))
+            if json_filter['report_type'] != 'all':
+                type = json_filter['report_type']
+                if type == 'adult':
+                    new_reports_unfiltered = new_reports_unfiltered_adults
+                elif type == 'site':
+                    new_reports_unfiltered = new_reports_unfiltered_sites_embornal
+                elif type == 'site-o':
+                    new_reports_unfiltered = new_reports_unfiltered_sites_other
+            if json_filter['visibility'] != 'all':
+                visibility = json_filter['visibility']
+                if visibility == 'visible':
+                    new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+                elif visibility == 'hidden':
+                    new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+            if json_filter['note'] != '':
+                new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=json_filter['note'])
+
+        report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
+            ())).values("version_UUID").distinct()
+        report_id_deleted_reports_sites = Report.objects.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'site' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
+            ())).values("version_UUID").distinct()
+
+        new_reports_unfiltered = new_reports_unfiltered.exclude(
+            version_UUID__in=report_id_deleted_reports_adults).exclude(version_UUID__in=report_id_deleted_reports_sites)
+
+        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher",
+            ()))
+
         results = new_reports_unfiltered
 
         try:
