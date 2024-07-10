@@ -80,14 +80,21 @@
             margin-left: 10px;
             margin-right: 10px;
         }
+        .hide_button {
+            display: none;
+        }
     </style>
     <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
     <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
     <script src="{% static 'tigacrafting/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/jquery_blockUI/jquery.blockUI.js' %}"></script>
     <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'tigacrafting/javascript/coarse_filter.js' %}"></script>
     <script src="{% static 'tigacrafting/d3/d3.min.js' %}"></script>
     <script src="{% static 'tigacrafting/ia_graph.js' %}"></script>
+    <script>
+        var csrf_token = '{{ csrf_token }}';
+    </script>
 </head>
 <body>
 
@@ -231,7 +238,7 @@
     <div class="container">
         <div id="filter_status">
             <strong>Filters:</strong>
-            Showing - <span class="badge" id="visibility_filter">All</span>,
+            Showing - <span class="badge" id="visibility_filter">Visible</span>,
             User note contains - '<span class="badge" id="text_filter">Anything</span>',
             Report type - <span class="badge" id="rtype_filter">All</span>,
             Country - <span class="badge" id="country_filter">Any</span>,

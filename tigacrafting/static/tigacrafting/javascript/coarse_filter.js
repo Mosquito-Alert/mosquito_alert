@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
 function reset_filter(){
-    $('#visibility_select').val('all');
+    $('#visibility_select').val('visible');
     $('#type_select').val('all');
     $('#country_select').val('all');
     $( "#slider" ).slider("value", 1.0);
@@ -107,10 +107,31 @@ function set_current(current_page, n_pages, n_total){
 
 function lockui(){
     $('#gear').show();
+    $.blockUI();
 }
 
 function unlockui(){
     $('#gear').hide();
+    $.unblockUI();
+}
+
+function classify_picture(report_id, category_id, validation_value){
+    $('#' + report_id).block({ message: 'Writing classification' });
+    $.ajax({
+        url: '/api/annotate_coarse/',
+        data: { "report_id": report_id, "category_id": category_id, "validation_value": validation_value },
+        type: "POST",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            $('#' + report_id).unblock();
+            $('#' + report_id).remove();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            $('#' + report_id).unblock();
+        },
+        cache: false
+    });
 }
 
 function load_data(limit=200, offset=1, q=''){
@@ -150,7 +171,7 @@ function load_data(limit=200, offset=1, q=''){
 function single_picture_template(picture){
     return `
         <div class="picture_item">
-            <img src="${ picture.photo }">
+            <img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100" >
         </div>
     `;
 }
@@ -165,6 +186,7 @@ function single_report_template(report){
     const report_country_name = report.country == null ? 'No country' : report.country.name_engl;
     const site_cat = report.site_cat == 0 ? 'storm_drain' : 'other';
     const ia_value = report.ia_filter_1 == null ? 'N/A' : report.ia_filter_1;
+    const additional_button_class = report.type == 'site' ? 'hide_button' : '';
     return `
         <div id="${ report.version_UUID }" class="photo ${ report.type } ${ site_cat }">
             <div class="photo_internal_wrapper">
@@ -191,9 +213,12 @@ function single_report_template(report){
                 </div>
                 <hr class="hrnomargin">
                 <div class="buttons_internal_grid">
-                    <button type="button" class="btn btn-primary foot_btn">1</button>
-                    <button type="button" class="btn btn-primary foot_btn">2</button>
-                    <button type="button" class="btn btn-primary foot_btn">3</button>
+                    <button type="button" title="Hide report" data-report-id="${ report.version_UUID }" class="btn btn-primary foot_btn btn_hide_report">Hide</button>
+                    <button type="button" title="Other species" data-category="2" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_other">O.species</button>
+                    <button type="button" title="Probably culex" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_pculex">P.culex</button>
+                    <button type="button" title="Probably albopictus" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_palbo">P.albo.</button>
+                    <button type="button" title="Definitely albopictus" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
+                    <button type="button" title="Not sure" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_notsure">N.S.</button>
                 </div>
             </div>
         </div>
@@ -229,7 +254,8 @@ $('.n_choice').click( function(e){
         child_span.addClass('glyphicon-check');
     };
     $('#n_per_page').val( $(this).data('n_val') );
-    load_data( $(this).data('n_val'), 1 );
+    const q = ui_to_filter();
+    load_data( $(this).data('n_val'), 1, q);
 });
 
 $('#filters_submit_button').click( function(e){
@@ -252,6 +278,13 @@ $('#filters_clear').click( function(e){
     load_data(page_size,1,filter);
 });
 
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_other', function(){
+    console.log('click');
+    const category_id = $(this).data("category");
+    const report_id = $(this).data("report-id");
+    classify_picture(report_id, category_id, null);
+});
+
 $( "#slider" ).slider({
     min: -1,
     max: 1.05,
@@ -262,18 +295,6 @@ $( "#slider" ).slider({
 });
 $( "#slider" ).slider("value", 1.0);
 
-/*
-function test(){
-    const root = $('#photo_grid');
-    for(var i = 0; i < data.results.length; i++){
-        const report = data.results[i];
-        const single_report = single_report_template(report);
-        //console.log( single_report );
-        root.append(single_report);
-    }
-}
-test();
-*/
 reset_filter();
 load_data();
 

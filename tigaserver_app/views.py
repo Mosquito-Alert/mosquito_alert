@@ -17,9 +17,10 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
+from tigacrafting.views import auto_annotate
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -2206,10 +2207,46 @@ def favorite(request):
             new_fav.save()
             return Response(status=status.HTTP_200_OK)
 
+def get_filter_params_from_q(q):
+    if q == '':
+        return {
+            'type':'all',
+            'visibility':'visible',
+            'aithr':1.00,
+            'note': '',
+            'country': 'all'
+        } #default values
+    else:
+        json_filter = json.loads(q);
+        return {
+            'type': json_filter['report_type'],
+            'visibility': json_filter['visibility'],
+            'aithr': float(json_filter['ia_threshold']),
+            'note': json_filter['note'],
+            'country': json_filter['country']
+        }
+
+@api_view(['POST'])
+def annotate_coarse(request):
+    if request.method == 'POST':
+        report_id = request.POST.get('report_id', '-1')
+        category_id = request.POST.get('category_id', -1)
+        validation_value = request.POST.get('validation_value', None)
+        if report_id == '-1':
+            raise ParseError(detail='report_id param is mandatory')
+        if category_id == -1:
+            raise ParseError(detail='category_id param is mandatory')
+        if validation_value == '':
+            validation_value = None
+        report = Report.objects.get(pk=report_id)
+        category = Categories.objects.get(pk=category_id)
+        annotation = auto_annotate(report, category, validation_value)
+        return Response(data={'message':'success'}, status=status.HTTP_200_OK)
+
 @api_view(['GET'])
 def coarse_filter_reports(request):
     if request.method == 'GET':
-        json_filter = None
+
         new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
         reports_imbornal = get_reports_imbornal()
         new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
@@ -2217,35 +2254,34 @@ def coarse_filter_reports(request):
         new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
 
         q = request.query_params.get("q", '')
+        filter_params = get_filter_params_from_q(q)
+        aithr = filter_params['aithr']
+        type = filter_params['type']
+        visibility = filter_params['visibility']
+        note = filter_params['note']
+        country = filter_params['country']
+
         limit = request.query_params.get("limit", 100)
         offset = request.query_params.get("offset", 1)
 
-        if q != '':
-            json_filter = json.loads(q);
-            aithr = json_filter['ia_threshold']
-            new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
+        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
 
         new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
 
-        if json_filter:
-            if json_filter['country'] != 'all':
-                new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(json_filter['country']))
-            if json_filter['report_type'] != 'all':
-                type = json_filter['report_type']
-                if type == 'adult':
-                    new_reports_unfiltered = new_reports_unfiltered_adults
-                elif type == 'site':
-                    new_reports_unfiltered = new_reports_unfiltered_sites_embornal
-                elif type == 'site-o':
-                    new_reports_unfiltered = new_reports_unfiltered_sites_other
-            if json_filter['visibility'] != 'all':
-                visibility = json_filter['visibility']
-                if visibility == 'visible':
-                    new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
-                elif visibility == 'hidden':
-                    new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
-            if json_filter['note'] != '':
-                new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=json_filter['note'])
+        if type == 'adult':
+            new_reports_unfiltered = new_reports_unfiltered_adults
+        elif type == 'site':
+            new_reports_unfiltered = new_reports_unfiltered_sites_embornal
+        elif type == 'site-o':
+            new_reports_unfiltered = new_reports_unfiltered_sites_other
+        if visibility == 'visible':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+        elif visibility == 'hidden':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+        if note != '':
+            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=note)
+        if country and country != '' and country != 'all':
+            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
 
         report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL(
             "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
