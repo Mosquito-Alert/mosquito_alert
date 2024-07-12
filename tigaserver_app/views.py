@@ -2226,6 +2226,22 @@ def get_filter_params_from_q(q):
             'country': json_filter['country']
         }
 
+@api_view(['PATCH'])
+def hide_report(request):
+    if request.method == 'PATCH':
+        #print(request.data)
+        report_id = request.data.get('report_id','-1')
+        hide_val = request.data.get('hide')
+        if report_id == '-1':
+            raise ParseError(detail='report_id param is mandatory')
+        if not hide_val:
+            raise ParseError(detail='hide param is mandatory')
+        hide = hide_val == 'true'
+        report = get_object_or_404(Report,pk=report_id)
+        report.hide = hide
+        report.save()
+        return Response(data={'msg': 'hide set to {0}'.format( hide )}, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 def annotate_coarse(request):
     if request.method == 'POST':
@@ -2238,8 +2254,8 @@ def annotate_coarse(request):
             raise ParseError(detail='category_id param is mandatory')
         if validation_value == '':
             validation_value = None
-        report = Report.objects.get(pk=report_id)
-        category = Categories.objects.get(pk=category_id)
+        report = get_object_or_404(Report, pk=report_id)
+        category = get_object_or_404(Categories, pk=category_id)
         annotation = auto_annotate(report, category, validation_value)
         return Response(data={'message':'success'}, status=status.HTTP_200_OK)
 

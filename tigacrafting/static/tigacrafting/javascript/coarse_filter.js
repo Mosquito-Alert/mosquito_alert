@@ -1,3 +1,36 @@
+function set_report_visible_to(report_id, hide_value){
+    const selector = `#visibility_${ report_id }`;
+    const selector_hidden_button = `#hide_${ report_id }`;
+    const selector_show_button = `#show_${ report_id }`;
+    if(hide_value == 'true'){ //hidden
+        $(selector).empty();
+        $(selector).html('<span class="glyphicon glyphicon-eye-close" title="This report is hidden" style="color: white;"></span>');
+        $(selector_hidden_button).addClass('hide_button');
+        $(selector_show_button).removeClass('hide_button');
+    }else{ //not
+        $(selector).empty();
+        $(selector).html('<span class="glyphicon glyphicon-eye-open" title="This report is visible" style="color: white;"></span>');
+        $(selector_hidden_button).removeClass('hide_button');
+        $(selector_show_button).addClass('hide_button');
+    }
+}
+
+function show_adult_buttons(report_id){
+    $(`#other_${ report_id }`).removeClass('hide_button');
+    $(`#pculex_${ report_id }`).removeClass('hide_button');
+    $(`#palbo_${ report_id }`).removeClass('hide_button');
+    $(`#dalbo_${ report_id }`).removeClass('hide_button');
+    $(`#ns_${ report_id }`).removeClass('hide_button');
+}
+
+function hide_adult_buttons(report_id){
+    $(`#other_${ report_id }`).addClass('hide_button');
+    $(`#pculex_${ report_id }`).addClass('hide_button');
+    $(`#palbo_${ report_id }`).addClass('hide_button');
+    $(`#dalbo_${ report_id }`).addClass('hide_button');
+    $(`#ns_${ report_id }`).addClass('hide_button');
+}
+
 $(document).ready(function() {
 
 function reset_filter(){
@@ -115,6 +148,54 @@ function unlockui(){
     $.unblockUI();
 }
 
+function load_previews(){
+    $(".preview").each(function (index, element) {
+        return hoverPreview($(this)[0]);
+    });
+}
+
+function set_visibility_icons(){
+    $(".status_hidden").each(function (index, element) {
+        $(this).html('<span class="glyphicon glyphicon-eye-close" title="This report is hidden" style="color: white;"></span>');
+    });
+    $(".status_visible").each(function (index, element) {
+        $(this).html('<span class="glyphicon glyphicon-eye-open" title="This report is visible" style="color: white;"></span>');
+    });
+}
+
+function hide_or_show_report(report_id, hide_value){
+    $('#' + report_id).block({ message: 'Hiding or showing report' });
+    $.ajax({
+        url: '/api/hide_report/',
+        data: { "report_id": report_id, "hide": hide_value },
+        type: "PATCH",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            $('#' + report_id).unblock();
+            const current_filter = ui_to_filter();
+            const current_filter_json = JSON.parse(current_filter);
+            if(current_filter_json.visibility=='all'){
+                //redraw visibility icon
+                set_report_visible_to(report_id, hide_value);
+                if( hide_value == 'false' ){
+                    if( $('#' + report_id).data('type') == 'adult' ){
+                        show_adult_buttons(report_id);
+                    }else{
+                        hide_adult_buttons(report_id);
+                    }
+                }
+            }else{
+                $('#' + report_id).remove();
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            $('#' + report_id).unblock();
+        },
+        cache: false
+    });
+}
+
 function classify_picture(report_id, category_id, validation_value){
     $('#' + report_id).block({ message: 'Writing classification' });
     $.ajax({
@@ -159,6 +240,8 @@ function load_data(limit=200, offset=1, q=''){
             }
             update_pagination_data(pagination_data);
             create_ia_graph();
+            load_previews();
+            set_visibility_icons();
         },
         error: function(jqXHR, textStatus, errorThrown){
             unlockui();
@@ -171,7 +254,10 @@ function load_data(limit=200, offset=1, q=''){
 function single_picture_template(picture){
     return `
         <div class="picture_item">
-            <img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100" >
+            <a class="preview" href="${ picture.photo }" target="_blank">
+                <img src="${ picture.small_url }">
+            </a>
+            <!--<img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100" >-->
         </div>
     `;
 }
@@ -186,9 +272,12 @@ function single_report_template(report){
     const report_country_name = report.country == null ? 'No country' : report.country.name_engl;
     const site_cat = report.site_cat == 0 ? 'storm_drain' : 'other';
     const ia_value = report.ia_filter_1 == null ? 'N/A' : report.ia_filter_1;
-    const additional_button_class = report.type == 'site' ? 'hide_button' : '';
+    const adult_additional_button_class = report.type == 'site' || report.hide == true ? 'hide_button' : '';
+    const hide_additional_button_class = report.hide == true ? 'hide_button' : '';
+    const show_additional_button_class = report.hide == true ? '' : 'hide_button';
+    const visibility_class = report.hide == true ? 'status_hidden' : 'status_visible';
     return `
-        <div id="${ report.version_UUID }" class="photo ${ report.type } ${ site_cat }">
+        <div id="${ report.version_UUID }" data-type="${ report.type }" class="photo ${ report.type } ${ site_cat }">
             <div class="photo_internal_wrapper">
                 <div class="header_internal_wrapper">
                     <div class="header_country">
@@ -197,6 +286,9 @@ function single_report_template(report){
                     <div class="header_ia">
                         IA Value ${ ia_value }
                         <div id="ia${ report.version_UUID }" data-ia-value="${ report.ia_filter_1 }" data-type="${ report.type }" data-id="${ report.version_UUID }" class="ia_graph ${report.type}" style=""></div>
+                    </div>
+                    <div class="header_visibility">
+                        <div id="visibility_${report.version_UUID}" class="${visibility_class}"></div>
                     </div>
                 </div>
                 <hr class="hrnomargin">
@@ -213,12 +305,13 @@ function single_report_template(report){
                 </div>
                 <hr class="hrnomargin">
                 <div class="buttons_internal_grid">
-                    <button type="button" title="Hide report" data-report-id="${ report.version_UUID }" class="btn btn-primary foot_btn btn_hide_report">Hide</button>
-                    <button type="button" title="Other species" data-category="2" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_other">O.species</button>
-                    <button type="button" title="Probably culex" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_pculex">P.culex</button>
-                    <button type="button" title="Probably albopictus" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_palbo">P.albo.</button>
-                    <button type="button" title="Definitely albopictus" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
-                    <button type="button" title="Not sure" data-report-id="${ report.version_UUID }" class="${ additional_button_class } btn btn-primary foot_btn btn_notsure">N.S.</button>
+                    <button type="button" id="hide_${ report.version_UUID }" title="Hide report" data-report-id="${ report.version_UUID }" class="${ hide_additional_button_class } btn btn-primary foot_btn btn_hide_report">Hide</button>
+                    <button type="button" id="show_${ report.version_UUID }" title="Show report" data-report-id="${ report.version_UUID }" class="${ show_additional_button_class } btn btn-primary foot_btn btn_show_report">Show</button>
+                    <button type="button" id="other_${ report.version_UUID }" title="Other species" data-category="2" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_other">O.species</button>
+                    <button type="button" id="pculex_${ report.version_UUID }" title="Probably culex" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_pculex">P.culex</button>
+                    <button type="button" id="palbo_${ report.version_UUID }" title="Probably albopictus" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_palbo">P.albo.</button>
+                    <button type="button" id="dalbo_${ report.version_UUID }" title="Definitely albopictus" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
+                    <button type="button" id="ns_${ report.version_UUID }" title="Not sure" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_notsure">N.S.</button>
                 </div>
             </div>
         </div>
@@ -278,8 +371,17 @@ $('#filters_clear').click( function(e){
     load_data(page_size,1,filter);
 });
 
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_hide_report', function(){
+    const report_id = $(this).data("report-id");
+    hide_or_show_report(report_id, "true");
+});
+
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_show_report', function(){
+    const report_id = $(this).data("report-id");
+    hide_or_show_report(report_id, "false");
+});
+
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_other', function(){
-    console.log('click');
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
     classify_picture(report_id, category_id, null);

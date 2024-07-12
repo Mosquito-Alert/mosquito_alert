@@ -79,5 +79,6 @@ urlpatterns = [
     url('user_favorites/$', views.user_favorites),
     url('coarse_filter_reports/$', views.coarse_filter_reports),
     url('annotate_coarse/$', views.annotate_coarse),
+    url('hide_report/$', views.hide_report),
     url('', include(router.urls)),
 ]

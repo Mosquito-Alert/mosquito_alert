@@ -639,8 +639,17 @@ class OrganizationPinsSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class CoarsePhotoSerializer(serializers.ModelSerializer):
+    small_url = serializers.SerializerMethodField(method_name='get_small_url')
+
+    def get_small_url(self,obj):
+        return obj.get_small_url()
+    class Meta:
+        model = Photo
+        fields = ['id', 'photo', 'uuid', 'small_url']
+
 class CoarseReportSerializer(serializers.ModelSerializer):
-    photos = DetailedPhotoSerializer(many=True)
+    photos = CoarsePhotoSerializer(many=True)
     version_UUID = serializers.ReadOnlyField()
     report_id = serializers.ReadOnlyField()
     creation_time = serializers.ReadOnlyField()
@@ -649,10 +658,11 @@ class CoarseReportSerializer(serializers.ModelSerializer):
     country = EuropeCountrySimpleSerializer(many=False)
     site_cat = serializers.SerializerMethodField(method_name='get_site_cat')
     ia_filter_1 = serializers.ReadOnlyField()
+    hide = serializers.ReadOnlyField()
 
     def get_site_cat(self,obj):
         return obj.site_cat
 
     class Meta:
         model = Report
-        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1')
+        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1', 'hide')
