@@ -2252,10 +2252,10 @@ def annotate_coarse(request):
             raise ParseError(detail='report_id param is mandatory')
         if category_id == -1:
             raise ParseError(detail='category_id param is mandatory')
-        if validation_value == '':
-            validation_value = None
         report = get_object_or_404(Report, pk=report_id)
         category = get_object_or_404(Categories, pk=category_id)
+        if validation_value == '' or not category.specify_certainty_level:
+            validation_value = None
         annotation = auto_annotate(report, category, validation_value)
         return Response(data={'message':'success'}, status=status.HTTP_200_OK)
 

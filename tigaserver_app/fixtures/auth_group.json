@@ -1,0 +1,22 @@
+[
+    {
+        "model": "auth.group",
+        "pk": 3,
+        "fields":
+        {
+            "name": "expert",
+            "permissions":
+            []
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 4,
+        "fields":
+        {
+            "name": "superexpert",
+            "permissions":
+            []
+        }
+    }
+]

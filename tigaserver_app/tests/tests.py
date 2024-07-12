@@ -25,6 +25,7 @@ from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
 import urllib
+import json
 
 '''
 class PictureTestCase(APITestCase):
@@ -984,3 +985,34 @@ class NotificationTestCase(APITestCase):
         self.assertTrue(my_fav is None, "Favorite object should not exist")
 
         self.client.logout()
+
+class AnnotateCoarseTestCase(APITestCase):
+    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigaprofile.json','tigausers.json','reports.json','auth_group.json']
+    def test_annotate_coarse(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        annos = ExpertReportAnnotation.objects.filter(report=r)
+        self.assertTrue(annos.count() == 0, "Report should not have any annotations")
+        # Let's change that
+        for c_id in [2, 10, 4, 9]:
+            category = Categories.objects.get(pk=c_id)
+            data = {
+                'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
+                'category_id': str(c_id)
+            }
+            if category.specify_certainty_level:
+                data['validation_value'] = '1'
+            response = self.client.post('/api/annotate_coarse/', data=data)
+            self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+            classification = json.loads(r.get_final_combined_expert_category_euro_struct_json())
+            category_text = classification['category']
+            category_id = int(classification['category_id'])
+            value = classification['value']
+            self.assertEqual(category_text, category.name, "Category should be {0}, is {1}".format(category.name, category_text))
+            self.assertEqual(category_id, category.id, "Category id should be {0}, is {1}".format(category.id, category_id))
+            if category.specify_certainty_level:
+                self.assertEqual(value, data['validation_value'], "Validation value should be {0}, is {1}".format(data['validation_value'], value))
+            else:
+                self.assertEqual(value, None, "Validation value should be None, is {0}".format(value))
+            ExpertReportAnnotation.objects.filter(report=r).delete()

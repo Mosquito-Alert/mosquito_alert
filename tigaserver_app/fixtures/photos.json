@@ -1,0 +1,38 @@
+[
+    {
+        "model": "tigaserver_app.photo",
+        "pk": 58,
+        "fields":
+        {
+            "photo": "tigapics/2f4d4446-80a5-4fad-abff-35de1254e971.jpg",
+            "report": "00042354-ffd6-431e-af1e-cecf55e55364",
+            "hide": false,
+            "uuid": "d1bbf374-4be1-4af0-ad6d-91644e163cc3",
+            "blood_genre": null
+        }
+    },
+    {
+        "model": "tigaserver_app.photo",
+        "pk": 59,
+        "fields":
+        {
+            "photo": "tigapics/babca021-f92f-4b42-9ff3-8ef02a21958c.jpg",
+            "report": "00042354-ffd6-431e-af1e-cecf55e55364",
+            "hide": false,
+            "uuid": "52597e44-702b-4872-94da-c28a9afee074",
+            "blood_genre": null
+        }
+    },
+    {
+        "model": "tigaserver_app.photo",
+        "pk": 60,
+        "fields":
+        {
+            "photo": "tigapics/2d037a6f-f50d-41d2-88f1-a44f3c167200.jpg",
+            "report": "00042354-ffd6-431e-af1e-cecf55e55364",
+            "hide": false,
+            "uuid": "631e1643-ebd7-4d09-85b3-9384d2643fed",
+            "blood_genre": null
+        }
+    }
+]
