@@ -2253,11 +2253,14 @@ def annotate_coarse(request):
         if category_id == -1:
             raise ParseError(detail='category_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
+        # This prevents auto annotating a report which has been claimed by someone between reloads
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         category = get_object_or_404(Categories, pk=category_id)
         if validation_value == '' or not category.specify_certainty_level:
             validation_value = None
         annotation = auto_annotate(report, category, validation_value)
-        return Response(data={'message':'success'}, status=status.HTTP_200_OK)
+        return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def coarse_filter_reports(request):

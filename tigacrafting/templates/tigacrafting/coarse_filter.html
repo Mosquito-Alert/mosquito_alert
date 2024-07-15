@@ -42,13 +42,15 @@
             margin: 10px;
         }
         .picture_item {
-            width: 100px;
-            height: 100px;
+            width: 75px;
+            height: 75px;
             background-color: gray;
             margin: 5px;
         }
         .photo {
-            width: 500px;
+            /*width: 500px;
+            height: 400px;*/
+            width: 450px;
             height: 400px;
             background-color: red;
             margin: 10px;
@@ -81,12 +83,10 @@
             margin-bottom: 10px;
             margin-left: 10px;
             margin-right: 10px;
+            text-align: center;
         }
         .hide_button {
             display: none;
-        }
-        #filter_status {
-            text-align: center;
         }
         .header_visibility {
             margin-right: 20px;
@@ -255,9 +255,11 @@
             AI Threshold - <= <span class="badge" id="ia_filter">1.0</span>
             <br><strong>Reports Matching Current Filter/Search Criteria:</strong> <span class="badge" id="n_query_reports">??</span>
         </div>
+    </div>
+    <div class="photo_container">
         <div id="photo_grid" class="photo_grid">
         </div>
-    </div>
+    <div class="container">
     <input id="n_per_page" type="hidden">
     <input id="filter_options" type="hidden">
 </body>

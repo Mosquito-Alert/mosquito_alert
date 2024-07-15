@@ -156,10 +156,10 @@ function load_previews(){
 
 function set_visibility_icons(){
     $(".status_hidden").each(function (index, element) {
-        $(this).html('<span class="glyphicon glyphicon-eye-close" title="This report is hidden" style="color: white;"></span>');
+        $(this).html('<h4><span class="glyphicon glyphicon-eye-close" title="This report is hidden" style="color: white;"></span></h4>');
     });
     $(".status_visible").each(function (index, element) {
-        $(this).html('<span class="glyphicon glyphicon-eye-open" title="This report is visible" style="color: white;"></span>');
+        $(this).html('<h4><span class="glyphicon glyphicon-eye-open" title="This report is visible" style="color: white;"></span></h4>');
     });
 }
 
@@ -209,6 +209,10 @@ function classify_picture(report_id, category_id, validation_value){
             $('#' + report_id).remove();
         },
         error: function(jqXHR, textStatus, errorThrown){
+            if( jqXHR.responseJSON.opcode == -1 ){
+                alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
+                $('#' + report_id).remove();
+            }
             $('#' + report_id).unblock();
         },
         cache: false
@@ -254,7 +258,7 @@ function load_data(limit=200, offset=1, q=''){
 function single_picture_template(picture){
     return `
         <div class="picture_item">
-            <a class="preview" href="${ picture.photo }" target="_blank">
+            <a class="preview" href="http://webserver.mosquitoalert.com${ picture.photo }" target="_blank">
                 <img src="${ picture.small_url }">
             </a>
             <!--<img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100" >-->
@@ -276,6 +280,7 @@ function single_report_template(report){
     const hide_additional_button_class = report.hide == true ? 'hide_button' : '';
     const show_additional_button_class = report.hide == true ? '' : 'hide_button';
     const visibility_class = report.hide == true ? 'status_hidden' : 'status_visible';
+    const user_notes = report.note == null || report.note == 'null' ? 'No notes' : report.note;
     return `
         <div id="${ report.version_UUID }" data-type="${ report.type }" class="photo ${ report.type } ${ site_cat }">
             <div class="photo_internal_wrapper">
@@ -295,7 +300,7 @@ function single_report_template(report){
                 <div class="body_internal_wrapper">
                     <p><span class="label label-success">Report id</span> ${ report.version_UUID }</p>
                     <p><span class="label label-success">Date</span> ${ report.creation_time }</p>
-                    <p><span class="label label-success">User Notes</span> ${ report.note } </p>
+                    <p><span class="label label-success">User Notes</span> ${ user_notes } </p>
                 </div>
                 <hr>
                 <div class="pictures_internal_grid_wrapper">
