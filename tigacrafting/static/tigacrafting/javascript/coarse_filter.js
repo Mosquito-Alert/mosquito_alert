@@ -259,7 +259,8 @@ function single_picture_template(picture){
     return `
         <div class="picture_item">
             <a class="preview" href="http://webserver.mosquitoalert.com${ picture.photo }" target="_blank">
-                <img src="${ picture.small_url }">
+                <!--<img src="${ picture.small_url }">-->
+                <img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100">
             </a>
             <!--<img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100" >-->
         </div>
@@ -298,11 +299,17 @@ function single_report_template(report){
                 </div>
                 <hr class="hrnomargin">
                 <div class="body_internal_wrapper">
-                    <p><span class="label label-success">Report id</span> ${ report.version_UUID }</p>
-                    <p><span class="label label-success">Date</span> ${ report.creation_time }</p>
-                    <p><span class="label label-success">User Notes</span> ${ user_notes } </p>
+                    <div class="label_wrapper">
+                        <span class="label label-success">Id</span> ${ report.version_UUID }
+                    </div>
+                    <div class="label_wrapper">
+                        <span class="label label-success">Date</span> ${ report.creation_time }
+                    </div>
+                    <div class="label_wrapper">
+                        <span class="label label-success">User Notes</span> ${ user_notes }
+                    </div>
                 </div>
-                <hr>
+                <hr class="hrnomargin">
                 <div class="pictures_internal_grid_wrapper">
                     <div class="pictures_internal_grid">
                         ${ pictures }

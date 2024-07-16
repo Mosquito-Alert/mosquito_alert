@@ -1,10 +1,10 @@
 var create_graph = function(id){
-    margin = {right: 0, left: 20}
+    margin = {right: 0, left: 10}
     width = 200;
 
     var vis = d3.select("#" + id).append("svg");
     var w = width;
-    var h = 30;
+    var h = 10;
     vis.attr("width", w).attr("height", h);
 
     var lg = vis.append("defs").append("linearGradient")
