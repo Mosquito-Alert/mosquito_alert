@@ -37,6 +37,7 @@ function reset_filter(){
     $('#visibility_select').val('visible');
     $('#type_select').val('all');
     $('#country_select').val('all');
+    $("#country_select_exclude").val("").change();
     $( "#slider" ).slider("value", 1.0);
     $( "#slider_value" ).html( "1.0" );
     $('#usernote_filter').val('');
@@ -49,6 +50,7 @@ function filter_to_ui(){
     $('#text_filter').html(filter_json.note);
     $('#rtype_filter').html(filter_json.report_type_readable);
     $('#country_filter').html(filter_json.country_readable);
+    $('#country_filter_exclude').html(filter_json.country_exclude_readable);
     $('#ia_filter').html(filter_json.ia_threshold);
     $('#usernote_filter').html(decodeURI(filter_json.note));
 }
@@ -60,6 +62,8 @@ function ui_to_filter(){
     const report_type_readable = $('#type_select option:selected').text();
     const country = $('#country_select').val();
     const country_readable = $('#country_select option:selected').text();
+    const country_exclude = $("#country_select_exclude").val();
+    const country_exclude_readable = $("#country_select_exclude option:selected").text();
     const ia_threshold = $('#slider').slider('value');
     const note = escape($('#usernote_filter').val());
     return `
@@ -69,6 +73,7 @@ function ui_to_filter(){
             "report_type": "${report_type}",
             "report_type_readable": "${report_type_readable}",
             "country": "${country}",
+            "country_exclude": "${country_exclude}",
             "country_readable": "${country_readable}",
             "ia_threshold": "${ia_threshold}",
             "note": "${note}"
@@ -219,7 +224,7 @@ function classify_picture(report_id, category_id, validation_value){
     });
 }
 
-function load_data(limit=200, offset=1, q=''){
+function load_data(limit=300, offset=1, q=''){
     lockui();
     $.ajax({
         url: `/api/coarse_filter_reports/?limit=${limit}&offset=${offset}&q=${q}`,
@@ -276,7 +281,7 @@ function single_report_template(report){
     const pictures = pictures_template(report.photos);
     const report_country_name = report.country == null ? 'No country' : report.country.name_engl;
     const site_cat = report.site_cat == 0 ? 'storm_drain' : 'other';
-    const ia_value = report.ia_filter_1 == null ? 'N/A' : report.ia_filter_1;
+    const ia_value = report.ia_filter_1 == null ? 'N/A' : Math.round(report.ia_filter_1 * 100) / 100;
     const adult_additional_button_class = report.type == 'site' || report.hide == true ? 'hide_button' : '';
     const hide_additional_button_class = report.hide == true ? 'hide_button' : '';
     const show_additional_button_class = report.hide == true ? '' : 'hide_button';
@@ -286,15 +291,22 @@ function single_report_template(report){
         <div id="${ report.version_UUID }" data-type="${ report.type }" class="photo ${ report.type } ${ site_cat }">
             <div class="photo_internal_wrapper">
                 <div class="header_internal_wrapper">
-                    <div class="header_country">
-                        <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> ${ report_country_name }</span></a>
+                    <div class="header_left">
+                        <div class="header_country">
+                            <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> ${ report_country_name }</span></a>
+                        </div>
+                        <div class="header_ia">
+                            IA Value ${ ia_value }
+                            <div id="ia${ report.version_UUID }" data-ia-value="${ report.ia_filter_1 }" data-type="${ report.type }" data-id="${ report.version_UUID }" class="ia_graph ${report.type}" style=""></div>
+                        </div>
+                        <div class="header_visibility">
+                            <div id="visibility_${report.version_UUID}" class="${visibility_class}"></div>
+                        </div>
                     </div>
-                    <div class="header_ia">
-                        IA Value ${ ia_value }
-                        <div id="ia${ report.version_UUID }" data-ia-value="${ report.ia_filter_1 }" data-type="${ report.type }" data-id="${ report.version_UUID }" class="ia_graph ${report.type}" style=""></div>
-                    </div>
-                    <div class="header_visibility">
-                        <div id="visibility_${report.version_UUID}" class="${visibility_class}"></div>
+                    <div class="header_right">
+                        <div class="map_${ report.version_UUID }">
+                            <iframe loading="lazy" class="minimap" src="/single_simple/${ report.version_UUID }"></iframe>
+                        </div>
                     </div>
                 </div>
                 <hr class="hrnomargin">
@@ -320,10 +332,11 @@ function single_report_template(report){
                     <button type="button" id="hide_${ report.version_UUID }" title="Hide report" data-report-id="${ report.version_UUID }" class="${ hide_additional_button_class } btn btn-primary foot_btn btn_hide_report">Hide</button>
                     <button type="button" id="show_${ report.version_UUID }" title="Show report" data-report-id="${ report.version_UUID }" class="${ show_additional_button_class } btn btn-primary foot_btn btn_show_report">Show</button>
                     <button type="button" id="other_${ report.version_UUID }" title="Other species" data-category="2" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_other">O.species</button>
-                    <button type="button" id="pculex_${ report.version_UUID }" title="Probably culex" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_pculex">P.culex</button>
-                    <button type="button" id="palbo_${ report.version_UUID }" title="Probably albopictus" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_palbo">P.albo.</button>
-                    <button type="button" id="dalbo_${ report.version_UUID }" title="Definitely albopictus" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
-                    <button type="button" id="ns_${ report.version_UUID }" title="Not sure" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_notsure">N.S.</button>
+                    <button type="button" id="pculex_${ report.version_UUID }" title="Probably culex" data-category="10" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_pculex">P.culex</button>
+                    <button type="button" id="palbo_${ report.version_UUID }" title="Probably albopictus" data-category="4" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_palbo">P.albo.</button>
+                    <button type="button" id="dalbo_${ report.version_UUID }" title="Definitely albopictus" data-category="4" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
+                    <button type="button" id="ns_${ report.version_UUID }" title="Not sure" data-category="9" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_notsure">N.S.</button>
+                    <button type="button" id="flip_${ report.version_UUID }" title="Change report type" data-type="${ report.type }" data-site-cat="${ site_cat }" data-report-id="${ report.version_UUID }" class="btn btn-danger foot_btn btn_notsure btn_flip">Flip</button>
                 </div>
             </div>
         </div>
@@ -397,6 +410,45 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primar
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
     classify_picture(report_id, category_id, null);
+});
+
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_pculex', function(){
+    const category_id = $(this).data("category");
+    const report_id = $(this).data("report-id");
+    classify_picture(report_id, category_id, 1);
+});
+
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_palbo', function(){
+    const category_id = $(this).data("category");
+    const report_id = $(this).data("report-id");
+    classify_picture(report_id, category_id, 1);
+});
+
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_dalbo', function(){
+    const category_id = $(this).data("category");
+    const report_id = $(this).data("report-id");
+    classify_picture(report_id, category_id, 2);
+});
+
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_notsure', function(){
+    const category_id = $(this).data("category");
+    const report_id = $(this).data("report-id");
+    classify_picture(report_id, category_id, null);
+});
+
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger.foot_btn.btn_flip', function(){
+    const type = $(this).data("type");
+    const site_cat = $(this).data("site-cat");
+    console.log(`${ type } ${ site_cat }`);
+});
+
+$('#country_select').on('change', function(){
+    if($(this).val() != 'all'){
+        $('#country_select_exclude').prop('disabled', true);
+        $("#country_select_exclude").val("").change();
+    }else{
+        $('#country_select_exclude').prop('disabled', false);
+    }
 });
 
 $( "#slider" ).slider({

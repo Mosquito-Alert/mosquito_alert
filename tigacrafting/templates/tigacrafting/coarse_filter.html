@@ -12,10 +12,25 @@
             flex-wrap: wrap;
             margin-top: 20px;
         }
+        .minimap {
+            height: 140px;
+            width: 100%;
+            border: none;
+            color: gray;
+        }
         .header_internal_wrapper {
             display: flex;
             justify-content: space-between;
             flex-direction: row;
+        }
+        .header_left {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .header_right {
+            margin: 2px;
+            background-color: gray;
         }
         .header_country {
             margin: 10px;
@@ -50,10 +65,8 @@
             margin: 5px;
         }
         .photo {
-            /*width: 500px;
-            height: 400px;*/
             width: 450px;
-            height: 280px;
+            height: 400px;
             background-color: red;
             margin: 10px;
         }
@@ -212,8 +225,8 @@
                             <div class="col-sm-8">
                                 <select id="type_select" class="selectpicker show-tick form-control">
                                     <option value="adult">Adults</option>
-                                    <option value="site">Breeding sites - storm drains</option>
-                                    <option value="site-o">Breeding sites - other</option>
+                                    <option value="site">Breeding sites</option>
+                                    <!--<option value="site-o">Breeding sites - other</option>-->
                                     <option value="all">Show All</option>
                                 </select>
                             </div>
@@ -223,6 +236,17 @@
                             <div class="col-sm-8">
                                 <select id="country_select" class="selectpicker show-tick form-control">
                                     <option value="all">Show All</option>
+                                    {% for country in countries %}
+                                    <option value="{{ country.gid }}">{{ country.name_engl }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="country_select_exclude" class="col-sm-4 control-label">Exclude country:</label>
+                            <div class="col-sm-8">
+                                <select id="country_select_exclude" class="selectpicker show-tick form-control">
+                                    <option value="">------</option>
                                     {% for country in countries %}
                                     <option value="{{ country.gid }}">{{ country.name_engl }}</option>
                                     {% endfor %}

@@ -2214,7 +2214,8 @@ def get_filter_params_from_q(q):
             'visibility':'visible',
             'aithr':1.00,
             'note': '',
-            'country': 'all'
+            'country': 'all',
+            'country_exclude': ''
         } #default values
     else:
         json_filter = json.loads(q);
@@ -2223,7 +2224,8 @@ def get_filter_params_from_q(q):
             'visibility': json_filter['visibility'],
             'aithr': float(json_filter['ia_threshold']),
             'note': json_filter['note'],
-            'country': json_filter['country']
+            'country': json_filter['country'],
+            'country_exclude': json_filter['country_exclude']
         }
 
 @api_view(['PATCH'])
@@ -2242,6 +2244,24 @@ def hide_report(request):
         report.save()
         return Response(data={'msg': 'hide set to {0}'.format( hide )}, status=status.HTTP_200_OK)
 
+@api_view(['PATCH'])
+def flip_report(request):
+    if request.method == 'PATCH':
+        flip_to_type = request.data.get('flip_to_type', '')
+        flip_to_subtype = request.data.get('flip_to_subtype', '')
+        if flip_to_type == '': # adult | site
+            raise ParseError(detail='flip_to_type param is mandatory')
+        if flip_to_type not in ['adult', 'site']:
+            raise ParseError(detail='value not allowed, possible values are \'adult\', \'site\'')
+        if flip_to_type == 'site':
+            if flip_to_subtype == '':
+                raise ParseError(detail='flip_to_subtype param is mandatory if type is site')
+            else:
+                if flip_to_subtype not in ['storm_drain', 'other']:
+                    raise ParseError(detail='value not allowed, possible values are \'storm_drain\', \'other\'')
+        # delete questions and answers ?
+
+
 @api_view(['POST'])
 def annotate_coarse(request):
     if request.method == 'POST':
@@ -2250,8 +2270,8 @@ def annotate_coarse(request):
         validation_value = request.POST.get('validation_value', None)
         if report_id == '-1':
             raise ParseError(detail='report_id param is mandatory')
-        if category_id == -1:
-            raise ParseError(detail='category_id param is mandatory')
+        # if category_id == -1:
+        #     raise ParseError(detail='category_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
         # This prevents auto annotating a report which has been claimed by someone between reloads
         if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
@@ -2268,9 +2288,15 @@ def coarse_filter_reports(request):
 
         new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
         reports_imbornal = get_reports_imbornal()
-        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+        # new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+        # new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+        # new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+        new_reports_unfiltered_sites = (Report.objects.filter(type='site')
+                                        .exclude(note__icontains='#345')
+                                        .exclude(photos=None).annotate(
+                                            n_annotations=Count('expert_report_annotations')
+                                        )
+                                        .filter(n_annotations=0).order_by('-creation_time').all())
 
         q = request.query_params.get("q", '')
         filter_params = get_filter_params_from_q(q)
@@ -2279,8 +2305,9 @@ def coarse_filter_reports(request):
         visibility = filter_params['visibility']
         note = filter_params['note']
         country = filter_params['country']
+        country_exclude = filter_params['country_exclude']
 
-        limit = request.query_params.get("limit", 100)
+        limit = request.query_params.get("limit", 300)
         offset = request.query_params.get("offset", 1)
 
         new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
@@ -2290,9 +2317,7 @@ def coarse_filter_reports(request):
         if type == 'adult':
             new_reports_unfiltered = new_reports_unfiltered_adults
         elif type == 'site':
-            new_reports_unfiltered = new_reports_unfiltered_sites_embornal
-        elif type == 'site-o':
-            new_reports_unfiltered = new_reports_unfiltered_sites_other
+            new_reports_unfiltered = new_reports_unfiltered_sites
         if visibility == 'visible':
             new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
         elif visibility == 'hidden':
@@ -2301,6 +2326,8 @@ def coarse_filter_reports(request):
             new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=note)
         if country and country != '' and country != 'all':
             new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
+        elif country == 'all' and country_exclude != '':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(country__gid=int(country_exclude))
 
         report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL(
             "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
