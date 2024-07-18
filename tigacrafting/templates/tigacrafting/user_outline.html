@@ -1,0 +1,151 @@
+{% load staticfiles %}
+{% load leaflet_tags %}
+{% load i18n %}
+{% load floppyforms %}
+
+<!DOCTYPE html>
+<html lang={% block language %}"en"{% endblock %}>
+<head>
+    {% block encoding %}
+    <meta charset="utf-8">
+    {% endblock %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta name="description" content="MosquitoAlert">
+    <meta name="author" content="Movement Ecology Laboratory">
+
+    <title>{% block page_title %}MosquitoAlert User Profile{% endblock %}</title>
+
+    {% block bootstrap_css %}
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
+    <link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>
+    {% endblock %}
+
+    <script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script>
+    <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
+    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
+    <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
+    <style>
+        .report_wrapper {
+            margin-bottom: 50px;
+        }
+        .report_header {
+            margin: 5px;
+        }
+        .map_wrapper {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="filter_wrapper">
+        <div class="form-group">
+            <label for="type_select" class="col-sm-4 control-label">Report type:</label>
+            <div class="col-sm-8">
+                <select id="type_select" class="form-control">
+                    <option value="adult">Adults</option>
+                    <option value="site">Bites</option>
+                    <option value="site">Breeding sites</option>
+                    <option value="all" selected>Show All</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+{% for report in tigauser.user_reports.all|dictsortreversed:"server_upload_time" %}
+<div class="container">
+    <div class="report_wrapper {{ report.type }} {% if report.photos.count > 0 %} yes_photos {% else %} no_photos {% endif %}" >
+        <div class="row report_header" style="background-color:{% if report.type == 'adult' %}#DFD458;{% elif report.type == 'site' %}#7D9393;{% else %}#D28A73;{% endif %}">
+            <h4>
+                <strong>{{ report.type|capfirst }} Report <a target="_blank" href="{% url 'single_report_view' report.version_UUID %}">{{ report.version_UUID }}</a> </strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC - {{ report.country_label }} - {{ report.language }}
+            </h4>
+            <h5>
+                <strong>Report code - {{ report.report_id }}</strong>
+            </h5>
+        </div>
+        <div class="map_wrapper">
+            <div class="map_{{ report.version_UUID }}">
+                <iframe loading="lazy" class="minimap" src="/single_simple/{{ report.version_UUID }}"></iframe>
+            </div>
+        </div>
+        {% if report.type == 'adult' %}
+            <div class="row" style="padding-top:10px;padding-bottom:10px;">
+            {% if report.get_is_expert_validated and request.user.userstat.is_superexpert %}
+                <a class="btn btn-primary" href="{% url 'expert_report_annotation' %}?version_uuid={{ report.version_UUID }}">View this Report in Validation Mode <span class="glyphicon glyphicon-share-alt"></span></a>
+            {% endif %}
+            </div>
+            {% if report.deleted %}
+            <div class="row">
+                <div class="col-md-12">
+                    <strong>WARNING: THIS REPORT HAS BEEN DELETED BY THE USER. IT WILL NOT BE SENT FOR EXPERT VALIDATION OR DISPLAYED ON THE PUBLIC MAP.</strong>
+                </div>
+            </div>
+            {% endif %}
+            {% if not report.deleted and not report.latest_version %}
+            <div class="row">
+                <div class="col-md-12">
+                    <strong>WARNING: THIS IS NOT THE LATEST VERSION OF THIS REPORT. IT WILL NOT BE SENT FOR EXPERT VALIDATION OR DISPLAYED ON THE PUBLIC MAP.</strong><br>The latest version of this report is <a href="{% url 'expert_report_status' %}?version_uuid={{ report.get_which_is_latest }}">{{ report.get_which_is_latest }}</a>
+                </div>
+            </div>
+            {% endif %}
+            <div class="row" style="margin-bottom: 3px;">
+                <div class="col-md-12">
+                    {% if report.get_is_expert_validated %}
+                        {{ report.get_final_expert_status_bootstrap | safe }}
+                        <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=report.get_final_combined_expert_category_euro color=report.get_html_color_for_label %}
+                    {% else %}
+                        <strong>Status:</strong> Not yet validated by three experts.
+                    {% endif %}
+                    {% if report.photos.count > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Public Note</th>
+                                    <th>Note to User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ report.get_final_photo_html.popup_image | safe }}</td>
+                                    <td>
+                                        {% if report.get_final_public_note %}
+                                        {{ report.get_final_public_note | safe }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ report.get_final_note_to_user_html | safe }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div> <!-- table responsive -->
+                    {% else %}
+                    <h3>Report has no photos</h3>
+                    {% endif %}
+                </div> <!-- col-md12 -->
+            </div> <!-- row -->
+        {% else %} <!-- not an adult report -->
+            {% if report.photos.count > 0 %}
+            <div class="photo_wrapper">
+                {% for picture in report.photos.all %}
+                    <div class="picture_item">
+                        <a class="preview" href="http://webserver.mosquitoalert.com/media/{{ picture.photo }}" target="_blank">
+                            <img src="http://webserver.mosquitoalert.com/media/{{ picture.photo }}" width="100" height="100">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <h3>Report has no photos</h3>
+            {% endif %}
+        {% endif %}
+        <hr>
+    </div>
+</div>
+{% endfor %}
+<script src="{% static "tigacrafting/user_outline.js" %}"></script>
+</body>

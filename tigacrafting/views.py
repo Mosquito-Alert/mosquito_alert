@@ -49,6 +49,7 @@ import functools
 import operator
 import math
 from tigacrafting.report_queues import get_crisis_report_available_reports
+from django.shortcuts import get_object_or_404
 
 #----------Metadades fotos----------#
 
@@ -1226,6 +1227,14 @@ def expert_status(request):
         return render(request, 'tigacrafting/expert_status.html', {'groups': groups})
     else:
         return HttpResponseRedirect(reverse('login'))
+
+
+
+@login_required
+def user_outline(request, user_uuid):
+    tigauser = get_object_or_404(TigaUser,pk=user_uuid)
+    return render(request, 'tigacrafting/user_outline.html', { 'tigauser': tigauser })
+
 
 # var is an ExpertReportAnnotation
 def reportannotation_formatter(var):
