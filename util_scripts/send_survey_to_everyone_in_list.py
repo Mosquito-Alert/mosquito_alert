@@ -98,8 +98,8 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
             'message': message_en
         }
 
-        body_html_en = render_to_string("tigacrafting/survey_2023/survey_en.html", context_en).replace('&amp;', '&')
-        body_html_native = render_to_string("tigacrafting/survey_2023/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
+        body_html_en = render_to_string("tigacrafting/survey_2024/survey_en.html", context_en).replace('&amp;', '&')
+        body_html_native = render_to_string("tigacrafting/survey_2024/survey_{0}.html".format( user_language ), context).replace('&amp;', '&')
         title_native = title_native
         title_en = title_en
 
