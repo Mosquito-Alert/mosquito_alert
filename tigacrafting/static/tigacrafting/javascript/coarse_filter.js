@@ -1,3 +1,12 @@
+function make_site(report_id, type){
+    hide_adult_buttons(report_id);
+    $('#' + report_id).removeClass('adult');
+    $('#' + report_id).removeClass('other');
+    $('#' + report_id).addClass('site');
+    $('#' + report_id).addClass(type);
+    $('#header_ia_' + report_id).empty();
+}
+
 function set_report_visible_to(report_id, hide_value){
     const selector = `#visibility_${ report_id }`;
     const selector_hidden_button = `#hide_${ report_id }`;
@@ -295,7 +304,7 @@ function single_report_template(report){
                         <div class="header_country">
                             <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> ${ report_country_name }</span></a>
                         </div>
-                        <div class="header_ia">
+                        <div id="header_ia_${ report.version_UUID }" class="header_ia">
                             IA Value ${ ia_value }
                             <div id="ia${ report.version_UUID }" data-ia-value="${ report.ia_filter_1 }" data-type="${ report.type }" data-id="${ report.version_UUID }" class="ia_graph ${report.type}" style=""></div>
                         </div>
@@ -305,7 +314,7 @@ function single_report_template(report){
                     </div>
                     <div class="header_right">
                         <div class="map_${ report.version_UUID }">
-                            <iframe loading="lazy" class="minimap" src="/single_simple/${ report.version_UUID }"></iframe>
+                            <!--<iframe loading="lazy" class="minimap" src="/single_simple/${ report.version_UUID }"></iframe>-->
                         </div>
                     </div>
                 </div>
