@@ -17,7 +17,7 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
 from tigacrafting.views import auto_annotate
@@ -2249,6 +2249,8 @@ def flip_report(request):
     if request.method == 'PATCH':
         flip_to_type = request.data.get('flip_to_type', '')
         flip_to_subtype = request.data.get('flip_to_subtype', '')
+        report_id = request.data.get('report_id', '')
+        report = get_object_or_404(Report,pk=report_id)
         if flip_to_type == '': # adult | site
             raise ParseError(detail='flip_to_type param is mandatory')
         if flip_to_type not in ['adult', 'site']:
@@ -2257,10 +2259,47 @@ def flip_report(request):
             if flip_to_subtype == '':
                 raise ParseError(detail='flip_to_subtype param is mandatory if type is site')
             else:
-                if flip_to_subtype not in ['storm_drain', 'other']:
-                    raise ParseError(detail='value not allowed, possible values are \'storm_drain\', \'other\'')
+                if flip_to_subtype not in ['storm_drain_water','storm_drain_dry', 'other_water', 'other_dry']:
+                    raise ParseError(detail='value not allowed, possible values are \'storm_drain_water\',\'storm_drain_dry\', \'other_water\', \'other_dry\' ')
         # delete questions and answers ?
 
+        # set new questions and answers
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_12	question_12_answer_122	122		12 -> Other
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_10	question_10_answer_101	101		10 -> Water
+
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_12	question_12_answer_121	121		12 -> Storm Drain
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_10	question_10_answer_101	101		10 -> Water
+        with transaction.atomic():
+            ReportResponse.objects.filter(report=report).delete()
+            rr_type_stormdrain = ReportResponse(report=report,question='question_12',answer='question_12_answer_121',question_id='12',answer_id='121')
+            rr_type_other = ReportResponse(report=report, question='question_12', answer='question_12_answer_122', question_id='12', answer_id='122')
+            rr_yes_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_101', question_id='10', answer_id='101')
+            rr_no_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_102', question_id='10', answer_id='102')
+            if flip_to_type == 'site':
+                report.type = 'site'
+                report.save()
+                if flip_to_subtype == 'storm_drain_water':
+                    rr_type_stormdrain.save()
+                    rr_yes_water.save()
+                    message = "Report changed to Site - Storm Drain, Water"
+                elif flip_to_subtype == 'storm_drain_dry':
+                    rr_type_stormdrain.save()
+                    rr_no_water.save()
+                    message = "Report changed to Site - Storm Drain, No Water"
+                elif flip_to_subtype == 'other_dry':
+                    rr_type_other.save()
+                    rr_no_water.save()
+                    message = "Report changed to Site - Other, No Water"
+                elif flip_to_subtype == 'other_water':
+                    rr_type_other.save()
+                    rr_yes_water.save()
+                    message = "Report changed to Site - Other, Water"
+            elif flip_to_type == 'adult':
+                report.type = 'adult'
+                report.save()
+                message = "Report changed to Adult"
+
+            return Response(data={'message': message}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def annotate_coarse(request):

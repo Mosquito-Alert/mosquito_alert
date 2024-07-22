@@ -440,6 +440,27 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger
     const type = $(this).data("type");
     const site_cat = $(this).data("site-cat");
     console.log(`${ type } ${ site_cat }`);
+    $('#flip_report_id').val( $(this).data("report-id") );
+    if( type=='adult' ){
+        $('#flip_to_type').val( "site" );
+        $('#modal_flip_to_site').modal('show');
+    }else{
+        $('#flip_to_type').val( "adult" );
+    }
+});
+
+function get_flip_to_subtype(){
+    const type = $('input[name="radio_site_type"]:checked').val();
+    const water = $('input[name="radio_water"]:checked').val();
+    return `${type}_${water}`;
+}
+
+$('#go_flip').on('click', function(){
+    const report_id = $('#flip_report_id').val();
+    const flip_to_type = $('#flip_to_type').val();
+    const flip_to_subtype = get_flip_to_subtype();
+    //console.log(`${ flip_to_type } ${ site_cat }`);
+    console.log(`${ flip_to_subtype }`);
 });
 
 $('#country_select').on('change', function(){

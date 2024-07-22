@@ -201,6 +201,57 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modal_flip_to_site" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="modallabel">Flip adult report to site</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" class="form-horizontal">
+                        <div class="form-group">
+                            <h4>Select the site type</h4>
+                            <div class="radio">
+                              <label>
+                                <input type="radio" name="radio_site_type" id="type_storm_drain" value="storm_drain" checked>
+                                Storm drain
+                              </label>
+                            </div>
+                            <div class="radio">
+                              <label>
+                                <input type="radio" name="radio_site_type" id="type_other" value="other">
+                                Other
+                              </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <h4>Do you see water?</h4>
+                            <div class="radio">
+                              <label>
+                                <input type="radio" name="radio_water" id="radio_water_yes" value="water" checked>
+                                Yes, there is water
+                              </label>
+                            </div>
+                            <div class="radio">
+                              <label>
+                                <input type="radio" name="radio_water" id="radio_water_no" value="dry">
+                                No, there is no water
+                              </label>
+                            </div>
+                        </div>
+                        <input id="flip_report_id" type="hidden">
+                        <input id="flip_to_type" type="hidden">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="go_flip" class="btn btn-warning">Go!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

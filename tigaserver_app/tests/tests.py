@@ -4,7 +4,7 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse
 from django.core.management import call_command
 import PIL.Image
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -1016,3 +1016,43 @@ class AnnotateCoarseTestCase(APITestCase):
             else:
                 self.assertEqual(value, None, "Validation value should be None, is {0}".format(value))
             ExpertReportAnnotation.objects.filter(report=r).delete()
+
+    def test_flip(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        # Check report types
+        self.assertEqual(r_adult.type, 'adult', "Report type should be adult, is {0}".format(r_adult.type))
+        r_site = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
+        self.assertEqual(r_site.type, 'site', "Report type should be site, is {0}".format(r_site.type))
+        # flip adult to storm drain water
+        data = {
+            'report_id': r_adult.version_UUID,
+            'flip_to_type': 'site',
+            'flip_to_subtype': 'storm_drain_water'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        adult_reloaded = Report.objects.get(pk=r_adult.version_UUID)
+        self.assertTrue(adult_reloaded.type=='site',"Report type should have changed to site, is {0}".format(adult_reloaded.type))
+        n_responses = ReportResponse.objects.filter(report=adult_reloaded).count()
+        self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
+        try:
+            response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='12',answer_id='121')
+        except:
+            self.assertTrue(False,"Report does not have the storm drain response")
+        try:
+            response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='10',answer_id='101')
+        except:
+            self.assertTrue(False,"Report does not have the water response")
+        # flip site to adult
+        data = {
+            'report_id': r_site.version_UUID,
+            'flip_to_type': 'adult'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        site_reloaded = Report.objects.get(pk=r_site.version_UUID)
+        self.assertTrue(site_reloaded.type == 'adult', "Report type should have changed to adult, is {0}".format(site_reloaded.type))
+        n_responses = ReportResponse.objects.filter(report=site_reloaded).count()
+        self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
