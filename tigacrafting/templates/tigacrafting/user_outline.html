@@ -26,6 +26,7 @@
     <script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script>
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
     <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
+    <script src="{% static "tigacrafting/user_outline.js" %}"></script>
     <style>
         .report_wrapper {
             margin-bottom: 50px;
@@ -46,9 +47,19 @@
             <div class="col-sm-8">
                 <select id="type_select" class="form-control">
                     <option value="adult">Adults</option>
-                    <option value="site">Bites</option>
+                    <option value="bite">Bites</option>
                     <option value="site">Breeding sites</option>
                     <option value="all" selected>Show All</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="type_select" class="col-sm-4 control-label">Validation status:</label>
+            <div class="col-sm-8">
+                <select id="validation_select" class="form-control">
+                    <option value="validated">Validated</option>
+                    <option value="not_validated">Not validated</option>
+                    <option value="all_validated" selected>All</option>
                 </select>
             </div>
         </div>
@@ -56,7 +67,7 @@
 </div>
 {% for report in tigauser.user_reports.all|dictsortreversed:"server_upload_time" %}
 <div class="container">
-    <div class="report_wrapper {{ report.type }} {% if report.photos.count > 0 %} yes_photos {% else %} no_photos {% endif %}" >
+    <div class="report_wrapper {{ report.type }} {% if report.get_is_expert_validated %}validated{% else %}not_validated{% endif %} all_validated {% if report.photos.count > 0 %} yes_photos {% else %} no_photos {% endif %}" >
         <div class="row report_header" style="background-color:{% if report.type == 'adult' %}#DFD458;{% elif report.type == 'site' %}#7D9393;{% else %}#D28A73;{% endif %}">
             <h4>
                 <strong>{{ report.type|capfirst }} Report <a target="_blank" href="{% url 'single_report_view' report.version_UUID %}">{{ report.version_UUID }}</a> </strong>{{ report.creation_time|date:"d/m/y H:i" }} UTC - {{ report.country_label }} - {{ report.language }}
@@ -147,5 +158,4 @@
     </div>
 </div>
 {% endfor %}
-<script src="{% static "tigacrafting/user_outline.js" %}"></script>
 </body>
