@@ -2299,7 +2299,7 @@ def flip_report(request):
                 report.save()
                 message = "Report changed to Adult"
 
-            return Response(data={'message': message}, status=status.HTTP_200_OK)
+            return Response(data={'message': message, 'new_type': flip_to_type, 'new_subtype': flip_to_subtype}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def annotate_coarse(request):

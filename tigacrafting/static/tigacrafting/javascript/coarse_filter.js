@@ -5,6 +5,17 @@ function make_site(report_id, type){
     $('#' + report_id).addClass('site');
     $('#' + report_id).addClass(type);
     $('#header_ia_' + report_id).empty();
+    $('#ia_label_' + report_id).empty();
+}
+
+function make_adult(report_id){
+    show_adult_buttons(report_id);
+    $('#' + report_id).removeClass('adult');
+    $('#' + report_id).removeClass('other');
+    $('#' + report_id).addClass('site');
+    create_graph( 'ia' + report_id );
+    const ia_value = $('#ia' + report_id ).data('ia-value');
+    $('#ia_label_' + report_id ).html('IA Value ' + ia_value);
 }
 
 function set_report_visible_to(report_id, hide_value){
@@ -41,6 +52,29 @@ function hide_adult_buttons(report_id){
 }
 
 $(document).ready(function() {
+
+function type_shows_with_current_filter(type){
+    const filtered_type = $('#type_select').val();
+    if(filtered_type=='all'){
+        return true;
+    }else if(filtered_type==type){
+            return true;
+    }
+    return false;
+}
+
+function report_shows_with_current_visibility(report_id){
+    const is_visible = $('#visibility_' + report_id).hasClass('status_visible');
+    const current_visibility = $('#visibility_select').val();
+    if(current_visibility=='all'){
+        return true;
+    } else if ( current_visibility == 'visible' && is_visible ) {
+        return true;
+    } else if ( current_visibility == 'hidden' && !is_visible ) {
+        return true;
+    }
+    return false;
+}
 
 function reset_filter(){
     $('#visibility_select').val('visible');
@@ -233,6 +267,40 @@ function classify_picture(report_id, category_id, validation_value){
     });
 }
 
+function flip_report(report_id, flip_to_type, flip_to_subtype){
+    $('#' + report_id).block({ message: 'Flipping report' });
+    $.ajax({
+        url: '/api/flip_report/',
+        data: { "report_id": report_id, "flip_to_type": flip_to_type, "flip_to_subtype": flip_to_subtype },
+        type: "PATCH",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            $('#' + report_id).unblock();
+            $('#modal_flip_to_site').modal('hide');
+            const type = data.new_type;
+            if( type_shows_with_current_filter(type) && report_shows_with_current_visibility(report_id) ){
+                $('#' + report_id).remove();
+            }else{
+                if(type=='adult'){
+                    make_adult(report_id);
+                }else if(type=='site'){
+                    const subtype = data.new_subtype.startsWith('storm') ? "storm_drain" : "other";
+                    make_site(report_id, subtype);
+                }
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            if( jqXHR.responseJSON.opcode == -1 ){
+                alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
+                $('#' + report_id).remove();
+            }
+            $('#' + report_id).unblock();
+        },
+        cache: false
+    });
+}
+
 function load_data(limit=300, offset=1, q=''){
     lockui();
     $.ajax({
@@ -305,7 +373,7 @@ function single_report_template(report){
                             <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> ${ report_country_name }</span></a>
                         </div>
                         <div id="header_ia_${ report.version_UUID }" class="header_ia">
-                            IA Value ${ ia_value }
+                            <div id="ia_label_${ report.version_UUID }">IA Value ${ ia_value }</div>
                             <div id="ia${ report.version_UUID }" data-ia-value="${ report.ia_filter_1 }" data-type="${ report.type }" data-id="${ report.version_UUID }" class="ia_graph ${report.type}" style=""></div>
                         </div>
                         <div class="header_visibility">
@@ -469,7 +537,8 @@ $('#go_flip').on('click', function(){
     const flip_to_type = $('#flip_to_type').val();
     const flip_to_subtype = get_flip_to_subtype();
     //console.log(`${ flip_to_type } ${ site_cat }`);
-    console.log(`${ flip_to_subtype }`);
+    //console.log(`${ flip_to_subtype }`);
+    flip_report(report_id, flip_to_type, flip_to_subtype);
 });
 
 $('#country_select').on('change', function(){
