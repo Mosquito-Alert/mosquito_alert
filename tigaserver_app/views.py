@@ -2251,6 +2251,8 @@ def flip_report(request):
         flip_to_subtype = request.data.get('flip_to_subtype', '')
         report_id = request.data.get('report_id', '')
         report = get_object_or_404(Report,pk=report_id)
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         if flip_to_type == '': # adult | site
             raise ParseError(detail='flip_to_type param is mandatory')
         if flip_to_type not in ['adult', 'site']:
@@ -2299,7 +2301,7 @@ def flip_report(request):
                 report.save()
                 message = "Report changed to Adult"
 
-            return Response(data={'message': message, 'new_type': flip_to_type, 'new_subtype': flip_to_subtype}, status=status.HTTP_200_OK)
+            return Response(data={'message': message, 'new_type': flip_to_type, 'new_subtype': flip_to_subtype, 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def annotate_coarse(request):

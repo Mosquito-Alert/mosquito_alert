@@ -4,18 +4,25 @@ function make_site(report_id, type){
     $('#' + report_id).removeClass('other');
     $('#' + report_id).addClass('site');
     $('#' + report_id).addClass(type);
-    $('#header_ia_' + report_id).empty();
-    $('#ia_label_' + report_id).empty();
+    $('#' + report_id).data('type','site');
+    $('#flip_' + report_id).data('type','site');
+    $('#ia' + report_id).empty();
+    $('#ia_label_' + report_id ).html('IA Value N/A');
 }
 
 function make_adult(report_id){
     show_adult_buttons(report_id);
-    $('#' + report_id).removeClass('adult');
+    $('#' + report_id).removeClass('site');
     $('#' + report_id).removeClass('other');
-    $('#' + report_id).addClass('site');
+    $('#' + report_id).removeClass('storm_drain');
+    $('#' + report_id).addClass('adult');
+    $('#' + report_id).data('type','adult');
+    $('#flip_' + report_id).data('type','adult');
     create_graph( 'ia' + report_id );
     const ia_value = $('#ia' + report_id ).data('ia-value');
-    $('#ia_label_' + report_id ).html('IA Value ' + ia_value);
+    const ia_f_value = Math.round(parseFloat(ia_value) * 100) / 100
+    $('#ia_label_' + report_id ).html('IA Value ' + ia_f_value );
+
 }
 
 function set_report_visible_to(report_id, hide_value){
@@ -280,14 +287,14 @@ function flip_report(report_id, flip_to_type, flip_to_subtype){
             $('#modal_flip_to_site').modal('hide');
             const type = data.new_type;
             if( type_shows_with_current_filter(type) && report_shows_with_current_visibility(report_id) ){
-                $('#' + report_id).remove();
-            }else{
                 if(type=='adult'){
                     make_adult(report_id);
                 }else if(type=='site'){
                     const subtype = data.new_subtype.startsWith('storm') ? "storm_drain" : "other";
                     make_site(report_id, subtype);
                 }
+            }else{
+                $('#' + report_id).remove();
             }
         },
         error: function(jqXHR, textStatus, errorThrown){
@@ -358,7 +365,7 @@ function single_report_template(report){
     const pictures = pictures_template(report.photos);
     const report_country_name = report.country == null ? 'No country' : report.country.name_engl;
     const site_cat = report.site_cat == 0 ? 'storm_drain' : 'other';
-    const ia_value = report.ia_filter_1 == null ? 'N/A' : Math.round(report.ia_filter_1 * 100) / 100;
+    const ia_value = report.ia_filter_1 == null || report.type == 'site' ? 'N/A' : Math.round(report.ia_filter_1 * 100) / 100;
     const adult_additional_button_class = report.type == 'site' || report.hide == true ? 'hide_button' : '';
     const hide_additional_button_class = report.hide == true ? 'hide_button' : '';
     const show_additional_button_class = report.hide == true ? '' : 'hide_button';
@@ -523,6 +530,8 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger
         $('#modal_flip_to_site').modal('show');
     }else{
         $('#flip_to_type').val( "adult" );
+        const report_id = $(this).data("report-id");
+        flip_report(report_id, 'adult', null);
     }
 });
 
