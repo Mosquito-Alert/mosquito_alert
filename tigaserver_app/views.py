@@ -2240,9 +2240,11 @@ def hide_report(request):
             raise ParseError(detail='hide param is mandatory')
         hide = hide_val == 'true'
         report = get_object_or_404(Report,pk=report_id)
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         report.hide = hide
         report.save()
-        return Response(data={'msg': 'hide set to {0}'.format( hide )}, status=status.HTTP_200_OK)
+        return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 def flip_report(request):
@@ -2384,7 +2386,8 @@ def coarse_filter_reports(request):
             "select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher",
             ()))
 
-        results = new_reports_unfiltered
+        #results = new_reports_unfiltered.prefetch_related('photos','users')
+        results = new_reports_unfiltered.select_related('user').prefetch_related('photos')
 
         try:
             paginator = Paginator(results, limit)

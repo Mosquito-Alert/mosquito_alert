@@ -94,9 +94,9 @@
             margin-top: 2px !important;
             margin-bottom: 2px !important;
         }
-        .site.storm_drain { background-color: #4169E1; }
-        .site.other { background-color: #a7b9f1; }
-        .adult { background-color: orange; }
+        .site.storm_drain { background-color: #7D9393; }
+        .site.other { background-color: #a5b5b5; }
+        .adult { background-color: #DFD458; }
         .miniform { margin-left: 15px; margin-top: 10px;}
         li.miniform > span > span { color: white; }
         .form-inline { display: inline; }
@@ -114,6 +114,32 @@
             margin-right: 20px;
             align-self: center;
         }
+        .label_wrapper {
+            color: white;
+        }
+        .box {
+          float: left;
+          height: 20px;
+          width: 40px;
+          //margin-bottom: 15px;
+          border: 1px solid black;
+          clear: both;
+        }
+        .font_palette {
+            font-size: small;
+            color: white;
+        }
+        .adult_palette {
+          background-color: #DFD458;
+        }
+
+        .storm_drain_palette {
+          background-color: #7D9393;
+        }
+
+        .other_palette {
+          background-color: #a5b5b5;
+        }
     </style>
     <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
     <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
@@ -124,6 +150,7 @@
     <script src="{% static 'tigacrafting/d3/d3.min.js' %}"></script>
     <script src="{% static 'tigacrafting/ia_graph.js' %}"></script>
     <script src="{% static 'tigacrafting/javascript/hover-preview.min.js' %}"></script>
+    <script src="{% static 'tigacrafting/toastr/toastr.min.js' %}"></script>
     <script>
         var csrf_token = '{{ csrf_token }}';
     </script>
@@ -172,6 +199,11 @@
                                         </div>
                                     </form>
                                 </span>
+                            </li>
+                            <li>
+                                <ul class="font_palette"><div class="box adult_palette">Adult</div></ul>
+                                <ul class="font_palette"><div class="box storm_drain_palette">Storm Drain</div></ul>
+                                <ul class="font_palette"><div class="box other_palette">Other</div></ul>
                             </li>
                         </ul>
 

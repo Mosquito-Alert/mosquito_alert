@@ -988,6 +988,48 @@ class NotificationTestCase(APITestCase):
 
 class AnnotateCoarseTestCase(APITestCase):
     fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigaprofile.json','tigausers.json','reports.json','auth_group.json']
+    def test_annotate_taken(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        annos = ExpertReportAnnotation.objects.filter(report=r)
+        self.assertTrue(annos.count() == 0, "Report should not have any annotations")
+        # Give report to one expert
+        innie = User.objects.get(pk=150) #innie
+        anno = ExpertReportAnnotation(user=innie, report=r)
+        anno.save()
+        # try to annotate
+        category = Categories.objects.get(pk=2)
+        data = {
+            'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
+            'category_id': str(2)
+        }
+        response = self.client.post('/api/annotate_coarse/', data=data)
+        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
+        # opcode should be -1
+        self.assertEqual(response.data['opcode'], -1, "Opcode should be -1, is {0}".format(response.data['opcode']))
+
+    def test_flip_taken(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        annos = ExpertReportAnnotation.objects.filter(report=r_adult)
+        self.assertTrue(annos.count() == 0, "Report should not have any annotations")
+        # Give report to one expert
+        innie = User.objects.get(pk=150)  # innie
+        anno = ExpertReportAnnotation(user=innie, report=r_adult)
+        anno.save()
+        # try to annotate
+        data = {
+            'report_id': r_adult.version_UUID,
+            'flip_to_type': 'site',
+            'flip_to_subtype': 'storm_drain_water'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
+        # opcode should be -1
+        self.assertEqual(response.data['opcode'], -1, "Opcode should be -1, is {0}".format(response.data['opcode']))
+
     def test_annotate_coarse(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
@@ -1056,3 +1098,17 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(site_reloaded.type == 'adult', "Report type should have changed to adult, is {0}".format(site_reloaded.type))
         n_responses = ReportResponse.objects.filter(report=site_reloaded).count()
         self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
+
+    def test_hide(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        self.assertTrue(not r_adult.hide, "Report should be visible, is not")
+        data = {
+            'report_id': r_adult.version_UUID,
+            'hide': 'true'
+        }
+        response = self.client.patch('/api/hide_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        r_adult_reloaded = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        self.assertTrue(r_adult_reloaded.hide, "Report should be hidden, is not")

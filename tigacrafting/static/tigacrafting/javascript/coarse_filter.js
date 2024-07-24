@@ -245,6 +245,10 @@ function hide_or_show_report(report_id, hide_value){
             }
         },
         error: function(jqXHR, textStatus, errorThrown){
+            if( jqXHR.responseJSON.opcode == -1 ){
+                alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
+                $('#' + report_id).remove();
+            }
             $('#' + report_id).unblock();
         },
         cache: false
@@ -402,6 +406,9 @@ function single_report_template(report){
                         <span class="label label-success">Date</span> ${ report.creation_time }
                     </div>
                     <div class="label_wrapper">
+                        <span class="label label-success">User</span> ${ report.user_id }
+                    </div>
+                    <div class="label_wrapper">
                         <span class="label label-success">User Notes</span> ${ user_notes }
                     </div>
                 </div>
@@ -531,7 +538,9 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger
     }else{
         $('#flip_to_type').val( "adult" );
         const report_id = $(this).data("report-id");
-        flip_report(report_id, 'adult', null);
+        if(confirm("Site report will be flipped to adult report. Proceed?")){
+            flip_report(report_id, 'adult', null);
+        }
     }
 });
 
