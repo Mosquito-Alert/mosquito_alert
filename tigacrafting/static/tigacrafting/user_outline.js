@@ -1,5 +1,12 @@
 $(document).ready(function() {
     $('#type_select').on('change', function(e){
+        if( $(this).val() == 'adult' || $(this).val() == 'all' ){
+            //$('#validation_select option[value="all_validated"]').attr("selected", true);
+            $('#validation_select').attr('disabled', false);
+        }else{
+            $('#validation_select').val("all_validated");
+            $('#validation_select').attr('disabled', true);
+        }
         if( $(this).val() == 'adult' ){
             $(".adult").show();
             $(".bite").hide();

@@ -2,10 +2,12 @@
 {% load leaflet_tags %}
 {% load i18n %}
 {% load floppyforms %}
+{% load inbox %}
 
 <!DOCTYPE html>
 <html lang={% block language %}"en"{% endblock %}>
 <head>
+
     {% block encoding %}
     <meta charset="utf-8">
     {% endblock %}
@@ -27,6 +29,20 @@
     <link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}>
     <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
     <script src="{% static "tigacrafting/user_outline.js" %}"></script>
+    {% block fa_css %}
+        <!-- FA CSS -->
+        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>
+    {% endblock %}
+
+
+    {% block fallback_bs_js %}
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% endblock %}
     <style>
         .report_wrapper {
             margin-bottom: 50px;
@@ -37,31 +53,109 @@
         .map_wrapper {
             margin: 5px;
         }
+        .filter_wrapper {
+            padding: 20px;
+        }
+        .control-label {
+            color: white;
+        }
     </style>
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
 </head>
 <body>
-<div class="container">
-    <div class="filter_wrapper">
-        <div class="form-group">
-            <label for="type_select" class="col-sm-4 control-label">Report type:</label>
-            <div class="col-sm-8">
-                <select id="type_select" class="form-control">
-                    <option value="adult">Adults</option>
-                    <option value="bite">Bites</option>
-                    <option value="site">Breeding sites</option>
-                    <option value="all" selected>Show All</option>
-                </select>
+<div class="navbar-wrapper">
+    <div class="container">
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div id="navbar" class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <div class="navbar-brand">
+                        <span style="color:#ff9900; font-size: small">MosquitoAlert User Outline</span>
+                    </div>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-left">
+                        <li class="miniform">
+                            <span class="step-links">
+                                <form role="form" class="form-inline">
+                                    <div class="form-group">
+                                        <label for="type_select" class="col-sm-4 control-label">Report type:</label>
+                                        <div class="col-sm-8">
+                                            <select id="type_select" class="form-control">
+                                                <option value="adult">Adults</option>
+                                                <option value="bite">Bites</option>
+                                                <option value="site">Breeding sites</option>
+                                                <option value="all" selected>Show All</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="type_select" class="col-sm-4 control-label">Validation status:</label>
+                                        <div class="col-sm-8">
+                                            <select id="validation_select" class="form-control">
+                                                <option value="validated">Validated</option>
+                                                <option value="not_validated">Not validated</option>
+                                                <option value="all_validated" selected>All</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </span>
+                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Validation <span
+                                    class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href={% url 'expert_report_annotation' %}>Validate</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Monitor <span
+                                    class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href={% url 'expert_report_status' %}>Reports</a></li>
+                                <li><a href={% url 'expert_status' %}>People</a></li>
+
+                            </ul>
+                        </li>
+
+                        {% inbox_count as my_var %}
+                        <li>
+                            <a href="{% url 'messages_inbox' %}">Messages <span class="badge {%if my_var > 0%}pending{% else %}clear{% endif %}">{{ my_var }}</span></a>
+                        </li>
+
+                        <li><p class="navbar-text">{{ request.user.username }}</p></li>
+                        <li><a href="{% url 'auth_logout' %}">logout</a>
+                        </li>
+                    </ul>
+
+
+                </div>
             </div>
         </div>
-        <div class="form-group">
-            <label for="type_select" class="col-sm-4 control-label">Validation status:</label>
-            <div class="col-sm-8">
-                <select id="validation_select" class="form-control">
-                    <option value="validated">Validated</option>
-                    <option value="not_validated">Not validated</option>
-                    <option value="all_validated" selected>All</option>
-                </select>
-            </div>
+    </div>
+</div>
+<div class="container">
+    <div class="starter-template">
+        <h1>User outline</h1>
+        <h2>User id {{ tigauser.user_UUID }}</h2>
+    </div>
+    <div class="filter_wrapper">
+        <div class="row">
+
+        </div>
+        <div class="row">
+
         </div>
     </div>
 </div>
@@ -158,4 +252,7 @@
     </div>
 </div>
 {% endfor %}
+    <script src={% static "tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js" %}></script>
+    <script src={% static "tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js" %}></script>
+    <script src="{% static "tigacrafting/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
 </body>
