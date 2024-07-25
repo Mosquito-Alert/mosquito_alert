@@ -669,22 +669,6 @@ def predefined_messages(request):
     return render(request, 'tigacrafting/predefined_messages.html', {'langs': langs})
 
 
-def pending_reports_heatmap_data():
-    country_qs = EuropeCountry.objects.exclude(is_bounding_box=True)
-    raw_data = []
-    data = []
-    for country in country_qs:
-        current_progress_country = Report.objects.filter(country=country).exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
-        # data is [lat, lng, intensity]
-        centroid = country.geom.centroid
-        raw_data.append( [ centroid.y, centroid.x, current_progress_country.count() if current_progress_country.count() > 0 else 0  ] )
-    # total = 0
-    # for d in raw_data:
-    #     total += d[2]
-    # for d in raw_data:
-    #     data.append([ d[0], d[1], d[2]/total ])
-    return raw_data
-
 
 def update_pending_data(country):
     data = get_crisis_report_available_reports(country)
@@ -1161,20 +1145,18 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
 @login_required
-def single_report_view(request,version_uuid=None):
+def single_report_view(request,version_uuid):
     this_user = request.user
     version_uuid = request.GET.get('version_uuid', version_uuid)
-    reports = Report.objects.filter(version_UUID=version_uuid)
-    report = reports.first()
+    report = Report.objects.get(pk=version_uuid)
     who_has_list = []
     if report:
-        these_annotations = ExpertReportAnnotation.objects.filter(report=report)
-        for ano in these_annotations:
+        for ano in report.expert_report_annotations.select_related('user').all():
             if ano.user.username != this_user.username and not ano.user.userstat.is_superexpert():
                 who_has_list.append( '<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by expert') if ano.validation_complete else ('pending with expert')) + '">expert <span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>' )
             else:
                 who_has_list.append('<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by ' + ano.user.username) if ano.validation_complete else ('pending with ' + ano.user.username)) + '">' + ano.user.username + '<span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>')
-    context = {'reports': reports, 'version_uuid' : version_uuid, 'this_user': this_user.username, 'who_has_list': who_has_list}
+    context = {'reports': [report,], 'version_uuid' : version_uuid, 'this_user': this_user.username, 'who_has_list': who_has_list}
     return render(request, 'tigacrafting/single_report_view.html', context)
 
 
@@ -1269,7 +1251,7 @@ def expert_report_pending(request):
     x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=False)
 
     reports = []
-    for var in x:
+    for var in x.select_related('report'):
         reports.append(reportannotation_formatter(var))
 
     context = {'pendingReports': reports}
@@ -1284,7 +1266,7 @@ def expert_report_complete(request):
     x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=True)
 
     reports = []
-    for var in x:
+    for var in x.select_related('report'):
         reports.append(reportannotation_formatter(var))
 
     context = {'completeReports': reports}
