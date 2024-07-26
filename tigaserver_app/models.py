@@ -440,6 +440,9 @@ class NutsEurope(models.Model):
     geom = models.MultiPolygonField(blank=True, null=True)
     europecountry = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="nuts", on_delete=models.CASCADE)
 
+    def __str__(self):
+        return "{0} ({1})".format(self.name_latn, self.europecountry.name_engl)
+
     class Meta:
         managed = True
         db_table = 'nuts_europe'
