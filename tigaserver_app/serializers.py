@@ -660,6 +660,8 @@ class CoarseReportSerializer(serializers.ModelSerializer):
     site_cat = serializers.SerializerMethodField(method_name='get_site_cat')
     ia_filter_1 = serializers.ReadOnlyField()
     hide = serializers.ReadOnlyField()
+    lat = serializers.ReadOnlyField()
+    lon = serializers.ReadOnlyField()
 
     def get_site_cat(self,obj):
         return obj.site_cat
@@ -669,4 +671,4 @@ class CoarseReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1', 'hide', 'user_id')
+        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1', 'hide', 'user_id', 'lat', 'lon')
