@@ -2280,6 +2280,9 @@ def flip_report(request):
             rr_yes_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_101', question_id='10', answer_id='101')
             rr_no_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_102', question_id='10', answer_id='102')
             if flip_to_type == 'site':
+                report.flipped = True
+                report.flipped_on = timezone.now()
+                report.flipped_to = report.type + '#site'
                 report.type = 'site'
                 report.save()
                 if flip_to_subtype == 'storm_drain_water':
@@ -2299,6 +2302,9 @@ def flip_report(request):
                     rr_yes_water.save()
                     message = "Report changed to Site - Other, Water"
             elif flip_to_type == 'adult':
+                report.flipped = True
+                report.flipped_on = timezone.now()
+                report.flipped_to = report.type + '#adult'
                 report.type = 'adult'
                 report.save()
                 message = "Report changed to Adult"

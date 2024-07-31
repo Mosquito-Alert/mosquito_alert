@@ -1563,6 +1563,7 @@ def auto_annotate_other_species(report, request):
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
+@login_required
 def coarse_filter(request):
     range_list = [n for n in range(10, 101, 10)]
     context = {

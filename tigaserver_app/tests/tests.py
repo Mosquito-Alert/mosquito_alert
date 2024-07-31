@@ -1079,6 +1079,9 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(adult_reloaded.type=='site',"Report type should have changed to site, is {0}".format(adult_reloaded.type))
         n_responses = ReportResponse.objects.filter(report=adult_reloaded).count()
         self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
+        self.assertTrue( adult_reloaded.flipped, "Report should be marked as flipped" )
+        self.assertTrue( adult_reloaded.flipped_to == 'adult#site', "Report should be marked as flipped from adult to site, field has value of {0}".format(adult_reloaded.flipped_to))
+        print(adult_reloaded.flipped_on)
         try:
             response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='12',answer_id='121')
         except:
@@ -1098,6 +1101,9 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(site_reloaded.type == 'adult', "Report type should have changed to adult, is {0}".format(site_reloaded.type))
         n_responses = ReportResponse.objects.filter(report=site_reloaded).count()
         self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
+        self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
+        self.assertTrue(site_reloaded.flipped_to == 'site#adult',"Report should be marked as flipped from site to adult, field has value of {0}".format(adult_reloaded.flipped_to))
+        print(site_reloaded.flipped_on)
 
     def test_hide(self):
         u = User.objects.get(pk=25)

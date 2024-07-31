@@ -189,7 +189,8 @@ function set_buttons(pagination_data){
 }
 
 function set_current(current_page, n_pages, n_total){
-    $('.current').html(`Page ${current_page} of ${n_pages} (${n_total} reports)`);
+    $('.current').html(`Page ${current_page} of ${n_pages}`);
+    $('#n_pagination_reports').html(`${n_total}`);
     $('#n_query_reports').html(`${n_total}`);
 }
 
@@ -218,6 +219,16 @@ function set_visibility_icons(){
     });
 }
 
+function remove_report(report_id){
+    $('#' + report_id).remove();
+    const n_reports = $('#n_query_reports').html();
+    const n_reports_int = parseInt(n_reports);
+    if(!isNaN(n_reports_int)){
+        $('#n_query_reports').html( n_reports_int - 1 );
+        $('#n_pagination_reports').html( n_reports_int - 1 );
+    }
+}
+
 function hide_or_show_report(report_id, hide_value){
     $('#' + report_id).block({ message: 'Hiding or showing report' });
     $.ajax({
@@ -241,13 +252,13 @@ function hide_or_show_report(report_id, hide_value){
                     }
                 }
             }else{
-                $('#' + report_id).remove();
+                remove_report(report_id);
             }
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
                 alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
-                $('#' + report_id).remove();
+                remove_report(report_id);
             }
             $('#' + report_id).unblock();
         },
@@ -265,12 +276,12 @@ function classify_picture(report_id, category_id, validation_value){
         dataType: "json",
         success: function(data) {
             $('#' + report_id).unblock();
-            $('#' + report_id).remove();
+            remove_report(report_id);
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
                 alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
-                $('#' + report_id).remove();
+                remove_report(report_id);
             }
             $('#' + report_id).unblock();
         },
@@ -298,13 +309,13 @@ function flip_report(report_id, flip_to_type, flip_to_subtype){
                     make_site(report_id, subtype);
                 }
             }else{
-                $('#' + report_id).remove();
+                remove_report(report_id);
             }
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
                 alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
-                $('#' + report_id).remove();
+                remove_report(report_id);
             }
             $('#' + report_id).unblock();
         },
@@ -353,8 +364,8 @@ function single_picture_template(picture){
     return `
         <div class="picture_item">
             <a class="preview" href="http://webserver.mosquitoalert.com${ picture.photo }" target="_blank">
-                <!--<img src="${ picture.small_url }">-->
-                <img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100">
+                <img src="${ picture.small_url }">
+                <!--<img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100">-->
             </a>
             <!--<img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100" >-->
         </div>
@@ -382,7 +393,7 @@ function single_report_template(report){
                 <div class="header_internal_wrapper">
                     <div class="header_left">
                         <div class="header_country">
-                            <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="glyphicon glyphicon-link" style="color: white;"> ${ report_country_name }</span></a>
+                            <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="glyphicon glyphicon-link" style="color: black;"> ${ report_country_name }</span></a>
                         </div>
                         <div id="header_ia_${ report.version_UUID }" class="header_ia">
                             <div id="ia_label_${ report.version_UUID }">IA Value ${ ia_value }</div>
@@ -452,7 +463,6 @@ $('#page_button').click( function(e){
     if(page != ''){
         load_data(page_size,parseInt(page));
     }
-    console.log(page);
 });
 
 $('.n_choice').click( function(e){
@@ -474,7 +484,6 @@ $('#filters_submit_button').click( function(e){
     $('#filter_options').val(filter);
     $('#myModal').modal('hide');
     load_data(page_size,offset,filter);
-    //console.log(filter);
 });
 
 $('#filters_clear').click( function(e){
@@ -530,7 +539,6 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primar
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger.foot_btn.btn_flip', function(){
     const type = $(this).data("type");
     const site_cat = $(this).data("site-cat");
-    console.log(`${ type } ${ site_cat }`);
     $('#flip_report_id').val( $(this).data("report-id") );
     if( type=='adult' ){
         $('#flip_to_type').val( "site" );
