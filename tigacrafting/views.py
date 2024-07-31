@@ -1565,12 +1565,16 @@ def auto_annotate_other_species(report, request):
 
 @login_required
 def coarse_filter(request):
-    range_list = [n for n in range(10, 101, 10)]
-    context = {
-        'tasks_per_page_choices': range_list + [200, 300],
-        'countries': EuropeCountry.objects.all().order_by('name_engl')
-    }
-    return render(request, 'tigacrafting/coarse_filter.html', context)
+    this_user = request.user
+    if this_user.groups.filter(name='coarse_filter').exists():
+        range_list = [n for n in range(10, 101, 10)]
+        context = {
+            'tasks_per_page_choices': range_list + [200, 300],
+            'countries': EuropeCountry.objects.all().order_by('name_engl')
+        }
+        return render(request, 'tigacrafting/coarse_filter.html', context)
+    else:
+        return HttpResponse("You need to belong to the coarse filter group to access this page, please contact MoveLab.")
 
 @login_required
 def picture_validation(request,tasks_per_page='300',visibility='visible', usr_note='', type='all', country='all', aithr='1.00'):
