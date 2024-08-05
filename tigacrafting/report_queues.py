@@ -227,6 +227,16 @@ def get_progress_available_reports(country):
     available_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
     return available_reports
 
+def get_ns_locked_reports(country):
+    if UserStat.objects.filter(national_supervisor_of=country).exists():
+        new_reports_unfiltered = get_base_adults_qs().filter(country=country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+        # reports in ns exclusion period
+        new_reports_unfiltered = new_reports_unfiltered.filter(server_upload_time__gte=timezone.now() - timedelta(days=country.national_supervisor_report_expires_in))
+        available_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+        return available_reports
+    else:
+        return None
+
 
 def get_unassigned_available_reports(country):
     expiration_period_days = 14
