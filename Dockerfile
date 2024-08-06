@@ -30,7 +30,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # Install dependencies
 #     setuptools<58.0.0 required for anyjson
 #     cython<3.0.0 required for the pyyaml version we are using (https://stackoverflow.com/questions/7496547/does-python-scipy-need-blas)
-RUN pip install --upgrade pip "setuptools<58.0.0" "wheel==0.40.0" "cython<3.0.0"
+#     pinned pip to version <24.1 because otherwise celery install fails
+RUN pip install --upgrade "setuptools<58.0.0" "wheel==0.40.0" "cython<3.0.0" "pip<24.1"
 # Solved bug when install scikit. Use same version as dev.pip
 RUN pip install numpy==1.23.1
 
