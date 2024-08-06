@@ -33,9 +33,10 @@ from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
-from tigacrafting.report_queues import get_crisis_report_available_reports, get_unassigned_available_reports, get_progress_available_reports
+from tigacrafting.report_queues import get_crisis_report_available_reports, get_unassigned_available_reports, get_progress_available_reports, get_ns_locked_reports
 from tigacrafting.views import get_blocked_reports_by_country
 from tigacrafting.report_queues import filter_reports as queue_filter
+from django.db.models import Sum
 
 
 @xframe_options_exempt
@@ -788,98 +789,61 @@ def global_assignments(request):
     this_user_is_national_supervisor = this_user.userstat.is_national_supervisor()
     lock_period = settings.ENTOLAB_LOCK_PERIOD
     if this_user_is_superexpert:
-        #national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
+        assignments = GlobalAssignmentStat.objects.select_related('country').all().order_by('country__name_engl')
         data = []
-        total_unassigned = 0
-        total_progress = 0
-        total_pending = 0
         total_blocked = 0
-        # manually add spain
-        current_country = 17
-        country = EuropeCountry.objects.get(pk=current_country)
-        unassigned_filtered = get_unassigned_available_reports(country)
-        progress_filtered = get_progress_available_reports(country)
-        user_id_filter = settings.USERS_IN_STATS
-        pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(
-            validation_complete=False).filter(report__type='adult').values('report')
-        blocked = get_blocked_reports_by_country(17)
-        n_unassigned = unassigned_filtered.count()
-        n_progress = progress_filtered.count()
-        n_pending = pending.count()
-        n_blocked = get_blocked_count( blocked )
-        data.append(
-            {
-                "ns_id": 'N/A',
-                "ns_username": 'N/A',
-                "ns_country_id": 17,
-                "ns_country_code": 'ESP',
-                "ns_country_name": 'Spain',
-                "unassigned": n_unassigned,
-                "progress": n_progress,
-                "pending": n_pending,
-                "blocked": n_blocked
-            }
-        )
-        total_unassigned += n_unassigned
-        total_progress += n_progress
-        total_pending += n_pending
-        total_blocked += n_blocked
-        countries_with_at_least_one_expert = UserStat.objects.exclude(native_of__isnull=True).exclude(native_of__gid=17).values('native_of').distinct()
-        countries = EuropeCountry.objects.exclude(gid=17).filter(gid__in=countries_with_at_least_one_expert)
-        #for user in national_supervisors:
-        for current_country in countries:
-            try:
-                ns = UserStat.objects.get(national_supervisor_of=current_country)
-            except UserStat.DoesNotExist:
-                ns = None
-            #current_country = user.userstat.national_supervisor_of.gid
-            #unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-            #unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
-            unassigned_filtered = get_unassigned_available_reports(current_country)
-            progress_filtered = get_progress_available_reports(current_country)
-            user_id_filter = UserStat.objects.filter(native_of=current_country).values('user__id')
-            pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
-            blocked = get_blocked_reports_by_country(current_country)
-            n_unassigned = unassigned_filtered.count()
-            n_progress = progress_filtered.count()
-            n_pending = pending.count()
+        for assignment in assignments:
+            blocked = get_blocked_reports_by_country(assignment.country)
             n_blocked = get_blocked_count(blocked)
+            try:
+                userstat = UserStat.objects.get(national_supervisor_of=assignment.country)
+                ns_id = userstat.user.id
+                ns_username = userstat.user.username
+            except UserStat.DoesNotExist:
+                ns_id = 'N/A'
+                ns_username = 'N/A'
             data.append(
                 {
-                    "ns_id": ns.user.id if ns else None,
-                    "ns_username": ns.user.username if ns else None,
-                    "ns_country_id":current_country.gid,
-                    "ns_country_code": current_country.iso3_code,
-                    "ns_country_name":current_country.name_engl,
-                    "unassigned": n_unassigned,
-                    "progress": n_progress,
-                    "pending": n_pending,
-                    "blocked": n_blocked
+                    "ns_id": ns_id,
+                    "ns_username": ns_username,
+                    "ns_country_id": assignment.country.gid,
+                    "ns_country_code": assignment.country.iso3_code,
+                    "ns_country_name": assignment.country.name_engl,
+                    "unassigned": assignment.unassigned_reports,
+                    "progress": assignment.in_progress_reports,
+                    "pending": assignment.pending_reports,
+                    "blocked": n_blocked,
+                    "blocked_ns": assignment.nsqueue_reports,
+                    "last_update": assignment.last_update.strftime('%d/%m/%Y - %H:%M:%S')
                 }
             )
-            total_unassigned += n_unassigned
-            total_progress += n_progress
-            total_pending += n_pending
             total_blocked += n_blocked
-        summary = { 'total_unassigned':total_unassigned, 'total_progress':total_progress, 'total_pending':total_pending, 'total_blocked':total_blocked }
+        totals = GlobalAssignmentStat.objects.aggregate(Sum('unassigned_reports'),Sum('in_progress_reports'),Sum('pending_reports'),Sum('nsqueue_reports'))
+        total_unassigned = totals['unassigned_reports__sum']
+        total_progress = totals['in_progress_reports__sum']
+        total_pending = totals['pending_reports__sum']
+        total_blocked_ns = totals['nsqueue_reports__sum']
+        summary = { 'total_unassigned':total_unassigned, 'total_progress':total_progress, 'total_pending':total_pending, 'total_blocked':total_blocked, 'total_blocked_ns': total_blocked_ns }
         context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary, 'days': lock_period}
         return render(request, 'stats/global_assignments.html', context)
     elif this_user_is_national_supervisor:
-        #national_supervisors = User.objects.filter(userstat__isnull=False).filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl').all()
         data = []
         total_unassigned = 0
         total_progress = 0
         total_pending = 0
+        total_blocked_ns = 0
         current_country = this_user.userstat.national_supervisor_of.gid
-        # unassigned = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').filter(country_id=current_country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
-        # unassigned_filtered = filter( lambda x: report_id_table[x.report_id]['num_versions'] == 1 or (report_id_table[x.report_id]['min_version'] != -1 and x.version_number == report_id_table[x.report_id]['max_version']), unassigned )
         unassigned_filtered = get_unassigned_available_reports(this_user.userstat.national_supervisor_of)
         progress_filtered = get_progress_available_reports(this_user.userstat.national_supervisor_of)
+        blocked_ns = get_ns_locked_reports(this_user.userstat.national_supervisor_of)
         user_id_filter = UserStat.objects.filter(native_of__gid=current_country).values('user__id')
         pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
         n_unassigned = unassigned_filtered.count()
         n_progress = progress_filtered.count()
         n_pending = pending.count()
+        n_blocked_ns = 0 if blocked_ns is None else blocked_ns.count()
+        now = datetime.datetime.now(pytz.utc)
+        now_string = now.strftime('%d/%m/%Y - %H:%M:%S')
         data.append(
             {
                 "ns_id": this_user.id,
@@ -889,13 +853,33 @@ def global_assignments(request):
                 "ns_country_name": this_user.userstat.national_supervisor_of.name_engl,
                 "unassigned": n_unassigned,
                 "progress": n_progress,
-                "pending": n_pending
+                "pending": n_pending,
+                "blocked_ns": n_blocked_ns,
+                "last_update": now_string
             }
         )
         total_unassigned += n_unassigned
         total_progress += n_progress
         total_pending += n_pending
-        summary = {'total_unassigned': total_unassigned, 'total_progress': total_progress, 'total_pending': total_pending}
+        total_blocked_ns += n_blocked_ns
+        try:
+            g = GlobalAssignmentStat.objects.get(country=current_country)
+            g.unassigned_reports = n_unassigned
+            g.in_progress_reports = n_progress
+            g.pending_reports = n_pending
+            g.nsqueue_reports = n_blocked_ns
+            g.last_update = now
+        except GlobalAssignmentStat.DoesNotExist:
+            g = GlobalAssignmentStat(
+                country=current_country,
+                unassigned_reports=n_unassigned,
+                in_progress_reports=n_progress,
+                pending_reports=n_pending,
+                nsqueue_reports=n_blocked_ns,
+                last_update=now
+            )
+        g.save()
+        summary = {'total_unassigned': total_unassigned, 'total_progress': total_progress, 'total_pending': total_pending, 'total_blocked_ns': total_blocked_ns}
         context = {'data': data, 'encoded_data': json.dumps(data), 'summary': summary}
         return render(request, 'stats/global_assignments.html', context)
     else:
@@ -923,6 +907,10 @@ def global_assignments_list(request, country_code=None, status=None):
             progress = get_progress_available_reports( EuropeCountry.objects.get(pk=countryGID) )
             reportList = progress
             reportStatus = 'In progress'
+        elif status == 'nsblocked':
+            nsblocked = get_ns_locked_reports( EuropeCountry.objects.get(pk=countryGID) )
+            reportList = nsblocked
+            reportStatus = 'NS Queue'
 
         i = 0
         while i < len(reportList):

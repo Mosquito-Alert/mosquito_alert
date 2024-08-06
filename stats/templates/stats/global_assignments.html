@@ -63,6 +63,8 @@
                 <p>Reports in progress are reports which have not yet been assigned to at least 3 experts. Therefore, they are considered work in progress. This count excludes unassigned reports.</p>
                 <p><strong>Pending reports</strong></p>
                 <p>This is the total pending (assigned but not yet validated) reports for the users of the current country. These users include the national supervisor of the current country.</p>
+                <p><strong>Reports in National Supervisor queue</strong></p>
+                <p>Reports that are currently in the exclusivity period for the National Supervisor (and therefore not available to regular users), and NS has not yet claimed them</p>
                 {% if user.userstat.is_superexpert %}
                 <p><strong>Blocked reports</strong></p>
                 <p>Number of reports which have been claimed by experts and not validated for more than <b>{{ days }}</b>  days.</p>
@@ -76,6 +78,8 @@
                 <p><h3>{{ summary.total_progress }}</h3></p>
                 <p><strong>Total pending reports:</strong></p>
                 <p><h3>{{ summary.total_pending }}</h3></p>
+                <p><strong>Total reports in National Supervisor queue:</strong></p>
+                <p><h3>{{ summary.total_blocked_ns }}</h3></p>
                 {% if user.userstat.is_superexpert %}
                 <p><strong>Total blocked reports:</strong></p>
                 <p><h3>{{ summary.total_blocked }} {% if summary.total_blocked > 0 %} <a class="btn btn-primary" href="{% url 'report_expiration' %}" target="_blank">Manage blocked for all countries</a> {% endif %}</h3></p>
@@ -86,13 +90,14 @@
   {% for d in data %}
   <div class="container-custom">
       <div class="row solid-border">
-        <div class="col-md-2">
+        <div class="col-md-1">
             <p><h3>{{ d.ns_country_name }}</h3></p>
             <p>National supervisor - {{ d.ns_username }}</p>
+            <p>Data last update - {{ d.last_update }} (UTC)</p>
         </div>
-        <div class="col-md-10">
+        <div class="col-md-11">
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div id="{{ d.ns_country_code }}_unassigned" style="height: 200px; margin: 0 auto"></div>
                     {% if user.userstat.is_superexpert %}
                     <div style="padding-top: 15px;">
@@ -102,7 +107,7 @@
                     </div>
                     {% endif %}
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div id="{{ d.ns_country_code }}_progress" style="height: 200px; margin: 0 auto"></div>
                     {% if user.userstat.is_superexpert %}
                     <div style="padding-top: 15px;">
@@ -112,7 +117,7 @@
                     </div>
                     {% endif %}
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div id="{{ d.ns_country_code }}_pending" style="height: 200px; margin: 0 auto"></div>
                     {% if user.userstat.is_superexpert %}
                     <div style="padding-top: 15px;">
@@ -122,9 +127,19 @@
                     </div>
                     {% endif %}
                 </div>
+                <div class="col-md-2">
+                    <div id="{{ d.ns_country_code }}_nsblocked" style="height: 200px; margin: 0 auto"></div>
+                    {% if user.userstat.is_superexpert %}
+                    <div style="padding-top: 15px;">
+                        <p style="text-align: center;">
+                            <a id="{{ d.ns_country_code }}_nsblocked_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='nsblocked' %}" target="_blank"><i class="fas fa-list"></i>&nbsp; NS queue list</a>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
                 {% if user.userstat.is_superexpert %}
                 {% if d.blocked > 0 %}
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <h4>Blocked reports</h4>
                     <h1>{{ d.blocked }}</h1>
                     <a class="btn btn-primary" href="{% url 'report_expiration' country_id=d.ns_country_id %}" target="_blank">Manage blocked</a>

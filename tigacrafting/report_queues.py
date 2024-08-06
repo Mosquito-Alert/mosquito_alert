@@ -211,7 +211,10 @@ def assign_reports_to_national_supervisor(this_user):
 
 
 def get_progress_available_reports(country):
-    expiration_period_days = 14
+    # expiration_period_days = 14
+    expiration_period_days = country.national_supervisor_report_expires_in
+    if not expiration_period_days:
+        expiration_period_days = 14
     new_reports_unfiltered = get_base_adults_qs().filter(country=country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0)
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:
@@ -227,9 +230,25 @@ def get_progress_available_reports(country):
     available_reports = filter_reports(reports_unfiltered_excluding_reserved_ns.order_by('creation_time'))
     return available_reports
 
+def get_ns_locked_reports(country):
+    expiration_period_days = country.national_supervisor_report_expires_in
+    if not expiration_period_days:
+        expiration_period_days = 14
+    if UserStat.objects.filter(national_supervisor_of=country).exists():
+        new_reports_unfiltered = get_base_adults_qs().filter(country=country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
+        # reports in ns exclusion period
+        new_reports_unfiltered = new_reports_unfiltered.filter(server_upload_time__gte=timezone.now() - timedelta(days=expiration_period_days))
+        available_reports = filter_reports(new_reports_unfiltered.order_by('creation_time'))
+        return available_reports
+    else:
+        return None
+
 
 def get_unassigned_available_reports(country):
-    expiration_period_days = 14
+    #expiration_period_days = 14
+    expiration_period_days = country.national_supervisor_report_expires_in
+    if not expiration_period_days:
+        expiration_period_days = 14
     new_reports_unfiltered = get_base_adults_qs().filter(country=country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0)
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:
@@ -245,7 +264,10 @@ def get_unassigned_available_reports(country):
     return available_reports
 
 def get_crisis_report_available_reports(country):
-    expiration_period_days = 14
+    # expiration_period_days = 14
+    expiration_period_days = country.national_supervisor_report_expires_in
+    if not expiration_period_days:
+        expiration_period_days = 14
     new_reports_unfiltered = get_base_adults_qs().filter(country=country).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT)
     if UserStat.objects.filter(national_supervisor_of=country).exists():
         if country.national_supervisor_report_expires_in is not None:
@@ -263,7 +285,10 @@ def get_crisis_report_available_reports(country):
 
 def assign_crisis_report(this_user, country):
     summary = {}
-    expiration_period_days = 14
+    # expiration_period_days = 14
+    expiration_period_days = country.national_supervisor_report_expires_in
+    if not expiration_period_days:
+        expiration_period_days = 14
     logger_report_assignment.debug('Assigning crisis report for User {0} in country {1}'.format(this_user, country.name_engl))
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
     summary['current_pending'] = current_pending
