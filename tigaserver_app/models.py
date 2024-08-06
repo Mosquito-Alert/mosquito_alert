@@ -426,6 +426,14 @@ class EuropeCountry(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.gid, self.name_engl)
 
+class GlobalAssignmentStat(models.Model):
+    country = models.OneToOneField('tigaserver_app.EuropeCountry', primary_key=True, on_delete=models.CASCADE, )
+    unassigned_reports = models.IntegerField(default=0)
+    in_progress_reports = models.IntegerField(default=0)
+    pending_reports = models.IntegerField(default=0)
+    nsqueue_reports = models.IntegerField(default=0)
+    last_update = models.DateTimeField(help_text="Last time stats were updated", null=True, blank=True)
+
 class NutsEurope(models.Model):
     gid = models.AutoField(primary_key=True)
     nuts_id = models.CharField(max_length=5, blank=True, null=True)
