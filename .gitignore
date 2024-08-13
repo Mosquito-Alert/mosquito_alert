@@ -22,6 +22,7 @@ tigatrapp-server/media
 /media
 tigatrapp-server/media
 /media
+/venv
 
 # Unit test / coverage reports
 htmlcov/

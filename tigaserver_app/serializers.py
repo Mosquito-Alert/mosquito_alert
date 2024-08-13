@@ -639,3 +639,36 @@ class OrganizationPinsSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class CoarsePhotoSerializer(serializers.ModelSerializer):
+    small_url = serializers.SerializerMethodField(method_name='get_small_url')
+
+    def get_small_url(self,obj):
+        return obj.get_small_url()
+    class Meta:
+        model = Photo
+        fields = ['id', 'photo', 'uuid', 'small_url']
+
+class CoarseReportSerializer(serializers.ModelSerializer):
+    photos = CoarsePhotoSerializer(many=True)
+    version_UUID = serializers.ReadOnlyField()
+    report_id = serializers.ReadOnlyField()
+    creation_time = serializers.ReadOnlyField()
+    user_id = serializers.SerializerMethodField(method_name='get_user_id')
+    type = serializers.ReadOnlyField()
+    note = serializers.ReadOnlyField()
+    country = EuropeCountrySimpleSerializer(many=False)
+    site_cat = serializers.SerializerMethodField(method_name='get_site_cat')
+    ia_filter_1 = serializers.ReadOnlyField()
+    hide = serializers.ReadOnlyField()
+    lat = serializers.ReadOnlyField()
+    lon = serializers.ReadOnlyField()
+
+    def get_site_cat(self,obj):
+        return obj.site_cat
+
+    def get_user_id(self,obj):
+        return obj.user.user_UUID
+
+    class Meta:
+        model = Report
+        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1', 'hide', 'user_id', 'lat', 'lon')

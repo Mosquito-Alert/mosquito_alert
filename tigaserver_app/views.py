@@ -16,17 +16,18 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
+from tigacrafting.views import auto_annotate
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
-from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
+from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports,get_reports_unfiltered_adults_except_being_validated
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
@@ -36,15 +37,17 @@ from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
 from django.db import connection
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
+from django.db.models.expressions import RawSQL
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
+import math
 
 #from celery.task.schedules import crontab
 #from celery.decorators import periodic_task
@@ -2204,6 +2207,224 @@ def favorite(request):
             new_fav.save()
             return Response(status=status.HTTP_200_OK)
 
+def get_filter_params_from_q(q):
+    if q == '':
+        return {
+            'type':'all',
+            'visibility':'visible',
+            'aithr':1.00,
+            'note': '',
+            'country': 'all',
+            'country_exclude': ''
+        } #default values
+    else:
+        json_filter = json.loads(q);
+        return {
+            'type': json_filter['report_type'],
+            'visibility': json_filter['visibility'],
+            'aithr': float(json_filter['ia_threshold']),
+            'note': json_filter['note'],
+            'country': json_filter['country'],
+            'country_exclude': json_filter['country_exclude']
+        }
+
+@api_view(['PATCH'])
+def hide_report(request):
+    if request.method == 'PATCH':
+        #print(request.data)
+        report_id = request.data.get('report_id','-1')
+        hide_val = request.data.get('hide')
+        if report_id == '-1':
+            raise ParseError(detail='report_id param is mandatory')
+        if not hide_val:
+            raise ParseError(detail='hide param is mandatory')
+        hide = hide_val == 'true'
+        report = get_object_or_404(Report,pk=report_id)
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+        report.hide = hide
+        report.save()
+        return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+def flip_report(request):
+    if request.method == 'PATCH':
+        flip_to_type = request.data.get('flip_to_type', '')
+        flip_to_subtype = request.data.get('flip_to_subtype', '')
+        report_id = request.data.get('report_id', '')
+        report = get_object_or_404(Report,pk=report_id)
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+        if flip_to_type == '': # adult | site
+            raise ParseError(detail='flip_to_type param is mandatory')
+        if flip_to_type not in ['adult', 'site']:
+            raise ParseError(detail='value not allowed, possible values are \'adult\', \'site\'')
+        if flip_to_type == 'site':
+            if flip_to_subtype == '':
+                raise ParseError(detail='flip_to_subtype param is mandatory if type is site')
+            else:
+                if flip_to_subtype not in ['storm_drain_water','storm_drain_dry', 'other_water', 'other_dry']:
+                    raise ParseError(detail='value not allowed, possible values are \'storm_drain_water\',\'storm_drain_dry\', \'other_water\', \'other_dry\' ')
+        # delete questions and answers ?
+
+        # set new questions and answers
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_12	question_12_answer_122	122		12 -> Other
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_10	question_10_answer_101	101		10 -> Water
+
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_12	question_12_answer_121	121		12 -> Storm Drain
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_10	question_10_answer_101	101		10 -> Water
+        with transaction.atomic():
+            ReportResponse.objects.filter(report=report).delete()
+            rr_type_stormdrain = ReportResponse(report=report,question='question_12',answer='question_12_answer_121',question_id='12',answer_id='121')
+            rr_type_other = ReportResponse(report=report, question='question_12', answer='question_12_answer_122', question_id='12', answer_id='122')
+            rr_yes_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_101', question_id='10', answer_id='101')
+            rr_no_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_102', question_id='10', answer_id='102')
+            if flip_to_type == 'site':
+                report.flipped = True
+                report.flipped_on = timezone.now()
+                report.flipped_to = report.type + '#site'
+                report.type = 'site'
+                report.save()
+                if flip_to_subtype == 'storm_drain_water':
+                    rr_type_stormdrain.save()
+                    rr_yes_water.save()
+                    message = "Report changed to Site - Storm Drain, Water"
+                elif flip_to_subtype == 'storm_drain_dry':
+                    rr_type_stormdrain.save()
+                    rr_no_water.save()
+                    message = "Report changed to Site - Storm Drain, No Water"
+                elif flip_to_subtype == 'other_dry':
+                    rr_type_other.save()
+                    rr_no_water.save()
+                    message = "Report changed to Site - Other, No Water"
+                elif flip_to_subtype == 'other_water':
+                    rr_type_other.save()
+                    rr_yes_water.save()
+                    message = "Report changed to Site - Other, Water"
+            elif flip_to_type == 'adult':
+                report.flipped = True
+                report.flipped_on = timezone.now()
+                report.flipped_to = report.type + '#adult'
+                report.type = 'adult'
+                report.save()
+                message = "Report changed to Adult"
+
+            return Response(data={'message': message, 'new_type': flip_to_type, 'new_subtype': flip_to_subtype, 'opcode': 0}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def annotate_coarse(request):
+    if request.method == 'POST':
+        report_id = request.POST.get('report_id', '-1')
+        category_id = request.POST.get('category_id', -1)
+        validation_value = request.POST.get('validation_value', None)
+        if report_id == '-1':
+            raise ParseError(detail='report_id param is mandatory')
+        # if category_id == -1:
+        #     raise ParseError(detail='category_id param is mandatory')
+        report = get_object_or_404(Report, pk=report_id)
+        # This prevents auto annotating a report which has been claimed by someone between reloads
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+        category = get_object_or_404(Categories, pk=category_id)
+        if validation_value == '' or not category.specify_certainty_level:
+            validation_value = None
+        annotation = auto_annotate(report, category, validation_value)
+        return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def coarse_filter_reports(request):
+    if request.method == 'GET':
+
+        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
+        reports_imbornal = get_reports_imbornal()
+        # new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+        # new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+        # new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+        new_reports_unfiltered_sites = (Report.objects.filter(type='site')
+                                        .exclude(note__icontains='#345')
+                                        .exclude(photos=None).annotate(
+                                            n_annotations=Count('expert_report_annotations')
+                                        )
+                                        .filter(n_annotations=0).order_by('-creation_time').all())
+
+        q = request.query_params.get("q", '')
+        filter_params = get_filter_params_from_q(q)
+        aithr = filter_params['aithr']
+        type = filter_params['type']
+        visibility = filter_params['visibility']
+        note = filter_params['note']
+        country = filter_params['country']
+        country_exclude = filter_params['country_exclude']
+
+        limit = request.query_params.get("limit", 300)
+        offset = request.query_params.get("offset", 1)
+
+        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
+
+        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+
+        if type == 'adult':
+            new_reports_unfiltered = new_reports_unfiltered_adults
+        elif type == 'site':
+            new_reports_unfiltered = new_reports_unfiltered_sites
+        if visibility == 'visible':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+        elif visibility == 'hidden':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+        if note != '':
+            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=note)
+        if country and country != '' and country != 'all':
+            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
+        elif country == 'all' and country_exclude != '':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(country__gid=int(country_exclude))
+
+        report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
+            ())).values("version_UUID").distinct()
+        report_id_deleted_reports_sites = Report.objects.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'site' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
+            ())).values("version_UUID").distinct()
+
+        new_reports_unfiltered = new_reports_unfiltered.exclude(
+            version_UUID__in=report_id_deleted_reports_adults).exclude(version_UUID__in=report_id_deleted_reports_sites)
+
+        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher",
+            ()))
+
+        #results = new_reports_unfiltered.prefetch_related('photos','users')
+        results = new_reports_unfiltered.select_related('user').prefetch_related('photos')
+
+        try:
+            paginator = Paginator(results, limit)
+        except:
+            paginator = Paginator(results, limit)
+
+        try:
+            results = paginator.page(offset)
+        except PageNotAnInteger:
+            results = paginator.page(offset)
+        except EmptyPage:
+            results = []
+
+        api_count = paginator.count
+        api_next = None if not results.has_next() else results.next_page_number()
+        api_previous = None if not results.has_previous() else results.previous_page_number()
+
+        #serializer = ReportSerializer(results, many=True)
+        serializer = CoarseReportSerializer(results, many=True)
+
+        data = {
+            'per_page': limit,
+            'count_pages': paginator.num_pages,
+            'current': offset,
+            'count': api_count,
+            'next': api_next,
+            'previous': api_previous,
+            'results': serializer.data
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def user_favorites(request):

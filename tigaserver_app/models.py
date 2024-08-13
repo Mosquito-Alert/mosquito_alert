@@ -679,6 +679,27 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Language setting, within tigatrapp, of device from which this report was submitted. 2-digit ISO-639-1 language code.",
     )
 
+    flipped = models.BooleanField(
+        default=False,
+        help_text="If true, indicates that the report type has been changed in the coarse filter",
+    )
+
+    flipped_on = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of when the report was flipped",
+    )
+
+    flipped_to = models.CharField(
+        max_length=60,
+        null=True,
+        blank=True,
+        help_text="Type it was flipped from, to type it was flipped to, separated by #"
+        '''        
+            For instance, if the report was and adult and flipped to storm_drain_water, this field would have the value adult#storm_drain_water
+        '''
+    )
+
     # Object Manager
     objects = ReportManager()
 
