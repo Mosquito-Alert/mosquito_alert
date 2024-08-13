@@ -196,6 +196,26 @@ $(function () {
                     data : {user_slug : key},
                     success: function(data) {
 
+                        // The data comes as an array of [timestamp, count]
+                        let filledData = [];
+                        let startTime = data[0][0];
+                        let endTime = data[data.length - 1][0];
+                        let oneWeek = 7 * 24 * 60 * 60 * 1000; // One week in milliseconds
+
+                        for (let time = startTime; time <= endTime; time += oneWeek) {
+                            let found = false;
+                            for (let i = 0; i < data.length; i++) {
+                                if (data[i][0] === time) {
+                                    filledData.push(data[i]);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                filledData.push([time, 0]); // If no data found for this week, add 0
+                            }
+                        }
+
                         if(key.includes(".")){
                             keyNoDot = jq(key);
                             $('#' + keyNoDot).removeAttr("disabled");
@@ -206,7 +226,7 @@ $(function () {
 
                         userChart.addSeries({
                             name: user_data[key].name,
-                            data: data,
+                            data: filledData,
                             color: get_color_by_expert_slug(key),
                             marker: {
                                 enabled: false,
@@ -216,7 +236,7 @@ $(function () {
                             }
                         });
 
-                        user_data[key].data = data;
+                        user_data[key].data = filledData;
                     },
                     cache: false
                 });
