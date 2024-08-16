@@ -223,7 +223,7 @@ def populate_report_history_table(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0046_populate_responses_column'),
+        ('tigaserver_app', '0047_populate_responses_column'),
         ('tigacrafting', '0020_auto_20240125_1557'),
     ]
 

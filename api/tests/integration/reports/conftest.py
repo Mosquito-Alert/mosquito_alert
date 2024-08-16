@@ -16,6 +16,7 @@ def published_adult_report(adult_report):
     _ = MapAuxReports.objects.get_or_create(
         version_uuid=adult_report,
         defaults={
+            "id": 10,
             "user_id": adult_report.user.pk,
             "ref_system": 4326,
             "type": adult_report.type,
@@ -38,6 +39,7 @@ def deleted_published_adult_report(deleted_adult_report):
     _ = MapAuxReports.objects.get_or_create(
         version_uuid=deleted_adult_report,
         defaults={
+            "id": 20,
             "user_id": deleted_adult_report.user.pk,
             "ref_system": 4326,
             "type": deleted_adult_report.type,

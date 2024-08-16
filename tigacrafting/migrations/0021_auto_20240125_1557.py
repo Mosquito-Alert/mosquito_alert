@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tigacrafting', '0020_auto_20240125_1557'),
-        ('tigaserver_app', '0047_report_versioning'),
+        ('tigaserver_app', '0048_report_versioning'),
     ]
 
     operations = [

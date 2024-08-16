@@ -8,7 +8,7 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0051_auto_20240307_0929'),
+        ('tigaserver_app', '0052_auto_20240307_0929'),
     ]
 
     operations = [

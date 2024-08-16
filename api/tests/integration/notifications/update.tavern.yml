@@ -90,7 +90,7 @@ stages:
     response:
       status_code: 200
       strict:
-        - json: off
+        - json:off
       json:
         seen: false
   - id: signup

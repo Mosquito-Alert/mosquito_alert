@@ -38,7 +38,6 @@ from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
 
 from common.translation import get_translation_in, get_locale_for_native
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
@@ -230,7 +229,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True, on_delete=models.SET_NULL, )
 
-    score_v2_struct = models.JSONField(help_text="Full cached score data", null=True, blank=True)
+    score_v2_struct = models.TextField(help_text="Full cached score data", null=True, blank=True)
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
@@ -260,6 +259,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
         return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"
 
     def update_score(self, commit: bool = True) -> None:
+        from tigascoring.xp_scoring import compute_user_score_in_xp_v2
         score_dict = compute_user_score_in_xp_v2(user_uuid=self.pk, update=False)
         self.score_v2_struct = score_dict
 
@@ -1646,7 +1646,7 @@ class Report(TimeZoneModelMixin, models.Model):
             f for f in bite_fields if f is not None
         ) if self.type == self.TYPE_BITE else None
 
-        if self.app_language:
+        if self.app_language and len(self.app_language) == 2:
             self.user.language_iso2 = self.app_language
             self.user.save(update_fields=['language_iso2'])
 
@@ -3115,7 +3115,6 @@ class Notification(models.Model):
             notification=self
         ).delete()
 
-
 class AcknowledgedNotification(models.Model):
     user = models.ForeignKey(TigaUser, related_name="user_acknowledgements",help_text='User which has acknowledged the notification', on_delete=models.CASCADE, )
     notification = models.ForeignKey(Notification, related_name="notification_acknowledgements",help_text='The notification which has been acknowledged or not', on_delete=models.CASCADE, )
@@ -3175,37 +3174,61 @@ class SentNotification(models.Model):
     #you either send a notification to a user, or to a group of users via topics
     notification = models.ForeignKey(Notification, related_name="notification_sendings", help_text='The notification which has been sent', on_delete=models.CASCADE, )
 
-    def _get_push_data_message(self):
-        return {
-            "notification_id": self.notification.pk,
-            "data": {
-                "notification": {"id": self.notification.pk},
-                "notification_id": self.notification.pk
-            }
-        }
+    def send_push(self, language_code: str = None):
 
-    def send_push_notification(self, locale: str = None):
-        push_service = apps.get_app_config(app_label=TigaserverApp.label).push_service
-        if not push_service:
+        if settings.DISABLE_PUSH:
             return
 
-        if self.sent_to_user and self.sent_to_user.device_token:
-            push_service.notify_single_device(
-                registration_id=self.sent_to_user.device_token,
-                message_title=self.notification.notification_content.get_title_locale_safe(locale=locale),
-                message_body=None,
-                data_message=self._get_push_data_message(),
-                dry_run=settings.DRY_RUN_PUSH
+        # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
+        # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
+        message_payload = dict(
+            data={
+                "id": str(self.notification.pk)
+            },
+            notification=FirebaseNotification(
+                title=self.notification.notification_content.get_title(language_code=language_code),
+                body=self.notification.notification_content.get_body(language_code=language_code),
+                image=self.notification.notification_content.body_image
+            ),
+            android=AndroidConfig(
+                notification=AndroidNotification(
+                    click_action='FLUTTER_NOTIFICATION_CLICK'
+                )
             )
-        
+        )
+        message_id = None
         if self.sent_to_topic:
-            push_service.notify_topic_subscribers(
-                topic_name=self.sent_to_topic.topic_code,
-                message_title=self.notification.notification_content.get_title_locale_safe(locale=locale),
-                message_body=None,
-                data_message=self._get_push_data_message(),
-                dry_run=settings.DRY_RUN_PUSH
-            )
+            try:
+                message_id = firebase_admin.messaging.send(
+                    message=Message(
+                        **message_payload,
+                        topic=self.sent_to_topic.topic_code
+                    ),
+                    dry_run=settings.DRY_RUN_PUSH,
+                )
+            except firebase_admin._messaging_utils.UnregisteredError:
+                logger_notification.exception(f"Topic {self.sent_to_topic.topic_code} not valid")
+            except (FirebaseError, ValueError) as e:
+                logger_notification.exception(str(e))
+            except Exception as e:
+                logger_notification.exception(str(e))
+        elif self.sent_to_user and self.sent_to_user.device_token:
+            try:
+                message_id = firebase_admin.messaging.send(
+                    message=Message(
+                        **message_payload,
+                        token=self.sent_to_user.device_token
+                    ),
+                    dry_run=settings.DRY_RUN_PUSH,
+                )
+            except firebase_admin._messaging_utils.UnregisteredError:
+                logger_notification.exception(f"Device token {self.sent_to_user.device_token} not valid")
+            except (FirebaseError, ValueError) as e:
+                logger_notification.exception(str(e))
+            except Exception as e:
+                logger_notification.exception(str(e))
+
+        return message_id
 
 
 class AwardCategory(models.Model):

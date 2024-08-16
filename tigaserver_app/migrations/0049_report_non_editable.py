@@ -24,7 +24,7 @@ def update_report_updated_at_field(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0047_report_versioning'),
+        ('tigaserver_app', '0048_report_versioning'),
     ]
 
     operations = [

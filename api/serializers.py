@@ -120,8 +120,8 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
         if obj.notification_content is None:
             return ""
 
-        return obj.notification_content.get_title_locale_safe(
-            locale=self.context.get("request").LANGUAGE_CODE
+        return obj.notification_content.get_title(
+            language_code=self.context.get("request").LANGUAGE_CODE
         )
 
     @extend_schema_field(OpenApiTypes.STR)
@@ -129,8 +129,8 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
         if obj.notification_content is None:
             return ""
 
-        return obj.notification_content.get_body_locale_safe(
-            locale=self.context.get("request").LANGUAGE_CODE
+        return obj.notification_content.get_body_html(
+            language_code=self.context.get("request").LANGUAGE_CODE
         )
 
     def update(self, instance, validated_data):

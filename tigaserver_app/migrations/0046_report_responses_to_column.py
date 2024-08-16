@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0044_refactor'),
+        ('tigaserver_app', '0045_tigauser_language_iso2'),
     ]
 
     operations = [

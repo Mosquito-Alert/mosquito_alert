@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0048_report_non_editable'),
+        ('tigaserver_app', '0049_report_non_editable'),
     ]
 
     operations = [

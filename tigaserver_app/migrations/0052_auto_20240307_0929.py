@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0050_auto_20240305_0900'),
+        ('tigaserver_app', '0051_auto_20240305_0900'),
     ]
 
     operations = [
