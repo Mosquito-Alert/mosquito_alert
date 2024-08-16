@@ -44,7 +44,6 @@ from common.translation import get_translation_in, get_locale_for_native
 from django.template.loader import TemplateDoesNotExist
 from django.utils.translation import gettext as _
 from tigacrafting.querystring_parser import parser
-from django.db.models.expressions import RawSQL
 import functools
 import operator
 import math
@@ -317,7 +316,7 @@ def show_processing(request):
 
 
 def filter_tasks(tasks):
-    tasks_filtered = filter(lambda x: not x.photo.report.deleted and x.photo.report.latest_version, tasks)
+    tasks_filtered = filter(lambda x: not x.photo.report.deleted, tasks)
     return tasks_filtered
 
 def fast_filter_reports(reports):
@@ -332,11 +331,12 @@ def fast_filter_reports(reports):
 
 
 def filter_reports(reports, sort=True):
+    reports_filtered = reports.non_deleted()
+
     if sort:
-        reports_filtered = sorted(filter(lambda x: not x.deleted and x.latest_version, reports), key=attrgetter('n_annotations'), reverse=True)
-    else:
-        reports_filtered = filter(lambda x: not x.deleted and x.latest_version, reports)
-    return reports_filtered
+        reports_filtered = sorted(reports_filtered, key=attrgetter('n_annotations'), reverse=True)
+
+    return list(reports_filtered)
 
 
 def filter_spain_reports(reports, sort=True):
@@ -356,7 +356,8 @@ def filter_eu_reports(reports, sort=True):
 
 
 def filter_reports_for_superexpert(reports):
-    reports_filtered = filter(lambda x: not x.deleted and x.latest_version and len(list(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))) >= 3, reports)
+    reports_filtered = reports.non_deleted()
+    reports_filtered = filter(lambda x: len(list(filter(lambda y: y.is_expert() and y.validation_complete, x.expert_report_annotations.all()))) >= 3, reports_filtered)
     return reports_filtered
 
 
@@ -1304,20 +1305,7 @@ def get_reports_unfiltered_sites_other(reports_imbornal):
     return new_reports_unfiltered_sites_other
 
 def get_reports_imbornal():
-    reports_imbornal = ReportResponse.objects.filter(
-        Q(question='Is this a storm drain or sewer?', answer='Yes') | Q(question=u'\xc9s un embornal o claveguera?',
-                                                                        answer=u'S\xed') | Q(
-            question=u'\xbfEs un imbornal o alcantarilla?', answer=u'S\xed') | Q(question='Selecciona lloc de cria',
-                                                                                 answer='Embornals') | Q(
-            question='Selecciona lloc de cria', answer='Embornal o similar') | Q(question='Tipo de lugar de cría',
-                                                                                 answer='Sumidero o imbornal') | Q(
-            question='Tipo de lugar de cría', answer='Sumideros') | Q(question='Type of breeding site',
-                                                                      answer='Storm drain') | Q(
-            question='Type of breeding site', answer='Storm drain or similar receptacle')).values('report').distinct()
-
-    reports_imbornal_new = ReportResponse.objects.filter(question_id=12).filter(answer_id=121).values('report').distinct()
-
-    return  reports_imbornal | reports_imbornal_new
+    return Report.objects.filter(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
 
 def get_reports_unfiltered_adults_except_being_validated():
     new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
@@ -1616,17 +1604,10 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
         #
         # new_reports_unfiltered = list(new_reports_unfiltered)
 
-        #report_id_deleted_reports = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("report_id").distinct()
-        report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("version_UUID").distinct()
-        report_id_deleted_reports_sites = Report.objects.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'site' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",())).values("version_UUID").distinct()
-
-        new_reports_unfiltered = new_reports_unfiltered.exclude(version_UUID__in=report_id_deleted_reports_adults).exclude(version_UUID__in=report_id_deleted_reports_sites)
-
-        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher",()))
-        #new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL("select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number union select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, version_number, count(\"version_UUID\") from tigaserver_app_report where type = 'site' group by report_id, user_id, version_number having count(\"version_UUID\") = 1) as uniq where r.report_id = uniq.report_id and r.user_id = uniq.user_id and r.version_number = uniq.version_number",()))
+        new_reports_unfiltered = new_reports_unfiltered.non_deleted()
 
         # for r in new_reports_unfiltered:
-        #      print("{0} {1} {2}".format(r.version_UUID, r.deleted, r.latest_version))
+        #      print("{0} {1}".format(r.version_UUID, r.deleted))
 
         paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
         page = request.GET.get('page', 1)

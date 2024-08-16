@@ -22,22 +22,11 @@ SITE_WATER_QUESTION_REWARD = 3
 SITE_STORM_DRAIN_REWARD = 4
 BREEDING_SITE_MOSQUITO_REWARD = 3
 
-MOSQUITO_HOW_LOOKS_QUESTION_ID = 7
-MOSQUITO_THORAX_ANSWER_IDS = [711, 712, 713, 714]
-MOSQUITO_ABDOMEN_ANSWER_IDS = [721, 722, 723, 724]
-MOSQUITO_LEG_ANSWER_IDS = [731, 732, 733, 734]
-
 MOSQUITO_BITE_QUESTION_ID = 8
 MOSQUITO_BITE_ANSWER_ID = 101
 
 BREEDING_SITE_MOSQUITO_QUESTION_ID = 11
 BREEDING_SITE_MOSQUITO_ANSWER_ID = 101
-
-SITE_WATER_QUESTION_ID = 10
-SITE_WATER_ANSWER_IDS = [81, 101]
-
-STORM_DRAIN_QUESTION_ID = 12
-STORM_DRAIN_ANSWER_ID = 121
 
 CULEX_CATEGORY_ID = 10
 AEDES_CATEGORY_IDS = [4, 5, 6, 7]
@@ -88,53 +77,31 @@ score metadata structure - json
 
 
 def is_thorax_answered(report):
-    for response in report.responses.all():
-        if response.question_id == MOSQUITO_HOW_LOOKS_QUESTION_ID and response.answer_id in MOSQUITO_THORAX_ANSWER_IDS:
-            return True
-    return False
+    return report.user_perceived_mosquito_thorax is not None
 
 
 def is_abdomen_answered(report):
-    for response in report.responses.all():
-        if response.question_id == MOSQUITO_HOW_LOOKS_QUESTION_ID and response.answer_id in MOSQUITO_ABDOMEN_ANSWER_IDS:
-            return True
-    return False
+    return report.user_perceived_mosquito_abdomen is not None
 
 
 def is_leg_answered(report):
-    for response in report.responses.all():
-        if response.question_id == MOSQUITO_HOW_LOOKS_QUESTION_ID and response.answer_id in MOSQUITO_LEG_ANSWER_IDS:
-            return True
-    return False
+    return report.user_perceived_mosquito_legs is not None
 
 
 def is_water_answered(report):
-    for response in report.responses.all():
-        if response.question_id == SITE_WATER_QUESTION_ID and response.answer_id in SITE_WATER_ANSWER_IDS:
-            return True
-    return False
+    return report.breeding_site_has_water is not None
 
 
 def is_bite_report_followed(report):
-    for response in report.responses.all():
-        if response.question_id == MOSQUITO_BITE_QUESTION_ID and response.answer_id == MOSQUITO_BITE_ANSWER_ID:
-            return True
-    return False
+    return report.responses.filter(question_id=MOSQUITO_BITE_QUESTION_ID, answer_id=MOSQUITO_BITE_ANSWER_ID).exists()
 
 
 def is_mosquito_report_followed(report):
-    for response in report.responses.all():
-        if response.question_id == BREEDING_SITE_MOSQUITO_QUESTION_ID and response.answer_id == BREEDING_SITE_MOSQUITO_ANSWER_ID:
-            return True
-    return False
+    return report.responses.filter(question_id=BREEDING_SITE_MOSQUITO_QUESTION_ID, answer_id=BREEDING_SITE_MOSQUITO_ANSWER_ID).exists()
 
 
 def is_storm_drain(report):
-    for response in report.responses.all():
-        if response.question_id == STORM_DRAIN_QUESTION_ID and response.answer_id == STORM_DRAIN_ANSWER_ID:
-            return True
-    return False
-
+    return report.breeding_site_type == Report.BREEDING_SITE_TYPE_STORM_DRAIN
 
 def is_culex(validation_result):
     if validation_result['category'] is not None:
@@ -378,9 +345,9 @@ def compute_user_score_in_xp_v2_fast(user_uuid):
     #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
-    adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
-    site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
+    adult_last_versions = adults.non_deleted().all()
+    #bite_last_versions = bites.non_deleted().all()
+    site_last_versions = sites.non_deleted().all()
 
     results_adult = {}
     results_adult['score'] = 0
@@ -517,9 +484,9 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     #bites = user_reports.filter(type='bite')
     sites = user_reports.filter(type='site')
 
-    adult_last_versions = filter(lambda x: not x.deleted and x.latest_version, adults)
-    #bite_last_versions = filter(lambda x: not x.deleted and x.latest_version, bites)
-    site_last_versions = filter(lambda x: not x.deleted and x.latest_version, sites)
+    adult_last_versions = adults.non_deleted().all()
+    #bite_last_versions = bites.non_deleted().all()
+    site_last_versions = sites.non_deleted().all()
 
     results_adult = {}
     results_adult['score'] = 0
@@ -673,14 +640,6 @@ def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
             }
         )
     return retval
-
-
-def compute_all_user_scores():
-    all_users = TigaUser.objects.all()
-    for user in all_users:
-        score = compute_user_score_in_xp_v2( user.user_UUID )
-        user.score_v2 = score
-        user.save()
 
 
 def get_all_user_reports(user_uuid):

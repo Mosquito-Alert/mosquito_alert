@@ -641,13 +641,9 @@ def stats_user_score(request, user_uuid=None):
             pass
 
     if user.score_v2_struct is None:
-        user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
-        user.score_v2_struct = json.dumps(user_score, indent=2, sort_keys=True, default=str)
-        user.last_score_update = datetime.datetime.now()
-        user.save()
-    else:
-        user_score = json.loads(user.score_v2_struct)
-    context = { "score_data": user_score, "score_last_update": user.last_score_update }
+        user.update_score(commit=True)
+
+    context = { "score_data": user.score_v2_struct, "score_last_update": user.last_score_update }
     return render(request, 'stats/user_score.html', context)
 
 
@@ -679,16 +675,11 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         try:
             user = TigaUser.objects.get(pk=user_uuid)
             user.get_identicon()
-            #user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
             if user.score_v2_struct is None:
-                user_score = compute_user_score_in_xp_v2(user_uuid, update=True)
-                user.score_v2_struct = json.dumps(user_score, indent=2, sort_keys=True, default=str)
-                user.last_score_update = datetime.datetime.now()
-                user.save()
-            else:
-                user_score = json.loads( user.score_v2_struct )
-            if user_score['total_score'] > 0:
-                user_has_score = True
+                user.update_score(commit=True)
+
+            user_score = user.score_v2_struct
+            user_has_score = bool(user.score_v2)
 
         except TigaUser.DoesNotExist:
             pass
@@ -1016,7 +1007,7 @@ def show_fix_users(request):
 
 
 def show_report_users(request):
-    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)) if report.latest_version]
+    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))]
     tz = get_localzone()
     ref_date = datetime.datetime(2014, 6, 13,  tzinfo=tz)
     end_date = tz.localize(datetime.datetime.now())
@@ -1060,13 +1051,9 @@ def get_user_xp_data(request):
     translation.activate(locale)
 
     if u.score_v2_struct is None:
-        retval = compute_user_score_in_xp_v2(user_id, update=True)
-        u.score_v2_struct = json.dumps(retval, indent=2, sort_keys=True, default=str)
-        u.last_score_update = datetime.datetime.now()
-        u.save()
-    else:
-        retval = json.loads(u.score_v2_struct)
+        u.update_score(commit=True)
 
+    retval = u.score_v2_struct
     retval['last_update'] = u.last_score_update
 
     return Response(retval)
@@ -1087,10 +1074,9 @@ def get_hashtag_map_data(request):
         r = Report.objects.filter(note__icontains=hashtag).order_by('-server_upload_time')[:200]
         n = 0
         for report in r:
-            if report.latest_version:
-                n = n + 1
-                dates.append(report.server_upload_time)
-                data.append({ 'note': report.note, 'picture': report.photo_html, 'lat': report.lat, 'lon': report.lon, 'date_uploaded': report.server_upload_time.strftime('%d-%m-%Y / %H:%M:%S') })
+            n = n + 1
+            dates.append(report.server_upload_time)
+            data.append({ 'note': report.note, 'picture': report.photo_html, 'lat': report.lat, 'lon': report.lon, 'date_uploaded': report.server_upload_time.strftime('%d-%m-%Y / %H:%M:%S') })
     min_date_str = ''
     max_date_str = ''
     if len(dates) == 0:

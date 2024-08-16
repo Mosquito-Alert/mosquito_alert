@@ -26,7 +26,11 @@ django-floppyforms==1.8.0
 django-import-export==1.2.0
 django-leaflet==0.13.2
 django-messages==0.6.0
-django-rest-swagger==2.2.0
+django-timezone-field==5.1
+djangorestframework-simplejwt==5.2.2
+drf-extra-fields==3.3.0
+drf-spectacular==0.27.1
+django-simple-history==3.0.0
 django-sslserver==0.22
 django-taggit==1.1.0
 djangorestframework==3.10.3
@@ -88,11 +92,9 @@ python-geohash==0.8.5
 python-magic==0.4.27
 python-slugify==4.0.1
 python3-memcached==1.51
-PyYAML==5.1.2
 rawpy==0.17.1
 redgreenunittest==0.1.1
 redis==2.10.3
-requests==2.18.1
 rsa==4.7.2
 scandir==1.5
 scikit-learn==0.21.3

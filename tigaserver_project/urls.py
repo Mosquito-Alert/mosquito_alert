@@ -25,13 +25,16 @@ admin.autodiscover()
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browseable API.
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/v1/', include(('api.urls', 'api'), namespace='v1')),
+    path('api/', include(('tigaserver_app.urls', 'api'), namespace='legacy')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/', include('tigaserver_app.urls')),
-    #This is used for dynamic schema generation
-    #path('openapi/',get_schema_view(title="Mosquito Alert API",description="Dynamic API schema generator"), name='openapi-schema'),
     path('api-docs/', TemplateView.as_view(template_name='swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
+]
+
+urlpatterns += [
+    path('admin/', admin.site.urls),
     path('help/<platform>/<language>/', show_help),
     path('about/<platform>/<language>/', show_about),
     path('credits/', show_credit_image, name='show_credit_image'),
@@ -49,7 +52,7 @@ urlpatterns = [
     path('policies/zh-cn/', RedirectView.as_view(url='/zh-cn/policies/', permanent=False)),
     path('terms/es/', RedirectView.as_view(url='/es/terms/', permanent=False)),
     path('terms/ca/', RedirectView.as_view(url='/ca/terms/', permanent=False)),
-    path('terms/en/', RedirectView.as_view(url='/en/terms/', permanent=False)),
+    path('terms/en/', RedirectView.as_view(url='/en/terms/', permanent=False), name='terms'),
     path('terms/de/', RedirectView.as_view(url='/de/terms/', permanent=False)),
     path('terms/sq/', RedirectView.as_view(url='/sq/terms/', permanent=False)),
     path('terms/el/', RedirectView.as_view(url='/el/terms/', permanent=False)),

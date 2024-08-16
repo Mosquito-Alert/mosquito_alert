@@ -1,0 +1,28 @@
+---
+
+test_name: Make everybody can create users
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+  - parametrize:
+      key: device_token
+      vals:
+        - "123456789"
+        - null  # NOTE: will need to use !force_format_include not to cast to string
+        - ''
+
+
+stages:
+  - name: Sign up
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        device_token: !force_format_include '{device_token}'
+      method: POST
+    response:
+      status_code: 201
+      json: !force_format_include "{response_data_validation}"

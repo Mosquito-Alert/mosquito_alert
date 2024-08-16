@@ -1,0 +1,65 @@
+test_name: Make sure users can not list
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - partner
+
+stages:
+  - name: List campaigns for unauthorized users must fail
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 403
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List campaigns for authorized users & check schema result
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"
+
+---
+
+test_name: Test pagination
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - partner
+
+stages:
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List campaigns in page 1
+    request:
+      url: "{api_live_url}/{endpoint}/?page=1"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{partner.pk}"
+

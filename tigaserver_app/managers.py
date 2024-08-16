@@ -1,36 +1,46 @@
 from django.db import models
 
 class ReportQuerySet(models.QuerySet):
+    def deleted(self, state: bool = True):
+        return self.exclude(deleted_at__isnull=state)
 
-    def __version_subquery(self):
-        # NOTE: need to force using "objects" (default manager)
-        return self.model._default_manager.filter(
-            user=models.OuterRef('user'), 
-            report_id=models.OuterRef('report_id'), 
-            type=models.OuterRef('type')
+    def non_deleted(self):
+        return self.deleted(state=False)
+
+    def published(self, state: bool = True):
+        return self.non_deleted().filter(map_aux_report__isnull=not state)
+
+ReportManager = models.Manager.from_queryset(ReportQuerySet)
+
+class NotificationQuerySet(models.QuerySet):
+    def for_user(self, user: 'TigaUser'):
+        from .models import SentNotification
+
+        sent_notifications_subquery = SentNotification.objects.filter(
+            notification=models.OuterRef('pk')
+        ).filter(
+            models.Q(sent_to_user=user) |
+            models.Q(sent_to_topic__topic_code='global') |
+            models.Q(sent_to_topic__topic_users__user=user)
+        ).values('notification').distinct('notification')
+
+        return self.filter(
+            models.Q(user=user) | 
+            #models.Q(report__user=user) | 
+            models.Q(pk__in=models.Subquery(sent_notifications_subquery))
         )
 
-    def __latest_version_subquery(self):
-        return self.__version_subquery().order_by('-version_number', '-server_upload_time')
-
-    def last_version_of_each(self, state: bool=True):
+    def seen_by_user(self, user: 'TigaUser', state: bool = True):
         return self.filter(
             models.Q(
-                pk__in=models.Subquery(
-                    self.__latest_version_subquery().values('pk')[:1]
+                models.Q(
+                    notification_acknowledgements__user=user
+                ) | models.Q(
+                    user=user,
+                    acknowledged=True
                 ),
                 _negated=not state
             )
         )
-    
-    def deleted(self, state: bool = True):
-        return self.annotate(
-            has_negative_version=models.Exists(
-                self.__version_subquery().filter(version_number=-1).values('pk')
-            )
-        ).filter(
-            has_negative_version=state
-        )
 
-
-ReportManager = models.Manager.from_queryset(ReportQuerySet)
+NotificationManager = models.Manager.from_queryset(NotificationQuerySet)

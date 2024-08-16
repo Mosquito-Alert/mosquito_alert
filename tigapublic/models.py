@@ -180,6 +180,7 @@ class StormDrain(models.Model):
         managed = False
 
 
+
 class PredefinedNotificationManager(models.Manager):
     """PredefinedNotification manager. Ordering."""
 
@@ -267,7 +268,7 @@ class StormDrainUserVersions(models.Model):
         """Meta."""
 
         db_table = 'tigapublic_storm_drain_user_version'
-        managed = False
+        managed = True
 
 
 class Epidemiology(models.Model):

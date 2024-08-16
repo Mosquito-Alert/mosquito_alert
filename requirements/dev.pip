@@ -1,4 +1,6 @@
 -r prod_20_04.pip
 
 coverage==7.2.7
-
+pytest-django==4.8.0
+tavern[pytest]==2.7.1
+time-machine==2.14.0

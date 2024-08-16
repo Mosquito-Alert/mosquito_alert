@@ -15,8 +15,9 @@ from slugify import slugify
 from typing import Optional
 import uuid
 
+from django.apps import apps
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
@@ -24,19 +25,26 @@ from django.contrib.gis.measure import Distance as DistanceMeasure
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.forms.models import model_to_dict
 from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.urls import reverse
-from django.utils import translation
+from django.utils import translation, timezone
 from django.utils.deconstruct import deconstructible
+from django.utils.functional import cached_property
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
+from simple_history.models import HistoricalRecords
+from timezone_field import TimeZoneField
+
 from common.translation import get_translation_in, get_locale_for_native
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
-from .managers import ReportManager
+from .apps import TigaserverApp
+from .managers import ReportManager, NotificationManager
 from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -196,8 +204,12 @@ class RankingData(models.Model):
     last_update = models.DateTimeField(help_text="Last time ranking data was updated", null=True, blank=True)
 
 
-class TigaUser(models.Model):
-    user_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
+class TigaUser(AbstractBaseUser, AnonymousUser):
+    USERNAME_FIELD = 'pk'
+
+    password = models.CharField(_('password'), max_length=128, null=True, blank=True)
+
+    user_UUID = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False, help_text='UUID randomly generated on '
                                                                             'phone to identify each unique user. Must be exactly 36 '
                                                                             'characters (32 hex digits plus 4 hyphens).')
     registration_time = models.DateTimeField(auto_now_add=True, help_text='The date and time when user '
@@ -218,7 +230,7 @@ class TigaUser(models.Model):
 
     profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True, on_delete=models.SET_NULL, )
 
-    score_v2_struct = models.TextField(help_text="Full cached score data", null=True, blank=True)
+    score_v2_struct = models.JSONField(help_text="Full cached score data", null=True, blank=True)
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
@@ -246,6 +258,57 @@ class TigaUser(models.Model):
             f.write(identicon_png)
             f.close()
         return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"
+
+    def update_score(self, commit: bool = True) -> None:
+        score_dict = compute_user_score_in_xp_v2(user_uuid=self.pk, update=False)
+        self.score_v2_struct = score_dict
+
+        try:
+            self.score_v2_adult = score_dict['score_detail']['adult']['score']
+        except (KeyError, TypeError):
+            self.score_v2_adult = 0
+
+        try:
+            self.score_v2_bite = score_dict['score_detail']['bite']['score']
+        except (KeyError, TypeError):
+            self.score_v2_bite = 0
+
+        try:
+            self.score_v2_site = score_dict['score_detail']['site']['score']
+        except (KeyError, TypeError):
+            self.score_v2_site = 0
+
+        self.score_v2 = sum(self.score_v2_adult, self.score_v2_bite, self.score_v2_site)
+        self.last_score_update = timezone.now()
+
+        if commit:
+            self.save()
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            # On create: Make sure user is subscribe to global topic
+            try:
+                global_topic = NotificationTopic.objects.get(topic_code='global')
+            except NotificationTopic.DoesNotExist:
+                pass
+            else:
+                UserSubscription.objects.get_or_create(
+                    user=self,
+                    topic=global_topic
+                )
+
+        # Subscribe user to the language selected.
+        try:
+            language_topic = NotificationTopic.objects.get(topic_code=self.language_iso2)
+        except NotificationTopic.DoesNotExist:
+            pass
+        else:
+            UserSubscription.objects.get_or_create(
+                user=self,
+                topic=language_topic
+            )
+
+        super().save(*args, **kwargs)
 
     n_reports = property(number_of_reports_uploaded)
     ios_user = property(is_ios)
@@ -399,7 +462,7 @@ class MissionItem(models.Model):
 
 
 class EuropeCountry(models.Model):
-    gid = models.IntegerField(primary_key=True)
+    gid = models.AutoField(primary_key=True)
     cntr_id = models.CharField(max_length=2, blank=True)
     name_engl = models.CharField(max_length=44, blank=True)
     iso3_code = models.CharField(max_length=3, blank=True)
@@ -510,12 +573,15 @@ class Report(TimeZoneModelMixin, models.Model):
     # Attributes - Mandatory
     version_UUID = models.CharField(
         primary_key=True,
+        default=uuid.uuid4,
         max_length=36,
         help_text="UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens).",
     )
-    version_number = models.IntegerField(
+    version_number = models.SmallIntegerField(
+        default=0,
         db_index=True,
-        help_text="The report version number. Should be an integer that increments by 1 for each repor version. Note that the user keeps only the most recent version on the device, but all versions are stored on the server.",
+        editable=False,
+        help_text='-1 if deleted, otherwise 0.'
     )
     report_id = models.CharField(
         max_length=4,
@@ -536,13 +602,19 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Date and time on server when report uploaded. (Automatically generated by server.)",
     )
     phone_upload_time = models.DateTimeField(
+        editable=False,
         help_text="Date and time on phone when it uploaded fix. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
     )
     creation_time = models.DateTimeField(
+        editable=False,
         help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
     )
     version_time = models.DateTimeField(
         help_text="Date and time on phone when this version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+    )
+    phone_timezone = TimeZoneField(
+        blank=True, null=True,
+        help_text="The timezone corresponding to the datetime collected from the phone. Please provide values from the IANA timezone database (e.g., 'America/New_York')."
     )
     datetime_fix_offset = models.IntegerField(
         default=None,
@@ -594,6 +666,8 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Longitude of location selected by user on map. In decimal degrees.",
     )
     point = models.PointField(null=True, blank=True, srid=4326)
+
+    deleted_at = models.DateTimeField(null=True, blank=True, editable=False, default=None)
 
     note = models.TextField(
         null=True, blank=True, help_text="Note user attached to report."
@@ -668,8 +742,185 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Language setting, within tigatrapp, of device from which this report was submitted. 2-digit ISO-639-1 language code.",
     )
 
+    # Attributes - user responses - Optional
+    EVENT_ENVIRONMENT_INDOORS = 'indoors'
+    EVENT_ENVIRONMENT_OUTDOORS = 'outdoors'
+    EVENT_ENVIRONMENT_VEHICLE = 'vehicle'
+
+    EVENT_ENVIRONMENT_CHOICES = (
+        (EVENT_ENVIRONMENT_INDOORS, _("Indoors")),
+        (EVENT_ENVIRONMENT_OUTDOORS, _("Outdoors")),
+        (EVENT_ENVIRONMENT_VEHICLE, _("Inside vehicle")),
+    )
+
+    event_environment = models.CharField(
+        max_length=16, choices=EVENT_ENVIRONMENT_CHOICES, null=True,
+        help_text=_("The environment where the event took place.")
+    )
+
+    EVENT_MOMENT_NOW = 'now'
+    EVENT_MOMENT_LAST_MORNING = 'last_morning'
+    EVENT_MOMENT_LAST_MIDDAY = 'last_midday'
+    EVENT_MOMENT_LAST_AFTERNOON = 'last_afternoon'
+    EVENT_MOMENT_LAST_NIGHT = 'last_night'
+    EVENT_MOMENT_CHOICES = (
+        (EVENT_MOMENT_NOW, _("Now")),
+        (EVENT_MOMENT_LAST_MORNING, _("Last morning")),
+        (EVENT_MOMENT_LAST_MIDDAY, _("Last midday")),
+        (EVENT_MOMENT_LAST_AFTERNOON, _("Last afternoon")),
+        (EVENT_MOMENT_LAST_NIGHT, _("Last night")),
+    )
+
+    event_moment = models.CharField(
+        max_length=32, choices=EVENT_MOMENT_CHOICES, null=True, 
+        help_text=_("The moment of the day when the event took place.")
+    )
+
+    bite_count = models.PositiveSmallIntegerField(
+        null=True, blank=True, editable=False,
+        help_text=_("Total number of bites reported.")
+    )
+
+    head_bite_count = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Number of bites reported in the head.")
+    )
+    left_arm_bite_count = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Number of bites reported in the left arm.")
+    )
+    right_arm_bite_count = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Number of bites reported in the right arm.")
+    )
+    chest_bite_count = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Number of bites reported in the chest.")
+    )
+    left_leg_bite_count = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Number of bites reported in the left leg.")
+    )
+    right_leg_bite_count = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Number of bites reported in the right leg.")
+    )
+
+    SPECIE_ALBOPICTUS = "albopictus"
+    SPECIE_AEGYPTI = "aegypti"
+    SPECIE_JAPONICUS = "japonicus"
+    SPECIE_KOREICUS = "koreicus"
+    SPECIE_CULEX = "culex"
+    SPECIE_OTHER = "other"
+
+    MOSQUITO_SPECIE_CHOICES = (
+        (SPECIE_ALBOPICTUS, "Aedes albopictus"),
+        (SPECIE_AEGYPTI, "Aedes aegypti"),
+        (SPECIE_JAPONICUS, "Aedes japonicus"),
+        (SPECIE_KOREICUS, "Aedes koreicus"),
+        (SPECIE_CULEX, "Culex pipiens"),
+        (SPECIE_OTHER, _("Other")),
+    )
+
+    user_perceived_mosquito_specie = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The mosquito specie perceived by the user.")
+    )
+
+    user_perceived_mosquito_thorax = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The species of mosquito that the thorax resembles, according to the user.")
+    )
+    user_perceived_mosquito_abdomen = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The species of mosquito that the abdomen resembles, according to the user.")
+    )
+    user_perceived_mosquito_legs = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The species of mosquito that the leg resembles, according to the user.")
+    )
+
+    BREEDING_SITE_TYPE_BASIN = 'basin'
+    BREEDING_SITE_TYPE_BUCKET = 'bucket'
+    BREEDING_SITE_TYPE_FOUNTAIN = 'fountain'
+    BREEDING_SITE_TYPE_SMALL_CONTAINER = 'small_container'
+    BREEDING_SITE_TYPE_STORM_DRAIN = 'storm_drain'
+    BREEDING_SITE_TYPE_WELL = 'well'
+    BREEDING_SITE_TYPE_OTHER = 'other'
+
+    BREEDING_SITE_TYPE_CHOICES = (
+        (BREEDING_SITE_TYPE_BASIN, _('Basin')),
+        (BREEDING_SITE_TYPE_BUCKET, _('Bucket')),
+        (BREEDING_SITE_TYPE_FOUNTAIN, _('Fountain')),
+        (BREEDING_SITE_TYPE_SMALL_CONTAINER, _('Small container')),
+        (BREEDING_SITE_TYPE_STORM_DRAIN, _('Storm Drain')),
+        (BREEDING_SITE_TYPE_WELL, _('Well')),
+        (BREEDING_SITE_TYPE_OTHER, _('Other'))
+    )
+
+    breeding_site_type = models.CharField(
+        max_length=32, choices=BREEDING_SITE_TYPE_CHOICES, null=True,
+        help_text=_("Breeding site type.")
+    )
+    breeding_site_has_water = models.BooleanField(
+        null=True,
+        help_text=_("Either if the user perceived water in the breeding site.")
+    )
+    breeding_site_in_public_area = models.BooleanField(
+        null=True,
+        help_text=_("Either if the breeding site is found in a public area.")
+    )
+    breeding_site_has_near_mosquitoes = models.BooleanField(
+        null=True,
+        help_text=_("Either if the user perceived mosquitoes near the breeding site (less than 10 meters).")
+    )
+    breeding_site_has_larvae = models.BooleanField(
+        null=True,
+        help_text=_("Either if the user perceived larvaes the breeding site.")
+    )
     # Object Manager
     objects = ReportManager()
+
+    history = HistoricalRecords(
+        # Exclude field the user can not modify or that are not relevant.
+        excluded_fields=[
+            'user',
+            'mission',
+            'country',
+            'session',
+            'version_number',
+            'updated_at',
+            'server_upload_time',
+            'phone_upload_time',
+            'version_time',
+            'deleted_at',
+            'hide',
+            'ia_filter_1',
+            'ia_filter_2',
+            'cached_visible',
+            'package_name',
+            'device_manufacturer',
+            'device_model',
+            'os',
+            'os_version',
+            'os_language',
+            'app_language',
+        ],
+        history_id_field=models.UUIDField(default=uuid.uuid4),
+        cascade_delete_history=True, # We are managing deletion through soft-deletions.
+        user_model=TigaUser
+    )
+
+    __history_user = None
+    @property
+    def _history_user(self):
+        return self.__history_user
+
+    @_history_user.setter
+    def _history_user(self, value):
+        # TODO: if value is uuid, try getting the TigaUser.
+        if isinstance(value, TigaUser):
+            self.__history_user = value
 
     # Custom Properties
     @property
@@ -687,17 +938,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def deleted(self) -> bool:
-        return self.version_number == -1 or self.other_versions.filter(version_number=-1).exists()
-
-    @property
-    def latest_version(self) -> bool:
-        last_version = Report.objects.filter(
-            report_id=self.report_id,
-            type=self.type,
-            user=self.user
-        ).latest("version_number")
-
-        return self.pk == last_version.pk
+        return self.deleted_at is not None
 
     @property
     def is_spain(self) -> bool:
@@ -755,13 +996,9 @@ class Report(TimeZoneModelMixin, models.Model):
         else:
             return None
 
-    @property
-    def other_versions(self):
-        return Report.objects.filter(
-            report_id=self.report_id,
-            user=self.user,
-            type=self.type
-        ).exclude(pk=self.pk)
+    @cached_property
+    def published(self) -> bool:
+        return hasattr(self, 'map_aux_report')
 
     @property
     def response_html(self) -> str:
@@ -1025,124 +1262,27 @@ class Report(TimeZoneModelMixin, models.Model):
     # Custom properties related to breeding sites
     @property
     def basins(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer.startswith("Basin")
-                    or this_response.answer.startswith("Basses")
-                    or this_response.answer.startswith("Balsa")
-                    or this_response.answer.startswith("Bassa")
-                    or this_response.answer.startswith("Small basin")
-                    or "balsas" in this_response.answer
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BASIN
 
     @property
     def buckets(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer.startswith("Bucket")
-                    or this_response.answer.startswith("Small container")
-                    or this_response.answer.startswith("Bidones")
-                    or this_response.answer.startswith("Recipiente")
-                    or this_response.answer.startswith("Recipient")
-                    or this_response.answer.startswith("Bidons")
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BUCKET
 
     @property
     def embornals(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if this_response.question_id == 12 and this_response.answer_id == 121:
-                return True
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-                or this_response.question.startswith("Is this a storm drain")
-                or this_response.question.startswith("\xc9s un embornal")
-                or this_response.question.startswith("\xbfEs un imbornal")
-            ):
-                result = (
-                    this_response.answer.startswith("Embornal")
-                    or this_response.answer.startswith("Sumidero")
-                    or this_response.answer.startswith("Storm")
-                    or this_response.answer.startswith("Yes")
-                    or this_response.answer.startswith("S\xed")
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_STORM_DRAIN
 
     @property
     def fonts(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer.startswith("Font")
-                    or this_response.answer.startswith("Fountain")
-                    or this_response.answer.startswith("Fuente")
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_FOUNTAIN
 
     @property
     def other(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer == "Other"
-                    or this_response.answer == "Altres"
-                    or this_response.answer == "Otros"
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_OTHER
 
     @property
     def wells(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer == "Well"
-                    or this_response.answer == "Pozos"
-                    or this_response.answer == "Pous"
-                )
-        return result
-
-    @property
-    def site_type(self) -> str:
-        result = ""
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = this_response.answer
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_WELL
 
     @property
     def site_cat(self) -> int:
@@ -1158,19 +1298,6 @@ class Report(TimeZoneModelMixin, models.Model):
             return 4
         else:
             return 5
-
-    @property
-    def site_type_trans(self) -> str:
-        if self.embornals:
-            return _("storm-drain")
-        if self.fonts:
-            return _("Fountain")
-        if self.basins:
-            return _("Basin")
-        if self.wells:
-            return _("Well")
-        if self.other:
-            return _("Other")
 
     # Other properties
     @property
@@ -1475,6 +1602,11 @@ class Report(TimeZoneModelMixin, models.Model):
         return p
 
     def save(self, *args, **kwargs):
+        # Forcing self.version_number to be either 0 or -1
+        self.version_number = 0 if self.version_number >= 0 else -1
+
+        self.version_time = self.version_time or self.creation_time
+
         # Recreate the Point (just in case lat/lon has changed)
         _old_point = self.point
         self.point = self._get_point()
@@ -1502,19 +1634,55 @@ class Report(TimeZoneModelMixin, models.Model):
             if nuts2:
                 self.nuts_2 = nuts2.nuts_id
 
+        bite_fields = [
+            self.head_bite_count,
+            self.left_arm_bite_count,
+            self.right_arm_bite_count,
+            self.chest_bite_count,
+            self.left_leg_bite_count,
+            self.right_leg_bite_count
+        ]
+        self.bite_count = sum(
+            f for f in bite_fields if f is not None
+        ) if self.type == self.TYPE_BITE else None
+
         if self.app_language:
             self.user.language_iso2 = self.app_language
             self.user.save(update_fields=['language_iso2'])
 
         super(Report, self).save(*args, **kwargs)
 
+    def soft_delete(self):
+        self.deleted_at = timezone.now()
+        self.version_number = -1
+        self.save_without_historical_record()
+
+    def restore(self):
+        self.deleted_at = None
+        self.version_number = 0
+        self.save_without_historical_record()
+
     # Meta and String
     class Meta:
-        pass
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(
+                    version_number=0,
+                    deleted_at__isnull=True
+                ) | models.Q(
+                    version_number=-1,
+                    deleted_at__isnull=False
+                ),
+                name='version_number_constraint'
+            )
+        ]
+        indexes = [
+            # NOTE: Improve performance of .views.ReportViewSet
+            models.Index(fields=["user", "type", "report_id"])
+        ]
 
     def __unicode__(self):
         return self.pk
-
 
 
     def get_photo_html_for_report_validation_completed(self):
@@ -1524,10 +1692,6 @@ class Report(TimeZoneModelMixin, models.Model):
             border_style = "3px solid green" if best_photo else "1px solid #333333"
             result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_() + '</div><div>' + get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
         return result
-
-    def get_which_is_latest(self):
-        all_versions = Report.objects.filter(report_id=self.report_id).order_by('version_number')
-        return all_versions.reverse()[0].pk
 
     def get_crowdcrafting_score(self):
         if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
@@ -2320,9 +2484,8 @@ def get_user_reports_count(user):
             user_uuids.append(p.user_UUID)
     else:
         user_uuids.append(user.user_UUID)
-    reports = Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type=Report.TYPE_BITE)
-    last_versions = filter(lambda x: not x.deleted and x.latest_version, reports)
-    return len(list(last_versions))
+
+    return Report.objects.filter(user__pk__in=user_uuids).exclude(type=Report.TYPE_BITE).non_deleted().count()
 
 
 def package_number_allows_notification(report):
@@ -2404,6 +2567,23 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             notification.send_to_user(user=report.user)
 
 @receiver(post_save, sender=Report)
+def subscribe_user_to_country_topic(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    topic_code_candidates = [instance.country, instance.nuts_2, instance.nuts_3]
+    for topic_code in filter(lambda x: x is not None, topic_code_candidates):
+        try:
+            topic = NotificationTopic.objects.get(topic_code=topic_code)
+        except NotificationTopic.DoesNotExist:
+            pass
+        else:
+            UserSubscription.objects.get_or_create(
+                user=instance.user,
+                topic=topic
+            )
+
+@receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
     if created:
@@ -2434,14 +2614,6 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                     if instance.creation_time.month >= conf.SEASON_START_MONTH and instance.creation_time.day >= conf.SEASON_START_DAY:
                         grant_first_of_season(instance, super_movelab)
                         issue_notification(instance, START_OF_SEASON, get_xp_value_of_category(START_OF_SEASON), conf.HOST_NAME)
-                else: #it already has been awarded. If this report is last version of originally awarded, transfer award to last version
-                    if instance.latest_version: #this report is the last version
-                        version_of_previous = instance.version_number - 1
-                        if awards.filter(report__version_number=version_of_previous).exists(): #was previous version awarded with first of season?
-                            #if yes, transfer award to current version
-                            award = awards.filter(report__version_number=version_of_previous).first()
-                            award.report = instance
-                            award.save()
 
                 report_day = instance.creation_time.day
                 report_month = instance.creation_time.month
@@ -2492,6 +2664,120 @@ class ReportResponse(models.Model):
     answer_id = models.IntegerField(blank=True, null=True, help_text='Numeric identifier of the answer.')
     answer = models.CharField(max_length=1000, help_text='Answer that user selected.')
     answer_value = models.CharField(max_length=1000, blank=True, null=True, help_text='The value right now can contain 2 things: an integer representing the number or bites, or either a WKT representation of a point for a location answer. In all other cases, it will be blank')
+
+    def _update_report_value(self, commit: bool = True):
+        report_obj = self.report
+
+        # Convert the original state of the object to a dictionary
+        original_report_state = model_to_dict(report_obj)
+
+        if self.question_id == 2:
+            if self.answer_id == 21:
+                report_obj.head_bite_count = int(self.answer_value)
+            elif self.answer_id == 22:
+                report_obj.left_arm_bite_count = int(self.answer_value)
+            elif self.answer_id == 23:
+                report_obj.right_arm_bite_count = int(self.answer_value)
+            elif self.answer_id == 24:
+                report_obj.chest_bite_count = int(self.answer_value)
+            elif self.answer_id == 25:
+                report_obj.left_leg_bite_count = int(self.answer_value)
+            elif self.answer_id == 26:
+                report_obj.right_leg_bite_count = int(self.answer_value)
+        elif self.question_id == 3:
+            if self.answer_id == 31:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_MORNING
+            elif self.answer_id == 32:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_MIDDAY
+            elif self.answer_id == 33:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_AFTERNOON
+            elif self.answer_id == 34:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_NIGHT
+        elif self.question_id == 4:
+            if self.answer_id == 41:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_VEHICLE
+            elif self.answer_id == 42:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_INDOORS
+            elif self.answer_id == 43:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_OUTDOORS
+            elif self.answer_id == 44:
+                report_obj.event_environment = None
+        elif self.question_id == 5:
+            if self.answer_id == 51:
+                report_obj.event_moment = Report.EVENT_MOMENT_NOW
+        elif self.question == 'question_6':
+            # NOTE: using question since question_id '6' not present in DB.
+            if self.answer_id == 61:
+                report_obj.user_perceived_mosquito_specie = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 62:
+                report_obj.user_perceived_mosquito_specie = Report.SPECIE_CULEX
+            elif self.answer_id == 63:
+                report_obj.user_perceived_mosquito_specie = Report.SPECIE_OTHER
+            elif self.answer_id == 64:
+                report_obj.user_perceived_mosquito_specie = None
+        elif self.question_id == 7 or self.question == 'question_7':
+            # Thorax
+            if self.answer_id == 711:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 712:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_AEGYPTI
+            elif self.answer_id == 713:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_JAPONICUS
+            elif self.answer_id == 714:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_KOREICUS
+
+            # Abdomen
+            if self.answer_id == 721:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 722:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_AEGYPTI
+            elif self.answer_id == 723:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_JAPONICUS
+            elif self.answer_id == 724:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_KOREICUS
+
+            # Legs
+            if self.answer_id == 731:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 732:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_AEGYPTI
+            elif self.answer_id == 733:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_JAPONICUS
+            elif self.answer_id == 734:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_KOREICUS
+        elif self.question_id == 10:
+            if self.answer_id == 81 or self.answer_id == 102:
+                report_obj.breeding_site_has_water = False
+            elif self.answer_id == 101:
+                report_obj.breeding_site_has_water = True
+        elif self.question_id == 12:
+            if self.answer_id == 121:
+                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            elif self.answer_id == 122:
+                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_OTHER
+        elif self.question_id == 13:
+            if self.answer_id == 131:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_VEHICLE
+            elif self.answer_id == 132:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_INDOORS
+            elif self.answer_id == 133:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_OUTDOORS
+        elif self.question_id == 17:
+            if self.answer_id == 81 or self.answer_id == 102:
+                self.breeding_site_has_water = False
+            elif self.answer_id == 101:
+                self.breeding_site_has_water = True
+
+        # Check if any field has changed
+        if commit and any(getattr(report_obj, field) != original_report_state[field] for field in original_report_state.keys()):
+            # Save the object only if there are changes, not to trigger auto_now fields.
+            report_obj.save()
+
+    def save(self, skip_report_update: bool = False, *args, **kwargs):
+        if not skip_report_update:
+            self._update_report_value()
+
+        super().save(*args, **kwargs)
 
     def __unicode__(self):
         return str(self.id)
@@ -2653,9 +2939,8 @@ class Fix(TimeZoneModelMixin, models.Model):
                                                        'as ECMA '
                                                        '262 date time string (e.g. "2014-05-17T12:34:56'
                                                        '.123+01:00".')
-    masked_lon = models.FloatField(help_text='Longitude rounded down to nearest 0.5 decimal degree (floor(lon/.5)*.5)'
-                                             '.')
-    masked_lat = models.FloatField(help_text='Latitude rounded down to nearest 0.5 decimal degree (floor(lat/.5)*.5).')
+    masked_lon = models.FloatField(help_text='Longitude rounded down to nearest 0.025 decimal degree.')
+    masked_lat = models.FloatField(help_text='Latitude rounded down to nearest 0.025 decimal degree.')
     mask_size = models.FloatField(null=True, blank=True, help_text='size of location mask used')
     power = models.FloatField(null=True, blank=True, help_text='Power level of phone at time fix recorded, '
                                                                'expressed as proportion of full charge. Range: 0-1.')
@@ -2672,6 +2957,14 @@ class Fix(TimeZoneModelMixin, models.Model):
 
     def _get_longitude_for_timezone(self):
         return self.masked_lon
+    
+    def save(self, *args, **kwargs):
+        # Force masking of lat/lon
+        grid_size = 0.025
+        self.masked_lon = round(floor(self.masked_lon / grid_size) * grid_size, 5)
+        self.masked_lat = round(floor(self.masked_lat / grid_size) * grid_size, 5)
+
+        super().save(*args, **kwargs)
 
 
     class Meta:
@@ -2776,7 +3069,7 @@ class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
     # The field 'user' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
     # and in all other cases is given a default value (null user 00000000-0000-0000-0000-000000000000)
-    user = models.ForeignKey(TigaUser, default='00000000-0000-0000-0000-000000000000', related_name="user_notifications", help_text='User to which the notification will be sent', on_delete=models.CASCADE, )
+    user = models.ForeignKey(TigaUser, null=True, blank=True, on_delete=models.CASCADE)
     expert = models.ForeignKey(User, null=True, blank=True, related_name="expert_notifications", help_text='Expert sending the notification', on_delete=models.SET_NULL, )
     date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
@@ -2790,6 +3083,7 @@ class Notification(models.Model):
     acknowledged = models.BooleanField(default=False, help_text='This is set to True through the public API, when the user signals that the message has been received')
     # map_notification = models.BooleanField(default=False, help_text='Flag field to help discriminate notifications which have been issued from the map')
 
+    objects = NotificationManager()
 
     def send_to_topic(self, topic: 'NotificationTopic', push: bool = True, language_code: Optional[str] = None) -> Optional[str]:
         obj, _ = SentNotification.objects.get_or_create(
@@ -2808,6 +3102,19 @@ class Notification(models.Model):
 
         if push:
             return obj.send_push(language_code=user.language_iso2)
+
+    def mark_as_seen_for_user(self, user: TigaUser) -> None:
+        _ = AcknowledgedNotification.objects.get_or_create(
+            user=user,
+            notification=self
+        )
+
+    def mark_as_unseen_for_user(self, user: TigaUser) -> None:
+        _ = AcknowledgedNotification.objects.filter(
+            user=user,
+            notification=self
+        ).delete()
+
 
 class AcknowledgedNotification(models.Model):
     user = models.ForeignKey(TigaUser, related_name="user_acknowledgements",help_text='User which has acknowledged the notification', on_delete=models.CASCADE, )
@@ -2829,6 +3136,7 @@ class NotificationTopic(models.Model):
 
 
 class UserSubscription(models.Model):
+    # TODO: perform subscription in firebase
     user = models.ForeignKey(TigaUser, related_name="user_subscriptions", help_text='User which is subscribed to the topic', on_delete=models.CASCADE, )
     topic = models.ForeignKey(NotificationTopic, related_name="topic_users", help_text='Topics to which the user is subscribed', on_delete=models.CASCADE, )
 
@@ -2867,61 +3175,37 @@ class SentNotification(models.Model):
     #you either send a notification to a user, or to a group of users via topics
     notification = models.ForeignKey(Notification, related_name="notification_sendings", help_text='The notification which has been sent', on_delete=models.CASCADE, )
 
-    def send_push(self, language_code: str = None):
+    def _get_push_data_message(self):
+        return {
+            "notification_id": self.notification.pk,
+            "data": {
+                "notification": {"id": self.notification.pk},
+                "notification_id": self.notification.pk
+            }
+        }
 
-        if settings.DISABLE_PUSH:
+    def send_push_notification(self, locale: str = None):
+        push_service = apps.get_app_config(app_label=TigaserverApp.label).push_service
+        if not push_service:
             return
 
-        # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
-        # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
-        message_payload = dict(
-            data={
-                "id": str(self.notification.pk)
-            },
-            notification=FirebaseNotification(
-                title=self.notification.notification_content.get_title(language_code=language_code),
-                body=self.notification.notification_content.get_body(language_code=language_code),
-                image=self.notification.notification_content.body_image
-            ),
-            android=AndroidConfig(
-                notification=AndroidNotification(
-                    click_action='FLUTTER_NOTIFICATION_CLICK'
-                )
+        if self.sent_to_user and self.sent_to_user.device_token:
+            push_service.notify_single_device(
+                registration_id=self.sent_to_user.device_token,
+                message_title=self.notification.notification_content.get_title_locale_safe(locale=locale),
+                message_body=None,
+                data_message=self._get_push_data_message(),
+                dry_run=settings.DRY_RUN_PUSH
             )
-        )
-        message_id = None
+        
         if self.sent_to_topic:
-            try:
-                message_id = firebase_admin.messaging.send(
-                    message=Message(
-                        **message_payload,
-                        topic=self.sent_to_topic.topic_code
-                    ),
-                    dry_run=settings.DRY_RUN_PUSH,
-                )
-            except firebase_admin._messaging_utils.UnregisteredError:
-                logger_notification.exception(f"Topic {self.sent_to_topic.topic_code} not valid")
-            except (FirebaseError, ValueError) as e:
-                logger_notification.exception(str(e))
-            except Exception as e:
-                logger_notification.exception(str(e))
-        elif self.sent_to_user and self.sent_to_user.device_token:
-            try:
-                message_id = firebase_admin.messaging.send(
-                    message=Message(
-                        **message_payload,
-                        token=self.sent_to_user.device_token
-                    ),
-                    dry_run=settings.DRY_RUN_PUSH,
-                )
-            except firebase_admin._messaging_utils.UnregisteredError:
-                logger_notification.exception(f"Device token {self.sent_to_user.device_token} not valid")
-            except (FirebaseError, ValueError) as e:
-                logger_notification.exception(str(e))
-            except Exception as e:
-                logger_notification.exception(str(e))
-
-        return message_id
+            push_service.notify_topic_subscribers(
+                topic_name=self.sent_to_topic.topic_code,
+                message_title=self.notification.notification_content.get_title_locale_safe(locale=locale),
+                message_body=None,
+                data_message=self._get_push_data_message(),
+                dry_run=settings.DRY_RUN_PUSH
+            )
 
 
 class AwardCategory(models.Model):

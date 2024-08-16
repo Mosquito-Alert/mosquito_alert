@@ -7,7 +7,10 @@ import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
 from django.utils.html import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
+from simple_history.admin import SimpleHistoryAdmin
+from simple_history.utils import get_history_model_for_model
 
 def export_full_csv(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
@@ -106,42 +109,165 @@ class PhotoInline(admin.StackedInline):
     readonly_fields = ('photo', 'small_image_', 'report')
 
 
-class ReportAdmin(admin.ModelAdmin):
-    list_display = ('report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
-                    'package_version', 'os', 'n_photos', 'map_link', 'movelab_score', 'crowd_score')
-    inlines = [ReportResponseInline, PhotoInline]
-    ordering = ('creation_time', 'report_id', 'version_number')
-    readonly_fields = ('deleted', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', 'creation_time', 'version_time', 'server_upload_time', 'updated_at', 'datetime_fix_offset', 'phone_upload_time', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'map_link', 'movelab_score', 'crowd_score')
-    fields = ('hide', 'deleted', 'map_link', 'version_UUID', 'user', 'report_id', 'version_number', 'other_versions_of_this_report', ('creation_time', 'version_time', 'datetime_fix_offset'), ('server_upload_time','phone_upload_time'), 'updated_at', 'type', 'mission', 'location_choice', 'current_location_lon', 'current_location_lat', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'n_photos', 'lon', 'lat', 'tigaprob', 'tigaprob_text', 'site_type', 'site_type_trans', 'embornals', 'fonts', 'basins', 'buckets', 'wells', 'other', 'masked_lat', 'masked_lon', 'movelab_score', 'crowd_score')
+class ReportAdmin(SimpleHistoryAdmin):
+    list_display = (
+        'report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
+        'package_version', 'os', 'n_photos'
+    )
     list_filter = ['os', 'type', 'mission', 'package_name', 'package_version']
+
+    inlines = [ReportResponseInline, PhotoInline]
     actions = [export_full_csv, export_full_csv_sc]
+
+    readonly_fields = [
+        "deleted",
+        "deleted_at",
+        "report_id",
+        "version_number",
+        "type",
+        "user",
+        "mission",
+        "session",
+        "server_upload_time",
+        "updated_at",
+        "version_time",
+        "phone_upload_time",
+        "creation_time",
+    ]
+
+    fieldsets = [
+        (
+            _('General info'),
+            {
+                "fields": [
+                    ("report_id", "version_number"),
+                    ("hide", "deleted", "deleted_at"),
+                    "type",
+                    "user",
+                    ("mission","session"),
+                    ("server_upload_time", "updated_at"),
+                    ("version_time", "datetime_fix_offset"),
+                    ("creation_time", "phone_upload_time")
+                ]
+            }
+        ),
+        (
+            _("Location information"),
+            {
+                "fields": [
+                    ("country", "nuts_2", "nuts_3"),
+                    "location_choice",
+                    "point"
+                ]
+            }
+        ),
+        (
+            _("Other"),
+            {
+                "fields": [
+                    ("package_name", "package_version", "app_language"),
+                    ("device_manufacturer", "device_model"),
+                    ("os", "os_version", "os_language"),
+                    "note"
+                ],
+                "classes": ["collapse",]
+            }
+        )
+    ]
+
+    def get_readonly_fields(self, request, obj=None):
+        # Only allow to edit 'hide' field.
+        result = super().get_readonly_fields(request, obj)
+
+        readonly_fields = [field.name for field in self.model._meta.get_fields()]
+        allow_edit_fields = ['hide',]
+
+        for field_name in readonly_fields:
+            if not field_name in allow_edit_fields:
+                result.append(field_name)
+
+        return result
+
+    def get_fieldsets(self, request, obj = None):
+        result = super().get_fieldsets(request, obj)
+
+        if not obj:
+            return result
+
+        extra_fieldsets = []
+        if obj.type == Report.TYPE_ADULT:
+            extra_fieldsets.append(
+                (
+                    _("Classification"),
+                    {
+                        "fields": [
+                            "ia_filter_1", "ia_filter_2"
+                        ]
+                    }
+                )
+            )
+            extra_fieldsets.append(
+                (
+                    _("Specific information"),
+                    {
+                        "fields": [
+                            ("event_environment", "event_moment"),
+                            "user_perceived_mosquito_specie",
+                            ("user_perceived_mosquito_thorax", "user_perceived_mosquito_abdomen", "user_perceived_mosquito_legs")
+                        ]
+                    }
+                )
+            )
+        elif obj.type == Report.TYPE_BITE:
+            extra_fieldsets.append(
+                (
+                    _("Specific information"),
+                    {
+                        "fields": [
+                            ("event_environment", "event_moment"),
+                            "bite_count",
+                            ("head_bite_count", "left_arm_bite_count", "right_arm_bite_count", "chest_bite_count", "left_leg_bite_count", "right_leg_bite_count")
+                        ]
+                    }
+                )
+            )
+        elif obj.type == Report.TYPE_SITE:
+            extra_fieldsets.append(
+                (
+                    _("Specific information"),
+                    {
+                        "fields": [
+                            "breeding_site_type",
+                            "breeding_site_has_water",
+                            "breeding_site_in_public_area",
+                            "breeding_site_has_near_mosquitoes",
+                            "breeding_site_has_larvae"
+                        ]
+                    }
+                )
+            )
+
+        return result + extra_fieldsets
+
+    def render_history_view(self, request, template, context, **kwargs):
+        user_model = get_history_model_for_model(Report)._meta.get_field('history_user').related_model
+        context['admin_user_view'] = "admin:%s_%s_change" % (
+            user_model._meta.app_label,
+            user_model._meta.model_name
+        )
+
+        return super().render_history_view(
+            request=request,
+            template=template,
+            context=context,
+            **kwargs
+        )
 
     def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):
         return False
-
-    def other_versions_of_this_report(self, obj):
-        result = []
-        for this_version in obj.other_versions:
-            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
-                this_version.version_UUID,
-                this_version.version_number,
-            )
-        return result
-    other_versions_of_this_report.allow_tags = True
-
-    def movelab_score(self, obj):
-        return obj.movelab_score
-
-    def crowd_score(self, obj):
-        return obj.crowd_score
-
-    def map_link(self, obj):
-        return '<a href="/single_report_map/%s/">Show map</a>' % obj.version_UUID
-    map_link.allow_tags = True
-
 
 def export_csv_photo(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
@@ -188,7 +314,7 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
         smart_str(u"uuid"),
     ])
     for obj in queryset:
-        if not obj.report.deleted and not obj.report.hide and not obj.hide and obj.report.latest_version:
+        if not obj.report.deleted and not obj.report.hide and not obj.hide:
             writer.writerow([
                 smart_str(obj.id),
                 smart_str(obj.uuid),
@@ -214,8 +340,8 @@ show_photos.short_description = u"Unhide selected photos"
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ('id', 'date', 'deleted', 'hide', 'small_image_', 'user', 'date', 'report_link', 'map_link')
     list_filter = ['hide', 'report__package_name', 'report__package_version']
-    readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
-    fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
+    readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'map_link')
+    fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'map_link', 'small_image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting, hide_photos, show_photos]
     list_max_show_all = 6000
     list_per_page = 400
@@ -229,16 +355,6 @@ class PhotoAdmin(admin.ModelAdmin):
     def report_link(self, obj):
         return mark_safe('<a href="/admin/tigaserver_app/report/%s" target="_blank">%s</a>' % (obj.report.version_UUID, obj.report.version_UUID))
     report_link.allow_tags = True
-
-    def other_report_versions(self, obj):
-        result = []
-        for this_version in obj.report.other_versions:
-            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
-                this_version.version_UUID,
-                this_version.version_number,
-            )
-        return result
-    other_report_versions.allow_tags = True
 
     def map_link(self, obj):
         return mark_safe('<a href="/single_report_map/%s/" target="_blank">Show map</a>' % obj.report.version_UUID)
