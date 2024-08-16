@@ -17,10 +17,19 @@ marks:
 
 
 stages:
+  - name: Sign up without password must fail
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        device_token: !force_format_include '{device_token}'
+      method: POST
+    response:
+      status_code: 400
   - name: Sign up
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
+        password: "tmppassword123"
         device_token: !force_format_include '{device_token}'
       method: POST
     response:

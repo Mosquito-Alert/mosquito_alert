@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 
 from rest_framework import serializers
@@ -547,4 +548,20 @@ class UserSerializer(serializers.ModelSerializer):
             "device_token": {"write_only": True},
             "score": {"source": "score_v2"}
         }
+
+class CreateUserSerializer(UserSerializer):
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+
+    def create(self, validated_data):
+        raw_password = validated_data.pop("password")
+
+        instance = super().create(validated_data)
+
+        instance.set_password(raw_password)
+        instance.save()
+
+        return instance
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ("password",)
 

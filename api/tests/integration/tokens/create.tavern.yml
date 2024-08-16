@@ -16,7 +16,7 @@ stages:
       method: POST
       json:
         uuid: "{user_uuid}"
-        device_token: "{user_device_token:s}"
+        password: "{user_password:s}"
     response:
       status_code: 200
       verify_response_with: &verify_jwt_token
