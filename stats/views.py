@@ -1,12 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.db import connection
-from matplotlib.pyplot import switch_backend
 
 from tigaserver_app.models import *
 from tigacrafting.models import UserStat
 from datetime import date, timedelta, datetime
 import time
-import pytz
 from collections import Counter
 from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -21,100 +19,123 @@ from tigaserver_project import settings
 import json
 import datetime
 from django.utils import timezone
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import math
 from django.utils import translation
 
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2, get_ranking_data, compute_user_score_in_xp_v2_fast
+from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
-from tigacrafting.report_queues import get_crisis_report_available_reports, get_unassigned_available_reports, get_progress_available_reports, get_ns_locked_reports
+from tigacrafting.report_queues import get_unassigned_available_reports, get_progress_available_reports, get_ns_locked_reports
 from tigacrafting.views import get_blocked_reports_by_country
-from tigacrafting.report_queues import filter_reports as queue_filter
 from django.db.models import Sum
-
+from django.db.models.functions import Extract, Trunc
 
 @xframe_options_exempt
-@cache_page(60 * 15)
+# @cache_page(60 * 15)
 def show_usage(request):
-    real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
-    real_reports = Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
-    tz = get_localzone()
-    ref_date = datetime.datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
-    end_date = tz.localize(datetime.datetime.now())
-    users = []
-    site_reports = []
-    adult_reports = []
-    while ref_date <= end_date:
-        site_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': real_reports.filter(type='site', creation_time__lte=ref_date).count()})
-        adult_reports.append({'date': time.mktime(ref_date.timetuple()), 'n': real_reports.filter(type='adult', creation_time__lte=ref_date).count()})
-        users.append({'date': (time.mktime(ref_date.timetuple())), 'n': real_tigausers.filter(registration_time__lte=ref_date).count()})
-        ref_date += timedelta(hours=168)
-    # now set final day as current time
-    site_reports.append({'date': time.mktime(end_date.timetuple()), 'n': real_reports.filter(type='site', creation_time__lte=ref_date).count()})
-    adult_reports.append({'date': time.mktime(end_date.timetuple()), 'n': real_reports.filter(type='adult', creation_time__lte=ref_date).count()})
-    users.append({'date': time.mktime(end_date.timetuple()), 'n': real_tigausers.filter(registration_time__lte=ref_date).count()})
-    context = {'users': users, 'site_reports': site_reports, 'adult_reports': adult_reports}
-    return render(request, 'stats/chart.html', context)
+    def get_cumsum(qs, datetime_fieldname: str, trunc_by: str) -> dict:
+        qs = qs.annotate(
+            week_epoch=Extract(
+                Trunc(datetime_fieldname, kind=trunc_by),
+                'epoch'
+            )
+        ).values('week_epoch').annotate(
+            n=Count(1)
+        ).order_by('week_epoch')
 
-def get_most_recently_validated_report(slug):
-    completed_annot = ExpertReportAnnotation.objects.filter(validation_complete=True).filter(user__username=slug).extra(order_by=['-last_modified'])
-    if len(completed_annot) > 0:
-        latest_uncomplete_annotation = completed_annot.first()
-        return latest_uncomplete_annotation.created
-    return None
+        cumsum = 0
+        result = []
+        for obj in qs.iterator():
+            cumsum += obj['n']
+            result.append({
+                'date': obj['week_epoch'],
+                'n': cumsum
+            })
+        return result
+
+    context = {
+        'users': get_cumsum(
+            qs= TigaUser.objects,
+            datetime_fieldname='registration_time',
+            trunc_by='week'
+        ),
+        'site_reports': get_cumsum(
+            qs=Report.objects.filter(type=Report.TYPE_SITE),
+            datetime_fieldname='server_upload_time',
+            trunc_by='week'
+        ),
+        'adult_reports': get_cumsum(
+            qs=Report.objects.filter(type=Report.TYPE_ADULT),
+            datetime_fieldname='server_upload_time',
+            trunc_by='week'
+        )
+    }
+    return render(request, 'stats/chart.html', context)
 
 @api_view(['GET'])
 def workload_pending_per_user(request):
     if request.method == 'GET':
         user_slug = request.query_params.get('user_slug', -1)
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=user_slug)
-        current_pending = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report__type='adult')
+        user = get_object_or_404(User, username=user_slug)
+
+        if not hasattr(user, 'userstat'):
+            return
+
         pending_detail = []
-        for ano in current_pending:
-            pending_detail.append({ 'report_id': ano.report_id, 'created': ano.report.creation_time.strftime('%d/%m/%Y - %H:%M:%S') })
-        last_activity = get_most_recently_validated_report(user_slug)
-        if last_activity is not None:
-            pending = { 'current_pending_n' : current_pending.count(), 'current_pending': pending_detail, 'last_activity': last_activity.strftime('%d/%m/%Y') }
-        else:
-            pending = {'current_pending_n': current_pending.count(), 'current_pending': pending_detail, 'last_activity': 'Never'}
+        for ano in user.userstat.pending_annotations.select_related('report').iterator():
+            pending_detail.append(
+                {
+                    'report_id': ano.report_id, 
+                    'created': ano.report.creation_time.strftime('%d/%m/%Y - %H:%M:%S')
+                }
+            )
+
+        last_activity = user.userstat.completed_annotations.order_by('last_modified').last()
+
+        pending = {
+            'current_pending_n': user.userstat.num_pending_annotations,
+            'current_pending': pending_detail,
+            'last_activity': last_activity.last_modified.strftime('%d/%m/%Y') if last_activity else 'Never'
+        }
         return Response(pending)
 
 @api_view(['GET'])
 def workload_stats_per_user(request):
     if request.method == 'GET':
         user_slug = request.query_params.get('user_slug', -1)
-        tz = get_localzone()
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=user_slug)
-        single_user_work_output = []
-        annotated_reports = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=True)
-        ref_date = datetime.datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
-        end_date = tz.localize(datetime.datetime.now())
-        while ref_date <= end_date:
-            single_user_work_output.append([time.mktime(ref_date.timetuple())*1000, annotated_reports.filter(last_modified__year=ref_date.year).filter(last_modified__month=ref_date.month).filter(last_modified__day=ref_date.day).count()])
-            ref_date += timedelta(hours=24)
-        return Response(single_user_work_output)
+        user = get_object_or_404(User, username=user_slug)
+
+        if not hasattr(user, 'userstat'):
+            return
+
+        qs = user.userstat.completed_annotations.annotate(
+            week_epoch=Trunc('last_modified', kind='week')
+        ).values('week_epoch').annotate(
+            n=Count(1)
+        ).order_by('week_epoch')
+
+        # NOTE: convert to miliseconds (epoch)
+        return Response([(r['week_epoch'].timestamp()*1000, r['n']) for r in qs.iterator()])
 
 
 @api_view(['GET'])
 def workload_daily_report_input(request):
     if request.method == 'GET':
-        tz = get_localzone()
-        daily_report_input = []
-        ref_date = datetime.datetime(2014, 1, 1, 0, 0, 0, tzinfo=tz)
-        end_date = tz.localize(datetime.datetime.now())
-        reports = Report.objects.all()
-        while ref_date <= end_date:
-            daily_report_input.append([time.mktime(ref_date.timetuple())*1000,reports.filter(phone_upload_time__year=ref_date.year).filter(phone_upload_time__month=ref_date.month).filter(phone_upload_time__day=ref_date.day).count()])
-            ref_date += timedelta(hours=24)
-        return Response(daily_report_input)
+
+        qs = Report.objects.annotate(
+            day_epoch=Trunc('server_upload_time', kind='day')
+        ).values('day_epoch').annotate(
+            n=Count(1)
+        ).order_by('day_epoch')
+
+        # NOTE: convert to miliseconds (epoch)
+        return Response([(r['day_epoch'].timestamp()*1000, r['n']) for r in qs.iterator()])
 
 
 def user_ids_string_to_int_array(user_ids_str):
@@ -146,34 +167,12 @@ def workload_available_reports(request):
         data = { 'current_pending_n' : len(current_pending), 'current_progress_n' : len(current_progress), 'overall_pending': overall_pending.count()}
         return Response(data)
 
-
 def compute_speedmeter_params():
-    current_date = timezone.now()
-    date_7_days_ago = current_date - datetime.timedelta(days=7)
-    reports_last_seven = Report.objects.filter(creation_time__gte=date_7_days_ago).filter(
-        creation_time__lte=current_date)
+    count = Report.objects.filter(
+        server_upload_time__date__gte=timezone.now() - timedelta(days=7)
+    ).count()
 
-    date_intervals = []
-    days = 7
-    while days >= 0:
-        date_intervals.append(current_date - datetime.timedelta(days=days))
-        days -= 1
-
-    results = []
-    for idx, val in enumerate(date_intervals):
-        if idx + 1 >= len(date_intervals):
-            break
-        r = Report.objects.filter(creation_time__gte=date_intervals[idx]).filter(
-            creation_time__lte=date_intervals[idx + 1])
-        results.append(len(r))
-
-    total = 0
-    for result in results:
-        total = total + result
-    avg = total / len(results)
-
-    data = {'reports_last_seven': len(reports_last_seven), 'avg_last_seven': avg}
-    return data
+    return {'reports_last_seven': count, 'avg_last_seven': count/7}
 
 
 @api_view(['GET'])
@@ -694,8 +693,7 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         except TigaUser.DoesNotExist:
             pass
     seek = request.GET.get('seek', 'f')
-    #ranking = get_ranking_data()
-    #objects = ranking['data']
+
     objects = RankingData.objects.all().order_by('-score_v2')
     last_update = objects.first().last_update
     page_length = 5
@@ -959,8 +957,7 @@ def global_assignments_list(request, country_code=None, status=None):
 def workload_stats(request, country_id=None):
     this_user = request.user
     user_id_filter = settings.USERS_IN_STATS
-    this_user_is_superexpert = this_user.groups.filter(name='superexpert').exists()
-    if this_user_is_superexpert:
+    if this_user.userstat and this_user.userstat.is_superexpert():
         if country_id is None:
             users = User.objects.filter(groups__name='expert').filter(id__in=user_id_filter).order_by('first_name','last_name')
             context = {'users': users, 'load_everything_on_start': True, 'country_name': 'Spain'}

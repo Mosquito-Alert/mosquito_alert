@@ -171,8 +171,7 @@ def get_photo(request):
     if request.method == 'GET':
         user_id = request.query_params.get('user_id', -1)
         #get user reports by user id
-        these_reports = Report.objects.filter(user_id=user_id).values('version_UUID').distinct()
-        these_photos = Photo.objects.filter(report_id__in=these_reports)
+        these_photos = Photo.objects.filter(report__user_id=user_id)
         serializer = PhotoSerializer(these_photos,many=True)
         return Response(serializer.data)
 
