@@ -1,5 +1,6 @@
 from django.contrib import admin
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, UserStat
+from tigaserver_app.models import NutsEurope
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
@@ -70,7 +71,15 @@ class ExpertReportAnnotationAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+class UserStatAdmin(admin.ModelAdmin):
+    search_fields = ('user__username',)
+    ordering = ('user__username',)
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "nuts2_assignation":
+            kwargs["queryset"] = NutsEurope.objects.all().order_by('europecountry__name_engl','name_latn')
+        return super(UserStatAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 admin.site.register(MoveLabAnnotation, MoveLabAnnotationAdmin)
 admin.site.register(ExpertReportAnnotation, ExpertReportAnnotationAdmin)
-admin.site.register(UserStat)
+admin.site.register(UserStat, UserStatAdmin)

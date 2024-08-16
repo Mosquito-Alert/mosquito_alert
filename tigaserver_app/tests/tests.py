@@ -4,7 +4,7 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, SentNotification
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse
 from django.core.management import call_command
 import PIL.Image
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -25,6 +25,7 @@ from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
 import urllib
+import json
 
 '''
 class PictureTestCase(APITestCase):
@@ -782,8 +783,8 @@ class NotificationTestCase(APITestCase):
         n = Notification(expert=self.reritja_user, notification_content=nc)
         n.save()
         # send notif to global topic
-        sn = SentNotification(sent_to_topic=self.global_topic, notification=n)
-        sn.save()
+        n.send_to_topic(topic=self.global_topic, push=False)
+
         # the regular user should see this notification
         some_user = self.regular_user
         self.client.force_authenticate(user=self.reritja_user)
@@ -820,8 +821,7 @@ class NotificationTestCase(APITestCase):
         n.save()
 
         # send notif to regular topic
-        sn = SentNotification(sent_to_topic=self.some_topic, notification=n)
-        sn.save()
+        n.send_to_topic(topic=self.some_topic, push=False)
 
         self.client.force_authenticate(user=self.reritja_user)
         # list notifications for regular user
@@ -886,23 +886,20 @@ class NotificationTestCase(APITestCase):
         n1.save()
 
         # send notif to user
-        sn1 = SentNotification(sent_to_user=some_user, notification=n1)
-        sn1.save()
+        n1.send_to_user(user=some_user, push=False)
 
         # GLOBAL notification
         n3 = Notification(expert=self.reritja_user, notification_content=nc1)
         n3.save()
         # send notif to global topic
-        sn3 = SentNotification(sent_to_topic=self.global_topic, notification=n3)
-        sn3.save()
+        n3.send_to_topic(topic=self.global_topic, push=False)
 
         # SECOND direct  NOTIFICATION
         n2 = Notification(expert=self.reritja_user, notification_content=nc2)
         n2.save()
 
         # send notif to user
-        sn2 = SentNotification(sent_to_user=some_user, notification=n2)
-        sn2.save()
+        n2.send_to_user(user=some_user, push=False)
 
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
@@ -988,3 +985,136 @@ class NotificationTestCase(APITestCase):
         self.assertTrue(my_fav is None, "Favorite object should not exist")
 
         self.client.logout()
+
+class AnnotateCoarseTestCase(APITestCase):
+    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigaprofile.json','tigausers.json','reports.json','auth_group.json']
+    def test_annotate_taken(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        annos = ExpertReportAnnotation.objects.filter(report=r)
+        self.assertTrue(annos.count() == 0, "Report should not have any annotations")
+        # Give report to one expert
+        innie = User.objects.get(pk=150) #innie
+        anno = ExpertReportAnnotation(user=innie, report=r)
+        anno.save()
+        # try to annotate
+        category = Categories.objects.get(pk=2)
+        data = {
+            'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
+            'category_id': str(2)
+        }
+        response = self.client.post('/api/annotate_coarse/', data=data)
+        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
+        # opcode should be -1
+        self.assertEqual(response.data['opcode'], -1, "Opcode should be -1, is {0}".format(response.data['opcode']))
+
+    def test_flip_taken(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        annos = ExpertReportAnnotation.objects.filter(report=r_adult)
+        self.assertTrue(annos.count() == 0, "Report should not have any annotations")
+        # Give report to one expert
+        innie = User.objects.get(pk=150)  # innie
+        anno = ExpertReportAnnotation(user=innie, report=r_adult)
+        anno.save()
+        # try to annotate
+        data = {
+            'report_id': r_adult.version_UUID,
+            'flip_to_type': 'site',
+            'flip_to_subtype': 'storm_drain_water'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
+        # opcode should be -1
+        self.assertEqual(response.data['opcode'], -1, "Opcode should be -1, is {0}".format(response.data['opcode']))
+
+    def test_annotate_coarse(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        annos = ExpertReportAnnotation.objects.filter(report=r)
+        self.assertTrue(annos.count() == 0, "Report should not have any annotations")
+        # Let's change that
+        for c_id in [2, 10, 4, 9]:
+            category = Categories.objects.get(pk=c_id)
+            data = {
+                'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
+                'category_id': str(c_id)
+            }
+            if category.specify_certainty_level:
+                data['validation_value'] = '1'
+            response = self.client.post('/api/annotate_coarse/', data=data)
+            self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+            classification = json.loads(r.get_final_combined_expert_category_euro_struct_json())
+            category_text = classification['category']
+            category_id = int(classification['category_id'])
+            value = classification['value']
+            self.assertEqual(category_text, category.name, "Category should be {0}, is {1}".format(category.name, category_text))
+            self.assertEqual(category_id, category.id, "Category id should be {0}, is {1}".format(category.id, category_id))
+            if category.specify_certainty_level:
+                self.assertEqual(value, data['validation_value'], "Validation value should be {0}, is {1}".format(data['validation_value'], value))
+            else:
+                self.assertEqual(value, None, "Validation value should be None, is {0}".format(value))
+            ExpertReportAnnotation.objects.filter(report=r).delete()
+
+    def test_flip(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        # Check report types
+        self.assertEqual(r_adult.type, 'adult', "Report type should be adult, is {0}".format(r_adult.type))
+        r_site = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
+        self.assertEqual(r_site.type, 'site', "Report type should be site, is {0}".format(r_site.type))
+        # flip adult to storm drain water
+        data = {
+            'report_id': r_adult.version_UUID,
+            'flip_to_type': 'site',
+            'flip_to_subtype': 'storm_drain_water'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        adult_reloaded = Report.objects.get(pk=r_adult.version_UUID)
+        self.assertTrue(adult_reloaded.type=='site',"Report type should have changed to site, is {0}".format(adult_reloaded.type))
+        n_responses = ReportResponse.objects.filter(report=adult_reloaded).count()
+        self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
+        self.assertTrue( adult_reloaded.flipped, "Report should be marked as flipped" )
+        self.assertTrue( adult_reloaded.flipped_to == 'adult#site', "Report should be marked as flipped from adult to site, field has value of {0}".format(adult_reloaded.flipped_to))
+        print(adult_reloaded.flipped_on)
+        try:
+            response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='12',answer_id='121')
+        except:
+            self.assertTrue(False,"Report does not have the storm drain response")
+        try:
+            response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='10',answer_id='101')
+        except:
+            self.assertTrue(False,"Report does not have the water response")
+        # flip site to adult
+        data = {
+            'report_id': r_site.version_UUID,
+            'flip_to_type': 'adult'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        site_reloaded = Report.objects.get(pk=r_site.version_UUID)
+        self.assertTrue(site_reloaded.type == 'adult', "Report type should have changed to adult, is {0}".format(site_reloaded.type))
+        n_responses = ReportResponse.objects.filter(report=site_reloaded).count()
+        self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
+        self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
+        self.assertTrue(site_reloaded.flipped_to == 'site#adult',"Report should be marked as flipped from site to adult, field has value of {0}".format(adult_reloaded.flipped_to))
+        print(site_reloaded.flipped_on)
+
+    def test_hide(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        self.assertTrue(not r_adult.hide, "Report should be visible, is not")
+        data = {
+            'report_id': r_adult.version_UUID,
+            'hide': 'true'
+        }
+        response = self.client.patch('/api/hide_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        r_adult_reloaded = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        self.assertTrue(r_adult_reloaded.hide, "Report should be hidden, is not")

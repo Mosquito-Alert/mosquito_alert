@@ -75,10 +75,10 @@ def geojson(request, z, x, y):
                     ") AS t"
                 ") AS properties "
         "FROM map_aux_reports, municipis_4326 mun where id is not null and mun.gid = map_aux_reports.municipality_id and "
-            "St_Contains(tileBBox({}, {}, {}, 4326), ST_SetSRID(ST_MakePoint(lon, lat), 4326))"
-    ") AS f) AS fc").format(z, x, y)
+            "St_Contains(tileBBox(%s, %s, %s, 4326), ST_SetSRID(ST_MakePoint(lon, lat), 4326))"
+    ") AS f) AS fc")
 
-    cursor.execute(sql)
+    cursor.execute(sql, (float(z), float(x), float(y)))
     dades = cursor.fetchall()[0]
 
     if not os.path.exists("{}/{}/{}/{}".format(tiles_path, z, x, y)):

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Survey</title>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <p>
+        {{ message }}
+    </p>
+    <p>
+        We’re always researching ways to improve and better reach citizen scientists interested in studying and
+        monitoring mosquitoes. We’ve developed this short <a href="{{ survey_link }}" target="_blank">survey</a> and we’d be glad to
+        hear from you. It will take less than 5 minutes and your feedback will help advance scientific knowledge of
+        citizen participation in ecological monitoring projects.
+    </p>
+    <p>Your answers will remain anonymous and will provide insight into our citizen scientists.</p>
+    <p>
+        <a href="{{ survey_link }}" target="_blank">Take the survey in english.</a>
+    </p>
+    <p style="color:red; font-size: 20px">If you have trouble opening the former links, copy and paste the following url in a browser:</p>
+    <p style="color:red; font-size: 20px">{{ survey_link }}</p>
+    <p>The survey is part of a study developed by Mosquito Alert, CEAB-CSIC, and UPF.</p>
+    <p class="centeredImage"><img style="max-width: 100%; height: auto; display: block; margin-left: auto; margin-right: auto;" src="https://www.mosquitoalert.com/wp-content/uploads/2022/06/ceab-upf.png"></p>
+</body>
+</html>

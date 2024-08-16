@@ -18,9 +18,11 @@ CACHES["default"] = {
     "LOCATION": "",
 }
 
-DISABLE_PUSH_IOS = True
-DISABLE_PUSH_ANDROID = True
 DRY_RUN_PUSH = False
+# NOTE: Important to be set to True when running tests.
+DISABLE_PUSH = True
+
+
 DISABLE_ACHIEVEMENT_NOTIFICATIONS = False
 
 HOST_NAME = "localhost"

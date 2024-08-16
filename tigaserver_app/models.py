@@ -1,6 +1,11 @@
+from bs4 import BeautifulSoup
 from collections import Counter
 from datetime import datetime, timedelta
 import json
+import firebase_admin.messaging
+import firebase_admin._messaging_utils
+from firebase_admin.exceptions import FirebaseError
+from firebase_admin.messaging import Message, Notification as FirebaseNotification, AndroidConfig, AndroidNotification
 import logging
 from math import floor
 from PIL import Image
@@ -30,9 +35,8 @@ from common.translation import get_translation_in, get_locale_for_native
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
-from tigacrafting.messaging import send_message_android, send_message_ios
 
-
+from .managers import ReportManager
 from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -218,6 +222,12 @@ class TigaUser(models.Model):
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
+    language_iso2 = models.CharField(
+        max_length=2,
+        default='en',
+        help_text="Language setting of app. 2-digit ISO-639-1 language code.",
+    )
+
     def __unicode__(self):
         return self.user_UUID
 
@@ -239,6 +249,35 @@ class TigaUser(models.Model):
 
     n_reports = property(number_of_reports_uploaded)
     ios_user = property(is_ios)
+
+    def save(self, *args, **kwargs):
+        if self.device_token:
+            # Make sure user is subscribed to global topic
+            try:
+                global_topic = NotificationTopic.objects.get(topic_code='global')
+            except NotificationTopic.DoesNotExist:
+                pass
+            else:
+                UserSubscription.objects.get_or_create(
+                    user=self,
+                    topic=global_topic
+                )
+
+            # Subscribe user to the language selected.
+            try:
+                language_topic = NotificationTopic.objects.get(topic_code=self.language_iso2)
+            except NotificationTopic.DoesNotExist:
+                pass
+            else:
+                UserSubscription.objects.get_or_create(
+                    user=self,
+                    topic=language_topic
+                )
+        else:
+            if hasattr(self, 'user_subscriptions'):
+                for subscription in self.user_subscriptions.all():
+                    subscription.delete()
+        return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "user"
@@ -387,6 +426,14 @@ class EuropeCountry(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.gid, self.name_engl)
 
+class GlobalAssignmentStat(models.Model):
+    country = models.OneToOneField('tigaserver_app.EuropeCountry', primary_key=True, on_delete=models.CASCADE, )
+    unassigned_reports = models.IntegerField(default=0)
+    in_progress_reports = models.IntegerField(default=0)
+    pending_reports = models.IntegerField(default=0)
+    nsqueue_reports = models.IntegerField(default=0)
+    last_update = models.DateTimeField(help_text="Last time stats were updated", null=True, blank=True)
+
 class NutsEurope(models.Model):
     gid = models.AutoField(primary_key=True)
     nuts_id = models.CharField(max_length=5, blank=True, null=True)
@@ -400,6 +447,9 @@ class NutsEurope(models.Model):
     fid = models.CharField(max_length=5, blank=True, null=True)
     geom = models.MultiPolygonField(blank=True, null=True)
     europecountry = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="nuts", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "{0} ({1})".format(self.name_latn, self.europecountry.name_engl)
 
     class Meta:
         managed = True
@@ -629,7 +679,29 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Language setting, within tigatrapp, of device from which this report was submitted. 2-digit ISO-639-1 language code.",
     )
 
+    flipped = models.BooleanField(
+        default=False,
+        help_text="If true, indicates that the report type has been changed in the coarse filter",
+    )
+
+    flipped_on = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of when the report was flipped",
+    )
+
+    flipped_to = models.CharField(
+        max_length=60,
+        null=True,
+        blank=True,
+        help_text="Type it was flipped from, to type it was flipped to, separated by #"
+        '''        
+            For instance, if the report was and adult and flipped to storm_drain_water, this field would have the value adult#storm_drain_water
+        '''
+    )
+
     # Object Manager
+    objects = ReportManager()
 
     # Custom Properties
     @property
@@ -755,7 +827,7 @@ class Report(TimeZoneModelMixin, models.Model):
             total += 1
             if "Y" in response.answer or "S" in response.answer:
                 response_score += 1
-            elif "No" in response.values():
+            elif "No" in response.answer:
                 response_score -= 1
         if total == 0:
             total = 1
@@ -1461,6 +1533,10 @@ class Report(TimeZoneModelMixin, models.Model):
             nuts2 = self._get_nuts_is_in(levl_code=2)
             if nuts2:
                 self.nuts_2 = nuts2.nuts_id
+
+        if self.app_language:
+            self.user.language_iso2 = self.app_language
+            self.user.save(update_fields=['language_iso2'])
 
         super(Report, self).save(*args, **kwargs)
 
@@ -2357,24 +2433,7 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             notification_content.save()
             notification = Notification(report=report, expert=super_movelab, notification_content=notification_content)
             notification.save()
-
-            sent_notification = SentNotification(sent_to_user=report.user, notification=notification)
-            sent_notification.save()
-
-            recipient = report.user
-            if recipient.device_token is not None and recipient.device_token != '':
-                if (recipient.user_UUID.islower()):
-                    try:
-                        #print(recipient.user_UUID)
-                        send_message_android(recipient.device_token, notification_content.title_en, '')
-                    except Exception as e:
-                        logger_notification.exception("Exception sending xp android message")
-                else:
-                    try:
-                        #print(recipient.user_UUID)
-                        send_message_ios(recipient.device_token, notification_content.title_en, '')
-                    except Exception as e:
-                        logger_notification.exception("Exception sending xp ios message")
+            notification.send_to_user(user=report.user)
 
 @receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):
@@ -2707,58 +2766,43 @@ class NotificationContent(models.Model):
     native_locale = models.CharField(default=None, blank=True, null=True, max_length=10, help_text='Locale code for text in body_html_native and title_native')
     notification_label = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='Arbitrary label used to group thematically equal notifications. Optional. ')
 
-    def get_title_locale_safe(self, locale):
-        if self.native_locale is not None and locale.lower().strip() == self.native_locale.lower().strip():
-            return self.title_native
-        else:
-            return self.title_en
-        '''
-        if locale.lower().startswith('es'):
-            return self.title_es
-        elif locale.lower().startswith('ca'):
-            if self.title_ca is None:
-                return self.title_es
-            else:
-                return self.title_ca
-        elif locale.lower().startswith('en'):
-            if self.title_en is None:
-                return self.title_es
-            else:
-                return self.title_en
-        else:
-            return self.title_en
-        '''
-        # elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
-        #     return self.title_en
-        # else:
-        #     return self.title_es
+    @property
+    def body_image(self) -> Optional[str]:
+        soup = BeautifulSoup(self.body_html_en, 'html.parser')
 
-    def get_body_locale_safe(self, locale):
-        if self.native_locale is not None and locale.lower().strip() == self.native_locale.lower().strip():
-            return self.body_html_native
-        else:
-            return self.body_html_en
-        '''
-        if locale.lower().startswith('es'):
-            return self.body_html_es
-        elif locale.lower().startswith('ca'):
-            if self.body_html_ca is None:
-                return self.body_html_es
-            else:
-                return self.body_html_ca
-        elif locale.lower().startswith('en'):
-            if self.body_html_en is None:
-                return self.body_html_es
-            else:
-                return self.body_html_en
-        else:
-            return self.body_html_en
-        '''
-        # elif locale.lower() == 'zh_cn' or locale.lower().startswith('zh'):
-        #     return self.body_html_en
-        # else:
-        #     return self.body_html_es
+        img_tag = soup.find('img')
+        if img_tag:
+            return img_tag.get('src')
 
+        return None
+
+    def _get_localized_field(self, fieldname_prefix: str, language_code: Optional[str] = None) -> str:
+        # Default to english
+        language_code = language_code or 'en'
+
+        if self.native_locale and self.native_locale.lower().strip() == language_code.lower().strip():
+            language_code = 'native'
+
+        # Check if the field for the specified language exists
+        result_en = getattr(self, f"{fieldname_prefix}_en")
+        result_local = None
+        fieldname = f"{fieldname_prefix}_{language_code}"
+        if hasattr(self, fieldname):
+            result_local = getattr(self, fieldname)
+
+        # Return result with fallback to English
+        return result_local or result_en
+
+    def get_title(self, language_code: Optional[str] = None) -> str:
+        return self._get_localized_field(fieldname_prefix='title', language_code=language_code)
+
+    def get_body_html(self, language_code: Optional[str] = None) -> str:
+        return self._get_localized_field(fieldname_prefix='body_html', language_code=language_code)
+
+    def get_body(self, language_code: Optional[str] = None) -> str:
+        body_html = self.get_body_html(language_code=language_code)
+        soup = BeautifulSoup(body_html, 'html.parser')
+        return soup.get_text(separator='\n', strip=True)
 
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
@@ -2778,6 +2822,24 @@ class Notification(models.Model):
     acknowledged = models.BooleanField(default=False, help_text='This is set to True through the public API, when the user signals that the message has been received')
     # map_notification = models.BooleanField(default=False, help_text='Flag field to help discriminate notifications which have been issued from the map')
 
+
+    def send_to_topic(self, topic: 'NotificationTopic', push: bool = True, language_code: Optional[str] = None) -> Optional[str]:
+        obj, _ = SentNotification.objects.get_or_create(
+            sent_to_topic=topic,
+            notification=self
+        )
+
+        if push:
+            return obj.send_push(language_code=language_code)
+
+    def send_to_user(self, user: TigaUser, push: bool = True) -> Optional[str]:
+        obj, _ = SentNotification.objects.get_or_create(
+            sent_to_user=user,
+            notification=self
+        )
+
+        if push:
+            return obj.send_push(language_code=user.language_iso2)
 
 class AcknowledgedNotification(models.Model):
     user = models.ForeignKey(TigaUser, related_name="user_acknowledgements",help_text='User which has acknowledged the notification', on_delete=models.CASCADE, )
@@ -2802,6 +2864,30 @@ class UserSubscription(models.Model):
     user = models.ForeignKey(TigaUser, related_name="user_subscriptions", help_text='User which is subscribed to the topic', on_delete=models.CASCADE, )
     topic = models.ForeignKey(NotificationTopic, related_name="topic_users", help_text='Topics to which the user is subscribed', on_delete=models.CASCADE, )
 
+    def save(self, *args, **kwargs):
+        if self.user.device_token:
+            try:
+                firebase_admin.messaging.subscribe_to_topic(
+                    tokens=[self.user.device_token,],
+                    topic=self.topic.topic_code
+                )
+            except (FirebaseError, ValueError) as e:
+                logger_notification.exception(str(e))
+
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.user.device_token:
+            try:
+                firebase_admin.messaging.unsubscribe_from_topic(
+                    tokens=[self.user.device_token,],
+                    topic=self.topic.topic_code
+                )
+            except (FirebaseError, ValueError) as e:
+                logger_notification.exception(str(e))
+
+        return super().delete(*args, **kwargs)
+
     class Meta:
         unique_together = ( 'user', 'topic', )
 
@@ -2812,6 +2898,62 @@ class SentNotification(models.Model):
     #both sent_to_user and sent_to_topic can be null, but they can't be null at the same time. In other words, a sending
     #you either send a notification to a user, or to a group of users via topics
     notification = models.ForeignKey(Notification, related_name="notification_sendings", help_text='The notification which has been sent', on_delete=models.CASCADE, )
+
+    def send_push(self, language_code: str = None):
+
+        if settings.DISABLE_PUSH:
+            return
+
+        # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
+        # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
+        message_payload = dict(
+            data={
+                "id": str(self.notification.pk)
+            },
+            notification=FirebaseNotification(
+                title=self.notification.notification_content.get_title(language_code=language_code),
+                body=self.notification.notification_content.get_body(language_code=language_code),
+                image=self.notification.notification_content.body_image
+            ),
+            android=AndroidConfig(
+                notification=AndroidNotification(
+                    click_action='FLUTTER_NOTIFICATION_CLICK'
+                )
+            )
+        )
+        message_id = None
+        if self.sent_to_topic:
+            try:
+                message_id = firebase_admin.messaging.send(
+                    message=Message(
+                        **message_payload,
+                        topic=self.sent_to_topic.topic_code
+                    ),
+                    dry_run=settings.DRY_RUN_PUSH,
+                )
+            except firebase_admin._messaging_utils.UnregisteredError:
+                logger_notification.exception(f"Topic {self.sent_to_topic.topic_code} not valid")
+            except (FirebaseError, ValueError) as e:
+                logger_notification.exception(str(e))
+            except Exception as e:
+                logger_notification.exception(str(e))
+        elif self.sent_to_user and self.sent_to_user.device_token:
+            try:
+                message_id = firebase_admin.messaging.send(
+                    message=Message(
+                        **message_payload,
+                        token=self.sent_to_user.device_token
+                    ),
+                    dry_run=settings.DRY_RUN_PUSH,
+                )
+            except firebase_admin._messaging_utils.UnregisteredError:
+                logger_notification.exception(f"Device token {self.sent_to_user.device_token} not valid")
+            except (FirebaseError, ValueError) as e:
+                logger_notification.exception(str(e))
+            except Exception as e:
+                logger_notification.exception(str(e))
+
+        return message_id
 
 
 class AwardCategory(models.Model):

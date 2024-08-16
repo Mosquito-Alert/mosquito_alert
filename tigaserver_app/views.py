@@ -16,20 +16,20 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
+from tigacrafting.views import auto_annotate
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
-from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
+from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports,get_reports_unfiltered_adults_except_being_validated
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
-from tigacrafting.messaging import send_message_ios, send_message_android, send_messages_ios, send_messages_android, generic_send_to_topic
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
 from tigascoring.maUsers import smmry
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
@@ -37,15 +37,17 @@ from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
 from django.db import connection
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
+from django.db.models.expressions import RawSQL
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import time
+import math
 
 #from celery.task.schedules import crontab
 #from celery.decorators import periodic_task
@@ -282,9 +284,41 @@ the server map (although it will still be retained internally).
 * report_id: The 4-digit report ID.
 * type: The report type (adult, site, or mission).
     """
-    queryset = Report.objects.all()
+    queryset = Report.objects.all().prefetch_related("responses", "photos")
     serializer_class = ReportSerializer
     filter_fields = ('user', 'version_number', 'report_id', 'type')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Get the filters from the request
+        is_deleted = self.request.query_params.get('is_deleted', None)
+        is_last_version = self.request.query_params.get('is_last_version', None)
+
+        # Apply additional filters if provided
+        if is_deleted is not None:
+            if is_deleted.lower() not in ['true', 'false']:
+                raise ParseError("Invalid value for 'is_deleted'. It should be 'true', 'false', or not provided.")
+
+            if is_deleted.lower() == 'true':
+                # Filter queryset to include only deleted records
+                queryset = queryset.deleted(state=True)
+            elif is_deleted.lower() == 'false':
+                # Filter queryset to exclude deleted records
+                queryset = queryset.deleted(state=False)
+
+        if is_last_version is not None:
+            if is_last_version.lower() not in ['true', 'false']:
+                raise ParseError("Invalid value for 'is_last_version'. It should be 'true', 'false', or not provided.")
+
+            if is_last_version.lower() == 'true':
+                # Filter queryset to include only deleted records
+                queryset = queryset.last_version_of_each(state=True)
+            elif is_last_version.lower() == 'false':
+                # Filter queryset to exclude deleted records
+                queryset = queryset.last_version_of_each(state=False)
+
+        return queryset
 
 
 # For production version, substitute WriteOnlyModelViewSet
@@ -799,7 +833,7 @@ def topics_subscribed(request):
         usr = TigaUser.objects.get(pk=user)
     except TigaUser.DoesNotExist:
         raise ParseError(detail='no user with this id')
-    subs = UserSubscription.objects.filter(user=user)
+    subs = UserSubscription.objects.filter(user=user).select_related("topic")
     serializer = UserSubscriptionSerializer(subs,many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
@@ -1004,60 +1038,23 @@ def force_refresh_cfs_reports(request):
         results = get_cfs_reports()
         return Response(results)
 
-
-@api_view(['POST'])
-def msgs_ios(request):
-    data = request.data
-    user_ids = data.get('user_ids', [])
-    alert_message = data.get('alert_message', -1)
-    link_url = data.get('link_url', -1)
-    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
-    tokens = [ u.profile.firebase_token for u in queryset ]
-    if alert_message != -1 and link_url != -1:
-        if len(tokens) > 0:
-            resp = send_messages_ios(tokens, alert_message, link_url)
-            return Response({'tokens': tokens, 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': resp})
-        else:
-            return Response({'tokens': [], 'alert_message': alert_message, 'link_url': link_url, 'push_status_msg': 'no_tokens'})
-    else:
-        raise ParseError(detail='Invalid parameters')
-
-
 @api_view(['POST'])
 def msg_ios(request):
     user_id = request.query_params.get('user_id', -1)
     alert_message = request.query_params.get('alert_message', -1)
     link_url = request.query_params.get('link_url', -1)
     if user_id != -1 and alert_message != -1 and link_url != -1:
-        queryset = TigaUser.objects.all()
-        this_user = get_object_or_404(queryset, pk=user_id)
-        if this_user.device_token is not None and this_user.device_token != '':
-            _token = this_user.device_token
-            try:
-                resp = send_message_ios(_token, alert_message, link_url)
-                return Response({'token':_token, 'alert_message': alert_message, 'link_url':link_url, 'push_status_msg':resp})
-            except Exception as e:
-                raise ParseError(detail=e.message)
-        else:
-            raise ParseError(detail='Token not set for user')
-    else:
-        raise ParseError(detail='Invalid parameters')
+        this_user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
+        notificaiton = Notification.objects.create(
+            notification_content=NotificationContent.objects.create(
+                title_en=alert_message,
+                body_html_en=link_url
+            )
+        )
+        push_message_id = notificaiton.send_to_user(user=this_user)
 
+        return Response({'token': this_user.device_token, 'alert_message': alert_message, 'link_url':link_url, 'push_is_success': bool(push_message_id)})
 
-@api_view(['POST'])
-def msgs_android(request):
-    data = request.data
-    user_ids = data.get('user_ids', [])
-    message = data.get('message', -1)
-    title = data.get('title', -1)
-    queryset = TigaUser.objects.filter(user_UUID__in=user_ids).filter(profile__firebase_token__isnull=False)
-    tokens = [ u.profile.firebase_token for u in queryset ]
-    if message != -1 and title != -1:
-        if len(tokens) > 0:
-            resp = send_messages_android(tokens, message, title)
-            return Response({'tokens': tokens, 'message': message, 'title': title, 'push_status_msg': resp})
-        else:
-            return Response({'tokens': [], 'message': message, 'title': title, 'push_status_msg': 'no_tokens'})
     else:
         raise ParseError(detail='Invalid parameters')
 
@@ -1068,17 +1065,16 @@ def msg_android(request):
     message = request.query_params.get('message', -1)
     title = request.query_params.get('title', -1)
     if user_id != -1 and message != -1 and title != -1:
-        queryset = TigaUser.objects.all()
-        this_user = get_object_or_404(queryset, pk=user_id)
-        if this_user.device_token is not None and this_user.device_token != '':
-            _token = this_user.device_token
-            try:
-                resp = send_message_android(_token, title, message)
-                return Response({'token': _token, 'message': message, 'title': title, 'push_status_msg':resp})
-            except Exception as e:
-                raise ParseError(detail=e.message)
-        else:
-            raise ParseError(detail='Token not set for user')
+        this_user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
+        notificaiton = Notification.objects.create(
+            notification_content=NotificationContent.objects.create(
+                title_en=title,
+                body_html_en=message
+            )
+        )
+        push_message_id = notificaiton.send_to_user(user=this_user)
+
+        return Response({'token': this_user.device_token, 'message': message, 'title': title, 'push_is_success': bool(push_message_id)})
     else:
         raise ParseError(detail='Invalid parameters')
 
@@ -1214,8 +1210,8 @@ def user_score(request):
 
 '''
 def custom_render_notification(notification,locale):
-    expert_comment = notification.notification_content.get_title_locale_safe(locale)
-    expert_html = notification.notification_content.get_body_locale_safe(locale)
+    expert_comment = notification.notification_content.get_title(language_code=locale)
+    expert_html = notification.notification_content.get_body_html(language_code=locale)
     content = {
         'id':notification.id,
         'report_id':notification.report.version_UUID,
@@ -1269,8 +1265,8 @@ def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
     ack_ids = [ a.notification.id for a in acknowledged_queryset ]
     for sent_notif in queryset:
         notification = sent_notif.notification
-        expert_comment = notification.notification_content.get_title_locale_safe(locale)
-        expert_html = notification.notification_content.get_body_locale_safe(locale)
+        expert_comment = notification.notification_content.get_title(language_code=locale)
+        expert_html = notification.notification_content.get_body_html(language_code=locale)
         this_content = {
             'id': notification.id,
             'report_id': notification.report.version_UUID if notification.report is not None else None,
@@ -1431,7 +1427,7 @@ def send_notifications(request):
         data = request.data
         id = data['notification_content_id']
         sender = data['user_id']
-        push = data['ppush']
+        push = bool(data['ppush'].lower() == 'true')
         # report with oldest creation date
         r = None
         try:
@@ -1445,16 +1441,6 @@ def send_notifications(request):
         recipients = data['recipients']
         topic = None
         send_to = None
-        push_results = []
-
-        # Can be
-        # ALL if all pushes were successful
-        # SOME if some pushes were successful
-        # NONE if no pushes were successful
-        # NO_PUSH
-        push_success = ''
-        if not push:
-            push_success = 'NO_PUSH'
 
         notification_estimate = 0
 
@@ -1484,103 +1470,29 @@ def send_notifications(request):
         n = Notification(expert_id=sender, notification_content=notification_content, report=report)
         n.save()
 
+        push_success = False
         if topic is not None:
             # send to topic
-            send_notification = SentNotification(sent_to_topic=topic,notification=n)
-            send_notification.save()
-            json_notif = custom_render_notification(sent_notification=send_notification, recipìent=None, locale='en')
-            if push:
-                try:
-                    push_result = generic_send_to_topic(topic_code=topic.topic_code, title=notification_content.title_en, message='',json_notif=json_notif)
-                    push_results.append(push_result)
-                except Exception as e:
-                    pass
-        else:
-            #send to recipient(s)
-            for recipient in send_to:
-                send_notification = SentNotification(sent_to_user=recipient, notification=n)
-                send_notification.save()
-                if push and recipient.device_token is not None and recipient.device_token != '':
-                    if (recipient.user_UUID.islower()):
-                        json_notif = custom_render_notification(send_notification, recipient, 'en')
-                        try:
-                            push_result = send_message_android(recipient.device_token, notification_content.title_en, '', json_notif)
-                            push_results.append(push_result)
-                        except Exception as e:
-                            pass
-                    else:
-                        try:
-                            push_result = send_message_ios(recipient.device_token, notification_content.title_en, '', json_notif)
-                            push_results.append(push_result)
-                        except Exception as e:
-                            pass
-
-        if push:
-            all_successes = True
-            all_failures = True
-            for result in push_results:
-                if result['failure'] > 0:
-                    all_successes = False
-                if result['success'] > 0:
-                    all_failures = False
-            if all_successes:
-                push_success = 'ALL'
-            elif all_failures:
-                push_success = 'NONE'
-            else:
-                push_success = 'SOME'
-
-
-        results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success, 'push_results': push_results}
-        return Response(results)
-
-        '''
-        elif recipients.startswith("uploaded"):
-            if(recipients=='uploaded_pictures'):
-                send_to = users_with_pictures()
-            elif(recipients=='uploaded_pictures_sd'):
-                send_to = users_with_storm_drain_pictures()
-        elif recipients.startswith("score_arbitrary"):
-            range = recipients.split('-')
-            send_to = users_with_score_range(range[1], range[2])
-        elif recipients.startswith("score"):
-            send_to = users_with_score(recipients)
-        else:
-            ids_list = recipients.split('$')
-            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
-        
-        notifications_issued = 0
-        notifications_failed = 0
-        push_issued_android = 0
-        push_failed_android = 0
-        push_issued_ios = 0
-        push_failed_ios = 0
-        for recipient in send_to:
-            n = Notification(report_id=r,user=recipient,expert_id=sender,notification_content=notification_content)
             try:
-                n.save()
-                notifications_issued = notifications_issued + 1
-            except Exception as e:
-                notifications_failed = notifications_failed + 1
-                #raise ParseError(detail=e.message)
-            if push and recipient.device_token is not None and recipient.device_token != '':
-                #send push
-                if(recipient.user_UUID.islower()):
-                    json_notif = custom_render_notification(n,'es')
-                    try:
-                        send_message_android(recipient.device_token, notification_content.title_es, '', json_notif)
-                        push_issued_android = push_issued_android + 1
-                    except Exception as e:
-                        pass
-                else:
-                    try:
-                        send_message_ios(recipient.device_token,notification_content.title_es,'')
-                        push_issued_ios = push_issued_ios + 1
-                    except Exception as e:
-                        pass
-        results = {'notifications_issued' : notifications_issued, 'notifications_failed': notifications_failed, 'push_issued_ios' : push_issued_ios, 'push_issued_android' : push_issued_android, 'push_failed_android' : push_failed_android, 'push_failed_ios' : push_failed_ios }
+                message_id = n.send_to_topic(topic=topic, push=push)
+            except Exception:
+                pass
+            else:
+                push_success = bool(message_id)
+        else:
+            # send to recipient(s)
+            message_ids = []
+            for recipient in send_to:
+                try:
+                    message_ids.append(
+                        n.send_to_user(user=recipient, push=push)
+                    )
+                except Exception:
+                    pass
+            push_success = bool(message_ids) and all(message_ids)
+
+        results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success}
         return Response(results)
-        '''
 
 
 @api_view(['GET'])
@@ -1631,13 +1543,11 @@ def nearby_reports_no_dwindow(request):
 
         #Older postgis versions didn't like the second ::geography cast
         sql = "SELECT \"version_UUID\"  " + \
-              "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
-              "ORDER BY point <-> 'SRID=4326;POINT({3} {4})'"
-
-        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+              "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(%s %s)'::geography) <= %s " + \
+              "ORDER BY point <-> 'SRID=4326;POINT(%s %s)'"
 
         cursor = connection.cursor()
-        cursor.execute(sql_formatted)
+        cursor.execute(sql, (float(center_buffer_lon), float(center_buffer_lat), float(radius), float(center_buffer_lon), float(center_buffer_lat)))
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
@@ -1758,13 +1668,11 @@ def nearby_reports_fast(request):
             return Response(status=400,data='invalid parameters')
 
         sql = "SELECT \"version_UUID\"  " + \
-            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
-            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
-
-        sql_formatted = sql.format( center_buffer_lon, center_buffer_lat, radius, center_buffer_lon, center_buffer_lat )
+            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(%s %s)'::geography) <= %s " + \
+            "ORDER BY point::geography <-> 'SRID=4326;POINT(%s %s)'::geography "
 
         cursor = connection.cursor()
-        cursor.execute(sql_formatted)
+        cursor.execute(sql, (float(center_buffer_lon), float(center_buffer_lat), float(radius), float(center_buffer_lon), float(center_buffer_lat)))
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
@@ -2298,6 +2206,224 @@ def favorite(request):
             new_fav.save()
             return Response(status=status.HTTP_200_OK)
 
+def get_filter_params_from_q(q):
+    if q == '':
+        return {
+            'type':'all',
+            'visibility':'visible',
+            'aithr':1.00,
+            'note': '',
+            'country': 'all',
+            'country_exclude': ''
+        } #default values
+    else:
+        json_filter = json.loads(q);
+        return {
+            'type': json_filter['report_type'],
+            'visibility': json_filter['visibility'],
+            'aithr': float(json_filter['ia_threshold']),
+            'note': json_filter['note'],
+            'country': json_filter['country'],
+            'country_exclude': json_filter['country_exclude']
+        }
+
+@api_view(['PATCH'])
+def hide_report(request):
+    if request.method == 'PATCH':
+        #print(request.data)
+        report_id = request.data.get('report_id','-1')
+        hide_val = request.data.get('hide')
+        if report_id == '-1':
+            raise ParseError(detail='report_id param is mandatory')
+        if not hide_val:
+            raise ParseError(detail='hide param is mandatory')
+        hide = hide_val == 'true'
+        report = get_object_or_404(Report,pk=report_id)
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+        report.hide = hide
+        report.save()
+        return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+def flip_report(request):
+    if request.method == 'PATCH':
+        flip_to_type = request.data.get('flip_to_type', '')
+        flip_to_subtype = request.data.get('flip_to_subtype', '')
+        report_id = request.data.get('report_id', '')
+        report = get_object_or_404(Report,pk=report_id)
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+        if flip_to_type == '': # adult | site
+            raise ParseError(detail='flip_to_type param is mandatory')
+        if flip_to_type not in ['adult', 'site']:
+            raise ParseError(detail='value not allowed, possible values are \'adult\', \'site\'')
+        if flip_to_type == 'site':
+            if flip_to_subtype == '':
+                raise ParseError(detail='flip_to_subtype param is mandatory if type is site')
+            else:
+                if flip_to_subtype not in ['storm_drain_water','storm_drain_dry', 'other_water', 'other_dry']:
+                    raise ParseError(detail='value not allowed, possible values are \'storm_drain_water\',\'storm_drain_dry\', \'other_water\', \'other_dry\' ')
+        # delete questions and answers ?
+
+        # set new questions and answers
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_12	question_12_answer_122	122		12 -> Other
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_10	question_10_answer_101	101		10 -> Water
+
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_12	question_12_answer_121	121		12 -> Storm Drain
+        # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_10	question_10_answer_101	101		10 -> Water
+        with transaction.atomic():
+            ReportResponse.objects.filter(report=report).delete()
+            rr_type_stormdrain = ReportResponse(report=report,question='question_12',answer='question_12_answer_121',question_id='12',answer_id='121')
+            rr_type_other = ReportResponse(report=report, question='question_12', answer='question_12_answer_122', question_id='12', answer_id='122')
+            rr_yes_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_101', question_id='10', answer_id='101')
+            rr_no_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_102', question_id='10', answer_id='102')
+            if flip_to_type == 'site':
+                report.flipped = True
+                report.flipped_on = timezone.now()
+                report.flipped_to = report.type + '#site'
+                report.type = 'site'
+                report.save()
+                if flip_to_subtype == 'storm_drain_water':
+                    rr_type_stormdrain.save()
+                    rr_yes_water.save()
+                    message = "Report changed to Site - Storm Drain, Water"
+                elif flip_to_subtype == 'storm_drain_dry':
+                    rr_type_stormdrain.save()
+                    rr_no_water.save()
+                    message = "Report changed to Site - Storm Drain, No Water"
+                elif flip_to_subtype == 'other_dry':
+                    rr_type_other.save()
+                    rr_no_water.save()
+                    message = "Report changed to Site - Other, No Water"
+                elif flip_to_subtype == 'other_water':
+                    rr_type_other.save()
+                    rr_yes_water.save()
+                    message = "Report changed to Site - Other, Water"
+            elif flip_to_type == 'adult':
+                report.flipped = True
+                report.flipped_on = timezone.now()
+                report.flipped_to = report.type + '#adult'
+                report.type = 'adult'
+                report.save()
+                message = "Report changed to Adult"
+
+            return Response(data={'message': message, 'new_type': flip_to_type, 'new_subtype': flip_to_subtype, 'opcode': 0}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def annotate_coarse(request):
+    if request.method == 'POST':
+        report_id = request.POST.get('report_id', '-1')
+        category_id = request.POST.get('category_id', -1)
+        validation_value = request.POST.get('validation_value', None)
+        if report_id == '-1':
+            raise ParseError(detail='report_id param is mandatory')
+        # if category_id == -1:
+        #     raise ParseError(detail='category_id param is mandatory')
+        report = get_object_or_404(Report, pk=report_id)
+        # This prevents auto annotating a report which has been claimed by someone between reloads
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+        category = get_object_or_404(Categories, pk=category_id)
+        if validation_value == '' or not category.specify_certainty_level:
+            validation_value = None
+        annotation = auto_annotate(report, category, validation_value)
+        return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def coarse_filter_reports(request):
+    if request.method == 'GET':
+
+        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
+        reports_imbornal = get_reports_imbornal()
+        # new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
+        # new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
+        # new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
+        new_reports_unfiltered_sites = (Report.objects.filter(type='site')
+                                        .exclude(note__icontains='#345')
+                                        .exclude(photos=None).annotate(
+                                            n_annotations=Count('expert_report_annotations')
+                                        )
+                                        .filter(n_annotations=0).order_by('-creation_time').all())
+
+        q = request.query_params.get("q", '')
+        filter_params = get_filter_params_from_q(q)
+        aithr = filter_params['aithr']
+        type = filter_params['type']
+        visibility = filter_params['visibility']
+        note = filter_params['note']
+        country = filter_params['country']
+        country_exclude = filter_params['country_exclude']
+
+        limit = request.query_params.get("limit", 300)
+        offset = request.query_params.get("offset", 1)
+
+        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
+
+        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+
+        if type == 'adult':
+            new_reports_unfiltered = new_reports_unfiltered_adults
+        elif type == 'site':
+            new_reports_unfiltered = new_reports_unfiltered_sites
+        if visibility == 'visible':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+        elif visibility == 'hidden':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+        if note != '':
+            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=note)
+        if country and country != '' and country != 'all':
+            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
+        elif country == 'all' and country_exclude != '':
+            new_reports_unfiltered = new_reports_unfiltered.exclude(country__gid=int(country_exclude))
+
+        report_id_deleted_reports_adults = Report.objects.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'adult' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
+            ())).values("version_UUID").distinct()
+        report_id_deleted_reports_sites = Report.objects.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r, (select report_id, user_id, count(\"version_UUID\") from tigaserver_app_report where type = 'site' and report_id in (select distinct report_id from tigaserver_app_report where version_number = -1) group by report_id, user_id having count(\"version_UUID\") >1) as deleted where r.report_id = deleted.report_id and r.user_id = deleted.user_id",
+            ())).values("version_UUID").distinct()
+
+        new_reports_unfiltered = new_reports_unfiltered.exclude(
+            version_UUID__in=report_id_deleted_reports_adults).exclude(version_UUID__in=report_id_deleted_reports_sites)
+
+        new_reports_unfiltered = new_reports_unfiltered.filter(version_UUID__in=RawSQL(
+            "select \"version_UUID\" from tigaserver_app_report r,(select report_id,max(version_number) as higher from tigaserver_app_report where type = 'adult' group by report_id) maxes where r.type = 'adult' and r.report_id = maxes.report_id and r.version_number = maxes.higher union select \"version_UUID\" from tigaserver_app_report r, (select report_id,max(version_number) as higher from tigaserver_app_report where type = 'site' group by report_id) maxes where r.type = 'site' and r.report_id = maxes.report_id and r.version_number = maxes.higher",
+            ()))
+
+        #results = new_reports_unfiltered.prefetch_related('photos','users')
+        results = new_reports_unfiltered.select_related('user').prefetch_related('photos')
+
+        try:
+            paginator = Paginator(results, limit)
+        except:
+            paginator = Paginator(results, limit)
+
+        try:
+            results = paginator.page(offset)
+        except PageNotAnInteger:
+            results = paginator.page(offset)
+        except EmptyPage:
+            results = []
+
+        api_count = paginator.count
+        api_next = None if not results.has_next() else results.next_page_number()
+        api_previous = None if not results.has_previous() else results.previous_page_number()
+
+        #serializer = ReportSerializer(results, many=True)
+        serializer = CoarseReportSerializer(results, many=True)
+
+        data = {
+            'per_page': limit,
+            'count_pages': paginator.num_pages,
+            'current': offset,
+            'count': api_count,
+            'next': api_next,
+            'previous': api_previous,
+            'results': serializer.data
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def user_favorites(request):

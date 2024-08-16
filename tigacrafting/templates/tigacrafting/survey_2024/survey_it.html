@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Questionario</title>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <p>
+        {{ message }}
+    </p>
+    <p>
+        Siamo alla ricerca continua di metodi per raggiungere in modo efficace i cittadini-scienziati interessati a
+        studiare e monitorare le zanzare. Abbiamo sviluppato un breve <a href="{{ survey_link }}" target="_blank">questionario</a> e saremmo onorati di ricevere
+        la tua opinione. Non occuperai più di 5 minuti e il tuo feedback contribuirà ad aumentare la conoscenza
+        scientifica acquisita grazie alla partecipazione attiva dei cittadini ai progetti di monitoraggio ecologico.
+    </p>
+    <p>Risposte rimarranno anonime e forniranno informazioni sui nostri scienziati cittadini.</p>
+    <p>
+        <a href="{{ survey_link }}" target="_blank">Rispondi al sondaggio in italiano.</a>
+    </p>
+    <p style="color:red; font-size: 20px">Se hai problemi ad aprire i link precedenti, copia e incolla il seguente URL in un browser:</p>
+    <p style="color:red; font-size: 20px">{{ survey_link }}</p>
+    <p>Il sondaggio fa parte di uno studio sviluppato da Mosquito Alert, CEAB-CSIC e UPF.</p>
+    <p class="centeredImage"><img style="max-width: 100%; height: auto; display: block; margin-left: auto; margin-right: auto;" src="https://www.mosquitoalert.com/wp-content/uploads/2022/06/ceab-upf.png"></p>
+</body>
+</html>

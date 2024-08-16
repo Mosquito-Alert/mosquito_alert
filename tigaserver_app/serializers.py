@@ -24,8 +24,8 @@ def score_label(score):
 recipient is the TigaUser to which the notification will be displayed
 '''
 def custom_render_notification(sent_notification, recipìent, locale):
-    expert_comment = sent_notification.notification.notification_content.get_title_locale_safe(locale)
-    expert_html = sent_notification.notification.notification_content.get_body_locale_safe(locale)
+    expert_comment = sent_notification.notification.notification_content.get_title(language_code=locale)
+    expert_html = sent_notification.notification.notification_content.get_body_html(language_code=locale)
 
     ack = False
     if recipìent is not None:
@@ -168,7 +168,10 @@ class ReportResponseSerializer(serializers.ModelSerializer):
         model = ReportResponse
         fields = ['question', 'answer', 'question_id', 'answer_id', 'answer_value']
 
-
+class DetailedPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photo
+        fields = ['id', 'photo', 'uuid']
 class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer):
 
     # For AutoTimeZoneOrInstantUploadSerializerMixin
@@ -199,6 +202,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
     app_language = serializers.CharField(required=False)
     responses = ReportResponseSerializer(many=True)
     session = SessionListingField
+    photos = DetailedPhotoSerializer(many=True, read_only=True)
 
     def _get_dict_applied_tz(self, data: OrderedDict, *args, **kwargs) -> OrderedDict:
         data_result = super()._get_dict_applied_tz(data=data, *args, **kwargs)
@@ -314,10 +318,6 @@ class ConfigurationSerializer(serializers.ModelSerializer):
         model = Configuration
         fields = '__all__'
 
-class DetailedPhotoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Photo
-        fields = ['id', 'photo', 'uuid']
 
 class NearbyReportSerializer(serializers.ModelSerializer):
     user = UserListingField
@@ -403,9 +403,12 @@ class MapDataSerializer(serializers.ModelSerializer):
     visible = serializers.ReadOnlyField()
     latest_version = serializers.ReadOnlyField()
     n_photos = serializers.ReadOnlyField()
-    final_expert_status_text = serializers.ReadOnlyField()
+    final_expert_status_text = serializers.SerializerMethodField(method_name='get_final_expert_status')
     responses = FullReportResponseSerializer(many=True)
     country = serializers.SerializerMethodField(method_name='get_country')
+
+    def get_final_expert_status(self, obj):
+        return obj.get_final_expert_status()
 
     def get_country(self,obj):
         if obj.country is None:
@@ -636,3 +639,36 @@ class OrganizationPinsSerializer(serializers.ModelSerializer):
         else:
             return None
 
+class CoarsePhotoSerializer(serializers.ModelSerializer):
+    small_url = serializers.SerializerMethodField(method_name='get_small_url')
+
+    def get_small_url(self,obj):
+        return obj.get_small_url()
+    class Meta:
+        model = Photo
+        fields = ['id', 'photo', 'uuid', 'small_url']
+
+class CoarseReportSerializer(serializers.ModelSerializer):
+    photos = CoarsePhotoSerializer(many=True)
+    version_UUID = serializers.ReadOnlyField()
+    report_id = serializers.ReadOnlyField()
+    creation_time = serializers.ReadOnlyField()
+    user_id = serializers.SerializerMethodField(method_name='get_user_id')
+    type = serializers.ReadOnlyField()
+    note = serializers.ReadOnlyField()
+    country = EuropeCountrySimpleSerializer(many=False)
+    site_cat = serializers.SerializerMethodField(method_name='get_site_cat')
+    ia_filter_1 = serializers.ReadOnlyField()
+    hide = serializers.ReadOnlyField()
+    lat = serializers.ReadOnlyField()
+    lon = serializers.ReadOnlyField()
+
+    def get_site_cat(self,obj):
+        return obj.site_cat
+
+    def get_user_id(self,obj):
+        return obj.user.user_UUID
+
+    class Meta:
+        model = Report
+        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1', 'hide', 'user_id', 'lat', 'lon')

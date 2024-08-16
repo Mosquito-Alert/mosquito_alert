@@ -35,7 +35,6 @@ from django.contrib.auth.models import User, Group
 import urllib
 import django.utils.html
 from django.db import connection
-from tigacrafting.messaging import send_message_android,send_message_ios
 from tigaserver_app.serializers import custom_render_notification, DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
@@ -83,7 +82,8 @@ other_insect = {
     "bg": "На снимката е насекомо, което не е истински комар от семейство Culicidae. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
     "fr": "Cette image décrit un insecte qui n'est pas un vrai moustique appartenant à la famille des Culicidés. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
     "nl": "Het insect op deze foto is geen mug uit de Culicidae familie. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en maken van foto's van deze insecten. Blijf alstublieft foto's insturen.",
-    "hu": "Ezen a képen egy olyan rovar látható, amely nem az igazi szúnyogok (Culicidae) családjába tartozik. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+    "hu": "Ezen a képen egy olyan rovar látható, amely nem az igazi szúnyogok (Culicidae) családjába tartozik. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+    "sv": "Denna bild visar en insekt som inte är en stickmygga från familjen Culicidae. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!",
 }
 
 albopictus = {
@@ -103,7 +103,8 @@ albopictus = {
     "bg": "Много добра снимка! Успяхте да улесните разпознаването на тигровия комар, защото ясно може да се види характерната бяла ивица на гърба, освен другите белези. Благодарим за участието!",
     "fr": "Très belle image! Vous avez réussi à rendre facile à identifier ce Moustique Tigre puisque la typique ligne blanche sur le thorax est très visible, en plus d'autres traits. Merci de votre participation!",
     "nl": "Een erg goede foto! De door u gefotografeerde Aziatische tijgermug was makkelijk te identificeren, de karakteristieke witte streep op het borststuk is goed zichtbaar. Bedankt voor uw deelname!",
-    "hu": "Nagyon jó kép! Sikerült könnyen azonosítani a tigrisszúnyogot, mert eltekintve más karakterektől, a tor jellegzetes fehér csíkja jól látható. Köszönjük a részvételt!"
+    "hu": "Nagyon jó kép! Sikerült könnyen azonosítani a tigrisszúnyogot, mert eltekintve más karakterektől, a tor jellegzetes fehér csíkja jól látható. Köszönjük a részvételt!",
+    "sv": "Mycket bra bild! Du har lyckats göra det lätt att identifiera tigermyggan eftersom man tydligt kan se den karaktäristiska vita linjen på mellankroppen, och andra karaktärer. Tack för ditt deltagande!",
 }
 
 culex = {
@@ -123,7 +124,8 @@ culex = {
     "bg": "От тази снимка не можем да бъдем напълно сигурни, че става дума за комар Culex. Не могат едновременно да се видят достатъчно белези, въпреки че присъстват и други характерни белези на обикновения домашен комар. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
     "fr": "Sur cette image nous ne pouvons pas assurer tout à fait qu'il s'agisse d'un moustique Culex. Un nombre insuffisant de traits morphologiques y est visible, bien que certains d'autres, propres au moustique commun, y sont bien présents. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
     "nl": "Met deze foto kunnen we niet vaststellen of het om een huissteekmug gaat. Er zijn niet genoeg kenmerken van de huissteekmug zichtbaar. Toch is uw observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-    "hu": "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy dalos szúnyog. Nem látható egyszerre elég jellemvonás, bár a dalos szúnyog általános karakterei megfigyelhetőek. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+    "hu": "Sajnos ezzel a képpel nem lehetünk biztosak abban, hogy ez egy dalos szúnyog. Nem látható egyszerre elég jellemvonás, bár a dalos szúnyog általános karakterei megfigyelhetőek. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra. A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+    "sv": "Med denna bild kan vi inte vara helt säkra på att det är en Culexmygga. Man kan inte se tillräckligt många karaktärer samtidigt, även om man kan se några typiska karaktärer hos husmyggan. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!",
 }
 
 notsure = {
@@ -143,7 +145,8 @@ notsure = {
     "bg": "С тази снимка не можем да идентифицираме нито един вид комари, защото е размазана и не могат да се разпознаят типичните белези на нито един от тях. Все пак, наблюдението Ви е много полезно. На www.mosquitoalert.com ще намерите съвети за улавяне и фотографиране на тези насекоми. Моля, изпращайте още снимки!",
     "fr": "L'identification d'une espècie n'est pas possible sur cette image qui est trop floue et ne montre pas suffisamment de traits pour la reconnaître. Toutefois, votre observation est utile. Sur www.mosquitoalert.com vous rencontrerez des astuces et des conseils pour capturer et photographier ces insectes. Envoyez encore des photos s'il vous plaît!",
     "nl": "We kunnen geen muggensoort identificeren met deze foto omdat de foto wazig is en de typische kenmerken om muggensoorten van elkaar te onderscheiden hierdoor niet zichtbaar zijn. Toch is deze observatie erg nuttig. Op www.mosquitoalert.com vind u tips en tricks voor het vangen en fotograferen van deze insecten. Blijf alstublieft foto's insturen!",
-    "hu": "Sajnos ezzel a képpel nem tudunk azonosítani egyetlen szúnyogfajt sem, mert homályos és nem ismerhetőek fel egyik faj jellemző tulajdonságai sem. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra! A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!"
+    "hu": "Sajnos ezzel a képpel nem tudunk azonosítani egyetlen szúnyogfajt sem, mert homályos és nem ismerhetőek fel egyik faj jellemző tulajdonságai sem. Ennek ellenére, a megfigyelésed nagyon hasznos számunkra! A www.mosquitoalert.com oldalon találsz különböző tippeket és trükköket a szúnyogok megfogására és fotózására. Kérünk, küldj további képeket!",
+    "sv": "Med denna bild kan vi inte identifiera någon myggart eftersom den är suddig och man kan inte se några artspecifika karaktärer. Din observation är dock ändå väldigt användbar. På www.mosquitoalert.com kan du hitta tips på hur man fångar och fotograferar dessa insekter. Skicka gärna fler bilder!",
 }
 
 def get_current_domain(request):
@@ -643,22 +646,7 @@ def issue_notification(report_annotation,current_domain):
     notification_content.save()
     notification = Notification(report=report_annotation.report, expert=report_annotation.user, notification_content=notification_content)
     notification.save()
-    sent_notification = SentNotification(sent_to_user=report_annotation.report.user,notification=notification)
-    sent_notification.save()
-
-    recipient = report_annotation.report.user
-    if recipient.device_token is not None and recipient.device_token != '':
-        if (recipient.user_UUID.islower()):
-            json_notif = custom_render_notification(sent_notification, recipient, 'en')
-            try:
-                send_message_android(recipient.device_token, notification_content.title_native, '', json_notif)
-            except Exception as e:
-                logger_notification.exception("Exception sending validation android message")
-        else:
-            try:
-                send_message_ios(recipient.device_token, notification_content.title_native, '')
-            except Exception as e:
-                logger_notification.exception("Exception sending validation ios message")
+    notification.send_to_user(user=report_annotation.report.user)
 
 @login_required
 def entolab_license_agreement(request):
@@ -1322,154 +1310,169 @@ def get_reports_unfiltered_adults():
     return new_reports_unfiltered_adults
 
 def auto_annotate_notsure(report, request):
-    users = []
-    users.append(User.objects.get(username="innie"))
-    users.append(User.objects.get(username="minnie"))
-    users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
-    photo = report.photos.first()
-    report_locale = report.app_language
-    user_notes = notsure.get(report_locale, notsure['en'])
-    for u in users:
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
-            new_annotation = ExpertReportAnnotation(report=report, user=u)
-            if u.username == 'innie':
-                new_annotation.edited_user_notes = user_notes
-                new_annotation.best_photo_id = photo.id
-                new_annotation.simplified_annotation = False
-            else:
-                new_annotation.simplified_annotation = True
-            new_annotation.tiger_certainty_notes = 'auto'
-            new_annotation.tiger_certainty_category = 0
-            new_annotation.aegypti_certainty_category = 0
-            new_annotation.status = 1
-            new_annotation.category = Categories.objects.get(pk=9)
-            new_annotation.validation_complete = True
-            new_annotation.save()
-    try:
-        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
-    except ExpertReportAnnotation.DoesNotExist:
-        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
-
-    roger_annotation.validation_complete = True
-    roger_annotation.save()
+    # users = []
+    # users.append(User.objects.get(username="innie"))
+    # users.append(User.objects.get(username="minnie"))
+    # users.append(User.objects.get(username="manny"))
+    # super_reritja = User.objects.get(username="super_reritja")
+    # photo = report.photos.first()
+    # report_locale = report.app_language
+    # user_notes = notsure.get(report_locale, notsure['en'])
+    # for u in users:
+    #     if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+    #         new_annotation = ExpertReportAnnotation(report=report, user=u)
+    #         if u.username == 'innie':
+    #             new_annotation.edited_user_notes = user_notes
+    #             new_annotation.best_photo_id = photo.id
+    #             new_annotation.simplified_annotation = False
+    #         else:
+    #             new_annotation.simplified_annotation = True
+    #         new_annotation.tiger_certainty_notes = 'auto'
+    #         new_annotation.tiger_certainty_category = 0
+    #         new_annotation.aegypti_certainty_category = 0
+    #         new_annotation.status = 1
+    #         new_annotation.category = Categories.objects.get(pk=9)
+    #         new_annotation.validation_complete = True
+    #         new_annotation.save()
+    # try:
+    #     roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    # except ExpertReportAnnotation.DoesNotExist:
+    #     roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+    #
+    # roger_annotation.validation_complete = True
+    # roger_annotation.save()
+    notsure = Categories.objects.get(pk=9)
+    roger_annotation = auto_annotate(report=report, category=notsure, validation_value=None)
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
 def auto_annotate_probably_albopictus(report, request):
-    users = []
-    users.append(User.objects.get(username="innie"))
-    users.append(User.objects.get(username="minnie"))
-    users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
-    photo = report.photos.first()
-    report_locale = report.app_language
-    user_notes = albopictus.get(report_locale, albopictus['en'])
-    for u in users:
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
-            new_annotation = ExpertReportAnnotation(report=report, user=u)
-            if u.username == 'innie':
-                new_annotation.edited_user_notes = user_notes
-                new_annotation.best_photo_id = photo.id
-                new_annotation.simplified_annotation = False
-            else:
-                new_annotation.simplified_annotation = True
-            new_annotation.tiger_certainty_notes = 'auto'
-            new_annotation.tiger_certainty_category = 2
-            new_annotation.aegypti_certainty_category = -2
-            new_annotation.status = 1
-            new_annotation.category = Categories.objects.get(pk=4)
-            new_annotation.validation_complete = True
-            # probably albopictus
-            new_annotation.validation_value = 1
-            new_annotation.save()
-    try:
-        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
-    except ExpertReportAnnotation.DoesNotExist:
-        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
-
-    roger_annotation.validation_complete = True
-    roger_annotation.save()
+    # users = []
+    # users.append(User.objects.get(username="innie"))
+    # users.append(User.objects.get(username="minnie"))
+    # users.append(User.objects.get(username="manny"))
+    # super_reritja = User.objects.get(username="super_reritja")
+    # photo = report.photos.first()
+    # report_locale = report.app_language
+    # user_notes = albopictus.get(report_locale, albopictus['en'])
+    # for u in users:
+    #     if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+    #         new_annotation = ExpertReportAnnotation(report=report, user=u)
+    #         if u.username == 'innie':
+    #             new_annotation.edited_user_notes = user_notes
+    #             new_annotation.best_photo_id = photo.id
+    #             new_annotation.simplified_annotation = False
+    #         else:
+    #             new_annotation.simplified_annotation = True
+    #         new_annotation.tiger_certainty_notes = 'auto'
+    #         new_annotation.tiger_certainty_category = 2
+    #         new_annotation.aegypti_certainty_category = -2
+    #         new_annotation.status = 1
+    #         new_annotation.category = Categories.objects.get(pk=4)
+    #         new_annotation.validation_complete = True
+    #         # probably albopictus
+    #         new_annotation.validation_value = 1
+    #         new_annotation.save()
+    # try:
+    #     roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    # except ExpertReportAnnotation.DoesNotExist:
+    #     roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+    #
+    # roger_annotation.validation_complete = True
+    # roger_annotation.save()
+    albopictus = Categories.objects.get(pk=4)
+    roger_annotation = auto_annotate(report=report, category=albopictus, validation_value=1)
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
 def auto_annotate_albopictus(report, request):
-    users = []
-    users.append(User.objects.get(username="innie"))
-    users.append(User.objects.get(username="minnie"))
-    users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
-    photo = report.photos.first()
-    report_locale = report.app_language
-    user_notes = albopictus.get(report_locale, albopictus['en'])
-    for u in users:
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
-            new_annotation = ExpertReportAnnotation(report=report, user=u)
-            if u.username == 'innie':
-                new_annotation.edited_user_notes = user_notes
-                new_annotation.best_photo_id = photo.id
-                new_annotation.simplified_annotation = False
-            else:
-                new_annotation.simplified_annotation = True
-            new_annotation.tiger_certainty_notes = 'auto'
-            new_annotation.tiger_certainty_category = 2
-            new_annotation.aegypti_certainty_category = -2
-            new_annotation.status = 1
-            new_annotation.category = Categories.objects.get(pk=4)
-            new_annotation.validation_complete = True
-            # definitely albopictus
-            new_annotation.validation_value = 2
-            new_annotation.save()
-    try:
-        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
-    except ExpertReportAnnotation.DoesNotExist:
-        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
-
-    roger_annotation.validation_complete = True
-    roger_annotation.save()
+    # users = []
+    # users.append(User.objects.get(username="innie"))
+    # users.append(User.objects.get(username="minnie"))
+    # users.append(User.objects.get(username="manny"))
+    # super_reritja = User.objects.get(username="super_reritja")
+    # photo = report.photos.first()
+    # report_locale = report.app_language
+    # user_notes = albopictus.get(report_locale, albopictus['en'])
+    # for u in users:
+    #     if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+    #         new_annotation = ExpertReportAnnotation(report=report, user=u)
+    #         if u.username == 'innie':
+    #             new_annotation.edited_user_notes = user_notes
+    #             new_annotation.best_photo_id = photo.id
+    #             new_annotation.simplified_annotation = False
+    #         else:
+    #             new_annotation.simplified_annotation = True
+    #         new_annotation.tiger_certainty_notes = 'auto'
+    #         new_annotation.tiger_certainty_category = 2
+    #         new_annotation.aegypti_certainty_category = -2
+    #         new_annotation.status = 1
+    #         new_annotation.category = Categories.objects.get(pk=4)
+    #         new_annotation.validation_complete = True
+    #         # definitely albopictus
+    #         new_annotation.validation_value = 2
+    #         new_annotation.save()
+    # try:
+    #     roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    # except ExpertReportAnnotation.DoesNotExist:
+    #     roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+    #
+    # roger_annotation.validation_complete = True
+    # roger_annotation.save()
+    albopictus = Categories.objects.get(pk=4)
+    roger_annotation = auto_annotate(report=report, category=albopictus, validation_value=2)
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
 
 def auto_annotate_culex(report, request):
-    users = []
-    users.append(User.objects.get(username="innie"))
-    users.append(User.objects.get(username="minnie"))
-    users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
-    photo = report.photos.first()
-    report_locale = report.app_language
-    user_notes = culex.get(report_locale, culex['en'])
-    for u in users:
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
-            new_annotation = ExpertReportAnnotation(report=report, user=u)
-            if u.username == 'innie':
-                new_annotation.edited_user_notes = user_notes
-                new_annotation.best_photo_id = photo.id
-                new_annotation.simplified_annotation = False
-            else:
-                new_annotation.simplified_annotation = True
-            new_annotation.tiger_certainty_notes = 'auto'
-            new_annotation.tiger_certainty_category = -2
-            new_annotation.aegypti_certainty_category = -2
-            new_annotation.status = 1
-            new_annotation.category = Categories.objects.get(pk=10)
-            new_annotation.validation_complete = True
-            #probably culex
-            new_annotation.validation_value = 1
-            new_annotation.save()
-    try:
-        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
-    except ExpertReportAnnotation.DoesNotExist:
-        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
-
-    roger_annotation.validation_complete = True
-    roger_annotation.save()
+    # users = []
+    # users.append(User.objects.get(username="innie"))
+    # users.append(User.objects.get(username="minnie"))
+    # users.append(User.objects.get(username="manny"))
+    # super_reritja = User.objects.get(username="super_reritja")
+    # photo = report.photos.first()
+    # report_locale = report.app_language
+    # user_notes = culex.get(report_locale, culex['en'])
+    # for u in users:
+    #     if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+    #         new_annotation = ExpertReportAnnotation(report=report, user=u)
+    #         if u.username == 'innie':
+    #             new_annotation.edited_user_notes = user_notes
+    #             new_annotation.best_photo_id = photo.id
+    #             new_annotation.simplified_annotation = False
+    #         else:
+    #             new_annotation.simplified_annotation = True
+    #         new_annotation.tiger_certainty_notes = 'auto'
+    #         new_annotation.tiger_certainty_category = -2
+    #         new_annotation.aegypti_certainty_category = -2
+    #         new_annotation.status = 1
+    #         new_annotation.category = Categories.objects.get(pk=10)
+    #         new_annotation.validation_complete = True
+    #         #probably culex
+    #         new_annotation.validation_value = 1
+    #         new_annotation.save()
+    # try:
+    #     roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    # except ExpertReportAnnotation.DoesNotExist:
+    #     roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+    #
+    # roger_annotation.validation_complete = True
+    # roger_annotation.save()
+    culex = Categories.objects.get(pk=10)
+    roger_annotation = auto_annotate(report=report, category=culex, validation_value=1)
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
 
-
-def auto_annotate_other_species(report, request):
+def auto_annotate(report, category, validation_value):
+    tiger_aegypti_cert_to_cat = {
+        "4": { "t": 2, "a": -2 }, #albopictus
+        "5": { "t": -2, "a": 2 }  #aegypti
+    }
+    try:
+        cats = tiger_aegypti_cert_to_cat[str(category.id)]
+    except KeyError:
+        cats = {"t": -2, "a": -2}
     users = []
     users.append(User.objects.get(username="innie"))
     users.append(User.objects.get(username="minnie"))
@@ -1488,11 +1491,13 @@ def auto_annotate_other_species(report, request):
             else:
                 new_annotation.simplified_annotation = True
             new_annotation.tiger_certainty_notes = 'auto'
-            new_annotation.tiger_certainty_category = -2
-            new_annotation.aegypti_certainty_category = -2
+            new_annotation.tiger_certainty_category = cats['t']
+            new_annotation.aegypti_certainty_category = cats['a']
             new_annotation.status = 1
-            new_annotation.category = Categories.objects.get(pk=2)
+            new_annotation.category = category
             new_annotation.validation_complete = True
+            if category.specify_certainty_level:
+                new_annotation.validation_value = validation_value
             new_annotation.save()
     try:
         roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
@@ -1501,8 +1506,57 @@ def auto_annotate_other_species(report, request):
 
     roger_annotation.validation_complete = True
     roger_annotation.save()
+    return roger_annotation
+
+def auto_annotate_other_species(report, request):
+    # users = []
+    # users.append(User.objects.get(username="innie"))
+    # users.append(User.objects.get(username="minnie"))
+    # users.append(User.objects.get(username="manny"))
+    # super_reritja = User.objects.get(username="super_reritja")
+    # photo = report.photos.first()
+    # report_locale = report.app_language
+    # user_notes = other_insect.get(report_locale, other_insect['en'])
+    # for u in users:
+    #     if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
+    #         new_annotation = ExpertReportAnnotation(report=report, user=u)
+    #         if u.username == 'innie':
+    #             new_annotation.edited_user_notes = user_notes
+    #             new_annotation.best_photo_id = photo.id
+    #             new_annotation.simplified_annotation = False
+    #         else:
+    #             new_annotation.simplified_annotation = True
+    #         new_annotation.tiger_certainty_notes = 'auto'
+    #         new_annotation.tiger_certainty_category = -2
+    #         new_annotation.aegypti_certainty_category = -2
+    #         new_annotation.status = 1
+    #         new_annotation.category = Categories.objects.get(pk=2)
+    #         new_annotation.validation_complete = True
+    #         new_annotation.save()
+    # try:
+    #     roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
+    # except ExpertReportAnnotation.DoesNotExist:
+    #     roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
+    #
+    # roger_annotation.validation_complete = True
+    # roger_annotation.save()
+    other_species = Categories.objects.get(pk=2)
+    roger_annotation = auto_annotate(report=report, category=other_species, validation_value=None)
     current_domain = get_current_domain(request)
     issue_notification(roger_annotation, current_domain)
+
+@login_required
+def coarse_filter(request):
+    this_user = request.user
+    if this_user.groups.filter(name='coarse_filter').exists():
+        range_list = [n for n in range(10, 101, 10)]
+        context = {
+            'tasks_per_page_choices': range_list + [200, 300],
+            'countries': EuropeCountry.objects.all().order_by('name_engl')
+        }
+        return render(request, 'tigacrafting/coarse_filter.html', context)
+    else:
+        return HttpResponse("You need to belong to the coarse filter group to access this page, please contact MoveLab.")
 
 @login_required
 def picture_validation(request,tasks_per_page='300',visibility='visible', usr_note='', type='all', country='all', aithr='1.00'):
@@ -1673,13 +1727,6 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
     else:
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
-
-@login_required
-def notifications(request,user_uuid=None):
-    this_user = request.user
-    user_uuid = request.GET.get('user_uuid',None)
-    total_users = TigaUser.objects.all().count()
-    return render(request, 'tigacrafting/notifications.html',{'user_id':this_user.id,'total_users':total_users, 'user_uuid':user_uuid})
 
 @login_required
 def aimalog(request):

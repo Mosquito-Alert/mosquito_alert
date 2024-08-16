@@ -12,7 +12,7 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from tigaserver_app.models import NotificationContent, Notification, SentNotification, Report, TigaUser
+from tigaserver_app.models import NotificationContent, Notification, Report, TigaUser
 from tigapublic.models import PredefinedNotification, ObservationNotifications
 from django.contrib.auth.models import User
 from progress.bar import Bar
@@ -125,11 +125,7 @@ def move_map_notifications():
             )
             n.save()
             # and send the notifications
-            sn = SentNotification(
-                sent_to_user=tigauser,
-                notification=n
-            )
-            sn.save()
+            n.send_to_user(user=tigauser)
         bar.next()
     bar.finish()
     # ... then we do de not predefined
@@ -165,11 +161,7 @@ def move_map_notifications():
             )
             n.save()
             # and also send the notifications
-            sn = SentNotification(
-                sent_to_user=tigauser,
-                notification=n
-            )
-            sn.save()
+            n.send_to_user(user=tigauser)
         bar.next()
     bar.finish()
 

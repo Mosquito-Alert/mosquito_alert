@@ -267,9 +267,6 @@ SOUTH_MIGRATION_MODULES = {
 
 USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49, 130, 123, 126, 131, 129, 127, 124, 128, 125]
 
-#PUSH KILL SWITCHES
-DISABLE_PUSH_IOS = False
-DISABLE_PUSH_ANDROID = False
 #Completely disables notifications for achievements/rewards
 DISABLE_ACHIEVEMENT_NOTIFICATIONS = False
 #Minimum package version for scoring notifications
@@ -283,11 +280,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 #every 15 minutes
 CELERY_REFRESH_SCORE_FREQUENCY = '*/15'
-
-APNS_ADDRESS = 'gateway.push.apple.com'
-#APNS_ADDRESS = 'gateway.sandbox.push.apple.com'
-FCM_ADDRESS = 'https://fcm.googleapis.com/fcm/send'
-
 
 IDENTICON_FOREGROUNDS = [ "rgb(45,79,255)",
                "rgb(254,180,44)",
@@ -315,10 +307,13 @@ SITE_ID = 1
 # number of days after a report is considered blocked
 ENTOLAB_LOCK_PERIOD = 14
 
-FCM_API_KEY = ""
-DISABLE_PUSH_IOS = True
-DISABLE_PUSH_ANDROID = True
+# FCM Notification settings
 DRY_RUN_PUSH = True
+DISABLE_PUSH = True
+
+# NOTE: paste json data here
+# See: https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk?authuser=1
+FIREBASE_SERVICE_ACCOUNT_CREDENTIAL = {}
 
 try:
     from tigaserver_project.settings_local import *
