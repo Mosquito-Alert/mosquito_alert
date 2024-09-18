@@ -155,7 +155,7 @@ def get_current_domain(request):
     if settings.DEBUG:
         current_domain = 'humboldt.ceab.csic.es'
     else:
-        current_domain = 'tigaserver.atrapaeltigre.com'
+        current_domain = 'webserver.mosquitoalert.com'
     return current_domain
 
 
