@@ -39,8 +39,8 @@ def do_update():
             g = GlobalAssignmentStat.objects.get(country=current_country)
             g.unassigned_reports = n_unassigned
             g.in_progress_reports = n_progress
-            g.pending_reports = n_pending,
-            g.nsqueue_reports = n_blocked_ns,
+            g.pending_reports = n_pending
+            g.nsqueue_reports = n_blocked_ns
             g.last_update = datetime.datetime.now(pytz.utc)
         except GlobalAssignmentStat.DoesNotExist:
             g = GlobalAssignmentStat(
@@ -52,6 +52,34 @@ def do_update():
                 last_update=datetime.datetime.now(pytz.utc)
             )
         g.save()
+
+    country_spain = EuropeCountry.objects.get(pk=17)
+    unassigned_filtered = get_unassigned_available_reports(country_spain)
+    progress_filtered = get_progress_available_reports(country_spain)
+    blocked_ns = None
+    user_id_filter = settings.USERS_IN_STATS
+    pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False).filter(report__type='adult').values('report')
+    n_unassigned = unassigned_filtered.count()
+    n_progress = progress_filtered.count()
+    n_pending = pending.count()
+    n_blocked_ns = 0 if blocked_ns is None else blocked_ns.count()
+    try:
+        g = GlobalAssignmentStat.objects.get(country=country_spain)
+        g.unassigned_reports = n_unassigned
+        g.in_progress_reports = n_progress
+        g.pending_reports = n_pending
+        g.nsqueue_reports = n_blocked_ns
+        g.last_update = datetime.datetime.now(pytz.utc)
+    except GlobalAssignmentStat.DoesNotExist:
+        g = GlobalAssignmentStat(
+            country=country_spain,
+            unassigned_reports=n_unassigned,
+            in_progress_reports=n_progress,
+            pending_reports=n_pending,
+            nsqueue_reports=n_blocked_ns,
+            last_update=datetime.datetime.now(pytz.utc)
+        )
+    g.save()
 
 if __name__ == "__main__":
     do_update()
