@@ -1480,7 +1480,14 @@ def auto_annotate(report, category, validation_value):
     super_reritja = User.objects.get(username="super_reritja")
     photo = report.photos.first()
     report_locale = report.app_language
-    user_notes = other_insect.get(report_locale, other_insect['en'])
+    if category.id == 4: #albopictus
+        user_notes = albopictus.get(report_locale, albopictus['en'])
+    elif category.id == 10: #culex
+        user_notes = culex.get(report_locale, culex['en'])
+    elif category.id == 9:  # not sure
+        user_notes = notsure.get(report_locale, notsure['en'])
+    else: #other_insect
+        user_notes = other_insect.get(report_locale, other_insect['en'])
     for u in users:
         if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
             new_annotation = ExpertReportAnnotation(report=report, user=u)
