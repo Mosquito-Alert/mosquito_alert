@@ -150,13 +150,16 @@ notsure = {
 }
 
 def get_current_domain(request):
-    if request.META['HTTP_HOST'] != '':
-        return request.META['HTTP_HOST']
-    if settings.DEBUG:
-        current_domain = 'humboldt.ceab.csic.es'
-    else:
-        current_domain = 'webserver.mosquitoalert.com'
-    return current_domain
+    try:
+        if request.META['HTTP_HOST'] != '':
+            return request.META['HTTP_HOST']
+        if settings.DEBUG:
+            current_domain = 'humboldt.ceab.csic.es'
+        else:
+            current_domain = 'webserver.mosquitoalert.com'
+        return current_domain
+    except KeyError: #On tests, the header HTTP_HOST does not exist
+        return 'webserver.mosquitoalert.com'
 
 
 def photos_to_tasks():

@@ -21,6 +21,7 @@ from django.urls import reverse
 import io
 from rest_framework import status
 from tigacrafting.views import issue_notification
+from tigacrafting.views import other_insect, albopictus, culex, notsure
 from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -1057,6 +1058,21 @@ class AnnotateCoarseTestCase(APITestCase):
                 self.assertEqual(value, data['validation_value'], "Validation value should be {0}, is {1}".format(data['validation_value'], value))
             else:
                 self.assertEqual(value, None, "Validation value should be None, is {0}".format(value))
+            notif = Notification.objects.get(report=r)
+            notif_content = notif.notification_content
+            if c_id == 2: #other species
+                self.assertTrue( other_insect['es'] in notif_content.body_html_native, "Report classified as other species associated notification should contain other insect message, it does not" )
+                #'no pertenece a la familia de los Culícidos'
+            elif c_id == 10: #culex sp.
+                self.assertTrue(culex['es'] in notif_content.body_html_native, "Report classified as culex associated notification should contain culex message, it does not")
+                #'no podemos asegurar totalmente que sea un Culex'
+            elif c_id == 4: #aedes albopictus
+                self.assertTrue(albopictus['es'] in notif_content.body_html_native, "Report classified as albopictus associated notification should contain albopictus message, it does not")
+                #'Has conseguido que se pueda identificar perfectamente el mosquito tigre'
+            else: #c_id == 9 not_sure
+                self.assertTrue(notsure['es'] in notif_content.body_html_native, "Report classified as not_sure associated notification should contain not_sure message, it does not")
+                #'Con esta foto no podemos identificar ninguna especie'
+            Notification.objects.filter(report=r).delete()
             ExpertReportAnnotation.objects.filter(report=r).delete()
 
     def test_flip(self):
@@ -1081,7 +1097,6 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
         self.assertTrue( adult_reloaded.flipped, "Report should be marked as flipped" )
         self.assertTrue( adult_reloaded.flipped_to == 'adult#site', "Report should be marked as flipped from adult to site, field has value of {0}".format(adult_reloaded.flipped_to))
-        print(adult_reloaded.flipped_on)
         try:
             response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='12',answer_id='121')
         except:
@@ -1103,7 +1118,7 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
         self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
         self.assertTrue(site_reloaded.flipped_to == 'site#adult',"Report should be marked as flipped from site to adult, field has value of {0}".format(adult_reloaded.flipped_to))
-        print(site_reloaded.flipped_on)
+        #print(site_reloaded.flipped_on)
 
     def test_hide(self):
         u = User.objects.get(pk=25)
