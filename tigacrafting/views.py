@@ -150,13 +150,16 @@ notsure = {
 }
 
 def get_current_domain(request):
-    if request.META['HTTP_HOST'] != '':
-        return request.META['HTTP_HOST']
-    if settings.DEBUG:
-        current_domain = 'humboldt.ceab.csic.es'
-    else:
-        current_domain = 'tigaserver.atrapaeltigre.com'
-    return current_domain
+    try:
+        if request.META['HTTP_HOST'] != '':
+            return request.META['HTTP_HOST']
+        if settings.DEBUG:
+            current_domain = 'humboldt.ceab.csic.es'
+        else:
+            current_domain = 'webserver.mosquitoalert.com'
+        return current_domain
+    except KeyError: #On tests, the header HTTP_HOST does not exist
+        return 'webserver.mosquitoalert.com'
 
 
 def photos_to_tasks():
@@ -1480,7 +1483,14 @@ def auto_annotate(report, category, validation_value):
     super_reritja = User.objects.get(username="super_reritja")
     photo = report.photos.first()
     report_locale = report.app_language
-    user_notes = other_insect.get(report_locale, other_insect['en'])
+    if category.id == 4: #albopictus
+        user_notes = albopictus.get(report_locale, albopictus['en'])
+    elif category.id == 10: #culex
+        user_notes = culex.get(report_locale, culex['en'])
+    elif category.id == 9:  # not sure
+        user_notes = notsure.get(report_locale, notsure['en'])
+    else: #other_insect
+        user_notes = other_insect.get(report_locale, other_insect['en'])
     for u in users:
         if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
             new_annotation = ExpertReportAnnotation(report=report, user=u)

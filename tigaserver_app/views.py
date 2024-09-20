@@ -20,7 +20,7 @@ from tigaserver_app.serializers import NotificationSerializer, NotificationConte
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
-from tigacrafting.views import auto_annotate
+from tigacrafting.views import auto_annotate, issue_notification, get_current_domain
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -2328,6 +2328,8 @@ def annotate_coarse(request):
         if validation_value == '' or not category.specify_certainty_level:
             validation_value = None
         annotation = auto_annotate(report, category, validation_value)
+        current_domain = get_current_domain(request)
+        issue_notification(annotation, current_domain)
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
