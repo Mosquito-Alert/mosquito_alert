@@ -21,7 +21,7 @@ from django.urls import reverse
 import io
 from rest_framework import status
 from tigacrafting.views import issue_notification
-from tigacrafting.views import other_insect, albopictus, culex, notsure
+from tigacrafting.views import other_insect, albopictus, culex, notsure, albopictus_probably
 from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -1067,13 +1067,33 @@ class AnnotateCoarseTestCase(APITestCase):
                 self.assertTrue(culex['es'] in notif_content.body_html_native, "Report classified as culex associated notification should contain culex message, it does not")
                 #'no podemos asegurar totalmente que sea un Culex'
             elif c_id == 4: #aedes albopictus
-                self.assertTrue(albopictus['es'] in notif_content.body_html_native, "Report classified as albopictus associated notification should contain albopictus message, it does not")
+                self.assertTrue(albopictus_probably['es'] in notif_content.body_html_native, "Report classified as albopictus associated notification should contain probably albopictus message, it does not")
                 #'Has conseguido que se pueda identificar perfectamente el mosquito tigre'
             else: #c_id == 9 not_sure
                 self.assertTrue(notsure['es'] in notif_content.body_html_native, "Report classified as not_sure associated notification should contain not_sure message, it does not")
                 #'Con esta foto no podemos identificar ninguna especie'
             Notification.objects.filter(report=r).delete()
             ExpertReportAnnotation.objects.filter(report=r).delete()
+        # test also definitely albopictus
+        category = Categories.objects.get(pk=4)
+        data = {
+            'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
+            'category_id': "4"
+        }
+        data['validation_value'] = '2'
+        response = self.client.post('/api/annotate_coarse/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        classification = json.loads(r.get_final_combined_expert_category_euro_struct_json())
+        category_text = classification['category']
+        category_id = int(classification['category_id'])
+        value = classification['value']
+        self.assertEqual(category_text, category.name,"Category should be {0}, is {1}".format(category.name, category_text))
+        self.assertEqual(category_id, category.id, "Category id should be {0}, is {1}".format(category.id, category_id))
+        notif = Notification.objects.get(report=r)
+        notif_content = notif.notification_content
+        self.assertTrue(albopictus['es'] in notif_content.body_html_native,"Report classified as albopictus associated notification should contain definitely albopictus message, it does not")
+        Notification.objects.filter(report=r).delete()
+        ExpertReportAnnotation.objects.filter(report=r).delete()
 
     def test_flip(self):
         u = User.objects.get(pk=25)
