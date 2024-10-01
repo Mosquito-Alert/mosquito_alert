@@ -564,26 +564,29 @@ function map_init_basic(map, lat, lon) {
 
 function init_maps(){
     $('.maps').each(function(){
-        const centerLat = $(this).data('lat');
-        const centerLng = $(this).data('lon');
-        const map_id = $(this).attr('id');
-        var initialZoom = 6;
-        var djoptions = {"layers": [
-                    ["OSM", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                        "\u00a9 <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
-                ],
-                    "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
-                    "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
-                        [-90,
-                            -180],
-                        [90,
-                            180]
-                    ], "resetview": true, "srid": null, "fitextent": true},
-                options = {djoptions: djoptions, globals: false, callback: window.map_init_basic};
+        try{
+            const centerLat = $(this).data('lat');
+            const centerLng = $(this).data('lon');
+            const map_id = $(this).attr('id');
+            var initialZoom = 6;
+            var djoptions = {"layers": [
+                        ["OSM", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            "\u00a9 <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]
+                    ],
+                        "minimap": false, "scale": "metric", "center": [centerLat, centerLng], "tilesextent": [],
+                        "attributionprefix": null, "zoom": initialZoom, "maxzoom": 18, "minzoom": 0, "extent": [
+                            [-90,
+                                -180],
+                            [90,
+                                180]
+                        ], "resetview": true, "srid": null, "fitextent": true},
+                    options = {djoptions: djoptions, globals: false, callback: window.map_init_basic};
 
-        const map = L.Map.djangoMap(map_id, {djoptions: djoptions, globals: false });
-        map_init_basic(map, centerLat, centerLng);
-
+            const map = L.Map.djangoMap(map_id, {djoptions: djoptions, globals: false });
+            map_init_basic(map, centerLat, centerLng);
+        }catch(error){
+            console.log(error);
+        };
     });
 }
 
