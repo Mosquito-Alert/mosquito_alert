@@ -564,10 +564,10 @@ function map_init_basic(map, lat, lon) {
 
 function init_maps(){
     $('.maps').each(function(){
+        const centerLat = $(this).data('lat');
+        const centerLng = $(this).data('lon');
+        const map_id = $(this).attr('id');
         try{
-            const centerLat = $(this).data('lat');
-            const centerLng = $(this).data('lon');
-            const map_id = $(this).attr('id');
             var initialZoom = 6;
             var djoptions = {"layers": [
                         ["OSM", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -586,6 +586,7 @@ function init_maps(){
             map_init_basic(map, centerLat, centerLng);
         }catch(error){
             console.log(error);
+            console.log(map_id);
         };
     });
 }
