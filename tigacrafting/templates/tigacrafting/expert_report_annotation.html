@@ -708,7 +708,7 @@
                         Reset
                     </button><br>
 
-                    <div style="overflow: auto;">
+                    <div class="photo_wrapper" style="overflow: auto;">
                         {% if request.user.userstat.is_superexpert %}
                             {{ form.instance.get_photo_html_for_report_validation_superexpert | safe }}
                         {% else %}
@@ -2543,6 +2543,7 @@
     <script src={% static "tigacrafting/csrf_utils.js" %}></script>
     <script src={% static "tigacrafting/blood_switch.js" %}></script>
     <script src={% static "tigacrafting/javascript/favorites.js" %}></script>
+    <script src={% static "tigacrafting/javascript/default_select_single_picture.js" %}></script>
 
 
 {% endblock %}
