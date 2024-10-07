@@ -2311,6 +2311,29 @@ def flip_report(request):
             return Response(data={'message': message, 'new_type': flip_to_type, 'new_subtype': flip_to_subtype, 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
+def quick_upload_report(request):
+    if request.method == 'POST':
+        report_id = request.POST.get('report_id', '-1')
+        if report_id == '-1':
+            raise ParseError(detail='report_id param is mandatory')
+        report = get_object_or_404(Report, pk=report_id)
+        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+        super_movelab = User.objects.get(pk=24)
+        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
+            new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
+            photo = report.photos.first()
+            new_annotation.site_certainty_notes = 'auto'
+            new_annotation.best_photo_id = photo.id
+            new_annotation.validation_complete = True
+            new_annotation.revise = True
+            new_annotation.save()
+            return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'message': 'success', 'opcode': 1}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
 def annotate_coarse(request):
     if request.method == 'POST':
         report_id = request.POST.get('report_id', '-1')
