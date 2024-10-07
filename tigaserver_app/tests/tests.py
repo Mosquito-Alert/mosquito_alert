@@ -988,7 +988,7 @@ class NotificationTestCase(APITestCase):
         self.client.logout()
 
 class AnnotateCoarseTestCase(APITestCase):
-    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigaprofile.json','tigausers.json','reports.json','auth_group.json']
+    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigaprofile.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
@@ -1153,3 +1153,23 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
         r_adult_reloaded = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
         self.assertTrue(r_adult_reloaded.hide, "Report should be hidden, is not")
+
+    def test_quick_upload(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_site = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
+        n_annotations = ExpertReportAnnotation.objects.filter(report=r_site).count()
+        self.assertTrue(n_annotations == 0, "Report annotations should be 0, is not (is {0})".format(n_annotations))
+        data = {
+            'report_id': r_site.version_UUID
+        }
+        response = self.client.post('/api/quick_upload_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        r_site_reloaded = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
+        n_annotations = ExpertReportAnnotation.objects.filter(report=r_site_reloaded).count()
+        self.assertTrue(n_annotations == 1, "Report annotations should be 1, is not (is {0})".format(n_annotations))
+        annotation = ExpertReportAnnotation.objects.filter(report=r_site_reloaded).first()
+        self.assertTrue(annotation.best_photo_id is not None, "Report annotation should have picture, it has not")
+        self.assertTrue(annotation.site_certainty_notes == 'auto', "Report annotation notes should be 'auto'")
+        self.assertTrue(annotation.validation_complete, "Report annotation validation should be done")
+        self.assertTrue(annotation.revise, "Report annotation revision should be done")

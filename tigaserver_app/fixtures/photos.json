@@ -34,5 +34,17 @@
             "uuid": "631e1643-ebd7-4d09-85b3-9384d2643fed",
             "blood_genre": null
         }
+    },
+    {
+        "model": "tigaserver_app.photo",
+        "pk": 61,
+        "fields":
+        {
+            "photo": "tigapics/2d037a6f-f50d-41d2-88f1-a44f3c167200.jpg",
+            "report": "00042fb1-408f-4da4-898d-4331a9ec3129",
+            "hide": false,
+            "uuid": "631e1643-ebd7-4d09-85b3-9384d2643fed",
+            "blood_genre": null
+        }
     }
 ]

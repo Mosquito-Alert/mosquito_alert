@@ -1,0 +1,19 @@
+[
+  {
+    "pk": 24,
+    "model": "auth.user",
+    "fields": {
+      "username": "movelab_like",
+      "first_name": "This user is like movelab",
+      "last_name": "Lab",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": true,
+      "last_login": "2020-05-13T09:58:54.449Z",
+      "user_permissions": [],
+      "password": "pppppwwwwwwdddddd",
+      "email": "some_other_email@gmail.com",
+      "date_joined": "2015-07-17T15:48:51Z"
+    }
+  }
+]
