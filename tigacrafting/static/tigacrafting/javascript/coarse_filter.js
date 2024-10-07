@@ -289,6 +289,29 @@ function classify_picture(report_id, category_id, validation_value){
     });
 }
 
+function quick_upload_report(report_id){
+    $('#' + report_id).block({ message: 'Quick uploading report' });
+    $.ajax({
+        url: '/api/quick_upload_report/',
+        data: { "report_id": report_id},
+        type: "POST",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            $('#' + report_id).unblock();
+            remove_report(report_id);
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            if( jqXHR.responseJSON.opcode == -1 ){
+                alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
+                remove_report(report_id);
+            }
+            $('#' + report_id).unblock();
+        },
+        cache: false
+    });
+}
+
 function flip_report(report_id, flip_to_type, flip_to_subtype){
     $('#' + report_id).block({ message: 'Flipping report' });
     $.ajax({
@@ -387,13 +410,25 @@ function single_report_template(report){
     const show_additional_button_class = report.hide == true ? '' : 'hide_button';
     const visibility_class = report.hide == true ? 'status_hidden' : 'status_visible';
     const user_notes = report.note == null || report.note == 'null' ? 'No notes' : report.note;
+    const quick_upload_additional_button_class = report.type == 'adult' ? 'hide_button' : '';
+    const formatted_lat = report.lat.toFixed(6);
+    const formatted_lon = report.lon.toFixed(6);
+    var report_type_label = '';
+    if( report.type == 'adult' ){
+        report_type_label = 'Adult';
+    }else{
+        report_type_label = report.site_cat == 0 ? 'Breeding site - storm drain' : 'Breeding site - other';
+    }
     return `
         <div id="${ report.version_UUID }" data-type="${ report.type }" class="photo ${ report.type } ${ site_cat }">
             <div class="photo_internal_wrapper">
                 <div class="header_internal_wrapper">
                     <div class="header_left">
                         <div class="header_country">
-                            <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="glyphicon glyphicon-link" style="color: black;"> ${ report_country_name }</span></a>
+                            <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="label label-default"><span class="glyphicon glyphicon-link"> </span> ${ report_country_name }</span></a>
+                        </div>
+                        <div class="header_report_label_wrapper">
+                            <div class="header_report_label"><span class="label label-default">${report_type_label}</span></div>
                         </div>
                         <div id="header_ia_${ report.version_UUID }" class="header_ia">
                             <div id="ia_label_${ report.version_UUID }">IA Value ${ ia_value }</div>
@@ -405,6 +440,15 @@ function single_report_template(report){
                     </div>
                     <div class="header_right">
                         <div id="map_${ report.version_UUID }" class="maps map_${ report.version_UUID }" data-lat="${ report.lat }" data-lon="${ report.lon }">
+                        </div>
+                        <div class="lat_lon_wrapper">
+                            <div>
+                                <p><span class="label label-default">Lat: ${formatted_lat}</span></p>
+                                <p><span class="label label-default">Lon: ${formatted_lon}</span></p>
+                            </div>
+                            <div class="lookup_button_wrapper">
+                                <p><a class="btn btn-sm btn-primary" target="_blank" href="https://www.google.com/maps/place/${report.lat},${report.lon}">Lookup</a></p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -439,6 +483,7 @@ function single_report_template(report){
                     <button type="button" id="dalbo_${ report.version_UUID }" title="Definitely albopictus" data-category="4" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
                     <button type="button" id="ns_${ report.version_UUID }" title="Not sure" data-category="9" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_notsure">N.S.</button>
                     <button type="button" id="flip_${ report.version_UUID }" title="Change report type" data-type="${ report.type }" data-site-cat="${ site_cat }" data-report-id="${ report.version_UUID }" class="btn btn-danger foot_btn btn_notsure btn_flip">Flip</button>
+                    <button type="button" id="quick_upload_${ report.version_UUID }" title="Set quick upload for site report" data-type="${ report.type }" data-report-id="${ report.version_UUID }" class="${ quick_upload_additional_button_class } btn btn-warning foot_btn btn_quick">Quick upload</button>
                 </div>
             </div>
         </div>
@@ -534,6 +579,11 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primar
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
     classify_picture(report_id, category_id, null);
+});
+
+$('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-warning.foot_btn.btn_quick', function(){
+    const report_id = $(this).data("report-id");
+    quick_upload_report(report_id);
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger.foot_btn.btn_flip', function(){
