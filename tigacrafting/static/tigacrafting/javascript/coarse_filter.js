@@ -10,6 +10,11 @@ function make_site(report_id, type){
     $('#flip_' + report_id).data('type','site');
     $('#ia' + report_id).empty();
     $('#ia_label_' + report_id ).html('IA Value N/A');
+    if(type=='other'){
+        $('#label_' + report_id ).html('Breeding site - other');
+    }else{
+        $('#label_' + report_id ).html('Breeding site - storm drain');
+    }
 }
 
 function make_adult(report_id){
@@ -339,8 +344,11 @@ function flip_report(report_id, flip_to_type, flip_to_subtype){
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
-                alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.")
+                alert("This report has been claimed by at least one expert, so it will be removed from the coarse filter.");
                 remove_report(report_id);
+            }else{
+                alert(jqXHR.responseJSON.message);
+                $('#modal_flip_to_site').modal('hide');
             }
             $('#' + report_id).unblock();
         },
@@ -430,7 +438,7 @@ function single_report_template(report){
                             <a href="/single_simple/${ report.version_UUID }" target="_blank"><span class="label label-default"><span class="glyphicon glyphicon-link"> </span> ${ report_country_name }</span></a>
                         </div>
                         <div class="header_report_label_wrapper">
-                            <div class="header_report_label"><span class="label label-default">${report_type_label}</span></div>
+                            <div class="header_report_label"><span id="label_${report.version_UUID}" class="label label-default">${report_type_label}</span></div>
                         </div>
                         <div id="header_ia_${ report.version_UUID }" class="header_ia">
                             <div id="ia_label_${ report.version_UUID }">IA Value ${ ia_value }</div>
@@ -495,20 +503,34 @@ function single_report_template(report){
 $('#next_page_button').click( function(e){
     const offset = $(this).data('offset');
     const page_size = get_page_size();
-    load_data(page_size,offset);
+    const filter = ui_to_filter();
+    $('#filter_options').val(filter);
+    load_data(page_size,offset,filter);
 } );
 
 $('#previous_page_button').click( function(e){
     const offset = $(this).data('offset');
     const page_size = get_page_size();
-    load_data(page_size,offset);
+    const filter = ui_to_filter();
+    $('#filter_options').val(filter);
+    load_data(page_size,offset,filter);
 } );
+
+$('#reload_button').click( function(e){
+    const offset = 1;
+    const page_size = get_page_size();
+    const filter = ui_to_filter();
+    $('#filter_options').val(filter);
+    load_data(page_size,offset,filter);
+});
 
 $('#page_button').click( function(e){
     const page = $('#page_input').val();
     const page_size = get_page_size();
+    const filter = ui_to_filter();
+    $('#filter_options').val(filter);
     if(page != ''){
-        load_data(page_size,parseInt(page));
+        load_data(page_size,parseInt(page),filter);
     }
 });
 
@@ -624,10 +646,35 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-warnin
     }
 });
 
+$("input[name='radio_report_type']").on('click', function(){
+    $('#flip_to_type').val($(this).val());
+});
+
+$("input[name='radio_site_type']").on('click', function(){
+    $('#flip_to_subtype').val($(this).val());
+});
+
+$("input[name='radio_water']").on('click', function(){
+    $('#flip_water').val($(this).val());
+});
+
+function set_modal_defaults(){
+    $("input[name=radio_report_type][value=adult]").prop('checked', true);
+    $("input[name=radio_site_type][value=storm_drain]").prop('checked', true);
+    $("input[name=radio_water][value=water]").prop('checked', true);
+    $('#flip_to_type').val('adult');
+    $('#flip_to_subtype').val('storm_drain');
+    $('#flip_water').val('water');
+}
+
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger.foot_btn.btn_flip', function(){
     const type = $(this).data("type");
     const site_cat = $(this).data("site-cat");
+    const report_id = $(this).data("report-id");
     $('#flip_report_id').val( $(this).data("report-id") );
+    set_modal_defaults();
+    $('#modal_flip_to_site').modal('show');
+    /*
     if( type=='adult' ){
         $('#flip_to_type').val( "site" );
         $('#modal_flip_to_site').modal('show');
@@ -638,6 +685,7 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger
             flip_report(report_id, 'adult', null);
         }
     }
+    */
 });
 
 function map_init_basic(map, lat, lon) {

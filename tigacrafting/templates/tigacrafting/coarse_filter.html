@@ -228,6 +228,7 @@
                                            class="form-control input-sm" id="page_input" placeholder="Go to page"
                                            style="width:100px;">
                                             <button id="page_button" class="btn btn-default btn-sm active" type="button">Go</button>
+                                            <button id="reload_button" class="btn btn-default btn-sm active" type="button">Reload</button>
                                         </div>
                                     </form>
                                 </span>
@@ -270,42 +271,79 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="modallabel">Flip adult report to site</h4>
+                    <h4 class="modal-title" id="modallabel">Change report type</h4>
                 </div>
                 <div class="modal-body">
                     <form role="form" class="form-horizontal">
                         <div class="form-group">
-                            <h4>Select the site type</h4>
-                            <div class="radio">
-                              <label>
-                                <input type="radio" name="radio_site_type" id="type_storm_drain" value="storm_drain" checked>
-                                Storm drain
-                              </label>
-                            </div>
-                            <div class="radio">
-                              <label>
-                                <input type="radio" name="radio_site_type" id="type_other" value="other">
-                                Other
-                              </label>
+                            <h4>Select report type</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="radio">
+                                      <label>
+                                        <input type="radio" name="radio_report_type" id="type_adult" value="adult" checked>
+                                        Adult
+                                      </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="radio">
+                                      <label>
+                                        <input type="radio" name="radio_report_type" id="type_site" value="site">
+                                        Site
+                                      </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <h4>Do you see water?</h4>
-                            <div class="radio">
-                              <label>
-                                <input type="radio" name="radio_water" id="radio_water_yes" value="water" checked>
-                                Yes, there is water
-                              </label>
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                </div>
+                                <div class="col-md-6">
+                                    <h4>Select the site type</h4>
+                                    <div class="radio">
+                                      <label>
+                                        <input type="radio" name="radio_site_type" id="type_storm_drain" value="storm_drain" checked>
+                                        Storm drain
+                                      </label>
+                                    </div>
+                                    <div class="radio">
+                                      <label>
+                                        <input type="radio" name="radio_site_type" id="type_other" value="other">
+                                        Other
+                                      </label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="radio">
-                              <label>
-                                <input type="radio" name="radio_water" id="radio_water_no" value="dry">
-                                No, there is no water
-                              </label>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                </div>
+                                <div class="col-md-6">
+                                    <h4>Do you see water?</h4>
+                                    <div class="radio">
+                                      <label>
+                                        <input type="radio" name="radio_water" id="radio_water_yes" value="water" checked>
+                                        Yes, there is water
+                                      </label>
+                                    </div>
+                                    <div class="radio">
+                                      <label>
+                                        <input type="radio" name="radio_water" id="radio_water_no" value="dry">
+                                        No, there is no water
+                                      </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <input id="flip_report_id" type="hidden">
                         <input id="flip_to_type" type="hidden">
+                        <input id="flip_to_subtype" type="hidden">
+                        <input id="flip_water" type="hidden">
                     </form>
                 </div>
                 <div class="modal-footer">
