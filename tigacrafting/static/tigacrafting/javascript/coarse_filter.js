@@ -1,3 +1,5 @@
+const ask_confirmation = true;
+
 function make_site(report_id, type){
     hide_adult_buttons(report_id);
     $('#' + report_id).removeClass('adult');
@@ -554,36 +556,72 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primar
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_other', function(){
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
-    classify_picture(report_id, category_id, null);
+    if(ask_confirmation){
+        if(confirm(`About to classify report with id ${report_id} as 'Other species'. Continue?`)==true){
+            classify_picture(report_id, category_id, null);
+        }
+    }else{
+        classify_picture(report_id, category_id, null);
+    }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_pculex', function(){
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
-    classify_picture(report_id, category_id, 1);
+    if(ask_confirmation){
+        if(confirm(`About to classify report with id ${report_id} as 'Probably Culex'. Continue?`)==true){
+            classify_picture(report_id, category_id, 1);
+        }
+    }else{
+        classify_picture(report_id, category_id, 1);
+    }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_palbo', function(){
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
-    classify_picture(report_id, category_id, 1);
+    if(ask_confirmation){
+        if(confirm(`About to classify report with id ${report_id} as 'Probably Albopictus'. Continue?`)==true){
+            classify_picture(report_id, category_id, 1);
+        }
+    }else{
+        classify_picture(report_id, category_id, 1);
+    }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_dalbo', function(){
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
-    classify_picture(report_id, category_id, 2);
+    if(ask_confirmation){
+        if(confirm(`About to classify report with id ${report_id} as 'Definitely Albopictus'. Continue?`)==true){
+            classify_picture(report_id, category_id, 2);
+        }
+    }else{
+        classify_picture(report_id, category_id, 2);
+    }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_notsure', function(){
     const category_id = $(this).data("category");
     const report_id = $(this).data("report-id");
-    classify_picture(report_id, category_id, null);
+    if(ask_confirmation){
+        if(confirm(`About to classify report with id ${report_id} as 'Not sure'. Continue?`)==true){
+            classify_picture(report_id, category_id, null);
+        }
+    }else{
+        classify_picture(report_id, category_id, null);
+    }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-warning.foot_btn.btn_quick', function(){
     const report_id = $(this).data("report-id");
-    quick_upload_report(report_id);
+    if(ask_confirmation){
+        if(confirm(`About to quick upload site report with id ${report_id}. Continue?`)==true){
+            quick_upload_report(report_id);
+        }
+    }else{
+        quick_upload_report(report_id);
+    }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger.foot_btn.btn_flip', function(){
